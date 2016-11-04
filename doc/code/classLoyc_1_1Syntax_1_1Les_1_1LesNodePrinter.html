@@ -144,7 +144,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="mdescLeft">&#160;</td><td class="mdescRight">When an argument to a method or macro has the value <code>@``</code>, it will be omitted completely if this flag is set. <a href="#a7c572a565bf60fd0da3881c41c3a4ebf">More...</a><br /></td></tr>
 <tr class="separator:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a7bdd6fd9cd655af0cbcfabe61111ffe0">OmitSpaceTrivia</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter). <a href="#a7bdd6fd9cd655af0cbcfabe61111ffe0">More...</a><br /></td></tr>
+<tr class="memdesc:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaNewline). <a href="#a7bdd6fd9cd655af0cbcfabe61111ffe0">More...</a><br /></td></tr>
 <tr class="separator:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d35fffdeeab47165c0d11650a28f15c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5d35fffdeeab47165c0d11650a28f15c">OmitComments</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a5d35fffdeeab47165c0d11650a28f15c"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, comment trivia attributes are ignored (e.g. CodeSymbols.TriviaSLCommentAfter). <a href="#a5d35fffdeeab47165c0d11650a28f15c">More...</a><br /></td></tr>
@@ -156,7 +156,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:a2556ffa94dcb427a21fc7dd3e2e24bac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output. <a href="#a2556ffa94dcb427a21fc7dd3e2e24bac">More...</a><br /></td></tr>
 <tr class="separator:a2556ffa94dcb427a21fc7dd3e2e24bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a832454e19ff751e338d94365376bb20e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a832454e19ff751e338d94365376bb20e">PrintExplicitTrivia</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a832454e19ff751e338d94365376bb20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses. <a href="#a832454e19ff751e338d94365376bb20e">More...</a><br /></td></tr>
+<tr class="memdesc:a832454e19ff751e338d94365376bb20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a2556ffa94dcb427a21fc7dd3e2e24bac" title="Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output...">OmitUnknownTrivia</a> has no effect when this flag is true. <a href="#a832454e19ff751e338d94365376bb20e">More...</a><br /></td></tr>
 <tr class="separator:a832454e19ff751e338d94365376bb20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cb1e86133a4cd97acad6e50c44510e2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a3cb1e86133a4cd97acad6e50c44510e2">ObeyRawText</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a3cb1e86133a4cd97acad6e50c44510e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes raw text to be printed verbatim, as the EC# printer does. When this option is false, raw text trivia is printed as a normal attribute. <a href="#a3cb1e86133a4cd97acad6e50c44510e2">More...</a><br /></td></tr>
@@ -364,7 +364,7 @@ Protected fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter).</p>
+<p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaNewline).</p>
 
 </div>
 </div>
@@ -408,7 +408,7 @@ Protected fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses.</p>
+<p>Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a2556ffa94dcb427a21fc7dd3e2e24bac" title="Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output...">OmitUnknownTrivia</a> has no effect when this flag is true.</p>
 
 </div>
 </div>
@@ -438,7 +438,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 12 2016 15:49:42 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 07:35:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -217,7 +217,7 @@ Classes</h2></td></tr>
 Enumerations</h2></td></tr>
 <tr class="memitem:aee9716da50d3d135d672d14a85f6d4af"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> { <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa30fc6bbba82125243ecf4ddb27fee645">EscapeC.Minimal</a> = 0, 
-<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7a1920d61156abc05a60135aefe8bc67">EscapeC.Default</a> = Control | Quotes, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7a1920d61156abc05a60135aefe8bc67">EscapeC.Default</a> = Control | DoubleQuotes | UnicodeNonCharacters | UnicodePrivateUse, 
 <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afacc75fdd6498997587bd4a7bb260f78fd">EscapeC.NonAscii</a> = 1, 
 <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afab7ed9d803ea10cb2e99329b2e02d10e5">EscapeC.BackslashX</a> = 2, 
@@ -228,11 +228,13 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afae522cdf475c9b1059020759a3a241908">EscapeC.SingleQuotes</a> = 32, 
 <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afac9a28e7f0dbc3ed20a161351c4f29a7b">EscapeC.Quotes</a> = 48, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4">EscapeC.HasEscapes</a> = 0x100, 
-<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7f5f743ac34344aeb26849015b4b3dae">EscapeC.Unrecognized</a> = 0x200, 
-<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa18110aa1122a2b61725655ba462bcea5">EscapeC.HasLongEscape</a> = 0x400, 
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa4233421b92fc9d55f1a35451388d53ca">EscapeC.UnicodeNonCharacters</a> = 64, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa815e88e4d05d1bbf92f9bd02fc4b13fb">EscapeC.UnicodePrivateUse</a> = 128, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4">EscapeC.HasEscapes</a> = 0x100, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa860d1f098ab0895628d6cc141a383bb8">EscapeC.HasInvalid6DigitEscape</a> = 0x800
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7f5f743ac34344aeb26849015b4b3dae">EscapeC.Unrecognized</a> = 0x200, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa18110aa1122a2b61725655ba462bcea5">EscapeC.HasLongEscape</a> = 0x400, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa860d1f098ab0895628d6cc141a383bb8">EscapeC.HasInvalid6DigitEscape</a> = 0x800
 <br />
  }<tr class="memdesc:aee9716da50d3d135d672d14a85f6d4af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags to control ParseHelpers.EscapeCStyle(UString, EscapeC). <a href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">More...</a><br /></td></tr>
 </td></tr>
@@ -312,7 +314,9 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1">NodeStyle.Alternate</a> = 8, 
 <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8adbb22e2551d9969f35984d1608e16013">NodeStyle.Alternate2</a> = 16, 
-<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed">NodeStyle.Handled</a> = 128
+<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf">NodeStyle.OneLiner</a> = 64, 
+<br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed">NodeStyle.Handled</a> = 128
 <br />
  }<tr class="memdesc:abc3eedb6b204244ecdfdfeacb1d433b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suggests a printing style when serializing a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to text. <a href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">More...</a><br /></td></tr>
 </td></tr>
@@ -421,6 +425,12 @@ x the parser should *not include the comment as part of the range unless it want
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="aee9716da50d3d135d672d14a85f6d4afac9a28e7f0dbc3ed20a161351c4f29a7b"></a>Quotes&#160;</td><td class="fielddoc">
 <p>Escape single and double quotes</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="aee9716da50d3d135d672d14a85f6d4afa4233421b92fc9d55f1a35451388d53ca"></a>UnicodeNonCharacters&#160;</td><td class="fielddoc">
+<p>Escape non-character unicode code points such as the Byte Order Mark and unpaired surrogate pair characters.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="aee9716da50d3d135d672d14a85f6d4afa815e88e4d05d1bbf92f9bd02fc4b13fb"></a>UnicodePrivateUse&#160;</td><td class="fielddoc">
+<p>Escape unicode private-use code points.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4"></a>HasEscapes&#160;</td><td class="fielddoc">
 <p>While unescaping, a backslash was encountered.</p>
@@ -562,6 +572,9 @@ x the parser should *not include the comment as part of the range unless it want
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8adbb22e2551d9969f35984d1608e16013"></a>Alternate2&#160;</td><td class="fielddoc">
 <p>Another alternate style flag. In LES and EC#, this is used for binary-format numbers. In LES, it is used for triple-quoted strings that use single quotes.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf"></a>OneLiner&#160;</td><td class="fielddoc">
+<p>Indicates that the there is no comment or newline trivia associated with the children of this node, and therefore when printing this node, automatic newlines can be suppressed.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed"></a>Handled&#160;</td><td class="fielddoc">
 <p>Indicates that some part of a compiler has seen the node and done something with it.</p>
@@ -726,33 +739,66 @@ x the parser should *not include the comment as part of the range unless it want
 </div><div class="memdoc">
 <p>List of trivia to be injected by Run. Must be sorted.</p>
 <p>Index of next trivia to be injected.</p>
-<p>Parent calls of the current node.</p>
 <p>Initializes the SortedTrivia property.</p>
 <p>Derived class should associate the given list of trivia with the specified node. Leading trivia will be attached to a given node before trailing trivia.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">trivia</td><td>Trivia to be associated with <code>node</code>. Usually, all leading trivia is provided in a single call to this method and all trailing trivia is provided in a second call, but this is not guaranteed.</td></tr>
-    <tr><td class="paramname">trailing</td><td>If true, this is trailing trivia. If false, this is leading trivia.</td></tr>
+    <tr><td class="paramname">node</td><td>The node.</td></tr>
+    <tr><td class="paramname">trivia</td><td>Trivia to be associated with <code>node</code>.</td></tr>
+    <tr><td class="paramname">loc</td><td>Location of the trivia. For a given node, the base class calls this method at most once for each value of TriviaLocation. </td></tr>
+    <tr><td class="paramname">parent</td><td>(Original version of) parent of <code>node</code>.</td></tr>
+    <tr><td class="paramname">indexInParent</td><td>Index of <code>node</code> within <code>parent</code>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The same node with trivia attributes added.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The same node with trivia attributes added. If loc indicates trailing trivia, the derived class can say "I don't want trivia to be associated with 
+this node" by returning null; the base class will, if possible, associate it with the next node instead, but this doesn't work for the last child in a sequence; in that case this method is called again with the same trivia and loc is set to TriviaLocation.TrailingExtra.</dd></dl>
 <p>This method is STILL called for a given node when there is no trivia associated with that node.</p>
 <p>Trivia that appeared before a node</p>
 <p>Trivia associated with a node that came before it</p>
 <p>Trivia attached to the last node in an argument list or last statement in a block</p>
-<p>Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia.</p>
-<p>Returns true if the trivia represents a newline, false otherwise.</p>
-<p>A method called to create a virtual node to apply trivia to an empty source file.</p>
-<p>Default implementation attaches all trivia to a "missing" node (zero-length identifier). If this method returns null then the result is discarded.</p>
-<p>Attaches trivia to the input nodes provided.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>The trivia begins within the range of an identifier or literal. This occurs, for example, if a list of arguments or attributes includes a comma in the range of each argument, and there is trivia before the comma, e.g. in <code>Foo(x/* trivia</code></p>
+<p><code></code></p>
+<p><code>Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia.</code></p>
+<p><code></code></p>
+<p><code></code></p>
+<p><code>Returns true if the trivia represents a newline, false otherwise.</code></p>
+<p><code></code></p>
+<p><code></code></p>
+<p><code>A method called to create a virtual node to apply trivia to an empty source file.</code></p>
+<p><code> </code></p>
+<p><code>Default implementation attaches all trivia to a "missing" node (zero-length identifier). If this method returns null then the result is discarded.</code></p>
+<p><code></code></p>
+<p><code></code></p>
+<p><code>This method is called after a node has been processed and any applicable trivia was attached.</code></p>
+<p><code> </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">node</td><td>Node (after trivia attached)</td></tr>
+    <tr><td class="paramname">parent</td><td>Parent of <code>node</code> (old version, before changes to children are applied)</td></tr>
+    <tr><td class="paramname">indexInParent</td><td>Index of <code>node</code> within <code>parent</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Should return <code>node</code> or an altered version of <code>node</code>.</dd></dl>
+<p></code></p>
+<p><code>This method gives the derived class one final chance to rearrange or alter the interpretation of the attached trivia. Note that this method may be called on some nodes to which trivia was not attached, when siblings of the same parent had trivia attached. </code></p>
+<p><code></code></p>
+<p><code></code></p>
+<p><code>Attaches trivia to the input nodes provided.</code></p>
+<p><code> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">nodes</td><td>List of input nodes. This method calls nodes.MoveNext() before calling nodes.Current.</td></tr>
   </table>
   </dd>
 </dl>
-<p>Trailing trivia after all nodes is attached to the final node. If <code>nodes</code> is empty then GetEmptyResultSet is called to create a dummy node and attach all trivia to it.</p>
+<p></code></p>
+<p><code>Trailing trivia after all nodes is attached to the final node. If <code>nodes</code> is empty then GetEmptyResultSet is called to create a dummy node and attach all trivia to it.</code></p>
+<p><code></code></p>
+<p><code></code></p>
+<p><code>Core trivia associaton algorithm.</code></p>
+<p><code> </code></p>
+<p><code> NOTE: the enumerator may DRIVE lexing and actually cause the trivia list (SortedTrivia) to increase in size. For this reason, this algorithm is careful to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this precaution is sufficient to preserve trivia in all "streaming" cases, but it seems to work in at least most cases. </code></p>
+<p><code> </code></p>
 
 </div>
 </div>
@@ -789,7 +835,7 @@ The parser should assign minimal boundaries to each node: the <a class="el" href
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 12 2016 15:49:39 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 07:35:43 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

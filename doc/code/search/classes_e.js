@@ -23,8 +23,8 @@ var searchData=
   ['printerstate',['PrinterState',['../structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html',1,'Loyc::Syntax::Impl']]],
   ['program',['Program',['../classLoyc_1_1LLParserGenerator_1_1Program.html',1,'Loyc::LLParserGenerator']]],
   ['program',['Program',['../classTextEditor_1_1Program.html',1,'TextEditor']]],
-  ['pushedcurrent',['PushedCurrent',['../structLoyc_1_1MessageSink_1_1PushedCurrent.html',1,'Loyc::MessageSink']]],
   ['pushedcurrent',['PushedCurrent',['../structLoyc_1_1Syntax_1_1ParsingService_1_1PushedCurrent.html',1,'Loyc::Syntax::ParsingService']]],
+  ['pushedcurrent',['PushedCurrent',['../structLoyc_1_1MessageSink_1_1PushedCurrent.html',1,'Loyc::MessageSink']]],
   ['pushedprinter',['PushedPrinter',['../structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html',1,'Loyc::Syntax::LNode']]],
   ['pushedtlv',['PushedTLV',['../structLoyc_1_1Threading_1_1PushedTLV.html',1,'Loyc::Threading']]]
 ];

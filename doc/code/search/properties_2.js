@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['canpreservecomments',['CanPreserveComments',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#a935b134eb841d2923f0228445152e02b',1,'Loyc::Syntax::IParsingService']]],
   ['capacity',['Capacity',['../structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#ade5b302d17b19c2ae19ec38c12cf6834',1,'Loyc.Collections.Impl.InternalList.Capacity()'],['../classLoyc_1_1Collections_1_1VListBlock.html#a1bdf1a2c6f51876cfece605688c7350f',1,'Loyc.Collections.VListBlock.Capacity()']]],
   ['castla',['CastLA',['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a9106c04f6b50caaa539f756e0ec89c76',1,'Loyc::LLParserGenerator::GeneralCodeGenHelper']]],
   ['children',['Children',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6',1,'Loyc::Syntax::Lexing::Token']]],

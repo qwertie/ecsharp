@@ -181,8 +181,8 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:af6777f19c2bd33b3656b36d293a61a40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls the locations where spaces appear as EcsNodePrinter is printing. <a href="namespaceLoyc_1_1Ecs.html#af6777f19c2bd33b3656b36d293a61a40">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:af6777f19c2bd33b3656b36d293a61a40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31748d155453336105544fe3a55e83e1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31748d155453336105544fe3a55e83e1"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>NewlineOpt</b> { <br />
-&#160;&#160;<b>Default</b>, 
+<tr class="memitem:a31748d155453336105544fe3a55e83e1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Ecs.html#a31748d155453336105544fe3a55e83e1">NewlineOpt</a> { <br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Ecs.html#a31748d155453336105544fe3a55e83e1a7a1920d61156abc05a60135aefe8bc67">NewlineOpt.Default</a>, 
 <b>BeforeSpaceDefBrace</b> = 0x000001, 
 <b>BeforeMethodBrace</b> = 0x000002, 
 <br />
@@ -212,7 +212,8 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<b>BeforeConstructorColon</b> = 0x200000
 <br />
- }</td></tr>
+ }<tr class="memdesc:a31748d155453336105544fe3a55e83e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags to control situations in which newlines should be added automatically by the EC# printer. <a href="namespaceLoyc_1_1Ecs.html#a31748d155453336105544fe3a55e83e1">More...</a><br /></td></tr>
+</td></tr>
 <tr class="separator:a31748d155453336105544fe3a55e83e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -237,6 +238,34 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Flags for EcsNodePrinter.IsComplexIdentifier.</p>
+
+</div>
+</div>
+<a class="anchor" id="a31748d155453336105544fe3a55e83e1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc_1_1Ecs.html#a31748d155453336105544fe3a55e83e1">Loyc.Ecs.NewlineOpt</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Flags to control situations in which newlines should be added automatically by the EC# printer.</p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a31748d155453336105544fe3a55e83e1a7a1920d61156abc05a60135aefe8bc67"></a>Default&#160;</td><td class="fielddoc">
+<p>Default value of <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#af046ec4a06e1270685460547238cc950" title="Controls the locations where newlines should be emitted.">EcsNodePrinter.NewlineOptions</a></p>
+<p>Oct 2016: Some defaults have been turned off because newlines can now be added with #trivia_newline, and turning on some NewlineOpts currently causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline at the same time.</p>
+</td></tr>
+</table>
 
 </div>
 </div>
@@ -267,7 +296,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 12 2016 15:49:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 07:35:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

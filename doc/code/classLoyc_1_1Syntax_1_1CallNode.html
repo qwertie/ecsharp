@@ -320,9 +320,9 @@ virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#
 <tr class="memitem:a463a310eef54c7406715c1f52de63755 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a463a310eef54c7406715c1f52de63755"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithRange</b> (<a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
 <tr class="separator:a463a310eef54c7406715c1f52de63755 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a8593b8919c8ce8328ba221661dcd5b inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a8593b8919c8ce8328ba221661dcd5b"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithRange</b> (int startIndex, int endIndex)</td></tr>
-<tr class="separator:a9a8593b8919c8ce8328ba221661dcd5b inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a033aa17e9e7f43740b5e655e8793cfe0 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a033aa17e9e7f43740b5e655e8793cfe0"></a>
+virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithRange</b> (int startIndex, int endIndex)</td></tr>
+<tr class="separator:a033aa17e9e7f43740b5e655e8793cfe0 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc48d5d5147f2d6bae078b1bf5bbde61 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abc48d5d5147f2d6bae078b1bf5bbde61"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithStyle</b> (<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style)</td></tr>
 <tr class="separator:abc48d5d5147f2d6bae078b1bf5bbde61 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -920,7 +920,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 </div><div class="memdoc">
 
 <p>Transforms the Target, parameters, and optionally the attributes of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#afbd1c05ec418a4df7eed80ae53d43d0a" title="Transforms the Target, parameters, and optionally the attributes of an LNode, returning another LNode...">Select()</a> returns <code>this</code>.</p>
-<p>The selector is not allowed to return null, but it can return <code>NoValue.Value</code> to delete a parameter or target. If you're wondering why we don't use <code>null</code> for this purpose, it is because the functionality of this method is actually implemented by <a class="el" href="structLoyc_1_1Collections_1_1VList.html#a3751829c3359ff56319fe6d93b6be40a" title="Filters and maps a list with a user-defined function.">VList&lt;T&gt;.WhereSelect(Func&lt;T, Maybe&lt;T&gt;&gt;)</a>; since T could be a value type, that method cannot use null as a signal to delete items from the collection. </p>
+<p>The selector is not allowed to return null, but it can return <code>NoValue.Value</code> to delete a parameter or target. If the current node is a target, it cannot be deleted, so it is replaced with <code>#splice()</code> which, by convention, represents an empty list. If you're wondering why we don't use <code>null</code> for deletions, it is because the functionality of this method is actually implemented by <a class="el" href="structLoyc_1_1Collections_1_1VList.html#a3751829c3359ff56319fe6d93b6be40a" title="Filters and maps a list with a user-defined function.">VList&lt;T&gt;.WhereSelect(Func&lt;T, Maybe&lt;T&gt;&gt;)</a>; since T could be a value type, that method cannot use null as a signal to delete items from the collection. </p>
 <p>It is not possible to delete the Target of a call, and if the selector returns <code>NoValue.Value</code> for the Target, the target is replaced with an empty call to <code>#splice()</code>.</p>
 
 <p>Reimplemented from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af726d256f8c9d004c8cd322bb42e36ea">Loyc.Syntax.LNode</a>.</p>
@@ -1032,7 +1032,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 12 2016 15:49:39 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 07:35:43 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

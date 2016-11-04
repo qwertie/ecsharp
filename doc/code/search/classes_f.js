@@ -1,7 +1,7 @@
 var searchData=
 [
   ['range',['Range',['../classLoyc_1_1Range.html',1,'Loyc']]],
-  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;']]],
+  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;']]],
   ['rangeext',['RangeExt',['../classLoyc_1_1Collections_1_1RangeExt.html',1,'Loyc::Collections']]],
   ['readonlyascollection',['ReadOnlyAsCollection',['../classLoyc_1_1Collections_1_1ReadOnlyAsCollection.html',1,'Loyc::Collections']]],
   ['readonlycollectionbase',['ReadOnlyCollectionBase',['../classLoyc_1_1Collections_1_1Impl_1_1ReadOnlyCollectionBase.html',1,'Loyc::Collections::Impl']]],

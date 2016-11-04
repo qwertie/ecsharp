@@ -127,9 +127,12 @@ HashSet&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> &gt;&#160;<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:a82cc8ff957ef2f6dfad4cfcd06f7abf8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82cc8ff957ef2f6dfad4cfcd06f7abf8"></a>
-IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>CommentList</b><code> [get]</code></td></tr>
-<tr class="separator:a82cc8ff957ef2f6dfad4cfcd06f7abf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2083ec9116d7e605176e6e27ff1ef2f9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a2083ec9116d7e605176e6e27ff1ef2f9">SaveComments</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a2083ec9116d7e605176e6e27ff1ef2f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls whether comments and newlines are saved into <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a63fa262bd9d56095e4c181f6f32b9c53" title="A list of saved trivia: comments, newlines, preprocessor directives and ignored regions.">TriviaList</a>. <a href="#a2083ec9116d7e605176e6e27ff1ef2f9">More...</a><br /></td></tr>
+<tr class="separator:a2083ec9116d7e605176e6e27ff1ef2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63fa262bd9d56095e4c181f6f32b9c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a63fa262bd9d56095e4c181f6f32b9c53">TriviaList</a><code> [get]</code></td></tr>
+<tr class="memdesc:a63fa262bd9d56095e4c181f6f32b9c53"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of saved trivia: comments, newlines, preprocessor directives and ignored regions. <a href="#a63fa262bd9d56095e4c181f6f32b9c53">More...</a><br /></td></tr>
+<tr class="separator:a63fa262bd9d56095e4c181f6f32b9c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html">Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;</a></td></tr>
 <tr class="memitem:ae37a8e4c5f0e449d91b1858b025b65f1 inherit properties_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae37a8e4c5f0e449d91b1858b025b65f1"></a>
 <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Lexer</b><code> [get, set]</code></td></tr>
@@ -181,9 +184,9 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> 
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af2341ac0fe140015df9c26256e9c742c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2341ac0fe140015df9c26256e9c742c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>EcsPreprocessor</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; source, Action&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; onComment=null)</td></tr>
-<tr class="separator:af2341ac0fe140015df9c26256e9c742c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe364cb0480e896ceb03d11428032da3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abe364cb0480e896ceb03d11428032da3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EcsPreprocessor</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; source, bool saveComments)</td></tr>
+<tr class="separator:abe364cb0480e896ceb03d11428032da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e269bdc9ef105b9f7f4c011eec7712b"><td class="memItemLeft" align="right" valign="top">override <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">NextToken</a> ()</td></tr>
 <tr class="memdesc:a9e269bdc9ef105b9f7f4c011eec7712b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the next (postprocessed) token. This method should set the <code>_current</code> field to the returned value. <a href="#a9e269bdc9ef105b9f7f4c011eec7712b">More...</a><br /></td></tr>
 <tr class="separator:a9e269bdc9ef105b9f7f4c011eec7712b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,7 +238,52 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#a3f1cb6d179c36f7a6e57883a19787fdd">Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4">Loyc.Syntax.LNode.Name</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165">Loyc.Syntax.Lexing.Token.StartIndex</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aec247d67d4c8cf23acde5735127c5387">Loyc.Syntax.Lexing.Token.TypeInt</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1DList.html#a3424bff1b4734e85cb2b5f3971390fc6">Loyc.Collections.DList&lt; T &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4">Loyc.Syntax.LNode.Name</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165">Loyc.Syntax.Lexing.Token.StartIndex</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aec247d67d4c8cf23acde5735127c5387">Loyc.Syntax.Lexing.Token.TypeInt</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="a2083ec9116d7e605176e6e27ff1ef2f9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.Ecs.Parser.EcsPreprocessor.SaveComments</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Controls whether comments and newlines are saved into <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a63fa262bd9d56095e4c181f6f32b9c53" title="A list of saved trivia: comments, newlines, preprocessor directives and ignored regions.">TriviaList</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a63fa262bd9d56095e4c181f6f32b9c53"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&gt; Loyc.Ecs.Parser.EcsPreprocessor.TriviaList</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A list of saved trivia: comments, newlines, preprocessor directives and ignored regions.</p>
 
 </div>
 </div>
@@ -243,7 +291,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 12 2016 15:49:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 07:35:38 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1BaseParser_1_1SavePosition.html',1,'Loyc::Syntax::BaseParser']]],
   ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_1_1SavePosition.html',1,'Loyc::Syntax::Lexing::BaseLexer']]],
+  ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1BaseParser_1_1SavePosition.html',1,'Loyc::Syntax::BaseParser']]],
   ['scell',['SCell',['../structLoyc_1_1Collections_1_1Impl_1_1SCell.html',1,'Loyc::Collections::Impl']]],
   ['scratchbuffer',['ScratchBuffer',['../structLoyc_1_1Threading_1_1ScratchBuffer.html',1,'Loyc::Threading']]],
   ['scratchbuffer_3c_20byte_5b_5d_3e',['ScratchBuffer&lt; byte[]&gt;',['../structLoyc_1_1Threading_1_1ScratchBuffer.html',1,'Loyc::Threading']]],

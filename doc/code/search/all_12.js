@@ -4,7 +4,7 @@ var searchData=
   ['range',['Range',['../classLoyc_1_1Range.html',1,'Loyc']]],
   ['range',['Range',['../classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650',1,'Loyc.Syntax.LNode.Range()'],['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#ad5208f945c07472140059a8c01148abf',1,'Loyc.Syntax.Lexing.Token.Range()']]],
   ['rangearray',['RangeArray',['../classLoyc_1_1Collections_1_1ListExt.html#a222092fa78ef95be6c705e5887be371e',1,'Loyc::Collections::ListExt']]],
-  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;']]],
+  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;']]],
   ['rangeext',['RangeExt',['../classLoyc_1_1Collections_1_1RangeExt.html',1,'Loyc::Collections']]],
   ['rangestostring',['RangesToString',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a9ab17e0960bcab0b15dd3c2c0c9f012d',1,'Loyc::Syntax::Lexing::BaseLexer']]],
   ['readonlyascollection',['ReadOnlyAsCollection',['../classLoyc_1_1Collections_1_1ReadOnlyAsCollection.html',1,'Loyc::Collections']]],

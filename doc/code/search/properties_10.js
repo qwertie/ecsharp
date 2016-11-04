@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['savecomments',['SaveComments',['../classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a2083ec9116d7e605176e6e27ff1ef2f9',1,'Loyc::Ecs::Parser::EcsPreprocessor']]],
   ['scopedproperties',['ScopedProperties',['../interfaceLeMP_1_1IMacroContext.html#a12883b70ba50042d8fbda2e89e43b4f5',1,'LeMP::IMacroContext']]],
   ['significantbits',['SignificantBits',['../interfaceLoyc_1_1Math_1_1INumTraits.html#a3e3a198315454063cfdc77c2359021dd',1,'Loyc::Math::INumTraits']]],
   ['sink',['Sink',['../interfaceLeMP_1_1IMacroContext.html#a8419c79777d647e75169adb9a3968ee8',1,'LeMP.IMacroContext.Sink()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c',1,'Loyc.LLParserGenerator.LLParserGenerator.Sink()']]],
