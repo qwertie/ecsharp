@@ -6,6 +6,7 @@ var searchData=
   ['sink',['Sink',['../interfaceLeMP_1_1IMacroContext.html#a8419c79777d647e75169adb9a3968ee8',1,'LeMP.IMacroContext.Sink()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c',1,'Loyc.LLParserGenerator.LLParserGenerator.Sink()']]],
   ['size',['Size',['../classLoyc_1_1LLParserGenerator_1_1IntSet.html#a1742c28481702275708b86a731985dd3',1,'Loyc::LLParserGenerator::IntSet']]],
   ['slicestart',['SliceStart',['../interfaceLoyc_1_1Collections_1_1IBRangeEx.html#a1a7afbb1e9a5272223ab07ace44d9ae9',1,'Loyc::Collections::IBRangeEx']]],
+  ['sortedtrivia',['SortedTrivia',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ab5a7dddee267170e607cc8118128245e',1,'Loyc::Syntax::AbstractTriviaInjector']]],
   ['source',['Source',['../classLoyc_1_1Syntax_1_1LNode.html#a002045914ce7a51f2a2b7323ac671ac0',1,'Loyc::Syntax::LNode']]],
   ['sourcefile',['SourceFile',['../interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a173348e6c8aacad1ba2d932d592f3584',1,'Loyc.Syntax.Lexing.ILexer.SourceFile()'],['../classLoyc_1_1Syntax_1_1BaseParser.html#a960dc7787d9eccb923a01b2c30d5f3ed',1,'Loyc.Syntax.BaseParser.SourceFile()']]],
   ['spaceaftercomma',['SpaceAfterComma',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a3e71c65dd9ad788a483d93360abb71e4',1,'Loyc::Syntax::Les::Les3Printer']]],

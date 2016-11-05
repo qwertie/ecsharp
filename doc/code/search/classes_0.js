@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['abstracttriviainjector',['AbstractTriviaInjector',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html',1,'Loyc::Syntax']]],
+  ['abstracttriviainjector_3c_20token_20_3e',['AbstractTriviaInjector&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html',1,'Loyc::Syntax']]],
   ['alist',['AList',['../classLoyc_1_1Collections_1_1AList.html',1,'Loyc::Collections']]],
   ['alistbase',['AListBase',['../classLoyc_1_1Collections_1_1AListBase.html',1,'Loyc.Collections.AListBase&lt; T &gt;'],['../classLoyc_1_1Collections_1_1AListBase.html',1,'Loyc.Collections.AListBase&lt; K, T &gt;'],['../classLoyc_1_1Collections_1_1AListBase.html',1,'Loyc.Collections.AListBase&lt; K, T &gt;']]],
   ['alistbase_3c_20int_2c_20t_20_3e',['AListBase&lt; int, T &gt;',['../classLoyc_1_1Collections_1_1AListBase.html',1,'Loyc::Collections']]],

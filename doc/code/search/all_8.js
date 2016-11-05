@@ -6,6 +6,7 @@ var searchData=
   ['handleundersized',['HandleUndersized',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3',1,'Loyc::Collections::Impl::AListInnerBase']]],
   ['hasescapes',['HasEscapes',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4',1,'Loyc::Syntax']]],
   ['hashtags',['HashTags',['../classLoyc_1_1HashTags.html',1,'Loyc']]],
+  ['hasimplicitleadingnewline',['HasImplicitLeadingNewline',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a8acbed868ee589edec4ef0e04267dc36',1,'Loyc::Syntax::StandardTriviaInjector']]],
   ['hasindex_3c_20t_20_3e',['HasIndex&lt; T &gt;',['../classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa',1,'Loyc::Collections::LCInterfaces']]],
   ['hasinvalid6digitescape',['HasInvalid6DigitEscape',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa860d1f098ab0895628d6cc141a383bb8',1,'Loyc::Syntax']]],
   ['haslistchanging',['HasListChanging',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a67d4aeddc04cdb8052e9e09eb3fd4b87',1,'Loyc::Collections::Impl::AListNode']]],

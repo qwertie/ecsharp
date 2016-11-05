@@ -91,8 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax Namespace Reference</div>  </div>
 </div><!--header-->
@@ -112,6 +111,9 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">AbstractTriviaInjector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as trivia attributes into LNodes. <a href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html">BaseParser</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator). Note: this is the old (harder to use) base class design. You should use BaseParserForList&lt;Token,MatchType&gt; instead.  <a href="classLoyc_1_1Syntax_1_1BaseParser.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -208,6 +210,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds a reference to a source file (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>&lt;char&gt;) and the beginning and end indices of a range in that file.  <a href="structLoyc_1_1Syntax_1_1SourceRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html">StandardTriviaInjector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as trivia attributes into LNodes. <a href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html">StreamCharSource</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exposes a stream as an ICharSource, as though it were an array of characters. The stream must support seeking, and if a text decoder is specified, it must meet certain constraints.  <a href="classLoyc_1_1Syntax_1_1StreamCharSource.html#details">More...</a><br /></td></tr>
@@ -339,41 +344,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="memItemLeft" align="right" valign="top">delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
 <tr class="memdesc:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signature for a method that serializes a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to text. Each programming language will have one (when complete). <a href="#a6ba7daec9d30e5569a3cc8b4b50e507e">More...</a><br /></td></tr>
 <tr class="separator:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae05ca9e0b19ae36c35cefd231a2a642d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae05ca9e0b19ae36c35cefd231a2a642d"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child&#160;</td><td class="memItemRight" valign="bottom"><b>node</b> (&lt; c &gt;x&lt;/c &gt;) instead of with the entire *expression(&lt; c &gt;x+y&lt;/c &gt;).&lt;/li &gt; *&lt; li &gt;If a node has normal(non-trivia) attributes attached to it</td></tr>
-<tr class="separator:ae05ca9e0b19ae36c35cefd231a2a642d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bf33eda255b8cbf31e949253dc5bd68"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1bf33eda255b8cbf31e949253dc5bd68"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon it s *&#160;</td><td class="memItemRight" valign="bottom"><b>best</b> (but not crucial) to include the semicolon/comma in the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">LNode.Range</a></td></tr>
-<tr class="separator:a1bf33eda255b8cbf31e949253dc5bd68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa646be0e455e6c7e9cd2ad77a7e82e5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa646be0e455e6c7e9cd2ad77a7e82e5d"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon it s *but if a statement is terminated by a the newline should not be *included in the range.If when the terminator is included in the then any comment that appears before the terminator is attached *to the final child node rather than to the node as a&#160;</td><td class="memItemRight" valign="bottom"><b>whole.</b> (e.g.in *&lt; c &gt;x=y;&lt;/c &gt;, the comment is associated with&lt; c &gt;y&lt;/c &gt; if the *comment is within the range of the statement as a whole.)&lt;/li &gt; *&lt;/ul &gt; **This example shows how comments are associated with nodes</td></tr>
-<tr class="separator:aa646be0e455e6c7e9cd2ad77a7e82e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0c112ea7b50b21d5b9333c1b6713b7e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0c112ea7b50b21d5b9333c1b6713b7e"></a>
-*&lt;/pre &gt; *When there is a single newline between two&lt; see cref=&quot;Run&quot;/&gt; will *associate it with the second one.When there is a blank line between two *&#160;</td><td class="memItemRight" valign="bottom"><b>nodes</b> (two newlines)</td></tr>
-<tr class="separator:af0c112ea7b50b21d5b9333c1b6713b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef8b58ce733eaff3376f1547c256693b"><td class="memItemLeft" align="right" valign="top">*&lt;/pre &gt; *When there is a single newline between two&lt; see cref=&quot;Run&quot;/&gt; will *associate it with the second one.When there is a blank line between two the first&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#aef8b58ce733eaff3376f1547c256693b">newline</a> (and any before) is associated with *the first node and the second new line(and any following) is associated with *the second.*&lt;/remarks &gt; */public override class AbstractTriviaInjector&lt; Trivia &gt;</td></tr>
-<tr class="separator:aef8b58ce733eaff3376f1547c256693b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a29602ef0b9f36ad7fb8f1a224f7743f5"><td class="memItemLeft" align="right" valign="top">x&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#a29602ef0b9f36ad7fb8f1a224f7743f5">y&lt;/c &gt;</a></td></tr>
-<tr class="memdesc:a29602ef0b9f36ad7fb8f1a224f7743f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as trivia attributes into LNodes. <a href="#a29602ef0b9f36ad7fb8f1a224f7743f5">More...</a><br /></td></tr>
-<tr class="separator:a29602ef0b9f36ad7fb8f1a224f7743f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39dca7011add5a98ed9e7fcdae34eb28"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a39dca7011add5a98ed9e7fcdae34eb28"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon&#160;</td><td class="memItemRight" valign="bottom"><b>comma</b></td></tr>
-<tr class="separator:a39dca7011add5a98ed9e7fcdae34eb28"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b0560a1450ab552632b22c95c5b1cdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b0560a1450ab552632b22c95c5b1cdd"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon it s *but if a statement is terminated by a&#160;</td><td class="memItemRight" valign="bottom"><b>newline</b></td></tr>
-<tr class="separator:a3b0560a1450ab552632b22c95c5b1cdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2465308d5cb3d4948d227e415b93da0e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2465308d5cb3d4948d227e415b93da0e"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon it s *but if a statement is terminated by a the newline should not be *included in the range.If&#160;</td><td class="memItemRight" valign="bottom"><b>general</b></td></tr>
-<tr class="separator:a2465308d5cb3d4948d227e415b93da0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8ed49a230ac3c92b883d3373b8d6ed2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae8ed49a230ac3c92b883d3373b8d6ed2"></a>
-x the parser should *not include the comment as part of the range unless it wants the comment to *be associated with a child the range of *the node should include those attributes.&lt;/li &gt; *&lt; li &gt; The parser should use&lt; see cref=&quot;LNodeFactory.InParens&quot;/&gt; to place a *node in parentheses and include the index of the opening and closing parens.&lt;/li &gt; *&lt; li &gt; If an expression statement is terminated by a semicolon it s *but if a statement is terminated by a the newline should not be *included in the range.If when the terminator is included in the *&#160;</td><td class="memItemRight" valign="bottom"><b>range</b></td></tr>
-<tr class="separator:ae8ed49a230ac3c92b883d3373b8d6ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a968c0f78ec7f79db27e4071f36fe7f88"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a968c0f78ec7f79db27e4071f36fe7f88"></a>
-*&lt;/pre &gt; *When there is a single newline between two&#160;</td><td class="memItemRight" valign="bottom"><b>nodes</b></td></tr>
-<tr class="separator:a968c0f78ec7f79db27e4071f36fe7f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Loyc.Syntax.dll: contains <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>), lexing stuff, LLLPG base classes (<a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol...">BaseParser</a>{T} and BaseLexer), the LES parser and printer, data types related to source code management (e.g. <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a>) and other general-purpose code related to the manipulation of syntax. </p>
@@ -716,126 +686,11 @@ x the parser should *not include the comment as part of the range unless it want
 
 </div>
 </div>
-<a class="anchor" id="aef8b58ce733eaff3376f1547c256693b"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">*&lt;/pre&gt; * When there is a single newline between two&lt;see cref=&quot;Run&quot;/&gt; will* associate it with the second one.When there is a blank line between two the first Loyc.Syntax.newline </td>
-          <td>(</td>
-          <td class="paramtype">and any&#160;</td>
-          <td class="paramname"><em>before</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">new</span><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>List of trivia to be injected by Run. Must be sorted.</p>
-<p>Index of next trivia to be injected.</p>
-<p>Initializes the SortedTrivia property.</p>
-<p>Derived class should associate the given list of trivia with the specified node. Leading trivia will be attached to a given node before trailing trivia.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">node</td><td>The node.</td></tr>
-    <tr><td class="paramname">trivia</td><td>Trivia to be associated with <code>node</code>.</td></tr>
-    <tr><td class="paramname">loc</td><td>Location of the trivia. For a given node, the base class calls this method at most once for each value of TriviaLocation. </td></tr>
-    <tr><td class="paramname">parent</td><td>(Original version of) parent of <code>node</code>.</td></tr>
-    <tr><td class="paramname">indexInParent</td><td>Index of <code>node</code> within <code>parent</code>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The same node with trivia attributes added. If loc indicates trailing trivia, the derived class can say "I don't want trivia to be associated with 
-this node" by returning null; the base class will, if possible, associate it with the next node instead, but this doesn't work for the last child in a sequence; in that case this method is called again with the same trivia and loc is set to TriviaLocation.TrailingExtra.</dd></dl>
-<p>This method is STILL called for a given node when there is no trivia associated with that node.</p>
-<p>Trivia that appeared before a node</p>
-<p>Trivia associated with a node that came before it</p>
-<p>Trivia attached to the last node in an argument list or last statement in a block</p>
-<p>The trivia begins within the range of an identifier or literal. This occurs, for example, if a list of arguments or attributes includes a comma in the range of each argument, and there is trivia before the comma, e.g. in <code>Foo(x/* trivia</code></p>
-<p><code></code></p>
-<p><code>Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia.</code></p>
-<p><code></code></p>
-<p><code></code></p>
-<p><code>Returns true if the trivia represents a newline, false otherwise.</code></p>
-<p><code></code></p>
-<p><code></code></p>
-<p><code>A method called to create a virtual node to apply trivia to an empty source file.</code></p>
-<p><code> </code></p>
-<p><code>Default implementation attaches all trivia to a "missing" node (zero-length identifier). If this method returns null then the result is discarded.</code></p>
-<p><code></code></p>
-<p><code></code></p>
-<p><code>This method is called after a node has been processed and any applicable trivia was attached.</code></p>
-<p><code> </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">node</td><td>Node (after trivia attached)</td></tr>
-    <tr><td class="paramname">parent</td><td>Parent of <code>node</code> (old version, before changes to children are applied)</td></tr>
-    <tr><td class="paramname">indexInParent</td><td>Index of <code>node</code> within <code>parent</code>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Should return <code>node</code> or an altered version of <code>node</code>.</dd></dl>
-<p></code></p>
-<p><code>This method gives the derived class one final chance to rearrange or alter the interpretation of the attached trivia. Note that this method may be called on some nodes to which trivia was not attached, when siblings of the same parent had trivia attached. </code></p>
-<p><code></code></p>
-<p><code></code></p>
-<p><code>Attaches trivia to the input nodes provided.</code></p>
-<p><code> </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">nodes</td><td>List of input nodes. This method calls nodes.MoveNext() before calling nodes.Current.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p></code></p>
-<p><code>Trailing trivia after all nodes is attached to the final node. If <code>nodes</code> is empty then GetEmptyResultSet is called to create a dummy node and attach all trivia to it.</code></p>
-<p><code></code></p>
-<p><code></code></p>
-<p><code>Core trivia associaton algorithm.</code></p>
-<p><code> </code></p>
-<p><code> NOTE: the enumerator may DRIVE lexing and actually cause the trivia list (SortedTrivia) to increase in size. For this reason, this algorithm is careful to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this precaution is sufficient to preserve trivia in all "streaming" cases, but it seems to work in at least most cases. </code></p>
-<p><code> </code></p>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a class="anchor" id="a29602ef0b9f36ad7fb8f1a224f7743f5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">x Loyc.Syntax.y&lt;/c &gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as trivia attributes into LNodes.</p>
-<p>Call Run to invoke the algorithm. One must also write a derived class that knows how to interpret the trivia and associate it with a specific <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, or use the standard derived class StandardTriviaInjector. </p>
-<p>The algorithm is designed to postprocess output from a parser that works in a typical way. The lexer for your language needs to follow the following rules:</p>
-<ul>
-<li>
-It must not include the newline character in the range of a single-line comment. </li>
-<li>
-Generally, newlines (including the newline after a single-line comment) must be included in the trivia list, as the algorithm relies on these newlines instead of asking <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">LNode.Range</a> for line numbers, which is slower. If newlines are omitted then a comment right after a statement (e.g. on the same line) will be associated with the next statement instead. </li>
-</ul>
-<p>Typically one will wrap the lexer in TriviaSaver, which saves trivia while filtering out whitespace so that the parser doesen't see it. </p>
-<p>Your language's parser needs to follow the following rules:</p>
-<ul>
-<li>
-The parser should assign minimal boundaries to each node: the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">LNode.Range</a> should not be wider than necessary. If there is a comment before an expression like <code>/*! </code></li>
-</ul>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:43 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Nov 5 2016 08:03:04 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

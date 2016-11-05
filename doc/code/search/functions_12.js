@@ -52,6 +52,7 @@ var searchData=
   ['splitat',['SplitAt',['../classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0',1,'Loyc.StringExt.SplitAt()'],['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#afad23e4bd7665da8b817a980dcc750a3',1,'Loyc.Collections.Impl.AListInnerBase.SplitAt()']]],
   ['sqrt',['Sqrt',['../classLoyc_1_1Math_1_1MathEx.html#adf3738c7121251df0d13769814f3378e',1,'Loyc::Math::MathEx']]],
   ['stablesort_3c_20t_20_3e',['StableSort&lt; T &gt;',['../classLoyc_1_1Collections_1_1ListExt.html#ae126a0171a0139b09a51eb65c99177b1',1,'Loyc::Collections::ListExt']]],
+  ['standardtriviainjector',['StandardTriviaInjector',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a32f3909c6207236b677cf9771ef4802c',1,'Loyc::Syntax::StandardTriviaInjector']]],
   ['start',['Start',['../classLoyc_1_1Threading_1_1ThreadEx.html#ad01fa3b2e53b8b34b02d9439ec5cae00',1,'Loyc.Threading.ThreadEx.Start()'],['../classLoyc_1_1Threading_1_1ThreadEx.html#a1f701b8788fa24a4ea595b16fa1ffd2d',1,'Loyc.Threading.ThreadEx.Start(object parameter)'],['../classLoyc_1_1Syntax_1_1Les_1_1LesParser.html#ab56dce7c200ee5b5f6bba1cfaf3f2eca',1,'Loyc.Syntax.Les.LesParser.Start()']]],
   ['startswith',['StartsWith',['../structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee',1,'Loyc::UString']]],
   ['stringslice',['StringSlice',['../structLoyc_1_1Collections_1_1StringSlice.html#aba62a41125f3b3ab7f4e8702d4298f5b',1,'Loyc::Collections::StringSlice']]],

@@ -25,6 +25,7 @@ var searchData=
   ['sourcerange',['SourceRange',['../structLoyc_1_1Syntax_1_1SourceRange.html',1,'Loyc::Syntax']]],
   ['sparsealist',['SparseAList',['../classLoyc_1_1Collections_1_1SparseAList.html',1,'Loyc::Collections']]],
   ['sparsealistleaf',['SparseAListLeaf',['../classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html',1,'Loyc::Collections::Impl']]],
+  ['standardtriviainjector',['StandardTriviaInjector',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html',1,'Loyc::Syntax']]],
   ['statistic',['Statistic',['../classLoyc_1_1Utilities_1_1Statistic.html',1,'Loyc::Utilities']]],
   ['streamcharsource',['StreamCharSource',['../classLoyc_1_1Syntax_1_1StreamCharSource.html',1,'Loyc::Syntax']]],
   ['stringext',['StringExt',['../classLoyc_1_1StringExt.html',1,'Loyc']]],

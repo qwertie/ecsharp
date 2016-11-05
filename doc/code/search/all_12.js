@@ -4,7 +4,7 @@ var searchData=
   ['range',['Range',['../classLoyc_1_1Range.html',1,'Loyc']]],
   ['range',['Range',['../classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650',1,'Loyc.Syntax.LNode.Range()'],['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#ad5208f945c07472140059a8c01148abf',1,'Loyc.Syntax.Lexing.Token.Range()']]],
   ['rangearray',['RangeArray',['../classLoyc_1_1Collections_1_1ListExt.html#a222092fa78ef95be6c705e5887be371e',1,'Loyc::Collections::ListExt']]],
-  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;']]],
+  ['rangeenumerator',['RangeEnumerator',['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; T &gt;'],['../structLoyc_1_1Collections_1_1RangeEnumerator.html',1,'Loyc.Collections.RangeEnumerator&lt; R, T &gt;']]],
   ['rangeext',['RangeExt',['../classLoyc_1_1Collections_1_1RangeExt.html',1,'Loyc::Collections']]],
   ['rangestostring',['RangesToString',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a9ab17e0960bcab0b15dd3c2c0c9f012d',1,'Loyc::Syntax::Lexing::BaseLexer']]],
   ['readonlyascollection',['ReadOnlyAsCollection',['../classLoyc_1_1Collections_1_1ReadOnlyAsCollection.html',1,'Loyc::Collections']]],
@@ -69,7 +69,8 @@ var searchData=
   ['rot90_3c_20t_2c_20m_20_3e',['Rot90&lt; T, M &gt;',['../classLoyc_1_1Geometry_1_1PointExt.html#a486c0696f02d1c19df5095cae2cf9ba8',1,'Loyc::Geometry::PointExt']]],
   ['rule',['Rule',['../classLoyc_1_1LLParserGenerator_1_1Rule.html',1,'Loyc::LLParserGenerator']]],
   ['ruleref',['RuleRef',['../classLoyc_1_1LLParserGenerator_1_1RuleRef.html',1,'Loyc::LLParserGenerator']]],
-  ['run',['Run',['../classLoyc_1_1MiniTest_1_1RunTests.html#a6a100581fc9efed39b6ca906863d3039',1,'Loyc.MiniTest.RunTests.Run()'],['../classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95',1,'LeMP.Compiler.Run()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12',1,'Loyc.LLParserGenerator.LLParserGenerator.Run()']]],
+  ['run',['Run',['../classLoyc_1_1MiniTest_1_1RunTests.html#a6a100581fc9efed39b6ca906863d3039',1,'Loyc.MiniTest.RunTests.Run()'],['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aa8d088768a4d80c19dda40cf547ce752',1,'Loyc.Syntax.AbstractTriviaInjector.Run()'],['../classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95',1,'LeMP.Compiler.Run()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12',1,'Loyc.LLParserGenerator.LLParserGenerator.Run()']]],
+  ['runcore',['RunCore',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a7109a7eb2172249ff4d5e2e41e55cc5b',1,'Loyc::Syntax::AbstractTriviaInjector']]],
   ['runmany',['RunMany',['../classLoyc_1_1MiniTest_1_1RunTests.html#ad1638a6f120c443333dfa9a93b544257',1,'Loyc::MiniTest::RunTests']]],
   ['runtests',['RunTests',['../classLoyc_1_1MiniTest_1_1RunTests.html',1,'Loyc::MiniTest']]]
 ];

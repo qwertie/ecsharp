@@ -177,7 +177,7 @@ var searchData=
   ['iring',['IRing',['../interfaceLoyc_1_1Math_1_1IRing.html',1,'Loyc::Math']]],
   ['isetimm',['ISetImm',['../interfaceLoyc_1_1Collections_1_1ISetImm.html',1,'Loyc.Collections.ISetImm&lt; T &gt;'],['../interfaceLoyc_1_1Collections_1_1ISetImm.html',1,'Loyc.Collections.ISetImm&lt; T, SetT &gt;']]],
   ['isetimm_3c_20t_20_3e',['ISetImm&lt; T &gt;',['../interfaceLoyc_1_1Collections_1_1ISetImm.html',1,'Loyc::Collections']]],
-  ['isetoperations',['ISetOperations',['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc.Collections.ISetOperations&lt; in in T, in in InSetT, out out OutSetT &gt;'],['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc.Collections.ISetOperations&lt; in in T, SetT &gt;']]],
+  ['isetoperations',['ISetOperations',['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc.Collections.ISetOperations&lt; in in T, SetT &gt;'],['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc.Collections.ISetOperations&lt; in in T, in in InSetT, out out OutSetT &gt;']]],
   ['isetoperations_3c_20t_2c_20sett_20_3e',['ISetOperations&lt; T, SetT &gt;',['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc::Collections']]],
   ['isetoperations_3c_20t_2c_20sett_2c_20sett_20_3e',['ISetOperations&lt; T, SetT, SetT &gt;',['../interfaceLoyc_1_1Collections_1_1ISetOperations.html',1,'Loyc::Collections']]],
   ['isignedmath',['ISignedMath',['../interfaceLoyc_1_1Math_1_1ISignedMath.html',1,'Loyc::Math']]],
