@@ -240,7 +240,12 @@ namespace Loyc.Syntax
 			return null;
 		}
 
-		#region Add/remove parentheses
+		#region Parentheses management
+
+		public static bool IsParenthesizedExpr(this LNode node)
+		{
+			return node.AttrNamed(CodeSymbols.TriviaInParens) != null;
+		}
 
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		public static LNode InParens(this LNode node)
@@ -370,11 +375,17 @@ namespace Loyc.Syntax
 			} else // kind == Id
 				return true;
 		}
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out MMap<Symbol, LNode> captures)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
-			VList<LNode> unmatchedAttrs = VList<LNode>.Empty;
-			captures = null;
-			return MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs);
+			MMap<Symbol, LNode> captures2 = null;
+			var matched = MatchesPattern(candidate, pattern, ref captures2, out unmatchedAttrs);
+			captures = captures2;
+			return matched;
+		}
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures)
+		{
+			VList<LNode> unmatchedAttrs;
+			return MatchesPattern(candidate, pattern, out captures, out unmatchedAttrs);
 		}
 
 		static void AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items)
@@ -485,6 +496,68 @@ namespace Loyc.Syntax
 		done_group:
 			AddCapture(captures, pArgs[saved_p], cArgs.Slice(saved_c, captureSize));
 			return true;
+		}
+
+		#endregion
+
+		#region ILNode extensions
+
+		public static bool IsCall(this ILNode node) { return node.Kind == LNodeKind.Call; }
+		public static bool IsId(this ILNode node) { return node.Kind == LNodeKind.Id; }
+		public static bool IsLiteral(this ILNode node) { return node.Kind == LNodeKind.Literal; }
+
+		public static int ArgCount(this ILNode node) { return node.Max + 1; }
+		public static int AttrCount(this ILNode node) { return -node.Min - 1; }
+
+		public static NegListSlice<ILNode> Attrs(this ILNode node)
+		{
+			int min = node.Min;
+			return new NegListSlice<ILNode>(node, min, -1 - min);
+		}
+		public static NegListSlice<ILNode> Args(this ILNode node)
+		{
+			return new NegListSlice<ILNode>(node, 0, System.Math.Max(node.Max + 1, 0));
+		}
+
+		public static bool IsTrivia(this ILNode node)
+		{
+			return CodeSymbols.IsTriviaSymbol(node.Name);
+		}
+
+		public static bool IsIdNamed(this ILNode node, Symbol name) { return node.Name == name; }
+		public static bool IsIdNamed(this ILNode node, string name)
+		{
+			var nn = node.Name;
+			return nn == null ? name == null : nn.Name == name;
+		}
+
+		public static bool Calls(this ILNode node, Symbol name) { return node.CallsMin(name, 0); }
+
+		public static bool IsParenthesizedExpr(this ILNode node)
+		{
+			return node.Attrs().NodeNamed(CodeSymbols.TriviaInParens) != null;
+		}
+
+		public static bool HasSpecialName(this ILNode node) { return LNode.IsSpecialName(node.Name); }
+
+		public static bool HasAttrs(this ILNode node)
+		{
+			return node.Min < -1;
+		}
+		public static bool HasPAttrs(this ILNode node)
+		{
+			for (int i = node.Min; i < -1; i++)
+				if (!node[i].IsTrivia())
+					return true;
+			return false;
+		}
+
+		public static LNode NodeNamed(this NegListSlice<ILNode> self, Symbol name)
+		{
+			foreach (LNode node in self)
+				if (node.Name == name)
+					return node;
+			return null;
 		}
 
 		#endregion

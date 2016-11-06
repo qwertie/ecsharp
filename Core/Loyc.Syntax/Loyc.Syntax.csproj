@@ -182,6 +182,7 @@
     <Compile Include="Lexing\WhitespaceFilter.cs" />
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
+    <Compile Include="LNodes\ILNode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
