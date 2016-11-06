@@ -14,7 +14,7 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		/// <inheritdoc cref="NegListSource{T}.NegListSource"/>
-		public static NegListSource<T> NegView<T>(this IListSource<T> list, int zeroOffset)
+		public static NegListSource<T> AsNegList<T>(this IListSource<T> list, int zeroOffset)
 		{
 			return new NegListSource<T>(list, zeroOffset);
 		}

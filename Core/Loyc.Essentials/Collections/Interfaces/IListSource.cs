@@ -206,25 +206,6 @@ namespace Loyc.Collections
 			return -1;
 		}
 
-		/// <summary>Copies the contents of an IListSource to an array.</summary>
-		public static T[] ToArray<T>(this IReadOnlyList<T> c)
-		{
-			var array = new T[c.Count];
-			for (int i = 0; i < array.Length; i++)
-				array[i] = c[i];
-			return array;
-		}
-
-		public static T LastOrDefault<T>(this IReadOnlyList<T> list)
-		{
-			int c = list.Count;
-			return c <= 0 ? default(T) : list[c - 1];
-		}
-		public static T FirstOrDefault<T>(this IReadOnlyList<T> list)
-		{
-			int c = list.Count;
-			return c <= 0 ? default(T) : list[0];
-		}
 		public static T FirstOrDefault<T>(this IListSource<T> list)
 		{
 			bool _;

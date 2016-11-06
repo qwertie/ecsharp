@@ -14,12 +14,12 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		/// <inheritdoc cref="NegList{T}.NegList"/>
-		public static NegList<T> NegView<T>(this IList<T> list, int zeroOffset)
+		public static NegList<T> AsNegList<T>(this IList<T> list, int zeroOffset)
 		{
 			return new NegList<T>(list, zeroOffset);
 		}
 		/// <inheritdoc cref="NegList{T}.NegList"/>
-		public static NegList<T> NegView<T>(this IListAndListSource<T> list, int zeroOffset)
+		public static NegList<T> AsNegList<T>(this IListAndListSource<T> list, int zeroOffset)
 		{
 			return new NegList<T>(list, zeroOffset);
 		}

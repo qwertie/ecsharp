@@ -204,8 +204,6 @@
     <Compile Include="Collections\Adapters\ReversedList.cs" />
     <Compile Include="Collections\Adapters\ReversedListSource.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
-    <Compile Include="Collections\Adapters\SelectNegLists.cs" />
-    <Compile Include="Collections\Adapters\SelectNegListSources.cs" />
     <Compile Include="Collections\Adapters\Slice.cs" />
     <Compile Include="Collections\Adapters\SourceAsCollection.cs" />
     <Compile Include="Collections\Adapters\NegListSlice.cs" />
