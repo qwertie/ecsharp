@@ -37,7 +37,7 @@ namespace Loyc.Syntax
 	/// <ul>
 	/// <li>The parser should assign minimal boundaries to each node: the 
 	/// <see cref="LNode.Range"/> should not be wider than necessary. If there is 
-	/// a comment before an expression like <c>/*!*/ x + y</c>, the parser should 
+	/// a comment before an expression like <c>/*!* / x + y</c>, the parser should 
 	/// not include the comment as part of the range unless it wants the comment to 
 	/// be associated with a child node (<c>x</c>) instead of with the entire 
 	/// expression (<c>x + y</c>).</li>
@@ -51,11 +51,11 @@ namespace Loyc.Syntax
 	/// included in the range. If general, when the terminator is included in the 
 	/// range, then any comment that appears before the terminator is attached
 	/// to the final child node rather than to the node as a whole. (e.g. in 
-	/// <c>x = y /*y*/;</c>, the comment is associated with <c>y</c> if the
+	/// <c>x = y /*y* /;</c>, the comment is associated with <c>y</c> if the
 	/// comment is within the range of the statement as a whole.)</li>
 	/// </ul>
-	/// 
 	/// This example shows how comments are associated with nodes:
+	/// [NOTE: the space in "* /" is a workaround for a serious bug in Doxygen, the html doc generator]
 	/// <pre>
 	/// // Comment attached to block
 	/// {
@@ -65,10 +65,10 @@ namespace Loyc.Syntax
 	///		// generally invisible to the injector since it is not part of the LNode 
 	///		// tree, so the 1st and 2nd comments will both be attached to the sum-
 	///		// expression as a whole.
-	///		argument1 + 1 /*1st comment*/, // 2nd comment
+	///		argument1 + 1 /*1st comment* /, // 2nd comment
 	///		// Comment attached to «argument2 + 2»
 	///		argument2 + 2); // Comment attached to Foo() call
-	///	  Area = 3.14159265/*PI*/ * /*radius*/r**2;
+	///	  Area = 3.14159265/*PI* / * /*radius* /r**2;
 	///	  // Comment attached to «Area =» statement, preceded by newline trivia?
 	///
 	///	  // Comment attached to Bar()
@@ -134,7 +134,7 @@ namespace Loyc.Syntax
 			/// <summary>The trivia begins within the range of an identifier or literal. 
 			/// This occurs, for example, if a list of arguments or attributes includes a
 			/// comma in the range of each argument, and there is trivia before the comma,
-			/// e.g. in <c>Foo(x/* trivia */, y);</c>, this occurs if the range of <c>x</c> 
+			/// e.g. in <c>Foo(x/* trivia * /, y);</c>, this occurs if the range of <c>x</c> 
 			/// includes the comma token. The trivia injector is not aware of <c>x</c> or
 			/// the comma; all it knows is that the trivia is "inside" the range of <c>x</c>.</summary>
 			Ambiguous = 3,
@@ -255,7 +255,7 @@ namespace Loyc.Syntax
 				if (firstNewlineAt > 0 && prev != null) {
 					// case (1)
 					var triviaList2 = new InternalList<Trivia>(triviaList.Take(firstNewlineAt));
-					if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent));
+					if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent))
 						triviaList.RemoveRange(0, firstNewlineAt);
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
 				}

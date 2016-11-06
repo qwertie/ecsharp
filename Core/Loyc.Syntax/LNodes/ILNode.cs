@@ -34,6 +34,9 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// The Attrs() and Args() extension methods return slices of this node
 	/// corresponding to the attributes and arguments.
+	/// <para/>
+	/// Tip: the LES node printer can print any ILNode as a string. See
+	/// <see cref="Loyc.Syntax.Les.LesNodePrinter.Print(ILNode, StringBuilder, IMessageSink, object, string, string)"/>
 	/// </remarks>
 	public interface ILNode : IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
 	{

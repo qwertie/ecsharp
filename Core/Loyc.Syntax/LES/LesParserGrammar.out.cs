@@ -143,7 +143,7 @@ namespace Loyc.Syntax.Les {
 			Token t = default(Token);
 			// line 92
 			var attrStart = int.MaxValue;
-			// Line 94: (TT.At TT.LBrack ExprList TT.RBrack)*
+			// Line 94: greedy(TT.At TT.LBrack ExprList TT.RBrack)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.At) {

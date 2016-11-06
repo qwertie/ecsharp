@@ -18,13 +18,15 @@ namespace Loyc.Syntax
 	/// <pre>
 	/// {
 	///		// Leading Comment 1
-	///		/* Leading Comment 2 */
-	///		/* Leading Comment 3 */ x = y; // Trailing Comment 1
-	///		/* Trailing Comment 2 */
+	///		/* Leading Comment 2 * /
+	///		/* Leading Comment 3 * / x = y; // Trailing Comment 1
+	///		/* Trailing Comment 2 * /
 	///		
 	///		y = z; TheEnd();
 	///	}
 	/// </pre>
+	/// [NOTE: the space in "* /" is a workaround for a serious bug in Doxygen, the html doc generator]
+	/// 
 	/// The output, expressed in LESv2, is
 	/// <pre>
 	/// {

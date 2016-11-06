@@ -90,7 +90,7 @@ namespace Loyc.Syntax.Les {
 
 		@[protected] rule TopExpr()::LNode @{
 			{var attrStart = int.MaxValue;}
-			[	// @[Attributes]
+			greedy[	// @[Attributes]
 				at:"@"
 				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")}
 				 else {attrStart = System.Math.Min(attrStart, at.StartIndex);};} 

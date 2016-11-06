@@ -91,7 +91,10 @@ namespace Loyc.MiniTest
 		/// <returns>The total number of tests that unexpectedly failed.</returns>
 		public static int RunMany(params object[] os)
 		{
-			return os.Aggregate(0, (errCount, o) => errCount + Run(o));
+			int failures = os.Aggregate(0, (errCount, o) => errCount + Run(o));
+			if (failures != 0)
+				Console.WriteLine("{0} test(s) unexpectedly failed in this set.", failures);
+			return failures;
 		}
 
 		private static object IsTest(MethodInfo info)

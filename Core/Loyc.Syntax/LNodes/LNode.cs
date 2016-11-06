@@ -836,7 +836,7 @@ namespace Loyc.Syntax
 		/// value, the same arguments, and the same attributes.</summary>
 		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
 		/// <remarks>Position information (<see cref="Range"/>) is not compared.</remarks>
-		public virtual bool Equals(LNode other, bool compareStyles) { return Equals(this, other, compareStyles); }
+		public virtual bool Equals(ILNode other, bool compareStyles) { return Equals(this, other, compareStyles); }
 		public bool Equals(LNode other) { return Equals(this, other); }
 		public bool Equals(ILNode other) { return Equals(this, other); }
 		public override bool Equals(object other) { var b = other as LNode; return Equals(this, b); }

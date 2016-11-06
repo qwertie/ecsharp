@@ -69,6 +69,8 @@ namespace Loyc.Tests
 						ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i+1, menu[i].Key);
 						errorCount += menu[i].Value();
 					}
+					if (errorCount != 0)
+						Console.WriteLine("{0} test(s) unexpectedly failed in total.", errorCount);
 				} else {
 					int i = ParseHelpers.HexDigitValue(c);
 					if (i > 0 && i <= menu.Count)
