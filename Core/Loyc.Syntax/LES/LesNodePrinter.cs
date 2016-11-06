@@ -78,7 +78,7 @@ namespace Loyc.Syntax.Les
 		static LesNodePrinter _printer;
 		public static readonly LNodePrinter Printer = Print;
 
-		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		public static void Print(ILNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var w = new LesNodePrinterWriter(target, indentString, lineSeparator);
 			var p = _printer = _printer ?? new LesNodePrinter(null, null);
@@ -104,21 +104,21 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		public void Print(LNode node)
+		public void Print(ILNode node)
 		{
 			Print(node, StartStmt, ";");
 		}
-		public void Print(LNode node, Precedence context, string terminator = null)
+		public void Print(ILNode node, Precedence context, string terminator = null)
 		{
 			int parenCount = WriteAttrs(node, ref context);
 
-			if (node.BaseStyle == NodeStyle.PrefixNotation)
+			if (node.BaseStyle() == NodeStyle.PrefixNotation)
 				PrintPrefixNotation(node, context);
 			else do {
-				if (node.IsCall) {
+				if (node.IsCall()) {
 					if (AutoPrintBracesOrBracks(node))
 						break;
-					int args = node.ArgCount;
+					int args = node.ArgCount();
 					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
 						break;
 					if (args == 2 && AutoPrintInfixOp(node, context))
@@ -132,28 +132,27 @@ namespace Loyc.Syntax.Les
 
 		#region Infix, prefix and suffix operators
 
-		private bool AutoPrintInfixOp(LNode node, Precedence context)
+		private bool AutoPrintInfixOp(ILNode node, Precedence context)
 		{
 			var prec = GetPrecedenceIfOperator(node, OperatorShape.Infix, context);
 			if (prec == null)
 				return false;
-			var a = node.Args;
-			Print(a[0], prec.Value.LeftContext(context));
+			Print(node[0], prec.Value.LeftContext(context));
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
 			bool sa = prec.Value.Lo < SpaceAroundInfixStopPrecedence;
 			WriteOpName(node.Name, node.Target, prec.Value, spaceAfter: sa);
-			Print(a[1], prec.Value.RightContext(context));
+			Print(node[1], prec.Value.RightContext(context));
 			return true;
 		}
 
-		private bool AutoPrintPrefixOrSuffixOp(LNode node, Precedence context)
+		private bool AutoPrintPrefixOrSuffixOp(ILNode node, Precedence context)
 		{
 			Symbol bareName;
 			if (LesPrecedenceMap.IsSuffixOperatorName(node.Name, out bareName, false)) {
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Suffix, context);
 				if (prec == null || prec.Value == LesPrecedence.Other)
 					return false;
-				Print(node.Args[0], prec.Value.LeftContext(context));
+				Print(node[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
 				WriteOpName(bareName, node.Target, prec.Value);
 			} else {
@@ -162,12 +161,12 @@ namespace Loyc.Syntax.Les
 					return false;
 				var spaceAfter = prec.Value.Lo < SpaceAfterPrefixStopPrecedence;
 				WriteOpName(node.Name, node.Target, prec.Value, spaceAfter);
-				Print(node.Args[0], prec.Value.RightContext(context));
+				Print(node[0], prec.Value.RightContext(context));
 			}
 			return true;
 		}
 		
-		private void WriteOpName(Symbol op, LNode target, Precedence prec, bool spaceAfter = false)
+		private void WriteOpName(Symbol op, ILNode target, Precedence prec, bool spaceAfter = false)
 		{
 			// Note: if the operator has a space after it, there's a subtle reason why 
 			// we want to print that space before the trivia and not after. Consider
@@ -180,7 +179,7 @@ namespace Loyc.Syntax.Les
 			// suppresses the newline if it is followed immediately by another newline.
 			// But if we print a space after the trivia, then this suppression does not
 			// occur and we end up with two newlines. Therefore, we must print the space first.
-			if (target.AttrCount == 0)
+			if (target.AttrCount() == 0)
 				target = null; // optimize the usual case
 			if (target != null)
 				PrintPrefixTrivia(target);
@@ -205,12 +204,12 @@ namespace Loyc.Syntax.Les
 
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
 
-		private Precedence? GetPrecedenceIfOperator(LNode node, OperatorShape shape, Precedence context)
+		private Precedence? GetPrecedenceIfOperator(ILNode node, OperatorShape shape, Precedence context)
 		{
-			int ac = node.ArgCount;
-			if ((ac == (int)shape || ac == -(int)shape) && HasSimpleTargetWithoutPAttrs(node))
+			int ac = node.ArgCount();
+			if ((ac == (int)shape || ac == -(int)shape) && HasIdTargetWithoutPAttrs(node))
 			{
-				var bs = node.BaseStyle;
+				var bs = node.BaseStyle();
 				var op = node.Name;
 				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op.Name);
 				if ((naturalOp && bs != NodeStyle.PrefixNotation) ||
@@ -225,34 +224,32 @@ namespace Loyc.Syntax.Les
 			return null;
 		}
 
-		private bool HasSimpleTargetWithoutPAttrs(LNode node)
+		private bool HasIdTargetWithoutPAttrs(ILNode node)
 		{
-			if (node.HasSimpleHead())
-				return true;
 			var t = node.Target;
-			return !t.IsCall && !HasPAttrs(t);
+			return t.IsId && !HasPAttrs(t);
 		}
 		
 		#endregion
 
 		#region Other stuff: braces, TODO: superexpressions, indexing, generics, tuples
 
-		private bool AutoPrintBracesOrBracks(LNode node)
+		private bool AutoPrintBracesOrBracks(ILNode node)
 		{
 			var name = node.Name;
-			if ((name == S.Array || name == S.Braces) && node.IsCall && !HasPAttrs(node.Target)) {
+			if ((name == S.Array || name == S.Braces) && node.IsCall() && !HasPAttrs(node.Target)) {
 				if (name == S.Array) {
-					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, "[", ']', node.Target);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "[", ']', node.Target);
 					return true;
 				} else if (name == S.Braces) {
-					PrintArgList(node.Args, node.BaseStyle != NodeStyle.Expression, "{", '}', node.Target);
+					PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', node.Target);
 					return true;
 				}
 			}
 			return false;
 		}
 
-		private void PrintArgList(VList<LNode> args, bool stmtMode, string leftDelim, char rightDelim, LNode target = null)
+		private void PrintArgList(NegListSlice<ILNode> args, bool stmtMode, string leftDelim, char rightDelim, ILNode target = null)
 		{
 			if (target != null)
 				PrintPrefixTrivia(target);
@@ -284,7 +281,7 @@ namespace Loyc.Syntax.Les
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
 		public static readonly Precedence StartStmt      = Precedence.MinValue;
 
-		void PrintPrefixNotation(LNode node, Precedence context)
+		void PrintPrefixNotation(ILNode node, Precedence context)
 		{
 			switch(node.Kind) {
 				case LNodeKind.Id:
@@ -293,24 +290,24 @@ namespace Loyc.Syntax.Les
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
 					Print(node.Target, LesPrecedence.Primary.LeftContext(context), "(");
-					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, "", ')', null);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "", ')', null);
 					break;
 			}
 		}
 
-		bool HasPAttrs(LNode node)
+		bool HasPAttrs(ILNode node)
 		{
-			foreach (var attr in node.Attrs.ToFVList())
+			foreach (var attr in node.Attrs())
 				if (!IsConsumedTrivia(attr))
 					return true;
 			return false;
 		}
 
-		private int WriteAttrs(LNode node, ref Precedence context)
+		private int WriteAttrs(ILNode node, ref Precedence context)
 		{
 			bool wroteBrack = false, needParen = (context != StartStmt);
 			int parenCount = 0;
-			foreach (var attr in node.Attrs) {
+			foreach (var attr in node.Attrs()) {
 				if (attr.IsIdNamed(S.TriviaInParens)) {
 					MaybeCloseBrack(ref wroteBrack);
 					parenCount++;
@@ -356,12 +353,12 @@ namespace Loyc.Syntax.Les
 
 		#region Trivia printing
 
-		private void PrintPrefixTrivia(LNode _n)
+		private void PrintPrefixTrivia(ILNode _n)
 		{
-			foreach (var attr in _n.Attrs)
+			foreach (var attr in _n.Attrs())
 				MaybePrintTrivia(attr, needSpace: false);
 		}
-		private void PrintSuffixTrivia(LNode _n, int parenCount, string terminator)
+		private void PrintSuffixTrivia(ILNode _n, int parenCount, string terminator)
 		{
 			while (--parenCount >= 0)
 				_out.Write(')', true);
@@ -371,11 +368,11 @@ namespace Loyc.Syntax.Les
 				MaybePrintTrivia(attr, needSpace: true);
 		}
 
-		private bool IsConsumedTrivia(LNode attr)
+		private bool IsConsumedTrivia(ILNode attr)
 		{
 			return MaybePrintTrivia(attr, false, testOnly: true);
 		}
-		private bool MaybePrintTrivia(LNode attr, bool needSpace, bool testOnly = false)
+		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false)
 		{
 			Debug.Assert(!PrintExplicitTrivia);
 			var name = attr.Name;
@@ -423,11 +420,11 @@ namespace Loyc.Syntax.Les
 			return false;
 		}
 
-		static string GetRawText(LNode rawTextNode)
+		static string GetRawText(ILNode rawTextNode)
 		{
 			object value = rawTextNode.Value;
 			if (value == null || value == NoValue.Value) {
-				var node = rawTextNode.Args[0, null];
+				var node = rawTextNode.TryGet(0, null);
 				if (node != null)
 					value = node.Value;
 			}
@@ -485,7 +482,7 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Returns true if the given symbol can be printed as a 
 		/// normal identifier, without an "@" prefix. Note: identifiers 
-		/// starting with "#" still count as normal; call <see cref="LNode.HasSpecialName"/> 
+		/// starting with "#" still count as normal; call <see cref="ILNode.HasSpecialName"/> 
 		/// to detect this.</summary>
 		public static bool IsNormalIdentifier(Symbol name)
 		{
@@ -661,7 +658,7 @@ namespace Loyc.Syntax.Les
 			_out.Write("d", true);
 		}
 
-		private void PrintLiteral(LNode node)
+		private void PrintLiteral(ILNode node)
 		{
 			PrintLiteralCore(node.Value, node.Style);
 		}
@@ -673,7 +670,7 @@ namespace Loyc.Syntax.Les
 			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
 				p(this, value, style);
 			else {
-				// TODO: add current LNode as context to error message
+				// TODO: add current ILNode as context to error message
 				Errors.Write(Severity.Error, null, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;

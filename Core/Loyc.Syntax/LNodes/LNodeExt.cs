@@ -524,6 +524,8 @@ namespace Loyc.Syntax
 			return CodeSymbols.IsTriviaSymbol(node.Name);
 		}
 
+		public static NodeStyle BaseStyle(this ILNode node) { return node.Style & NodeStyle.BaseStyleMask; }
+
 		public static bool IsIdNamed(this ILNode node, Symbol name) { return node.Name == name; }
 		public static bool IsIdNamed(this ILNode node, string name)
 		{
@@ -552,12 +554,61 @@ namespace Loyc.Syntax
 			return false;
 		}
 
+		public static LNode AttrNamed(this ILNode node, Symbol name)
+		{
+			return node.Attrs().NodeNamed(name);
+		}
 		public static LNode NodeNamed(this NegListSlice<ILNode> self, Symbol name)
 		{
 			foreach (LNode node in self)
 				if (node.Name == name)
 					return node;
 			return null;
+		}
+		public static IListSource<ILNode> GetTrailingTrivia(this ILNode node)
+		{
+			if (node is LNode) {
+				VList<LNode> list = GetTrailingTrivia((LNode)node);
+				if (list.IsEmpty)
+					return EmptyList<ILNode>.Value; // avoid boxing in the common case
+				return list;
+			} else {
+				VList<ILNode> list = VList<ILNode>.Empty;
+				foreach (ILNode a in node.Attrs()) {
+					if (a.Calls(S.TriviaTrailing))
+						list.AddRange(a.Args());
+				}
+				if (list.IsEmpty)
+					return EmptyList<ILNode>.Value; // avoid boxing in the common case
+				return list;
+			}
+		}
+
+		/// <summary>Converts <see cref="ILNode"/> to <see cref="LNode"/> recursively.
+		/// If the specified node is already an <see cref="LNode"/>, this method simply
+		/// does a cast.</summary>
+		public static LNode ToLNode(ILNode node)
+		{
+			return node is LNode ? (LNode)node : ToLNodeCore(node);
+		}
+		static LNode ToLNodeCore(ILNode node)
+		{
+			var attrs = VList<LNode>.Empty;
+			for (int i = node.Min; i < -1; i++)
+				attrs.Add(ToLNodeCore(node[i]));
+
+			switch (node.Kind) {
+				case LNodeKind.Id:
+					return LNode.Id(attrs, node.Name, node.Range, node.Style);
+				case LNodeKind.Literal:
+					return LNode.Literal(attrs, node.Value, node.Range, node.Style);
+				default:
+					var args = VList<LNode>.Empty;
+					for (int i = 0, max = node.Max; i <= max; i++)
+						args.Add(ToLNodeCore(node[i]));
+					var target = ToLNodeCore(node.Target);
+					return LNode.Call(attrs, target, args, node.Range, node.Style);
+			}
 		}
 
 		#endregion

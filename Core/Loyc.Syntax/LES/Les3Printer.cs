@@ -20,7 +20,7 @@ namespace Loyc.Syntax.Les
 	// TODO: Add comments and line breaks to tree produced by parser (multi-language algorithm?)
 	// TODO: Verify # is treated as ident char or not depending on feedback
 	// TODO: Switch over from `#` to `.` prefix as the keyword marker?
-	public class Les3Printer : ILNodeVisitor
+	public class Les3Printer
 	{
 		#region Properties
 
@@ -122,31 +122,35 @@ namespace Loyc.Syntax.Les
 		}
 
 		protected PrinterState PS;
-		protected LNode _n;
+		protected ILNode _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected Chars _curSet = 0;
 		protected bool _allowBlockCalls = true;
 
 		public static readonly LNodePrinter Printer = Print;
 
-		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public static void Print(ILNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			CheckParam.IsNotNull("target", target);
 			var p = new Les3Printer(new PrinterState(target, indentString, lineSeparator), errors);
 			p.Print(node);
 		}
 
-		public StringBuilder Print(LNode node, string terminator = null)
+		public StringBuilder Print(ILNode node, string terminator = null)
 		{
 			_n = node;
 			int parenCount = PrintPrefixTriviaAndAttrs(node);
-			node.Call(this);
+			switch (node.Kind) {
+				case LNodeKind.Id: VisitId(node); break;
+				case LNodeKind.Literal: VisitLiteral(node); break;
+				case LNodeKind.Call: VisitCall(node); break;
+			}
 			PrintSuffixTrivia(node, parenCount, terminator);
 			_n = null;
 			return SB;
 		}
 
-		protected void Print(LNode node, Precedence context, string terminator = null)
+		protected void Print(ILNode node, Precedence context, string terminator = null)
 		{
 			var oldContext = _context;
 			_context = context;
@@ -234,12 +238,15 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		private bool HasSimpleTarget(LNode node)
+		private bool HasIdTargetWithoutPAttrs(ILNode node)
 		{
+			var t = node.Target;
+			if (!t.IsId)
+				return false;
 			if (PrintTriviaExplicitly)
-				return node.HasSimpleHead() && node.Target.AttrCount == 0;
+				return t.AttrCount() == 0;
 			else
-				return node.HasSimpleHeadWithoutPAttrs();
+				return !t.HasPAttrs();
 		}
 		
 		#endregion
@@ -248,7 +255,7 @@ namespace Loyc.Syntax.Les
 
 		static readonly Symbol sy_true = (Symbol)"true", sy_false = (Symbol)"false", sy_null = (Symbol)"null";
 
-		public void Visit(IdNode node)
+		public void VisitId(ILNode node)
 		{
 			PrintIdCore(node.Name, startToken: true);
 		}
@@ -356,7 +363,7 @@ namespace Loyc.Syntax.Les
 
 		#region Printing of literals
 
-		public void Visit(LiteralNode node)
+		public void VisitLiteral(ILNode node)
 		{
 			PrintLiteralCore(node.Value, node.Style);
 		}
@@ -573,28 +580,28 @@ namespace Loyc.Syntax.Les
 
 		#region Printing calls: main Visit() method
 
-		public void Visit(CallNode node)
+		public void VisitCall(ILNode node)
 		{
 			bool allowBlockCalls = _allowBlockCalls;
 			// Note: Attributes, if any, have already been printed by this point
 			bool parens = false;
-			switch (PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle)
+			switch (PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Operator:
 				case NodeStyle.Statement:
 				case NodeStyle.Default:
 					// Figure out if this node can be treated as an operator and if 
 					// so, whether it's a suffix operator.
-					if (!HasSimpleTarget(node))
+					if (!HasIdTargetWithoutPAttrs(node))
 						goto default;
 
 					Symbol opName = node.Name;
 					if (!TryToPrintCallAsSpecialOperator(opName, node))
 					{
-						if (!node.ArgCount.IsInRange(1, 2) || !LesPrecedenceMap.IsExtendedOperator(opName.Name))
+						if (!node.ArgCount().IsInRange(1, 2) || !LesPrecedenceMap.IsExtendedOperator(opName.Name))
 							goto default;
-						var shape = (OperatorShape)node.ArgCount;
-						if (node.ArgCount == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName, true))
+						var shape = (OperatorShape)node.ArgCount();
+						if (node.ArgCount() == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName, true))
 							shape = OperatorShape.Suffix;
 
 						parens = PrintCallAsNormalOpOrPrefixNotation(shape, opName, node);
@@ -619,7 +626,7 @@ namespace Loyc.Syntax.Les
 
 		#region Printing calls: in prefix notation or as a block call
 
-		bool PrintPrefixNotation(CallNode node, bool allowBlockCalls)
+		bool PrintPrefixNotation(ILNode node, bool allowBlockCalls)
 		{
 			bool parens = AddParenIf(!IsAllowedHere(LesPrecedence.Primary));
 
@@ -632,32 +639,39 @@ namespace Loyc.Syntax.Les
 		internal static readonly HashSet<Symbol> ContinuatorOps = Les3Parser.ContinuatorOps;
 		internal static readonly Dictionary<object, Symbol> Continuators = Les3Parser.Continuators;
 
-		bool IsContinuator(LNode lastArg)
+		bool IsContinuator(ILNode lastArg)
 		{
-			if (lastArg.ArgCount > 0 && HasSimpleTarget(lastArg) && ContinuatorOps.Contains(lastArg.Name))
+			if (lastArg.ArgCount() > 0 && HasIdTargetWithoutPAttrs(lastArg) && ContinuatorOps.Contains(lastArg.Name))
 				return true;
 			return false;
 		}
 
-		void PrintArgList(LNode node, bool allowBlockCalls, bool ignoreContinuators = false)
+		void PrintArgList(ILNode node, bool allowBlockCalls, bool ignoreContinuators = false)
 		{
-			var args = node.Args;
+			var args = node.Args();
 			int numContinuators = 0;
-			LNode braces = null;
+			ILNode braces = null;
 
 			if (allowBlockCalls && _allowBlockCalls && args.Count > 0) {
 				// Detect a block call, which should have something in 
 				// braces, followed by continuators.
 				if (!ignoreContinuators)
-					while (args.Count > 1 && IsContinuator(args.Last)) {
+					while (args.Count > 1 && IsContinuator(args.Back)) {
 						numContinuators++;
-						args.Pop();
+						args = args.Slice(0, args.Count - 1);
 					}
-				if (args.Count == 0 || !(braces = args.Pop()).Calls(CodeSymbols.Braces) || !HasSimpleTarget(braces)) {
+
+				do {
+					if (args.Count > 0) {
+						braces = args.Back;
+						args = args.Slice(0, args.Count - 1);
+						if (braces.Calls(CodeSymbols.Braces) && HasIdTargetWithoutPAttrs(braces))
+							break;
+					}
 					braces = null;
 					numContinuators = 0; // braces are required prior to continuators
-					args = node.Args;
-				}
+					args = node.Args();
+				} while (false);
 			}
 
 			if (!(braces != null && args.Count == 0)) {
@@ -673,7 +687,7 @@ namespace Loyc.Syntax.Les
 			if (braces != null) {
 				Space();
 				PrintBracedBlock(braces);
-				args = node.Args;
+				args = node.Args();
 				for (int i = args.Count - numContinuators; i < args.Count; i++) {
 					Space();
 					PrintContinuator(args[i]);
@@ -681,7 +695,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		private void PrintContinuator(LNode continuator)
+		private void PrintContinuator(ILNode continuator)
 		{
 			Debug.Assert(continuator.Name.Name.StartsWith("'"));
 			WriteToken(continuator.Name.Name.Substring(1), LesColorCode.Keyword, Chars.Id);
@@ -694,7 +708,7 @@ namespace Loyc.Syntax.Les
 			Semicolons = 1, // semicolons as separator (tuple)
 			BracedBlock = 2 // semicolons and newlines (braced block)
 		}
-		void PrintArgListCore(VList<LNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside, int startIndex = 0)
+		void PrintArgListCore(NegListSlice<ILNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside, int startIndex = 0)
 		{
 			var outerAllowBlockCalls = _allowBlockCalls;
 			_allowBlockCalls = true;
@@ -728,7 +742,7 @@ namespace Loyc.Syntax.Les
 
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
 		// or in prefix notation if that fails. Returns true if closing ')' needed.
-		private bool PrintCallAsNormalOpOrPrefixNotation(OperatorShape shape, Symbol opName, CallNode node)
+		private bool PrintCallAsNormalOpOrPrefixNotation(OperatorShape shape, Symbol opName, ILNode node)
 		{
 			// Check if this operator is allowed here. For example, if operator '+ 
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
@@ -745,24 +759,24 @@ namespace Loyc.Syntax.Les
 
 			switch (shape) {
 				case OperatorShape.Prefix:
-					Debug.Assert(node.ArgCount == 1);
-					var inner = node.Args[0];
+					Debug.Assert(node.ArgCount() == 1);
+					var inner = node[0];
 					PrintOpName(opName);
 					Space(prec.Lo < SpaceAfterPrefixStopPrecedence);
 					Print(inner, prec.RightContext(_context));
 					break;
 				case OperatorShape.Suffix:
-					Debug.Assert(node.ArgCount == 1);
-					Print(node.Args[0], prec.LeftContext(_context));
+					Debug.Assert(node.ArgCount() == 1);
+					Print(node[0], prec.LeftContext(_context));
 					PrintOpName(opName);
 					break;
 				default:
-					Debug.Assert(node.ArgCount == 2);
-					Print(node.Args[0], prec.LeftContext(_context));
+					Debug.Assert(node.ArgCount() == 2);
+					Print(node[0], prec.LeftContext(_context));
 					Space(prec.Lo < SpaceAroundInfixStopPrecedence);
 					PrintOpName(opName);
 					Space(prec.Lo < SpaceAroundInfixStopPrecedence);
-					Print(node.Args[1], prec.RightContext(_context));
+					Print(node[1], prec.RightContext(_context));
 					break;
 			}
 			return parens;
@@ -806,25 +820,25 @@ namespace Loyc.Syntax.Les
 
 		#region Printing special operators: {braces}, [list], (tuple;), indexer[], generic!type
 
-		private bool TryToPrintCallAsSpecialOperator(Symbol opName, CallNode node)
+		private bool TryToPrintCallAsSpecialOperator(Symbol opName, ILNode node)
 		{
 			if (opName == CodeSymbols.Braces) { // {...}
 				PrintBracedBlock(node);
 			} else if (opName == CodeSymbols.Array) { // [...]
-				PrintArgListCore(node.Args, '[', ']', 
+				PrintArgListCore(node.Args(), '[', ']', 
 					ArgListStyle.Normal, SpaceInsideListBrackets);
 			} else if (opName == CodeSymbols.Tuple) { // (;;)
-				PrintArgListCore(node.Args, '(', ')', ArgListStyle.Semicolons, SpaceInsideTuples);
-			} else if (opName == CodeSymbols.IndexBracks && node.ArgCount > 0) { // foo[...]
-				Print(node.Args[0], LesPrecedence.Primary.LeftContext(_context));
-				PrintArgListCore(node.Args, '[', ']', (node.Style & NodeStyle.Alternate) != 0
+				PrintArgListCore(node.Args(), '(', ')', ArgListStyle.Semicolons, SpaceInsideTuples);
+			} else if (opName == CodeSymbols.IndexBracks && node.ArgCount() > 0) { // foo[...]
+				Print(node[0], LesPrecedence.Primary.LeftContext(_context));
+				PrintArgListCore(node.Args(), '[', ']', (node.Style & NodeStyle.Alternate) != 0
 					? ArgListStyle.Semicolons : ArgListStyle.Normal, SpaceInsideArgLists, startIndex: 1);
 			} else if (opName == CodeSymbols.Of) {
-				var args = node.Args;
+				var args = node.Args();
 				Print(args[0], LesPrecedence.Primary.LeftContext(_context));
 				WriteToken('!', LesColorCode.Operator, Chars.Punc);
-				if (args.Count == 2 && args[1].IsId && args[1].AttrCount == 0)
-					Visit((IdNode)args[1]);
+				if (args.Count == 2 && args[1].IsId() && args[1].AttrCount() == 0)
+					VisitId(args[1]);
 				else
 					PrintArgListCore(args, '(', ')', ArgListStyle.Normal, SpaceInsideArgLists, startIndex: 1);
 			} else
@@ -832,22 +846,22 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private void PrintBracedBlock(LNode braces)
+		private void PrintBracedBlock(ILNode braces)
 		{
 			Debug.Assert(braces.Calls(CodeSymbols.Braces));
-			PrintArgListCore(braces.Args, '{', '}', ArgListStyle.BracedBlock, false);
+			PrintArgListCore(braces.Args(), '{', '}', ArgListStyle.BracedBlock, false);
 		}
 
 		#endregion
 
 		#region Printing .keyword expressions
 
-		private bool TryToPrintCallAsKeywordExpression(CallNode node)
+		private bool TryToPrintCallAsKeywordExpression(ILNode node)
 		{
 			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
 				return false;
 
-			var args = node.Args;
+			var args = node.Args();
 			WriteToken(node.Name.Name, LesColorCode.Keyword, Chars.IdAndPunc);
 			if (args.Count == 0)
 				return true;
@@ -871,15 +885,15 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private bool IsKeywordExpression(CallNode node)
+		private bool IsKeywordExpression(ILNode node)
 		{
-			if (!HasSimpleTarget(node) || !LesPrecedenceMap.IsExtendedOperator(node.Name.Name, "."))
+			if (!HasIdTargetWithoutPAttrs(node) || !LesPrecedenceMap.IsExtendedOperator(node.Name.Name, "."))
 				return false;
-			var args = node.Args;
+			var args = node.Args();
 			if (args.Count <= 1)
 				return true;
 			var block = args[1];
-			if (!block.Calls(S.Braces) || !HasSimpleTarget(block))
+			if (!block.Calls(S.Braces) || !HasIdTargetWithoutPAttrs(block))
 				return false;
 			for (int i = 2; i < args.Count; i++)
 				if (!IsContinuator(args[i]))
@@ -893,9 +907,9 @@ namespace Loyc.Syntax.Les
 
 		#region Printing attributes (with trivia)
 
-		private int PrintPrefixTriviaAndAttrs(LNode node)
+		private int PrintPrefixTriviaAndAttrs(ILNode node)
 		{
-			var A = node.Attrs;
+			var A = node.Attrs();
 			int parenCount = 0;
 			bool needParensForAttribute = !_context.CanParse(LesPrecedence.SuperExpr);
 			for (int i = 0; i < A.Count; i++) {
@@ -913,7 +927,7 @@ namespace Loyc.Syntax.Les
 			return parenCount;
 		}
 
-		private void PrintSuffixTrivia(LNode node, int parenCount, string terminator)
+		private void PrintSuffixTrivia(ILNode node, int parenCount, string terminator)
 		{
 			// Putting comments inside parens allows them to be associated with an
 			// inner node rather than some outer node, which may preserve information.
@@ -923,7 +937,7 @@ namespace Loyc.Syntax.Les
 				WriteToken(terminator, LesColorCode.Separator, Chars.Delimiter);
 				terminator = null;
 			}
-			var A = node.Attrs;
+			var A = node.Attrs();
 			for (int i = 0; i < A.Count; i++) {
 				var attr = A[i];
 				int _ = 0;
@@ -942,7 +956,7 @@ namespace Loyc.Syntax.Les
 		// at the matching location (e.g. suffixMode=true means we're after the node 
 		// right now and want to print only suffix trivia). Returns true if the 
 		// attribute is trivia and should NOT printed as a normal attribute.
-		bool DetectAndMaybePrintTrivia(LNode attr, bool suffixMode, ref int parenCount)
+		bool DetectAndMaybePrintTrivia(ILNode attr, bool suffixMode, ref int parenCount)
 		{
 			var name = attr.Name;
 			bool suffix;
@@ -1025,11 +1039,11 @@ namespace Loyc.Syntax.Les
 				   name == S.TriviaSpaceBefore || name == S.TriviaSpaceAfter;
 		}*/
 		
-		static string GetRawText(LNode rawTextNode)
+		static string GetRawText(ILNode rawTextNode)
 		{
 			object value = rawTextNode.Value;
 			if (value == null || value == NoValue.Value) {
-				var node = rawTextNode.Args[0, null];
+				var node = rawTextNode.TryGet(0, null);
 				if (node != null)
 					value = node.Value;
 			}
