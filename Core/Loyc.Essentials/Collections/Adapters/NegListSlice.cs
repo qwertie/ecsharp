@@ -8,7 +8,7 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		/// <inheritdoc cref="NegList{T}.NegList"/>
-		public static NegListSlice<T> Slice<T>(this INegListSource<T> list, int start, int count)
+		public static NegListSlice<T> Slice<T>(this INegListSource<T> list, int start, int count = int.MaxValue)
 		{
 			return new NegListSlice<T>(list, start, count);
 		}
@@ -23,7 +23,14 @@ namespace Loyc.Collections
 	{
 		INegListSource<T> _list;
 		int _start, _count;
-		
+
+		public NegListSlice(INegListSource<T> list)
+		{
+			_list = list;
+			_start = list.Min;
+			_count = list.Count;
+		}
+
 		/// <summary>Initializes a slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
 		/// <remarks>The (start, count) range is allowed to be invalid, as long
@@ -35,7 +42,7 @@ namespace Loyc.Collections
 		/// slice is reduced to <c>list.Count - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public NegListSlice(INegListSource<T> list, int start, int count)
+		public NegListSlice(INegListSource<T> list, int start, int count = int.MaxValue)
 		{
 			_list = list;
 			_start = start;
@@ -125,7 +132,7 @@ namespace Loyc.Collections
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		IRange<T> INegListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public NegListSlice<T> Slice(int start, int count)
+		public NegListSlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0) throw new ArgumentException("The start index was below zero.");
 			if (count < 0) throw new ArgumentException("The count was below zero.");

@@ -1058,7 +1058,7 @@ namespace Loyc.Syntax
 			return new NegListSlice<ILNode>(this, start, count);
 		}
 
-		LNode ILNode.ToLNode() { return this; }
+		LNode IToLNode.ToLNode() { return this; }
 
 		#endregion
 

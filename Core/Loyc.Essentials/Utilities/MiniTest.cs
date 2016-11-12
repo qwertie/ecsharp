@@ -278,8 +278,7 @@ namespace Loyc.MiniTest
 				case StopReason.Inconclusive: throw new InconclusiveException(msg);
 				case StopReason.Success: throw new SuccessException(msg);
 			}
-			Console.Error.WriteLine(msg);
-			return;
+			Console.Error.WriteLine(msg); // unreachable without debugger
 		}
 
 		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(), 

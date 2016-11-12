@@ -554,13 +554,13 @@ namespace Loyc.Syntax
 			return false;
 		}
 
-		public static LNode AttrNamed(this ILNode node, Symbol name)
+		public static ILNode AttrNamed(this ILNode node, Symbol name)
 		{
 			return node.Attrs().NodeNamed(name);
 		}
-		public static LNode NodeNamed(this NegListSlice<ILNode> self, Symbol name)
+		public static ILNode NodeNamed(this NegListSlice<ILNode> self, Symbol name)
 		{
-			foreach (LNode node in self)
+			foreach (var node in self)
 				if (node.Name == name)
 					return node;
 			return null;

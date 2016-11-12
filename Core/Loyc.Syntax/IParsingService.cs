@@ -113,6 +113,10 @@ namespace Loyc.Syntax
 		/// <param name="indentString">Indent character for multi-line nodes</param>
 		/// <param name="lineSeparator">Newline string for multi-line nodes</param>
 		string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
+
+		/// <summary>Converts the specified list of syntax trees to a string.</summary>
+		/// <remarks>Most implementations can simply call <see cref="ParsingService.PrintMultiple"/>.</remarks>
+		string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 	}
 	
 	/// <summary>Standard parsing modes used with <see cref="IParsingService"/>.
@@ -308,28 +312,26 @@ namespace Loyc.Syntax
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Tokenize(parser, stream, fileName, msgs);
 		}
-		/// <summary>Converts a sequences of LNodes to strings, adding a newline after each.</summary>
+		/// <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
 		/// <param name="printer">Printer for a single LNode.</param>
 		/// <param name="mode">A language-specific way of modifying printer behavior.
 		/// The printer ignores the mode object if it does not not understand it.</param>
 		/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
 		/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
 		/// <returns>A string form of the nodes.</returns>
+		/// <remarks>The newline between two nodes is suppressed if the second 
+		/// node has a #trivia_appendStatement attribute.</remarks>
 		public static string PrintMultiple(this LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n", StringBuilder sb = null)
 		{
 			bool first = true;
 			sb = sb ?? new StringBuilder();
 			foreach (LNode node in nodes) {
-				if (!first && node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null)
-					sb.Append(lineSeparator);
+				if (!first)
+					sb.Append(node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null ? lineSeparator : " ");
 				printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
 				first = false;
 			}
 			return sb.ToString();
-		}
-		public static string Print(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
-		{
-			return PrintMultiple(service.Printer, nodes, msgs, mode, indentString, lineSeparator);
 		}
 	}
 }

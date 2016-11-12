@@ -29,6 +29,10 @@ namespace Loyc.Collections
 		{
 			return list.Count;
 		}
+		public static int Count<T>(this INegListSource<T> list)
+		{
+			return list.Count;
+		}
 
 		public static T Last<T>(this IList<T> list)
 		{
@@ -54,6 +58,9 @@ namespace Loyc.Collections
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
 		}
+		public static T Last<T>(this IListAndListSource<T> list) { return Last((IList<T>)list); }
+		public static T LastOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T))
+			{ return LastOrDefault((IList<T>)list, defaultValue); }
 		public static T Last<T>(this INegListSource<T> list)
 		{
 			int last = list.Max;

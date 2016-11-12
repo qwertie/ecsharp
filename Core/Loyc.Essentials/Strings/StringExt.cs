@@ -50,18 +50,6 @@ namespace Loyc
 				return s[index];
 			return defaultValue;
 		}
-		public static char? TryGet(this StringBuilder s, int index)
-		{
-			if ((uint)index < (uint)s.Length)
-				return s[index];
-			return null;
-		}
-		public static char TryGet(this StringBuilder s, int index, char defaultValue)
-		{
-			if ((uint)index < (uint)s.Length)
-				return s[index];
-			return defaultValue;
-		}
 
 		/// <summary>A variation on String.Substring() that never throws.</summary>
 		/// <remarks>This is best explained by examples:
@@ -240,22 +228,5 @@ namespace Loyc
 			}
 			return sb.ToString();
 		}
-
-		/// <summary>Appends a unicode code point in the range 0 to 0x10FFFF to StringBuilder in UTF-16.</summary>
-		/// <exception cref="ArgumentOutOfRangeException">Invalid character c</exception>
-		/// <exception cref="NullReferenceException">null StringBuildre</exception>
-		public static StringBuilder AppendCodePoint(this StringBuilder s, int c)
-		{
-			if ((uint)c <= 0xFFFF)
-				s.Append((char)c);
-			else if ((uint)c <= 0x10FFFF) {
-				c -= 0x10000;
-				s.Append((char)((c >> 10)   | 0xD800));
-				s.Append((char)((c & 0x3FF) | 0xDC00));
-			} else
-				throw new ArgumentOutOfRangeException("Invalid unicode character: {0}".Localized(c));
-			return s;
-		}
-
 	}
 }

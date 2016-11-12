@@ -38,7 +38,7 @@ namespace Loyc.Syntax
 	/// Tip: the LES node printer can print any ILNode as a string. See
 	/// <see cref="Loyc.Syntax.Les.LesNodePrinter.Print(ILNode, StringBuilder, IMessageSink, object, string, string)"/>
 	/// </remarks>
-	public interface ILNode : IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
+	public interface ILNode : IToLNode, IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
 	{
 		/// <inheritdoc cref="LNode.Kind"/>
 		LNodeKind Kind { get; }
@@ -51,15 +51,23 @@ namespace Loyc.Syntax
 		SourceRange Range { get; }
 		/// <inheritdoc cref="LNode.Style"/>
 		NodeStyle Style { get; set; }
-		/// <summary>Converts the syntax tree to an <see cref="LNode"/>, or returns 
-		/// <c>this</c> if the object is already an <see cref="LNode"/>.</summary>
-		LNode ToLNode();
 		/// <summary>Returns true if <c>Kind == LNodeKind.Call</c>, <c>Name == name</c>, 
 		/// and <c>Max + 1 >= argCount</c>.</summary>
 		/// <seealso cref="LNodeExt.Calls"/>
 		bool CallsMin(Symbol name, int argCount);
 		/// <summary>Returns true if <c>Name == name</c> and <c>Max + 1 == argCount</c>
 		/// (which implies <c>Kind == LNodeKind.Call</c> if argCount != -1).</summary>
+		/// <remarks>This could have been an extension method, but when verifying that
+		/// you have a certain kind of node, it's common to check <i>both</i> the Name 
+		/// and ArgCount(); checking both in one call avoids extra interface invocations.</remarks>
 		bool Calls(Symbol name, int argCount);
+	}
+
+	/// <summary>An interface for objects that can be converted to <see cref="LNode"/>.</summary>
+	public interface IToLNode
+	{
+		/// <summary>Converts this object to an <see cref="LNode"/>, or returns 
+		/// <c>this</c> if the object is already an <see cref="LNode"/>.</summary>
+		LNode ToLNode();
 	}
 }

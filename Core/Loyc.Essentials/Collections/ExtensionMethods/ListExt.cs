@@ -385,14 +385,18 @@ namespace Loyc.Collections
 		/// <summary>Performs a stable sort, i.e. a sort that preserves the 
 		/// relative order of items that compare equal.</summary>
 		/// <remarks>
-		/// This algorithm uses a quicksort and therefore runs in O(N log N) time,
-		/// but it requires O(N) temporary space (specifically, an array of N 
-		/// integers) and is slower than a standard quicksort, so you should use
-		/// it only if you need a stable sort.
+		/// On larger inputs, this algorithm uses a quicksort and therefore runs 
+		/// in O(N log N) time, but it requires O(N) temporary space (specifically, 
+		/// an array of N integers) and is slower than a standard quicksort, so 
+		/// you should use it only if you need a stable sort or if the input is
+		/// usually small (in which case insertion sort is used).
 		/// </remarks>
 		public static void StableSort<T>(this IList<T> list, Comparison<T> comp)
 		{
-			Sort(list, 0, list.Count, comp, RangeArray(list.Count));
+			if (list.Count <= 18)
+				InsertionSort(list, 0, list.Count, comp);
+			else
+				Sort(list, 0, list.Count, comp, RangeArray(list.Count));
 		}
 		public static void StableSort<T>(this IList<T> list)
 		{
