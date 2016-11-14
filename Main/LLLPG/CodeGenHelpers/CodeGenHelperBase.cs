@@ -336,9 +336,13 @@ namespace Loyc.LLParserGenerator
 			{
 				if (casesToInclude.Contains(i))
 				{
+					int index = -1;
 					foreach (LNode value in GetCases(branchSets[i]))
 					{
-						stmts.Add(F.Call(S.Case, value));
+						var label = F.Call(S.Case, value);
+						if (++index > 0 && (index % 4) != 0) // write 4 cases per line
+							label = label.PlusAttr(F.Id(S.TriviaAppendStatement));
+						stmts.Add(label);
 						if (stmts.Count > 65535) // sanity check
 							throw new InvalidOperationException("switch is too large to generate");
 					}

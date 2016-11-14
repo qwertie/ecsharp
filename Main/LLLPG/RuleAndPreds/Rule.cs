@@ -110,7 +110,8 @@ namespace Loyc.LLParserGenerator
 				if (IsRecognizer)
 					parts[0] = F.Bool;
 				parts[1] = F.Id(Name);
-				return Basis.WithArgs(parts);
+				// remove OneLiner style to avoid suppresing newlines in output for one-line rules
+				return Basis.WithArgs(parts).SetStyle(Basis.Style & ~NodeStyle.OneLiner);
 			} else {
 				var method = F.Fn(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
 				if (IsPrivate)
