@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.4.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -12,25 +12,30 @@ using System.Text;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-namespace Loyc.Ecs.Parser {
+
+namespace Loyc.Ecs.Parser
+{
 	using TT = TokenType;
 	using S = CodeSymbols;
-	public partial class EcsLexer {
+
+	public partial class EcsLexer
+	{
 		new void Newline() {
 			base.Newline();
 			_allowPPAt = InputPosition;
 			_value = WhitespaceTag.Value;
 		}
-		void OtherContextualKeyword() {
+		void OtherContextualKeyword()
+		{
 			_parseNeeded = _verbatim = false;
 			_type = TT.ContextualKeyword;
 			ParseIdValue(0, false);
 		}
-		bool AllowPP {
-			get {
+		// Keywords --------------------------------------------------------------
+		bool AllowPP { get {
 				return _startPosition == _allowPPAt;
-			}
-		}
+			} }
+	
 		static readonly Symbol _var = GSymbol.Get("var");
 		static readonly Symbol _dynamic = GSymbol.Get("dynamic");
 		static readonly Symbol _trait = GSymbol.Get("trait");
@@ -38,6 +43,7 @@ namespace Loyc.Ecs.Parser {
 		static readonly Symbol _assembly = GSymbol.Get("assembly");
 		static readonly Symbol _module = GSymbol.Get("module");
 		static readonly Symbol _await = GSymbol.Get("await");
+	
 		static readonly Symbol _where = GSymbol.Get("where");
 		static readonly Symbol _when = GSymbol.Get("when");
 		static readonly Symbol _select = GSymbol.Get("select");
@@ -52,9 +58,11 @@ namespace Loyc.Ecs.Parser {
 		static readonly Symbol _descending = GSymbol.Get("descending");
 		static readonly Symbol _group = GSymbol.Get("group");
 		static readonly Symbol _by = GSymbol.Get("by");
+		// This is used by EcsParser
 		internal static readonly HashSet<object> LinqKeywords = new HashSet<object> { 
 			_where, _select, _from, _join, _on, _equals, _into, _let, _orderby, _ascending, _descending, _group, _by
 		};
+	
 	
 		void DotIndent()
 		{
@@ -127,7 +135,7 @@ namespace Loyc.Ecs.Parser {
 	
 		void UTF_BOM()
 		{
-			Match('\uFEFF');
+			Match('﻿');
 			#line 52 "EcsLexerGrammar.les"
 			if ((_lineStartAt == _startPosition)) {
 				_lineStartAt = InputPosition;
@@ -186,8 +194,7 @@ namespace Loyc.Ecs.Parser {
 							Skip();
 					}
 					break;
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					Newline();
 					break;
 				default:
@@ -203,6 +210,8 @@ namespace Loyc.Ecs.Parser {
 			#line default
 		}
 	
+	
+		// Numbers ---------------------------------------------------------------
 		void DecDigits()
 		{
 			int la0, la1;
@@ -508,12 +517,10 @@ namespace Loyc.Ecs.Parser {
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
-				case 'X':
-				case 'x':
+				case 'X': case 'x':
 					HexNumber();
 					break;
-				case 'B':
-				case 'b':
+				case 'B': case 'b':
 					BinNumber();
 					break;
 				default:
@@ -524,8 +531,7 @@ namespace Loyc.Ecs.Parser {
 				DecNumber();
 			// Line 99: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
 			switch (LA0) {
-			case 'F':
-			case 'f':
+			case 'F': case 'f':
 				{
 					Skip();
 					#line 99 "EcsLexerGrammar.les"
@@ -535,8 +541,7 @@ namespace Loyc.Ecs.Parser {
 					#line default
 				}
 				break;
-			case 'D':
-			case 'd':
+			case 'D': case 'd':
 				{
 					Skip();
 					#line 100 "EcsLexerGrammar.les"
@@ -546,8 +551,7 @@ namespace Loyc.Ecs.Parser {
 					#line default
 				}
 				break;
-			case 'M':
-			case 'm':
+			case 'M': case 'm':
 				{
 					Skip();
 					#line 101 "EcsLexerGrammar.les"
@@ -557,8 +561,7 @@ namespace Loyc.Ecs.Parser {
 					#line default
 				}
 				break;
-			case 'L':
-			case 'l':
+			case 'L': case 'l':
 				{
 					Skip();
 					#line 103 "EcsLexerGrammar.les"
@@ -574,8 +577,7 @@ namespace Loyc.Ecs.Parser {
 					}
 				}
 				break;
-			case 'U':
-			case 'u':
+			case 'U': case 'u':
 				{
 					Skip();
 					#line 104 "EcsLexerGrammar.les"
@@ -597,6 +599,8 @@ namespace Loyc.Ecs.Parser {
 			#line default
 		}
 	
+	
+		// Strings ---------------------------------------------------------------
 		void SQString()
 		{
 			int la0;
@@ -754,6 +758,9 @@ namespace Loyc.Ecs.Parser {
 			#line default
 		}
 	
+		//@[private] rule BQStringV @{ {_verbatim=true;}
+		//	'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
+		//};
 		void BQStringN()
 		{
 			int la0;
@@ -789,6 +796,8 @@ namespace Loyc.Ecs.Parser {
 			#line default
 		}
 	
+	
+		// Identifiers and Symbols -----------------------------------------------
 		void IdStartChar()
 		{
 			Skip();
@@ -918,6 +927,7 @@ namespace Loyc.Ecs.Parser {
 			Skip();
 			IdContChars();
 		}
+	
 	
 		void CommentStart()
 		{
@@ -1062,6 +1072,7 @@ namespace Loyc.Ecs.Parser {
 				#line default
 			}
 		}
+	
 		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 	
 		void Symbol()
@@ -1089,6 +1100,7 @@ namespace Loyc.Ecs.Parser {
 		}
 		static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', '\\', '\\', '_', '_', 'a', 'z', 128, 65532);
 	
+		// detect completeness of \uABCD
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5, la6;
@@ -1169,6 +1181,8 @@ namespace Loyc.Ecs.Parser {
 			Match(LettersOrPunc_set0);
 		}
 	
+	
+		// Punctuation & operators -----------------------------------------------
 		void Comma()
 		{
 			Skip();
@@ -1198,6 +1212,7 @@ namespace Loyc.Ecs.Parser {
 			_value = S.AtSign;
 			#line default
 		}
+	
 	
 		void Operator()
 		{
@@ -1744,6 +1759,8 @@ namespace Loyc.Ecs.Parser {
 			} while (false);
 		}
 	
+	
+		// Shebang ---------------------------------------------------------------
 		void Shebang()
 		{
 			int la0;
@@ -1762,6 +1779,7 @@ namespace Loyc.Ecs.Parser {
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
+	
 		static readonly HashSet<int> IdOrKeyword_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 	
 		void IdOrKeyword()
@@ -5091,6 +5109,7 @@ namespace Loyc.Ecs.Parser {
 			}
 		}
 	
+	
 		string RestOfPPLine()
 		{
 			int la0;
@@ -5109,8 +5128,11 @@ namespace Loyc.Ecs.Parser {
 			return CharSource.Slice(start, InputPosition - start).ToString();
 			#line default
 		}
+	
 		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~', 128, 65532);
 		static readonly HashSet<int> Token_set1 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '^', '^', '|', '|', '~', '~');
+	
+		// Token -----------------------------------------------------------------
 	
 		void Token()
 		{
@@ -5119,8 +5141,7 @@ namespace Loyc.Ecs.Parser {
 			do {
 				la0 = LA0;
 				switch (la0) {
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					{
 						#line 418 "EcsLexerGrammar.les"
 						_type = TT.Newline;
@@ -5139,14 +5160,8 @@ namespace Loyc.Ecs.Parser {
 							Operator();
 					}
 					break;
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
+				case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8':
 				case '9':
 					goto matchNumber;
 				case '/':
@@ -5266,21 +5281,10 @@ namespace Loyc.Ecs.Parser {
 						BQString();
 					}
 					break;
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case '-':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-				case '~':
+				case '!': case '$': case '%': case '&':
+				case '*': case '+': case '-': case ':':
+				case '<': case '=': case '>': case '?':
+				case '^': case '|': case '~':
 					Operator();
 					break;
 				case ',':

@@ -1,4 +1,4 @@
-// Generated from LesLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.4.0
+// Generated from LesLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,10 +13,14 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-namespace Loyc.Syntax.Les {
+
+namespace Loyc.Syntax.Les
+{
 	using TT = TokenType;
 	using S = CodeSymbols;
-	public partial class LesLexer {
+
+	public partial class LesLexer
+	{
 	
 		void Newline(bool ignoreIndent = false)
 		{
@@ -80,8 +84,7 @@ namespace Loyc.Syntax.Les {
 							Skip();
 					}
 					break;
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					Newline(true);
 					break;
 				default:
@@ -96,6 +99,8 @@ namespace Loyc.Syntax.Les {
 			_value = WhitespaceTag.Value;
 		}
 	
+	
+		// Numbers ---------------------------------------------------------------
 		void DecDigits()
 		{
 			int la0, la1;
@@ -395,12 +400,10 @@ namespace Loyc.Syntax.Les {
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
-				case 'X':
-				case 'x':
+				case 'X': case 'x':
 					HexNumber();
 					break;
-				case 'B':
-				case 'b':
+				case 'B': case 'b':
 					BinNumber();
 					break;
 				default:
@@ -413,8 +416,7 @@ namespace Loyc.Syntax.Les {
 			var numberEndPosition = InputPosition;
 			// Line 72: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
 			switch (LA0) {
-			case 'F':
-			case 'f':
+			case 'F': case 'f':
 				{
 					Skip();
 					// line 72
@@ -422,8 +424,7 @@ namespace Loyc.Syntax.Les {
 					_isFloat = true;
 				}
 				break;
-			case 'D':
-			case 'd':
+			case 'D': case 'd':
 				{
 					Skip();
 					// line 73
@@ -431,8 +432,7 @@ namespace Loyc.Syntax.Les {
 					_isFloat = true;
 				}
 				break;
-			case 'M':
-			case 'm':
+			case 'M': case 'm':
 				{
 					Skip();
 					// line 74
@@ -440,16 +440,14 @@ namespace Loyc.Syntax.Les {
 					_isFloat = true;
 				}
 				break;
-			case 'Z':
-			case 'z':
+			case 'Z': case 'z':
 				{
 					Skip();
 					// line 75
 					_typeSuffix = _Z;
 				}
 				break;
-			case 'L':
-			case 'l':
+			case 'L': case 'l':
 				{
 					Skip();
 					// line 77
@@ -463,8 +461,7 @@ namespace Loyc.Syntax.Les {
 					}
 				}
 				break;
-			case 'U':
-			case 'u':
+			case 'U': case 'u':
 				{
 					Skip();
 					// line 78
@@ -483,6 +480,8 @@ namespace Loyc.Syntax.Les {
 			ParseNumberValue(numberEndPosition);
 		}
 	
+	
+		// Strings ---------------------------------------------------------------
 		void SQString()
 		{
 			int la0, la1;
@@ -582,8 +581,7 @@ namespace Loyc.Syntax.Les {
 						break;
 					case -1:
 						goto stop;
-					case '\n':
-					case '\r':
+					case '\n': case '\r':
 						Newline(true);
 						break;
 					default:
@@ -621,8 +619,7 @@ namespace Loyc.Syntax.Les {
 						break;
 					case -1:
 						goto stop2;
-					case '\n':
-					case '\r':
+					case '\n': case '\r':
 						Newline(true);
 						break;
 					default:
@@ -638,6 +635,7 @@ namespace Loyc.Syntax.Les {
 			// line 103
 			ParseStringValue(true);
 		}
+	
 	
 		void BQString()
 		{
@@ -668,11 +666,14 @@ namespace Loyc.Syntax.Les {
 			_value = ParseBQStringValue();
 		}
 	
+	
+		// Identifiers and Symbols -----------------------------------------------
 		void IdStartChar()
 		{
 			Skip();
 		}
 	
+		// FIXME: 0x80..0xFFFC makes LLLPG make a HashSet<int> of unreasonable size.
 		void IdExtLetter()
 		{
 			Check(char.IsLetter((char) LA0), "@char.IsLetter($LA->@char)");
@@ -767,6 +768,8 @@ namespace Loyc.Syntax.Les {
 			Skip();
 		}
 	
+	
+		// Punctuation & operators -----------------------------------------------
 		void OpChar()
 		{
 			Skip();
@@ -805,22 +808,10 @@ namespace Loyc.Syntax.Les {
 			// Line 143: (OpChar)*
 			for (;;) {
 				switch (LA0) {
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case '-':
-				case '.':
-				case '/':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
+				case '!': case '$': case '%': case '&':
+				case '*': case '+': case '-': case '.':
+				case '/': case ':': case '<': case '=':
+				case '>': case '?': case '^': case '|':
 				case '~':
 					OpChar();
 					break;
@@ -833,6 +824,7 @@ namespace Loyc.Syntax.Les {
 			ParseNormalOp();
 		}
 	
+		//[private] token BackslashOp @{ '\\' FancyId? {ParseBackslashOp();} };
 		void LParen()
 		{
 			var prev = LA(-1);
@@ -840,6 +832,8 @@ namespace Loyc.Syntax.Les {
 			Skip();
 		}
 	
+	
+		// Shebang ---------------------------------------------------------------
 		void Shebang()
 		{
 			int la0;
@@ -858,11 +852,14 @@ namespace Loyc.Syntax.Les {
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
+	
 		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', 'z', '|', '|', '~', '~', 128, 65532);
 		static readonly HashSet<int> NextToken_set1 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~', 128, 65532);
 		static readonly HashSet<int> NextToken_set2 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 	
-		public override Maybe<Token> NextToken()
+		// Token -----------------------------------------------------------------
+		public override 
+		Maybe<Token> NextToken()
 		{
 			int la0, la1, la2;
 			// line 159
@@ -914,8 +911,7 @@ namespace Loyc.Syntax.Les {
 							goto matchAt;
 					}
 					break;
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					{
 						// line 171
 						_type = TT.Newline;
@@ -969,14 +965,8 @@ namespace Loyc.Syntax.Les {
 							Operator();
 					}
 					break;
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
+				case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8':
 				case '9':
 					goto matchNumber;
 				case '"':
@@ -1066,20 +1056,10 @@ namespace Loyc.Syntax.Les {
 						Skip();
 					}
 					break;
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-				case '~':
+				case '!': case '$': case '%': case '&':
+				case '*': case '+': case ':': case '<':
+				case '=': case '>': case '?': case '^':
+				case '|': case '~':
 					Operator();
 					break;
 				default:
@@ -1150,14 +1130,18 @@ namespace Loyc.Syntax.Les {
 			return _current = new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, _value);
 		}
 	
-		public bool TDQStringLine()
+	
+		// Partial tokens used for syntax highlighting. An LES syntax highlighter
+		// can record the token continued in each line (''', """ or /*) call one
+		// of these rules to proces that token until it ends or the line ends.
+		public 
+		bool TDQStringLine()
 		{
 			int la0, la1, la2;
 			// Line 203: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					goto stop;
 				case '"':
 					{
@@ -1197,14 +1181,14 @@ namespace Loyc.Syntax.Les {
 			}
 		}
 	
-		public bool TSQStringLine()
+		public 
+		bool TSQStringLine()
 		{
 			int la0, la1, la2;
 			// Line 205: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					goto stop;
 				case '\'':
 					{
@@ -1244,7 +1228,8 @@ namespace Loyc.Syntax.Les {
 			}
 		}
 	
-		public bool MLCommentLine(ref int nested)
+		public 
+		bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
 			// Line 209: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*

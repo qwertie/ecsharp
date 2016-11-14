@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.4.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -14,7 +14,8 @@ using Loyc;	// optional (for IMessageSink, Symbol, etc.)
 using Loyc.Collections;	// optional (many handy interfaces & classes)
 using Loyc.Syntax.Lexing;	// For BaseLexer
 using Loyc.Syntax;	// For BaseParser<Token> and LNode
-namespace Loyc.Syntax.Les {
+namespace Loyc.Syntax.Les
+{
 	using TT = TokenType;	// Abbreviate TokenType as TT
 	using P = LesPrecedence;
 	using S = CodeSymbols;
@@ -80,13 +81,8 @@ namespace Loyc.Syntax.Les {
 				}
 				// Line 1: ( / TopExpr)
 				switch ((TT) LA0) {
-				case EOF:
-				case TT.Comma:
-				case TT.Newline:
-				case TT.RBrace:
-				case TT.RBrack:
-				case TT.RParen:
-				case TT.Semicolon:
+				case EOF: case TT.Comma: case TT.Newline: case TT.RBrace:
+				case TT.RBrack: case TT.RParen: case TT.Semicolon:
 					{ }
 					break;
 				default:
@@ -96,9 +92,7 @@ namespace Loyc.Syntax.Les {
 				// Line 89: ((TT.Comma|TT.Newline|TT.Semicolon) greedy(TT.Newline)* ( / TopExpr))*
 				for (;;) {
 					switch ((TT) LA0) {
-					case TT.Comma:
-					case TT.Newline:
-					case TT.Semicolon:
+					case TT.Comma: case TT.Newline: case TT.Semicolon:
 						{
 							end = MatchAny();
 							// Line 89: greedy(TT.Newline)*
@@ -114,13 +108,8 @@ namespace Loyc.Syntax.Les {
 							e = null;
 							// Line 1: ( / TopExpr)
 							switch ((TT) LA0) {
-							case EOF:
-							case TT.Comma:
-							case TT.Newline:
-							case TT.RBrace:
-							case TT.RBrack:
-							case TT.RParen:
-							case TT.Semicolon:
+							case EOF: case TT.Comma: case TT.Newline: case TT.RBrace:
+							case TT.RBrack: case TT.RParen: case TT.Semicolon:
 								{ }
 								break;
 							default:
@@ -129,10 +118,7 @@ namespace Loyc.Syntax.Les {
 							}
 						}
 						break;
-					case EOF:
-					case TT.RBrace:
-					case TT.RBrack:
-					case TT.RParen:
+					case EOF: case TT.RBrace: case TT.RBrack: case TT.RParen:
 						goto stop;
 					default:
 						{
@@ -141,13 +127,8 @@ namespace Loyc.Syntax.Les {
 							e = null;
 							// Line 1: ( / TopExpr)
 							switch ((TT) LA0) {
-							case EOF:
-							case TT.Comma:
-							case TT.Newline:
-							case TT.RBrace:
-							case TT.RBrack:
-							case TT.RParen:
-							case TT.Semicolon:
+							case EOF: case TT.Comma: case TT.Newline: case TT.RBrace:
+							case TT.RBrack: case TT.RParen: case TT.Semicolon:
 								{ }
 								break;
 							default:
@@ -188,10 +169,7 @@ namespace Loyc.Syntax.Les {
 			}
 			// Line 1: ( / TopExpr)
 			switch ((TT) LA0) {
-			case EOF:
-			case TT.Comma:
-			case TT.Newline:
-			case TT.Semicolon:
+			case EOF: case TT.Comma: case TT.Newline: case TT.Semicolon:
 				{ }
 				break;
 			default:
@@ -201,9 +179,7 @@ namespace Loyc.Syntax.Les {
 			// Line 105: ((TT.Comma|TT.Newline|TT.Semicolon) greedy(TT.Newline)* ( / TopExpr))*
 			for (;;) {
 				switch ((TT) LA0) {
-				case TT.Comma:
-				case TT.Newline:
-				case TT.Semicolon:
+				case TT.Comma: case TT.Newline: case TT.Semicolon:
 					{
 						end = MatchAny();
 						// Line 105: greedy(TT.Newline)*
@@ -219,10 +195,7 @@ namespace Loyc.Syntax.Les {
 						e = null;
 						// Line 1: ( / TopExpr)
 						switch ((TT) LA0) {
-						case EOF:
-						case TT.Comma:
-						case TT.Newline:
-						case TT.Semicolon:
+						case EOF: case TT.Comma: case TT.Newline: case TT.Semicolon:
 							{ }
 							break;
 						default:
@@ -240,10 +213,7 @@ namespace Loyc.Syntax.Les {
 						e = null;
 						// Line 1: ( / TopExpr)
 						switch ((TT) LA0) {
-						case EOF:
-						case TT.Comma:
-						case TT.Newline:
-						case TT.Semicolon:
+						case EOF: case TT.Comma: case TT.Newline: case TT.Semicolon:
 							{ }
 							break;
 						default:
@@ -287,21 +257,10 @@ namespace Loyc.Syntax.Les {
 			}
 			// Line 122: (Expr (TT.Colon (EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen) => )?)
 			switch ((TT) LA0) {
-			case TT.Assignment:
-			case TT.BQId:
-			case TT.BQOperator:
-			case TT.Dot:
-			case TT.Id:
-			case TT.LBrace:
-			case TT.LBrack:
-			case TT.Literal:
-			case TT.LParen:
-			case TT.LTokenLiteral:
-			case TT.NegativeLiteral:
-			case TT.NormalOp:
-			case TT.Not:
-			case TT.PrefixOp:
-			case TT.PreOrSufOp:
+			case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Dot:
+			case TT.Id: case TT.LBrace: case TT.LBrack: case TT.Literal:
+			case TT.LParen: case TT.LTokenLiteral: case TT.NegativeLiteral: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 				{
 					e = Expr(StartStmt);
 					// Line 124: (TT.Colon (EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen) => )?
@@ -324,14 +283,8 @@ namespace Loyc.Syntax.Les {
 						case TT.At:
 							{
 								switch ((TT) LA(1)) {
-								case EOF:
-								case TT.BQId:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.LTokenLiteral:
+								case EOF: case TT.BQId: case TT.Id: case TT.LBrace:
+								case TT.LBrack: case TT.Literal: case TT.LParen: case TT.LTokenLiteral:
 								case TT.NegativeLiteral:
 									goto stop;
 								default:
@@ -349,30 +302,14 @@ namespace Loyc.Syntax.Les {
 									Skip();
 							}
 							break;
-						case TT.Assignment:
-						case TT.BQOperator:
-						case TT.NormalOp:
-						case TT.Not:
-						case TT.PrefixOp:
-						case TT.PreOrSufOp:
+						case TT.Assignment: case TT.BQOperator: case TT.NormalOp: case TT.Not:
+						case TT.PrefixOp: case TT.PreOrSufOp:
 							{
 								switch ((TT) LA(1)) {
-								case EOF:
-								case TT.Assignment:
-								case TT.BQId:
-								case TT.BQOperator:
-								case TT.Dot:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.LTokenLiteral:
-								case TT.NegativeLiteral:
-								case TT.NormalOp:
-								case TT.Not:
-								case TT.PrefixOp:
-								case TT.PreOrSufOp:
+								case EOF: case TT.Assignment: case TT.BQId: case TT.BQOperator:
+								case TT.Dot: case TT.Id: case TT.LBrace: case TT.LBrack:
+								case TT.Literal: case TT.LParen: case TT.LTokenLiteral: case TT.NegativeLiteral:
+								case TT.NormalOp: case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 									goto stop;
 								default:
 									Skip();
@@ -380,20 +317,11 @@ namespace Loyc.Syntax.Les {
 								}
 							}
 							break;
-						case TT.BQId:
-						case TT.Id:
-						case TT.Literal:
-						case TT.NegativeLiteral:
+						case TT.BQId: case TT.Id: case TT.Literal: case TT.NegativeLiteral:
 							{
 								switch ((TT) LA(1)) {
-								case TT.Assignment:
-								case TT.Colon:
-								case TT.Dot:
-								case TT.Id:
-								case TT.LParen:
-								case TT.NegativeLiteral:
-								case TT.NormalOp:
-								case TT.PreOrSufOp:
+								case TT.Assignment: case TT.Colon: case TT.Dot: case TT.Id:
+								case TT.LParen: case TT.NegativeLiteral: case TT.NormalOp: case TT.PreOrSufOp:
 									goto stop;
 								case TT.LBrace:
 									{
@@ -403,14 +331,8 @@ namespace Loyc.Syntax.Les {
 											Skip();
 									}
 									break;
-								case EOF:
-								case TT.Comma:
-								case TT.LBrack:
-								case TT.Newline:
-								case TT.Not:
-								case TT.RBrace:
-								case TT.RBrack:
-								case TT.RParen:
+								case EOF: case TT.Comma: case TT.LBrack: case TT.Newline:
+								case TT.Not: case TT.RBrace: case TT.RBrack: case TT.RParen:
 								case TT.Semicolon:
 									goto stop;
 								default:
@@ -424,26 +346,11 @@ namespace Loyc.Syntax.Les {
 						case TT.LBrace:
 							{
 								switch ((TT) LA(1)) {
-								case EOF:
-								case TT.Assignment:
-								case TT.At:
-								case TT.BQId:
-								case TT.BQOperator:
-								case TT.Comma:
-								case TT.Dot:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.LTokenLiteral:
-								case TT.NegativeLiteral:
-								case TT.Newline:
-								case TT.NormalOp:
-								case TT.Not:
-								case TT.PrefixOp:
-								case TT.PreOrSufOp:
-								case TT.RBrace:
+								case EOF: case TT.Assignment: case TT.At: case TT.BQId:
+								case TT.BQOperator: case TT.Comma: case TT.Dot: case TT.Id:
+								case TT.LBrace: case TT.LBrack: case TT.Literal: case TT.LParen:
+								case TT.LTokenLiteral: case TT.NegativeLiteral: case TT.Newline: case TT.NormalOp:
+								case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.RBrace:
 								case TT.Semicolon:
 									goto stop;
 								default:
@@ -455,26 +362,11 @@ namespace Loyc.Syntax.Les {
 						case TT.LBrack:
 							{
 								switch ((TT) LA(1)) {
-								case EOF:
-								case TT.Assignment:
-								case TT.At:
-								case TT.BQId:
-								case TT.BQOperator:
-								case TT.Comma:
-								case TT.Dot:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.LTokenLiteral:
-								case TT.NegativeLiteral:
-								case TT.Newline:
-								case TT.NormalOp:
-								case TT.Not:
-								case TT.PrefixOp:
-								case TT.PreOrSufOp:
-								case TT.RBrack:
+								case EOF: case TT.Assignment: case TT.At: case TT.BQId:
+								case TT.BQOperator: case TT.Comma: case TT.Dot: case TT.Id:
+								case TT.LBrace: case TT.LBrack: case TT.Literal: case TT.LParen:
+								case TT.LTokenLiteral: case TT.NegativeLiteral: case TT.Newline: case TT.NormalOp:
+								case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.RBrack:
 								case TT.Semicolon:
 									goto stop;
 								default:
@@ -486,26 +378,11 @@ namespace Loyc.Syntax.Les {
 						case TT.LParen:
 							{
 								switch ((TT) LA(1)) {
-								case EOF:
-								case TT.Assignment:
-								case TT.At:
-								case TT.BQId:
-								case TT.BQOperator:
-								case TT.Comma:
-								case TT.Dot:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.LTokenLiteral:
-								case TT.NegativeLiteral:
-								case TT.Newline:
-								case TT.NormalOp:
-								case TT.Not:
-								case TT.PrefixOp:
-								case TT.PreOrSufOp:
-								case TT.RParen:
+								case EOF: case TT.Assignment: case TT.At: case TT.BQId:
+								case TT.BQOperator: case TT.Comma: case TT.Dot: case TT.Id:
+								case TT.LBrace: case TT.LBrack: case TT.Literal: case TT.LParen:
+								case TT.LTokenLiteral: case TT.NegativeLiteral: case TT.Newline: case TT.NormalOp:
+								case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.RParen:
 								case TT.Semicolon:
 									goto stop;
 								default:
@@ -514,13 +391,8 @@ namespace Loyc.Syntax.Les {
 								}
 							}
 							break;
-						case EOF:
-						case TT.Comma:
-						case TT.Newline:
-						case TT.RBrace:
-						case TT.RBrack:
-						case TT.RParen:
-						case TT.Semicolon:
+						case EOF: case TT.Comma: case TT.Newline: case TT.RBrace:
+						case TT.RBrack: case TT.RParen: case TT.Semicolon:
 							goto stop;
 						default:
 							Skip();
@@ -530,22 +402,10 @@ namespace Loyc.Syntax.Les {
 				stop:;
 					// Line 129: (TopExpr | (EOF|TT.Comma|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen|TT.Semicolon) => )
 					switch ((TT) LA0) {
-					case TT.Assignment:
-					case TT.At:
-					case TT.BQId:
-					case TT.BQOperator:
-					case TT.Dot:
-					case TT.Id:
-					case TT.LBrace:
-					case TT.LBrack:
-					case TT.Literal:
-					case TT.LParen:
-					case TT.LTokenLiteral:
-					case TT.NegativeLiteral:
-					case TT.NormalOp:
-					case TT.Not:
-					case TT.PrefixOp:
-					case TT.PreOrSufOp:
+					case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
+					case TT.Dot: case TT.Id: case TT.LBrace: case TT.LBrack:
+					case TT.Literal: case TT.LParen: case TT.LTokenLiteral: case TT.NegativeLiteral:
+					case TT.NormalOp: case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 						e = TopExpr();
 						break;
 					default:
@@ -582,26 +442,11 @@ namespace Loyc.Syntax.Les {
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrace) {
 					switch ((TT) LA(1)) {
-					case TT.Assignment:
-					case TT.At:
-					case TT.BQId:
-					case TT.BQOperator:
-					case TT.Comma:
-					case TT.Dot:
-					case TT.Id:
-					case TT.LBrace:
-					case TT.LBrack:
-					case TT.Literal:
-					case TT.LParen:
-					case TT.LTokenLiteral:
-					case TT.NegativeLiteral:
-					case TT.Newline:
-					case TT.NormalOp:
-					case TT.Not:
-					case TT.PrefixOp:
-					case TT.PreOrSufOp:
-					case TT.RBrace:
-					case TT.Semicolon:
+					case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
+					case TT.Comma: case TT.Dot: case TT.Id: case TT.LBrace:
+					case TT.LBrack: case TT.Literal: case TT.LParen: case TT.LTokenLiteral:
+					case TT.NegativeLiteral: case TT.Newline: case TT.NormalOp: case TT.Not:
+					case TT.PrefixOp: case TT.PreOrSufOp: case TT.RBrace: case TT.Semicolon:
 						BracesWithContinuators(ref args);
 						break;
 					}
@@ -713,9 +558,7 @@ namespace Loyc.Syntax.Les {
 				// Line 189: greedy( &{CanParse(context, $LI, out prec)} ( (TT.Assignment|TT.Dot|TT.NormalOp) (TT.Newline)* | &{(TT) LA($LI + 1) != TT.Newline} TT.Colon | TT.Id (&{op.EndIndex == LT0.StartIndex} (TT.Assignment|TT.Dot|TT.NormalOp) / ) ) Expr | &{context.CanParse(P.Add)} TT.NegativeLiteral | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp | &{context.CanParse(P.Primary)} FinishPrimaryExpr )*
 				for (;;) {
 					switch ((TT) LA0) {
-					case TT.Assignment:
-					case TT.Dot:
-					case TT.NormalOp:
+					case TT.Assignment: case TT.Dot: case TT.NormalOp:
 						{
 							if (CanParse(context, 0, out prec))
 								goto matchExpr;
@@ -769,8 +612,8 @@ namespace Loyc.Syntax.Les {
 						break;
 					case TT.LBrace:
 						{
-							if (_allowBlockCalls) {
-								if (context.CanParse(P.Primary))
+							if (context.CanParse(P.Primary)) {
+								if (_allowBlockCalls)
 									e = FinishPrimaryExpr(e);
 								else
 									goto stop;
@@ -778,8 +621,7 @@ namespace Loyc.Syntax.Les {
 								goto stop;
 						}
 						break;
-					case TT.LBrack:
-					case TT.Not:
+					case TT.LBrack: case TT.Not:
 						{
 							if (context.CanParse(P.Primary))
 								e = FinishPrimaryExpr(e);
@@ -797,9 +639,7 @@ namespace Loyc.Syntax.Les {
 						Symbol opName;
 						// Line 191: ( (TT.Assignment|TT.Dot|TT.NormalOp) (TT.Newline)* | &{(TT) LA($LI + 1) != TT.Newline} TT.Colon | TT.Id (&{op.EndIndex == LT0.StartIndex} (TT.Assignment|TT.Dot|TT.NormalOp) / ) )
 						switch ((TT) LA0) {
-						case TT.Assignment:
-						case TT.Dot:
-						case TT.NormalOp:
+						case TT.Assignment: case TT.Dot: case TT.NormalOp:
 							{
 								op = MatchAny();
 								// Line 191: (TT.Newline)*
@@ -920,26 +760,11 @@ namespace Loyc.Syntax.Les {
 				if (la0 == TT.LBrace) {
 					if (_allowBlockCalls) {
 						switch ((TT) LA(1)) {
-						case TT.Assignment:
-						case TT.At:
-						case TT.BQId:
-						case TT.BQOperator:
-						case TT.Comma:
-						case TT.Dot:
-						case TT.Id:
-						case TT.LBrace:
-						case TT.LBrack:
-						case TT.Literal:
-						case TT.LParen:
-						case TT.LTokenLiteral:
-						case TT.NegativeLiteral:
-						case TT.Newline:
-						case TT.NormalOp:
-						case TT.Not:
-						case TT.PrefixOp:
-						case TT.PreOrSufOp:
-						case TT.RBrace:
-						case TT.Semicolon:
+						case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
+						case TT.Comma: case TT.Dot: case TT.Id: case TT.LBrace:
+						case TT.LBrack: case TT.Literal: case TT.LParen: case TT.LTokenLiteral:
+						case TT.NegativeLiteral: case TT.Newline: case TT.NormalOp: case TT.Not:
+						case TT.PrefixOp: case TT.PreOrSufOp: case TT.RBrace: case TT.Semicolon:
 							{
 								endIndex = BracesWithContinuators(ref args);
 								// line 236
@@ -973,12 +798,8 @@ namespace Loyc.Syntax.Les {
 			LNode result = default(LNode);
 			// Line 246: ((TT.Assignment|TT.BQOperator|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr / Particle)
 			switch ((TT) LA0) {
-			case TT.Assignment:
-			case TT.BQOperator:
-			case TT.NormalOp:
-			case TT.Not:
-			case TT.PrefixOp:
-			case TT.PreOrSufOp:
+			case TT.Assignment: case TT.BQOperator: case TT.NormalOp: case TT.Not:
+			case TT.PrefixOp: case TT.PreOrSufOp:
 				{
 					op = MatchAny();
 					e = Expr(PrefixPrecedenceOf(op));
@@ -1005,16 +826,14 @@ namespace Loyc.Syntax.Les {
 			TokenTree tree = default(TokenTree);
 			// Line 261: ( (TT.BQId|TT.Id) | (TT.Literal|TT.NegativeLiteral) | TT.LTokenLiteral TokenTree TT.RBrace | BracedBlock | TT.LBrack ExprList TT.RBrack | TT.LParen ExprList TT.RParen )
 			switch ((TT) LA0) {
-			case TT.BQId:
-			case TT.Id:
+			case TT.BQId: case TT.Id:
 				{
 					var id = MatchAny();
 					// line 262
 					result = F.Id(id).SetStyle(id.Style);
 				}
 				break;
-			case TT.Literal:
-			case TT.NegativeLiteral:
+			case TT.Literal: case TT.NegativeLiteral:
 				{
 					var lit = MatchAny();
 					// line 264
@@ -1090,14 +909,9 @@ namespace Loyc.Syntax.Les {
 			// Line 297: nongreedy((TT.LBrace|TT.LBrack|TT.LParen) TokenTree (TT.RBrace|TT.RBrack|TT.RParen) / ~(EOF))*
 			for (;;) {
 				switch ((TT) LA0) {
-				case EOF:
-				case TT.RBrace:
-				case TT.RBrack:
-				case TT.RParen:
+				case EOF: case TT.RBrace: case TT.RBrack: case TT.RParen:
 					goto stop;
-				case TT.LBrace:
-				case TT.LBrack:
-				case TT.LParen:
+				case TT.LBrace: case TT.LBrack: case TT.LParen:
 					{
 						la1 = (TT) LA(1);
 						if (la1 != (TT) EOF) {

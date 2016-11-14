@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.4.0
+// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,25 +13,34 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
+
 namespace Loyc.Syntax.Les {
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
+
+	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 	#pragma warning disable 162, 642
-	public partial class LesParser {
+
+	public partial class LesParser
+	{
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>)) {
 			var endMarker = default(TT);
 			return (ExprList(ref endMarker, list));
 		}
-		void CheckEndMarker(ref TokenType endMarker, ref Token end) {
+	
+		void CheckEndMarker(ref TokenType endMarker, ref Token end)
+		{
 			if ((endMarker != end.Type())) {
 				if ((endMarker == default(TT))) {
 					endMarker = end.Type();
 				} else {
-					Error(-1, "Unexpected separator: {0} should be {1}", ToString(end.TypeInt), ToString((int) endMarker));
+					Error(-1, "Unexpected separator: {0} should be {1}", 
+					ToString(end.TypeInt), ToString((int) endMarker));
 				}
 			}
 		}
+	
 	
 		public VList<LNode> StmtList()
 		{
@@ -41,6 +50,8 @@ namespace Loyc.Syntax.Les {
 			return result;
 		}
 	
+		// A sequence of expressions separated by commas OR semicolons.
+		// The `ref endMarker` parameter tells the caller if semicolons were used.
 		public virtual VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
 		{
 			TT la0;
@@ -52,12 +63,8 @@ namespace Loyc.Syntax.Les {
 			}
 			// Line 1: ( / TopExpr)
 			switch ((TT) LA0) {
-			case EOF:
-			case TT.Comma:
-			case TT.RBrace:
-			case TT.RBrack:
-			case TT.RParen:
-			case TT.Semicolon:
+			case EOF: case TT.Comma: case TT.RBrace: case TT.RBrack:
+			case TT.RParen: case TT.Semicolon:
 				{ }
 				break;
 			default:
@@ -74,12 +81,8 @@ namespace Loyc.Syntax.Les {
 					CheckEndMarker(ref endMarker, ref end);
 					// Line 63: ( / TopExpr)
 					switch ((TT) LA0) {
-					case EOF:
-					case TT.Comma:
-					case TT.RBrace:
-					case TT.RBrack:
-					case TT.RParen:
-					case TT.Semicolon:
+					case EOF: case TT.Comma: case TT.RBrace: case TT.RBrack:
+					case TT.RParen: case TT.Semicolon:
 						// line 63
 						e = null;
 						break;
@@ -166,32 +169,17 @@ namespace Loyc.Syntax.Les {
 			}
 			// Line 99: (Expr / TT.Id Expr (Particle)*)
 			switch ((TT) LA0) {
-			case TT.Assignment:
-			case TT.BQOperator:
-			case TT.Dot:
-			case TT.NormalOp:
-			case TT.Not:
-			case TT.PrefixOp:
-			case TT.PreOrSufOp:
+			case TT.Assignment: case TT.BQOperator: case TT.Dot: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 				e = Expr(StartStmt);
 				break;
 			case TT.Id:
 				{
 					switch ((TT) LA(1)) {
-					case EOF:
-					case TT.Assignment:
-					case TT.BQOperator:
-					case TT.Comma:
-					case TT.Dot:
-					case TT.LBrack:
-					case TT.LParen:
-					case TT.NormalOp:
-					case TT.Not:
-					case TT.PreOrSufOp:
-					case TT.RBrace:
-					case TT.RBrack:
-					case TT.RParen:
-					case TT.Semicolon:
+					case EOF: case TT.Assignment: case TT.BQOperator: case TT.Comma:
+					case TT.Dot: case TT.LBrack: case TT.LParen: case TT.NormalOp:
+					case TT.Not: case TT.PreOrSufOp: case TT.RBrace: case TT.RBrack:
+					case TT.RParen: case TT.Semicolon:
 						e = Expr(StartStmt);
 						break;
 					default:
@@ -203,13 +191,8 @@ namespace Loyc.Syntax.Les {
 							// Line 104: (Particle)*
 							for (;;) {
 								switch ((TT) LA0) {
-								case TT.At:
-								case TT.Id:
-								case TT.LBrace:
-								case TT.LBrack:
-								case TT.Literal:
-								case TT.LParen:
-								case TT.SpaceLParen:
+								case TT.At: case TT.Id: case TT.LBrace: case TT.LBrack:
+								case TT.Literal: case TT.LParen: case TT.SpaceLParen:
 									{
 										// line 105
 										if (((TT) LA0 == TT.LParen)) {
@@ -241,6 +224,14 @@ namespace Loyc.Syntax.Les {
 			return e.PlusAttrsBefore(attrs);
 		}
 	
+	
+		// Types of (normal) expressions:
+		// - particles: ids, literals, (parenthesized), {braced}
+		// - ++prefix_operators
+		// - infix + operators
+		// - suffix_operators++
+		// - Special primary expressions:
+		//   method_calls(with arguments), indexers[with indexes], generic!arguments
 		LNode Expr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -251,10 +242,7 @@ namespace Loyc.Syntax.Les {
 			// Line 131: greedy( &{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp )*
 			for (;;) {
 				switch ((TT) LA0) {
-				case TT.Assignment:
-				case TT.BQOperator:
-				case TT.Dot:
-				case TT.NormalOp:
+				case TT.Assignment: case TT.BQOperator: case TT.Dot: case TT.NormalOp:
 					{
 						if (context.CanParse(prec = InfixPrecedenceOf(LT(0)))) {
 							// line 132
@@ -269,9 +257,7 @@ namespace Loyc.Syntax.Les {
 							goto stop;
 					}
 					break;
-				case TT.LBrack:
-				case TT.LParen:
-				case TT.Not:
+				case TT.LBrack: case TT.LParen: case TT.Not:
 					{
 						if (context.CanParse(P.Primary))
 							e = FinishPrimaryExpr(e);
@@ -298,6 +284,8 @@ namespace Loyc.Syntax.Les {
 			return e;
 		}
 	
+	
+		// Helper rule that parses one of the syntactically special primary expressions
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
@@ -355,6 +343,7 @@ namespace Loyc.Syntax.Les {
 			return e;
 		}
 	
+	
 		LNode PrefixExpr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -362,13 +351,8 @@ namespace Loyc.Syntax.Les {
 			Token t = default(Token);
 			// Line 175: ((TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
 			switch ((TT) LA0) {
-			case TT.Assignment:
-			case TT.BQOperator:
-			case TT.Dot:
-			case TT.NormalOp:
-			case TT.Not:
-			case TT.PrefixOp:
-			case TT.PreOrSufOp:
+			case TT.Assignment: case TT.BQOperator: case TT.Dot: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 				{
 					t = MatchAny();
 					e = Expr(PrefixPrecedenceOf(t));
@@ -383,6 +367,15 @@ namespace Loyc.Syntax.Les {
 			return result;
 		}
 	
+	
+		// An Particle is:
+		// - an (expression) in parenthesis or a tuple
+		// - a literal or simple identifier
+		//   - simple calls are also handled here, as a space optimization
+		// - a token literal @{ ... }
+		// - a prefix operator followed by an Expr
+		// - a { block } in braces
+		// - a [ list  ] in square brackets
 		LNode Particle()
 		{
 			TT la0;
@@ -442,8 +435,7 @@ namespace Loyc.Syntax.Les {
 					result = F.Call(S.Array, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);
 				}
 				break;
-			case TT.LParen:
-			case TT.SpaceLParen:
+			case TT.LParen: case TT.SpaceLParen:
 				{
 					// line 205
 					var endMarker = default(TT);
@@ -478,6 +470,7 @@ namespace Loyc.Syntax.Les {
 			return result;
 		}
 	
+	
 		TokenTree TokenTree()
 		{
 			TT la1;
@@ -487,15 +480,9 @@ namespace Loyc.Syntax.Les {
 			// Line 232: nongreedy((TT.LBrace|TT.LBrack|TT.LParen|TT.SpaceLParen) TokenTree (TT.RBrace|TT.RBrack|TT.RParen) / ~(EOF))*
 			for (;;) {
 				switch ((TT) LA0) {
-				case EOF:
-				case TT.RBrace:
-				case TT.RBrack:
-				case TT.RParen:
+				case EOF: case TT.RBrace: case TT.RBrack: case TT.RParen:
 					goto stop;
-				case TT.LBrace:
-				case TT.LBrack:
-				case TT.LParen:
-				case TT.SpaceLParen:
+				case TT.LBrace: case TT.LBrack: case TT.LParen: case TT.SpaceLParen:
 					{
 						la1 = (TT) LA(1);
 						if (la1 != (TT) EOF) {

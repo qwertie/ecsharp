@@ -25,7 +25,7 @@ namespace Util.UI
 			{ _action = action; _done = false; _finishGroup = finishGroup; }
 			DoOrUndo _action;
 			bool _done; // debug check
-			// To group a series of actions into one undo command, _groupSeparator should 
+			// To group a series of actions into one undo command, _finishGroup should 
 			// be false on all actions except the final one.
 			bool _finishGroup;
 			public bool FinishGroup { get { return _finishGroup; } }

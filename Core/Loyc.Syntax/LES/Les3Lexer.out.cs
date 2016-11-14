@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 1.9.4.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 1.9.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,7 +13,8 @@ using System.Diagnostics;
 using Loyc;	// optional (for IMessageSink, Symbol, etc.)
 using Loyc.Collections;	// optional (many handy interfaces & classes)
 using Loyc.Syntax.Lexing;	// For BaseLexer
-namespace Loyc.Syntax.Les {
+namespace Loyc.Syntax.Les
+{
 	using TT = TokenType;	// Abbreviate TokenType as TT
 	using P = LesPrecedence;
 	using S = CodeSymbols;
@@ -87,9 +88,7 @@ namespace Loyc.Syntax.Les {
 							Skip();
 					}
 					break;
-				case -1:
-				case '\n':
-				case '\r':
+				case -1: case '\n': case '\r':
 					goto stop;
 				default:
 					Skip();
@@ -135,8 +134,7 @@ namespace Loyc.Syntax.Les {
 							Skip();
 					}
 					break;
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					Newline(true);
 					break;
 				default:
@@ -168,12 +166,10 @@ namespace Loyc.Syntax.Les {
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
-				case 'X':
-				case 'x':
+				case 'X': case 'x':
 					HexNumber();
 					break;
-				case 'B':
-				case 'b':
+				case 'B': case 'b':
 					BinNumber();
 					break;
 				default:
@@ -554,8 +550,7 @@ namespace Loyc.Syntax.Les {
 						break;
 					case -1:
 						goto stop;
-					case '\n':
-					case '\r':
+					case '\n': case '\r':
 						Newline(true);
 						break;
 					default:
@@ -593,8 +588,7 @@ namespace Loyc.Syntax.Les {
 						break;
 					case -1:
 						goto stop2;
-					case '\n':
-					case '\r':
+					case '\n': case '\r':
 						Newline(true);
 						break;
 					default:
@@ -647,22 +641,10 @@ namespace Loyc.Syntax.Les {
 			// Line 114: ([!%&*+\--/:<-?^|~])*
 			for (;;) {
 				switch (LA0) {
-				case '!':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case '-':
-				case '.':
-				case '/':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-				case '~':
+				case '!': case '%': case '&': case '*':
+				case '+': case '-': case '.': case '/':
+				case ':': case '<': case '=': case '>':
+				case '?': case '^': case '|': case '~':
 					Skip();
 					break;
 				default:
@@ -739,7 +721,7 @@ namespace Loyc.Syntax.Les {
 				break;
 			match1:
 				{
-					var old_startPosition_0 = _startPosition;
+					var old_startPosition_10 = _startPosition;
 					try {
 						_startPosition = InputPosition;
 						// Line 134: (TQString / DQString)
@@ -757,7 +739,7 @@ namespace Loyc.Syntax.Les {
 						PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
 						return _value = ParseLiteral2(idtext, value.ToString(), false);
 					} finally {
-						_startPosition = old_startPosition_0;
+						_startPosition = old_startPosition_10;
 					}
 				}
 			} while (false);
@@ -899,58 +881,19 @@ namespace Loyc.Syntax.Les {
 						value = Id();
 					}
 					break;
-				case 'A':
-				case 'B':
-				case 'C':
-				case 'D':
-				case 'E':
-				case 'F':
-				case 'G':
-				case 'H':
-				case 'I':
-				case 'J':
-				case 'K':
-				case 'L':
-				case 'M':
-				case 'N':
-				case 'O':
-				case 'P':
-				case 'Q':
-				case 'R':
-				case 'S':
-				case 'T':
-				case 'U':
-				case 'V':
-				case 'W':
-				case 'X':
-				case 'Y':
-				case 'Z':
-				case '_':
-				case 'a':
-				case 'b':
-				case 'c':
-				case 'd':
-				case 'e':
-				case 'f':
-				case 'g':
-				case 'h':
-				case 'i':
-				case 'j':
-				case 'k':
-				case 'l':
-				case 'm':
-				case 'n':
-				case 'o':
-				case 'p':
-				case 'q':
-				case 'r':
-				case 's':
-				case 't':
-				case 'u':
-				case 'v':
-				case 'w':
-				case 'x':
-				case 'y':
+				case 'A': case 'B': case 'C': case 'D':
+				case 'E': case 'F': case 'G': case 'H':
+				case 'I': case 'J': case 'K': case 'L':
+				case 'M': case 'N': case 'O': case 'P':
+				case 'Q': case 'R': case 'S': case 'T':
+				case 'U': case 'V': case 'W': case 'X':
+				case 'Y': case 'Z': case '_': case 'a':
+				case 'b': case 'c': case 'd': case 'e':
+				case 'f': case 'g': case 'h': case 'i':
+				case 'j': case 'k': case 'l': case 'm':
+				case 'n': case 'o': case 'p': case 'q':
+				case 'r': case 's': case 't': case 'u':
+				case 'v': case 'w': case 'x': case 'y':
 				case 'z':
 					{
 						// line 179
@@ -958,8 +901,7 @@ namespace Loyc.Syntax.Les {
 						value = Id();
 					}
 					break;
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					{
 						// line 180
 						_type = TT.Newline;
@@ -1004,16 +946,9 @@ namespace Loyc.Syntax.Les {
 							value = Operator();
 					}
 					break;
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
+				case '0': case '1': case '2': case '3':
+				case '4': case '5': case '6': case '7':
+				case '8': case '9':
 					goto matchNumber;
 				case '.':
 					{
@@ -1155,20 +1090,10 @@ namespace Loyc.Syntax.Les {
 							_brackStack.Pop();
 					}
 					break;
-				case '!':
-				case '$':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-				case '~':
+				case '!': case '$': case '%': case '&':
+				case '*': case '+': case ':': case '<':
+				case '=': case '>': case '?': case '^':
+				case '|': case '~':
 					value = Operator();
 					break;
 				default:
@@ -1238,8 +1163,7 @@ namespace Loyc.Syntax.Les {
 			// Line 213: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					goto stop;
 				case '"':
 					{
@@ -1285,8 +1209,7 @@ namespace Loyc.Syntax.Les {
 			// Line 216: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
-				case '\n':
-				case '\r':
+				case '\n': case '\r':
 					goto stop;
 				case '\'':
 					{
@@ -1431,6 +1354,5 @@ namespace Loyc.Syntax.Les {
 				return false;
 			return true;
 		}
-	}
-	;
+	} ;
 }	// braces around the rest of the file are optional
