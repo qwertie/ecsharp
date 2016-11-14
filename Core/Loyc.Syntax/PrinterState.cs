@@ -76,8 +76,11 @@ namespace Loyc.Syntax.Impl
 		public string IndentString;
 		public string NewlineString;
 		private int _lineStartIndex;
+		private int _lineStartAfterIndent;
 		public int LineStartIndex { get { return _lineStartIndex; } }
 		public int IndexInCurrentLine { get { return S.Length - _lineStartIndex; } }
+		public int IndexInCurrentLineAfterIndent { get { return S.Length - _lineStartAfterIndent; } }
+		public bool AtStartOfLine { get { return S.Length == _lineStartAfterIndent; } }
 		private InternalList<Revokable> _newlines;
 
 		public PrinterState(StringBuilder s, string indent = "\t", string newline = "\n")
@@ -87,6 +90,7 @@ namespace Loyc.Syntax.Impl
 			IndentString = indent;
 			NewlineString = newline;
 			_lineStartIndex = 0;
+			_lineStartAfterIndent = 0;
 			LineNo = 1;
 			_newlines = InternalList<Revokable>.Empty;
 		}
@@ -109,7 +113,7 @@ namespace Loyc.Syntax.Impl
 		public int Length { get { return S.Length; } }
 
 		public Checkpoint GetCheckpoint() { 
-			return new Checkpoint { _oldLineStart = _lineStartIndex, _oldLineNo = LineNo };
+			return new Checkpoint { _oldLineStart = _lineStartIndex, _oldLineNo = LineNo, _oldLineStartAfterIndent = _lineStartAfterIndent };
 		}
 
 		/// <summary>Writes a newline and the appropriate amount of indentation afterward.</summary>
@@ -128,6 +132,7 @@ namespace Loyc.Syntax.Impl
 			_lineStartIndex = S.Length;
 			for (int i = 0; i < IndentLevel; i++)
 				S.Append(IndentString);
+			_lineStartAfterIndent = S.Length;
 			_newlines.Add(r);
 			return cp;
 		}
@@ -145,32 +150,52 @@ namespace Loyc.Syntax.Impl
 			int lengthAfterCP = S.Length - cp._oldLineStart;
 			// Figure out which newlines we can revoke and what the total line 
 			// length would be if they were revoked
-			int newlinesCount = _newlines.Count;
 			int i0;
 			bool any = false;
-			for (i0 = newlinesCount - 1; i0 >= 0 && _newlines[i0]._index >= cp._oldLineStart; i0--) {
+			for (i0 = _newlines.Count; i0 > 0 && _newlines[i0 - 1]._index >= cp._oldLineStart; i0--) {
 				lengthAfterCP -= _newlines[i0].Length;
 				any = true;
 			}
 
 			if (any) {
 				if (lengthAfterCP <= maxLineWidth) {
-					for (int i = newlinesCount - 1; i > i0; i--) {
-						Revoke(_newlines[i]);
-						_newlines.RemoveAt(i);
-					}
+					int count = RevokeNewlinesStartingAtIndex(i0);
 					Debug.Assert(cp._oldLineNo == LineNo);
 					Debug.Assert(cp._oldLineStart == _lineStartIndex);
-					return -(newlinesCount - 1 - i0);
+					_lineStartAfterIndent = cp._oldLineStartAfterIndent;
+					return -count;
 				} else {
 					// We have decided not to revoke the newest newlines; this means
 					// we can't revoke older ones later, since Revoke() does not 
 					// support revoking some recent newlines and not others.
-					_newlines.Clear();
-					return newlinesCount;
+					return CommitNewlines();
 				}
 			}
 			return 0;
+		}
+
+		public int CommitNewlines()
+		{
+			int count = _newlines.Count;
+			_newlines.Clear();
+			return count;
+		}
+
+		public int RevokeNewlinesSince(Checkpoint cp)
+		{
+			int i0;
+			for (i0 = _newlines.Count; i0 > 0 && _newlines[i0 - 1]._index >= cp._oldLineStart; i0--) { }
+			return RevokeNewlinesStartingAtIndex(i0);
+		}
+
+		private int RevokeNewlinesStartingAtIndex(int i0)
+		{
+			int count = _newlines.Count - i0;
+			for (int i = _newlines.Count - 1; i >= i0; i--) {
+				Revoke(_newlines[i]);
+				_newlines.RemoveAt(i);
+			}
+			return count;
 		}
 
 		/// <summary>Revokes (deletes) the last newline created, and its indent.</summary>
@@ -202,6 +227,7 @@ namespace Loyc.Syntax.Impl
 		public struct Checkpoint
 		{
 			internal int _oldLineStart; // at start of line
+			internal int _oldLineStartAfterIndent;
 			internal int _oldLineNo;
 			public int LineNo { get { return _oldLineNo; } }
 		}

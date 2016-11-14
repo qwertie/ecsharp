@@ -87,6 +87,7 @@ namespace Loyc.Ecs
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
 			d[S.CsRawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
+			d[S.CsPPRawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
 			d[S.Assembly] = OpenDelegate<StatementPrinter>("AutoPrintAssemblyAttribute");
 			return d;
 		}
@@ -128,7 +129,7 @@ namespace Loyc.Ecs
 						using (WithFlags(_flags | Ambiguity.NoParentheses)) {
 							var result = printer(this);
 							if (result != SPResult.Fail) {
-								PrintTrivia(suffixTrivia: true, needSemicolon: result == SPResult.NeedSemicolon);
+								PrintTrivia(trailingTrivia: true, needSemicolon: result == SPResult.NeedSemicolon);
 								return;
 							}
 						}
@@ -148,7 +149,7 @@ namespace Loyc.Ecs
 			}
 
 			PrintCurrentExpr();
-			PrintTrivia(suffixTrivia: true, needSemicolon: true);
+			PrintTrivia(trailingTrivia: true, needSemicolon: true);
 		}
 
 		private bool AutoPrintMacroBlockCall()
@@ -242,7 +243,14 @@ namespace Loyc.Ecs
 			if (!ObeyRawText)
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs));
+
+			bool isPP = _n.Name == S.CsPPRawText;
+			if (isPP && _out.LastCharWritten != '\n')
+				_out.Newline();
 			WriteRawText(GetRawText(_n));
+			if (isPP)
+				_out.Newline(pending: true);
+
 			return SPResult.NeedSuffixTrivia;
 		}
 
@@ -405,28 +413,34 @@ namespace Loyc.Ecs
 
 		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null, BraceMode mode = BraceMode.Normal)
 		{
-			int oldLineNum = _out.LineNumber;
-			if (mode != BraceMode.BlockStmt)
-				PrintTrivia(body, trailingTrivia: false);
-			else
-				G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
-			if (oldLineNum == _out.LineNumber && beforeBrace != 0)
-				NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
-			_out.Write('{', true);
-			// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
-			PrintTrivia(body.Target, trailingTrivia: true);
+			using (WithFlags(CheckOneLiner(_flags, body)))
+			{
+				int oldLineNum = _out.LineNumber;
+				if (mode != BraceMode.BlockStmt)
+					PrintTrivia(body, trailingTrivia: false);
+				else
+					G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
+				if (oldLineNum == _out.LineNumber && beforeBrace != 0)
+					NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
+				_out.Write('{', true);
+				// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
+				PrintTrivia(body.Target, trailingTrivia: true);
 
-			using (WithSpace(spaceName)) {
-				if (mode == BraceMode.Initializer || mode == BraceMode.Enum) {
-					Debug.Assert(!skipFirstStmt);
-					PrintExpressionsInBraces(body, mode == BraceMode.Initializer);
-				} else
-					PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
+				using (WithSpace(spaceName))
+				{
+					if (mode == BraceMode.Initializer || mode == BraceMode.Enum)
+					{
+						Debug.Assert(!skipFirstStmt);
+						PrintExpressionsInBraces(body, mode == BraceMode.Initializer);
+					}
+					else
+						PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
+				}
+
+				_out.Write('}', true);
+				if (mode != BraceMode.BlockStmt)
+					PrintTrivia(body, trailingTrivia: true);
 			}
-
-			_out.Write('}', true);
-			if (mode != BraceMode.BlockStmt)
-				PrintTrivia(body, trailingTrivia: true);
 		}
 
 		private void PrintStatementsInBraces(LNode braces, bool skipFirstStmt = false, bool newlinesByDefault = true)
@@ -435,7 +449,15 @@ namespace Loyc.Ecs
 			using (Indented)
 				for (int i = (skipFirstStmt ? 1 : 0), c = braces.ArgCount; i < c; i++) {
 					var stmt = braces.Args[i];
-					if (NewlineOrSpace(NewlineOpt.Default, !newlinesByDefault))
+					// Bug fix: check if '\n' was just written to avoid a space before 'g' in
+					// [#trivia_trailing(#trivia_newline)] f();
+					// [#trivia_appendStatement] g();
+					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt) || !Newline(NewlineOpt.Default)) {
+						if (_out.LastCharWritten != '\n')
+							Space(SpaceOpt.Default);
+						else
+							anyNewlines = true;
+					} else
 						anyNewlines = true;
 					PrintStmt(stmt, i + 1 == c ? Ambiguity.FinalStmt : 0);
 				}
@@ -456,7 +478,7 @@ namespace Loyc.Ecs
 							WriteThenSpace(',', SpaceOpt.AfterComma);
 						PrintExpr(body.Args[i], StartExpr);
 					}
-				} else {
+				} else { // enum body
 					for (; i < c; i++)
 					{
 						var stmt = body.Args[i];
@@ -514,8 +536,10 @@ namespace Loyc.Ecs
 			var ifClause = PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
+			PrintTrivia(args, trailingTrivia: false);
 			PrintArgList(args.Args, ParenFor.MethodDecl, true, OmitMissingArguments);
-	
+			PrintTrivia(args, trailingTrivia: true);
+
 			PrintWhereClauses(name);
 			
 			// If this is a constructor where the first statement is this(...) or 
@@ -536,7 +560,7 @@ namespace Loyc.Ecs
 
 		private bool IsDefaultNewlineSuppressed(LNode node)
 		{
-			return node.AttrNamed(S.TriviaAppendStatement) != null;
+			return node.AttrNamed(S.TriviaAppendStatement) != null || (_flags & Ambiguity.OneLiner) != 0;
 		}
 
 		// e.g. given the method void f() {...}, prints "void f"
@@ -551,6 +575,10 @@ namespace Loyc.Ecs
 					G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs, null, "return"));
 
 			G.Verify(0 == PrintAttrs(attrStyle, /*0,*/ ifClause));
+
+			var target = _n.Target; // #fn or #prop
+			PrintTrivia(target, trailingTrivia: false);
+			PrintTrivia(target, trailingTrivia: true);
 
 			if (eventKeywordOpt != null)
 				_out.Write(eventKeywordOpt, true);
@@ -570,7 +598,8 @@ namespace Loyc.Ecs
 			{
 				if (!isConstructor) {
 					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
-					_out.Space();
+					if (_out.LastCharWritten != '\n')
+						_out.Space();
 				}
 				if (isConstructor && name.IsIdNamed(S.This))
 					_out.Write("this", true);
@@ -586,7 +615,9 @@ namespace Loyc.Ecs
 				flags |= Ambiguity.AllowUnassignedVarDecl;
 			using (WithFlags(flags)) {
 				WriteOpenParen(kind);
+				_out.Indent();
 				PrintArgs(args, _flags, omitMissingArguments, separator);
+				_out.Dedent();
 				WriteCloseParen(kind);
 			}
 		}

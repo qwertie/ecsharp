@@ -940,9 +940,9 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		private void PrintTrivia(bool suffixTrivia, bool needSemicolon = false)
+		private void PrintTrivia(bool trailingTrivia, bool needSemicolon = false)
 		{
-			PrintTrivia(_n, suffixTrivia, needSemicolon);
+			PrintTrivia(_n, trailingTrivia, needSemicolon);
 		}
 		private void PrintTrivia(LNode node, bool trailingTrivia, bool needSemicolon = false)
 		{
@@ -960,7 +960,7 @@ namespace Loyc.Ecs
 			if (text.EndsWith("\n")) {
 				// use our own newline logic so indentation works
 				_out.Write(text.Substring(0, text.Length - 1), true);
-				_out.Newline(true);
+				_out.Newline(pending: true);
 			} else
 				_out.Write(text, true);
 		}

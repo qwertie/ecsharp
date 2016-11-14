@@ -57,24 +57,24 @@ namespace Loyc.Syntax.Les {
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
-				{e ??= MissingExpr();}
+				{e ??= MissingExpr(end);}
 				{list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));}
 				{CheckEndMarker(ref endMarker, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
-			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); };}
+			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr(end)); };}
 			{return list;}
 		};
 		@[public, virtual] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
-				{e ??= MissingExpr();}
+				{e ??= MissingExpr(end);}
 				{#rawText("yield"); return e.WithRange(e.Range.StartIndex, end.EndIndex);}
 				{CheckEndMarker(ref endMarker.Value, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
-			{if ($e != null || end.Type() == TT.Comma) {@[#yield] return e ?? MissingExpr();}}
+			{if ($e != null || end.Type() == TT.Comma) {@[#yield] return e ?? MissingExpr(end);}}
 		};
 		fn CheckEndMarker(ref endMarker::TokenType, ref end::Token)
 		{
@@ -221,7 +221,7 @@ namespace Loyc.Syntax.Les {
 				}
 			|	error {
 					Error(0, "Expected a particle (id, literal, {braces} or (parens)).");
-					$result = MissingExpr();
+					$result = MissingExpr(LT0);
 				}
 			)
 		};

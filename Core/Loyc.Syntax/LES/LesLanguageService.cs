@@ -35,6 +35,10 @@ namespace Loyc.Syntax.Les
 			Printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
+		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		{
+			return ParsingService.PrintMultiple(Printer, nodes, msgs, mode, indentString, lineSeparator);
+		}
 		public bool HasTokenizer
 		{
 			get { return true; }

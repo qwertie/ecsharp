@@ -17,38 +17,58 @@ namespace Loyc.Syntax.Les
 		{
 			// There are certain instances of CustomLiteral that the parser will 
 			// not produce, which come out as ordinary literals when printed:
-			Exact("1234;", F.Literal(new CustomLiteral("1234", (Symbol)"number")));
-			Exact("1234.5f00bar;", F.Literal(new CustomLiteral("1234.5", (Symbol)"f00bar")));
-			Exact(@"0x1234`f00bar`;",  F.Literal(new CustomLiteral(0x1234, (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"0x1234`WTF!\n`;",  F.Literal(new CustomLiteral(0x1234, (Symbol)"WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"re""[hH]ello!"";", F.Literal(new CustomLiteral(
+			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"number")));
+			Exact("1234.5f00bar", F.Literal(new CustomLiteral("1234.5", (Symbol)"f00bar")));
+			Exact(@"0x1234`f00bar`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234`WTF!\n`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"re""[hH]ello!""", F.Literal(new CustomLiteral(
 				new System.Text.RegularExpressions.Regex("[hH]ello!"), (Symbol)"re")));
 			// Support in parser planned soon
-			Exact("123456789012345678901234567890z;", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
+			Exact("123456789012345678901234567890z", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
 			// Ensure we can't trick printer into printing non-number as number
-			Exact(@"f00bar""1234.5.6"";", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"f00bar")));
-			Exact(@"number""1234.5.6"";", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"number")));
-			Exact(@"number""1234e5.6"";", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"number")));
-			Exact(@"number""1234567."";", F.Literal(new CustomLiteral("1234567.", (Symbol)"number")));
+			Exact(@"f00bar""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"f00bar")));
+			Exact(@"number""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"number")));
+			Exact(@"number""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"number")));
+			Exact(@"number""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"number")));
+		}
+
+		[Test]
+		public void EvilComments()
+		{
+			// Normal comments
+			Exact("Foo	// Comment",         Foo.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " Comment")));
+			Test(Mode.Exact, 0, "Foo	// Comment\nx()", Foo.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " Comment")), F.Call(x));
+			
+			// Comments that could cause the printer to produce invalid output unless the text is changed
+			Exact(@"x	// Comment\\ = 1",   F.Assign(x.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " Comment")), one));
+			Exact(@"x	// Comment\ \\ = 1", F.Assign(x.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, @" Comment\")), one));
+			Exact("Foo	// C:\\\u200B\\dir\\file", Foo.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, @" C:\\dir\file")));
+			Exact("Foo /***/",               Foo.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "*")));
+			Exact("Foo /* /**/ */",          Foo.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " /**/ ")));
+			Exact("Foo /* /*/* */*/*/",      Foo.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " /*/* ")));
+			Exact("Foo /* /*/**/*/ */",      Foo.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " /*/**/*/ ")));
+			Exact("Foo /* /**/*\\ */",       Foo.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " /**/*/ ")));
+			Exact("Foo\t/* \\\\ \n"+
+				"	*\\*/",                   Foo.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " \\\\ \n	*/")));
 		}
 
 		[Test]
 		public void MiscibilityErrors()
 		{
-			Exact("x & `'==`(Foo, 0);", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
-			Exact("`'&`(x, Foo) == 0;", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
-			Exact("x >> 1 == a;", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
-			Exact("x >> `'+`(a, 1);", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
-			Exact("x >> `'*`(a, 2);", F.Call(S.Shr, x, F.Call(S.Mul, a, two)));
-			Exact("`'>>`(x, a) + 1;", F.Call(S.Add, F.Call(S.Shr, x, a), one));
-			Exact("`'>>`(x, a) * 2;", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
-			Exact("x >> a**1;", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
-			Exact("x 'Foo `'..`(a, b);", F.Call("'Foo", x, F.Call(S.DotDot, a, b)).SetStyle(NodeStyle.Operator));
-			Exact("x 'Foo `'*`(a, b);", F.Call("'Foo", x, F.Call(S.Mul, a, b)).SetStyle(NodeStyle.Operator));
-			Exact("x 'Foo a**b;", F.Call("'Foo", x, F.Call(S.Exp, a, b)).SetStyle(NodeStyle.Operator));
-			Exact("x 'Foo 1 == a;", F.Call(S.Eq, F.Call("'Foo", x, one).SetStyle(NodeStyle.Operator), a));
-			Exact(".. `'&`(a, b) && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact("`'..`(a) & b && c;", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+			Exact("x & `'==`(Foo, 0)", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
+			Exact("`'&`(x, Foo) == 0", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
+			Exact("x >> 1 == a", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
+			Exact("x >> `'+`(a, 1)", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
+			Exact("x >> `'*`(a, 2)", F.Call(S.Shr, x, F.Call(S.Mul, a, two)));
+			Exact("`'>>`(x, a) + 1", F.Call(S.Add, F.Call(S.Shr, x, a), one));
+			Exact("`'>>`(x, a) * 2", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
+			Exact("x >> a**1", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
+			Exact("x 'Foo `'..`(a, b)", F.Call("'Foo", x, F.Call(S.DotDot, a, b)).SetStyle(NodeStyle.Operator));
+			Exact("x 'Foo `'*`(a, b)", F.Call("'Foo", x, F.Call(S.Mul, a, b)).SetStyle(NodeStyle.Operator));
+			Exact("x 'Foo a**b", F.Call("'Foo", x, F.Call(S.Exp, a, b)).SetStyle(NodeStyle.Operator));
+			Exact("x 'Foo 1 == a", F.Call(S.Eq, F.Call("'Foo", x, one).SetStyle(NodeStyle.Operator), a));
+			Exact(".. `'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
+			Exact("`'..`(a) & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, string str, params LNode[] inputs)
@@ -58,12 +78,7 @@ namespace Loyc.Syntax.Les
 				if (mode == Mode.Exact) {
 					var sb = new StringBuilder();
 					var printer = Les3Printer.New(sb, messages, "  ", "\n");
-					var sep = "";
-					foreach (LNode node in inputs) {
-						sb.Append(sep);
-						sep = "\n";
-						printer.Print(node, ";");
-					}
+					printer.Print(inputs);
 					Assert.AreEqual(str, sb.ToString());
 				} else {
 					// Start by parsing. If parsing fails, just stop; such errors are 
@@ -103,10 +118,11 @@ namespace Loyc.Syntax.Les
 		public void PrettyPrinter()
 		{
 			// Console output: impossible to test? Just do a visual test
-			Les3PrettyPrinter.PrintToConsole(F.Call(F.Dot(_("Console"), _("WriteLine")),
-				F.Call(S.Add, F.Literal("Pretty print: "), F.InParens(F.True)))
-				.PlusAttr(F.Trivia(S.TriviaMLCommentAfter, " success "))
-				.PlusAttr(F.Literal(123)));
+			Les3PrettyPrinter.New().PrintToConsole(
+				F.Call(F.Dot(_("Console"), _("WriteLine")),
+					F.Call(S.Add, F.Literal("Pretty print: "), F.InParens(F.True)))
+					.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " success "))
+					.PlusAttr(F.Literal(123)));
 
 			// The text in these tests indicates where each token should begin and 
 			// end; the text is used to derive a "raw" test (which checks the
@@ -114,25 +130,25 @@ namespace Loyc.Syntax.Les
 			// normal tokens is {0}, but for {Id} it is {/Id} so that the HTML test
 			// (in which there is no <span> for identifiers) can easily remove both
 			// {Id} and {/Id} from the string.
-			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0});", F.Call(Foo, F.Null), htmlTest: false);
-			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0});", F.Call(Foo, F.Null), rawTest: false);
-			TestPrettyPrint("{KeywordLiteral}true{0}; {Comment}/* hello */{0}", F.True.PlusAttr(F.Trivia(S.TriviaMLCommentAfter, " hello ")));
-			TestPrettyPrint("{Id}x{/Id} {Operator}={0} {String}'x'{0};", F.Call(S.Assign, x, F.Literal('x')));
-			TestPrettyPrint("{Id}x{/Id} {Operator}+={0} {Number}123{0};", F.Call(S.AddAssign, x, F.Literal(123)));
-			TestPrettyPrint("{Id}Babies{/Id} {Operator}'Like{0} {String}'''Shiny objects'''{0};",
+			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0})", F.Call(Foo, F.Null), htmlTest: false);
+			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0})", F.Call(Foo, F.Null), rawTest: false);
+			TestPrettyPrint("{KeywordLiteral}true{0} {Comment}/* hello */{0}", F.True.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " hello ")));
+			TestPrettyPrint("{Id}x{/Id} {Operator}={0} {String}'x'{0}", F.Call(S.Assign, x, F.Literal('x')));
+			TestPrettyPrint("{Id}x{/Id} {Operator}+={0} {Number}123{0}", F.Call(S.AddAssign, x, F.Literal(123)));
+			TestPrettyPrint("{Id}Babies{/Id} {Operator}'Like{0} {String}'''Shiny objects'''{0}",
 				F.Call((Symbol)"'Like", F.Id("Babies"), F.Literal("Shiny objects").SetBaseStyle(NodeStyle.TQStringLiteral)));
-			TestPrettyPrint("{Id}x{/Id}[{CustomLiteral}s\"index\"{0}]{Operator}++{0};",
+			TestPrettyPrint("{Id}x{/Id}[{CustomLiteral}s\"index\"{0}]{Operator}++{0}",
 				F.Call(S.PostInc, F.Call(S.IndexBracks, x, F.Literal((Symbol)"index"))));
-			TestPrettyPrint("{Id}Foo{/Id}{Operator}.{0}{Id}x{/Id}();", F.Call(F.Dot(Foo, x)));
+			TestPrettyPrint("{Id}Foo{/Id}{Operator}.{0}{Id}x{/Id}()", F.Call(F.Dot(Foo, x)));
 		}
 
 		public void PrettyPrinterAttributes()
 		{
-			TestPrettyPrint("{Attribute}@{0}({Id}Foo{/Id}{Closer}(){0}) x;", x.PlusAttr(F.Call(Foo)));
+			TestPrettyPrint("{Attribute}@{0}({Id}Foo{/Id}{Closer}(){0}) x", x.PlusAttr(F.Call(Foo)));
 			
 			// The HTML writer extends the attribute coloring to the token afterward
 			// if it is an identifier or a number.
-			TestPrettyPrint("{Attribute}@Foo{0} {Attribute}@123{0} {Number}1234.5{0};", 
+			TestPrettyPrint("{Attribute}@Foo{0} {Attribute}@123{0} {Number}1234.5{0}", 
 				F.Literal(1234.5).PlusAttr(Foo).PlusAttr(F.Literal(123)), rawTest: false, htmlTest: true);
 		}
 
@@ -170,8 +186,8 @@ namespace Loyc.Syntax.Les
 									.Replace("{/Id}", "{0}").Replace(",", "{Separator},{0}").Replace(";", "{Separator};{0}");
 				var pretty3 = (pretty2.EndsWith("{0}") ? pretty2.Substring(0, pretty2.Length - 3) : pretty2).Replace("{0}{", "{");
 				var expected = pretty3.FormatCore(ControlCodeTable);
-				var pp = Les3PrettyPrinter.New(null);
-				StringBuilder result = pp.Print(node, ";");
+				var pp = Les3PrettyPrinter.New();
+				StringBuilder result = pp.Print(node);
 				AreEqual(expected, result.ToString());
 			}
 			if (htmlTest) {
@@ -180,7 +196,7 @@ namespace Loyc.Syntax.Les
 				var expected = pretty2.FormatCore(HtmlCodeTable);
 				if (addPreCode)
 					expected = "<pre class='highlight'><code>" + expected + "</code></pre>";
-				var result = Les3PrettyPrinter.PrintToHtml(node, addPreCode: addPreCode);
+				var result = Les3PrettyPrinter.New().PrintToHtml(node, addPreCode: addPreCode);
 				AreEqual(expected, result.ToString());
 			}
 		}

@@ -352,6 +352,7 @@ namespace Loyc.Syntax
 		/// without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
 		public static readonly Symbol CsRawText = GSymbol.Get("#C#RawText");
+		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< Preprocessor raw text: always printed on separate line
 
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

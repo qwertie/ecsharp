@@ -80,6 +80,7 @@ partial class Les3Parser
 	public ExprList[ref TokenType endMarker, VList<LNode> list, bool allowBlockCalls] returns [VList<LNode> result] :
 		{saveAndRestore(_allowBlockCalls = allowBlockCalls);}
 		{if (LT0.Value is string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
+		greedy("\n")*
 		// `(/X)` is the same as `[X]?` except that in the first version, X is 
 		// the default branch, which simplifies the output code in this case.
 		// Theoretically [default X]? should work equally well, but for some
@@ -87,46 +88,48 @@ partial class Les3Parser
 		(/ e:TopExpr)
 		[	end:(","|"\n"|";") greedy("\n")*
 			{CheckEndMarker(ref endMarker, ref end);}
-			{list.Add(e ?? MissingExpr());}
+			{list.Add(e ?? MissingExpr(end));}
 			{$e = null;} (/ e:TopExpr)
 		/	error
 			{MissingEndMarker(e, endMarker);}
-			{list.Add(e ?? MissingExpr());}
+			{list.Add(e ?? MissingExpr(LT0));}
 			{$e = null;} (/ e:TopExpr)
 		]*
-		{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); }}
+		{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr(end)); }}
 		{return list;};
 
 	public override ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
 		{if (LT0.Value is string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
+		greedy("\n")*
 		(/ e:TopExpr)
 		[	end:(","|"\n"|";") greedy("\n")*
 			{CheckEndMarker(ref endMarker.Value, ref end);}
-			{yield return e ?? MissingExpr();}
+			{yield return e ?? MissingExpr(end);}
 			{$e = null;} (/ e:TopExpr)
 		/	error
 			{MissingEndMarker(e, endMarker.Value);}
-			{yield return e ?? MissingExpr();}
+			{yield return e ?? MissingExpr(LT0);}
 			{$e = null;} (/ e:TopExpr)
 		]*
-		{if ($e != null || end.Type() == TT.Comma) {yield return e ?? MissingExpr();}};
+		{if ($e != null || end.Type() == TT.Comma) {yield return e ?? MissingExpr(end);}};
 
 	[#new] protected TopExpr returns [LNode result] :
+		{int startIndex = LT0.StartIndex;}
 		{var attrs = new VList<LNode>();}
 		(	// @Attribute
-			"@" attrs+=Particle[isAttribute: true]
+			"@" attrs+=Particle[isAttribute: true] greedy("\n")*
 		)*
 		(	e:Expr[StartStmt]
 			(
 				":" (("\n"|")"|"]"|"}"|EOF) =>)
-				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex);}
+				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
 			)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
-			(e:TopExpr | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr();})
+			(e:TopExpr | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);})
 		)
-		{if ($"@".TypeInt != 0) { e = e.WithRange($"@".StartIndex, e.Range.EndIndex); };}
-		{return e.PlusAttrsBefore(attrs);};
+		{if (!attrs.IsEmpty) { e = e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); }}
+		{return e;};
 
 	////////////////////////////////////////////////////////////////////////////
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
@@ -139,24 +142,24 @@ partial class Les3Parser
 		{var keyword = GSymbol.Get("." + id.Value.ToString());}
 		{var args = new VList<LNode>($Expr);}
 		greedy(BracesWithContinuators[ref args])?
-		{$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, args.Last.Range.EndIndex));};
+		{$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, args.Last.Range.EndIndex, $".".StartIndex, id.EndIndex));};
 	
 	private BracesWithContinuators[ref VList<LNode> args] returns [int result] @init {int endIndex;} :
 		bb:BracedBlock {args.Add(bb); endIndex = bb.Range.EndIndex;}
 		greedy
 		(	kw:ContinuatorKeyword {var opName = Continuators[kw.Value];}
-			(	bb:BracedBlock   {args.Add(F.Call(opName, bb));}
+			(	bb:BracedBlock   {args.Add(F.Call(opName, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex));}
 			|	"(" ExprList ")" 
 				(	bb:BracedBlock
-					{args.Add(F.Call(opName, $ExprList.Add(bb), kw.StartIndex, $")".EndIndex));}
-				/	{args.Add(F.Call(opName, $ExprList,     kw.StartIndex, bb.Range.EndIndex));} )
+					{args.Add(F.Call(opName, $ExprList.Add(bb), kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex));}
+				/	{args.Add(F.Call(opName, $ExprList,         kw.StartIndex,     $")".EndIndex, kw.StartIndex, kw.EndIndex));} )
 			)
 		)*
 		{return endIndex;};
 	
 	private BracedBlock returns [LNode result] : 
-		"{" greedy("\n")* stmts:=StmtList "}" 
-		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex).SetStyle(NodeStyle.Statement);};
+		"{" stmts:=StmtList "}" 
+		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.Statement);};
 	private Parentheses returns [LNode result] @init {var endMarker = default(TokenType);} :
 		"(" exprs:ExprList[ref endMarker] ")" 
 		{return exprs.Count == 1 && endMarker != TT.Semicolon ? exprs[0] : F.Tuple(exprs, $"(".StartIndex, $")".EndIndex);};
@@ -185,23 +188,23 @@ partial class Les3Parser
 			(	// Infix operator
 				&{[Local] CanParse(context, $LI, out prec)}
 				{Symbol opName;}
-				(	op:=(TT.NormalOp|TT.Assignment|".") "\n"*	{opName = (Symbol) op.Value;}
-				|	&{(TT)LA($LI+1) != TT.Newline} op:=":"	{opName = (Symbol) op.Value;}
-				|	op:=TT.Id 
+				(	op:(TT.NormalOp|TT.Assignment|".") "\n"*   {opName = (Symbol) op.Value;}
+				|	&{(TT)LA($LI+1) != TT.Newline} op:":"      {opName = (Symbol) op.Value;}
+				|	op:TT.Id 
 					(	// optional punctuation part
 						&{op.EndIndex == LT0.StartIndex} op2:(TT.NormalOp|TT.Assignment|".")
 						{opName = GSymbol.Get("'"+op.Value.ToString()+op2.Value.ToString().Substring(1));}
 					/	{opName = GSymbol.Get("'"+op.Value.ToString());})
 				)
 				rhs:=Expr(prec)
-				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	&{[Local] context.CanParse(P.Add)}
 				rhs:=TT.NegativeLiteral
-				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex, rhs.StartIndex, rhs.StartIndex + 1, NodeStyle.Operator);}
 			|	// Suffix operator
 				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
-				{e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
 			|	// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
@@ -218,11 +221,11 @@ partial class Les3Parser
 			(	"(" args=ExprList[args] c:=")"      {endIndex = c.EndIndex;}
 			/	T:=Expr[P.Primary]                  {args.Add(T); endIndex = T.Range.EndIndex;}
 			)
-			{return F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);}
+			{return F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 		|	// Indexer / square brackets
 			{var args = new VList<LNode> { e };}
-			"[" args=ExprList[args] c:="]"
-			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
+			lb:="[" args=ExprList[args] rb:="]"
+			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, rb.EndIndex, lb.StartIndex, rb.EndIndex, NodeStyle.Operator);}
 		;
 
 	private CallArgs[LNode target] returns [LNode result] : 
@@ -240,9 +243,9 @@ partial class Les3Parser
 
 	private PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
-			t:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
-			e:Expr[PrefixPrecedenceOf(t)]
-			{$result = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
+			e:Expr[PrefixPrecedenceOf(op)]
+			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
 		/	result:Particle
 		;
 
@@ -266,7 +269,7 @@ partial class Les3Parser
 			result:BracedBlock
 			// [list]
 		|	"[" list:=ExprList "]"
-			{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex).SetStyle(NodeStyle.Expression);}
+			{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);}
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
 			"(" {var saveParens = !isAttribute && (TT)LA0 != TT.At;}
@@ -274,7 +277,7 @@ partial class Les3Parser
 			list:=ExprList[ref endMarker]
 			")" {
 				if (endMarker == TT.Semicolon || list.Count != 1) {
-					$result = F.Call(S.Tuple, list, $"(".StartIndex, $")".EndIndex);
+					$result = F.Call(S.Tuple, list, $"(".StartIndex, $")".EndIndex, $"(".StartIndex, $"(".EndIndex);
 					if (endMarker == TT.Comma) {
 						var msg = "Tuples require ';' as a separator.";
 						ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
@@ -285,7 +288,7 @@ partial class Les3Parser
 			}
 		|	error {
 				Error(0, "Expected a particle (id, literal, {braces} or (parens)).");
-				$result = MissingExpr();
+				$result = MissingExpr(LT0);
 			};
 
 	TokenTree returns [TokenTree result] :

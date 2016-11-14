@@ -111,8 +111,9 @@ namespace Loyc.Syntax
 		/// with the next node instead, but this doesn't work for the last child in a 
 		/// sequence; in that case this method is called again with the same trivia and
 		/// loc is set to TriviaLocation.TrailingExtra.</returns>
-		/// <remarks>This method is STILL called for a given node when there is no trivia 
-		/// associated with that node.</remarks>
+		/// <remarks>This method may STILL called for a given node when there is no trivia 
+		/// associated with that node, IF the node is at the top level or its sibling 
+		/// nodes in the same parent have associated trivia.</remarks>
 		protected abstract VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
 
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
@@ -138,6 +139,17 @@ namespace Loyc.Syntax
 			/// includes the comma token. The trivia injector is not aware of <c>x</c> or
 			/// the comma; all it knows is that the trivia is "inside" the range of <c>x</c>.</summary>
 			Ambiguous = 3,
+		}
+
+		/// <summary>This method is called when a node has no newlines or comments within it
+		/// (although the node may still have a leading or trailing comment). It informs the
+		/// derived class that <see cref="AbstractTriviaInjector"/> will not traverse into the 
+		/// node.</summary>
+		/// <remarks>The default implementation sets the <see cref="NodeStyle.OneLiner"/> 
+		/// style flag.</remarks>
+		protected virtual void MarkOneLiner(ref LNode node)
+		{
+			node.Style |= NodeStyle.OneLiner;
 		}
 
 		/// <summary>Gets the <see cref="SourceRange"/> for an element of trivia.</summary>
@@ -220,69 +232,76 @@ namespace Loyc.Syntax
 			SourceRange triviaRange;
 			Maybe<Trivia> trivia = NoValue.Value;
 			InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
-			int prevIndexInParent = 0, indexInParent;
+			int prevIndexInParent = int.MinValue, indexInParent;
 			LNode node, prev;
-			bool hasNext;
-			for (prev = null; hasNext = nodes.MoveNext(); prev = node, prevIndexInParent = indexInParent) {
-				if (!(trivia = CurrentTrivia(out triviaRange)).HasValue)
-					break;
+			for (prev = null; nodes.MoveNext(); prev = node, prevIndexInParent = indexInParent) {
+				Debug.Assert(triviaList.IsEmpty);
 				var current = nodes.Current;
 				node = current.Item1;
 				indexInParent = current.Item2;
 
-				// Get a list of trivia that appears before the current node. The tricky part 
-				// of this is that we sometimes want to associate some comments with the
-				// previous node instead of the current node. This is done when...
-				// (1) a comment appears on the same line as the previous node AND the
-				//     current node is on a different line, e.g. Kill(p); /* end process */
-				// (2) a comment appears on the next line after the previous node AND
-				//     there is a blank line between that comment and the current node
-				int firstNewlineAt = -1;
-				while (triviaRange.StartIndex < node.Range.StartIndex) {
-					if (prev != null && IsNewline(trivia.Value)) {
-						if (firstNewlineAt == -1) {
-							firstNewlineAt = triviaList.Count;
-						} else if (!triviaList.IsEmpty && IsNewline(triviaList.Last)) {
-							// case (2)
-							TryAttachTriviaTo(ref prev, ref triviaList, TriviaLocation.Trailing, parent, prevIndexInParent);
-							yield return YieldPrev(ref prev, parent, prevIndexInParent);
+				if ((trivia = CurrentTrivia(out triviaRange)).HasValue) {
+					// Get a list of trivia that appears before the current node. The tricky part 
+					// of this is that we sometimes want to associate some comments with the
+					// previous node instead of the current node. This is done when...
+					// (1) a comment appears on the same line as the previous node AND the
+					//     current node is on a different line, e.g. Kill(p); /* end process */
+					// (2) a comment appears on the next line after the previous node AND
+					//     there is a blank line between that comment and the current node
+					// ...however, don't do this between attributes, or between the last 
+					// attribute and the target, because in that case we want to yield the 
+					// trivia into the attribute list of the parent using the special logic 
+					// below.
+					bool canAssociateWithPrev = prev != null && !(prevIndexInParent < -1 && indexInParent <= -1);
+					int firstNewlineAt = -1;
+					while (triviaRange.StartIndex < node.Range.StartIndex) {
+						if (canAssociateWithPrev && IsNewline(trivia.Value)) {
+							if (firstNewlineAt == -1) {
+								firstNewlineAt = triviaList.Count;
+							} else if (!triviaList.IsEmpty && IsNewline(triviaList.Last)) {
+								// case (2)
+								TryAttachTriviaTo(ref prev, ref triviaList, TriviaLocation.Trailing, parent, prevIndexInParent);
+								yield return YieldPrev(ref prev, parent, prevIndexInParent);
+								canAssociateWithPrev = false; // because prev == null now
+							}
 						}
+						triviaList.Add(trivia.Value);
+						if (!(trivia = AdvanceTrivia(out triviaRange)).HasValue)
+							break;
 					}
-					triviaList.Add(trivia.Value);
-					if (!(trivia = AdvanceTrivia(out triviaRange)).HasValue)
-						break;
+					if (firstNewlineAt > 0 && canAssociateWithPrev) {
+						// case (1)
+						var triviaList2 = new InternalList<Trivia>(triviaList.Take(firstNewlineAt));
+						if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent))
+							triviaList.RemoveRange(0, firstNewlineAt);
+						yield return YieldPrev(ref prev, parent, prevIndexInParent);
+					}
 				}
-				if (firstNewlineAt > 0 && prev != null) {
-					// case (1)
-					var triviaList2 = new InternalList<Trivia>(triviaList.Take(firstNewlineAt));
-					if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent))
-						triviaList.RemoveRange(0, firstNewlineAt);
-					yield return YieldPrev(ref prev, parent, prevIndexInParent);
-				}
-
-				// Attach leading trivia to current node
-				TryAttachTriviaTo(ref node, ref triviaList, TriviaLocation.Leading, parent, indexInParent);
-
-				// Attach trivia within this node's range to this node's children, if applicable
-				if (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && node.Range.EndIndex >= 0) {
-					InjectTriviaInChildren(parent, out triviaRange, out trivia, indexInParent, ref node);
-					node.Style &= ~NodeStyle.OneLiner;
-				} else
-					node.Style |= NodeStyle.OneLiner;
 
 				if (prev != null)
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
-			}
-			if (prev != null) {
-				yield return YieldPrev(ref prev, parent, prevIndexInParent);
-			}
-			if (!trivia.HasValue) {
-				while (hasNext) {
-					nodes.Current.A.Style |= NodeStyle.OneLiner;
-					yield return nodes.Current;
-					hasNext = nodes.MoveNext();
+
+				// Attach leading trivia to current node
+				var newAttrs = AttachTriviaTo(ref node, triviaList, TriviaLocation.Leading, parent, indexInParent);
+				if (!(prevIndexInParent < -1 && indexInParent <= -1))
+					node = node.PlusAttrsBefore(newAttrs);
+				else {
+					// Special case: this trivia appears between attributes. 
+					// Yield it to parent node as additional attribute(s)
+					foreach (var attr in newAttrs)
+						yield return Pair.Create(attr, prevIndexInParent);
 				}
+				triviaList.Clear();
+
+				// Attach trivia within this node's range to this node's children, if applicable
+				if (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && node.Range.EndIndex >= 0) {
+					node.Style &= ~NodeStyle.OneLiner;
+					InjectTriviaInChildren(parent, out triviaRange, out trivia, indexInParent, ref node);
+				} else
+					MarkOneLiner(ref node);
 			}
+			if (prev != null)
+				yield return YieldPrev(ref prev, parent, prevIndexInParent);
 		}
 
 		private bool TryAttachTriviaTo(ref LNode prev, ref InternalList<Trivia> triviaList, TriviaLocation loc, LNode parent, int prevIndexInParent)
@@ -306,7 +325,8 @@ namespace Loyc.Syntax
 		private void InjectTriviaInChildren(LNode parent, out SourceRange triviaRange, out Maybe<Trivia> trivia, int indexInParent, ref LNode node)
 		{
 			// Current trivia's range is within node's range: Apply it to 
-			// the node's children, if any. First gather list of children:
+			// the node's children, if any. First gather list of children
+			// and sort by source-code order, if necessary:
 			int min = node.Min;
 			InternalList<Pair<LNode, int>> children = InternalList<Pair<LNode, int>>.Empty;
 			children.Resize(node.Max - min + 1);
@@ -321,16 +341,17 @@ namespace Loyc.Syntax
 			if (!inOrder)
 				children.Sort((a, b) => a.Item1.Range.StartIndex.CompareTo(b.Item1.Range.StartIndex));
 
-			// Call ourself recursively to apply trivia to children
+			// Call ourself recursively to apply trivia to children. Usually, 
+			// newChildren is the same length as children, but it may have extra
+			// trivia attributes added.
+			InternalList<Pair<LNode, int>> newChildren = new InternalList<Pair<LNode, int>>(children.Count);
 			var output = RunCore(children.GetEnumerator(), node);
 			bool changed = false;
-			for (int i = 0; output.MoveNext(); i++) {
+			while (output.MoveNext()) {
 				var @new = output.Current;
-				Debug.Assert(@new.Item2 == children[i].Item2);
-				if (@new.Item1 != children[i].Item1) {
+				newChildren.Add(@new);
+				if (@new.Item1 != children[@new.Item2 - min].Item1)
 					changed = true;
-					children[i] = @new;
-				}
 			}
 
 			// At the end, gather up any remaining trivia
@@ -344,27 +365,27 @@ namespace Loyc.Syntax
 
 			if (changed) {
 				// If this is a call, attach any remaining trivia to the last child.
-				if (node.IsCall) {
-					int i = children.Count - 1;
-					var last = children.InternalArray[i];
-					children.InternalArray[i].A = AttachTriviaTo(last.A, triviaList, TriviaLocation.TrailingExtra, node, last.B) ?? last.A;
+				if (node.IsCall && !triviaList.IsEmpty) {
+					int i = newChildren.Count - 1;
+					var last = newChildren.InternalArray[i];
+					newChildren.InternalArray[i].A = AttachTriviaTo(last.A, triviaList, TriviaLocation.TrailingExtra, node, last.B) ?? last.A;
 				}
 
 				// Put the children back in their "conceptual" order
 				if (!inOrder)
-					children.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+					newChildren.StableSort((a, b) => a.Item2.CompareTo(b.Item2));
 
 				// Update node's attributes, if any
-				int numAttrs = -min - 1;
+				int numAttrs = newChildren.TakeWhile(p => p.B < -1).Count();
 				if (numAttrs > 0) {
-					var attrs = LNode.List(children.Slice(0, numAttrs).SelectArray(p => p.A));
+					var attrs = LNode.List(newChildren.Slice(0, numAttrs).SelectArray(p => p.A));
 					node = node.WithAttrs(attrs);
 				}
 
 				if (node.IsCall) {
-					Debug.Assert(children[numAttrs].B == -1);
-					var newChildren = children.Slice(numAttrs + 1).SelectArray(p => p.A);
-					node = node.With(children[numAttrs].A, LNode.List(newChildren));
+					Debug.Assert(newChildren[numAttrs].B == -1);
+					var newArgs = newChildren.Slice(numAttrs + 1).SelectArray(p => p.A);
+					node = node.With(newChildren[numAttrs].A, LNode.List(newArgs));
 				} else if (!triviaList.IsEmpty) {
 					// If current node is not a call, attach any remaining trivia to it.
 					node = AttachTriviaTo(node, triviaList, TriviaLocation.Ambiguous, parent, indexInParent);

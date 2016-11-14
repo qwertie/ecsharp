@@ -69,7 +69,7 @@ namespace Loyc.Syntax.Les {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
-					e = e ?? MissingExpr();
+					e = e ?? MissingExpr(end);
 					list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));
 					CheckEndMarker(ref endMarker, ref end);
 					// Line 63: ( / TopExpr)
@@ -91,7 +91,7 @@ namespace Loyc.Syntax.Les {
 					break;
 			}
 			if ((e != null || end.Type() == TT.Comma)) {
-				list.Add(e ?? MissingExpr());
+				list.Add(e ?? MissingExpr(end));
 			}
 			return list;
 		}
@@ -114,7 +114,7 @@ namespace Loyc.Syntax.Les {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
-					e = e ?? MissingExpr();
+					e = e ?? MissingExpr(end);
 					yield
 					return e.WithRange(e.Range.StartIndex, end.EndIndex);
 					CheckEndMarker(ref endMarker.Value, ref end);
@@ -130,7 +130,7 @@ namespace Loyc.Syntax.Les {
 			}
 			// line 77
 			if ((e != null || end.Type() == TT.Comma)) {
-				yield return e ?? MissingExpr();
+				yield return e ?? MissingExpr(end);
 			}
 		}
 	
@@ -471,7 +471,7 @@ namespace Loyc.Syntax.Les {
 				{
 					// line 223
 					Error(0, "Expected a particle (id, literal, {braces} or (parens)).");
-					result = MissingExpr();
+					result = MissingExpr(LT0);
 				}
 				break;
 			}

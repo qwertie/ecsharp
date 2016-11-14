@@ -164,10 +164,10 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Stmts()
 		{
-			Test(Mode.Stmt, -1, "a; b; c;", a, b, c);
+			Test(Mode.Stmt, -1, "a;\nb;\nc;", a, b, c);
 			Stmt("a.b(c);", F.Call(F.Dot(a, b), c));
-			Expr("{ b(c); } + { ; Foo() }", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
-			Stmt("a.{b;c;}();", F.Call(F.Dot(a, F.Braces(b, c))));
+			Expr("{\n  b(c);\n} + {\n  ;\n  Foo()\n}", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
+			Stmt("a.{\n  b;\n  c;}();", F.Call(F.Dot(a, F.Braces(b, c))));
 		}
 
 		[Test]
@@ -235,28 +235,39 @@ namespace Loyc.Syntax.Les
 			                              ).PlusAttr(   F.Trivia(S.TriviaMLComment, " before ")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " after "));
 			Exact("/* before */Foo /*[*/== //]\n/*{*/x /*}*/; /* after */", node);
 
-			// This currently round-trips, but is a contrived example; usually people 
-			// would write the comment _after_ the comma. See TODO below.
 			node = F.Call(Foo).PlusAttrs(a.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "Comment after a")), 
-			                          b, c.PlusAttr(F.Trivia(S.TriviaMLComment, "Comment before c")));
+			                          b, F.Trivia(S.TriviaMLComment, "Comment before c"), c);
 			Exact("@[a\t//Comment after a\n"+
-			      ", b, /*Comment before c*/c] Foo();", node);
+			      ", b] /*Comment before c*/@[c] Foo();", node);
 			// TODO: The following example parses as shown but is printed out differently.
 			// Either we should change AbstractTriviaInjector to emit the comment at the 
 			// "top level" of the attribute list (not attached to `a`) or we should change 
 			// the node printer to print the comma before it prints trailing trivia.
-			//node = F.Call(Foo).PlusAttrs(a.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "Comment after a")), 
-			//                             b.PlusAttr(F.TriviaNewline), 
-			//                             c.PlusAttr(F.Trivia(S.TriviaMLComment, "Comment before c")));
-			//Exact("@[a, //Comment after a\n"+
-			//      "b, /*Comment before c*/c] Foo();", node);
+			node = F.Call(Foo).PlusAttrs(a, F.Trivia(S.TriviaSLComment, "Comment after a"),
+										 b, F.Trivia(S.TriviaMLComment, "Comment before c"), c);
+			Exact("@[a] //Comment after a\n"+
+			      "@[b] /*Comment before c*/@[c] Foo();", node);
+		}
+
+		[Test]
+		public void TriviaTest_Appending()
+		{
+			var append = F.Id(S.TriviaAppendStatement);
+			LNode[] stmts = {
+				F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner)
+			};
+			Test(Mode.Exact, 0, "{ a(); b(); };", stmts);
+			stmts = new[] {
+				F.Call(a), F.Call(b), F.Call(c).PlusAttr(append)
+			};
+			Test(Mode.Exact, 0, "a();\nb(); c();", stmts);
 		}
 
 		[Test]
 		public void TriviaTest_LineBreakBetweenAttrs()
 		{
-			Exact("@[a] \nFoo();", F.Call(Foo.PlusAttr(F.TriviaNewline)).PlusAttrs(a));
-			Exact("@[a, b, \nc] \nFoo();", F.Call(Foo.PlusAttr(F.TriviaNewline)).PlusAttrs(a, b, c.PlusAttr(F.TriviaNewline)));
+			Exact("@[a] \nFoo();", F.Call(Foo).PlusAttrs(a, F.TriviaNewline));
+			Exact("@[a, b] \n@[c] \nFoo();", F.Call(Foo).PlusAttrs(a, b, F.TriviaNewline, c, F.TriviaNewline));
 		}
 
 		[Test]

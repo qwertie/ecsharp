@@ -21,12 +21,18 @@ namespace Loyc.Syntax.Les
 
 		public LNodePrinter Printer
 		{
-			get { return LesNodePrinter.Printer; }
+			get { return Les3Printer.Printer; }
 		}
 		public string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var sb = new StringBuilder();
-			Printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
+			Les3Printer.Print(node, sb, msgs, mode, indentString, lineSeparator);
+			return sb.ToString();
+		}
+		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		{
+			var sb = new StringBuilder();
+			Les3Printer.Print(nodes.Upcast<ILNode, LNode>(), sb, msgs, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
 		public bool HasTokenizer
@@ -43,12 +49,20 @@ namespace Loyc.Syntax.Les
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var lexer = new WhitespaceFilter(Tokenize(text, fileName, msgs));
+			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType, preserveComments);
 		}
 		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
+			if (preserveComments) {
+				var saver = new TriviaSaver(input, (int)TokenType.Newline);
+				var results = Parse(saver.Buffered(), input.SourceFile, msgs, inputType);
+				var injector = new StandardTriviaInjector(saver.TriviaList, input.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				injector.SLCommentSuffix = @"\\";
+				return injector.Run(results.GetEnumerator()).Buffered();
+			} else {
+				return Parse(new WhitespaceFilter(input).Buffered(), input.SourceFile, msgs, inputType);
+			}
 		}
 
 		[ThreadStatic]

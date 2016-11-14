@@ -72,17 +72,37 @@ namespace Loyc.Syntax.Les {
 	
 		object SLComment()
 		{
-			int la0;
+			int la0, la1;
 			Skip();
 			Skip();
-			// Line 33: ([^\$\n\r])*
+			// Line 33: nongreedy([^\$])*
 			for (;;) {
-				la0 = LA0;
-				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
-					Skip();
-				else
+				switch (LA0) {
+				case '\\':
+					{
+						la1 = LA(1);
+						if (la1 == -1 || la1 == '\\')
+							goto stop;
+						else
+							Skip();
+					}
 					break;
+				case -1:
+				case '\n':
+				case '\r':
+					goto stop;
+				default:
+					Skip();
+					break;
+				}
 			}
+		stop:;
+			// Line 33: ([\\] [\\] | [\$\n\r] => )
+			la0 = LA0;
+			if (la0 == '\\') {
+				Skip();
+				Match('\\');
+			} else { }
 			// line 34
 			return WhitespaceTag.Value;
 		}
@@ -719,7 +739,7 @@ namespace Loyc.Syntax.Les {
 				break;
 			match1:
 				{
-					var old_startPosition_10 = _startPosition;
+					var old_startPosition_0 = _startPosition;
 					try {
 						_startPosition = InputPosition;
 						// Line 134: (TQString / DQString)
@@ -737,7 +757,7 @@ namespace Loyc.Syntax.Les {
 						PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
 						return _value = ParseLiteral2(idtext, value.ToString(), false);
 					} finally {
-						_startPosition = old_startPosition_10;
+						_startPosition = old_startPosition_0;
 					}
 				}
 			} while (false);

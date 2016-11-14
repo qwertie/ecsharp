@@ -24,6 +24,16 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void TriviaTest_Appending()
+		{
+			LNode stmt;
+			stmt = F.Splice(F.Call(a), F.Call(b), AppendStmt(F.Call(c)));
+			Stmt("a();\nb(); c();", stmt);
+			stmt = F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner);
+			Stmt("{ a(); b(); }", stmt);
+		}
+
+		[Test]
 		public void TriviaTest_BlankLinesBetweenStmts()
 		{
 			Stmt("int a;\n\nint b;\n\nint c;",
@@ -66,39 +76,51 @@ namespace Loyc.Ecs.Tests
 				"}\t// end of block", stmt);
 		}
 
-		[Test(Fails = "Test not yet fully written")]
+		[Test]
 		public void TriviaTest_Methods()
 		{
-			Stmt("public static void Foo(string[] x) // OK\n" +
-				"{	// Before\n" +
+			var node = Attr(F.Public, @static,
+				F.Fn(F.Void, Foo,
+					F.List(F.Var(F.Of(S.Array, F.String), x)).PlusTrailingTrivia(SLComment(" OK")),
+					OnNewLine(F.Braces(
+						F.Call(a, x).PlusAttr(SLComment(" Before"))
+									.PlusTrailingTrivia(LNode.List(F.TriviaNewline, SLComment(" After")))))));
+			Stmt("public static void Foo(string[] x)\t// OK\n" +
+				"{\n"+
+				"  // Before\n" +
 				"  a(x);\n" +
-				"  // After\n}",
-				Attr(F.Public, @static,
-				F.Fn(F.Void, Foo,
-					F.List(F.Var(F.Of(S.Array, F.String), x)),
-					F.Braces(F.Call(a, x)))));
-				
-			Stmt("public static void Main /* Params: */ (\n"+
-				"  /*arg*/ string[] /*name->*/ x /*<-name*/) {\n"+
-				"  a(x);\n}",
-				Attr(F.Public, @static,
-				F.Fn(F.Void, Foo,
-					F.List(F.Var(F.Of(S.Array, F.String), x)),
-					F.Braces(F.Call(a, x)))));
+				"  \t// After\n"+
+				"}", node);
 
-			Stmt("public	// can be used from the outside\n"+
-				 "static	// can be called without an instance\n"+
-				 "void	// return type\n"+
-				 "/*Method*/ Foo(string[] a) {\n"+
-				 "  x(a);\n}",
-				Attr(F.Public, @static,
+			node = Attr(F.Public, @static,
 				F.Fn(F.Void, Foo,
-					F.List(F.Var(F.Of(S.Array, F.String), x)),
-					F.Braces(F.Call(a, x)))));
+					Attr(MLComment(" Params: "),
+						F.List(Attr(F.TriviaNewline, MLComment("arg"),
+							F.Var(F.Of(S.Array, F.String), Attr(MLComment("name->"), x)))
+							.PlusTrailingTrivia(MLComment("<-name")))),
+					F.Braces(F.Call(a, x))));
+			Stmt("public static void Foo/* Params: */(\n" +
+				"  /*arg*/string[] /*name->*/x /*<-name*/) {\n" +
+				"  a(x);\n"+
+				"}", node);
+
+			node = Attr(F.Public, SLComment(" can be used from the outside"),
+					 @static, SLComment(" can be called without an instance"),
+				F.Call(S.Fn,
+					F.Void.PlusTrailingTrivia(SLComment(" return type")),
+					Foo.PlusAttrs(F.TriviaNewline, MLComment("Method")),
+					F.List(F.Var(F.Of(S.Array, F.String), a)),
+					F.Braces(F.Call(x, a))));
+			Stmt("public // can be used from the outside\n" +
+				 "static // can be called without an instance\n" +
+				 "void	// return type\n" +
+				 "/*Method*/Foo(string[] a) {\n" +
+				 "  x(a);\n" +
+				 "}", node);
 		}
 
 
-		[Test(Fails = "OneLiner not working in printer yet")]
+		[Test]
 		public void TriviaTest_Enums()
 		{
 			var stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(F.Braces(

@@ -28,7 +28,7 @@ namespace Samples
 		public void Les3PrettyPrinterDemo()
 		{
 			// Pretty printer demo
-			foreach (LNode n in Loyc.Syntax.Les.Les3LanguageService.Value.Parse(
+			var code = Loyc.Syntax.Les.Les3LanguageService.Value.Parse(
 				@".memory 1
 				  .fn _sumIntegersDemo(input: i32, length: i32): i32 {
 					sum: i32
@@ -46,8 +46,8 @@ namespace Samples
 					  stop:
 					}
 					sum // return value
-				  }", MessageSink.Console))
-			Loyc.Syntax.Les.Les3PrettyPrinter.PrintToConsole(n);
+				  }", MessageSink.Console);
+			Loyc.Syntax.Les.Les3PrettyPrinter.New().PrintToConsole(code.Cast<ILNode>());
 		}
 
 		/*[Test]*/ public void PrintAllTheNames()

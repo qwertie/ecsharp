@@ -34,13 +34,13 @@ namespace Loyc.Syntax.Les
 			msgs = Test(Mode.Stmt, 1, "5 (x);", F.Literal(5));
 			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
 			// Invalid superexpressions
-			msgs = Test(Mode.Stmt, 1, "a; 5 c b; x();", a, F.Literal(5));
+			msgs = Test(Mode.Stmt, 1, "a;\n 5 c b; x();", a, F.Literal(5));
 			ExpectMessageContains(msgs, "';'");
 			msgs = Test(Mode.Stmt, 1, "get Foo { x } = 0;", F.Call(S.get, Foo, F.Braces(x)));
 			ExpectMessageContains(msgs, "Assignment", "';'");
 			msgs = Test(Mode.Stmt, 1, "if(a) > b { c(); };", F.Call(S.GT, F.Call("if", a), b));
 			ExpectMessageContains(msgs, "'{'", "';'");
-			msgs = Test(Mode.Stmt, 1, "{ a + b c }; Foo();", F.Braces(F.Call(S.Add, a, b)), F.Call(Foo));
+			msgs = Test(Mode.Stmt, 1, "{ a + b c };\nFoo();", F.Braces(F.Call(S.Add, a, b)), F.Call(Foo));
 			ExpectMessageContains(msgs, "Id", "'}'");
 			msgs = Test(Mode.Stmt, 1, "a.b c", F.Dot(a, b));
 			msgs = Test(Mode.Stmt, 1, "a + b.c {} Foo", F.Call(S.Add, a, F.Dot(b, c)));
@@ -55,12 +55,12 @@ namespace Loyc.Syntax.Les
 		public void SemicolonCommaErrors()
 		{
 			MessageHolder msgs;
-			msgs = Test(Mode.Expr, 0, "a, b", a, b);
-			msgs = Test(Mode.Stmt, 1, "a, b", a, b);
+			msgs = Test(Mode.Expr, 0, "a,\nb", a, b);
+			msgs = Test(Mode.Stmt, 1, "a,\nb", a, b);
 			ExpectMessageContains(msgs, "';'", "','");
 			msgs = Test(Mode.Stmt, 1, "(a, b)", F.Tuple(a, b));
 			ExpectMessageContains(msgs, "';'");
-			msgs = Test(Mode.Stmt, 1, "{a, b}", F.Braces(a, b));
+			msgs = Test(Mode.Stmt, 1, "{\n  a,\n  b}", F.Braces(a, b));
 			ExpectMessageContains(msgs, "';'");
 			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
 			Test(Mode.Stmt, 0, "Foo!(a, b)", F.Of(Foo, a, b));
@@ -89,14 +89,14 @@ namespace Loyc.Syntax.Les
 		{
 			var messages = new MessageHolder();
 			var results = Les2LanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
-			for (int i = 0; i < expected.Length; i++)
-				AreEqual(expected[i], results[i]);
-			AreEqual(expected.Length, results.Count);
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
 				messages.WriteListTo(MessageSink.Console);
 				AreEqual(errorsExpected, messages.List.Count); // fail
 			}
+			for (int i = 0; i < expected.Length; i++)
+				AreEqual(expected[i], results[i]);
+			AreEqual(expected.Length, results.Count);
 			return messages;
 		}
 	}

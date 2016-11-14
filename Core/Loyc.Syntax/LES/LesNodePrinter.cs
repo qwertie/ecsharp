@@ -56,12 +56,16 @@ namespace Loyc.Syntax.Les
 		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
 		/// always printed as parentheses, and <see cref="OmitUnknownTrivia"/> has
 		/// no effect when this flag is true.</summary>
-		public bool PrintExplicitTrivia { get; set; }
+		public bool PrintTriviaExplicitly { get; set; }
 
 		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
 		/// When this option is false, raw text trivia is printed as a normal 
 		/// attribute.</summary>
 		public bool ObeyRawText { get; set; }
+
+		public bool SpacesBetweenAppendedStatements = true;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
 
 		#region Constructors, New(), and default Printer
 
@@ -104,30 +108,41 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		/// <summary>Indicates whether the <see cref="NodeStyle.OneLiner"/> 
+		/// flag is present on the current node or any of its parents. It 
+		/// suppresses newlines within braced blocks.</summary>
+		bool _isOneLiner;
+
 		public void Print(ILNode node)
 		{
 			Print(node, StartStmt, ";");
 		}
 		public void Print(ILNode node, Precedence context, string terminator = null)
 		{
-			int parenCount = WriteAttrs(node, ref context);
+			bool old_isOneLiner = _isOneLiner;
+			_isOneLiner |= (node.Style & NodeStyle.OneLiner) != 0;
+			try {
+				int parenCount = WriteAttrs(node, ref context);
 
-			if (node.BaseStyle() == NodeStyle.PrefixNotation)
-				PrintPrefixNotation(node, context);
-			else do {
-				if (node.IsCall()) {
-					if (AutoPrintBracesOrBracks(node))
-						break;
-					int args = node.ArgCount();
-					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
-						break;
-					if (args == 2 && AutoPrintInfixOp(node, context))
-						break;
-				}
-				PrintPrefixNotation(node, context);
-			} while (false);
+				if (node.BaseStyle() == NodeStyle.PrefixNotation)
+					PrintPrefixNotation(node, context);
+				else do {
+					if (node.IsCall()) {
+						if (AutoPrintBracesOrBracks(node))
+							break;
+						int args = node.ArgCount();
+						if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
+							break;
+						if (args == 2 && AutoPrintInfixOp(node, context))
+							break;
+					}
+					PrintPrefixNotation(node, context);
+				} while (false);
 			
-			PrintSuffixTrivia(node, parenCount, terminator);
+				PrintSuffixTrivia(node, parenCount, terminator);
+			} finally {
+				_isOneLiner = old_isOneLiner;
+			}
 		}
 
 		#region Infix, prefix and suffix operators
@@ -194,9 +209,6 @@ namespace Loyc.Syntax.Les
 				PrintSuffixTrivia(target, 0, null);
 		}
 
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
-
 		private void SpaceIf(bool cond)
 		{
 			if (cond) _out.Space();
@@ -207,7 +219,7 @@ namespace Loyc.Syntax.Les
 		private Precedence? GetPrecedenceIfOperator(ILNode node, OperatorShape shape, Precedence context)
 		{
 			int ac = node.ArgCount();
-			if ((ac == (int)shape || ac == -(int)shape) && HasIdTargetWithoutPAttrs(node))
+			if ((ac == (int)shape || ac == -(int)shape) && HasTargetIdWithoutPAttrs(node))
 			{
 				var bs = node.BaseStyle();
 				var op = node.Name;
@@ -224,7 +236,7 @@ namespace Loyc.Syntax.Les
 			return null;
 		}
 
-		private bool HasIdTargetWithoutPAttrs(ILNode node)
+		private bool HasTargetIdWithoutPAttrs(ILNode node)
 		{
 			var t = node.Target;
 			return t.IsId && !HasPAttrs(t);
@@ -260,15 +272,18 @@ namespace Loyc.Syntax.Les
 				_out.Indent();
 				bool anyNewlines = false;
 				foreach (var stmt in args) {
-					if (stmt.AttrNamed(S.TriviaAppendStatement) == null) {
+					if (stmt.AttrNamed(S.TriviaAppendStatement) == null && !_isOneLiner) {
 						_out.Newline();
 						anyNewlines = true;
-					}
+					} else
+						SpaceIf(SpacesBetweenAppendedStatements);
 					Print(stmt, StartStmt, ";");
 				}
 				_out.Dedent();
 				if (anyNewlines)
 					_out.Newline();
+				else
+					SpaceIf(SpacesBetweenAppendedStatements);
 			} else {
 				for (int i = 0; i < args.Count; )
 					Print(args[i], StartStmt, ++i == args.Count ? "" : ", ");
@@ -374,14 +389,13 @@ namespace Loyc.Syntax.Les
 		}
 		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false)
 		{
-			Debug.Assert(!PrintExplicitTrivia);
 			var name = attr.Name;
 			if (S.IsTriviaSymbol(name)) {
 				if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && ObeyRawText) {
 					if (!testOnly)
 						_out.Write(GetRawText(attr), true);
 					return true;
-				} else if (PrintExplicitTrivia) {
+				} else if (PrintTriviaExplicitly) {
 					return false;
 				} else {
 					if (name == S.TriviaNewline) {
@@ -410,9 +424,10 @@ namespace Loyc.Syntax.Les
 							_out.Write("*/", false);
 						}
 						return true;
-					}
+					} else if (name == S.TriviaAppendStatement)
+						return true; // obeyed elsewhere
 					if (OmitUnknownTrivia)
-						return true;
+						return true; // block printing
 					if (!needSpace && name == S.TriviaTrailing)
 						return true;
 				}

@@ -64,7 +64,7 @@ namespace Loyc.Syntax
 				    #trivia_newline)] 
 				x = y;
 				y = z;
-				@[#trivia_appendStatement] TheEnd();");
+				@[#trivia_appendStatement] TheEnd();", preserveComments: false);
 
 			var injector = new StandardTriviaInjector(trivia, F.File, (int)TT.Newline, "/*", "*/", "//");
 			{

@@ -72,7 +72,7 @@ namespace Loyc.Syntax.Les
 			return ((TokenType)type).ToString();
 		}
 		
-		protected LNode MissingExpr() { return F.Id(S.Missing, InputPosition, InputPosition).SetStyle(NodeStyle.Alternate2); }
+		protected LNode MissingExpr(Token tok) { return F.Id(S.Missing, tok.StartIndex, tok.EndIndex); }
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = Precedence.MinValue;

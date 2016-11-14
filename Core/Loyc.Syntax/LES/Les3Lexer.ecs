@@ -30,7 +30,7 @@ public partial class Les3Lexer
 		// We want to filter out newlines inside parentheses and square brackets.
 		{return _brackStack.Last == TokenType.LBrace ? null : WhitespaceTag.Value;};
 	private token SLComment returns [object result] :
-		"//" (~('\r'|'\n'))* 
+		"//" nongreedy(_)* (@"\\" | ('\r'|'\n'|EOF) =>)
 		{return WhitespaceTag.Value;};
 	[LL(3)] private token MLComment returns [object result] :
 		"/*" nongreedy(MLComment / Newline(true) / _)* "*/"

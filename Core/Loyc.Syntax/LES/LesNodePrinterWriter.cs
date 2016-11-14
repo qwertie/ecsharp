@@ -21,6 +21,7 @@ namespace Loyc.Syntax.Les
 		// BeginLabel() is called to suppress it. Instead, it's stored here.
 		protected string _indentPending;
 		protected int _lineNumber = 1;
+		protected int _lastNewlineAt = 0;
 		protected TextWriter _out;
 
 		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null) : this(new StringWriter(sb), indentString, lineSeparator, labelIndent) { }

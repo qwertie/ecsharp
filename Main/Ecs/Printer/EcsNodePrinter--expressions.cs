@@ -192,7 +192,7 @@ namespace Loyc.Ecs
 				WriteCloseParens(inParens);
 			}
 			if (_context.Lo != StartStmt.Lo)
-				PrintTrivia(suffixTrivia: true);
+				PrintTrivia(trailingTrivia: true);
 		}
 
 		// Checks if an operator with precedence 'prec' can appear in this context.
@@ -988,8 +988,6 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else if ((_n.Name == S.RawText || _n.Name == S.CsRawText) && ObeyRawText)
-				_out.Write(GetRawText(_n), true);
 			else
 				PrintSimpleIdent(_n.Name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
@@ -1005,6 +1003,10 @@ namespace Loyc.Ecs
 					flags |= Ambiguity.ForceAttributeList;
 				G.Verify(0 == PrintAttrs(AttrStyle.IsDefinition, skipClause));
 			}
+
+			var target = _n.Target;
+			PrintTrivia(target, trailingTrivia: false);
+			PrintTrivia(target, trailingTrivia: true);
 
 			Debug.Assert(_context == StartStmt || _context == StartExpr || Flagged(Ambiguity.ForEachInitializer));
 			if (IsSimpleSymbolWPA(a[0], S.Missing))

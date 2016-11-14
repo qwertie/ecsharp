@@ -294,7 +294,7 @@ namespace Loyc.Ecs.Parser {
 				ArgList(ref list);
 				Up();
 			}
-			return F.List(list, lp.StartIndex, rp.EndIndex);
+			return F.Call(S.AltList, list, lp.StartIndex, rp.EndIndex, lp.StartIndex, lp.StartIndex + 1);
 		}
 		int ColumnOf(int index) {
 			return _sourceFile.IndexToLine(index).PosInLine;
@@ -2223,8 +2223,8 @@ namespace Loyc.Ecs.Parser {
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -2246,8 +2246,8 @@ namespace Loyc.Ecs.Parser {
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match3;
@@ -3839,8 +3839,8 @@ namespace Loyc.Ecs.Parser {
 			// Line 1626: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
-				if (Down(0) && Up(HasNoSemicolons())) {
-					if (isArray) {
+				if (isArray) {
+					if (Down(0) && Up(HasNoSemicolons())) {
 						la1 = LA(1);
 						if (la1 == TT.RBrace) {
 							var lb = MatchAny();

@@ -9,7 +9,48 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
-		[Test]
+		[Test(Fails = "TODO: investigate this bug")]
+		public void Bug_2016_11()
+		{
+			Test(@"
+				[FullLLk, AddCsLineDirectives(false)]
+				LLLPG (lexer) @{
+					private token SLComment returns[object result] :
+						'/' '/' nongreedy(_)* ('\\' '\\' | ('\r'|'\n') =>);
+				}", @"
+					object SLComment()
+					{
+						int la0, la1;
+						Match('/');
+						Match('/');
+						for (;;) {
+							switch (LA0) {
+							case '\\':
+								{
+									la1 = LA(1);
+									if (la1 == '\\')
+										goto stop;
+									else
+										Skip();
+								}
+								break;
+							case -1: case '\n': case '\r':
+								goto stop;
+							default:
+								Skip();
+								break;
+							}
+						}
+					stop:;
+						la0 = LA0;
+						if (la0 == '\\') {
+							Skip();
+							Skip();
+						} else { }
+					}", null, Ecs.EcsLanguageService.Value);
+		}
+
+	[Test]
 		public void Regression_2016_10()
 		{
 			// Regression: while turning off hoisting by default for semantic &{...} 

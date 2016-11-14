@@ -32,6 +32,10 @@ namespace Loyc.Syntax.Les
 				A(TT.MLComment, TT.MLComment), WS, WS);
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment), WS, null, null, null, WS);
+			Case("// C:\\hello\\\\\n/* world */",
+				A(TT.SLComment, TT.Newline, TT.MLComment), WS, null, WS);
+			Case("// C:\\hello\\\\/* world */",
+				A(TT.SLComment, TT.MLComment), WS, WS);
 			Case("/* hello */**/",
 				A(TT.MLComment, TT.NormalOp), WS, _("'**/"));
 		}

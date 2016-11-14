@@ -1741,7 +1741,7 @@ namespace Loyc.Ecs.Parser
 				ArgList(ref list);
 				Up();
 			};
-			return F.List(list, lp.StartIndex, rp.EndIndex);
+			return F.Call(S.AltList, list, lp.StartIndex, rp.EndIndex, lp.StartIndex, lp.StartIndex + 1);
 		};
 
 		@[recognizer(fn HasNoSemicolons()::bool), private] 

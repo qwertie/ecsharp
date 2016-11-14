@@ -63,6 +63,8 @@ namespace Loyc.Ecs.Tests
 		{
 			return F.Attr(trivia_appendStatement, node);
 		}
+		protected LNode MLComment(string text) { return F.Trivia(S.TriviaMLComment, text); }
+		protected LNode SLComment(string text) { return F.Trivia(S.TriviaSLComment, text); }
 
 		// Allows a particular test to exclude the printer or the parser
 		[Flags]

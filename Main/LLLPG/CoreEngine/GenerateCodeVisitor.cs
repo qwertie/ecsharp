@@ -110,13 +110,13 @@ namespace Loyc.LLParserGenerator
 							if (line != r.Start.Line) {
 								line = r.Start.Line;
 								if (line <= 0) // sometimes occurs for generated `return result` statement
-									_target.Insert(i++, F.Trivia(S.RawText, "#line default")); 
+									_target.Insert(i++, F.Trivia(S.CsPPRawText, "#line default")); 
 								else
-									_target.Insert(i++, F.Trivia(S.RawText, "#line "+line+" "+Ecs.EcsNodePrinter.PrintString(filename, '"')));
+									_target.Insert(i++, F.Trivia(S.CsPPRawText, "#line "+line+" "+Ecs.EcsNodePrinter.PrintString(filename, '"')));
 							}
 						}
 						if (line > 1)
-							_target.Add(F.Trivia(S.RawText, "#line default"));
+							_target.Add(F.Trivia(S.CsPPRawText, "#line default"));
 					} else {
 						_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaSLCommentBefore,
 							string.Format(" line {0}", _target[i].Range.Start.Line)));

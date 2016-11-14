@@ -13,20 +13,28 @@ namespace Loyc.Syntax.Les
 	/// <see cref="LesColorCode"/> control codes. 
 	/// </summary>
 	/// <remarks>
-	/// Call the <see cref="PrintToConsole"/> static method for console 
-	/// output, <see cref="PrintToHtml"/> for HTML output and <see cref="New"/>
+	/// Call <see cref="New"/> to create an instance, then call 
+	/// <see cref="PrintToConsole"/> for console output, <see cref="PrintToHtml"/> 
+	/// for HTML output, or <see cref="Les3Printer.Print(IEnumerable{ILNode})"/> 
 	/// for just control codes.
 	/// </remarks>
 	public sealed class Les3PrettyPrinter : Les3Printer
 	{
 		/// <summary>Creates an instance of this class, which produces plain LES 
 		/// augmented with control codes.</summary>
-		public new static Les3Printer New(StringBuilder target, IMessageSink messageSink = null, string indentString = "  ", string lineSeparator = "\n")
+		public static Les3PrettyPrinter New(IMessageSink messageSink = null, string indentString = "  ", string lineSeparator = "\n")
 		{
-			return new Les3PrettyPrinter(new PrinterState(target, indentString, lineSeparator), messageSink);
+			return new Les3PrettyPrinter(new PrinterState(null, indentString, lineSeparator), messageSink);
 		}
 
-		public Les3PrettyPrinter(PrinterState ps, IMessageSink messageSink) : base(ps, messageSink)
+		/// <summary>The lookup table of strings for control codes (<see cref="LesColorCode"/> 
+		/// values) to HTML classes, used by <see cref="PrintToHtml(ILNode, StringBuilder, bool, string)"/>.</summary>
+		/// <remarks>This property is null by default, which causes the default 
+		/// table to be used. See <see cref="GetDefaultCssClassTable()"/> for more 
+		/// information.</remarks>
+		public string[] ColorCodesToCssClasses { get; set; }
+
+		internal Les3PrettyPrinter(PrinterState ps, IMessageSink messageSink) : base(ps, messageSink)
 		{
 		}
 
@@ -43,15 +51,20 @@ namespace Loyc.Syntax.Les
 		}
 
 		#region Console pretty printer
-		
-		public static void PrintToConsole(LNode node, IMessageSink messageSink = null, string indentString = "  ", bool endWithNewline = true)
+
+		public void PrintToConsole(ILNode node, bool endWithNewline = true)
 		{
-			var pp = New(null, messageSink, indentString);
-			pp.Print(node, ";");
-			PrintToConsole(pp.SB, endWithNewline);
+			base.Print(node, UseRedundantSemicolons ? ";" : null);
+			PrintToConsoleCore(SB, endWithNewline);
 		}
 
-		public static void PrintToConsole(StringBuilder input, bool endWithNewline = true)
+		public void PrintToConsole(IEnumerable<ILNode> nodes, bool endWithNewline = true)
+		{
+			base.Print(nodes);
+			PrintToConsoleCore(SB, endWithNewline);
+		}
+
+		public static void PrintToConsoleCore(StringBuilder input, bool endWithNewline = true)
 		{
 			var originalColor = Console.ForegroundColor;
 			int depth = 0;
@@ -179,14 +192,26 @@ namespace Loyc.Syntax.Les
 		/// see <see cref="GetDefaultCssClassTable"/>.</param>
 		/// <returns>The output StringBuilder</returns>
 		public static StringBuilder PrintToHtml(
-				LNode node, StringBuilder output = null, 
+				IEnumerable<ILNode> nodes, StringBuilder output = null, 
 				IMessageSink messageSink = null, bool addPreCode = true, 
-				string indentString = "  ", string newlineString = "\n", 
-				string[] colorCodesToCssClasses = null)
+				string indentString = "  ", string newlineString = "\n")
 		{
-			var pp = New(null, messageSink, indentString);
-			pp.Print(node, ";");
-			return PrintToHtml(pp.SB, output, addPreCode, newlineString, colorCodesToCssClasses);
+			var pp = New(messageSink, indentString);
+			return pp.PrintToHtml(nodes, output, addPreCode, newlineString);
+		}
+
+		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, IMessageSink, bool, string, string)"/>
+		public StringBuilder PrintToHtml(IEnumerable<ILNode> nodes, StringBuilder output = null, bool addPreCode = true, string newlineString = "\n")
+		{
+			Print(nodes);
+			return PrintToHtmlCore(SB, output, addPreCode, newlineString, ColorCodesToCssClasses);
+		}
+
+		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, IMessageSink, bool, string, string)"/>
+		public StringBuilder PrintToHtml(ILNode node, StringBuilder output = null, bool addPreCode = true, string newlineString = "\n")
+		{
+			Print(node);
+			return PrintToHtmlCore(SB, output, addPreCode, newlineString, ColorCodesToCssClasses);
 		}
 
 		/// <summary>Converts a StringBuilder with <see cref="LesColorCode"/> 
@@ -198,7 +223,7 @@ namespace Loyc.Syntax.Les
 		/// <param name="colorCodesToCssClasses">CSS class table for span tags, 
 		/// see <see cref="GetDefaultCssClassTable"/>.</param>
 		/// <returns>The output StringBuilder.</returns>
-		public static StringBuilder PrintToHtml(
+		public static StringBuilder PrintToHtmlCore(
 				StringBuilder input, StringBuilder output = null, 
 				bool addPreCode = true, string newline = "\n",
 				string[] colorCodesToCssClasses = null)
