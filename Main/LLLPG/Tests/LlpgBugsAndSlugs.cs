@@ -17,7 +17,7 @@ namespace Loyc.LLParserGenerator
 				LLLPG (lexer) @{
 					private token SLComment returns[object result] :
 						'/' '/' nongreedy(_)* ('\\' '\\' | ('\r'|'\n') =>);
-				}", @"
+				};", @"
 					object SLComment()
 					{
 						int la0, la1;

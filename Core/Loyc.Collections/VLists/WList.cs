@@ -361,7 +361,7 @@ namespace Loyc.Collections
 			AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(-1); });
 			AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(list.Count); });
 
-			// Front, Contains, IndexOf
+			// Last, Contains, IndexOf
 			Assert.That(list.Last == 10);
 			Assert.That(list.Contains(9));
 			Assert.That(list[list.IndexOf(2)] == 2);

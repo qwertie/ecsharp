@@ -18,7 +18,7 @@ namespace Loyc.Collections
 		{
 			bool fail;
 			for (int i = 0; i < count; i++) {
-				range.PopFront(out fail);
+				range.PopFirst(out fail);
 				if (fail) return i;
 			}
 			return count;
@@ -28,7 +28,7 @@ namespace Loyc.Collections
 			bool fail;
 			for (int i = 0; i < count; i++)
 			{
-				range.PopBack(out fail);
+				range.PopLast(out fail);
 				if (fail) return i;
 			}
 			return count;
@@ -36,7 +36,7 @@ namespace Loyc.Collections
 		public static T PopFirst<R, T>(ref R range, T defaultValue) where R : IFRange<T>
 		{
 			bool fail;
-			T next = range.PopFront(out fail);
+			T next = range.PopFirst(out fail);
 			if (!fail)
 				return next;
 			else
@@ -45,14 +45,14 @@ namespace Loyc.Collections
 		public static T PopFirst<R,T>(ref R range) where R:IFRange<T>
 		{
 			bool fail;
-			T next = range.PopFront(out fail);
+			T next = range.PopFirst(out fail);
 			if (fail) throw new EmptySequenceException();
 			return next;
 		}
 		public static T PopLast<R, T>(ref R range, T defaultValue) where R : IBRange<T>
 		{
 			bool fail;
-			T next = range.PopBack(out fail);
+			T next = range.PopLast(out fail);
 			if (!fail)
 				return next;
 			else
@@ -61,7 +61,7 @@ namespace Loyc.Collections
 		public static T PopLast<R, T>(ref R range) where R : IBRange<T>
 		{
 			bool fail;
-			T next = range.PopBack(out fail);
+			T next = range.PopLast(out fail);
 			if (fail) throw new EmptySequenceException();
 			return next;
 		}

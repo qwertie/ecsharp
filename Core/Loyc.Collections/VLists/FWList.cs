@@ -223,7 +223,7 @@ namespace Loyc.Collections
 		#region Other stuff
 
 		/// <summary>Returns the front item of the list (at index 0).</summary>
-		public T Front
+		public T First
 		{
 			get {
 				return Block.Front(LocalCount);
@@ -240,7 +240,7 @@ namespace Loyc.Collections
 		{
 			if (Block == null)
 				throw new InvalidOperationException("Pop: The list is empty.");
-			T item = Front;
+			T item = First;
 			RemoveAtDff(0);
 			return item;
 		}
@@ -341,7 +341,7 @@ namespace Loyc.Collections
 			AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(list.Count); });
 
 			// Front, Contains, IndexOf
-			Assert.That(list.Front == 10);
+			Assert.That(list.First == 10);
 			Assert.That(list.Contains(9));
 			Assert.That(list[list.IndexOf(2)] == 2);
 			Assert.That(list[list.IndexOf(9)] == 9);
@@ -522,7 +522,7 @@ namespace Loyc.Collections
 			Assert.That(b.IsEmpty);
 			b.Insert(0, a[0]);
 			ExpectList(b, 1);
-			b.Remove(a.Front);
+			b.Remove(a.First);
 			Assert.That(b.IsEmpty);
 		}
 		[Test]

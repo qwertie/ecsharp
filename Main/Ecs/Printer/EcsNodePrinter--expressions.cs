@@ -6,6 +6,7 @@ using System.ComponentModel;
 using Loyc;
 using Loyc.Math;
 using Loyc.Syntax;
+using Loyc.Collections;
 using Loyc.Collections.Impl;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Loyc.Ecs.EcsPrecedence;
@@ -229,7 +230,7 @@ namespace Loyc.Ecs
 			if (!_n.IsCall || !HasSimpleHeadWPA(_n))
 				return false;
 			Pair<Precedence, OperatorPrinter> info;
-			if (OperatorPrinters.TryGetValue(_n.Name, out info))
+			if (OperatorPrinters.TryGetValueSafe(_n.Name, out info))
 				return info.Item2(this, info.Item1);
 			else if (_n.BaseStyle == NodeStyle.Operator)
 			{

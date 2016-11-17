@@ -83,14 +83,15 @@ namespace Loyc.LLParserGenerator
 			if (expr.IsCall)
 			{
 				bool slash = false, not;
-				if (expr.Calls(S.Tuple))
+				var name = expr.Name;
+				if (name == S.Tuple)
 				{
 					// sequence: (a, b, c)
 					if (expr.Calls(S.Tuple, 1))
 						return NodeToPred(expr.Args[0], ctx);
 					return ArgsToSeq(expr, ctx);
 				}
-				else if (expr.Calls(S.Braces))
+				else if (name == S.Braces)
 				{
 					// Just code: use an empty sequence
 					var seq = new Seq(expr);
@@ -159,7 +160,7 @@ namespace Loyc.LLParserGenerator
 				{
 					return Translate_any_in_Expr(expr, ctx);
 				}
-				else if ((expr.Name.Name.EndsWith(":") || expr.Name.Name.EndsWith("=")) && expr.ArgCount == 2)
+				else if ((name.Name.EndsWith(":") || name.Name.EndsWith("=")) && expr.ArgCount == 2)
 				{
 					return TranslateLabeledExpr(expr, ctx);
 				}

@@ -330,6 +330,7 @@ namespace Loyc.Syntax
 		public override Symbol Name {
 			get {
 				var target = Target;
+				Debug.Assert(target != null);
 				if (target == null || !target.IsId)
 					return GSymbol.Empty;
 				return target.Name;

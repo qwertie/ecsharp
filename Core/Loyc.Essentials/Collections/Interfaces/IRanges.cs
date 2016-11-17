@@ -43,7 +43,7 @@ namespace Loyc.Collections
 	/// PopFirst(), to get the next item, unlike IEnumerator which requires two 
 	/// interface calls per iteration. That can improve performance, since 
 	/// interface calls cannot be inlined. It is a bit inconvenient to use
-	/// <see cref="PopFront(out bool)"/> because of its "out" argument, and 
+	/// <see cref="PopFirst(out bool)"/> because of its "out" argument, and 
 	/// more convenient extension methods would have been provided if C# 
 	/// supported "ref Type this", which would be needed since ranges are
 	/// often value types.
@@ -185,10 +185,10 @@ namespace Loyc.Collections
 		/// <remarks>
 		/// A possible default implementation:
 		/// <pre>
-		/// T Front { get { return Range.PopFront(Clone()); } }
+		/// T First { get { return Range.PopFirst(Clone()); } }
 		/// </pre>
 		/// </remarks>
-		T Front { get; }
+		T First { get; }
 		/// <summary>Removes the first item from the range and returns it.</summary>
 		/// <param name="fail">Receives the current value of <see cref="IIsEmpty.IsEmpty"/>.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
@@ -202,12 +202,12 @@ namespace Loyc.Collections
 		/// which, ironically, is not compatible with "out T" parameters, only with 
 		/// return values.
 		/// </remarks>
-		T PopFront(out bool fail);
+		T PopFirst(out bool fail);
 	}
 
 	/// <summary>A mutable forward range.</summary>
 	/// <remarks>
-	/// This range lets you change the value of <see cref="Front"/>.
+	/// This range lets you change the value of <see cref="First"/>.
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// <para/>
@@ -233,7 +233,7 @@ namespace Loyc.Collections
 	{
 		/// <summary>Gets or sets the value of the first item in the range.</summary>
 		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
-		new T Front { get; set; }
+		new T First { get; set; }
 	}
 
 	/// <summary>A bidirectional range. Allows you to read or remove the first
@@ -256,19 +256,19 @@ namespace Loyc.Collections
 		/// <remarks>
 		/// A reasonable default implementation:
 		/// <pre>
-		/// T Back { get { return Range.PopBack(Clone()); } }
+		/// T Last { get { return Range.PopLast(Clone()); } }
 		/// </pre>
 		/// </remarks>
-		T Back { get; }
+		T Last { get; }
 		/// <summary>Removes the last item from the range and returns it.</summary>
 		/// <param name="fail">Receives the current value of IsEmpty.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
-		/// <remarks>The remarks of <see cref="IFRange{T}.PopFront"/> apply to this method.</remarks>
-		T PopBack(out bool fail);
+		/// <remarks>The remarks of <see cref="IFRange{T}.PopFirst"/> apply to this method.</remarks>
+		T PopLast(out bool fail);
 	}
 
 	/// <summary>A mutable bidirectional range.</summary>
-	/// <remarks>This range lets you change the value of <see cref="IMFRange{T}.Front"/> and <see cref="Back"/>.
+	/// <remarks>This range lets you change the value of <see cref="IMFRange{T}.First"/> and <see cref="Last"/>.
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
@@ -276,7 +276,7 @@ namespace Loyc.Collections
 	{
 		/// <summary>Gets or sets the value of the last item in the range.</summary>
 		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
-		new T Back { get; set; }
+		new T Last { get; set; }
 	}
 
 	/// <summary>A random-access range, also known as a "slice". Allows you to 

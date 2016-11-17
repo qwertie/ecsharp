@@ -86,20 +86,20 @@ namespace Loyc.Collections
 		{
 			get { return true; }
 		}
-		public T Front
+		public T First
 		{
 			get { throw new EmptySequenceException(); }
 		}
-		public T Back
+		public T Last
 		{
 			get { throw new EmptySequenceException(); }
 		}
 
-		public T PopBack(out bool fail)
+		public T PopLast(out bool fail)
 		{
 			fail = true; return default(T);
 		}
-		public T PopFront(out bool fail)
+		public T PopFirst(out bool fail)
 		{
 			fail = true; return default(T);
 		}

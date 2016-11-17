@@ -73,16 +73,16 @@ namespace Loyc.Collections
 		{
 			get { return _count == 0; }
 		}
-		public char Front
+		public char First
 		{
 			get { return this[0]; }
 		}
-		public char Back
+		public char Last
 		{
 			get { return this[_count - 1]; }
 		}
 
-		public char PopFront(out bool fail)
+		public char PopFirst(out bool fail)
 		{
 			if (_count != 0)
 			{
@@ -93,7 +93,7 @@ namespace Loyc.Collections
 			fail = true;
 			return default(char);
 		}
-		public char PopBack(out bool fail)
+		public char PopLast(out bool fail)
 		{
 			if (_count != 0)
 			{

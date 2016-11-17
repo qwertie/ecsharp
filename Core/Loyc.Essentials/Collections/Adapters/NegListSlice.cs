@@ -61,16 +61,16 @@ namespace Loyc.Collections
 		{
 			get { return _count == 0; }
 		}
-		public T Front
+		public T First
 		{
 			get { return this[0]; }
 		}
-		public T Back
+		public T Last
 		{
 			get { return this[_count - 1]; }
 		}
 
-		public T PopFront(out bool empty)
+		public T PopFirst(out bool empty)
 		{
 			if (_count != 0) {
 				empty = false;
@@ -80,7 +80,7 @@ namespace Loyc.Collections
 			empty = true;
 			return default(T);
 		}
-		public T PopBack(out bool empty)
+		public T PopLast(out bool empty)
 		{
 			if (_count != 0) {
 				empty = false;

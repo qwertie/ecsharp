@@ -184,7 +184,7 @@ namespace Loyc.Syntax.Les
 		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
 		{
 			bool isTripleQuoted = false, fail;
-			char quoteType = (char)sourceText.PopFront(out fail);
+			char quoteType = (char)sourceText.PopFirst(out fail);
 			if (sourceText[0, '\0'] == quoteType &&
 				sourceText[1, '\0'] == quoteType) {
 				sourceText = sourceText.Substring(2);
@@ -233,9 +233,9 @@ namespace Loyc.Syntax.Les
 						// Detect escape sequence
 						c = ParseHelpers.UnescapeChar(ref sourceText);
 						if (sourceText.InternalStart > i0 + 1)
-							G.Verify(sourceText.PopFront(out fail) == '/');
+							G.Verify(sourceText.PopFirst(out fail) == '/');
 					} else {
-						c = sourceText.PopFront(out fail);
+						c = sourceText.PopFirst(out fail);
 						if (fail)
 							return false;
 						if (c == quoteType) {
@@ -252,14 +252,14 @@ namespace Loyc.Syntax.Les
 							if (c == '\r') {
 								c = '\n';
 								var copy = sourceText.Clone();
-								if (sourceText.PopFront(out fail) != '\n')
+								if (sourceText.PopFirst(out fail) != '\n')
 									sourceText = copy;
 							}
 							// Inside a triple-quoted string, the indentation following a newline 
 							// is ignored, as long as it matches the indentation of the first line.
 							UString src = sourceText, ind = indentation;
 							int sp;
-							while ((sp = src.PopFront(out fail)) == ind.PopFront(out fail) && !fail)
+							while ((sp = src.PopFirst(out fail)) == ind.PopFirst(out fail) && !fail)
 								sourceText = src;
 							if (les3TQIndents && fail) {
 								// Allow an additional one tab or three spaces when initial indent matches
@@ -267,9 +267,9 @@ namespace Loyc.Syntax.Les
 									sourceText = src;
 								else if (sp == ' ') { 
 									sourceText = src;
-									if (src.PopFront(out fail) == ' ')
+									if (src.PopFirst(out fail) == ' ')
 										sourceText = src;
-									if (src.PopFront(out fail) == ' ')
+									if (src.PopFirst(out fail) == ' ')
 										sourceText = src;
 								}
 							}
@@ -460,23 +460,23 @@ namespace Loyc.Syntax.Les
 
 			UString start = source;
 			bool fail;
-			int c = source.PopFront(out fail);
+			int c = source.PopFirst(out fail);
 			if (c == '@') {
 				// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
-				c = source.PopFront(out fail);
+				c = source.PopFirst(out fail);
 				if (c == '`') {
 					UnescapeString(ref source, (char)c, false, onError, parsed);
 				} else {
 					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
 						parsed.Append((char)c);
-						c = source.PopFront(out fail);
+						c = source.PopFirst(out fail);
 					}
 					checkForNamedLiteral = true;
 				}
 			} else if (IsIdStartChar(c)) {
 				parsed.Append(c);
 				for (;;) {
-					c = source.PopFront(out fail);
+					c = source.PopFirst(out fail);
 					if (!IsIdContChar(c))
 						break;
 					parsed.Append((char)c);

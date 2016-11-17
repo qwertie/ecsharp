@@ -153,14 +153,14 @@ namespace Loyc.Ecs.Parser
 			Debug.Assert(source.Length >= 1);
 			if (isVerbatim) {
 				bool fail;
-				char stringType = (char)source.PopFront(out fail);
+				char stringType = (char)source.PopFirst(out fail);
 				StringBuilder sb = new StringBuilder();
 				int c;
 				for (;;) {
-					c = source.PopFront(out fail);
+					c = source.PopFirst(out fail);
 					if (fail) break;
 					if (c == stringType) {
-						if ((c = source.PopFront(out fail)) != stringType)
+						if ((c = source.PopFirst(out fail)) != stringType)
 							break;
 					}
 					sb.Append((char)c);

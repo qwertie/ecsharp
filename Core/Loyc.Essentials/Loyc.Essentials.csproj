@@ -208,6 +208,7 @@
     <Compile Include="Collections\Adapters\SourceAsCollection.cs" />
     <Compile Include="Collections\Adapters\NegListSlice.cs" />
     <Compile Include="NamespaceDocs.cs" />
+    <Compile Include="Strings\StringBuilderExt.cs" />
     <Compile Include="Strings\StringSlice.cs" />
     <Compile Include="Strings\UString.cs" />
     <Compile Include="Collections\Adapters\ValueCollection.cs" />

@@ -462,7 +462,7 @@ namespace LeMP
 
 		#region Find macros by name: GetApplicableMacros
 
-		public int GetApplicableMacros(ICollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found)
+		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found)
 		{
 			VList<MacroInfo> candidates;
 			if (_macros.TryGetValue(name, out candidates)) {

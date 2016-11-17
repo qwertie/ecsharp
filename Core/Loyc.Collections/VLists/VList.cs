@@ -684,7 +684,7 @@ namespace Loyc.Collections
 			Assert.That(list[list.IndexOf(15)] == 15);
 			Assert.That(list.IndexOf(3) == -1);
 
-			// PreviousIn(), Back
+			// PreviousIn(), Last
 			VList<int> list3 = list2;
 			Assert.AreEqual(11, (list3 = list3.NextIn(list)).Last);
 			Assert.AreEqual(12, (list3 = list3.NextIn(list)).Last);

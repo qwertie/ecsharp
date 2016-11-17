@@ -76,8 +76,6 @@ namespace LeMP
 	/// <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>.
 	/// Parallelizing on a file-by-file basis is easy; each source file is completely 
 	/// independent, since no semantic analysis is being done. 
-	/// <para/>
-	/// TODO: add method for processing an LNode instead of a list of source files.
 	/// </remarks>
 	public partial class MacroProcessor
 	{
@@ -107,15 +105,20 @@ namespace LeMP
 		public ICollection<Symbol> PreOpenedNamespaces { get { return _preOpenedNamespaces; } }
 		internal MSet<Symbol> _preOpenedNamespaces = new MSet<Symbol>();
 
-		/// <summary>Default values of scoped properties. This map is empty by 
-		/// default.</summary>
-		/// <remarks>The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
+		/// <summary>Default values of scoped properties.</summary>
+		/// <remarks>Code being processed can look up a scoped property named "N" with 
+		/// <c>#getScopedProperty("N")</c> in LESv2 or EC#. This map is empty by default.
+		/// Scoped properties are "scoped" in the sense that setting a property with 
+		/// <c>#setScopedProperty(keyLiteral, valueLiteral)</c> takes effect only until 
+		/// the end of the braced block in which it appears.
+		/// <para/>
+		/// The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
 		/// syntax for <see cref="Symbol"/>) are not normally stored in this collection; 
 		/// when you use <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>, 
 		/// @@#inputFolder and @@#inputFileName are set according to the folder and 
 		/// filename in <see cref="InputOutput.FileName"/>. However, @@#inputFolder 
 		/// is not set if the filename has no folder component, so this collection 
-		/// could be used to override @@#inputFolder in that case.
+		/// could be used to provide a value of @@#inputFolder in that case.
 		/// </remarks>
 		public MMap<object, object> DefaultScopedProperties = new MMap<object, object>();
 

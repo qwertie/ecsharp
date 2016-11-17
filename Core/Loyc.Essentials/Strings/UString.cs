@@ -132,11 +132,11 @@ namespace Loyc
 		{
 			get { return _count == 0; }
 		}
-		public uchar Front
+		public uchar First
 		{
 			get { return DecodeAt(0); }
 		}
-		public uchar Back
+		public uchar Last
 		{
 			get {
 				int c = DecodeAt(_count - 1);
@@ -151,11 +151,11 @@ namespace Loyc
 			}
 		}
 
-		public uchar PopFront(out bool fail)
+		public uchar PopFirst(out bool fail)
 		{
 			if (_count != 0) {
 				fail = false;
-				var c = Front;
+				var c = First;
 				int inc = c >= 0x10000 ? 2 : 1;
 				_count -= inc;
 				_start += inc;
@@ -164,11 +164,11 @@ namespace Loyc
 			fail = true;
 			return default(uchar);
 		}
-		public uchar PopBack(out bool fail)
+		public uchar PopLast(out bool fail)
 		{
 			if (_count != 0) {
 				fail = false;
-				var c = Back;
+				var c = Last;
 				_count -= (c >= 0x10000 ? 2 : 1);
 				return c;
 			}
@@ -370,7 +370,7 @@ namespace Loyc
 					for (;;) {
 						bool fail;
 						var was = sub;
-						uchar f = sub.PopFront(out fail);
+						uchar f = sub.PopFirst(out fail);
 						if (fail || what == f || f <= 0xFFFF && what == char.ToUpperInvariant((char)f))
 							return was;
 					}
@@ -384,7 +384,7 @@ namespace Loyc
 				for (;;) {
 					bool fail;
 					var was = sub;
-					uchar f = sub.PopFront(out fail);
+					uchar f = sub.PopFirst(out fail);
 					if (fail || what == f)
 						return was;
 				}

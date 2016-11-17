@@ -97,7 +97,7 @@ namespace Loyc.Syntax
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			bool usedEscapes = false, fail;
 			for (;;) {
-				int c = s.PopFront(out fail);
+				int c = s.PopFirst(out fail);
 				if (fail) break;
 				usedEscapes |= EscapeCStyle(c, s2, flags, quoteType);
 			}
@@ -286,14 +286,14 @@ namespace Loyc.Syntax
 		public static int UnescapeChar(ref UString s, ref EscapeC encountered)
 		{
 			bool fail;
-			int c = s.PopFront(out fail);
+			int c = s.PopFirst(out fail);
 			if (c != '\\' || s.Length <= 0)
 				return c;
 
 			encountered |= EscapeC.HasEscapes;
 			int code; // hex code after \u or \x
 			UString slice, original = s;
-			switch (s.PopFront(out fail)) {
+			switch (s.PopFirst(out fail)) {
 				case 'u':
 					slice = s.Left(6);
 					if (TryParseHex(ref slice, out code) >= 4) {

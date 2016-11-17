@@ -121,7 +121,7 @@ namespace Loyc.Ecs
 				var style = _n.BaseStyle;
 				StatementPrinter printer;
 				var name = _n.Name;
-				if (StatementPrinters.TryGetValue(name, out printer) && HasSimpleHeadWPA(_n))
+				if (StatementPrinters.TryGetValueSafe(name, out printer) && HasSimpleHeadWPA(_n))
 				{
 					if (PreferPlainCSharp || name == S.RawText || name == S.CsRawText ||
 						(style != NodeStyle.Expression && style != NodeStyle.PrefixNotation))

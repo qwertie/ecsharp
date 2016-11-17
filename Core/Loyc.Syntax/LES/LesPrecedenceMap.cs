@@ -270,13 +270,13 @@ namespace Loyc.Syntax.Les
 		/// returning true will be that IsNaturalOperator(bareName) == true.</param>
 		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName, bool checkNatural)
 		{
-			if (name.Name.EndsWith("suf"))
+			if (name.Name.EndsWith("suf")) {
 				bareName = (Symbol)name.Name.Substring(0, name.Name.Length - 3);
-			else {
+				return !checkNatural || IsNaturalOperator(bareName.Name);
+			} else {
 				bareName = name;
 				return false;
 			}
-			return !checkNatural || IsNaturalOperator(bareName.Name);
 		}
 	}
 }

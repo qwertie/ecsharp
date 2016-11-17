@@ -151,16 +151,16 @@ namespace Loyc.Collections
 			get { return _count <= 0; }
 		}
 
-		public T Back
+		public T Last
 		{
-			get { return Front; }
+			get { return First; }
 		}
-		public T PopBack(out bool fail)
+		public T PopLast(out bool fail)
 		{
-			return PopBack(out fail);
+			return PopLast(out fail);
 		}
 
-		public T Front
+		public T First
 		{
 			get { 
 				if (_count <= 0)
@@ -168,7 +168,7 @@ namespace Loyc.Collections
 				return _value; 
 			}
 		}
-		public T PopFront(out bool fail)
+		public T PopFirst(out bool fail)
 		{
 			if (!(fail = _count <= 0)) {
 				_count--;

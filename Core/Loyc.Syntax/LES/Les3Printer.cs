@@ -430,7 +430,7 @@ namespace Loyc.Syntax.Les
 				UString s = text;
 				for (;;) {
 					bool fail;
-					int c = s.PopFront(out fail);
+					int c = s.PopFirst(out fail);
 					if (fail) break;
 
 					EscapeC flags = EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse;
@@ -749,14 +749,14 @@ namespace Loyc.Syntax.Les
 				// Detect a block call, which should have something in 
 				// braces, followed by continuators.
 				if (!ignoreContinuators)
-					while (args.Count > 1 && IsContinuator(args.Back)) {
+					while (args.Count > 1 && IsContinuator(args.Last)) {
 						numContinuators++;
 						args = args.Slice(0, args.Count - 1);
 					}
 
 				do {
 					if (args.Count > 0) {
-						braces = args.Back;
+						braces = args.Last;
 						args = args.Slice(0, args.Count - 1);
 						if (braces.Calls(CodeSymbols.Braces) && HasTargetIdWithoutPAttrs(braces))
 							break;
