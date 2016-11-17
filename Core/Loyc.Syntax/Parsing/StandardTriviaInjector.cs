@@ -163,7 +163,7 @@ namespace Loyc.Syntax
 				}
 				if (commentType == null)
 					return null;
-				return LNode.Trivia(commentType, text.ToString(), SourceFile, t.StartIndex, t.Length);
+				return LNode.Trivia(commentType, text.ToString(), new SourceRange(SourceFile, t.StartIndex, t.Length));
 			}
 		}
 

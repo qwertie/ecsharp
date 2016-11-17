@@ -317,19 +317,19 @@ namespace Loyc.Syntax
 		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
 		public static CallNode Trivia(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, range, style); }
 
-		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = 0) { return new StdIdNode(name, new SourceRange(file, position, width)); }
-		public static IdNode Id(string name, ISourceFile file = null, int position = -1, int width = 0) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
-		public static IdNode Id(VList<LNode> attrs, Symbol name, ISourceFile file = null, int position = -1, int width = 0) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file, position, width)); }
-		public static IdNode Id(VList<LNode> attrs, string name, ISourceFile file = null, int position = -1, int width = 0) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file, position, width)); }
-		public static LiteralNode Literal(object value, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
-		public static LiteralNode Literal(VList<LNode> attrs, object value, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file, position, width), style); }
-		public static CallNode Call(Symbol name, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, VList<LNode>.Empty, new SourceRange(file, position, width), style); }
-		public static CallNode Call(LNode target, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, VList<LNode>.Empty, new SourceRange(file, position, width), style); }
-		public static CallNode Call(Symbol name, VList<LNode> args, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file, position, width), style); }
-		public static CallNode Call(LNode target, VList<LNode> args, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
-		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
-		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
-		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, int position = -1, int width = 0, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file, position, width), style); }
+		public static IdNode Id(Symbol name, ISourceFile file = null) { return new StdIdNode(name, new SourceRange(file)); }
+		public static IdNode Id(string name, ISourceFile file = null) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file)); }
+		public static IdNode Id(VList<LNode> attrs, Symbol name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file)); }
+		public static IdNode Id(VList<LNode> attrs, string name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file)); }
+		public static LiteralNode Literal(object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file), style); }
+		public static LiteralNode Literal(VList<LNode> attrs, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file), style); }
+		public static CallNode Call(Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, VList<LNode>.Empty, new SourceRange(file), style); }
+		public static CallNode Call(LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, VList<LNode>.Empty, new SourceRange(file), style); }
+		public static CallNode Call(Symbol name, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file), style); }
+		public static CallNode Call(LNode target, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file), style); }
+		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file), style); }
+		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file), style); }
+		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file), style); }
 
 		/// <summary>Used by the <c>quote {...}</c> macro.</summary>
 		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);

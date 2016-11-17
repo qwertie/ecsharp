@@ -1029,7 +1029,7 @@ namespace Loyc.Ecs
 		public static string PrintLiteral(object value, NodeStyle style)
 		{
 			InitStaticInstance();
-			_staticPrinter._n = LNode.Literal(value, null, -1, -1, style);
+			_staticPrinter._n = LNode.Literal(value, null, style);
 			_staticPrinter.PrintLiteral();
 			return _staticStringBuilder.ToString();
 		}
