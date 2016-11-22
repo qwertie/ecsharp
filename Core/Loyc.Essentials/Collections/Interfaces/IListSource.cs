@@ -205,11 +205,5 @@ namespace Loyc.Collections
 					return i;
 			return -1;
 		}
-
-		public static T FirstOrDefault<T>(this IListSource<T> list)
-		{
-			bool _;
-			return list.TryGet(0, out _);
-		}
 	}
 }

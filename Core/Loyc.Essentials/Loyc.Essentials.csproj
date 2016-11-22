@@ -160,6 +160,11 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\HelperClasses\SelectListSource.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SelectListSource.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Compatibility\Contract.Assert.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
@@ -203,7 +208,10 @@
     <Compile Include="Collections\Adapters\ReverseBinumerator.cs" />
     <Compile Include="Collections\Adapters\ReversedList.cs" />
     <Compile Include="Collections\Adapters\ReversedListSource.cs" />
-    <Compile Include="Collections\HelperClasses\SelectListSource.cs" />
+    <None Include="Collections\HelperClasses\SelectListSource.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SelectListSource.out.cs</LastGenOutput>
+    </None>
     <Compile Include="Collections\Adapters\Slice.cs" />
     <Compile Include="Collections\Adapters\SourceAsCollection.cs" />
     <Compile Include="Collections\Adapters\NegListSlice.cs" />

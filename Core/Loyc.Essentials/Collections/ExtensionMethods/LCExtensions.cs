@@ -99,11 +99,6 @@ namespace Loyc.Collections
 		{
 			return StringExt.Join(separator, list.GetEnumerator());
 		}
-
-		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
-		{
-			return new SelectListSource<T, TResult>(source, selector);
-		}
 	}
 
 	/// <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>

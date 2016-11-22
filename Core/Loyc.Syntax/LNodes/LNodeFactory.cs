@@ -519,7 +519,7 @@ namespace Loyc.Syntax
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };
-			return new StdSimpleCallNode(S.Fn, new VList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.Fn, new VList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex), startIndex, startIndex);
 		}
 		public LNode Property(LNode type, LNode name, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
@@ -535,7 +535,7 @@ namespace Loyc.Syntax
 				: initializer == null
 				? new[] { type, name, argList, body }
 				: new[] { type, name, argList, body, initializer };
-			return new StdSimpleCallNode(S.Property, new VList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.Property, new VList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex), startIndex, startIndex);
 		}
 		
 		public LNode Var(LNode type, string name, LNode initValue = null, int startIndex = -1, int endIndex = -1)

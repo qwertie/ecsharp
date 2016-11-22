@@ -280,7 +280,7 @@ namespace Loyc.Utilities
 
 			ExpectList(args.AsListSource(), "@"+file1, "@"+file2, "fox--jumps", "lazy dog");
 			ExpectList(options, P("over", null));
-			ExpectList(msgs.List.Select(msg => msg.ToString()).Buffered(),
+			ExpectList(msgs.List.Select(msg => msg.ToString()).AsListSource(),
 				"@test ProcessCmdLine 2.txt: Warning: Limit of 5 commands exceeded");
 		}
 	}

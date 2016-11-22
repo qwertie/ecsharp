@@ -11,8 +11,9 @@ using System.Linq;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// Work in progress. This class will enhance LINQ-to-Objects with 
-	/// type-preserving and/or higher-performance extension methods.
+	/// This class enhances LINQ-to-Objects with extension methods that preserve the
+	/// interface (e.g. Take(List&lt;int>) returns IList&lt;int>) and/or have higher
+	/// performance than the ones in System.Linq.Enumerable.
 	/// </summary><remarks>
 	/// For example, the <see cref="Enumerable.Last(IEnumerable{T})"/> extension 
 	/// method scans the entire list before returning the last item, while 
@@ -32,6 +33,30 @@ namespace Loyc.Collections
 		public static int Count<T>(this INegListSource<T> list)
 		{
 			return list.Count;
+		}
+
+		public static T FirstOrDefault<T>(this IList<T> list, T defaultValue = default(T))
+		{
+			if (list.Count > 0)
+				return list[0];
+			return defaultValue;
+		}
+		public static T FirstOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T))
+		{
+			return FirstOrDefault((IListSource<T>)list, defaultValue);
+		}
+		public static T FirstOrDefault<T>(this IListSource<T> list)
+		{
+			bool _;
+			return list.TryGet(0, out _);
+		}
+		public static T FirstOrDefault<T>(this IListSource<T> list, T defaultValue)
+		{
+			bool fail;
+			var result = list.TryGet(0, out fail);
+			if (fail)
+				return defaultValue;
+			return result;
 		}
 
 		public static T Last<T>(this IList<T> list)
@@ -125,6 +150,19 @@ namespace Loyc.Collections
 			for (int i = 0; i < array.Length; i++)
 				array[i] = c[i + min];
 			return array;
+		}
+
+		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
+		{
+			return new SelectListSource<T, TResult>(source, selector);
+		}
+		public static IList<TResult> Select<T, TResult>(this IList<T> source, Func<T, TResult> selector)
+		{
+			return new SelectList<T, TResult>(source, selector);
+		}
+		public static IListSource<TResult> Select<T, TResult>(this IListAndListSource<T> source, Func<T, TResult> selector)
+		{
+			return new SelectListSource<T, TResult>(source, selector);
 		}
 
 		// TODO:

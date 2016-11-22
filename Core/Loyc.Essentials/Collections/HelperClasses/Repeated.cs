@@ -132,7 +132,7 @@ namespace Loyc.Collections
 		}
 		public bool Contains(T item)
 		{
-			return Enumerable.Contains(this, item);
+			return EqualityComparer<T>.Default.Equals(_value, item);
 		}
 
 		#endregion
