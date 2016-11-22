@@ -41,8 +41,8 @@ namespace LeMP.Tests
 		[Test]
 		public void TestReplace_params()
 		{
-			TestEcs("replace({ $(params before); on_exit { $(params command); } $(params after); } =>\n"+
-			        "        { $before;          try  { $after; } finally { $command; }         }) \n"+
+			TestEcs("replace({{ $(params before); on_exit { $(params command); } $(params after); }} =>\n"+
+			        "        {{ $before;          try  { $after; } finally { $command; }         }}) \n"+
 			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
 			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
 			
@@ -97,6 +97,29 @@ namespace LeMP.Tests
 		{
 			TestEcs(@"{ replace(C => Console, WL => WriteLine); string name = ""Bob""; C.WL(""Hi ""+name); }",
 			        @"{ string name = ""Bob""; Console.WriteLine(""Hi ""+name); }");
+		}
+
+		[Test]
+		public void TestReplaceFn()
+		{
+			TestEcs(@"replace NL() { Console.WriteLine(); } NL(); NL();",
+					@"Console.WriteLine(); Console.WriteLine();");
+			TestEcs(@"replace Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
+					@"void F(int arg) {} void G(int arg) {} void F(List<int> arg) {} void G(List<int> arg) {}");
+			TestEcs(@"replace WL($format, $(..args)) => Console.WriteLine($format, $args); WL(1, 2, 3);",
+					@"Console.WriteLine(1, 2, 3);");
+			TestEcs(@"[Passive] replace operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
+					@"x = Foo.SetAt(y, z);");
+			// Test warnings about `$`
+			using (MessageSink.PushCurrent(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
+				_msgHolder.List.Clear();
+				TestEcs(@"replace Foo(w, $x, y, $z) => (x, $y);", @"");
+				Assert.AreEqual(2, _msgHolder.List.Count);
+				TestEcs(@"replace Foo(a, b) => (a, b);", @"");
+				Assert.AreEqual(4, _msgHolder.List.Count);
+				Assert.IsTrue(_msgHolder.List.All(msg => msg.Severity == Severity.Warning));
+				_msgHolder.WriteListTo(MessageSink.Trace);
+			}
 		}
 	}
 }

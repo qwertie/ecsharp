@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using Loyc;
 using Loyc.Syntax;
-using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Collections;
 using System.Diagnostics;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections.Impl;
+using Loyc.Ecs;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
@@ -42,10 +43,14 @@ namespace LeMP
 							pattern = context.PreProcess(pattern);
 							repl = context.PreProcess(repl);
 						}
-						if (pattern.Calls(S.Braces, 1) && repl.Calls(S.Braces)) {
-							pattern = pattern.Args[0];
-							repl = repl.WithTarget(S.Splice);
+						if (pattern.Calls(S.Braces)) {
+							if (pattern.ArgCount == 1)
+								pattern = pattern.Args[0];
+							else
+								context.Write(Severity.Error, pattern, "The braces must contain only a single statement. To search for braces literally, use `{{ ... }}`");
 						}
+						if (repl.Calls(S.Braces))
+							repl = repl.WithTarget(S.Splice);
 						patterns[i] = Pair.Create(pattern, repl);
 					} else {
 						string msg = "Expected 'pattern => replacement'.";
@@ -122,7 +127,7 @@ namespace LeMP
 	
 			return null;
 		}
-		public static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
+		static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
 		{
 			VList<LNode> attrs;
 			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out attrs)) {
@@ -138,20 +143,115 @@ namespace LeMP
 
 			return null;
 		}
-		static LNode ReplaceCaptures(LNode node, MMap<Symbol, LNode> captures)
+		public static LNode ReplaceCaptures(LNode replacement, MMap<Symbol, LNode> captures)
 		{
 			if (captures.Count != 0)
 			{
 				// TODO: EXPAND SPLICES! Generally it works anyway though because 
 				// the macro processor has built-in support for #splice.
-				return node.ReplaceRecursive(n => {
+				return replacement.ReplaceRecursive(n => {
 					LNode sub, cap;
 					if (n.Calls(S.Substitute, 1) && (sub = n.Args.Last).IsId && captures.TryGetValue(sub.Name, out cap))
 						return cap;
 					return null;
 				});
 			}
-			return node;
+			return replacement;
+		}
+
+		static readonly Symbol _replace = (Symbol)"replace";
+
+		[LexicalMacro(@"replace Name($arg1, $arg2, ...) {...}; replace Name($arg1, $arg2, ...) => ...",
+			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
+			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. " +
+			"In some cases this macro is more efficient than replace(...). " +
+			"The macro's arguments can be patterns; for example `replace Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`.", 
+			"#fn", Mode = MacroMode.Passive)]
+		public static LNode replaceFn(LNode node, IMacroContext context1)
+		{
+			if (!node.Args[0, LNode.Missing].IsIdNamed(_replace))
+				return null;
+			LNode replaceKw, macroName, args, body;
+			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn)
+				return null;
+
+			MacroMode mode, modes = 0;
+			var leftoverAttrs = node.Attrs.SmartWhere(attr =>
+			{
+				if (attr.IsId && Enum.TryParse(attr.Name.Name, out mode))
+				{
+					modes |= mode;
+					return false;
+				}
+				return true;
+			});
+
+			LNode pattern = F.Call(macroName, args.Args).PlusAttrs(leftoverAttrs);
+			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice).PlusAttrs(replaceKw.Attrs);
+
+			WarnAboutMissingDollarSigns(args, context1, pattern, replacement);
+
+			// Note: we could fill out the macro's Syntax and Description with the 
+			// pattern and replacement converted to strings, but it's generally a 
+			// waste of CPU time as those strings are usually not requested.
+			var lma = new LexicalMacroAttribute(
+				string.Concat(macroName.Name, "(", args.Args.Count.ToString(), " args)"), "", macroName.Name.Name);
+			var macroInfo = new MacroInfo(null, lma, (candidate, context2) =>
+			{
+				MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
+				VList<LNode> unmatchedAttrs;
+				if (candidate.MatchesPattern(pattern, ref captures, out unmatchedAttrs))
+				{
+					return ReplaceCaptures(replacement, captures).PlusAttrsBefore(unmatchedAttrs);
+				}
+				return null;
+			}) {
+				Mode = modes
+			};
+			context1.RegisterMacro(macroInfo);
+			return F.Splice();
+		}
+
+		private static void WarnAboutMissingDollarSigns(LNode argList, IMacroContext context, LNode pattern, LNode replacement)
+		{
+			// Warn if a name appears in both pattern and replacement but uses $ in only one of the two.
+			Dictionary<Symbol, LNode> pVars = ScanForVariables(pattern), rVars = ScanForVariables(replacement);
+			// Also warn if it looks like all `$`s were forgotten.
+			bool allIds = argList.Args.Count > 0 && argList.Args.All(n => !n.IsCall);
+			foreach (var pair in pVars)
+			{
+				LNode rVar = rVars.TryGetValue(pair.Key, null);
+				if (pair.Value.IsId) // id without `$` in pattern list
+				{
+					if (rVar != null && (allIds || !rVar.IsId))
+						context.Write(Severity.Warning, pair.Value, "`{0}` is written without `$`, so it may not match as intended.", pair.Value.Name);
+				}
+				else // $id in pattern list
+				{
+					if (rVar != null && rVar.IsId)
+						context.Write(Severity.Warning, rVar, "`{0}` appears in the output without `$` so replacement will not occur.", pair.Key);
+				}
+			}
+		}
+
+		private static Dictionary<Symbol, LNode> ScanForVariables(LNode code)
+		{
+			var nameTable = new Dictionary<Symbol, LNode>();
+			code.ReplaceRecursive(n =>
+				{
+					if (n.IsId)
+						nameTable[n.Name] = n;
+					else {
+						LNode id = LNodeExt.GetCaptureIdentifier(n);
+						if (id != null) {
+							if (!nameTable.ContainsKey(n.Name))
+								nameTable[id.Name] = n;
+							return n;
+						}
+					}
+					return null;
+				});
+			return nameTable;
 		}
 	}
 }

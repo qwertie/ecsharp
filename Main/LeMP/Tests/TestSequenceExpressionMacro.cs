@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Ecs;
 using Loyc.MiniTest;
+using Loyc;
 
 namespace LeMP.Tests
 {
@@ -382,17 +383,23 @@ namespace LeMP.Tests
 				}");
 
 			// Test lambda function
-			TestCs(@"#useSequenceExpressions;
-				void f() {
-					Func<int,int> fSquare = (int x) => f(x)::fx * fx;
-				}
-				", @"
-				void f() {
-					Func<int,int> fSquare = (int x) => {
-						var fx = f(x);
-						return fx * fx;
-					};
-				}");
+			using (MessageSink.PushCurrent(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
+				_msgHolder.List.Clear();
+				TestCs(@"#useSequenceExpressions;
+					void f() {
+						Func<int,int> fSquare = (int x) => f(x)::fx * fx;
+					}
+					", @"
+					void f() {
+						Func<int,int> fSquare = (int x) => {
+							var fx = f(x);
+							return fx * fx;
+						};
+					}");
+				Assert.AreEqual(1, _msgHolder.List.Count);
+				Assert.AreEqual(Severity.Warning, _msgHolder.List[0].Severity);
+				_msgHolder.WriteListTo(MessageSink.Trace);
+			}
 		}
 
 		[Test]
