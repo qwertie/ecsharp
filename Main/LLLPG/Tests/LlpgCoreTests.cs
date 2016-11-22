@@ -55,7 +55,7 @@ namespace Loyc.LLParserGenerator
 
 		protected static LNode Stmt(string code)
 		{
-			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F.Missing);
+			return F.Attr(F.Trivia(S.TriviaRawText, code), F.Missing);
 		}
 		protected static LNode Expr(string code)
 		{

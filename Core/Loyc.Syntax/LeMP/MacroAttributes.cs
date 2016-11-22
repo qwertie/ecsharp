@@ -51,12 +51,26 @@ namespace LeMP
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class LexicalMacroAttribute : Attribute
 	{
+		/// <summary>LexicalMacroAttribute constuctor.</summary>
+		/// <param name="syntax">A string that shows the expected syntax used to call the node.</param>
+		/// <param name="description"></param>
+		/// <param name="names"></param>
 		public LexicalMacroAttribute(string syntax, string description, params string[] names)
-			{ Syntax = syntax; Description = description; Names = names; Mode = MacroMode.Normal; }
-		public readonly string Syntax;
-		public readonly string Description;
-		public readonly string[] Names;
-		public MacroMode Mode { get; set; }
+			{ Syntax = syntax; Description = description; Names = names; Mode = MacroMode.PriorityNormal; }
+
+		public string Syntax { get; protected set; }
+		public string Description { get; protected set; }
+		public string[] Names { get; private set; }
+		MacroMode _mode;
+		public MacroMode Mode {
+			get { return _mode; }
+			set {
+				_mode = value;
+				if ((_mode & MacroMode.PriorityMask) == 0)
+					_mode |= MacroMode.PriorityNormal;
+			}
+		}
+		public MacroMode Priority { get { return Mode & MacroMode.PriorityMask; } }
 	}
 
 	/// <summary>Flags that affect the way that <see cref="LeMP.MacroProcessor"/>
@@ -78,8 +92,12 @@ namespace LeMP
 		/// <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce the same results.</summary>
 		AllowDuplicates = 16,
 		/// <summary>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</summary>
-		/// <remarks>Tyically this option is used by macros that splice together the list of <see cref="IMacroContext.RemainingNodes"/> into their own result.</remarks>
+		/// <remarks>This option may be used by macros that splice together the list of <see cref="IMacroContext.RemainingNodes"/> into their own result.
+		/// It is more common, however, to set the <see cref="IMacroContext.DropRemainingNodes"/> property inside the macro.</remarks>
 		DropRemainingListItems = 32,
+		/// <summary>If this flag is present, the macro can match a plain identifier. By default, a macro must be a call.</summary>
+		/// <remarks>This flag does <i>not</i> prevent the macro from matching calls.</remarks>
+		MatchIdentifier = 64,
 		/// <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
 		PriorityFallbackMin = 0x100,
 		/// <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>

@@ -108,5 +108,34 @@ namespace Loyc.Ecs.Tests
 			// 2015-05-20: parsed incorrectly
 			Expr("Foo[a-1]",         F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)), Mode.ParserTest);
 		}
+
+		[Test]
+		public void ParserTriviaBugFix()
+		{
+			// This bug caused trivia to move upward so it is above the property.
+			// Cause: LNodeFactory.Property() wasn't updated to assign a definite target range on #property,
+			//        oops, I fixed it without checking why the autodetected range was so far off.
+			LNode tree = F.Splice(
+				F.Attr(
+					F.Trivia(S.TriviaSLComment, " This bug is only triggered for properties in certain conditions,"),
+					F.Trivia(S.TriviaSLComment, " e.g. we need this comment."),
+					F.Property(F.Int32, a, F.Braces(F.Call(S.get, F.Braces(F.Call(S.Return, x))))))
+					.PlusTrailingTrivia(F.TriviaNewline),
+				F.Attr(
+					F.Trivia(S.TriviaSLComment, " The newlines seem important too."),
+					F.Var(F.Int32, b))
+			);
+			Stmt(@"// This bug is only triggered for properties in certain conditions,
+				// e.g. we need this comment.
+				int a {
+					get { 
+						return x;
+					}
+				}
+				
+				// The newlines seem important too.
+				int b;", 
+				tree, Mode.ParserTest);
+		}
 	}
 }

@@ -800,7 +800,7 @@ namespace Loyc.Ecs.Parser
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
 			(	// A property is allowed whereever an initialized variable is 
 				// allowed, to make possible `Constructor(public int Prop {get;}) {}`
-				result:RestOfPropertyDefinition(type, name, true)
+				result:RestOfPropertyDefinition(type.Range.StartIndex, type, name, true)
 				{hasInitializer = true;}
 			/	nameAndInit:=VarInitializerOpt(name, IsArrayType(type))
 				{
@@ -1604,7 +1604,7 @@ namespace Loyc.Ecs.Parser
 				result:MethodArgListAndBody(startIndex, type.Range.StartIndex, attrs, S.Fn, type, name)
 				{return $result;} // don't add attributes again
 			|	// Property definition
-				result:RestOfPropertyDefinition(type, name, false)
+				result:RestOfPropertyDefinition(startIndex, type, name, false)
 			|	error {Error("Syntax error in what appears to be a method, property, or variable declaration");}
 				ScanToEndOfStmt
 				{$result = F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}
@@ -1635,16 +1635,18 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
-		@[private] rule RestOfPropertyDefinition(type::LNode, name::LNode, isExpression::bool)::LNode @{
-			WhereClausesOpt(ref name)
+		@[private] rule RestOfPropertyDefinition(startIndex::int, type::LNode, name::LNode, isExpression::bool)::LNode @{
 			{args::LNode = F.Missing;}
 			[lb:"[" rb:"]" {args = ArgList(lb, rb);}]?
+			WhereClausesOpt(ref name)
 			{initializer::LNode;}
 			body:=MethodBodyOrForward(true, out initializer, isExpression)
-			{$result = (initializer != null
-				? F.Property(type, name, args, body, initializer, type.Range.StartIndex, initializer.Range.EndIndex)
-				: F.Property(type, name, args, body, null,        type.Range.StartIndex, body.Range.EndIndex)
-				);}
+			{
+				var parts = (new VList!LNode() { type; name; args; body });
+				if initializer != null { parts.Add(initializer); };
+				targetIndex::int = type.Range.StartIndex;
+				$result = F.Call(S.Property, parts, startIndex, body.Range.EndIndex, targetIndex, targetIndex);
+			}
 		};
 
 		@[private] rule OperatorCastMethod(startIndex::int, attrs::VList!LNode)::LNode @{

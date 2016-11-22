@@ -213,6 +213,41 @@ namespace Loyc.Ecs.Tests
 			Stmt("a = b `Foo` c**x;", F.Assign(a, Operator(F.Call(Foo, b, F.Call(S.Exp, c, x)))));
 		}
 
+		[Test]
+		public void EcsGenericProperties()
+		{
+			LNode stmt;
+			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), F.Braces(get, set)));
+			Stmt("private Foo<T> this<T>[T x] { get; set; }", stmt);
+
+			var T_where = Attr(F.Call(S.Where, @class), T);
+			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T_where), F.List(F.Var(T, x)), F.Braces(get, set)));
+			Stmt("private Foo<T> this<T>[T x] where T: class { get; set; }", stmt);
+
+			// where clause requires arg list
+			stmt = F.Property(Foo, F.Of(x, T_where), F.List(), F.Braces(get, set));
+			Stmt("Foo x<T>[] where T: class { get; set; }", stmt);
+		}
+
+		[Test]
+		public void EcsForwardedMethodsAndProperties()
+		{
+			LNode stmt;
+			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, x));
+			Stmt("int Foo ==> x;", stmt);
+
+			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, F.List(a, b)));
+			Stmt("int Foo ==> #(a, b);", stmt);
+
+			stmt = F.Property(F.Int32, Foo, F.Braces(
+			          Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
+			Stmt("int Foo {\n  get ==> x;\n}", stmt);
+			stmt = F.Property(F.Int32, Foo, F.Braces(F.Call(get, F.Call(S.Forward, a, b))));
+			Stmt("int Foo {\n  get(@`'==>`(a, b));\n}", stmt);
+			stmt = F.Property(F.Int32, Foo, F.Braces(
+								Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
+			Stmt("int Foo {\n  get(@`'==>`(a, b));\n}", stmt, Mode.PrinterTest);
+		}
 
 		[Test]
 		public void EcsAliasStmts()

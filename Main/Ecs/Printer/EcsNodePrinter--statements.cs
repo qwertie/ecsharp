@@ -687,8 +687,6 @@ namespace Loyc.Ecs
 
 			var ifClause = PrintTypeAndName(false);
 
-			PrintWhereClauses(_n.Args[1]);
-
 			// Detect if property has argument list (T this[...] {...})
 			if (_n.Args[2].Calls(S.AltList))
 			{
@@ -700,6 +698,8 @@ namespace Loyc.Ecs
 				WriteInnerSpace(ParenFor.MethodDecl);
 				_out.Write(']', true);
 			}
+
+			PrintWhereClauses(_n.Args[1]);
 
 			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null], ifClause);
 			if (_n.Args.Count >= 5) {

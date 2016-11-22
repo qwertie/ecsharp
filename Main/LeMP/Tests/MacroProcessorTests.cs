@@ -49,6 +49,33 @@ namespace LeMP.Tests
 			context.DropRemainingNodes = true;
 			return LNode.Call(S.Braces, LNode.List(context.RemainingNodes));
 		}
+
+		[LexicalMacro("replaceTarget(oldTarget, newTarget)", "Register a macro that changes its target from one identifier to another.")]
+		public static LNode replaceTarget(LNode outerNode, IMacroContext context1)
+		{
+			// Test the direct way to register a macro
+			context1.RegisterMacro(
+				new MacroInfo(null, outerNode[0].Name.Name, 
+					(node, context2) =>
+					{
+						return node.WithTarget(outerNode[1]);
+					}));
+			return LNode.Call(S.Splice);
+		}
+
+		[LexicalMacro("overrideTarget(oldTarget, newTarget)", "Register a macro that changes its target from one identifier to another.")]
+		public static LNode overrideTarget(LNode outerNode, IMacroContext context1)
+		{
+			// Test the indirect way to register a macro
+			return LNode.Call((Symbol)"#registerMacro", LNode.List(LNode.Literal(
+				new MacroInfo(null, outerNode[0].Name.Name, 
+					(node, context2) =>
+					{
+						return node.WithTarget(outerNode[1]);
+					}) {
+						Mode = MacroMode.PriorityOverride // needed by the unit test
+					})));
+		}
 	}
 }
 namespace LeMP
@@ -215,6 +242,16 @@ namespace LeMP
 			     "f(x); { g(y); h(z); }");
 			Test("import_macros LeMP.Tests; splice(f(x); braceTheRest); g(y); h(z);",
 			     "f(x); { g(y); h(z); }");
+		}
+
+		[Test]
+		public void RegisterMacros()
+		{
+			Test("import_macros LeMP.Tests; replaceTarget(John, Steve); John(John(1));",
+			     "Steve(Steve(1));");
+			// Make sure that scoping works
+			Test("{ import_macros LeMP.Tests; Hi(1); replaceTarget(Hi, Hello); { Hi(2); overrideTarget(Hi, Bye); Hi(3); }; Hi(4); }",
+				 "{ Hi(1); { Hello(2); Bye(3); } Hello(4); }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);

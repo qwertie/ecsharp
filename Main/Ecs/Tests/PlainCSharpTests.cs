@@ -538,28 +538,12 @@ namespace Loyc.Ecs.Tests
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
 
-			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, x));
-			Stmt("int Foo ==> x;", stmt);
-
-			stmt = F.Property(F.Int32, Foo, F.Call(S.Forward, F.List(a, b)));
-			Stmt("int Foo ==> #(a, b);", stmt);
-
-			stmt = F.Property(F.Int32, Foo, F.Braces(
-			          Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
-			Stmt("int Foo {\n  get ==> x;\n}", stmt);
-			stmt = F.Property(F.Int32, Foo, F.Braces(F.Call(get, F.Call(S.Forward, a, b))));
-			Stmt("int Foo {\n  get(@`'==>`(a, b));\n}", stmt);
-			stmt = F.Property(F.Int32, Foo, F.Braces(
-								Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
-			Stmt("int Foo {\n  get(@`'==>`(a, b));\n}", stmt, Mode.PrinterTest);
 			Stmt("int Foo { protected get; private set; }",
 				F.Property(F.Int32, Foo, F.Braces(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
 
 			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Braces(get, set));
 			Stmt("Foo this[long x] { get; set; }", stmt);
-			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), F.Braces(get, set)));
-			Stmt("private Foo<T> this<T>[T x] { get; set; }", stmt);
 		}
 
 		[Test]

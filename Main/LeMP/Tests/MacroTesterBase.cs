@@ -17,6 +17,7 @@ namespace LeMP.Tests
 
 		[SetUp]
 		public void SetUp() {
+			// Block verbose messages
 			MessageSink.Current = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
 			_msgHolder = new MessageHolder();
 		}
@@ -25,7 +26,7 @@ namespace LeMP.Tests
 		{
 			Test(input, Les2LanguageService.Value, outputLes, Les2LanguageService.Value, maxExpand);
 		}
-		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF, bool plainCsOut = false)
+		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF)
 		{
 			Test(input, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
 		}

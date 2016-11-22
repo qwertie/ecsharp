@@ -56,7 +56,7 @@ namespace LeMP
 		/// <para/>
 		/// If the currently-running macro fails, the result may be thrown away
 		/// and the effort of processing the children will have been wasted. If
-		/// the macro succeeds, and its <see cref="LexicalMacro"/> attribute uses
+		/// the macro succeeds, and its <see cref="LexicalMacroAttribute"/> uses
 		/// the default <c>MacroMode.Normal</c> processing mode, the children 
 		/// will (normally) be processed again after the macro returns.
 		/// </remarks>
@@ -118,6 +118,16 @@ namespace LeMP
 		int NextTempCounter { get; }
 		/// <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
 		int IncrementTempCounter();
+
+		/// <summary>Registers a new macro in the current scope.</summary>
+		/// <param name="macroInfo"></param>
+		/// <remarks>The macro will be forgotten at the end of the current scope. Macros 
+		/// in child scopes do not shadow macros in outer scopes; if there are macros 
+		/// with the same name in the outer scope, conflicts are handled in the same way 
+		/// as with groups of macros that are imported in the same scope. For example,
+		/// <c>Mode = <see cref="MacroMode.PriorityOverride"/></c> can be used to make 
+		/// macros that override normal-priority macros.</remarks>
+		void RegisterMacro(MacroInfo macroInfo);
 	}
 
 	/// <summary>Standard extension methods for <see cref="IMacroContext"/>.</summary>
@@ -174,10 +184,10 @@ namespace LeMP
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {
 				body = last.Args;
 				args = args.WithoutLast(1);
-			} else if (orRemainingNodes) {
+			} else if (orRemainingNodes && ctx.RemainingNodes != null) {
 				body = new VList<LNode>(ctx.RemainingNodes);
 				ctx.DropRemainingNodes = true;
-			}
+			} 
 			return Pair.Create(args, body);
 		}
 
@@ -207,26 +217,23 @@ namespace LeMP
 	}
 
 	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
-	public class MacroInfo : IComparable<MacroInfo>
+	/// <remarks>If this type is provided an empty list of macro names, the name 
+	/// of the method associated with the macro delegate is used as a name, so that 
+	/// the <see cref="Names"/> list will never be empty.</remarks>
+	public class MacroInfo : LexicalMacroAttribute
 	{
-		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, LexicalMacroAttribute info)
+		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
+		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro)
+			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 ? a.Names : new[] { macro.Method.Name })
 		{
-			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
-			Mode = info.Mode;
-			if ((Mode & MacroMode.PriorityMask) == 0)
-				Mode |= MacroMode.PriorityNormal;
+			CheckParam.IsNotNull("macro", macro);
+			Namespace = @namespace;
+			Macro = macro;
+			Mode = a.Mode;
 		}
-		public Symbol NamespaceSym { get; private set; }
-		public Symbol Name { get; private set; }
+		public Symbol Namespace { get; private set; }
 		public LexicalMacro Macro { get; private set; }
-		public LexicalMacroAttribute Info { get; private set; }
-		public MacroMode Mode { get; private set; }
-		public MacroMode Priority { get { return Mode & MacroMode.PriorityMask; } }
 
-		/// <summary>Compare priorities of two macros. Will sort in descending order.</summary>
-		public int CompareTo(MacroInfo other)
-		{
-			return other.Priority.CompareTo(Priority);
-		}
+		public static Comparison<MacroInfo> CompareDescendingByPriority = (a, b) => b.Priority.CompareTo(a.Priority);
 	}
 }

@@ -112,8 +112,8 @@ namespace Loyc.Syntax
 		#endregion
 
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
-		/// <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
-		/// with <c>block</c> as the only item.</summary>
+		/// <c>block.Calls(listIdentifier)</c>, otherwise returning a one-item list 
+		/// of nodes with <c>block</c> as the only item.</summary>
 		public static VList<LNode> AsList(this LNode block, Symbol listIdentifier)
 		{
 			return block.Calls(listIdentifier) ? block.Args : new VList<LNode>(block);
@@ -416,23 +416,31 @@ namespace Loyc.Syntax
 		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
 			if (pattern.HasPAttrs())
-				throw new NotImplementedException("TODO: attributes in patterns are not yet supported");
+				throw new LogException(pattern.Attrs.Last, "TODO: attributes in patterns are not yet supported");
 			unmatchedAttrs = candidate.Attrs;
 			return true;
 		}
-		static bool IsParamsCapture(LNode p)
+		static bool IsParamsCapture(LNode pattern)
 		{
-			return p.Calls(S.Substitute, 1) 
-				&& (p.Args.Last.AttrNamed(S.Params) != null || p.Args.Last.Calls(S.DotDot, 1))
-				&& GetCaptureIdentifier(p) != null;
+			if (pattern.Calls(S.Substitute, 1)) {
+				LNode arg = pattern.Args.Last;
+				return (arg.Calls(S.DotDot, 1) || arg.Calls(S.DotDotDot, 1) || arg.AttrNamed(S.Params) != null)
+					&& GetCaptureIdentifier(pattern) != null;
+			}
+			return false;
 		}
-		static LNode GetCaptureIdentifier(LNode pattern)
+		/// <summary>Checks if <c>pattern</c> matches one of the syntax trees 
+		/// <c>$x</c> or <c>$(..x)</c> or <c>$(...x)</c> for some identifier <c>x</c>.
+		/// These are conventionally used to represent partial syntax trees.</summary>
+		/// <returns>The matched identifier (<c>x</c> in the examples above), or null 
+		/// if <c>pattern</c> was not a match.</returns>
+		public static LNode GetCaptureIdentifier(LNode pattern, bool identifierRequired = true)
 		{
 			if (pattern.Calls(S.Substitute, 1)) {
 				var arg = pattern.Args.Last;
-				if (arg.Calls(S.DotDot, 1))
+				if (arg.Calls(S.DotDot, 1) || arg.Calls(S.DotDotDot, 1))
 					arg = arg.Args[0];
-				if (arg.IsId)
+				if (arg.IsId || !identifierRequired)
 					return arg;
 			}
 			return null;

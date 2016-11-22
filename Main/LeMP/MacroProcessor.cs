@@ -154,9 +154,12 @@ namespace LeMP
 
 		internal static void AddMacro(MMap<Symbol, VList<MacroInfo>> macros, MacroInfo info)
 		{
-			var cases = macros[info.Name, VList<MacroInfo>.Empty];
-			if (!cases.Any(existing => existing.Macro == info.Macro))
-				macros[info.Name] = cases.Add(info);
+			foreach (string name in info.Names) {
+				var nameS = (Symbol)name;
+				var cases = macros[nameS, VList<MacroInfo>.Empty];
+				if (!cases.Any(existing => existing.Macro == info.Macro))
+					macros[nameS] = cases.Add(info);
+			}
 		}
 
 		internal static IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace, IMessageSink sink, object instance = null)
@@ -167,13 +170,8 @@ namespace LeMP
 			foreach(var method in type.GetMethods(flags)) {
 				foreach (LexicalMacroAttribute attr in method.GetCustomAttributes(typeof(LexicalMacroAttribute), false)) {
 					var @delegate = AsDelegate(method, sink, instance);
-					if (@delegate != null) {
-						if (attr.Names == null || attr.Names.Length == 0)
-							yield return new MacroInfo(@namespace, GSymbol.Get(method.Name), @delegate, attr);
-						else
-							foreach (string name in attr.Names)
-								yield return new MacroInfo(@namespace, GSymbol.Get(name), @delegate, attr);
-					}
+					if (@delegate != null)
+						yield return new MacroInfo(@namespace, attr, @delegate);
 				}
 			}
 		}
