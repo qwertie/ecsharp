@@ -4,7 +4,6 @@ tagline: Standard macros in the LeMP namespace
 layout: article
 date: 20 Mar 2016
 toc: true
-redirectDomain: ecsharp.net
 ---
 
 Introduction
@@ -52,8 +51,7 @@ static char GetAscii(int code)
 
 ~~~csharp
 // Output of LeMP
-static char GetAscii(int code)
-{
+static char GetAscii(int code) {
   Contract.Assert(code >= 32, "Precondition failed: code >= 32");
   Contract.Assert(code < 128, "Precondition failed: code < 128");
   return (char) code;
@@ -189,8 +187,7 @@ int ProcessEvent(string handlerKey)
 
 ~~~csharp
 // Output of LeMP
-int ProcessEvent(string handlerKey)
-{
+int ProcessEvent(string handlerKey) {
   System.Diagnostics.Debug.Assert(!_reentrant, "Assertion failed in `ProcessEvent`: !_reentrant");
   Contract.Assert(!string.IsNullOrEmpty(handlerKey), "Precondition failed: !#string.IsNullOrEmpty(handlerKey)");
   _reentrant = true;
@@ -229,16 +226,14 @@ public void Save(string fn, string text)
 
 ~~~csharp
 // Output of LeMP
-static double Root(double x)
-{
+static double Root(double x) {
   {
     var return_value = Math.Sqrt(x);
     System.Diagnostics.Debug.Assert(return_value >= 0, "Postcondition failed: return_value >= 0");
     return return_value;
   }
 }
-public void Save(string fn, string text)
-{
+public void Save(string fn, string text) {
   File.WriteAllText(fn, text);
   Contract.Assert(File.Exists(fn), "Postcondition failed: File.Exists(fn)");
 }
@@ -261,8 +256,7 @@ void DoSomething()
 
 ~~~csharp
 // Output of LeMP
-void DoSomething()
-{
+void DoSomething() {
   try {
     try {
       DoSomethingCore();
@@ -299,8 +293,7 @@ void Method(int option)
 
 ~~~csharp
 // Output of LeMP
-void Method(int option)
-{
+void Method(int option) {
   try {
     ChangeStateBasedOn(option);
   } finally {

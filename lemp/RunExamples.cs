@@ -27,6 +27,11 @@ namespace LeMPExampleRunner
 		[STAThread]
 		static void Main(string[] args)
 		{
+			Console.WriteLine("This program scans file for code blocks to execute in LeMP ");
+			Console.WriteLine("between `~~~exec`and `~~~`, and places the output side-by-side ");
+			Console.WriteLine("(assuming there is a CSS class 'sbs' to provide this effect). ");
+			Console.WriteLine("It also re-runs the first code block in existing pairs.");
+			
 			if (args.Length == 0) {
 				var ofd = new OpenFileDialog
 				{

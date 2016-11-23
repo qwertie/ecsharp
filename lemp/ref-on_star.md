@@ -4,7 +4,6 @@ tagline: Standard macros in the LeMP namespace
 layout: article
 date: 20 Mar 2016
 toc: true
-redirectDomain: ecsharp.net
 ---
 
 Introduction
@@ -206,8 +205,7 @@ public static int CountOnes(uint x)
 
 ~~~csharp
 // Output of LeMP
-public static int CountOnes(uint x)
-{
+public static int CountOnes(uint x) {
   x -= ((x >> 1) & 1431655765);
   x = (((x >> 2) & 858993459) + (x & 858993459));
   x = (((x >> 4) + x) & 252645135);
@@ -264,8 +262,7 @@ public static void Main()
 
 ~~~csharp
 // Output of LeMP
-public static void Main()
-{
+public static void Main() {
   WriteLine("The Beginning.");
   WriteLine("The End.");
 }
@@ -295,8 +292,7 @@ int ScopeExample() {
 
 ~~~csharp
 // Output of LeMP
-int ScopeExample()
-{
+int ScopeExample() {
   try {
     try {
       {

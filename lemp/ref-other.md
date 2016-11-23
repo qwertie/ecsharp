@@ -5,6 +5,7 @@ date: 20 Mar 2016
 toc: true
 redirectDomain: ecsharp.net
 ---
+{% raw %}
 
 ## LeMP namespace ##
 
@@ -33,14 +34,11 @@ class Class {
 
 ~~~csharp
 // Output of LeMP
-class Class
-{
-  void Bar()
-  {
+class Class {
+  void Bar() {
     MyAssert(BarIsOpen, "Assertion failed in `Class.Bar`: BarIsOpen")
   }
-  void Foo()
-  {
+  void Foo() {
     System.Diagnostics.Debug.Assert(FoodIsHot, "Assertion failed in `Class.Foo`: FoodIsHot");
   }
 }
@@ -79,18 +77,13 @@ public partial abstract alt class Tree<T>
 // Output of LeMP
 public partial abstract class Tree<T> where T: IComparable<T>
 {
-  public Tree(T Value)
-  {
+  public Tree(T Value) {
     this.Value = Value;
   }
-  public T Value
-  {
-    get;
-    private set;
-  }
+  public T Value { get; private set; }
   public abstract Tree<T> WithValue(T newValue);
-  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public T Item1
-  {
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)
+  ] public T Item1 {
     get {
       return Value;
     }
@@ -105,9 +98,8 @@ public partial abstract static partial class Tree
 }
 class Leaf<T> : Tree<T> where T: IComparable<T>
 {
-  public Leaf(T Value) : base(Value)
-  {
-  }
+  public Leaf(T Value)
+     : base(Value) { }
   public override Tree<T> WithValue(T newValue)
   {
     return new Leaf<T>(newValue);
@@ -115,21 +107,13 @@ class Leaf<T> : Tree<T> where T: IComparable<T>
 }
 class Node<T> : Tree<T> where T: IComparable<T>
 {
-  public Node(T Value, Tree<T> Left, Tree<T> Right) : base(Value)
-  {
+  public Node(T Value, Tree<T> Left, Tree<T> Right)
+     : base(Value) {
     this.Left = Left;
     this.Right = Right;
   }
-  public Tree<T> Left
-  {
-    get;
-    private set;
-  }
-  public Tree<T> Right
-  {
-    get;
-    private set;
-  }
+  public Tree<T> Left { get; private set; }
+  public Tree<T> Right { get; private set; }
   public override Tree<T> WithValue(T newValue)
   {
     return new Node<T>(newValue, Left, Right);
@@ -142,14 +126,14 @@ class Node<T> : Tree<T> where T: IComparable<T>
   {
     return new Node<T>(Value, Left, newValue);
   }
-  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Tree<T> Item2
-  {
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)
+  ] public Tree<T> Item2 {
     get {
       return Left;
     }
   }
-  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Tree<T> Item3
-  {
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)
+  ] public Tree<T> Item3 {
     get {
       return Right;
     }
@@ -177,8 +161,7 @@ static partial class Node
 ~~~csharp
 // Output of LeMP
 int _x;
-int X
-{
+int X {
   get {
     return _x;
   }
@@ -187,8 +170,7 @@ int X
   }
 }
 int _y;
-int Y
-{
+int Y {
   get {
     return _y;
   }
@@ -197,8 +179,7 @@ int Y
   }
 }
 Int32 _z;
-int Z
-{
+int Z {
   get {
     return _z;
   }
@@ -243,11 +224,9 @@ class Foo {
 
 ~~~csharp
 // Output of LeMP
-class Foo
-{
-  public Foo(int x) : base(x)
-  {
-  }
+class Foo {
+  public Foo(int x)
+     : base(x) { }
 }
 ~~~
 </div>
@@ -309,22 +288,18 @@ Type Prop { get ==> target; set ==> target; }
 
 ~~~csharp
 // Output of LeMP
-Type SomeMethod(Type param)
-{
+Type SomeMethod(Type param) {
   return target.Method(param);
 }
-int Compute(int x)
-{
+int Compute(int x) {
   return base.Compute(x);
 }
-Type Prop
-{
+Type Property {
   get {
-    return target.Prop;
+    return target.Property;
   }
 }
-Type Prop
-{
+Type Prop {
   get {
     return target;
   }
@@ -401,12 +376,12 @@ match (obj) {
 // Output of LeMP
 do
   if (obj is Shape) {
-    Shape tmp_0 = (Shape) obj;
-    if (ShapeType.Circle.Equals(tmp_0.Item1)) {
-      var size = tmp_0.Item2;
-      var tmp_1 = tmp_0.Location;
-      if (tmp_1 is Point<int>) {
-        Point<int> p = (Point<int>) tmp_1;
+    Shape tmp_10 = (Shape) obj;
+    if (ShapeType.Circle.Equals(tmp_10.Item1)) {
+      var size = tmp_10.Item2;
+      var tmp_11 = tmp_10.Location;
+      if (tmp_11 is Point<int>) {
+        Point<int> p = (Point<int>) tmp_11;
         var x = p.Item1;
         var y = p.Item2;
         DrawCircle(size, x, y);
@@ -469,8 +444,7 @@ Console.WriteLine("Input an expression plz");
 string str = Console.ReadLine();
 LNode tree = EcsLanguageService.Value.Parse(str, null, ParsingService.Exprs);
 Console.WriteLine(Eval(tree));
-dynamic Eval(LNode code)
-{
+dynamic Eval(LNode code) {
   dynamic value;
   {
     LNode x, y, z;
@@ -527,17 +501,12 @@ class C {}
 
 ~~~csharp
 // Output of LeMP
-namespace Normal
-{
-  class C
-  {
-  }
+namespace Normal {
+  class C { }
 }
 namespace NoBraces
 {
-  class C
-  {
-  }
+  class C { }
 }
 ~~~
 </div>
@@ -568,7 +537,7 @@ if (a.b?.c.d ?? false) {
 
 ~~~csharp
 // Output of LeMP
-if ((a.b != null ? a.b.c.d : null) ?? false) {
+if (a.b?.c.d ?? false) {
   Good();
 }
 ~~~
@@ -624,7 +593,7 @@ if (int.Parse(text)=:num > 0)
 
 ~~~csharp
 // Output of LeMP
-if (#var(@``, num = int.Parse(text)) > 0)
+if (([] var num = int.Parse(text)) > 0)
   positives += num;
 ~~~
 </div>
@@ -644,7 +613,7 @@ var code = quote {
 ~~~csharp
 // Output of LeMP
 var str = LNode.Literal("Hello, world!");
-var code = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Console"), LNode.Id((Symbol) "WriteLine"))), LNode.List(str));
+var code = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Console"), LNode.Id((Symbol) "WriteLine"))).SetStyle(NodeStyle.Operator), LNode.List(str));
 ~~~
 </div>
 
@@ -734,9 +703,40 @@ The match expression and/or the replacement expression (left and right sides of 
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-replace ({$T $x;} => {$T $x = default($T);});
-int i;
-List<int> L;
+// Limitation: can't check $w and $s are the same.
+replace ({ 
+  List<$T> $L2 = $L1
+    .Where($w => $wc)
+    .Select($s => $sc).ToList(); 
+} => {
+  List<$T> $L2 = new List<$T>();
+  foreach (var $w in $L1) {
+    if ($w) {
+      static if ($w `tree==` $s) {} else
+      	var $s = $w;
+      $L2.Add($sc);
+    }
+  }
+});
+
+void LaterThatDay()
+{
+  List<Item> paidItems = 
+    items.Where(it => it.IsPaid)
+         .Select(it => it.SKU).ToList();
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+void LaterThatDay() {
+  List<Item> paidItems = new List<Item>();
+  foreach (var it in items) {
+    if (it) {
+      paidItems.Add(it.SKU);
+    }
+  }
+}
 ~~~
 </div>
 
@@ -750,6 +750,13 @@ replace (WL($fmt, $(..args)) => Console.WriteLine($fmt, $args));
 WL(); // not matched effect
 WL("Hello!");
 WL("Hello {0}!", name);
+~~~
+
+~~~csharp
+// Output of LeMP
+WL();
+Console.WriteLine("Hello!");
+Console.WriteLine("Hello {0}!", name);
 ~~~
 </div>
 
@@ -772,6 +779,20 @@ replace operator=(Foo[$index], $value) {
 }
 x = Foo[y] = z;
 ~~~
+
+~~~csharp
+// Output of LeMP
+void Square(int x) {
+  return x * x;
+}
+void Square(double x) {
+  return x * x;
+}
+void Square(float x) {
+  return x * x;
+}
+x = Foo.SetAt(y, z);
+~~~
 </div>
 
 Defines a new macro, scoped to the current braced block, that matches the specified pattern and replaces it with the specified output code. `replace` has the same syntax as a method, so you can use either lambda syntax like `replace MacroName(...) => ...`, or brace syntax like `replace MacroName(...) { ... }`. Brace syntax is more general, since it allows you to put multiple statements in the output, and you can also include type declarations.
@@ -792,19 +813,22 @@ The first difference is that method-style `replace` works recursively, but the o
 replace (Foo => Bar(Foo($x)));
 Foo(5);
 ~~~
+
+~~~csharp
+// Output of LeMP
+Bar(Foo($x))(5);
+~~~
 </div>
 
 Currently, method-style replace doesn't handle this well; `Foo(...)` is expanded recursively up to the iteration limit (or until stack overflow).
 
 The second difference is that the old macro performs replacements immediately, while method-style `replace` generates a macro whose expansions are interleaved with other macros in the usual way. For example, if you write
 
-<div class='sbs' markdown='1'>
 ~~~csharp
     replace (A => B);  
     replace macro2($X) => $X * $X;  
     macro1(macro2(macro3(A)));
 ~~~
-</div>
 
 The order of replacements is 
 
@@ -833,13 +857,11 @@ Type Method2(public Type Member2) {}
 
 ~~~csharp
 // Output of LeMP
-Type Method(Type member)
-{
+Type Method(Type member) {
   this.member = member;
 }
 public Type Member2;
-Type Method2(Type member2)
-{
+Type Method2(Type member2) {
   Member2 = member2;
 }
 ~~~
@@ -905,13 +927,13 @@ A very basic "compile-time if" facility. It can't do very much yet.
 <div class='sbs' markdown='1'>
 ~~~csharp
 stringify(expr);
-Console.WriteLine(stringify(u+me=luv));
+Console.WriteLine(stringify(luv=u+me));
 ~~~
 
 ~~~csharp
 // Output of LeMP
 "expr";
-Console.WriteLine("u + me = luv");
+Console.WriteLine("luv = u + me");
 ~~~
 </div>
 
@@ -922,15 +944,15 @@ Converts an expression to a string (note: original formatting is not preserved.)
 <div class='sbs' markdown='1'>
 ~~~csharp
 x `tree==` y;
-x + 1 `tree==` x + "1";
-x + 777 `tree==` x+777;
+(x + 1) `tree==` (x + "1");
+(x + 777) `tree==` (x+777);
 ~~~
 
 ~~~csharp
 // Output of LeMP
 false;
-false + "1";
-false + 777;
+false;
+true;
 ~~~
 </div>
 
@@ -1028,13 +1050,12 @@ void Increment()
 
 ~~~csharp
 // Output of LeMP
-static readonly Symbol sy_Foo = (Symbol) "Foo";
-void Increment()
-{
-  if (dict.Contains(sy_Foo))
-    dict[sy_Foo]++;
+static readonly Symbol sy_Counter = (Symbol) "Counter";
+void Increment() {
+  if (dict.Contains(sy_Counter))
+    dict[sy_Counter]++;
   else
-    dict[sy_Foo] = 1;
+    dict[sy_Counter] = 1;
 }
 ~~~
 </div>
@@ -1043,9 +1064,18 @@ Replaces each symbol in the code that follows with a `static readonly` variable 
 
 ### unless ###
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 unless (Fingers.Cold && Fingers.Dead) { Hold(Gun); }
 ~~~
+
+~~~csharp
+// Output of LeMP
+if (!(Fingers.Cold && Fingers.Dead)) {
+  Hold(Gun);
+}
+~~~
+</div>
 
 Executes a block of statements when the specified condition is false.
 
@@ -1081,9 +1111,9 @@ with (Some.Thing) { .Member = 0; .Method(); }
 ~~~csharp
 // Output of LeMP
 {
-  var tmp_2 = Some.Thing;
-  tmp_2.Member = 0;
-  tmp_2.Method();
+  var tmp_12 = Some.Thing;
+  tmp_12.Member = 0;
+  tmp_12.Method();
 }
 ~~~
 </div>
@@ -1091,3 +1121,5 @@ with (Some.Thing) { .Member = 0; .Method(); }
 Use members of a particular object with a shorthand "prefix-dot" notation. 
 
 **Caution**: if used with a value type, a copy of the value is made; you won't be editing the original.
+
+{% endraw %}
