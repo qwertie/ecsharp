@@ -8,6 +8,7 @@
 @REM 5. Run Doxygen -l to create a layout file
 @REM 6. Rearrange the layout file to your liking
 @REM 7. Run this batch file (Note: I assume the output folder HTML_OUTPUT = code) (/Q = no confirm prompt)
+attrib -r code\*.*
 del /Q code\*.*
 doxygen.exe
 if errorlevel 1 pause
@@ -16,6 +17,8 @@ del doxygen*.tmp
 @REM     (e.g. Git typically comes with a copy)
 @REM 8b. Change the regex and http link to properly recognize your files and point to your repo
 sed --in-place -r "s_<li>.*(/(Main|Core|Src)/.*)</li>_<li><a href='https://github.com/qwertie/ecsharp/tree/master\1'>\1</a></li>_;s_The documentation for this [a-z]* was generated from the following file_<b>Source file</b>_" ./code/*.html
+@REM     My copy of sed is making all files read-only. Fix that.
+attrib -r code\*.*
 @REM 8c. Getting "sed: preserving permissions for `./sed002836': Permission denied"?
 @REM     Changing the output folder permissions to "Full Control" for the current user may help.
 @REM 9. If using Visual Studio, go to Tools | External Tools... and add this batch 

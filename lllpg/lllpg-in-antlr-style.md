@@ -36,6 +36,8 @@ Although the _outline_ of each rule uses an ANTLR-like syntax, there are still s
 
 Also note:
 
+- Generally speaking, Enhanced C# copies comments to your output file; however, this doesn't work inside `@{...}` blocks due to a limitation of how the whole system was designed. In ANTLR mode, the _entire grammar_ is inside a `@{...}` block so _none_ of the comments can be copied.
+
 - The `@init` clause is supported but it is not needed; the following rules are equivalent:
 
         rule1 @init { Action(); }: X | Y;

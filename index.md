@@ -20,7 +20,7 @@ I see new general-purpose language projects popping up all the time, and I don't
 
 That's why Enhanced C# tries very hard to be backward compatible with C#. I don't think 100% compatibility is necessary, but it's important to make sure that the number of changes required to make the EC# compiler happy is very close to zero. If you find any existing C# isn't handled properly by EC#, it's probably just a bug - please file a bug report.
 
-Plus, the fact that EC# converts to plain C# means that if you decide to stop using EC#, you can always discard your EC# code and just use the C# code. EC# doesn't yet preserve comments and blank lines, but all it would take is one volunteer willing to [write a little code](/help-wanted.html#Task-copy-comments-to-output).
+Plus, the fact that EC# converts to plain C# means that if you decide to stop using EC#, you can always discard your EC# code and just use the C# code - especially now that EC# can preserve comments and blank lines.
 
 Learn More
 ----------

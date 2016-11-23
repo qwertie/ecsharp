@@ -706,7 +706,7 @@ Range.StartingAt(lo);
 ~~~
 </div>
 
-### replace ###
+### replace (old style) ###
 
 <div class='sbs' markdown='1'>
 ~~~csharp
@@ -726,7 +726,96 @@ if (Polo(x + y))
 
 Finds one or more patterns in a block of code and replaces each matching expression with another expression. The braces  are omitted from the output (and are not matchable). This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list.
 
-The alternate name `replacePP` additionally preprocesses the input and output arguments, and is useful to get around problems with macro execution order. This behavior is not the default, since the final output will be macro-processed a second time.
+The patterns can include both literal elements (e.g. `123` matches the integer literal `123` and nothing else, and `F()` only matches a call to `F` with no arguments) and "captures" like `$x`, which match any syntax tree and assign it to a "capture variable". Captures can be repeated in the replacement expression (after `=>`) to transfer subexpressions and statements from the original expression to the new expression. 
+
+For example, above you can see that the expression `Marco(x + y)` matched the search expression `Marco($x)`. The identifier `Marco` was matched literally. `$x` was associated with the expression `x + y`, and it was inserted into the output, `Polo(x + y)`.
+
+The match expression and/or the replacement expression (left and right sides of `=>`, respectively) can be enclosed in braces to enable statement syntax. Example:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace ({$T $x;} => {$T $x = default($T);});
+int i;
+List<int> L;
+~~~
+</div>
+
+The braces are otherwise ignored; for example, `{ 123; }` really just means `123`. If you actually want to match braces literally, use double braces: `{{ statement list; }}`
+
+You can match a sequence of zero or more expressions using syntax like `$(..x)` on the search side (left side of `=>`). For example,
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace (WL($fmt, $(..args)) => Console.WriteLine($fmt, $args));
+WL(); // not matched effect
+WL("Hello!");
+WL("Hello {0}!", name);
+~~~
+</div>
+
+The alternate name `replacePP(...)` additionally preprocesses the match and replacement expressions, which may be useful to get around problems with macro execution order. Caution: `replacePP` runs the macro processor twice on the replacement expression: once at the beginning, and again on the final output.
+
+### replace (method-style) ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace MakeSquare($T) { 
+	void Square($T x) { return x*x; }
+}
+MakeSquare(int);
+MakeSquare(double);
+MakeSquare(float);
+
+[Passive]
+replace operator=(Foo[$index], $value) {
+	Foo.SetAt($index, $value);
+}
+x = Foo[y] = z;
+~~~
+</div>
+
+Defines a new macro, scoped to the current braced block, that matches the specified pattern and replaces it with the specified output code. `replace` has the same syntax as a method, so you can use either lambda syntax like `replace MacroName(...) => ...`, or brace syntax like `replace MacroName(...) { ... }`. Brace syntax is more general, since it allows you to put multiple statements in the output, and you can also include type declarations.
+
+The `[Passive]` option in this example prevents warning messages when assignment operators are encountered that do not fit the specified pattern (e.g. `X = Y` and `X[index] = Y` do not match the pattern). See [MacroMode](http://ecsharp.net/doc/code/namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721) for a list of available options.
+
+Matching and replacement occur the same way as in the old-style `replace` macro described 
+above. One difference is worth noting: if there are braces around a match argument, those 
+braces are treated literally, not ignored (even though the braces around the replacement code 
+are _not_ considered part of the replacement code; they _are_ ignored).
+
+The technical difference between this and the old `replace()` macro is that the old one performs a find-and-replace operation directly, whereas this one creates a macro with a specific name. This leads to a couple of differences in behavior which ensure that the old macro is still useful in certain situations.
+
+The first difference is that method-style `replace` works recursively, but the old doesn't:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace (Foo => Bar(Foo($x)));
+Foo(5);
+~~~
+</div>
+
+Currently, method-style replace doesn't handle this well; `Foo(...)` is expanded recursively up to the iteration limit (or until stack overflow).
+
+The second difference is that the old macro performs replacements immediately, while method-style `replace` generates a macro whose expansions are interleaved with other macros in the usual way. For example, if you write
+
+<div class='sbs' markdown='1'>
+~~~csharp
+    replace (A => B);  
+    replace macro2($X) => $X * $X;  
+    macro1(macro2(macro3(A)));
+~~~
+</div>
+
+The order of replacements is 
+
+1. `A` is replaced with `B`
+2. `macro1` is executed (if there is a macro by this name)
+3. `macro2` is executed (if it still exists in the output of `macro1`)
+4. `macro3` is executed (if there is a macro by this name)
+
+Often, method-style `replace` has higher performance than the old `replace` macro because, by piggybacking on the usual macro expansion process, it avoids performing an extra pass on the syntax tree.
+
+**Note**: the `replace` macros are not hygienic. For example, variables defined in the replacement expression are not renamed to avoid conflicts with variables defined at the point of expansion.
 
 ### scope(...) ###
 

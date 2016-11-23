@@ -339,7 +339,9 @@ A key feature of the new operator is its high precedence. In EC# you _can_ write
       ...
 ~~~
 
-but this approach requires parenthesis, since `var table = ... != null` would be parsed as `var table = (... != null)`. You don't want that, so you add parentheses. But this isn't very convenient, and the parentheses make the code slightly harder to read. In contrast, `::` binds as tightly as `.` does, so extra parenthesis are rarely needed.
+but this approach requires parenthesis, since `var table = ... != null` would be parsed as `var table = (... != null)`. You don't want that, so you add parentheses. But this is inconvenient and the parentheses make the code slightly harder to read. In contrast, `::` binds as tightly as `.` does, so extra parenthesis are rarely needed.
+
+**Note:** currently, this operator is implemented as a macro. It won't work without an `#ecs;` statement, e.g. at the top of the source file.
 
 To explain why I think we need this operator, I will use a math analogy. Math-speak is a little different than normal speech; mathematicians have a special way of speaking because it is more efficient than the alternative. For instance they might say: "consider a perfect number x in a set of integers S where x is coprime with some y in S, y != x.". They pair words together like "perfect number X" and "set of integers S", which are basically variable declarations embedded in a sentence. Mathematicians would be very unhappy if some grammar Nazis forced them to separate out those variable declarations: "x and y are integers, and S is a set of integers. x is a perfect number in S where..." It's longer, and when you are used to math-speak, it's slightly harder to understand the statement when the variable declarations are separated.
 
@@ -357,7 +359,7 @@ if (AdjacencyList.Count::c > 1)
    pairs += c - 1;
 ~~~
 
-And there's a reasonable chance this code is faster. `AdjacencyList` might be a property that reaches into some data structure to retrieve the list, and the `Count` property might be a virtual or interface method. Unless the JIT can be certain that `AdjacencyList.Count` is pure (has no side effects), the JIT cannot avoid evaluating it twice.
+And there's a reasonable chance this code is faster. `AdjacencyList` might be a property that reaches into some data structure to retrieve the list, and the `Count` property might be a virtual or interface method. Unless the JIT can be certain that `AdjacencyList.Count` is pure (has no side effects), the JIT _cannot_ avoid evaluating it twice.
 
 So, by using the quick binding operator, you've just optimized your code to call these properties only once. Congratulations, you've just fallen into the pit of success: you wrote faster code with little or no effort.
 
@@ -508,18 +510,18 @@ void Open() {
 
 The `[requires]` attribute is one of the code contracts mentioned in the previous section; the hash mark `#` is a shortcut that refers to "the current parameter", i.e. `option`.
 
-There's one more wrinkle. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. That macro is called `#useSymbols`, and you need to write `#useSymbols;` near the top of any class that uses symbols. For example:
+There's one more wrinkle. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. Specifically, you need to write `#ecs;` at the top of the source file (or use the old method, which is to write `#useSymbols;` near the beginning of any class that uses symbols.) For example:
 
 ~~~csharp
+#ecs;
 class DatabaseManager {
-   #useSymbols;
    public static DatabaseConnection Open(string command, 
       [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
    ...
 }
 ~~~
 
-`#useSymbols`'s job is to create static fields to hold each symbol that you use:
+The macro's creates static fields to hold each symbol that you use:
 
 ~~~csharp
 class DatabaseManager
@@ -538,6 +540,8 @@ class DatabaseManager
 The `Symbol` type can be found in Loyc.Essentials.dll (part of LoycCore on NuGet) in the `Loyc` namespace.
 
 Since the `Symbol` class has a explicit cast from `string`, in plain C# you can write `(Symbol)"SymbolName"` to convert a string to a Symbol at runtime, in order to call methods that expect Symbols.
+
+Currently, symbols are not treated as constants, so you cannot use them as arguments to attributes, or as switch cases, or as default values to methods.
 
 `on_finally`
 ------------
@@ -574,7 +578,18 @@ void Method()
 
 `on_finally` groups together the code that sets and restores the value of the property, it eliminates two lines of code, and it removes the indentation on those `10 lines of code`.
 
-Actually, I often find myself wanting to save or use the _old_ value of something just before I _change_ the value of something. I feel like there should be some way to write `SomeBclClass.StaticProperty` only twice, instead of three times, and in the past I have suggested a ["slide operator"](http://loyc.net/2010/i-want-slide-operator.html) as the solution. But such an operator is not currently implemented; so if you like this idea, feel free to write it as a user-defined macro. Ask me how.
+In fact, for this particular problem you can use the `saveAndRestore()` macro:
+
+~~~csharp
+void Method()
+{
+   saveAndRestore(SomeBclClass.StaticProperty = newValue);
+   
+   10 lines of code;
+}
+~~~
+
+This does the same thing, saving the old value in a variable with a unique name like `oldStaticProperty_10`.
 
 `on_finally`, which works like the `defer` statement in Swift and the `scope(exit)` statement in D, is actually part of a group of related macros. The others are [`on_return`, `on_throw` and `on_throw_catch`](http://ecsharp.net/lemp/ref-on_star.html).
 
