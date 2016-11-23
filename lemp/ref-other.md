@@ -711,7 +711,7 @@ replace ({
 } => {
   List<$T> $L2 = new List<$T>();
   foreach (var $w in $L1) {
-    if ($w) {
+    if ($wc) {
       static if ($w `tree==` $s) {} else
       	var $s = $w;
       $L2.Add($sc);
@@ -732,7 +732,7 @@ void LaterThatDay()
 void LaterThatDay() {
   List<Item> paidItems = new List<Item>();
   foreach (var it in items) {
-    if (it) {
+    if (it.IsPaid) {
       paidItems.Add(it.SKU);
     }
   }
