@@ -17,6 +17,8 @@ namespace Loyc
 	/// messages; it could be used for log messages, compiler error messages, or
 	/// to report the progress of a process, for instance.
 	/// <para/>
+	/// It is typical to use <see cref="IMessageSink"/> without type parameters.
+	/// <para/>
 	/// Since .NET does not allow static members in an interface, the static
 	/// members can be found in <see cref="MessageSink"/>.
 	/// <para/>
@@ -55,6 +57,14 @@ namespace Loyc
 	/// doing any work required to prepare a message for printing when a certain
 	/// category of output is disabled.
 	/// </remarks>
+	/// <typeparam name="TSeverity">The type of the first parameter to <c>Write</c>, 
+	/// which is used to indicate the "kind" of message being logged. Typically this 
+	/// parameter is <see cref="Severity"/>, which includes values like Note, Warning 
+	/// and Error.</typeparam>
+	/// <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
+	/// which indicates where the error occurs. If the message relates to a text
+	/// file or source code, the location is typically indicated with an object of
+	/// type <see cref="Loyc.Syntax.SourceRange"/> or <see cref="Loyc.Syntax.LNode"/>.</typeparam>
 	/// <seealso cref="MessageSink"/>
 	/// <seealso cref="ConsoleMessageSink"/>
 	/// <seealso cref="TraceMessageSink"/>
@@ -62,7 +72,8 @@ namespace Loyc
 	/// <seealso cref="MessageFilter"/>
 	/// <seealso cref="MessageHolder"/>
 	/// <seealso cref="MessageSplitter"/>
-	public interface IMessageSink
+	/// <seealso cref="IHasLocation"/>
+	public interface IMessageSink<in TSeverity, in TContext>
 	{
 		/// <summary>Writes a message to the target that this object represents.</summary>
 		/// <param name="type">Severity or importance of the message; widely-used
@@ -75,13 +86,25 @@ namespace Loyc
 		/// See also <see cref="MessageSink.LocationString"/>().</param>
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
-		void Write(Severity type, object context, string format);
-		void Write(Severity type, object context, string format, object arg0, object arg1 = null);
-		void Write(Severity type, object context, string format, params object[] args);
+		void Write(TSeverity type, TContext context, string format);
+		void Write(TSeverity type, TContext context, string format, object arg0, object arg1 = null);
+		void Write(TSeverity type, TContext context, string format, params object[] args);
 		
 		/// <summary>Returns true if messages of the specified type will actually be 
-		/// printed, or false if Write(type, ...) is a no-op.</summary>
-		bool IsEnabled(Severity type);
+		/// printed, or false if Write(type, ...) has no effect.</summary>
+		bool IsEnabled(TSeverity type);
+	}
+
+	/// <summary>Alias for IMessageSink&lt;Severity, TContext>.</summary>
+	/// <seealso cref="IMessageSink{TSeverity,TContext}"/>
+	public interface IMessageSink<TContext> : IMessageSink<Severity, TContext>
+	{
+	}
+	
+	/// <summary>Alias for IMessageSink&lt;Severity, object>.</summary>
+	/// <seealso cref="IMessageSink{TSeverity,TContext}"/>
+	public interface IMessageSink : IMessageSink<object>
+	{
 	}
 
 	/// <summary>A linear scale to categorize the importance and seriousness of 
@@ -207,13 +230,17 @@ namespace Loyc
 		}
 	}
 
-	/// <summary>This interface allows an object to declare its "location". It is
-	/// used by <see cref="MessageSink.LocationString"/>, which helps convert
-	/// the "context" of a message into a string.</summary>
+	/// <summary>This interface allows an object to declare its "location".</summary>
 	/// <remarks>For example, <see cref="Loyc.Syntax.LNode"/> implements this 
 	/// interface so that when a compiler error refers to a source code construct,
 	/// the error message contains the location of that source code rather than the
-	/// code itself.</remarks>
+	/// code itself.
+	/// <para/>
+	/// Given a context object that may or may not implement this interface, it's
+	/// handy to use <see cref="MessageSink.LocationString"/> to convert the 
+	/// "context" of a message into a string, or <see cref="MessageSink.LocationOf(object)"/> 
+	/// to unwrap objects that implement IHasLocation.
+	/// </remarks>
 	public interface IHasLocation
 	{
 		object Location { get; }

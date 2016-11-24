@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	replace SelectClass($SelectList, $IList<T>)
+	replace GenerateSelectClass($SelectList, $IList<T>)
 	{
 		public class $SelectList<T,TResult> : ListSourceBase<TResult>
 		{
@@ -54,7 +54,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	SelectClass(SelectList, IList<T>);
+	GenerateSelectClass(SelectList, IList<T>);
 	
 	/// <summary>
 	/// Helper class: provides a modified view of an IListSource by transforming each element 
@@ -63,5 +63,5 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	SelectClass(SelectListSource, IListSource<T>);
+	GenerateSelectClass(SelectListSource, IListSource<T>);
 }

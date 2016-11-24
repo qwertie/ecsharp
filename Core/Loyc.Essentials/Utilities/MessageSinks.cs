@@ -28,6 +28,7 @@ namespace Loyc
 		/// <summary>Minimum severity level at which the severity level is printed.
 		/// For example, if set to Severity.Error, then the prefix "Error:" is printed
 		/// for errors but the prefix "Warning:" is not printed for warnings.</summary>
+		/// <remarks>Initial value: Severity.Warning</remarks>
 		public Severity PrintSeverityAt { get; set; }
 
 		protected virtual ConsoleColor PickColor(Severity msgType, out string msgTypeText)
