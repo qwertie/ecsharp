@@ -25,7 +25,7 @@ namespace LeMP
 			int i;
 			matchCode(classDecl) {
 				case {
-					[$(..attrs[(i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1])] 
+					[$(..attrs[(i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1])]
 					class $baseName : $(..baseTypes) {
 						$(..body);
 					}
@@ -162,8 +162,7 @@ namespace LeMP
 				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
 					_constructorAttrs.Add(F.Id(S.Public));
 				LNode constructor = quote {
-					[$(.._constructorAttrs)] 
-					#cons(@``, $_typeNameStem, #($(..args)), {
+					[$(.._constructorAttrs)] #cons(@``, $_typeNameStem, #($(..args)), {
 						$(..initialization);
 						$(.._extraConstrLogic);
 					});
@@ -180,8 +179,8 @@ namespace LeMP
 				outBody.AddRange(_classBody);
 
 				list.Add(quote {
-					[$(.._classAttrs)] 
-					class $TypeName : $(..BaseTypes) {
+					[$(.._classAttrs)] class $TypeName : $(..BaseTypes)
+					{
 						$(..outBody);
 					}
 				});
@@ -259,8 +258,8 @@ namespace LeMP
 			}
 			public LNode GetItemDecl(int itemNum) {
 				LNode ItemN = F.Id("Item" + itemNum);
+				// ItemN properties are used by the code generated for pattern matching
 				return quote {
-					// ItemN properties are used by the code generated for pattern matching
 					[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 					public $Type $ItemN { get { return $NameId; } }
 				};

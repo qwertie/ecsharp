@@ -194,12 +194,11 @@ namespace TextEditor
 
 		private SourcePos GetSourcePos(object context)
 		{
+			context = MessageSink.LocationOf(context);
 			if (context is SourcePos)
 				return (SourcePos)context;
 			if (context is SourceRange)
 				return ((SourceRange)context).Start;
-			if (context is LNode)
-				return ((LNode)context).Range.Start;
 			return null;
 		}
 

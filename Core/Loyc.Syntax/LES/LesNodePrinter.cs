@@ -484,7 +484,8 @@ namespace Loyc.Syntax.Les
 		{
 			_staticWriter.Reset();
 			_staticStringBuilder.Length = 0;
-			_staticPrinter.PrintLiteralCore(value, style);
+			if (!_staticPrinter.PrintLiteralCore(value, style))
+				return null;
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintString(string text, char quoteType, bool tripleQuoted)
@@ -675,18 +676,11 @@ namespace Loyc.Syntax.Les
 
 		private void PrintLiteral(ILNode node)
 		{
-			PrintLiteralCore(node.Value, node.Style);
-		}
-		private void PrintLiteralCore(object value, NodeStyle style)
-		{
-			Action<LesNodePrinter, object, NodeStyle> p;
-			if (value == null)
-				_out.Write("@null", true);
-			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
-				p(this, value, style);
-			else {
-				// TODO: add current ILNode as context to error message
-				Errors.Write(Severity.Error, null, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
+			object value = node.Value;
+			if (!PrintLiteralCore(value, node.Style))
+			{
+				Errors.Write(Severity.Error, node, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
+
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {
@@ -700,6 +694,17 @@ namespace Loyc.Syntax.Les
 				else
 					_out.Write(unprintable, true);
 			}
+		}
+		private bool PrintLiteralCore(object value, NodeStyle style)
+		{
+			Action<LesNodePrinter, object, NodeStyle> p;
+			if (value == null)
+				_out.Write("@null", true);
+			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
+				p(this, value, style);
+			else 
+				return false;
+			return true;
 		}
 
 		#endregion

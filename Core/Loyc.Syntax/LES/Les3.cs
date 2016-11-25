@@ -45,7 +45,7 @@ namespace Loyc.Syntax.Les
 				string syntaxError;
 				var result = ParseLiteral(typeMarker, parsedText, isNumericLiteral, out syntaxError);
 				if (syntaxError != null) {
-					SourcePos pos = IndexToLine(_startPosition);
+					var pos = new SourceRange(SourceFile, _startPosition, InputPosition - _startPosition);
 					ErrorSink.Write(Severity.Error, pos, syntaxError);
 				}
 				return result;
@@ -244,7 +244,7 @@ namespace Loyc.Syntax.Les
 		void PrintErrorIfTypeMarkerIsKeywordLiteral(object boolOrNull)
 		{
 			if (boolOrNull != NoValue.Value)
-				ErrorSink.Write(Severity.Error, IndexToLine(_startPosition), "Keyword '{0}' used as a type marker", boolOrNull);
+				ErrorSink.Write(Severity.Error, IndexToPositionObject(_startPosition), "Keyword '{0}' used as a type marker", boolOrNull);
 		}
 	}
 

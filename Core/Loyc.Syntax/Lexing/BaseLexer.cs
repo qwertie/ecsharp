@@ -607,8 +607,16 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="args">Arguments to insert into the error message.</param>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			SourcePos pos = IndexToLine(InputPosition + lookaheadIndex);
+			var pos = IndexToPositionObject(InputPosition + lookaheadIndex);
 			ErrorSink.Write(Severity.Error, pos, format, args);
+		}
+
+		protected virtual object IndexToPositionObject(int charIndex)
+		{
+			if (SourceFile != null)
+				return new SourceRange(SourceFile, charIndex);
+			else
+				return IndexToLine(charIndex);
 		}
 
 		protected virtual void Error(bool inverted, int range0lo, int range0hi) { Error(inverted, new int[] { range0lo, range0hi }); }
@@ -674,12 +682,12 @@ namespace Loyc.Syntax.Lexing
 				sb.Append(c);
 		}
 
-		public SourcePos IndexToLine(int index)
+		public SourcePos IndexToLine(int charIndex)
 		{
 			if (SourceFile == null)
-				return new SourcePos(_fileName, LineNumber, index - _lineStartAt + 1);
+				return new SourcePos(_fileName, LineNumber, charIndex - _lineStartAt + 1);
 			else
-				return SourceFile.IndexToLine(index);
+				return SourceFile.IndexToLine(charIndex);
 		}
 	}
 

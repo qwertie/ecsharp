@@ -73,6 +73,7 @@ namespace LeMP
 
 		public static LNode QuoteOne(LNode node, bool substitutions)
 		{
+			// TODO: When quoting, ignore injected trivia (trivia with the TriviaInjected flag)
 			if (node.Equals(LNode.InParensTrivia))
 				return LNode_InParensTrivia;
 			if (node.Equals(LNode.Missing))

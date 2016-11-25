@@ -58,7 +58,7 @@ partial class Les3Parser
 		}
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
-			SourcePos location = SourceFile.IndexToLine(LT(-1).EndIndex + 1);
+			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true)

@@ -44,8 +44,8 @@ namespace Loyc.Syntax.Lexing
 	public abstract class BaseILexer<CharSrc, Token> : BaseLexer<CharSrc>, ILexer<Token>
 		where CharSrc : ICharSource
 	{
-		protected BaseILexer(CharSrc charSrc, string fileName = "", int inputPosition = 0, bool newSourceFile = true) 
-			: base(charSrc, fileName, inputPosition, newSourceFile) { }
+		protected BaseILexer(CharSrc charSrc, string fileName = "", int inputPosition = 0) 
+			: base(charSrc, fileName, inputPosition) { }
 
 		UString _indentString;
 		protected int _indentLevel;

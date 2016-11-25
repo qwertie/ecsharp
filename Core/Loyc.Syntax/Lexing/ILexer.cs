@@ -13,6 +13,7 @@ namespace Loyc.Syntax.Lexing
 	public interface ILexer<Token> : IIndexToLine, IEnumerator<Token>
 	{
 		/// <summary>The file being lexed.</summary>
+		/// <remarks>This property should never be null.</remarks>
 		ISourceFile SourceFile { get; }
 		/// <summary>Scans the next token and returns information about it.</summary>
 		/// <returns>The next token, or null at the end of the source file.</returns>
@@ -95,7 +96,7 @@ namespace Loyc.Syntax.Lexing
 
 		protected void WriteError(int index, string msg, params object[] args)
 		{
-			LogMessage lm = new LogMessage(Severity.Error, SourceFile.IndexToLine(index), msg, args);
+			LogMessage lm = new LogMessage(Severity.Error, new SourceRange(SourceFile, index), msg, args);
 			if (ErrorSink == null)
 				throw new LogException(lm);
 			else

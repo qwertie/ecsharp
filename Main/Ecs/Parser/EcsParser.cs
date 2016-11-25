@@ -135,7 +135,7 @@ namespace Loyc.Ecs.Parser
 		void UnhandledException(Exception ex)
 		{
 			int iPos = GetTextPosition(InputPosition);
-			SourcePos pos = _sourceFile.IndexToLine(iPos);
+			SourceRange pos = new SourceRange(_sourceFile, iPos);
 			ErrorSink.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
@@ -179,7 +179,7 @@ namespace Loyc.Ecs.Parser
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
-			SourcePos pos = _sourceFile.IndexToLine(iPos);
+			SourceRange pos = new SourceRange(_sourceFile, iPos);
 			CurrentSink(true).Write(Severity.Error, pos, message, args);
 		}
 		protected LNode Error(string message, params object[] args)
@@ -199,7 +199,7 @@ namespace Loyc.Ecs.Parser
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			CurrentSink(true).Write(Severity.Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
+			CurrentSink(true).Write(Severity.Error, new SourceRange(_sourceFile, token), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

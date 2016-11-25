@@ -119,10 +119,17 @@ namespace Loyc.Syntax
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			var newAttrs = AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);
+			SetInjectedFlags(newAttrs);
 			if (loc == TriviaLocation.Leading)
 				return node.PlusAttrsBefore(newAttrs);
 			else
 				return node.PlusTrailingTrivia(newAttrs);
+		}
+
+		private static void SetInjectedFlags(VList<LNode> newAttrs)
+		{
+			foreach (var attr in newAttrs)
+				attr.Style |= NodeStyle.InjectedTrivia;
 		}
 
 		protected enum TriviaLocation {
@@ -283,13 +290,15 @@ namespace Loyc.Syntax
 
 				// Attach leading trivia to current node
 				var newAttrs = AttachTriviaTo(ref node, triviaList, TriviaLocation.Leading, parent, indexInParent);
+				SetInjectedFlags(newAttrs);
 				if (!(prevIndexInParent < -1 && indexInParent <= -1))
 					node = node.PlusAttrsBefore(newAttrs);
 				else {
 					// Special case: this trivia appears between attributes. 
 					// Yield it to parent node as additional attribute(s)
-					foreach (var attr in newAttrs)
+					foreach (var attr in newAttrs) {
 						yield return Pair.Create(attr, prevIndexInParent);
+					}
 				}
 				triviaList.Clear();
 

@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 1.9.5.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 1.9.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -523,7 +523,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1, la2;
 			_parseNeeded = true;
-			_style = NodeStyle.Alternate;
+			_style = NodeStyle.TDQStringLiteral;
 			// Line 100: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
@@ -564,7 +564,7 @@ namespace Loyc.Syntax.Les
 				Match('"');
 			} else {
 				// line 101
-				_style |= NodeStyle.Alternate2;
+				_style = NodeStyle.TQStringLiteral;
 				Match('\'');
 				Match('\'');
 				Match('\'');
@@ -721,7 +721,7 @@ namespace Loyc.Syntax.Les
 				break;
 			match1:
 				{
-					var old_startPosition_10 = _startPosition;
+					var old_startPosition_0 = _startPosition;
 					try {
 						_startPosition = InputPosition;
 						// Line 134: (TQString / DQString)
@@ -739,7 +739,7 @@ namespace Loyc.Syntax.Les
 						PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
 						return _value = ParseLiteral2(idtext, value.ToString(), false);
 					} finally {
-						_startPosition = old_startPosition_10;
+						_startPosition = old_startPosition_0;
 					}
 				}
 			} while (false);

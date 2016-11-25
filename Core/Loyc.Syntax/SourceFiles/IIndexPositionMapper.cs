@@ -19,6 +19,9 @@ namespace Loyc.Syntax
 		SourcePos IndexToLine(int index);
 		
 		/// <summary>Gets the file name used in results returned by <see cref="IndexToLine(int)"/>.</summary>
+		/// <remarks>It is not guaranteed that <i>all</i> return values from 
+		/// <see cref="IndexToLine(int)"/> use this filename; for example, the
+		/// file may vary in mappings from <see cref="SourceFileWithLineRemaps"/>.</remarks>
 		string FileName { get; }
 	}
 

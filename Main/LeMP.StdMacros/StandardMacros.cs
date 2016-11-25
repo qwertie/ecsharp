@@ -376,7 +376,7 @@ namespace LeMP
 			+"to make it clear you want to run this macro and that some other meaning of `$` does not apply. Examples:\n\n"
 			+"    $(out Foo) number; // variable of type Foo\n"
 			+"    int $(out concatId(Sq, uare))(int x) => x*x;",
-			"'$")]
+			"'$", Mode = MacroMode.Passive)]
 		public static LNode DollarSignIdentity(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 1)

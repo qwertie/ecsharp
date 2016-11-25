@@ -89,8 +89,6 @@ namespace LeMP
 		[LexicalMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple", Mode = MacroMode.Passive)]
 		public static LNode Tuple(LNode node, IMacroContext context)
 		{
-			// TODO: consider supporting .[a, b] (and !(a, b)) as syntax for @``<a, b> 
-			// which will refer to a tuple type.
 			if (node.IsCall) {
 				// Do not change a tuple on the LHS of =>, i.e. `(x, y) => expr`
 				if (context.Parent == null || (context.Parent.Calls(S.Lambda, 2) && context.Parent.Args[0].Equals(node)))

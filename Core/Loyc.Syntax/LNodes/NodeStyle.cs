@@ -75,18 +75,16 @@ namespace Loyc.Syntax
 		TDQStringLiteral = 7,
 
 		/// <summary>If this node has two styles in which it can be printed, this
-		/// selects the second (either the less common style, or in EC#, the EC# 
-		/// style for features of C# with new syntax in EC#). In EC#, it denotes 
-		/// x(->int) as opposed to (int)x, and x (as Y) as opposed to (x as Y). 
-		/// In C#, delegate(X) {Y;} is considered to be the alternate style for 
-		/// X => Y, and it forces parens and braces as a side-effect.</summary>
-		Alternate = 8,
-
-		/// <summary>Another alternate style flag. In LES and EC#, this is used for
-		/// binary-format numbers. In LES, it is used for triple-quoted strings that 
-		/// use single quotes.</summary>
-		Alternate2 = 16,
+		/// selects the second (the less common style, or less-well-supported style).
+		/// In EC#, it denotes x(->int) as opposed to (int)x, and x (as Y) as opposed 
+		/// to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate 
+		/// style for X => Y; it forces parens and braces as a side-effect.</summary>
+		Alternate = 16,
 		
+		/// <summary>Injected trivia (see <see cref="AbstractTriviaInjector{Trivia}"/>) 
+		/// will have this bit set.</summary>
+		InjectedTrivia = 32,
+
 		/// <summary>Indicates that the there is no comment or newline trivia associated
 		/// with the children of this node, and therefore when printing this node,
 		/// automatic newlines can be suppressed.</summary>
@@ -94,7 +92,7 @@ namespace Loyc.Syntax
 
 		/// <summary>Indicates that some part of a compiler has seen the node and 
 		/// done something with it.</summary>
-		/// <remarks>The idea behind this flag relates to compilers that allow 
+		/// <remarks>The motivation for this flag relates to compilers that allow 
 		/// user-defined attributes for plug-ins that add functionality. For 
 		/// example, internationalization plug-in might notice a language marker:
 		/// <code>
@@ -102,9 +100,9 @@ namespace Loyc.Syntax
 		/// </code>
 		/// If an attribute is not used by any plug-in, the compiler should print 
 		/// a warning that the attribute is unused. This leads to the question, how
-		/// can a compiler tell if an attribute was used or not? The Handled flag
+		/// can a compiler tell if an attribute was ever used? The Handled flag
 		/// is one possible mechanism; when any part of the compiler or its plug-
-		/// ins use an attribute, the Handled flag should be set to disable the
+		/// ins use an attribute, the Handled flag could be set to disable the
 		/// compiler warning.
 		/// <para/>
 		/// Remember that the same node can theoretically appear in multiple

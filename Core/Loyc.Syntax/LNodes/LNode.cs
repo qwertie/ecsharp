@@ -433,11 +433,11 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public ISourceFile Source { get { return RAS.Source; } }
 
-		/// <summary>Gets Range.Begin.ToString().</summary>
+		/// <summary>Returns Range.</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		object IHasLocation.Location
 		{
-			get { return Range.Start; }
+			get { return Range; }
 		}
 
 		/// <summary>Indicates the preferred style to use when printing the node to a text string.</summary>

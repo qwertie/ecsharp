@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.5.0
+// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -155,7 +155,7 @@ namespace Loyc.Syntax.Les {
 						at = MatchAny();
 						// line 95
 						if (at.Type() == default(TT)) {
-							ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['");
+							ErrorSink.Write(Severity.Warning, LaIndexToMsgContext(0), "Attribute: expected '@['");
 						} else {
 							attrStart = System.Math.Min(attrStart, at.StartIndex);
 						}

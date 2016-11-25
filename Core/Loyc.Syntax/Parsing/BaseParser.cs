@@ -133,17 +133,16 @@ namespace Loyc.Syntax
 			return charIdx;
 		}
 
-		/// <summary>Converts a lookahead token index to a <see cref="SourcePos"/>
-		/// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
-		/// <remarks>If the derived class initialized <c>SourceFile</c> to null, 
-		/// returns "At index {0}" where {0} is the character index.</remarks>
-		protected virtual object LaIndexToSourcePos(int lookaheadIndex)
+		/// <summary>Converts a lookahead token index to a <see cref="SourceRange"/>
+		/// (or to a string if <see cref="SourceFile"/> was initialized to null.)</summary>
+		/// <remarks>The base class can only return a zero-width SourceRange.</remarks>
+		protected virtual object LaIndexToMsgContext(int lookaheadIndex)
 		{
 			int charIdx = LaIndexToCharIndex(lookaheadIndex);
 			if (SourceFile == null)
 				return Localize.Localized("At index {0}", charIdx);
 			else
-				return SourceFile.IndexToLine(charIdx);
+				return new SourceRange(SourceFile, charIdx);
 		}
 
 		/// <summary>Records an error or throws an exception.</summary>
@@ -160,12 +159,12 @@ namespace Loyc.Syntax
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), message);
+			ErrorSink.Write(Severity.Error, LaIndexToMsgContext(lookaheadIndex), message);
 		}
 		/// <inheritdoc cref="Error(int,string)"/>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), format, args);
+			ErrorSink.Write(Severity.Error, LaIndexToMsgContext(lookaheadIndex), format, args);
 		}
 
 		protected void Skip()

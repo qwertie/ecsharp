@@ -92,7 +92,7 @@ namespace Loyc.Syntax.Les {
 			{var attrStart = int.MaxValue;}
 			greedy[	// @[Attributes]
 				at:"@"
-				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")}
+				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToMsgContext(0), "Attribute: expected '@['")}
 				 else {attrStart = System.Math.Min(attrStart, at.StartIndex);};} 
 				t:"[" attrs:ExprList(attrs) "]"
 			]*

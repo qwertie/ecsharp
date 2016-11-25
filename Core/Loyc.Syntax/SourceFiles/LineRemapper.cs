@@ -62,6 +62,16 @@ namespace Loyc.Syntax
 		}
 	}
 
+	/// <summary>A <see cref="SourcePos"/> that also includes the original index 
+	/// from which the Line and PosInLine were derived.</summary>
+	/// <remarks>Returned by <see cref="SourceFileWithLineRemaps.IndexToLine"/>.</remarks>
+	public class SourcePosAndIndex : SourcePos
+	{
+		public SourcePosAndIndex(int originalIndex, string FileName, int Line, int PosInLine)
+			: base(FileName, Line, PosInLine) { OriginalIndex = originalIndex; }
+		public int OriginalIndex { get; private set; }
+	}
+
 	/// <summary>A small helper class for languages such as C# and C++ that permit 
 	/// the locations reported by error messages to be remapped. This class stores
 	/// and applies such commands (#line in C#/C++)</summary>

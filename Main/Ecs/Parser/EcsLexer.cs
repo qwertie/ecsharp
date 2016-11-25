@@ -76,7 +76,7 @@ namespace Loyc.Ecs.Parser
 			// the fast "blitting" code path may not be able to handle errors
 			_parseNeeded = true;
 
-			var pos = SourceFile.IndexToLine(InputPosition + lookaheadIndex);
+			var pos = new SourceRange(SourceFile, InputPosition + lookaheadIndex);
 			if (ErrorSink != null)
 				ErrorSink.Write(Severity.Error, pos, message);
 			else
@@ -135,7 +135,8 @@ namespace Loyc.Ecs.Parser
 				start++;
 			char q;
 			Debug.Assert((q = CharSource.TryGet(start, '\0')) == '"' || q == '\'' || q == '`');
-			bool tripleQuoted = (_style & NodeStyle.Alternate2) != 0;
+			bool tripleQuoted = (_style & NodeStyle.BaseStyleMask) == NodeStyle.TDQStringLiteral ||
+			                    (_style & NodeStyle.BaseStyleMask) == NodeStyle.TQStringLiteral;
 
 			string value;
 			if (!_parseNeeded) {

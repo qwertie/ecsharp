@@ -91,7 +91,7 @@ namespace LeMP.Prelude
 		}
 
 		[LexicalMacro("#printKnownMacros;", "Prints a table of all macros known to LeMP, as (invalid) C# code.",
-			"printKnownMacros", "#printKnownMacros", Mode = MacroMode.NoReprocessing)]
+			"printKnownMacros", "#printKnownMacros", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifier)]
 		public static LNode printKnownMacros(LNode node, IMacroContext context)
 		{
 			// namespace LeMP {

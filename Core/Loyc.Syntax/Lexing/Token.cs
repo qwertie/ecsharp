@@ -407,7 +407,7 @@ namespace Loyc.Syntax.Lexing
 			return this;
 		}
 
-		public object ToSourceRange(ISourceFile sourceFile)
+		public SourceRange ToSourceRange(ISourceFile sourceFile)
 		{
 			return new SourceRange(sourceFile, StartIndex, Length);
 		}

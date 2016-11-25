@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.5.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -39,7 +39,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker) {
-			SourcePos location = SourceFile.IndexToLine(LT(-1).EndIndex + 1);
+			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true) {
@@ -64,7 +64,7 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			LNode e = default(LNode);
 			Token end = default(Token);
-			var old_allowBlockCalls_0 = _allowBlockCalls;
+			var old_allowBlockCalls_10 = _allowBlockCalls;
 			_allowBlockCalls = allowBlockCalls;
 			try {
 				if (LT0.Value is string) {
@@ -145,7 +145,7 @@ namespace Loyc.Syntax.Les
 				}
 				return list;
 			} finally {
-				_allowBlockCalls = old_allowBlockCalls_0;
+				_allowBlockCalls = old_allowBlockCalls_10;
 			}
 		}
 	
@@ -429,7 +429,7 @@ namespace Loyc.Syntax.Les
 			Token id = default(Token);
 			Token litx2E = default(Token);
 			LNode result = default(LNode);
-			var old_allowBlockCalls_1 = _allowBlockCalls;
+			var old_allowBlockCalls_11 = _allowBlockCalls;
 			_allowBlockCalls = false;
 			try {
 				litx2E = MatchAny();
@@ -454,7 +454,7 @@ namespace Loyc.Syntax.Les
 				result = MarkSpecial(F.Call(keyword, args, litx2E.StartIndex, args.Last.Range.EndIndex, litx2E.StartIndex, id.EndIndex));
 				return result;
 			} finally {
-				_allowBlockCalls = old_allowBlockCalls_1;
+				_allowBlockCalls = old_allowBlockCalls_11;
 			}
 		}
 	
@@ -867,7 +867,7 @@ namespace Loyc.Syntax.Les
 					var endMarker = default(TT);
 					lit_lpar = MatchAny();
 					var saveParens = !isAttribute && (TT) LA0 != TT.At;
-					var old_allowBlockCalls_2 = _allowBlockCalls;
+					var old_allowBlockCalls_12 = _allowBlockCalls;
 					_allowBlockCalls = true;
 					try {
 						var list = ExprList(ref endMarker);
@@ -885,7 +885,7 @@ namespace Loyc.Syntax.Les
 						}
 						;
 					} finally {
-						_allowBlockCalls = old_allowBlockCalls_2;
+						_allowBlockCalls = old_allowBlockCalls_12;
 					}
 				}
 				break;

@@ -128,7 +128,7 @@ namespace Loyc.Syntax.Lexing
 		/// </remarks>
 		protected virtual bool IndentChangedUnexpectedly(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, ref int deltaIndent)
 		{
-			var pos = IndexToLine(tokenAfterNewline.Or(default(Token)));
+			var pos = IndexToMsgContext(tokenAfterNewline.Or(default(Token)));
 			if (deltaIndent > 0) {
 				if (_errorBias >= 0)
 					ErrorSink.Write(Severity.Error, pos, "Unexpected indent");
@@ -144,12 +144,15 @@ namespace Loyc.Syntax.Lexing
 			}
 			return true;
 		}
-		protected virtual SourcePos IndexToLine(Token token)
+
+		/// <summary>Gets the context for use in error messages, which by convention is a <see cref="SourceRange"/>.</summary>
+		/// <remarks>The base class uses Lexer.InputPosition as a fallback if the token doesn't implement ISimpleToken{int}.</remarks>
+		protected virtual object IndexToMsgContext(Token token)
 		{
 			int index = Lexer.InputPosition;
 			if (token is ISimpleToken<int>)
 				index = (token as ISimpleToken<int>).StartIndex;
-			return IndexToLine(index);
+			return new SourceRange(Lexer.SourceFile, index);
 		}
 
 		protected virtual void CheckForIndentStyleMismatch(UString indent1, UString indent2, Token next)
@@ -158,7 +161,7 @@ namespace Loyc.Syntax.Lexing
 			indent1 = indent1.Substring(0, common);
 			indent2 = indent2.Substring(0, common);
 			if (!indent1.Equals(indent2))
-				ErrorSink.Write(Severity.Warning, IndexToLine(next), "Indentation style changed on this line from {0} to {1}",
+				ErrorSink.Write(Severity.Warning, IndexToMsgContext(next), "Indentation style changed on this line from {0} to {1}",
 					LesNodePrinter.PrintLiteral(indent1.ToString()), 
 					LesNodePrinter.PrintLiteral(indent2.ToString()));
 		}

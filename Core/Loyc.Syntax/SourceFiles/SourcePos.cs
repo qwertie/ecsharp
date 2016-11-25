@@ -80,13 +80,4 @@ namespace Loyc.Syntax
 		}
 		new public static SourcePos Nowhere = new SourcePos();
 	}
-
-	/// <summary>A <see cref="SourcePos"/> that also includes the original index 
-	/// from which the Line and PosInLine were derived.</summary>
-	public class SourcePosAndIndex : SourcePos
-	{
-		public SourcePosAndIndex(int originalIndex, string FileName, int Line, int PosInLine)
-			: base(FileName, Line, PosInLine) { OriginalIndex = originalIndex; }
-		public int OriginalIndex { get; private set; }
-	}
 }

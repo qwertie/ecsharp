@@ -96,10 +96,10 @@ public partial class Les3Lexer
 	
 	[LL(4)] private token TQString returns [object result] :
 		{_parseNeeded = true;}
-		{_style = NodeStyle.Alternate;}
+		{_style = NodeStyle.TDQStringLiteral;}
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
-			| {_style |= NodeStyle.Alternate2;}
-				"'''"   nongreedy(Newline(true) / _)* "'''" )
+		| {_style = NodeStyle.TQStringLiteral;}
+			"'''"       nongreedy(Newline(true) / _)* "'''" )
 		{return ParseStringValue(isTripleQuoted: true, les3TQIndents: true);};
 
 	private BQString :

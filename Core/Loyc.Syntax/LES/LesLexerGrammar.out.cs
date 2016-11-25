@@ -1,4 +1,4 @@
-// Generated from LesLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.5.0
+// Generated from LesLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -554,7 +554,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1, la2;
 			_parseNeeded = true;
-			_style = NodeStyle.Alternate;
+			_style = NodeStyle.TDQStringLiteral;
 			// Line 100: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
@@ -595,7 +595,7 @@ namespace Loyc.Syntax.Les
 				Match('"');
 			} else {
 				// line 101
-				_style |= NodeStyle.Alternate2;
+				_style |= NodeStyle.TQStringLiteral;
 				Match('\'');
 				Match('\'');
 				Match('\'');
