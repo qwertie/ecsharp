@@ -54,19 +54,21 @@ namespace Loyc.Syntax
 		/// <param name="text">input file or string.</param>
 		/// <param name="fileName">A file name to associate with errors, warnings, and output nodes.</param>
 		/// <param name="msgs">Error and warning messages are sent to this object.</param>
-		/// <param name="inputType">Indicates the kind of input, e.g. <c>File</c> 
+		/// <param name="mode">Indicates the kind of input, e.g. <c>File</c> 
 		/// (an entire source file), <c>FormalArguments</c> (function parameter list), etc. 
 		/// <c>null</c> is a synonym for <c>File</c>.</param>
 		/// <param name="preserveComments">Whether to preserve comments and newlines 
 		/// by attaching trivia attributes to the output. If the property
 		/// <see cref="CanPreserveComments"/> is false, this parameter will not work.</param>
-		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false);
+		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode mode = null, bool preserveComments = true);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
 		/// <param name="input">A source of tokens.</param>
-		/// <param name="msgs">Error and warning messages are sent to this object.</param>
-		/// <param name="inputType">Indicates how the input should be parsed.</param>
+		/// <param name="msgs">Error and warning messages are sent to this object. 
+		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
+		/// <param name="mode">Indicates how the input should be parsed.
+		/// <c>null</c> is a synonym for <see cref="ParsingMode.File"/></param>
 		/// <param name="preserveComments">Whether to preserve comments and newlines 
 		/// by attaching trivia attributes to the output. If the property
 		/// <see cref="CanPreserveComments"/> is false, this parameter will not work.</param>
@@ -77,12 +79,13 @@ namespace Loyc.Syntax
 		/// sends the results to the parser. If possible, the output is computed 
 		/// lazily.
 		/// </remarks>
-		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false);
+		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs = null, ParsingMode mode = null, bool preserveComments = true);
 
 		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
 		/// <param name="tokens">List of tokens</param>
 		/// <param name="file">A source file to associate with errors, warnings, and output nodes.</param>
-		/// <param name="msgs">Error and warning messages are sent to this object.</param>
+		/// <param name="msgs">Error and warning messages are sent to this object.
+		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
 		/// <param name="inputType">Indicates how the input should be parsed.</param>
 		/// <remarks>
 		/// Some languages may offer token literals, which are stored as token trees
@@ -103,56 +106,20 @@ namespace Loyc.Syntax
 
 		/// <summary>Converts the specified syntax tree to a string.</summary>
 		/// <param name="node">A syntax tree to print.</param>
-		/// <param name="msgs">If errors or warnings occur during printing, 
-		/// they are sent here. If this is null, messages shall be sent to
-		/// <see cref="MessageSink.Current"/>.</param>
-		/// <param name="mode">Language-defined configuration. It is suggested 
-		/// that the printing service should accept the members of 
-		/// <see cref="ParsingMode"/> (e.g. ParsingMode.Statements) as possible 
-		/// printing modes.</param>
-		/// <param name="indentString">Indent character for multi-line nodes</param>
-		/// <param name="lineSeparator">Newline string for multi-line nodes</param>
-		string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
+		/// <param name="options">A set of options to control printer behavior. If null,
+		/// an appropriate default set of options should be used. Some languages may
+		/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
+		/// <param name="sink">An object used to print warning and error messages. If 
+		/// this is null, messages are sent to <see cref="MessageSink.Current"/>.</param>
+		/// <param name="mode">Indicates the context in which the node(s) to be printed 
+		/// should be understood (e.g. is it a statement or an expression?).</param>
+		string Print(LNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
 
 		/// <summary>Converts the specified list of syntax trees to a string.</summary>
 		/// <remarks>Most implementations can simply call <see cref="ParsingService.PrintMultiple"/>.</remarks>
-		string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
+		string Print(IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
 	}
 	
-	/// <summary>Standard parsing modes used with <see cref="IParsingService"/>.
-	/// These modes should also be understood by printers (text serializers).</summary>
-	public class ParsingMode : Symbol
-	{
-		private ParsingMode(Symbol prototype) : base(prototype) { }
-		public static new readonly SymbolPool<ParsingMode> Pool 
-		                     = new SymbolPool<ParsingMode>(p => new ParsingMode(p));
-
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input 
-		/// as a single expression or expression list (which, in most languages, 
-		/// is comma-separated).</summary>
-		public static readonly ParsingMode Expressions = Pool.Get("Exprs");
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a list of statements. If the language makes a distinction between 
-		/// executable and declaration contexts, this refers to the executable 
-		/// context.</summary>
-		public static readonly ParsingMode Statements = Pool.Get("Stmts");
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a list of statements. If the language makes a distinction between 
-		/// executable and declaration contexts, this refers to the declaration
-		/// context, in which types, methods, and properties are recognized.</summary>
-		public static readonly ParsingMode Declarations = Pool.Get("Decls");
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a list of types (or a single type, if a list is not supported).</summary>
-		public static readonly ParsingMode Types = Pool.Get("Types");
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a formal argument list (parameter names with types).</summary>
-		public static readonly ParsingMode FormalArguments = Pool.Get("FormalArguments");
-		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
-		/// as a complete source file (this should be the default, i.e. null will
-		/// do the same thing).</summary>
-		public static readonly ParsingMode File = Pool.Get("File");
-	}
-
 	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
 	public static class ParsingService
 	{
@@ -263,20 +230,20 @@ namespace Loyc.Syntax
 			return parser.Tokenize(input, "", msgs ?? MessageSink.Current);
 		}
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Parse(ICharSource, string, IMessageSink, ParsingMode, bool)"/> using an empty string as the file name.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
+		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			return parser.Parse(input, "", msgs ?? MessageSink.Current, inputType, preserveComments);
 		}
 		/// <summary>Parses a string and expects exactly one output.</summary>
 		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
-		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
+		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			var e = parser.Parse(expr, msgs, inputType, preserveComments);
 			return Single(e);
 		}
 		/// <summary>Parses a string and expects exactly one output.</summary>
 		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
-		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
+		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			var e = parser.Parse(text, fileName, msgs, inputType, preserveComments);
 			return Single(e);
@@ -291,7 +258,7 @@ namespace Loyc.Syntax
 			return node;
 		}
 		/// <summary>Parses a Stream.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
+		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, ParsingMode inputType = null, IMessageSink msgs = null, bool preserveComments = true)
 		{
 			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType, preserveComments);
 		}
@@ -301,10 +268,10 @@ namespace Loyc.Syntax
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
 		/// <summary>Opens the specified file and parses it.</summary>
-		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
+		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingMode.File, preserveComments);
+				return Parse(parser, stream, fileName, inputType ?? ParsingMode.File, msgs, preserveComments);
 		}
 		/// <summary>Opens the specified file and tokenizes it.</summary>
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
@@ -316,19 +283,19 @@ namespace Loyc.Syntax
 		/// <param name="printer">Printer for a single LNode.</param>
 		/// <param name="mode">A language-specific way of modifying printer behavior.
 		/// The printer ignores the mode object if it does not not understand it.</param>
-		/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
-		/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
+		/// <param name="sb">Buffer to append to (null to allocate automatically)</param>
 		/// <returns>A string form of the nodes.</returns>
 		/// <remarks>The newline between two nodes is suppressed if the second 
 		/// node has a #trivia_appendStatement attribute.</remarks>
-		public static string PrintMultiple(this LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n", StringBuilder sb = null)
+		public static string PrintMultiple(LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null, StringBuilder sb = null)
 		{
-			bool first = true;
 			sb = sb ?? new StringBuilder();
+			var lineSeparator = (options != null ? options.NewlineString : null) ?? "\n";
+			bool first = true;
 			foreach (LNode node in nodes) {
 				if (!first)
 					sb.Append(node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null ? lineSeparator : " ");
-				printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
+				printer(node, sb, sink, mode, options);
 				first = false;
 			}
 			return sb.ToString();

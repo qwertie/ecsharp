@@ -29,8 +29,8 @@ namespace Loyc.Syntax
 	/// on the same line) will be associated with the next statement instead.</li>
 	/// </ul>
 	/// 
-	/// Typically one will wrap the lexer in <see cref="TriviaSaver"/>, which saves
-	/// trivia while filtering out whitespace so that the parser doesen't see it.
+	/// Typically one will wrap the lexer in <see cref="Lexing.TriviaSaver"/>, which 
+	/// saves trivia while filtering out whitespace so that the parser doesen't see it.
 	/// <para/>
 	/// Your language's parser needs to follow the following rules:
 	/// 
@@ -150,8 +150,8 @@ namespace Loyc.Syntax
 
 		/// <summary>This method is called when a node has no newlines or comments within it
 		/// (although the node may still have a leading or trailing comment). It informs the
-		/// derived class that <see cref="AbstractTriviaInjector"/> will not traverse into the 
-		/// node.</summary>
+		/// derived class that <see cref="AbstractTriviaInjector{Trivia}"/> will not traverse 
+		/// into the node.</summary>
 		/// <remarks>The default implementation sets the <see cref="NodeStyle.OneLiner"/> 
 		/// style flag.</remarks>
 		protected virtual void MarkOneLiner(ref LNode node)

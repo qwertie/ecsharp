@@ -478,7 +478,11 @@ namespace LeMP
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
 				var sb = new StringBuilder();
 				foreach (LNode node in io.Output) {
-					io.OutPrinter(node, sb, Sink, null, IndentString, NewlineString);
+					var options = new LNodePrinterOptions {
+						IndentString = IndentString,
+						NewlineString = NewlineString
+					};
+					io.OutPrinter(node, sb, Sink, null, options);
 					writer.Write(sb.ToString());
 					writer.Write(NewlineString);
 					sb.Length = 0; // Clear() is new in .NET 4

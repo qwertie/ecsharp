@@ -79,7 +79,7 @@ namespace Loyc.Ecs.Tests
 		// The tests were originally designed for printer tests, so they take
 		// an Action<EcsNodePrinter> lambda. But the parser accepts no special
 		// configuration, so EcsParserTests will just ignore the lambda.
-		protected abstract void Stmt(string text, LNode code, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both);
+		protected abstract void Stmt(string text, LNode code, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both);
 
 		protected void Stmt(string text, LNode code, Mode mode)
 		{
@@ -89,11 +89,11 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt(text, code, null, mode | Mode.Expression);
 		}
-		protected void Expr(string text, LNode code, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
+		protected void Expr(string text, LNode code, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
 		{
 			Stmt(text, code, configure, mode | Mode.Expression);
 		}
-		protected void Option(Mode mode, string before, string after, LNode code, Action<EcsNodePrinter> configure = null)
+		protected void Option(Mode mode, string before, string after, LNode code, Action<EcsPrinterOptions> configure = null)
 		{
 			Stmt(before, code, null,     mode == Mode.PrintBothParseFirst ? Mode.Both : mode);
 			Stmt(after, code, configure, (mode & Mode.PrintBothParseFirst) != 0 ? Mode.PrinterTest : mode);

@@ -49,15 +49,15 @@ namespace Loyc.Ecs
 		{
 			get { return _printer; }
 		}
-		public string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			var sb = new StringBuilder();
-			_printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
+			_printer(node, sb, sink, mode, options);
 			return sb.ToString();
 		}
-		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			return ParsingService.PrintMultiple(Printer, nodes, msgs, mode, indentString, lineSeparator);
+			return ParsingService.PrintMultiple(Printer, nodes, sink, mode, options);
 		}
 		public bool HasTokenizer
 		{
@@ -71,12 +71,12 @@ namespace Loyc.Ecs
 		{
 			return new EcsLexer(text, fileName, msgs);
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType, preserveComments);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			var preprocessed = new EcsPreprocessor(input, preserveComments);
 			var treeified = new TokensToTree(preprocessed, false);

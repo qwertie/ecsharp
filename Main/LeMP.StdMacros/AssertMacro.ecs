@@ -39,14 +39,14 @@ namespace LeMP
 			GetFnAndClassName(context, out @class, out fn);
 			var ps = ParsingService.Current;
 			if (fn == null)
-				return @class == null ? null : ps.Print(@class, null, ParsingMode.Expressions);
+				return @class == null ? null : ps.Print(@class, MessageSink.Null, ParsingMode.Expressions);
 			else if (@class == null)
-				return ps.Print(fn, null, ParsingMode.Expressions);
+				return ps.Print(fn, MessageSink.Null, ParsingMode.Expressions);
 			else {
 				while (fn.CallsMin(S.Dot, 2))
 					fn = fn.Args.Last;
-				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Expressions),
-				                                ps.Print(fn, null, ParsingMode.Expressions));
+				return string.Format("{0}.{1}", ps.Print(@class, MessageSink.Null, ParsingMode.Expressions),
+				                                ps.Print(fn, MessageSink.Null, ParsingMode.Expressions));
 			}
 		}
 

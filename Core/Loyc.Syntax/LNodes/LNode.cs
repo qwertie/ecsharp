@@ -16,14 +16,17 @@ namespace Loyc.Syntax
 	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
 	/// programming language will have one (when complete).</summary>
 	/// <param name="node">Node to print</param>
-	/// <param name="target">Output buffer</param>
-	/// <param name="mode">A language-specific way of modifying printer behavior.
-	/// The printer should ignore the mode object if it does not not understand it.</param>
-	/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
-	/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
+	/// <param name="target">Output buffer, to which output is appended.</param>
+	/// <param name="sink">An object used to print warning and error messages. If 
+	/// this is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
+	/// <param name="mode">Indicates the context in which the node(s) to be printed 
+	/// should be understood (e.g. is it a statement or an expression?).</param>
+	/// <param name="options">A set of options to control printer behavior. If null,
+	/// an appropriate default set of options should be used. Some languages may
+	/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
 	/// <remarks>This delegate only prints to a StringBuilder. Printing directly to 
 	/// a stream requires language-specific facilities.</remarks>
-	public delegate void LNodePrinter(LNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n");
+	public delegate void LNodePrinter(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
 
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
@@ -747,10 +750,10 @@ namespace Loyc.Syntax
 			public void Dispose() { Printer = old; }
 		}
 
-		public virtual string Print(object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public virtual string Print(ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			StringBuilder sb = new StringBuilder();
-			Printer(this, sb, MessageSink.Null, mode, indentString, lineSeparator);
+			Printer(this, sb, MessageSink.Null, mode, options);
 			return sb.ToString();
 		}
 
@@ -796,47 +799,77 @@ namespace Loyc.Syntax
 		/// <summary>Compares two lists of nodes for structural equality.</summary>
 		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
 		/// <remarks>Position information is not compared.</remarks>
-		public static bool Equals(VList<LNode> a, VList<LNode> b, bool compareStyles = false)
+		public static bool Equals(VList<LNode> a, VList<LNode> b, CompareMode mode = CompareMode.Normal)
 		{
 			if (a.Count != b.Count)
 				return false;
 			while (!a.IsEmpty)
-				if (!Equals(a.Pop(), b.Pop(), compareStyles))
+				if (!Equals(a.Pop(), b.Pop(), mode))
 					return false;
 			return true;
 		}
 		
 		/// <inheritdoc cref="Equals(LNode, bool)"/>
-		public static bool Equals(ILNode a, ILNode b, bool compareStyles = false)
+		public static bool Equals(ILNode a, ILNode b, CompareMode mode = CompareMode.Normal)
 		{
 			if ((object)a == b)
 				return true;
 			if (a == null || b == null)
 				return false;
 			int max = a.Max, min;
-			if (max != b.Max || (min = a.Min) != b.Min)
+			if (max != b.Max)
 				return false;
 			var kind = a.Kind;
 			if (kind != b.Kind)
 				return false;
-			if (compareStyles && a.Style != b.Style)
+			if ((mode & CompareMode.Styles) != 0 && a.Style != b.Style)
 				return false;
 			if (a.Name != b.Name)
 				return false;
 			if (kind == LNodeKind.Literal && !object.Equals(a.Value, b.Value))
 				return false;
+			if ((mode & CompareMode.IgnoreTrivia) != 0) {
+				// TODO: unit test this
+				int ia, ib;
+				for (ia = a.Min, ib = b.Min; ia < -1 && ib < -1; ia++)
+				{
+					var attr_a = a[ia];
+					if (!attr_a.IsTrivia()) {
+						do {
+							var attr_b = b[ib];
+							ib++;
+							if (!attr_b.IsTrivia()) {
+								if (Equals(attr_a, attr_b, mode))
+									break;
+								else
+									return false;
+							}
+						} while (ib < -1);
+					}
+				}
+				while (ib < -1 && b[ib].IsTrivia())
+					ib++;
+				if (ia != ib)
+					return false;
+				min = -1;
+			} else if ((min = a.Min) != b.Min)
+				return false;
+
 			for (int i = min; i <= max; i++)
-				if (!Equals(a[i], b[i], compareStyles))
+				if (!Equals(a[i], b[i], mode))
 					return false;
 			return true;
 		}
+
+		[Flags]
+		public enum CompareMode { Normal = 0, Styles = 1, IgnoreTrivia = 2 }
 
 		/// <summary>Compares two nodes for structural equality. Two nodes are 
 		/// considered equal if they have the same kind, the same name, the same 
 		/// value, the same arguments, and the same attributes.</summary>
 		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
 		/// <remarks>Position information (<see cref="Range"/>) is not compared.</remarks>
-		public virtual bool Equals(ILNode other, bool compareStyles) { return Equals(this, other, compareStyles); }
+		public virtual bool Equals(ILNode other, CompareMode mode) { return Equals(this, other, mode); }
 		public bool Equals(LNode other) { return Equals(this, other); }
 		public bool Equals(ILNode other) { return Equals(this, other); }
 		public override bool Equals(object other) { var b = other as LNode; return Equals(this, b); }

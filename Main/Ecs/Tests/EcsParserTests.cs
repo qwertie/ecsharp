@@ -26,7 +26,7 @@ namespace Loyc.Ecs.Tests
 			Token.ToStringStrategy = _oldTSS;
 		}
 
-		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
+		protected override void Stmt(string text, LNode expected, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
 		{
 			bool exprMode = (mode & Mode.Expression) != 0;
 			if ((mode & Mode.ParserTest) == 0)

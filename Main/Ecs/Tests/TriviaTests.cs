@@ -77,6 +77,23 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void TriviaTest_Attributes()
+		{
+			var node = Attr(_("Test"), _("Benchmark"), F.TriviaNewline, _("Test2"),
+				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+			Stmt("[Test, Benchmark] \n" +
+				 "[Test2] void Foo() { }", node);
+
+			node = Attr(_("Test"), SLComment(" NUnit"),
+					 F.Call(_("EditorBrowsable"), F.Dot(_("EditorBrowsableState"), _("Never"))), 
+					 F.TriviaNewline, F.Public,
+				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+			Stmt("[Test] // NUnit\n" +
+			     "[EditorBrowsable(EditorBrowsableState.Never)] \n" +
+			     "public void Foo() { }", node);
+		}
+
+		[Test]
 		public void TriviaTest_Methods()
 		{
 			var node = Attr(F.Public, @static,

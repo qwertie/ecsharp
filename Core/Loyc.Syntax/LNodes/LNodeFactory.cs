@@ -577,7 +577,11 @@ namespace Loyc.Syntax
 
 		#region Other stuff
 
-		public LNode InParens(LNode inner, int startIndex = -1, int endIndex = -1)
+		public LNode InParens(LNode inner)
+		{
+			return LNodeExt.InParens(inner);
+		}
+		public LNode InParens(LNode inner, int startIndex, int endIndex)
 		{
 			return LNodeExt.InParens(inner, File, startIndex, endIndex - startIndex);
 		}

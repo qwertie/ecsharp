@@ -26,91 +26,6 @@ namespace Loyc.Syntax.Les
 			set { CheckParam.IsNotNull("value", value); PS.S = value; }
 		}
 
-		/// <summary>Whether to print a space inside square brackets for lists <c>[ ... ]</c>.</summary>
-		public bool SpaceInsideListBrackets { get; set; }
-
-		/// <summary>Whether to print a space inside argument lists like <c>f( ... )</c>.</summary>
-		public bool SpaceInsideArgLists { get; set; }
-
-		/// <summary>Whether to print a space inside grouping parentheses <c>( ... )</c>.</summary>
-		public bool SpaceInsideGroupingParens { get; set; }
-
-		/// <summary>Whether to print a space inside tuples like <c>f( ...; )</c>.</summary>
-		public bool SpaceInsideTuples { get; set; }
-
-		/// <summary>Whether to print a space after each comma in an argument list.</summary>
-		/// <remarks>Initial value: true</remarks>
-		public bool SpaceAfterComma { get; set; }
-
-		/// <summary>Introduces extra parenthesis to express precedence, without
-		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute #trivia_inParens.)</remarks>
-		public bool AllowExtraParenthesis { get; set; }
-
-		/// <summary>
-		/// Print purely in prefix notation, e.g. <c>`'+`(2,3)</c> instead of <c>2 + 3</c>.
-		/// </summary>
-		public bool PrefixNotationOnly { get; set; }
-
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
-		
-		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
-		public bool OmitSpaceTrivia { get; set; }
-
-		/// <summary>When this flag is set, comment trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-		public bool OmitComments { get; set; }
-
-		/// <summary>Whether to print a warning when an "unprintable" literal is 
-		/// encountered. In any case the literal is converted to a string, placed 
-		/// in double quotes and prefixed by the unqualified Type of the Value.</summary>
-		/// <remarks>Initial value: true</remarks>
-		public bool WarnAboutUnprintableLiterals { get; set; }
-		
-		/// <summary>Causes unknown trivia (other than comments, spaces and raw 
-		/// text) to be dropped from the output.</summary>
-		public bool OmitUnknownTrivia { get; set; }
-
-		/// <summary>Causes comments and spaces to be printed as attributes in order 
-		/// to ensure faithful round-trip parsing. By default, only "raw text" and
-		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
-		/// always printed as parentheses.</summary>
-		public bool PrintTriviaExplicitly { get; set; }
-
-		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
-		/// When this option is false, raw text trivia is printed as a normal 
-		/// attribute.</summary>
-		public bool ObeyRawText { get; set; }
-
-		/// <summary>If true, a semicolon is used in addition to the usual newline to 
-		/// terminate each expression inside braced blocks and at the top level.</summary>
-		/// <remarks>Regardless of this flag, a semicolon is forced to appear when a 
-		/// node uses <see cref="CodeSymbols.TriviaAppendStatement"/> to put multiple 
-		/// expressions on one line.</remarks>
-		public bool UseRedundantSemicolons { get; set; }
-
-		/// <summary>Although the LES3 printer is not designed to insert line breaks
-		/// mid-expression or to keep lines under a certain length, this option can 
-		/// avoid extremely long lines in some cases, by (1) inserting line breaks 
-		/// after commas in argument lists, or after very long attribute lists, and 
-		/// (2) ignoring the <see cref="NodeStyle.OneLiner"/> flag or 
-		/// <see cref="CodeSymbols.TriviaAppendStatement"/> attribute when an 
-		/// expression within a braced block starts after this column on a line.
-		/// </summary>
-		/// <remarks>
-		/// The default value is 120.
-		/// <para/>
-		/// Setting the threshold to zero forces all "statements" (expressions 
-		/// in braces) to appear on a new line. Lines can still be arbitrarily long 
-		/// with this option, since breaks are only added at the end of expressions 
-		/// within a braced block.
-		/// </remarks>
-		public int ForcedLineBreakThreshold { get; set; }
-
 		IMessageSink _messageSink;
 		/// <summary>Target for warning messages.</summary>
 		public IMessageSink MessageSink {
@@ -118,23 +33,23 @@ namespace Loyc.Syntax.Les
 			set { _messageSink = value; }
 		}
 
+		private Les3PrinterOptions _o;
+		public Les3PrinterOptions Options { get { return _o; } }
+		public void SetOptions(ILNodePrinterOptions options)
+		{
+			_o = options as Les3PrinterOptions ?? new Les3PrinterOptions(options);
+		}
+
 		#endregion
 
-		#region New() / constructor, fields, and Print()
+		#region Constructor, fields, and Print()
 
-		public static Les3Printer New(StringBuilder target = null, IMessageSink messageSink = null, string indentString = "\t", string lineSeparator = "\n")
+		internal Les3Printer(StringBuilder target = null, IMessageSink sink = null, ILNodePrinterOptions options = null)
 		{
-			return new Les3Printer(new PrinterState(target, indentString, lineSeparator), messageSink);
-		}
-		public Les3Printer(PrinterState ps, IMessageSink messageSink)
-		{
-			PS = ps;
-			if (PS.S == null)
-				PS.S = new StringBuilder();
-			MessageSink = messageSink;
-			WarnAboutUnprintableLiterals = true;
-			SpaceAfterComma = true;
-			ForcedLineBreakThreshold = 120;
+			MessageSink = sink;
+			SetOptions(options);
+			var newline = string.IsNullOrEmpty(_o.NewlineString) ? "\n" : _o.NewlineString;
+			PS = new PrinterState(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline);
 		}
 
 		protected PrinterState PS;
@@ -151,20 +66,20 @@ namespace Loyc.Syntax.Les
 
 		public static readonly LNodePrinter Printer = Print;
 
-		public static void Print(ILNode node, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			CheckParam.IsNotNull("target", target);
-			var p = new Les3Printer(new PrinterState(target, indentString, lineSeparator), errors);
+			var p = new Les3Printer(target, sink, options);
 			p.Print(node);
 		}
-		public static void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink errors, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		internal static void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			CheckParam.IsNotNull("target", target);
-			var p = new Les3Printer(new PrinterState(target, indentString, lineSeparator), errors);
+			var p = new Les3Printer(target, sink, options);
 			p.Print(nodes);
 		}
 
-		public StringBuilder Print(IEnumerable<ILNode> list)
+		internal StringBuilder Print(IEnumerable<ILNode> list)
 		{
 			var neglist = list as INegListSource<ILNode> ?? list.ToList().AsNegList(0);
 			PrintStmtList(new NegListSlice<ILNode>(neglist), false);
@@ -541,7 +456,7 @@ namespace Loyc.Syntax.Les
 			} else {
 				if (tmarker == null)
 					tmarker = (Symbol)MemoizedTypeName.Get(value.GetType());
-				if (WarnAboutUnprintableLiterals)
+				if (_o.WarnAboutUnprintableLiterals)
 					MessageSink.Write(Severity.Warning, _n, "Les3Printer: Encountered unprintable literal of type {0}",
 						MemoizedTypeName.Get(value.GetType()));
 				string text;
@@ -677,7 +592,7 @@ namespace Loyc.Syntax.Les
 			bool allowBlockCalls = _allowBlockCalls;
 			// Note: Attributes, if any, have already been printed by this point
 			bool parens = false;
-			switch (PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
+			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Operator:
 				case NodeStyle.Statement:
@@ -774,7 +689,7 @@ namespace Loyc.Syntax.Les
 					Space(true);
 				}
 				var style = (node.Style & NodeStyle.Alternate) != 0 ? ArgListStyle.BracedBlock : ArgListStyle.Normal;
-				PrintArgListCore(args, '(', ')', style, SpaceInsideArgLists);
+				PrintArgListCore(args, '(', ')', style, _o.SpaceInsideArgLists);
 			}
 
 			if (braces != null) {
@@ -823,13 +738,13 @@ namespace Loyc.Syntax.Les
 					Newline();
 				} else {
 					PS.Dedent();
-					Space();
+					Space(_o.SpacesBetweenAppendedStatements);
 				}
 			} else {
 				string semicolon = (style == ArgListStyle.Normal ? null : ";");
 				for (int i = 0; i < args.Count; i++) {
 					if (i != 0)
-						Space(SpaceAfterComma && !PS.AtStartOfLine);
+						Space(_o.SpaceAfterComma && !PS.AtStartOfLine);
 					var stmt = args[i];
 					Print(stmt, Precedence.MinValue, suffix: semicolon ?? (i + 1 != args.Count ? "," : null));
 					MaybeForceLineBreak();
@@ -846,7 +761,7 @@ namespace Loyc.Syntax.Les
 		bool ShouldAppendStmt(ILNode node)
 		{
 			return (node.AttrNamed(S.TriviaAppendStatement) != null || _isOneLiner) &&
-				PS.IndexInCurrentLine < ForcedLineBreakThreshold;
+				PS.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 
 		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
@@ -860,7 +775,7 @@ namespace Loyc.Syntax.Les
 				for (int i = 0; next != null; i++) {
 					if (initialNewline || i != 0) {
 						if (append)
-							Space();
+							Space(_o.SpacesBetweenAppendedStatements);
 						else {
 							Newline();
 							anyNewlines = true;
@@ -869,7 +784,7 @@ namespace Loyc.Syntax.Les
 					var stmt = next;
 					next = args[i + 1, null];
 					append = next != null ? ShouldAppendStmt(next) : false;
-					Print(stmt, Precedence.MinValue, suffix: append || UseRedundantSemicolons ? ";" : null);
+					Print(stmt, Precedence.MinValue, suffix: append || _o.UseRedundantSemicolons ? ";" : null);
 				}
 			}
 			return anyNewlines;
@@ -891,7 +806,7 @@ namespace Loyc.Syntax.Les
 			if (shape != OperatorShape.Infix && (prec == LesPrecedence.Other || !LesPrecedenceMap.IsNaturalOperator(opName.Name)))
 				return PrintPrefixNotation(node, true);
 			bool allowed = IsAllowedHere(prec);
-			if (!allowed && !AllowExtraParenthesis && IsAllowedHere(LesPrecedence.Primary))
+			if (!allowed && !_o.AllowExtraParenthesis && IsAllowedHere(LesPrecedence.Primary))
 				return PrintPrefixNotation(node, true);
 
 			bool parens = AddParenIf(!allowed);
@@ -901,7 +816,7 @@ namespace Loyc.Syntax.Les
 					Debug.Assert(node.ArgCount() == 1);
 					var inner = node[0];
 					PrintOpName(opName, node.Target, isBinaryOp: false);
-					Space(prec.Lo < SpaceAfterPrefixStopPrecedence);
+					Space(prec.Lo < _o.SpaceAfterPrefixStopPrecedence);
 					Print(inner, prec.RightContext(_context));
 					break;
 				case OperatorShape.Suffix:
@@ -912,9 +827,9 @@ namespace Loyc.Syntax.Les
 				default:
 					Debug.Assert(node.ArgCount() == 2);
 					Print(node[0], prec.LeftContext(_context));
-					Space(prec.Lo < SpaceAroundInfixStopPrecedence);
+					Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
 					PrintOpName(opName, node.Target, isBinaryOp: true);
-					Space(prec.Lo < SpaceAroundInfixStopPrecedence);
+					Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
 					Print(node[1], prec.RightContext(_context), 
 						nlContext: NewlineContext.AfterBinOp | NewlineContext.AutoDetect);
 					break;
@@ -953,7 +868,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (cond) {
 				WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
-				Space(SpaceInsideGroupingParens);
+				Space(_o.SpaceInsideGroupingParens);
 				_context = Precedence.MinValue;
 				_allowBlockCalls = true;
 			}
@@ -975,14 +890,14 @@ namespace Loyc.Syntax.Les
 				PrintBracedBlock(node);
 			} else if (opName == CodeSymbols.Array) { // [...]
 				PrintArgListCore(node.Args(), '[', ']', 
-					ArgListStyle.Normal, SpaceInsideListBrackets, leftBracket: node.Target);
+					ArgListStyle.Normal, _o.SpaceInsideListBrackets, leftBracket: node.Target);
 			} else if (opName == CodeSymbols.Tuple) { // (;;)
 				PrintArgListCore(node.Args(), '(', ')', 
-					ArgListStyle.Semicolons, SpaceInsideTuples, leftBracket: node.Target);
+					ArgListStyle.Semicolons, _o.SpaceInsideTuples, leftBracket: node.Target);
 			} else if (opName == CodeSymbols.IndexBracks && node.ArgCount() > 0) { // foo[...]
 				Print(node[0], LesPrecedence.Primary.LeftContext(_context));
 				PrintArgListCore(node.Args().Slice(1), '[', ']', (node.Style & NodeStyle.Alternate) != 0
-					? ArgListStyle.Semicolons : ArgListStyle.Normal, SpaceInsideArgLists, leftBracket: node.Target);
+					? ArgListStyle.Semicolons : ArgListStyle.Normal, _o.SpaceInsideArgLists, leftBracket: node.Target);
 			} else if (opName == CodeSymbols.Of) {
 				var args = node.Args();
 				Print(args[0], LesPrecedence.Primary.LeftContext(_context));
@@ -990,7 +905,7 @@ namespace Loyc.Syntax.Les
 				if (args.Count == 2 && args[1].IsId() && args[1].AttrCount() == 0)
 					VisitId(args[1]);
 				else
-					PrintArgListCore(args.Slice(1), '(', ')', ArgListStyle.Normal, SpaceInsideArgLists);
+					PrintArgListCore(args.Slice(1), '(', ')', ArgListStyle.Normal, _o.SpaceInsideArgLists);
 			} else
 				return false;
 			return true;
@@ -1079,7 +994,7 @@ namespace Loyc.Syntax.Les
 						}
 						WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
 						parenCount++;
-						Space(SpaceInsideGroupingParens);
+						Space(_o.SpaceInsideGroupingParens);
 						_allowBlockCalls = true;
 					}
 					else
@@ -1100,7 +1015,7 @@ namespace Loyc.Syntax.Les
 
 		private bool MaybeForceLineBreak()
 		{
-			if (PS.IndexInCurrentLineAfterIndent > ForcedLineBreakThreshold) {
+			if (PS.IndexInCurrentLineAfterIndent > _o.ForcedLineBreakThreshold) {
 				Newline(true);
 				return true;
 			}
@@ -1122,7 +1037,7 @@ namespace Loyc.Syntax.Les
 			for (int i = 0; i < trivia.Count; i++)
 				MaybePrintTrivia(trivia[i], true, newlineSafePoint);
 			for (int i = 0; i < parenCount; i++) {
-				Space(SpaceInsideGroupingParens);
+				Space(_o.SpaceInsideGroupingParens);
 				WriteToken(')', LesColorCode.Closer, Chars.Delimiter);
 			}
 			if (!string.IsNullOrEmpty(suffix))
@@ -1147,31 +1062,31 @@ namespace Loyc.Syntax.Les
 			if (!S.IsTriviaSymbol(name))
 				return false;
 			
-			if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && ObeyRawText)
+			if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && _o.ObeyRawText)
 			{
 				if (!testOnly)
 					WriteToken(GetRawText(attr), LesColorCode.Unknown, 0);
 				return true;
 			}
-			else if (PrintTriviaExplicitly)
+			else if (_o.PrintTriviaExplicitly)
 			{
 				return false;
 			}
 			else if (name == S.TriviaNewline)
 			{
-				if (!testOnly && !OmitSpaceTrivia)
+				if (!testOnly && !_o.OmitSpaceTrivia)
 					PrintNewlineTriviaIfPossible(newlineSafePoint, false);
 				return true;
 			}
 			else if ((name == S.TriviaSpaces || name == S.TriviaSpaceBefore))
 			{
-				if (!testOnly && !OmitSpaceTrivia)
+				if (!testOnly && !_o.OmitSpaceTrivia)
 					PrintSpaces(GetRawText(attr));
 				return true;
 			}
 			else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore)
 			{
-				if (!testOnly && !OmitComments) {
+				if (!testOnly && !_o.OmitComments) {
 					if (trailing && !SB.TryGet(SB.Length-1, ' ').IsOneOf(' ', '\t'))
 						WriteOutsideToken('\t');
 
@@ -1191,7 +1106,7 @@ namespace Loyc.Syntax.Les
 			}
 			else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore)
 			{
-				if (!testOnly && !OmitComments) {
+				if (!testOnly && !_o.OmitComments) {
 					Space(trailing);
 					WriteMLComment(GetRawText(attr));
 				}
@@ -1199,7 +1114,7 @@ namespace Loyc.Syntax.Les
 			}
 			else if (name == S.TriviaAppendStatement)
 				return true; // obeyed elsewhere
-			if (OmitUnknownTrivia)
+			if (_o.OmitUnknownTrivia)
 				return true; // block printing
 			if (!trailing && name == S.TriviaTrailing)
 				return true;
@@ -1278,5 +1193,124 @@ namespace Loyc.Syntax.Les
 		}
 
 		#endregion
+	}
+
+	public class Les3PrinterOptions : LNodePrinterOptions
+	{
+		public Les3PrinterOptions() : this(null) { }
+		public Les3PrinterOptions(ILNodePrinterOptions options)
+		{
+			WarnAboutUnprintableLiterals = true;
+			SpaceAfterComma = true;
+			ForcedLineBreakThreshold = 120;
+			if (options != null)
+				CopyFrom(options);
+		}
+
+		public override bool CompactMode
+		{
+			get { return base.CompactMode; }
+			set {
+				if (base.CompactMode = value) {
+					SpacesBetweenAppendedStatements = false;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.SuperExpr.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.SuperExpr.Lo;
+					SpaceInsideArgLists = false;
+					SpaceInsideGroupingParens = false;
+					SpaceInsideTuples = false;
+					SpaceInsideListBrackets = false;
+				} else {
+					SpacesBetweenAppendedStatements = true;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+				}
+				SpaceAfterComma = value;
+				SpacesBetweenAppendedStatements = value;
+			}
+		}
+
+		/// <summary>Whether to print a space inside square brackets for lists <c>[ ... ]</c>.</summary>
+		public bool SpaceInsideListBrackets { get; set; }
+
+		/// <summary>Whether to print a space inside argument lists like <c>f( ... )</c>.</summary>
+		public bool SpaceInsideArgLists { get; set; }
+
+		/// <summary>Whether to print a space inside grouping parentheses <c>( ... )</c>.</summary>
+		public bool SpaceInsideGroupingParens { get; set; }
+
+		/// <summary>Whether to print a space inside tuples like <c>f( ...; )</c>.</summary>
+		public bool SpaceInsideTuples { get; set; }
+
+		/// <summary>Whether to print a space after each comma in an argument list.</summary>
+		/// <remarks>Initial value: true</remarks>
+		public bool SpaceAfterComma { get; set; }
+
+		/// <summary>Introduces extra parenthesis to express precedence, without
+		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
+		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
+		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
+		/// add the trivia attribute #trivia_inParens.)</remarks>
+		public bool AllowExtraParenthesis {
+			get { return base.AllowChangeParentheses; }
+			set { base.AllowChangeParentheses = value; }
+		}
+
+		/// <summary>When this flag is set, space trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
+		public bool OmitSpaceTrivia { get; set; }
+
+		/// <summary>Whether to print a warning when an "unprintable" literal is 
+		/// encountered. In any case the literal is converted to a string, placed 
+		/// in double quotes and prefixed by the unqualified Type of the Value.</summary>
+		/// <remarks>Initial value: true</remarks>
+		public bool WarnAboutUnprintableLiterals { get; set; }
+		
+		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
+		/// When this option is false, raw text trivia is printed as a normal 
+		/// attribute.</summary>
+		public bool ObeyRawText { get; set; }
+
+		/// <summary>Whether to add a space between multiple statements printed on
+		/// one line (initial value: true).</summary>
+		public bool SpacesBetweenAppendedStatements = true;
+
+		/// <summary>If true, a semicolon is used in addition to the usual newline to 
+		/// terminate each expression inside braced blocks and at the top level.</summary>
+		/// <remarks>Regardless of this flag, a semicolon is forced to appear when a 
+		/// node uses <see cref="CodeSymbols.TriviaAppendStatement"/> to put multiple 
+		/// expressions on one line.</remarks>
+		public bool UseRedundantSemicolons { get; set; }
+
+		/// <summary>
+		/// Print purely in prefix notation, e.g. <c>`'+`(2,3)</c> instead of <c>2 + 3</c>.
+		/// </summary>
+		public bool PrefixNotationOnly { get; set; }
+
+		/// <summary>The printer avoids printing spaces around infix (binary) 
+		/// operators that have the specified precedence or higher.</summary>
+		/// <seealso cref="LesPrecedence"/>
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+
+		/// <summary>The printer avoids printing spaces after prefix operators 
+		/// that have the specified precedence or higher.</summary>
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+
+		/// <summary>Although the LES3 printer is not designed to insert line breaks
+		/// mid-expression or to keep lines under a certain length, this option can 
+		/// avoid extremely long lines in some cases, by (1) inserting line breaks 
+		/// after commas in argument lists, or after very long attribute lists, and 
+		/// (2) ignoring the <see cref="NodeStyle.OneLiner"/> flag or 
+		/// <see cref="CodeSymbols.TriviaAppendStatement"/> attribute when an 
+		/// expression within a braced block starts after this column on a line.
+		/// </summary>
+		/// <remarks>
+		/// The default value is 120.
+		/// <para/>
+		/// Setting the threshold to zero forces all "statements" (expressions 
+		/// in braces) to appear on a new line. Lines can still be arbitrarily long 
+		/// with this option, since breaks are only added at the end of expressions 
+		/// within a braced block.
+		/// </remarks>
+		public int ForcedLineBreakThreshold { get; set; }
 	}
 }

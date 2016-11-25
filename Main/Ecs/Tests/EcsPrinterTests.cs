@@ -13,25 +13,28 @@ namespace Loyc.Ecs.Tests
 	[TestFixture]
 	public class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{
-		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
+		protected override void Stmt(string result, LNode input, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
 		{
 			bool exprMode = (mode & Mode.Expression) != 0;
 			if ((mode & Mode.PrinterTest) == 0)
 				return;
 
-			var sb = new StringBuilder();
-			var printer = EcsNodePrinter.New(sb, "  ");
-			printer.AllowChangeParentheses = false;
+			var options = new EcsPrinterOptions();
+			options.IndentString = "  ";
+			// by default, test the mode that is more difficult to get right
+			options.AllowChangeParentheses = false;
 			// TODO: make round tripping work without this
-			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
+			options.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
-				configure(printer);
+				configure(options);
+			var printer = new EcsNodePrinter(options);
+			var sb = new StringBuilder();
 			if (exprMode)
-				printer.Print(input, ParsingMode.Expressions);
+				printer.Print(input, sb, MessageSink.Current, ParsingMode.Expressions);
 			else if (input.Calls(S.Splice))
-				((LNodePrinter)printer.Print).PrintMultiple(input.Args, printer.Errors, ParsingMode.Statements, sb: sb);
+				ParsingService.PrintMultiple(EcsNodePrinter.Printer, input.Args, MessageSink.Current, ParsingMode.Statements, options, sb: sb);
 			else
-				printer.Print(input, ParsingMode.Statements);
+				printer.Print(input, sb, MessageSink.Current, ParsingMode.Statements);
 			AreEqual(result, sb.ToString());
 		}
 

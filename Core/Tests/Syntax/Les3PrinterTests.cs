@@ -71,42 +71,34 @@ namespace Loyc.Syntax.Les
 			Exact("`'..`(a) & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
-		protected override MessageHolder Test(Mode mode, int parseErrors, string str, params LNode[] inputs)
+		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)
 		{
 			var messages = new MessageHolder();
+			var options = new Les3PrinterOptions { IndentString = "  " };
 			if (parseErrors == 0) {
 				if (mode == Mode.Exact) {
-					var sb = new StringBuilder();
-					var printer = Les3Printer.New(sb, messages, "  ", "\n");
-					printer.Print(inputs);
-					Assert.AreEqual(str, sb.ToString());
+					var result = Les3LanguageService.Value.Print(inputs, messages, ParsingMode.Statements, options);
+					Assert.AreEqual(expected, result);
 				} else {
 					// Start by parsing. If parsing fails, just stop; such errors are 
 					// already reported by LesParserTests so we need not report them here.
-					var results = Les3LanguageService.Value.Parse(str, messages);
-					if (messages.List.Count == 0) {
-						var sb = new StringBuilder();
+					var _ = Les3LanguageService.Value.Parse(expected, msgs: messages);
+					if (messages.List.All(msg => msg.Severity < Severity.Error))
 						foreach (LNode input in inputs)
-							DoPrinterTest(input, sb);
-					}
+							DoPrinterTest(input);
 				}
 			}
 			return messages;
 		}
 
-		MessageHolder _messages = new MessageHolder();
-
-		private void DoPrinterTest(LNode input, StringBuilder sb)
+		private void DoPrinterTest(LNode input)
 		{
-			sb.Length = 0;
-			_messages.List.Clear();
-			var p = Les3Printer.New(sb, _messages, "\t", "\n");
-			p.Print(input);
-			var printed = sb.ToString();
-			Assert.AreEqual(0, _messages.List.Count);
-			var reparsed = Les3LanguageService.Value.Parse(printed, _messages);
-			if (_messages.List.Count != 0)
-				Assert.Fail("Printed node «{0}» causes error on parsing: {1}", printed, _messages.List[0].Formatted);
+			var messages = new MessageHolder();
+			var printed = Les3LanguageService.Value.Print(input, messages, null);
+			Assert.AreEqual(0, messages.List.Count);
+			var reparsed = Les3LanguageService.Value.Parse(printed, msgs: messages);
+			if (messages.List.Count != 0)
+				Assert.Fail("Printed node «{0}» causes error on parsing: {1}", printed, messages.List[0].Formatted);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(input, reparsed[0],
 				"Printed node «{0}» is different from original node.\n  Old: «{1}»\n  New: «{2}»", printed, input, reparsed[0]);
@@ -118,7 +110,7 @@ namespace Loyc.Syntax.Les
 		public void PrettyPrinter()
 		{
 			// Console output: impossible to test? Just do a visual test
-			Les3PrettyPrinter.New().PrintToConsole(
+			new Les3PrettyPrinter().PrintToConsole(
 				F.Call(F.Dot(_("Console"), _("WriteLine")),
 					F.Call(S.Add, F.Literal("Pretty print: "), F.InParens(F.True)))
 					.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " success "))
@@ -186,7 +178,7 @@ namespace Loyc.Syntax.Les
 									.Replace("{/Id}", "{0}").Replace(",", "{Separator},{0}").Replace(";", "{Separator};{0}");
 				var pretty3 = (pretty2.EndsWith("{0}") ? pretty2.Substring(0, pretty2.Length - 3) : pretty2).Replace("{0}{", "{");
 				var expected = pretty3.FormatCore(ControlCodeTable);
-				var pp = Les3PrettyPrinter.New();
+				var pp = new Les3PrettyPrinter();
 				StringBuilder result = pp.Print(node);
 				AreEqual(expected, result.ToString());
 			}
@@ -196,7 +188,7 @@ namespace Loyc.Syntax.Les
 				var expected = pretty2.FormatCore(HtmlCodeTable);
 				if (addPreCode)
 					expected = "<pre class='highlight'><code>" + expected + "</code></pre>";
-				var result = Les3PrettyPrinter.New().PrintToHtml(node, addPreCode: addPreCode);
+				var result = new Les3PrettyPrinter().PrintToHtml(node, addPreCode: addPreCode);
 				AreEqual(expected, result.ToString());
 			}
 		}

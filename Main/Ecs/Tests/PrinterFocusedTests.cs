@@ -21,12 +21,12 @@ namespace Loyc.Ecs.Tests
 			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferPlainCSharp = true);
 			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(WordAttr("yield"), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
-			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
+			Action<EcsPrinterOptions> parens = p => p.AllowChangeParentheses = true;
 			Option(Mode.PrintBothParseFirst, @"@`'+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
 			Option(Mode.PrintBothParseFirst, @"@`'-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
 			
 			// Put attributes in various locations and watch them all disappear
-			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
+			Action<EcsPrinterOptions> dropAttrs = p => p.DropNonDeclarationAttributes = true;
 			Option(Mode.PrintBothParseFirst,  "[Foo] a + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
@@ -186,8 +186,8 @@ namespace Loyc.Ecs.Tests
 		{
 			// TODO: test that parser produces warnings for immiscible operators
 
-			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
-			Action<EcsNodePrinter> mixImm = p => p.MixImmiscibleOperators = true;
+			Action<EcsPrinterOptions> parens = p => p.AllowChangeParentheses = true;
+			Action<EcsPrinterOptions> mixImm = p => p.MixImmiscibleOperators = true;
 			// Of course, operators can be mixed with themselves.
 			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c), parens);
 			Stmt("a = b = c;", F.Assign(a, F.Assign(b, c)), parens);

@@ -23,16 +23,16 @@ namespace Loyc.Syntax.Les
 		{
 			get { return Les3Printer.Printer; }
 		}
-		public string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			var sb = new StringBuilder();
-			Les3Printer.Print(node, sb, msgs, mode, indentString, lineSeparator);
+			Les3Printer.Print(node, sb, msgs, mode, options);
 			return sb.ToString();
 		}
-		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			var sb = new StringBuilder();
-			Les3Printer.Print(nodes.Upcast<ILNode, LNode>(), sb, msgs, mode, indentString, lineSeparator);
+			Les3Printer.Print(nodes.Upcast<ILNode, LNode>(), sb, msgs, mode, options);
 			return sb.ToString();
 		}
 		public bool HasTokenizer
@@ -47,12 +47,12 @@ namespace Loyc.Syntax.Les
 		{
 			return new Les3Lexer(text, fileName, msgs);
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType, preserveComments);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			if (preserveComments) {
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);

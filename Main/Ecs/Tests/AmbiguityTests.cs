@@ -84,7 +84,7 @@ namespace Loyc.Ecs.Tests
 			var thisConsNoBody   = F.Call(S.Constructor, F.Missing, _(S.This), F.List());
 			var fooConstructor   = F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
 			var fooConsNoBody    = F.Call(S.Constructor, F.Missing, Foo, F.List());
-			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
+			Action<EcsPrinterOptions> allowAmbig = p => p.AllowConstructorAmbiguity = true;
 			Stmt("this() { }",                          emptyConstructor);
 			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
 			Stmt("#cons(@``, Foo, #(), {\n  x();\n});", fooConstructor);

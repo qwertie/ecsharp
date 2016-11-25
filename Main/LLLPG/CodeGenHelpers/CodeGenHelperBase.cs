@@ -230,7 +230,7 @@ namespace Loyc.LLParserGenerator
 			else
 			{
 				string asString = (andPred.Pred is LNode
-					? ((LNode)andPred.Pred).Print(NodeStyle.Expression)
+					? ((LNode)andPred.Pred).Print(ParsingMode.Expressions)
 					: andPred.Pred.ToString());
 				if (andPred.Not)
 					asString = "!(" + asString + ")";

@@ -123,7 +123,7 @@ namespace Loyc.LLParserGenerator
 			var ex = set.BaseSet.FirstOrDefault();
 			if (ex == null)
 				return set.IsEmpty ? "<nothing>" : "<EOF>";
-			return ex.Print(NodeStyle.Expression);
+			return ex.Print(ParsingMode.Expressions);
 		}
 
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
@@ -339,19 +339,17 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		static readonly object ExprMode = NodeStyle.Expression;
-
 		public override string ToString()
 		{
 			if (!IsInverted && BaseSet.Count == 1)
-				return BaseSet.First().Print(ExprMode);
+				return BaseSet.First().Print(ParsingMode.Expressions);
 
 			var sb = new StringBuilder(40);
 			if (IsInverted)
 				sb.Append('~');
 			sb.Append('(');
 			bool first = true;
-			var items = BaseSet.Select(node => node.Print(ExprMode)).ToList();
+			var items = BaseSet.Select(node => node.Print(ParsingMode.Expressions)).ToList();
 			items.Sort();
 			foreach (var item in items) {
 				if (!first)

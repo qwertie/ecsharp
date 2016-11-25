@@ -250,14 +250,14 @@ namespace Loyc.Syntax
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		public static LNode InParens(this LNode node)
 		{
-			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
+			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		/// <remarks>The node's range is changed to the provided <see cref="SourceRange"/>
         /// and the original range of the node is assigned to the parentheses attribute.</remarks>
 		public static LNode InParens(this LNode node, SourceRange range)
 		{
-			return node.WithRange(range).PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
+			return node.WithRange(range).PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		public static LNode InParens(this LNode node, ISourceFile file, int startIndex, int endIndex)

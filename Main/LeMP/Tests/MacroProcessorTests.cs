@@ -101,17 +101,17 @@ namespace LeMP
 		{
 			Results = io.Output;
 			Output = new StringBuilder();
-			foreach (LNode node in Results) {
-				LNode.Printer(node, Output, Sink, null, IndentString, NewlineString);
-				Output.Append(NewlineString);
-			}
+			var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
+			ParsingService.PrintMultiple(LNode.Printer, Results, Sink, null, opts, Output);
 		}
 
 		#region static Test(), StripExtraWhitespace() methods
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
 		{
-			using (LNode.PushPrinter(new EcsNodePrinter(null) { PreferPlainCSharp = plainCS }.Print)) {
+			LNodePrinter printer = plainCS ? EcsNodePrinter.PrintPlainCSharp : EcsNodePrinter.Printer;
+			using (LNode.PushPrinter(printer))
+			{
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)

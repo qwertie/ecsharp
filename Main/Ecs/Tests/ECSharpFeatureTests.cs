@@ -272,7 +272,7 @@ namespace Loyc.Ecs.Tests
 		public void EcsMissing()
 		{
 			Stmt(";", F.Missing);
-			Action<EcsNodePrinter> oma = o => o.OmitMissingArguments = true;
+			Action<EcsPrinterOptions> oma = o => o.OmitMissingArguments = true;
 			Stmt("Foo(@``);", F.Call(Foo, F.Missing), oma);
 			Stmt("Foo(@``, b);", F.Call(Foo, F.Missing, b));
 			Stmt("Foo(, b);", F.Call(Foo, F.Missing, b), oma);

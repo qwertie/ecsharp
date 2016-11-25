@@ -23,87 +23,48 @@ namespace Loyc.Syntax.Les
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
-		/// <summary>Introduces extra parenthesis to express precedence, without
-		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute #trivia_inParens.)</remarks>
-		public bool AllowExtraParenthesis { get; set; }
-
-		/// <summary>When an argument to a method or macro has the value <c>@``</c>,
-		/// it will be omitted completely if this flag is set.</summary>
-		public bool OmitMissingArguments { get; set; }
-
-		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaNewline"/>).</summary>
-		public bool OmitSpaceTrivia { get; set; }
-
-		/// <summary>When this flag is set, comment trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-		public bool OmitComments { get; set; }
-
-		/// <summary>When the printer encounters an unprintable literal, it calls
-		/// Value.ToString(). When this flag is set, the string is placed in double
-		/// quotes; when this flag is clear, it is printed as raw text.</summary>
-		public bool QuoteUnprintableLiterals { get; set; }
-
-		/// <summary>Causes unknown trivia (other than comments, spaces and raw 
-		/// text) to be dropped from the output.</summary>
-		public bool OmitUnknownTrivia { get; set; }
-
-		/// <summary>Causes comments and spaces to be printed as attributes in order 
-		/// to ensure faithful round-trip parsing. By default, only "raw text" and
-		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
-		/// always printed as parentheses, and <see cref="OmitUnknownTrivia"/> has
-		/// no effect when this flag is true.</summary>
-		public bool PrintTriviaExplicitly { get; set; }
-
-		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
-		/// When this option is false, raw text trivia is printed as a normal 
-		/// attribute.</summary>
-		public bool ObeyRawText { get; set; }
-
-		public bool SpacesBetweenAppendedStatements = true;
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
-
-		#region Constructors, New(), and default Printer
-
-		public static LesNodePrinter New(StringBuilder target, string indentString = "\t", string lineSeparator = "\n", IMessageSink sink = null)
+		Les2PrinterOptions _o;
+		public Les2PrinterOptions Options { get { return _o; } }
+		public void SetOptions(ILNodePrinterOptions options)
 		{
-			return new LesNodePrinter(new LesNodePrinterWriter(target, indentString, lineSeparator), sink);
+			_o = options as Les2PrinterOptions ?? new Les2PrinterOptions(options);
 		}
-		public static LesNodePrinter New(TextWriter target, string indentString = "\t", string lineSeparator = "\n", IMessageSink sink = null)
-		{
-			return new LesNodePrinter(new LesNodePrinterWriter(target, indentString, lineSeparator), sink);
-		}
+
+		#region Constructors and default Printer
 		
 		[ThreadStatic]
 		static LesNodePrinter _printer;
 		public static readonly LNodePrinter Printer = Print;
 
-		public static void Print(ILNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
 		{
-			var w = new LesNodePrinterWriter(target, indentString, lineSeparator);
-			var p = _printer = _printer ?? new LesNodePrinter(null, null);
+			var p = _printer = _printer ?? new LesNodePrinter(TextWriter.Null, null);
+			var oldOptions = p._o;
 			var oldWriter = p.Writer;
-			var oldErrors = p.Errors;
-			p.Writer = w;
-			p.Errors = errors;
+			var oldSink = p.Errors;
+			p.Errors = sink;
+			p.SetOptions(options);
+			p.Writer = new LesNodePrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n");
 
-			if (mode == ParsingMode.Expressions || object.Equals(mode, NodeStyle.Expression))
+			if (mode == ParsingMode.Expressions)
 				p.Print(node, StartStmt, "");
 			else
 				p.Print(node, StartStmt, ";");
 
 			p.Writer = oldWriter;
-			p.Errors = oldErrors;
+			p._o = oldOptions;
+			p.Errors = oldSink;
 		}
 
-		public LesNodePrinter(INodePrinterWriter target, IMessageSink errors = null)
+		internal LesNodePrinter(TextWriter target, ILNodePrinterOptions options = null)
 		{
-			Writer = target;
-			Errors = errors;
+			SetOptions(options);
+			Writer = new LesNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+		}
+		internal LesNodePrinter(StringBuilder target, ILNodePrinterOptions options = null)
+		{
+			SetOptions(options);
+			Writer = new LesNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
 		}
 
 		#endregion
@@ -113,11 +74,7 @@ namespace Loyc.Syntax.Les
 		/// suppresses newlines within braced blocks.</summary>
 		bool _isOneLiner;
 
-		public void Print(ILNode node)
-		{
-			Print(node, StartStmt, ";");
-		}
-		public void Print(ILNode node, Precedence context, string terminator = null)
+		internal void Print(ILNode node, Precedence context, string terminator = null)
 		{
 			bool old_isOneLiner = _isOneLiner;
 			_isOneLiner |= (node.Style & NodeStyle.OneLiner) != 0;
@@ -153,8 +110,8 @@ namespace Loyc.Syntax.Les
 			if (prec == null)
 				return false;
 			Print(node[0], prec.Value.LeftContext(context));
-			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
-			bool sa = prec.Value.Lo < SpaceAroundInfixStopPrecedence;
+			SpaceIf(prec.Value.Lo < _o.SpaceAroundInfixStopPrecedence);
+			bool sa = prec.Value.Lo < _o.SpaceAroundInfixStopPrecedence;
 			WriteOpName(node.Name, node.Target, prec.Value, spaceAfter: sa);
 			Print(node[1], prec.Value.RightContext(context));
 			return true;
@@ -168,13 +125,13 @@ namespace Loyc.Syntax.Les
 				if (prec == null || prec.Value == LesPrecedence.Other)
 					return false;
 				Print(node[0], prec.Value.LeftContext(context));
-				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
+				SpaceIf(prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence);
 				WriteOpName(bareName, node.Target, prec.Value);
 			} else {
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Prefix, context);
 				if (prec == null)
 					return false;
-				var spaceAfter = prec.Value.Lo < SpaceAfterPrefixStopPrecedence;
+				var spaceAfter = prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence;
 				WriteOpName(node.Name, node.Target, prec.Value, spaceAfter);
 				Print(node[0], prec.Value.RightContext(context));
 			}
@@ -276,14 +233,14 @@ namespace Loyc.Syntax.Les
 						_out.Newline();
 						anyNewlines = true;
 					} else
-						SpaceIf(SpacesBetweenAppendedStatements);
+						SpaceIf(_o.SpacesBetweenAppendedStatements);
 					Print(stmt, StartStmt, ";");
 				}
 				_out.Dedent();
 				if (anyNewlines)
 					_out.Newline();
 				else
-					SpaceIf(SpacesBetweenAppendedStatements);
+					SpaceIf(_o.SpacesBetweenAppendedStatements);
 			} else {
 				for (int i = 0; i < args.Count; )
 					Print(args[i], StartStmt, ++i == args.Count ? "" : ", ");
@@ -294,7 +251,7 @@ namespace Loyc.Syntax.Les
 		#endregion
 
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
-		public static readonly Precedence StartStmt      = Precedence.MinValue;
+		protected static readonly Precedence StartStmt      = Precedence.MinValue;
 
 		void PrintPrefixNotation(ILNode node, Precedence context)
 		{
@@ -391,23 +348,23 @@ namespace Loyc.Syntax.Les
 		{
 			var name = attr.Name;
 			if (S.IsTriviaSymbol(name)) {
-				if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && ObeyRawText) {
+				if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && _o.ObeyRawText) {
 					if (!testOnly)
 						_out.Write(GetRawText(attr), true);
 					return true;
-				} else if (PrintTriviaExplicitly) {
+				} else if (_o.PrintTriviaExplicitly) {
 					return false;
 				} else {
 					if (name == S.TriviaNewline) {
-						if (!testOnly && !OmitSpaceTrivia)
+						if (!testOnly && !_o.OmitSpaceTrivia)
 							_out.Newline();
 						return true;
 					} else if ((name == S.TriviaSpaces || name == S.TriviaSpaceBefore)) {
-						if (!testOnly && !OmitSpaceTrivia)
+						if (!testOnly && !_o.OmitSpaceTrivia)
 							PrintSpaces(GetRawText(attr));
 						return true;
 					} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
-						if (!testOnly && !OmitComments) {
+						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t'))
 								_out.Write('\t', true);
 							_out.Write("//", false);
@@ -416,7 +373,7 @@ namespace Loyc.Syntax.Les
 						}
 						return true;
 					} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
-						if (!testOnly && !OmitComments) {
+						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 								_out.Space();
 							_out.Write("/*", false);
@@ -426,7 +383,7 @@ namespace Loyc.Syntax.Les
 						return true;
 					} else if (name == S.TriviaAppendStatement)
 						return true; // obeyed elsewhere
-					if (OmitUnknownTrivia)
+					if (_o.OmitUnknownTrivia)
 						return true; // block printing
 					if (!needSpace && name == S.TriviaTrailing)
 						return true;
@@ -471,7 +428,7 @@ namespace Loyc.Syntax.Les
 
 		static StringBuilder _staticStringBuilder = new StringBuilder();
 		static LesNodePrinterWriter _staticWriter = new LesNodePrinterWriter(_staticStringBuilder);
-		static LesNodePrinter _staticPrinter = new LesNodePrinter(_staticWriter);
+		static LesNodePrinter _staticPrinter = new LesNodePrinter(_staticStringBuilder);
 
 		public static string PrintId(Symbol name)
 		{
@@ -681,7 +638,7 @@ namespace Loyc.Syntax.Les
 			{
 				Errors.Write(Severity.Error, node, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
 
-				bool quote = QuoteUnprintableLiterals;
+				bool quote = _o.QuoteUnprintableLiterals;
 				string unprintable;
 				try {
 					unprintable = value.ToString();
@@ -708,5 +665,76 @@ namespace Loyc.Syntax.Les
 		}
 
 		#endregion
+	}
+
+	/// <summary>Options to control the way Loyc trees are printed by <see cref="LesNodePrinter"/>.</summary>
+	public sealed class Les2PrinterOptions : LNodePrinterOptions
+	{
+		public Les2PrinterOptions() { }
+		public Les2PrinterOptions(ILNodePrinterOptions options)
+		{
+			if (options != null)
+				CopyFrom(options);
+		}
+
+		/// <summary>Introduces extra parenthesis to express precedence, without
+		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
+		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
+		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
+		/// add the trivia attribute #trivia_inParens.)</remarks>
+		public override bool AllowChangeParentheses { get { return base.AllowChangeParentheses; } set { base.AllowChangeParentheses = value; } }
+
+		/// <summary>Causes comments and spaces to be printed as attributes in order 
+		/// to ensure faithful round-trip parsing. By default, only "raw text" and
+		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
+		/// always printed as parentheses, and <see cref="OmitUnknownTrivia"/> has
+		/// no effect when this flag is true.</summary>
+		public override bool PrintTriviaExplicitly { get { return base.PrintTriviaExplicitly; } set { base.PrintTriviaExplicitly = value; } }
+
+		/// <summary>When an argument to a method or macro has the value <c>@``</c>,
+		/// it will be omitted completely if this flag is set.</summary>
+		public bool OmitMissingArguments { get; set; }
+
+		/// <summary>When this flag is set, space trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaNewline"/>).</summary>
+		public bool OmitSpaceTrivia { get; set; }
+
+		public override bool CompactMode {
+			get { return base.CompactMode; }
+			set {
+				if (base.CompactMode = value) {
+					SpacesBetweenAppendedStatements = false;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.SuperExpr.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.SuperExpr.Lo;
+				} else {
+					SpacesBetweenAppendedStatements = true;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+				}
+			}
+		}
+
+		/// <summary>When the printer encounters an unprintable literal, it calls
+		/// Value.ToString(). When this flag is set, the string is placed in double
+		/// quotes; when this flag is clear, it is printed as raw text.</summary>
+		public bool QuoteUnprintableLiterals { get; set; }
+
+		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
+		/// When this option is false, raw text trivia is printed as a normal 
+		/// attribute.</summary>
+		public bool ObeyRawText { get; set; }
+
+		/// <summary>Whether to add a space between multiple statements printed on
+		/// one line (initial value: true).</summary>
+		public bool SpacesBetweenAppendedStatements = true;
+
+		/// <summary>The printer avoids printing spaces around infix (binary) 
+		/// operators that have the specified precedence or higher.</summary>
+		/// <seealso cref="LesPrecedence"/>
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+
+		/// <summary>The printer avoids printing spaces after prefix operators 
+		/// that have the specified precedence or higher.</summary>
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
 	}
 }

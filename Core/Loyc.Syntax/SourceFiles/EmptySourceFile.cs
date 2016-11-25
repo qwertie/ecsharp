@@ -6,8 +6,9 @@ using Loyc.Collections;
 namespace Loyc.Syntax
 {
 	/// <summary>
-	/// A dummy implementation of ISourceFile that has only a filename, no source text.
-	/// Used as the source file of synthetic syntax nodes.
+	/// A dummy implementation of <see cref="ISourceFile"/> that has only a 
+	/// filename, no source text. Used as the source file of synthetic syntax 
+	/// nodes.
 	/// </summary>
 	public class EmptySourceFile : ISourceFile
 	{

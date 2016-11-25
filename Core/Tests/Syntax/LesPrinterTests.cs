@@ -69,43 +69,37 @@ namespace Loyc.Syntax.Les
 			Exact("@'..(a) & b && c;", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
-		protected override MessageHolder Test(Mode mode, int parseErrors, string str, params LNode[] nodes)
+		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)
 		{
 			var messages = new MessageHolder();
+			var options = new Les2PrinterOptions { IndentString = "  " };
 			if (parseErrors == 0) {
 				if (mode == Mode.Exact) {
-					var sb = new StringBuilder();
-
-					Les2LanguageService.Value.Printer.PrintMultiple(nodes, messages, null, "  ", "\n", sb);
-					Assert.AreEqual(str, sb.ToString());
+					var result = Les2LanguageService.Value.Print(inputs, messages, ParsingMode.Statements, options);
+					Assert.AreEqual(expected, result);
 				} else {
 					// Start by parsing. If parsing fails, just stop; such errors are 
 					// already reported by LesParserTests so we need not report them here.
-					var results = Les2LanguageService.Value.Parse(str, messages);
-					if (messages.List.Count == 0)
-					{
-						var sb = new StringBuilder();
-						foreach (LNode node in nodes)
-							DoPrinterTest(node, sb);
-					}
+					var _ = Les2LanguageService.Value.Parse(expected, msgs: messages);
+					if (messages.List.All(msg => msg.Severity < Severity.Error))
+						foreach (LNode input in inputs)
+							DoPrinterTest(input);
 				}
 			}
 			return messages;
 		}
 
-		MessageHolder _messages = new MessageHolder();
-
-		private void DoPrinterTest(LNode node, StringBuilder sb)
+		private void DoPrinterTest(LNode input)
 		{
-			sb.Length = 0;
-			_messages.List.Clear();
-			var p = LesNodePrinter.New(sb, "\t", "\n", _messages);
-			p.Print(node);
-			Assert.AreEqual(0, _messages.List.Count);
-			var reparsed = Les2LanguageService.Value.Parse(sb.ToString(), _messages);
-			Assert.AreEqual(0, _messages.List.Count);
+			var messages = new MessageHolder();
+			var printed = Les2LanguageService.Value.Print(input, messages, null);
+			Assert.AreEqual(0, messages.List.Count);
+			var reparsed = Les2LanguageService.Value.Parse(printed, msgs: messages);
+			if (messages.List.Count != 0)
+				Assert.Fail("Printed node «{0}» causes error on parsing: {1}", printed, messages.List[0].Formatted);
 			Assert.AreEqual(1, reparsed.Count);
-			Assert.AreEqual(node, reparsed[0]);
+			Assert.AreEqual(input, reparsed[0],
+				"Printed node «{0}» is different from original node.\n  Old: «{1}»\n  New: «{2}»", printed, input, reparsed[0]);
 		}
 	}
 }

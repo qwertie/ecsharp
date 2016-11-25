@@ -101,17 +101,14 @@ namespace Loyc.Ecs
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
 		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
-		#region Constructors, New(), and default Printer
+		EcsPrinterOptions _o;
+		public EcsPrinterOptions Options { get { return _o; } }
+		public void SetOptions(ILNodePrinterOptions options)
+		{
+			_o = options as EcsPrinterOptions ?? new EcsPrinterOptions(options);
+		}
 
-		public static EcsNodePrinter New(StringBuilder target, string indentString = "\t", string lineSeparator = "\n")
-		{
-			return New(new StringWriter(target), indentString, lineSeparator);
-		}
-		public static EcsNodePrinter New(TextWriter target, string indentString = "\t", string lineSeparator = "\n")
-		{
-			var wr = new EcsNodePrinterWriter(target, indentString, lineSeparator);
-			return new EcsNodePrinter(wr);
-		}
+		#region Constructors, New(), and default Printer
 
 		[ThreadStatic]
 		static EcsNodePrinter _printer;
@@ -122,37 +119,46 @@ namespace Loyc.Ecs
 		/// <remarks>This does not perform a conversion from EC# to C#. If the 
 		/// syntax tree contains code that has no direct C# representation, the EC# 
 		/// representation will be printed.</remarks>
-		public static void PrintPlainCSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		public static void PrintPlainCSharp(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
 		{
-			var p = new EcsNodePrinter(new EcsNodePrinterWriter(target, indentString, lineSeparator));
-			p.Errors = errors;
-			p.SetPlainCSharpMode();
-			p.Print(node, mode);
+			var p = new EcsNodePrinter(options);
+			p.Options.SetPlainCSharpMode();
+			p.Print(node, target, sink, mode);
 		}
 		
 		/// <summary>Prints a node as EC# code.</summary>
-		public static void PrintECSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		public static void PrintECSharp(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
 		{
 			var p = _printer;
 			// When debugging the node printer itself, calling LNode.ToString() 
 			// inside the debugger will trash our current state, unless we 
 			// create a new printer for each printing operation.
 			if (p == null || _isDebugging)
-				_printer = p = new EcsNodePrinter(null);
+				_printer = p = new EcsNodePrinter(options);
+			else
+				p.SetOptions(options);
 
-			p.Print(node, target, errors, mode, indentString, lineSeparator);
+			p.Print(node, target, sink, mode);
 			// ensure stuff is GC'd
 			p._n = null;
-			p._out = null;
-			p.Errors = null;
+			p.Writer = null;
 		}
 
-		/// <summary>Attaches a new <see cref="StringBuilder"/> and sets the indent string and line separator,
-		/// then prints a node by calling <see cref="Print(LNode, object)"/>.</summary>
-		public void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		/// <summary>Attaches a new <see cref="StringBuilder"/>, then prints a node 
+		/// with <see cref="Print(LNode, object)"/>.</summary>
+		internal void Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode)
 		{
-			Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
-			Errors = errors;
+			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			Errors = sink;
+			Print(node, mode);
+		}
+
+		/// <summary>Attaches a new <see cref="TextWriter"/>, then prints a node 
+		/// with <see cref="Print(LNode, object)"/>.</summary>
+		internal void Print(LNode node, TextWriter target, IMessageSink sink, ParsingMode mode)
+		{
+			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			Errors = sink;
 			Print(node, mode);
 		}
 
@@ -162,151 +168,17 @@ namespace Loyc.Ecs
 		/// <see cref="NodeStyle.Expression"/>, and <see cref="NodeStyle.Default"/> 
 		/// which prints the node as a statement and is the default (i.e. null and
 		/// most other values have the same effect)</param>
-		public void Print(LNode node, object mode = null)
+		internal void Print(LNode node, ParsingMode mode = null)
 		{
-			NodeStyle style = NodeStyle.Default;
 			if (mode == ParsingMode.Expressions)
-				style = NodeStyle.Expression;
-			else if (mode is NodeStyle)
-				style = (NodeStyle)mode;
-
-			switch (style & NodeStyle.BaseStyleMask) {
-				case NodeStyle.Expression:
-					this.PrintExpr(node, StartExpr, 0);
-					break;
-				case NodeStyle.PrefixNotation:
-					using (With(node, StartExpr, 0))
-						this.PrintPurePrefixNotation();
-					break;
-				default:
-					this.PrintStmt(node, 0); break;
-			}
+				this.PrintExpr(node, StartExpr, 0);
+			else
+				this.PrintStmt(node, 0);
 		}
 
-		public EcsNodePrinter(INodePrinterWriter target)
+		internal EcsNodePrinter(ILNodePrinterOptions options = null)
 		{
-			_out = target;
-			SpaceOptions = SpaceOpt.Default;
-			NewlineOptions = NewlineOpt.Default;
-			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
-			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
-			AllowChangeParentheses = true;
-			ObeyRawText = true;
-		}
-
-		#endregion
-
-		#region Configuration properties
-
-		/// <summary>Allows operators to be mixed that will cause the parser to 
-		/// produce a warning. An example is <c>x &amp; @==(y, z)</c>: if you enable 
-		/// this option, it will be printed as <c>x &amp; y == z</c>, which the parser
-		/// will complain about because mixing those operators is deprecated.
-		/// </summary>
-		public bool MixImmiscibleOperators { get; set; }
-
-		/// <summary>Permits extra parentheses to express precedence, instead of
-		/// resorting to prefix notation (defaults to true). Also permits removal
-		/// of parenthesis if necessary to print special constructs.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>. Originally, the second tree had a significantly 
-		/// different structure from the first, as parenthesis were represented
-		/// by a call to the empty symbol @``. This was annoyingly restrictive, so 
-		/// I reconsidered the design; now, parenthesis will be represented only by 
-		/// a trivia attribute #trivia_inParens, so adding new parenthesis no longer
-		/// changes the Loyc tree in an important way, so the default has changed
-		/// from false to true (except in the test suite).
-		/// </remarks>
-		public bool AllowChangeParentheses { get; set; }
-
-		/// <summary>Solve if-else ambiguity by adding braces rather than reverting 
-		/// to prefix notation.</summary>
-		/// <remarks>
-		/// For example, the tree <c>#if(c1, #if(c2, x++), y++)</c> will be parsed 
-		/// incorrectly if it is printed <c>if (c1) if (c2) x++; else y++;</c>. This
-		/// problem can be resolved either by adding braces around <c>if (c2) x++;</c>,
-		/// or by printing <c>#if(c2, x++)</c> in prefix notation.
-		/// </remarks>
-		public bool AllowExtraBraceForIfElseAmbig { get; set; }
-
-		/// <summary>Suppresses printing of all attributes that are not on 
-		/// declaration or definition statements (such as classes, methods and 
-		/// variable declarations at statement level). Also, avoids prefix notation 
-		/// when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
-		/// can be printed "a+b" instead.</summary>
-		/// <remarks>This also affects the validation methods such as <see 
-		/// cref="IsVariableDecl"/>. With this flag, validation methods will ignore
-		/// attributes in locations where they don't belong instead of returning
-		/// false.</remarks>
-		public bool DropNonDeclarationAttributes { get; set; }
-
-		/// <summary>When an argument to a method or macro has an empty name (@``),
-		/// it will be omitted completely if this flag is set.</summary>
-		public bool OmitMissingArguments { get; set; }
-
-		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
-		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
-		/// automatically, space trivia (if any) may be redundant unless you set 
-		/// <see cref="SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
-		public bool OmitSpaceTrivia { get; set; }
-
-		/// <summary>When this flag is set, comment trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-		public bool OmitComments { get; set; }
-
-		/// <summary>When this flag is set, raw text trivia attributes (e.g. <see 
-		/// cref="CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
-		/// output); otherwise such attributes are treated as unknown trivia and, 
-		/// if <see cref="OmitUnknownTrivia"/> is false, printed as attributes.</summary>
-		/// <remarks>Initial value: true</remarks>
-		public bool ObeyRawText { get; set; }
-
-		/// <summary>Causes unknown trivia (other than comments, spaces and raw 
-		/// text) to be dropped from the output.</summary>
-		public bool OmitUnknownTrivia { get; set; }
-
-		/// <summary>When the printer encounters an unprintable literal, it calls
-		/// Value.ToString(). When this flag is set, the string is placed in double
-		/// quotes; when this flag is clear, it is printed as raw text.</summary>
-		public bool QuoteUnprintableLiterals { get; set; }
-
-		/// <summary>Causes the ambiguity between constructors and method calls to
-		/// be ignored; see <see cref="EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
-		public bool AllowConstructorAmbiguity { get; set; }
-
-		/// <summary>Prints statements like "foo (...) bar()" in the equivalent form
-		/// "foo (..., bar())" instead. Does not affect foo {...} because property
-		/// and event definitions require this syntax (get {...}, set {...}).</summary>
-		public bool AvoidMacroSyntax { get; set; }
-
-		/// <summary>Prefers plain C# syntax for certain other things (not covered
-		/// by the other options), even when the syntax tree requests a different 
-		/// style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x,
-		/// and @`at-identifiers` are sanitized.</summary>
-		public bool PreferPlainCSharp { get; set; }
-
-		/// <summary>Controls the locations where spaces should be emitted.</summary>
-		public SpaceOpt SpaceOptions { get; set; }
-		/// <summary>Controls the locations where newlines should be emitted.</summary>
-		public NewlineOpt NewlineOptions { get; set; }
-
-		public int SpaceAroundInfixStopPrecedence { get; set; }
-		public int SpaceAfterPrefixStopPrecedence { get; set; }
-
-		/// <summary>Sets <see cref="AllowChangeParentheses"/>, <see cref="PreferPlainCSharp"/> 
-		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
-		/// <returns>this.</returns>
-		public EcsNodePrinter SetPlainCSharpMode()
-		{
-			AllowChangeParentheses = true;
-			AllowExtraBraceForIfElseAmbig = true;
-			DropNonDeclarationAttributes = true;
-			AllowConstructorAmbiguity = true;
-			AvoidMacroSyntax = true;
-			PreferPlainCSharp = true;
-			OmitUnknownTrivia = true;
-			return this;
+			SetOptions(options);
 		}
 
 		#endregion
@@ -395,7 +267,7 @@ namespace Loyc.Ecs
 
 		void PrintInfixWithSpace(Symbol name, LNode target, Precedence p, bool useBacktick = false)
 		{
-			if (p.Lo < SpaceAroundInfixStopPrecedence && (name != S.DotDot || (SpaceOptions & SpaceOpt.SuppressAroundDotDot) == 0)) {
+			if (p.Lo < _o.SpaceAroundInfixStopPrecedence && (name != S.DotDot || (_o.SpaceOptions & SpaceOpt.SuppressAroundDotDot) == 0)) {
 				_out.Space();
 				WriteOperatorNameWithTrivia(name, target, useBacktick);
 				_out.Space();
@@ -415,18 +287,18 @@ namespace Loyc.Ecs
 
 		void PrefixSpace(Precedence p)
 		{
-			if (p.Lo < SpaceAfterPrefixStopPrecedence)
+			if (p.Lo < _o.SpaceAfterPrefixStopPrecedence)
 				_out.Space();
 		}
 		void Space(SpaceOpt context)
 		{
-			if ((SpaceOptions & context) != 0)
+			if ((_o.SpaceOptions & context) != 0)
 				_out.Space();
 		}
 		void WriteThenSpace(char ch, SpaceOpt option)
 		{
 			_out.Write(ch, true);
-			if ((SpaceOptions & option) != 0)
+			if ((_o.SpaceOptions & option) != 0)
 				_out.Space();
 		}
 		enum ParenFor {
@@ -440,7 +312,7 @@ namespace Loyc.Ecs
 		bool WriteOpenParen(ParenFor type, bool confirm = true)
 		{
 			if (confirm) {
-				if (((int)SpaceOptions & (int)type) != 0)
+				if (((int)_o.SpaceOptions & (int)type) != 0)
 					_out.Space();
 				_out.Write('(', true);
 				WriteInnerSpace(type);
@@ -452,7 +324,7 @@ namespace Loyc.Ecs
 			if (confirm) {
 				WriteInnerSpace(type);
 				_out.Write(')', true);
-				if (((int)SpaceOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
+				if (((int)_o.SpaceOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
 					_out.Space();
 			}
 		}
@@ -465,14 +337,14 @@ namespace Loyc.Ecs
 
 		private void WriteInnerSpace(ParenFor type)
 		{
-			if ((SpaceOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
+			if ((_o.SpaceOptions & (SpaceOpt.InsideParens | SpaceOpt.InsideCallParens)) != 0)
 				if ((type & (ParenFor.Grouping | ParenFor.MethodCall | ParenFor.MacroCall)) != 0)
-					if ((SpaceOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
+					if ((_o.SpaceOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
 						_out.Space();
 		}
 		private bool Newline(NewlineOpt context)
 		{
-			if ((NewlineOptions & context) != 0) {
+			if ((_o.NewlineOptions & context) != 0) {
 				_out.Newline();
 				return true;
 			}
@@ -680,11 +552,11 @@ namespace Loyc.Ecs
 
 		bool HasPAttrs(LNode node) // for use in expression context
 		{
-			return !DropNonDeclarationAttributes && node.HasPAttrs();
+			return !_o.DropNonDeclarationAttributes && node.HasPAttrs();
 		}
 		bool HasSimpleHeadWPA(LNode self)
 		{
-			return DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
+			return _o.DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
 		bool CallsWPAIH(LNode self, Symbol name)
 		{
@@ -710,8 +582,8 @@ namespace Loyc.Ecs
 		EcsValidators.Pedantics Pedantics {
 			get {
 				return
-					(DropNonDeclarationAttributes ? EcsValidators.Pedantics.IgnoreWeirdAttributes : 0) |
-					(AllowChangeParentheses ? EcsValidators.Pedantics.IgnoreIllegalParentheses : 0);
+					(_o.DropNonDeclarationAttributes ? EcsValidators.Pedantics.IgnoreWeirdAttributes : 0) |
+					(_o.AllowChangeParentheses ? EcsValidators.Pedantics.IgnoreIllegalParentheses : 0);
 			}
 		}
 
@@ -747,7 +619,7 @@ namespace Loyc.Ecs
 			var attrs = _n.Attrs;
 			if ((_flags & Ambiguity.NewlineBeforeChildStmt) != 0) {
 				if (attrs.Count == 0 || !attrs.Any(a => a.Name.IsOneOf(S.TriviaNewline, S.TriviaAppendStatement)))
-					_out.Newline();
+					NewlineOrSpace(NewlineOpt.BeforeSingleSubstmt, false, SpaceOpt.Minimal);
 				else if (attrs.NodeNamed(S.TriviaAppendStatement) != null)
 					Space(SpaceOpt.Default);
 			}
@@ -781,7 +653,7 @@ namespace Loyc.Ecs
 			bool beginningOfStmt = _context.RangeEquals(StartStmt);
 			bool mayNeedParens  = !_context.RangeEquals(StartExpr) && !beginningOfStmt;
 			bool dropMostAttrs = false;
-			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
+			if (_o.DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
 				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
 				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
 					dropMostAttrs = true;
@@ -793,14 +665,19 @@ namespace Loyc.Ecs
 			//	OpenParenIf(true, ref parenCount, ref context);
 
 			// Scanning forward, print normal attributes and trivia
-			bool any = false;
+			bool any = false, inBrackets = false;
 			for (i = 0; i < div; i++) {
 				var attr = attrs[i];
+				if (inBrackets && attr.IsTrivia) {
+					// It looks better if trivia is not printed inside [...]. Write ']' first.
+					inBrackets = false;
+					WriteThenSpace(']', SpaceOpt.AfterAttribute);
+				}
 				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref parenCount))
 					continue;
 
 				if (!dropMostAttrs) {
-					if (any)
+					if (inBrackets)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
 					else {
 						OpenParenIf(mayNeedParens, ref parenCount, ref _context);
@@ -811,17 +688,17 @@ namespace Loyc.Ecs
 							Space(SpaceOpt.AfterColon);
 						}
 					}
-					any = true;
+					any = inBrackets = true;
 					PrintExpr(attr, StartExpr);
 				}
 			}
 
-			if (any) {
+			if (inBrackets) {
 				Space(SpaceOpt.InsideAttribute);
 				_out.Write(']', true);
 				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
 					Space(SpaceOpt.AfterAttribute);
-			} else if ((_flags & Ambiguity.ForceAttributeList) != 0) {
+			} else if (!any && (_flags & Ambiguity.ForceAttributeList) != 0) {
 				OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 				_out.Write("[]", true);
 				Space(SpaceOpt.AfterAttribute);
@@ -836,7 +713,7 @@ namespace Loyc.Ecs
 				// instead.
 				if (parenCount == 1 && (_flags & Ambiguity.IsCallTarget) != 0
 					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
-					if (AllowChangeParentheses) {
+					if (_o.AllowChangeParentheses) {
 						parenCount++;
 						_out.Write('(', true);
 					} else {
@@ -897,11 +774,11 @@ namespace Loyc.Ecs
 		{
 			var name = attr.Name;
 			if (!KnownTrivia.Contains(name))
-				return OmitUnknownTrivia && S.IsTriviaSymbol(name);
+				return _o.OmitUnknownTrivia && S.IsTriviaSymbol(name);
 
 			if (name == S.TriviaRawText || name == S.TriviaCsRawText || name == S.TriviaRawTextBefore) {
-				if (!ObeyRawText)
-					return OmitUnknownTrivia;
+				if (!_o.ObeyRawText)
+					return _o.OmitUnknownTrivia;
 				_out.Write(GetRawText(attr), true);
 			} else if (name == S.TriviaInParens) {
 				if (!trailingMode && !Flagged(Ambiguity.InDefinitionName | Ambiguity.NoParentheses)) {
@@ -918,18 +795,18 @@ namespace Loyc.Ecs
 			} else if (name == S.TriviaNewline) {
 				_out.Newline();
 			} else if (name == S.TriviaSpaces || name == S.TriviaSpaceBefore) {
-				if (!OmitSpaceTrivia)
+				if (!_o.OmitSpaceTrivia)
 					PrintSpaces(GetRawText(attr));
 			} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
-				if (!OmitComments) {
-					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
+				if (!_o.OmitComments) {
+					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (_o.SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
 						_out.Write('\t', true);
 					_out.Write("//", false);
 					_out.Write(GetRawText(attr), false);
 					_out.Newline(true);
 				}
 			} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
-				if (!OmitComments) {
+				if (!_o.OmitComments) {
 					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 						Space(SpaceOpt.BeforeCommentOnSameLine);
 					_out.Write("/*", false);
@@ -1005,7 +882,7 @@ namespace Loyc.Ecs
 			if (_staticPrinter == null) {
 				var sb = _staticStringBuilder = new StringBuilder();
 				var wr = _staticWriter = new EcsNodePrinterWriter(sb);
-				_staticPrinter = new EcsNodePrinter(wr);
+				_staticPrinter = new EcsNodePrinter() { Writer = wr };
 			} else {
 				_staticWriter.Reset();
 				_staticStringBuilder.Length = 0; // Clear() is new in .NET 4
@@ -1074,7 +951,7 @@ namespace Loyc.Ecs
 				}
 			}
 
-			if (PreferPlainCSharp && !inSymbol) {
+			if (_o.PreferPlainCSharp && !inSymbol) {
 				if (!EcsValidators.IsPlainCsIdentifier(name.Name))
 					name = (Symbol)EcsValidators.SanitizeIdentifier(name.Name);
 			}
@@ -1200,7 +1077,7 @@ namespace Loyc.Ecs
 				p(this);
 			else {
 				Errors.Write(Severity.Error, _n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
-				bool quote = QuoteUnprintableLiterals;
+				bool quote = _o.QuoteUnprintableLiterals;
 				string unprintable;
 				try {
 					unprintable = _n.Value.ToString();
@@ -1245,15 +1122,16 @@ namespace Loyc.Ecs
 	/// is printing.</summary>
 	/// <remarks>
 	/// Note: Spaces around prefix and infix operators are controlled by 
-	/// <see cref="EcsNodePrinter.SpaceAroundInfixStopPrecedence"/> and
-	/// <see cref="EcsNodePrinter.SpaceAfterPrefixStopPrecedence"/>.
+	/// <see cref="EcsPrinterOptions.SpaceAroundInfixStopPrecedence"/> and
+	/// <see cref="EcsPrinterOptions.SpaceAfterPrefixStopPrecedence"/>.
 	/// </remarks>
 	[Flags] public enum SpaceOpt
 	{
-		Default = AfterComma | AfterCast | AfterAttribute | AfterColon | BeforeKeywordStmtArgs 
-			| BeforePossibleMacroArgs | BeforeNewInitBrace | InsideNewInitializer
-			| BeforeBaseListColon | BeforeForwardArrow | BeforeConstructorColon
-			| BeforeCommentOnSameLine | SuppressAroundDotDot,
+		Default = Minimal | AfterComma | AfterCast | AfterAttribute | AfterColon 
+			| BeforeKeywordStmtArgs | BeforePossibleMacroArgs | BeforeNewInitBrace 
+			| InsideNewInitializer | BeforeBaseListColon | BeforeForwardArrow 
+			| BeforeConstructorColon | BeforeCommentOnSameLine | SuppressAroundDotDot,
+		Minimal                 = 0x00000001, // Spaces in places where almost everyone puts spaces
 		AfterComma              = 0x00000002, // Spaces after normal commas (and ';' in for loop)
 		AfterCommaInOf          = 0x00000004, // Spaces after commas between type arguments
 		AfterCast               = 0x00000008, // Space after cast target: (Foo) x
@@ -1290,15 +1168,17 @@ namespace Loyc.Ecs
 		/// now be added with #trivia_newline, and turning on some NewlineOpts currently
 		/// causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline
 		/// at the same time.</remarks>
-		Default = //BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes |
-			AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr | BeforeConstructorColon,
-		BeforeSpaceDefBrace       = 0x000001, // Newline before opening brace of type definition
-		BeforeMethodBrace         = 0x000002, // Newline before opening brace of method body
-		BeforePropBrace           = 0x000004, // Newline before opening brace of property definition
-		BeforeGetSetBrace         = 0x000008, // Newline before opening brace of property getter/setter
+		Default = Minimal | //BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes |
+			AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr |
+			BeforeConstructorColon | BeforeSingleSubstmt | BeforeEachEnumItem,
+		Minimal                   = 0x000001, // Newline between statements in braces
+		BeforeSpaceDefBrace       = 0x000002, // Newline before opening brace of type definition
+		BeforeMethodBrace         = 0x000004, // Newline before opening brace of method body
+		BeforePropBrace           = 0x000008, // Newline before opening brace of property definition
+		BeforeGetSetBrace         = 0x000010, // Newline before opening brace of property getter/setter
 		BeforeSimpleStmtBrace     = 0x000020, // Newline before opening brace of try, get, set, checked, do, etc.
 		BeforeExecutableBrace     = 0x000010, // Newline before opening brace of other executable statements
-		BeforeSingleSubstmt       = 0x000080, // Newline before single substatement of if, for, while, etc.
+		BeforeSingleSubstmt       = 0x000040, // Newline before single substatement of if, for, while, etc.
 		BeforeOpenBraceInExpr     = 0x000100, // Newline before '{' inside an expression, including x=>{...}
 		BeforeCloseBraceInExpr    = 0x000200, // Newline before '}' returning to an expression, including x=>{...}
 		AfterCloseBraceInExpr     = 0x000400, // Newline after '}' returning to an expression, including x=>{...}
@@ -1306,12 +1186,144 @@ namespace Loyc.Ecs
 		AfterOpenBraceInNewExpr   = 0x001000, // Newline after '{' inside a 'new' expression
 		BeforeCloseBraceInNewExpr = 0x002000, // Newline before '}' at end of 'new' expression
 		AfterCloseBraceInNewExpr  = 0x004000, // Newline after '}' at end of 'new' expression
-		AfterEachInitializerInNew = 0x008000, // Newline after each initializer of 'new' expression
+		AfterEachInitializer      = 0x008000, // Newline after each initializer of 'new' expression
 		AfterAttributes           = 0x010000, // Newline after attributes attached to a statement
 		BeforeWhereClauses        = 0x020000, // Newline before opening brace of type definition
 		BeforeEachWhereClause     = 0x040000, // Newline before opening brace of type definition
 		BeforeIfClause            = 0x080000, // Newline before "if" clause
-		AfterEachEnumValue        = 0x100000, // Newline after each value of an enum
-		BeforeConstructorColon    = 0x200000, // Newline before ': this(...)' clause
+		BeforeConstructorColon    = 0x100000, // Newline before ': this(...)' clause
+		BeforeEachEnumItem        = 0x200000, // Newline before each item in an enum (`Minimal` puts a newline in front of the first item only)
+	}
+
+	/// <summary>Options to control the way <see cref="EcsNodePrinter"/>'s output is formatted.</summary>
+	public sealed class EcsPrinterOptions : LNodePrinterOptions
+	{
+		public EcsPrinterOptions() : this(null) { }
+		public EcsPrinterOptions(ILNodePrinterOptions options)
+		{
+			if (options != null)
+				CopyFrom(options);
+			else
+				AllowChangeParentheses = true;
+			SpaceOptions = SpaceOpt.Default;
+			NewlineOptions = NewlineOpt.Default;
+			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
+			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
+			ObeyRawText = true;
+		}
+
+		public EcsPrinterOptions SetPlainCSharpMode(bool flag = true)
+		{
+			CompatibilityMode = flag;
+			return this;
+		}
+
+		public override bool CompatibilityMode
+		{
+			get { return base.CompatibilityMode; }
+			set {
+				if (base.CompatibilityMode = value) {
+					base.AllowChangeParentheses = true;
+					AllowExtraBraceForIfElseAmbig = true;
+					PrintTriviaExplicitly = false;
+				}
+				OmitUnknownTrivia = value;
+				DropNonDeclarationAttributes = value;
+				AllowConstructorAmbiguity = value;
+				AvoidMacroSyntax = value;
+				PreferPlainCSharp = value;
+			}
+		}
+
+		public override bool CompactMode
+		{
+			get { return base.CompactMode; }
+			set {
+				if (base.CompactMode = value) {
+					SpaceOptions = SpaceOpt.Minimal;
+					NewlineOptions = NewlineOpt.Minimal;
+				} else {
+					SpaceOptions = SpaceOpt.Default;
+					NewlineOptions = NewlineOpt.Default;
+				}
+			}
+		}
+
+		/// <summary>Allows operators to be mixed that will cause the parser to 
+		/// produce a warning. An example is <c>x &amp; @==(y, z)</c>: if you enable 
+		/// this option, it will be printed as <c>x &amp; y == z</c>, which the parser
+		/// will complain about because mixing those operators is deprecated.
+		/// </summary>
+		public bool MixImmiscibleOperators { get; set; }
+
+		/// <summary>Solve if-else ambiguity by adding braces rather than reverting 
+		/// to prefix notation.</summary>
+		/// <remarks>
+		/// For example, the tree <c>#if(c1, #if(c2, x++), y++)</c> will be parsed 
+		/// incorrectly if it is printed <c>if (c1) if (c2) x++; else y++;</c>. This
+		/// problem can be resolved either by adding braces around <c>if (c2) x++;</c>,
+		/// or by printing <c>#if(c2, x++)</c> in prefix notation.
+		/// </remarks>
+		public bool AllowExtraBraceForIfElseAmbig { get; set; }
+
+		/// <summary>Suppresses printing of all attributes that are not on 
+		/// declaration or definition statements (such as classes, methods and 
+		/// variable declarations at statement level). Also, avoids prefix notation 
+		/// when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
+		/// can be printed "a+b" instead.</summary>
+		public bool DropNonDeclarationAttributes { get; set; }
+
+		/// <summary>When an argument to a method or macro has an empty name (@``),
+		/// it will be omitted completely if this flag is set.</summary>
+		public bool OmitMissingArguments { get; set; }
+
+		/// <summary>When this flag is set, space trivia attributes are ignored
+		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
+		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
+		/// automatically, space trivia (if any) may be redundant unless you set 
+		/// <see cref="_o.SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
+		public bool OmitSpaceTrivia { get; set; }
+
+		/// <summary>When this flag is set, raw text trivia attributes (e.g. <see 
+		/// cref="CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
+		/// output); otherwise such attributes are treated as unknown trivia and, 
+		/// if <see cref="OmitUnknownTrivia"/> is false, printed as attributes.</summary>
+		/// <remarks>Initial value: true</remarks>
+		public bool ObeyRawText { get; set; }
+
+		/// <summary>When the printer encounters an unprintable literal, it calls
+		/// Value.ToString(). When this flag is set, the string is placed in double
+		/// quotes; when this flag is clear, it is printed as raw text.</summary>
+		public bool QuoteUnprintableLiterals { get; set; }
+
+		/// <summary>Causes the ambiguity between constructors and method calls to
+		/// be ignored; see <see cref="EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
+		public bool AllowConstructorAmbiguity { get; set; }
+
+		/// <summary>Prints statements like "foo (...) bar()" in the equivalent form
+		/// "foo (..., bar())" instead. Does not affect foo {...} because property
+		/// and event definitions require this syntax (get {...}, set {...}).</summary>
+		public bool AvoidMacroSyntax { get; set; }
+
+		/// <summary>Prefers plain C# syntax for certain other things (not covered
+		/// by the other options), even when the syntax tree requests a different 
+		/// style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x,
+		/// and @`at-identifiers` are sanitized.</summary>
+		public bool PreferPlainCSharp { get; set; }
+
+		/// <summary>Controls the locations where spaces should be emitted.</summary>
+		public SpaceOpt SpaceOptions { get; set; }
+		
+		/// <summary>Controls the locations where newlines should be emitted.</summary>
+		public NewlineOpt NewlineOptions { get; set; }
+
+		/// <summary>The printer avoids printing spaces around infix (binary) 
+		/// operators that have the specified precedence or higher.</summary>
+		/// <seealso cref="EcsPrecedence"/>
+		public int SpaceAroundInfixStopPrecedence { get; set; }
+		
+		/// <summary>The printer avoids printing spaces after prefix operators 
+		/// that have the specified precedence or higher.</summary>
+		public int SpaceAfterPrefixStopPrecedence { get; set; }
 	}
 }

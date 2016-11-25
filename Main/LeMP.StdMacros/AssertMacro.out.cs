@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 1.9.0.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.0.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,15 +13,17 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
+
 namespace LeMP
 {
 	partial class StandardMacros
 	{
 		static readonly Symbol sy__numassertMethod = (Symbol) "#assertMethod";
+	
 		static Symbol GetFnAndClassName(IMacroContext context, out LNode @class, out LNode fn)
 		{
 			@class = fn = null;
-			var anc = context.Ancestors;
+			var anc = context.Ancestors;	// scan these to find function/property and class/struct/etc.
 			for (int i = anc.Count - 1; i >= 0; i--) {
 				var name = anc[i].Name;
 				if (anc[i].ArgCount >= 2) {
@@ -37,27 +39,36 @@ namespace LeMP
 			}
 			return null;
 		}
+	
 		static string GetFnAndClassNameString(IMacroContext context)
 		{
 			LNode @class, fn;
 			GetFnAndClassName(context, out @class, out fn);
 			var ps = ParsingService.Current;
 			if (fn == null)
-				return @class == null ? null : ps.Print(@class, null, ParsingMode.Expressions);
+				return @class == null ? null : ps.Print(@class, MessageSink.Null, ParsingMode.Expressions);
 			else if (@class == null)
-				return ps.Print(fn, null, ParsingMode.Expressions);
+				return ps.Print(fn, MessageSink.Null, ParsingMode.Expressions);
 			else {
 				while (fn.CallsMin(S.Dot, 2))
 					fn = fn.Args.Last;
-				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Expressions), ps.Print(fn, null, ParsingMode.Expressions));
+				return string.Format("{0}.{1}", ps.Print(@class, MessageSink.Null, ParsingMode.Expressions), 
+				ps.Print(fn, MessageSink.Null, ParsingMode.Expressions));
 			}
 		}
-		static readonly LNode defaultAssertMethod = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Diagnostics"))), LNode.Id((Symbol) "Debug"))), LNode.Id((Symbol) "Assert")));
+	
+		static readonly LNode defaultAssertMethod = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Diagnostics"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Debug"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Assert"))).SetStyle(NodeStyle.Operator);
+	
 		internal static LNode GetAssertMethod(IMacroContext context)
 		{
 			return (context.ScopedProperties.TryGetValue(sy__numassertMethod, null)as LNode) ?? defaultAssertMethod;
 		}
-		[LexicalMacro("assert(condition);", "Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\"). " + "You can change the assert method with `#snippet` as follows:\n\n" + "    #snippet #assertMethod = System.Diagnostics.Debug.Assert; // default", "assert")]
+	
+		[LexicalMacro("assert(condition);", 
+		"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\"). " 
+		+ "You can change the assert method with `#snippet` as follows:\n\n" 
+		+ "    #snippet #assertMethod = System.Diagnostics.Debug.Assert; // default", 
+		"assert")] 
 		public static LNode _assert(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount > 0) {
@@ -65,10 +76,12 @@ namespace LeMP
 				foreach (var condition in node.Args) {
 					string name = GetFnAndClassNameString(context) ?? "";
 					var ps = ParsingService.Current;
-					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
+					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
+					name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
+				
 					var assertFn = GetAssertMethod(context);
 					if (assertFn.IsIdNamed(node.Name))
-						return null;
+						return null;	// disabled!
 					results.Add(LNode.Call(assertFn, LNode.List(condition, condStr)));
 				}
 				return results.AsLNode(S.Splice);

@@ -269,7 +269,7 @@ namespace LeMP
 
 			LNode left = args[0];
 			for (int i = 1; i < args.Count; i++)
-				if (!left.Equals(args[i]))
+				if (!left.Equals(args[i], LNode.CompareMode.IgnoreTrivia))
 					return F.Literal(G.BoxedFalse);
 			return F.Literal(G.BoxedTrue);
 		}

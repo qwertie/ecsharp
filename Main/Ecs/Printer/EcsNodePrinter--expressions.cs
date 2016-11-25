@@ -174,7 +174,7 @@ namespace Loyc.Ecs
 			}
 
 			NodeStyle style = _n.BaseStyle;
-			if (style == NodeStyle.PrefixNotation && !PreferPlainCSharp)
+			if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 				PrintPurePrefixNotation(skipAttrs: false);
 			else {
 				int inParens;
@@ -200,12 +200,12 @@ namespace Loyc.Ecs
 		bool CanAppearHere(Precedence prec, out bool extraParens, bool prefix = false)
 		{
 			extraParens = false;
-			if (prec.CanAppearIn(_context, prefix) && (prefix || MixImmiscibleOperators || prec.CanMixWith(_context)))
+			if (prec.CanAppearIn(_context, prefix) && (prefix || _o.MixImmiscibleOperators || prec.CanMixWith(_context)))
 				return true;
 			if (_n.IsParenthesizedExpr())
 				return true;
-			if (AllowChangeParentheses || !EP.Primary.CanAppearIn(_context)) {
-				Trace.WriteLineIf(!AllowChangeParentheses, "Forced to write node in parens");
+			if (_o.AllowChangeParentheses || !EP.Primary.CanAppearIn(_context)) {
+				Trace.WriteLineIf(!_o.AllowChangeParentheses, "Forced to write node in parens");
 				return extraParens = true;
 			}
 			return false;
@@ -275,7 +275,7 @@ namespace Loyc.Ecs
 					name == S.Dot || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate) && !_n.IsParenthesizedExpr())
 				{
-					if (AllowChangeParentheses)
+					if (_o.AllowChangeParentheses)
 						needParens = true; // Resolve ambiguity with extra parens
 					else
 						return false; // Fallback to prefix notation
@@ -377,7 +377,7 @@ namespace Loyc.Ecs
 			// There is an extra rule for (X)Y casts: X must be a complex (or 
 			// simple) identifier, since anything else won't be parsed as a cast.
 			Symbol name = _n.Name;
-			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferPlainCSharp;
+			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !_o.PreferPlainCSharp;
 			LNode subject = _n.Args[0], target = _n.Args[1];
 			if (HasPAttrs(subject))
 				return false;
@@ -398,7 +398,7 @@ namespace Loyc.Ecs
 					return false;
 			}
 
-			if (alternate && PreferPlainCSharp)
+			if (alternate && _o.PreferPlainCSharp)
 				return false; // old-style cast is impossible here
 
 			if (WriteOpenParen(ParenFor.Grouping, needParens))
@@ -670,7 +670,7 @@ namespace Loyc.Ecs
 					// Otherwise we can print the type name without caring if it's an array or not.
 					PrintType(type, EP.Primary.LeftContext(_context));
 					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
-						PrintArgList(cons.Args, ParenFor.MethodCall, false, OmitMissingArguments);
+						PrintArgList(cons.Args, ParenFor.MethodCall, false, _o.OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
 					PrintBracedBlockInNewExpr(1);
@@ -694,7 +694,7 @@ namespace Loyc.Ecs
 				for (int i = start_i, c = _n.ArgCount; i < c; i++) {
 					if (i != start_i) {
 						WriteThenSpace(',', SpaceOpt.AfterComma);
-						Newline(NewlineOpt.AfterEachInitializerInNew);
+						Newline(NewlineOpt.AfterEachInitializer);
 					}
 					var expr = _n.Args[i];
 					if (expr.Calls(S.Braces))
@@ -773,7 +773,7 @@ namespace Loyc.Ecs
 
 			if (oldStyle) {
 				_out.Write("delegate", true);
-				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, true, OmitMissingArguments);
+				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
 			} else { 
 				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl | (_flags & Ambiguity.OneLiner));
@@ -908,7 +908,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool PrintRawText(Precedence mainPrec)
 		{
-			if (!ObeyRawText)
+			if (!_o.ObeyRawText)
 				return false;
 			_out.Write(GetRawText(_n), true);
 			return true;
@@ -942,7 +942,7 @@ namespace Loyc.Ecs
 			if (!_n.IsCall)
 				PrintSimpleIdentOrLiteral();
 			else {
-				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && _context == StartStmt && inParens == 0)
+				if (!_o.AllowConstructorAmbiguity && _n.Calls(_spaceName) && _context == StartStmt && inParens == 0)
 				{
 					inParens++;
 					WriteOpenParen(ParenFor.Grouping);
@@ -960,7 +960,7 @@ namespace Loyc.Ecs
 
 				bool first = true;
 				foreach (var arg in _n.Args) {
-					if (OmitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && _n.ArgCount > 1) {
+					if (_o.OmitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && _n.ArgCount > 1) {
 						if (!first) WriteThenSpace(',', SpaceOpt.MissingAfterComma);
 					} else {
 						if (!first) WriteThenSpace(',', SpaceOpt.AfterComma);

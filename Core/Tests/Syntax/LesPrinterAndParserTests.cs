@@ -178,7 +178,8 @@ namespace Loyc.Syntax.Les
 			Stmt("if a > b { c(); };", F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
 			Stmt("if (a > b) { c(); };", F.Call("if", F.InParens(F.Call(S.GT, a, b)), F.Braces(F.Call(c))));
 			Expr("a + (b c)", F.Call(S.Add, a, F.InParens(F.Call(b, c))));
-			Expr("a b + (if c {a;} else {b;})", F.Call(a, F.Call(S.Add, b, F.InParens(F.Call(_("if"), c, F.Braces(a), _("else"), F.Braces(b))))));
+			var node = F.Call(a, F.Call(S.Add, b, F.InParens(F.Call(_("if"), c, F.Braces(a), _("else"), F.Braces(b)))));
+			Expr("a b + (if c {a;} else {b;})", node);
 			Stmt("get { x } = 0;", F.Call(S.get, F.Call(S.Assign, F.Braces(x), zero)));
 		}
 
@@ -264,10 +265,18 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void TriviaTest_LineBreakBetweenAttrs()
+		public void TriviaTest_TriviaBetweenAttrs()
 		{
 			Exact("@[a] \nFoo();", F.Call(Foo).PlusAttrs(a, F.TriviaNewline));
 			Exact("@[a, b] \n@[c] \nFoo();", F.Call(Foo).PlusAttrs(a, b, F.TriviaNewline, c, F.TriviaNewline));
+
+			var node = F.Attr(_("Test"), F.Trivia(S.TriviaSLComment, " NUnit"),
+					 F.Call(_("EditorBrowsable"), F.Dot(_("EditorBrowsableState"), _("Never"))), 
+					 F.TriviaNewline,
+				F.Call(Foo, a, b, c));
+			Exact("@[Test] // NUnit\n" +
+			     "@[EditorBrowsable(EditorBrowsableState.Never)] \n" +
+			     "Foo(a, b, c);", node);
 		}
 
 		[Test]

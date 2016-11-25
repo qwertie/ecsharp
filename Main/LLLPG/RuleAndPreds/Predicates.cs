@@ -919,7 +919,7 @@ namespace Loyc.LLParserGenerator
 			var node = Pred as LNode;
 			string and = Not ? "&!" : "&";
 			if (node != null)
-				return string.Format("{0}{{{1}}}", and, node.Print(NodeStyle.Expression));
+				return string.Format("{0}{{{1}}}", and, node.Print(ParsingMode.Expressions));
 			else
 				return string.Format("{0}({1})", and, Pred);
 		}

@@ -183,6 +183,8 @@
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
     <Compile Include="LNodes\ILNode.cs" />
+    <Compile Include="LNodes\ILNodePrintingOptions.cs" />
+    <Compile Include="LNodes\ParsingMode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
@@ -215,7 +217,7 @@
     <Compile Include="LNodes\LNodeVisitor.cs" />
     <Compile Include="LNodes\NodeStyle.cs" />
     <Compile Include="LNodes\StdNodes.cs" />
-    <Compile Include="OperatorShape.cs" />
+    <Compile Include="Parsing\OperatorShape.cs" />
     <Compile Include="Parsing\StandardTriviaInjector.cs" />
     <Compile Include="Parsing\AbstractTriviaInjector.cs" />
     <Compile Include="Parsing\ParserSource.cs" />

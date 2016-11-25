@@ -153,11 +153,10 @@ namespace Loyc.VisualStudio
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
 						+ "// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);{0}", NewlineString, 
 						Path.GetFileName(io.FileName), typeof(MacroProcessor).Assembly.GetName().Version.ToString());
-				foreach (LNode node in results)
-				{
-					printer(node, Output, Sink, null, IndentString, NewlineString);
-					Output.Append(NewlineString);
-				}
+				var options = new LNodePrinterOptions {
+					IndentString = IndentString, NewlineString = NewlineString
+				};
+				ParsingService.PrintMultiple(printer, results, Sink, ParsingMode.File, options, Output);
 			}
 		}
 
