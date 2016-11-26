@@ -61,7 +61,7 @@ namespace LeMP.Tests
 		}
 		protected virtual MacroProcessor NewLemp(int maxExpand, IParsingService inLang)
 		{
-			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Current);
+			var lemp = new MacroProcessor(MessageSink.Current, typeof(LeMP.Prelude.BuiltinMacros));
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));

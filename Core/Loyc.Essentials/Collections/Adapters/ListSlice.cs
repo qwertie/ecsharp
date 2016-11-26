@@ -58,7 +58,7 @@ namespace Loyc.Collections
 		/// created.</li>
 		/// </ul>
 		/// </remarks>
-		public ListSlice(IList<T> list, int start, int count)
+		public ListSlice(IList<T> list, int start, int count = int.MaxValue)
 		{
 			_list = list;
 			_start = start;

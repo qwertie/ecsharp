@@ -84,6 +84,19 @@ namespace Loyc.Collections
 			else
 				return result;
 		}
+
+		/// <summary>Tries to get a value from the list at the specified index.</summary>
+		/// <param name="index">The index to access. Valid indexes are between Min and Max.</param>
+		/// <returns>The retrieved value, or <see cref="Maybe{T}.NoValue"/> if the index provided was not valid.</returns>
+		public static Maybe<T> TryGet<T>(this INegListSource<T> list, int index)
+		{
+			bool fail;
+			T result = list.TryGet(index, out fail);
+			if (fail)
+				return default(Maybe<T>);
+			else
+				return result;
+		}
 		
 		/// <summary>Determines the index of a specific value.</summary>
 		/// <returns>The index of the value, if found, or null if it was not found.</returns>

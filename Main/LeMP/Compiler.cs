@@ -147,7 +147,7 @@ namespace LeMP
 
 		public Compiler(IMessageSink sink, Type prelude = null, bool registerEcsAndLes = true)
 		{
-			MacroProcessor = new MacroProcessor(prelude, sink);
+			MacroProcessor = new MacroProcessor(sink, prelude);
 
 			if (registerEcsAndLes) {
 				ParsingService.Register(Loyc.Syntax.Les.Les2LanguageService.Value);

@@ -88,10 +88,20 @@ namespace LeMP
 		/// <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
 		public static MacroProcessor Current { get { return _current; } }
 
-		public MacroProcessor(Type prelude, IMessageSink sink)
+		/// <summary>Initializes MacroProcessor with default prelude.</summary>
+		public MacroProcessor(IMessageSink sink) : this(sink, typeof(BuiltinMacros)) { }
+
+		/// <summary>Initializes MacroProcessor.</summary>
+		/// <param name="sink">The destination for warning and error messages. NOTE: 
+		/// this class can process files in parallel. Consider using a thread-safe
+		/// implementation of <see cref="IMessageSink"/>.</param>
+		/// <param name="prelude">An initial type from which to add macros.
+		/// Omit this parameter to use typeof(LeMP.Prelude.BuiltinMacros).</param>
+		public MacroProcessor(IMessageSink sink, Type prelude)
 		{
 			_sink = sink;
-			AddMacros(prelude ?? typeof(BuiltinMacros));
+			if (prelude != null)
+				AddMacros(prelude);
 			AbortTimeout = TimeSpan.FromSeconds(30);
 			PreOpenedNamespaces.Add((Symbol)"LeMP.Prelude");
 		}

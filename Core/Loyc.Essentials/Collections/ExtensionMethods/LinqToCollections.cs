@@ -134,6 +134,76 @@ namespace Loyc.Collections
 			return new NegListSlice<T>(list, list.Min, count);
 		}
 
+		public static ListSlice<T> TakeWhile<T>(this IList<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new ListSlice<T>(list);
+				else if (!predicate(value.Value))
+					return new ListSlice<T>(list, 0, i);
+			}
+		}
+		public static Slice_<T> TakeWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new Slice_<T>(list);
+				else if (!predicate(value.Value))
+					return new Slice_<T>(list, 0, i);
+			}
+		}
+		public static NegListSlice<T> TakeWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i, default(T))).HasValue)
+					return new NegListSlice<T>(list);
+				else if (!predicate(value.Value))
+					return new NegListSlice<T>(list, 0, i);
+			}
+		}
+		public static Slice_<T> TakeWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
+		{
+			return TakeWhile((IListSource<T>)list, predicate);
+		}
+
+		public static ListSlice<T> SkipWhile<T>(this IList<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new ListSlice<T>();
+				else if (!predicate(value.Value))
+					return new ListSlice<T>(list, i);
+			}
+		}
+		public static Slice_<T> SkipWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new Slice_<T>();
+				else if (!predicate(value.Value))
+					return new Slice_<T>(list, i);
+			}
+		}
+		public static NegListSlice<T> SkipWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0; ; i++) {
+				if (!(value = list.TryGet(i, default(T))).HasValue)
+					return new NegListSlice<T>();
+				else if (!predicate(value.Value))
+					return new NegListSlice<T>(list, i);
+			}
+		}
+		public static Slice_<T> SkipWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
+		{
+			return SkipWhile((IListSource<T>)list, predicate);
+		}
+
 		/// <summary>Copies the contents of an IListSource or IReadOnlyList to an array.</summary>
 		public static T[] ToArray<T>(this IReadOnlyList<T> c)
 		{

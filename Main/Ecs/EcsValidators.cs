@@ -200,6 +200,7 @@ namespace Loyc.Ecs
 		/// <param name="body">The method body, or null if there is no method body. 
 		/// The method body calls <see cref="CodeSymbols.Braces"/> if the method is a 
 		/// non-lambda-style method.</param>
+		/// <returns>The definition kind (#fn, #cons, or #delegate), or null if it's no kind of method.</returns>
 		/// <remarks>
 		/// Method declarations (no body) also count.
 		/// <para/>
