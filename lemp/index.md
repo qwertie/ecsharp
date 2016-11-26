@@ -7,7 +7,7 @@ redirectDomain: ecsharp.net
 ---
 ## Introduction ##
 
-LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP — a preprocessor built on a parser called Enhanced C# — can make you more productive.
+LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, the occasional use of LeMP — a preprocessor built on a parser called Enhanced C# — might make you more productive. 
 
 Design patterns are a valuable conceptual tool for developers, but some of them - especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern) - arguably demonstrate that the language being used isn't powerful enough. When used in conventional languages, many design patterns can _only_ work by convention and _cannot_ be encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).
 
@@ -86,7 +86,7 @@ static string Twice(string s)
 
 **Note**: This feature does _not_ require the MS Code Contracts rewriter to be installed in Visual Studio, since LeMP has a built-in "rewriter" of its own, and it relies on `Contract.Assert`, one of the only methods of the `Contracts` class that does not require the rewriter. This behavior is customizable, e.g. LeMP can be told to use the standard methods instead, such as `Contract.Requires` and `Contract.Ènsures`.)
 
-The `notnull` attribute can be applied to the return value, as well, to check at run-time that a method does not return null. However, `notnull` is not supported on ordinary variables. LeMP also includes other "code contract" attributes. For example, the `notnull` modifier actually equivalent to either `[requires(_ != null)]` or `[ensures(_ != null)]`, depending on whether you use it on an argument or return value, respectively. The underscore `_` represents the value of a parameter, or a return value, depending on where you have used the contract attribute.
+The `notnull` attribute can be applied to the return value, as well, to check at run-time that a method does not return null. However, `notnull` is not supported on ordinary variables. LeMP also includes other "code contract" attributes. For example, the `notnull` modifier actually equivalent to either `[requires(# != null)]` or `[ensures(# != null)]`, depending on whether you use it on an argument or return value, respectively. The hash sign `#` represents the value of the current parameter, or return value, depending on where you have used the contract attribute.
 
 ### Example: Small data types ###
 
@@ -183,4 +183,6 @@ More links
 Help wanted
 -----------
 
-Do you have time to [make LeMP better](/help-wanted.html)? I can't pay you, since this is all non-profit. However, if you're an employer maybe you could [hire me](https://www.linkedin.com/in/qwertie) for consulting work. Seriously: if you don't hire me I might run out of things to do with C# soon, and then who's going to maintain LeMP? Sorry, I hope that didn't sound like a threat. Just sayin'.
+Do you have time to [make LeMP better](/help-wanted.html)? 
+
+Integration into Visual Studio is basic at the moment; help wanted if you have skill in writing extensions.

@@ -13,18 +13,18 @@ Code contracts allow you to specify "preconditions" (conditions that are require
 
 ~~~csharp
 // Enhanced C#
-[ensures(_ >= 0), requires(num >= 0)]
+[ensures(# >= 0), requires(num >= 0)]
 public static double Sqrt(double num) => Math.Sqrt(num);
 ~~~
 
-The condition on `ensures` includes an underscore `_` that refers to the return value of the method. The above can also be written equivalently as 
+The condition on `ensures` includes a hash sign `#` that refers to the return value of the method. The above can also be written equivalently as 
 
 ~~~csharp
-[ensures(_ >= 0)]
-public static double Sqrt([requires(_ >= 0)] double num) => Math.Sqrt(num);
+[ensures(# >= 0)]
+public static double Sqrt([requires(# >= 0)] double num) => Math.Sqrt(num);
 ~~~
 
-The condition on `requires` includes an underscore `_` that refers to the argument that the attribute is attached to. Both versions of this code produce the following code by default:
+The condition on `requires` includes a hash sign `#` that refers to the argument that the attribute is attached to. Both versions of this code produce the following code by default:
 
 ~~~csharp
 public static double Sqrt(double num)
@@ -37,6 +37,8 @@ public static double Sqrt(double num)
   }
 }
 ~~~
+
+**Note:** I recognize that `#` might be perceived as "weird looking", but it is thought that eventually we would like to use `_` for "don't care"; for example `Foo(out _)` would mean "use a dummy variable to hold this output parameter" and `(_, x, y) = tuple` would ignore the first value from a tuple. Therefore, using `_` for "current parameter" or "current return value" would be inconsistent. I propose to use `#` instead. Therefore, I'm changing this document to use `#` primarily. `_` is currently still allowed as an alias for `#` in code contracts.
 
 All contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message. Example:
 
@@ -58,8 +60,6 @@ static char GetAscii(int code) {
 }
 ~~~
 </div>
-
-**Note:** It is thought that eventually we would like to use `_` for "don't care"; for example `Foo(out _)` would mean "use a dummy variable to hold this output parameter" and `(_, x, y) = tuple` would ignore the first value from a tuple. Therefore, using `_` for "current parameter" or "current return value" would be inconsistent. I propose to use `#` instead. In fact, this is already supported; for example you can write `[requires(# != null)]` rather than `[requires(_ != null)]`, and similarly for method forwarding you can write `void Foo() ==> target.#` rather than `void Foo() ==> target._`. In fact, the only thing stopping me from using `#` throughout the documentation is that C# developers are not used to seeing `#` as an identifier, and acquiring new users is such a massive struggle.
 
 **Implementation details**: Code contracts are provided by just three macros in a single module, because it is difficult to modularize them due to technical limitations of LeMP (specifically, the fact that LeMP is _not_ designed to treat attributes as macros, and because it has limited mechanisms for ordering and conflict resolution between different macros). The first macro, internally named `ContractsOnMethod`, deals with contract attributes on methods and constructors. The second, `ContractsOnLambda`, deals with anonymous functions, and the third, `ContractsOnProperty`, deals with properties. All three macros provide access to the same set of contract attributes. This section (unlike other sections in this document) describes the _attributes_ rather than the macros, since the latter is merely an implementation detail.
 
@@ -131,7 +131,7 @@ All contract attributes
 
 ### notnull & [notnull] ###
 
-The word attribute `notnull` indicates that the argument or return value to which it is attached must not be null. `notnull` is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole. For example,
+The word attribute `notnull` indicates that the argument or return value to which it is attached must not be null. `notnull` is equivalent to [requires(# != null)] if applied to an argument, and [ensures(# != null)] if applied to the method as a whole. For example,
 
 	static notnull string Double(notnull string s) => s + s;
 
@@ -212,7 +212,7 @@ The `[assert]` attribute is actually translated to a call to the `assert()` macr
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-[ensuresAssert(_ >= 0)]
+[ensuresAssert(# >= 0)]
 static double Root(double x)
 {
 	return Math.Sqrt(x);
