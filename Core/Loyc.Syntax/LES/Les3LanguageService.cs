@@ -19,11 +19,11 @@ namespace Loyc.Syntax.Les
 		static readonly string[] _fileExtensions = new[] { "les3", "was" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
-		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
 			Print((ILNode)node, target, sink, mode, options);
 		}
-		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
 			Print(nodes.Upcast<ILNode, LNode>(), target, sink, mode, options);
 		}

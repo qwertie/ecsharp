@@ -498,9 +498,8 @@ namespace Loyc.Ecs
 		static readonly HashSet<Symbol> KnownTrivia = new HashSet<Symbol> {
 			S.TriviaInParens, S.TriviaTrailing,
 			S.TriviaNewline, S.TriviaAppendStatement, S.TriviaSpaces,
-			S.TriviaSLComment, S.TriviaSLCommentBefore, 
-			S.TriviaMLComment, S.TriviaMLCommentBefore, 
-			S.TriviaRawText, S.TriviaCsRawText, S.TriviaRawTextBefore,
+			S.TriviaSLComment, S.TriviaMLComment, 
+			S.TriviaRawText, S.TriviaCsRawText,
 			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
 		};
 
@@ -766,7 +765,7 @@ namespace Loyc.Ecs
 			if (!KnownTrivia.Contains(name))
 				return _o.OmitUnknownTrivia && S.IsTriviaSymbol(name);
 
-			if (name == S.TriviaRawText || name == S.TriviaCsRawText || name == S.TriviaRawTextBefore) {
+			if (name == S.TriviaRawText || name == S.TriviaCsRawText) {
 				if (!_o.ObeyRawText)
 					return _o.OmitUnknownTrivia;
 				_out.Write(GetRawText(attr), true);
@@ -784,10 +783,10 @@ namespace Loyc.Ecs
 				}
 			} else if (name == S.TriviaNewline) {
 				_out.Newline();
-			} else if (name == S.TriviaSpaces || name == S.TriviaSpaceBefore) {
+			} else if (name == S.TriviaSpaces) {
 				if (!_o.OmitSpaceTrivia)
 					PrintSpaces(GetRawText(attr));
-			} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
+			} else if (name == S.TriviaSLComment) {
 				if (!_o.OmitComments) {
 					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (_o.SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
 						_out.Write('\t', true);
@@ -795,7 +794,7 @@ namespace Loyc.Ecs
 					_out.Write(GetRawText(attr), false);
 					_out.Newline(true);
 				}
-			} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
+			} else if (name == S.TriviaMLComment) {
 				if (!_o.OmitComments) {
 					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 						Space(SpaceOpt.BeforeCommentOnSameLine);

@@ -1047,7 +1047,7 @@ namespace Loyc.Syntax.Les
 			if (!S.IsTriviaSymbol(name))
 				return false;
 			
-			if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && _o.ObeyRawText)
+			if ((name == S.TriviaRawText) && _o.ObeyRawText)
 			{
 				if (!testOnly)
 					WriteToken(GetRawText(attr), LesColorCode.Unknown, 0);
@@ -1063,13 +1063,13 @@ namespace Loyc.Syntax.Les
 					PrintNewlineTriviaIfPossible(newlineSafePoint, false);
 				return true;
 			}
-			else if ((name == S.TriviaSpaces || name == S.TriviaSpaceBefore))
+			else if ((name == S.TriviaSpaces))
 			{
 				if (!testOnly && !_o.OmitSpaceTrivia)
 					PrintSpaces(GetRawText(attr));
 				return true;
 			}
-			else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore)
+			else if (name == S.TriviaSLComment)
 			{
 				if (!testOnly && !_o.OmitComments) {
 					if (trailing && !SB.TryGet(SB.Length-1, ' ').IsOneOf(' ', '\t'))
@@ -1089,7 +1089,7 @@ namespace Loyc.Syntax.Les
 				}
 				return true;
 			}
-			else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore)
+			else if (name == S.TriviaMLComment)
 			{
 				if (!testOnly && !_o.OmitComments) {
 					Space(trailing);

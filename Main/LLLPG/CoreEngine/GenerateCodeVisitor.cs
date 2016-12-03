@@ -118,7 +118,7 @@ namespace Loyc.LLParserGenerator
 						if (line > 1)
 							_target.Add(F.Trivia(S.CsPPRawText, "#line default"));
 					} else {
-						_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaSLCommentBefore,
+						_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaSLComment,
 							string.Format(" line {0}", _target[i].Range.Start.Line)));
 					}
 				}

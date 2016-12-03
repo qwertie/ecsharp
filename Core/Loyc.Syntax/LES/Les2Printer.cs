@@ -347,7 +347,7 @@ namespace Loyc.Syntax.Les
 		{
 			var name = attr.Name;
 			if (S.IsTriviaSymbol(name)) {
-				if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && _o.ObeyRawText) {
+				if ((name == S.TriviaRawText) && _o.ObeyRawText) {
 					if (!testOnly)
 						_out.Write(GetRawText(attr), true);
 					return true;
@@ -358,11 +358,11 @@ namespace Loyc.Syntax.Les
 						if (!testOnly && !_o.OmitSpaceTrivia)
 							_out.Newline();
 						return true;
-					} else if ((name == S.TriviaSpaces || name == S.TriviaSpaceBefore)) {
+					} else if ((name == S.TriviaSpaces)) {
 						if (!testOnly && !_o.OmitSpaceTrivia)
 							PrintSpaces(GetRawText(attr));
 						return true;
-					} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
+					} else if (name == S.TriviaSLComment) {
 						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t'))
 								_out.Write('\t', true);
@@ -371,7 +371,7 @@ namespace Loyc.Syntax.Les
 							_out.Newline(pending: true);
 						}
 						return true;
-					} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
+					} else if (name == S.TriviaMLComment) {
 						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 								_out.Space();
