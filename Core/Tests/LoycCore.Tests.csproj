@@ -198,10 +198,10 @@
     <Compile Include="Syntax\Les3ParserTests.cs" />
     <Compile Include="Syntax\Les3PrinterAndParserTests.cs" />
     <Compile Include="Syntax\Les3PrinterTests.cs" />
-    <Compile Include="Syntax\LesLexerTests.cs" />
-    <Compile Include="Syntax\LesParserTests.cs" />
-    <Compile Include="Syntax\LesPrinterAndParserTests.cs" />
-    <Compile Include="Syntax\LesPrinterTests.cs" />
+    <Compile Include="Syntax\Les2LexerTests.cs" />
+    <Compile Include="Syntax\Les2ParserTests.cs" />
+    <Compile Include="Syntax\Les2PrinterAndParserTests.cs" />
+    <Compile Include="Syntax\Les2PrinterTests.cs" />
     <Compile Include="Syntax\LexerSourceTest.out.cs">
       <DependentUpon>LexerSourceTest.ecs</DependentUpon>
       <AutoGen>True</AutoGen>

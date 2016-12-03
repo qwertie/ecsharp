@@ -22,7 +22,7 @@ namespace Loyc.Syntax.Les {
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 	#rawText("#pragma warning disable 162, 642");
 
-	@[public, partial] class LesParser
+	@[public, partial] class Les2Parser
 	{
 		@[FullLLk, LL(2), AddCsLineDirectives(@false)]
 		LLLPG (parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));

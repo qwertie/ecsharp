@@ -162,8 +162,8 @@ namespace Loyc.Syntax.Lexing
 			indent2 = indent2.Substring(0, common);
 			if (!indent1.Equals(indent2))
 				ErrorSink.Write(Severity.Warning, IndexToMsgContext(next), "Indentation style changed on this line from {0} to {1}",
-					LesNodePrinter.PrintLiteral(indent1.ToString()), 
-					LesNodePrinter.PrintLiteral(indent2.ToString()));
+					Les2Printer.PrintLiteral(indent1.ToString()), 
+					Les2Printer.PrintLiteral(indent2.ToString()));
 		}
 
 		public override void Reset() { 

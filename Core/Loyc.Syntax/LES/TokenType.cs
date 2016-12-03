@@ -59,7 +59,7 @@ namespace Loyc.Syntax.Les
 		/// For performance reasons, a <see cref="Token"/> does not have a reference 
 		/// to its source file, so this method cannot return the original string.
 		/// <para/>
-		/// The results are undefined if the token was not produced by <see cref="LesLexer"/>.
+		/// The results are undefined if the token was not produced by <see cref="Les2Lexer"/>.
 		/// </remarks>
 		public static string ToString(Token t)
 		{
@@ -69,11 +69,11 @@ namespace Loyc.Syntax.Les
 				case TT.SLComment: return "//\n";
 				case TT.MLComment: return "/**/";
 				case TT.Literal:
-					return LesNodePrinter.PrintLiteral(t.Value, t.Style);
+					return Les2Printer.PrintLiteral(t.Value, t.Style);
 				case TT.BQOperator: 
-					return LesNodePrinter.PrintString((t.Value ?? "").ToString(), '`', false);
+					return Les2Printer.PrintString((t.Value ?? "").ToString(), '`', false);
 				case TT.Id: 
-					return LesNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
+					return Les2Printer.PrintId(t.Value as Symbol ?? GSymbol.Empty);
 				case TT.LParen: return "(";
 				case TT.RParen: return ")";
 				case TT.LBrack: return "[";

@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 	using S = CodeSymbols;
 	
-	@[public, partial] class LesLexer
+	@[public, partial] class Les2Lexer
 	{
 		@[FullLLk, AddCsLineDirectives(@false)]
 		LLLPG lexer;

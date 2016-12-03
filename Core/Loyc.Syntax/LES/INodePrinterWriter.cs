@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Syntax.Les
 {
 	/// <summary>This interface is implemented by helper objects that handle the 
-	/// low-level details of node printing. It is used by <see cref="LesNodePrinter"/>.</summary>
+	/// low-level details of node printing. It is used by <see cref="Les2Printer"/>.</summary>
 	/// <remarks>Specifically, INodePrinterWriter objects are in charge of how much
 	/// to indent lines of code, and ensuring that there are spaces between tokens
 	/// whenever omitting a space would screw up parsing.

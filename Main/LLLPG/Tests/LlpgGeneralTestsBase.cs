@@ -42,7 +42,7 @@ namespace Loyc.LLParserGenerator
 		protected void Test(string input, string expected, IMessageSink sink = null, IParsingService parser = null)
 		{
 			using (ParsingService.PushCurrent(parser ?? Les2LanguageService.Value))
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
+			using (LNode.PushPrinter(EcsLanguageService.WithPlainCSharpPrinter)) {
 				var c = new TestCompiler(sink ?? _sink, new UString(input));
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));

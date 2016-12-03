@@ -102,14 +102,14 @@ namespace LeMP
 			Results = io.Output;
 			Output = new StringBuilder();
 			var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
-			ParsingService.PrintMultiple(LNode.Printer, Results, Sink, null, opts, Output);
+			LNode.Printer.Print(Results, Output, Sink, null, opts);
 		}
 
 		#region static Test(), StripExtraWhitespace() methods
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
 		{
-			LNodePrinter printer = plainCS ? EcsNodePrinter.PrintPlainCSharp : EcsNodePrinter.Printer;
+			ILNodePrinter printer = plainCS ? EcsLanguageService.WithPlainCSharpPrinter : EcsLanguageService.Value;
 			using (LNode.PushPrinter(printer))
 			{
 				var c = new TestCompiler(sink, new UString(input), "");

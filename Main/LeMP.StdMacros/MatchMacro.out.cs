@@ -185,7 +185,7 @@ namespace LeMP
 							cmpExprOrBinding = null;
 						} else {
 							LNode target = pattern.Target;
-							if (!haveSubPatterns && pattern.IsCall && (!target.IsId || target.AttrNamed(S.TriviaInParens) != null || (!target.HasSpecialName && LesNodePrinter.IsNormalIdentifier(target.Name)))) {
+							if (!haveSubPatterns && pattern.IsCall && (!target.IsId || target.AttrNamed(S.TriviaInParens) != null || (!target.HasSpecialName && Les2Printer.IsNormalIdentifier(target.Name)))) {
 								haveSubPatterns = true;
 								subPatterns = pattern.Args;
 								pattern = pattern.Target;

@@ -15,7 +15,7 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 
 	[TestFixture]
-	public class LesLexerTests
+	public class Les2LexerTests
 	{
 		[DebuggerStepThrough] static Symbol _(string s) { return GSymbol.Get(s); }
 		[DebuggerStepThrough] static T[] A<T>(params T[] list) { return list; }
@@ -281,7 +281,7 @@ namespace Loyc.Syntax.Les
 			Debug.Assert(values.Length <= tokenTypes.Length);
 			
 			bool error = false;
-			var lexer = new LesLexer(input, new MessageSinkFromDelegate((type, ctx, msg, args) => {
+			var lexer = new Les2Lexer(input, new MessageSinkFromDelegate((type, ctx, msg, args) => {
 				MessageSink.Trace.Write(type, ctx, msg, args); error = true;
 			}));
 

@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Les
 	/// printer isn't done yet, we simply make sure that after parsing something, 
 	/// we can print it out and re-parse what was printed to get the same Loyc tree.</summary>
 	[TestFixture]
-	public class LesPrinterTests : LesPrinterAndParserTests
+	public class Les2PrinterTests : Les2PrinterAndParserTests
 	{
 		[Test]
 		public void TriviaTest_CommentsInPrinter()

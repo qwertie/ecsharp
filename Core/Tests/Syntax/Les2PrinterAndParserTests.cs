@@ -17,7 +17,7 @@ namespace Loyc.Syntax.Les
 	// tripping, text -> AST -> text, is not fully verified (and is not designed to
 	// be fully supported, as the printer is not designed to preserve spacing.)
 	[TestFixture]
-	public abstract class LesPrinterAndParserTests : Assert
+	public abstract class Les2PrinterAndParserTests : Assert
 	{
 		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
 		

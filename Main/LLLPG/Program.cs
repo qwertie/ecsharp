@@ -69,7 +69,7 @@ namespace Loyc.LLParserGenerator
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
 			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Current))
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+			using (LNode.PushPrinter(Ecs.EcsLanguageService.Value))
 				c.Run();
 			return c.Output.ToString();
 		}

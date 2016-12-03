@@ -49,7 +49,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
+			using (LNode.PushPrinter(EcsLanguageService.WithPlainCSharpPrinter))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
@@ -69,7 +69,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+			using (LNode.PushPrinter(EcsLanguageService.Value))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
@@ -88,7 +88,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(Loyc.Syntax.Les.LesNodePrinter.Printer))
+			using (LNode.PushPrinter(LesLanguageService.Value))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
@@ -142,7 +142,6 @@ namespace Loyc.VisualStudio
 			protected override void WriteOutput(InputOutput io)
 			{
 				VList<LNode> results = io.Output;
-				var printer = LNode.Printer;
 				if (!NoOutHeader)
 					Output.AppendFormat(
 						"// Generated from {1} by LeMP custom tool. LeMP version: {2}{0}"
@@ -156,7 +155,7 @@ namespace Loyc.VisualStudio
 				var options = new LNodePrinterOptions {
 					IndentString = IndentString, NewlineString = NewlineString
 				};
-				ParsingService.PrintMultiple(printer, results, Sink, ParsingMode.File, options, Output);
+				LNode.Printer.Print(results, Output, Sink, ParsingMode.File, options);
 			}
 		}
 

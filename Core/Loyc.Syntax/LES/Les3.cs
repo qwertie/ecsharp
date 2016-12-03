@@ -16,7 +16,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Syntax.Les
 {
-	partial class Les3Lexer : LesLexer
+	partial class Les3Lexer : Les2Lexer
 	{
 		// When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
 		// data from an `ICharSource`, which the string wrapper `UString` implements.
@@ -248,7 +248,7 @@ namespace Loyc.Syntax.Les
 		}
 	}
 
-	partial class Les3Parser : LesParser
+	partial class Les3Parser : Les2Parser
 	{
 		//LNodeFactory F;
 

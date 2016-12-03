@@ -17,7 +17,7 @@ namespace Loyc.Ecs
 	/// <remarks>
 	/// EC# overview: https://ecsharp.net
 	/// </remarks>
-	public class EcsLanguageService : IParsingService
+	public class EcsLanguageService : IParsingService, ILNodePrinter
 	{
 		static readonly string[] _fileExtensionsNormal = new[] { "ecs", "cs" };
 		static readonly string[] _fileExtensionsPlainCs = new[] { "cs", "ecs" };
@@ -26,13 +26,12 @@ namespace Loyc.Ecs
 		public static readonly EcsLanguageService WithPlainCSharpPrinter = new EcsLanguageService(true);
 
 		readonly string[] _fileExtensions = _fileExtensionsNormal;
-		readonly LNodePrinter _printer = EcsNodePrinter.Printer;
-		readonly string _name = "Enhanced C# (beta)";
+		readonly bool _usePlainCsPrinter;
+		readonly string _name = "Enhanced C#";
 
-		private EcsLanguageService(bool printPlainCSharp)
+		private EcsLanguageService(bool usePlainCsPrinter)
 		{
-			if (printPlainCSharp) {
-				_printer = EcsNodePrinter.PrintPlainCSharp;
+			if (_usePlainCsPrinter = usePlainCsPrinter) {
 				_fileExtensions = _fileExtensionsPlainCs;
 				_name = "Enhanced C# (configured for C# output)";
 			}
@@ -45,20 +44,18 @@ namespace Loyc.Ecs
 
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 		
-		public LNodePrinter Printer
+		public void Print(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			get { return _printer; }
+			if (_usePlainCsPrinter)
+				EcsNodePrinter.PrintPlainCSharp(node, target, sink, mode, options);
+			else
+				EcsNodePrinter.PrintECSharp(node, target, sink, mode, options);
 		}
-		public string Print(LNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			var sb = new StringBuilder();
-			_printer(node, sb, sink, mode, options);
-			return sb.ToString();
+			LNodePrinter.PrintMultiple(this, nodes, target, sink, mode, options);
 		}
-		public string Print(IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
-		{
-			return ParsingService.PrintMultiple(Printer, nodes, sink, mode, options);
-		}
+
 		public bool HasTokenizer
 		{
 			get { return true; }

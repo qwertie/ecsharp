@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.6.0
+// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -22,7 +22,7 @@ namespace Loyc.Syntax.Les {
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 	#pragma warning disable 162, 642
 
-	public partial class LesParser
+	public partial class Les2Parser
 	{
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>)) {
 			var endMarker = default(TT);

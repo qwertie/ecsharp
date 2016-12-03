@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Loyc.Syntax.Les
 {
-	/// <summary>Base class for the helper classes of <see cref="LesNodePrinter"/>
+	/// <summary>Base class for the helper classes of <see cref="Les2Printer"/>
 	/// and <see cref="Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
 	/// EcsNodePrinterWriter. See <see cref="INodePrinterWriter"/>.</summary>
 	public abstract class DefaultNodePrinterWriter : NodePrinterWriterBase
@@ -118,20 +118,20 @@ namespace Loyc.Syntax.Les
 		public override int LineNumber { get { return _lineNumber; } }
 	}
 
-	/// <summary>Helper class of <see cref="LesNodePrinter"/> that ensures there is 
+	/// <summary>Helper class of <see cref="Les2Printer"/> that ensures there is 
 	/// a tokens are spaced apart properly.</summary>
-	internal class LesNodePrinterWriter : DefaultNodePrinterWriter
+	internal class Les2PrinterWriter : DefaultNodePrinterWriter
 	{
-		public LesNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
-		public LesNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }
+		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
+		public Les2PrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }
 
 		protected override void StartToken(char nextCh)
 		{
 			if (_newlinePending)
 				Newline();
-			if (LesLexer.IsIdContChar(_lastCh) && LesLexer.IsIdContChar(nextCh))
+			if (Les2Lexer.IsIdContChar(_lastCh) && Les2Lexer.IsIdContChar(nextCh))
 				_out.Write(' ');
-			else if (LesLexer.IsOpContChar(_lastCh) && LesLexer.IsOpContChar(nextCh))
+			else if (Les2Lexer.IsOpContChar(_lastCh) && Les2Lexer.IsOpContChar(nextCh))
 				_out.Write(' ');
 			else if (_lastCh == '-' && (nextCh >= '0' && nextCh <= '9')) // - 2 is different from -2 (-(2) vs integer literal)
 				_out.Write(' ');

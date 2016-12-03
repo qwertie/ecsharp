@@ -169,7 +169,7 @@ namespace Loyc.Ecs.Parser
 				return sb.ToString();
 			} else {
 				// triple-quoted or normal string: let LES lexer handle it
-				return LesLexer.UnescapeQuotedString(ref source, onError, indentation, true);
+				return Les2Lexer.UnescapeQuotedString(ref source, onError, indentation, true);
 			}
 		}
 
@@ -307,7 +307,7 @@ namespace Loyc.Ecs.Parser
 
 			UString digits = CharSource.Slice(start, stop - start);
 			string error;
-			if ((_value = LesLexer.ParseNumberCore(digits, false, _numberBase, _isFloat, _typeSuffix, out error)) == null)
+			if ((_value = Les2Lexer.ParseNumberCore(digits, false, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
 			else if (_value == CodeSymbols.Sub) {
 				InputPosition = _startPosition + 1;

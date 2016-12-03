@@ -13,21 +13,6 @@ namespace Loyc.Syntax
 	/// <summary>The three kinds of nodes in a Loyc tree</summary>
 	public enum LNodeKind { Id, Literal, Call }
 
-	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
-	/// programming language will have one (when complete).</summary>
-	/// <param name="node">Node to print</param>
-	/// <param name="target">Output buffer, to which output is appended.</param>
-	/// <param name="sink">An object used to print warning and error messages. If 
-	/// this is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
-	/// <param name="mode">Indicates the context in which the node(s) to be printed 
-	/// should be understood (e.g. is it a statement or an expression?).</param>
-	/// <param name="options">A set of options to control printer behavior. If null,
-	/// an appropriate default set of options should be used. Some languages may
-	/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
-	/// <remarks>This delegate only prints to a StringBuilder. Printing directly to 
-	/// a stream requires language-specific facilities.</remarks>
-	public delegate void LNodePrinter(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
-
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
 	/// Loyc defines only three types of nodes: simple symbols, literals, and calls.
@@ -717,14 +702,14 @@ namespace Loyc.Syntax
 
 		#region Node printer service (used by ToString())
 
-		static LNodePrinter _defaultPrinter = Loyc.Syntax.Les.LesNodePrinter.Printer;
-		static ThreadLocalVariable<LNodePrinter> _printer = new ThreadLocalVariable<LNodePrinter>();
+		static ILNodePrinter _defaultPrinter = Loyc.Syntax.Les.Les2LanguageService.Value;
+		static ThreadLocalVariable<ILNodePrinter> _printer = new ThreadLocalVariable<ILNodePrinter>();
 
 		/// <summary>Gets or sets the default node printer on the current thread,
 		/// which controls how nodes are serialized to text by default.</summary>
 		/// <remarks>The LES printer is the default, and will be used if you try
 		/// to set this property to null.</remarks>
-		public static LNodePrinter Printer
+		public static ILNodePrinter Printer
 		{
 			get { return _printer.Value ?? _defaultPrinter; }
 			set { _printer.Value = value; }
@@ -741,20 +726,18 @@ namespace Loyc.Syntax
 		///     EcsNodePrinter.Printer(node, sb, MessageSink.Trace);
 		/// </code>
 		/// </remarks>
-		public static PushedPrinter PushPrinter(LNodePrinter printer) { return new PushedPrinter(printer); }
+		public static PushedPrinter PushPrinter(ILNodePrinter printer) { return new PushedPrinter(printer); }
 		/// <summary>Returned by <see cref="PushPrinter(LNodePrinter)"/>.</summary>
 		public struct PushedPrinter : IDisposable
 		{
-			LNodePrinter old;
-			public PushedPrinter(LNodePrinter @new) { old = Printer; Printer = @new; }
+			ILNodePrinter old;
+			public PushedPrinter(ILNodePrinter @new) { old = Printer; Printer = @new; }
 			public void Dispose() { Printer = old; }
 		}
 
 		public virtual string Print(ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			StringBuilder sb = new StringBuilder();
-			Printer(this, sb, MessageSink.Null, mode, options);
-			return sb.ToString();
+			return Printer.Print(this, MessageSink.Null, mode, options);
 		}
 
 		#endregion

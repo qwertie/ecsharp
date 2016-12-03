@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Les
 	/// <remarks>
 	/// LES overview: http://loyc.net/les
 	/// </remarks>
-	public class Les2LanguageService : IParsingService
+	public class Les2LanguageService : IParsingService, ILNodePrinter
 	{
 		public static readonly Les2LanguageService Value = new Les2LanguageService();
 
@@ -25,19 +25,17 @@ namespace Loyc.Syntax.Les
 		static readonly string[] _fileExtensions = new[] { "les", "les2" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
-		public LNodePrinter Printer
+		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
-			get { return LesNodePrinter.Printer; }
+			Print((ILNode)node, target, sink, mode, options);
 		}
-		public string Print(LNode node, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			var sb = new StringBuilder();
-			Printer(node, sb, msgs, mode, options);
-			return sb.ToString();
+			Les2Printer.Print(node, target, sink, mode, options);
 		}
-		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			return ParsingService.PrintMultiple(Printer, nodes, msgs, mode, options);
+			LNodePrinter.PrintMultiple(this, nodes, target, msgs, mode, options);
 		}
 		public bool HasTokenizer
 		{
@@ -49,7 +47,7 @@ namespace Loyc.Syntax.Les
 		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			return new LesLexer(text, fileName, msgs);
+			return new Les2Lexer(text, fileName, msgs);
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
@@ -70,7 +68,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		[ThreadStatic]
-		static LesParser _parser;
+		static Les2Parser _parser;
 
 		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
 		{
@@ -85,9 +83,9 @@ namespace Loyc.Syntax.Les
 			bool exprMode = inputType == ParsingMode.Expressions;
 			char _ = '\0';
 			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
-				LesParser parser = _parser;
+				Les2Parser parser = _parser;
 				if (parser == null)
-					_parser = parser = new LesParser(input, file, msgs);
+					_parser = parser = new Les2Parser(input, file, msgs);
 				else {
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
@@ -97,7 +95,7 @@ namespace Loyc.Syntax.Les
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {
-				var parser = new LesParser(input, file, msgs);
+				var parser = new Les2Parser(input, file, msgs);
 				return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			}
 		}

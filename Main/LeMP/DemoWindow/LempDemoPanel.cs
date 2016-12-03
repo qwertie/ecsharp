@@ -155,12 +155,10 @@ namespace TextEditor
 			{
 				VList<LNode> results = io.Output;
 
-				using (LNode.PushPrinter(io.OutPrinter)) {
-					Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", NewlineString,
-						io.FileName, typeof(Compiler).Assembly.GetName().Version.ToString());
-					var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
-					ParsingService.PrintMultiple(LNode.Printer, results, Sink, null, opts, Output);
-				}
+				Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", NewlineString,
+					io.FileName, typeof(Compiler).Assembly.GetName().Version.ToString());
+				var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
+				io.OutPrinter.Print(results, Output, Sink, ParsingMode.File, opts);
 			}
 		}
 

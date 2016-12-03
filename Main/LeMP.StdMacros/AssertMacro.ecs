@@ -37,7 +37,7 @@ namespace LeMP
 		{
 			LNode @class, fn;
 			GetFnAndClassName(context, out @class, out fn);
-			var ps = ParsingService.Current;
+			var ps = LNode.Printer;
 			if (fn == null)
 				return @class == null ? null : ps.Print(@class, MessageSink.Null, ParsingMode.Expressions);
 			else if (@class == null)
@@ -68,7 +68,7 @@ namespace LeMP
 				var results = LNode.List();
 				foreach (var condition in node.Args) {
 					string name = GetFnAndClassNameString(context) ?? "";
-					var ps = ParsingService.Current;
+					var ps = LNode.Printer;
 					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
 						name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
 				

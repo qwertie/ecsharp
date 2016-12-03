@@ -11,8 +11,8 @@ using System.IO;
 
 namespace Loyc.Syntax
 {
-	/// <summary>An interface that encapsulates the lexer, parser, and printer
-	/// of a programming language, or a non-programming language that can be 
+	/// <summary>An interface that encapsulates the lexer and parser of a 
+	/// programming language, or a non-programming language that can be 
 	/// represented by Loyc trees.</summary>
 	/// <remarks>
 	/// The simplest way to parse code is with the extension method 
@@ -97,30 +97,9 @@ namespace Loyc.Syntax
 		/// <exception cref="NotSupportedException">This feature is not supported 
 		/// by this parsing service.</exception>
 		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, ParsingMode inputType);
-
-		/// <summary>Gets a printer delegate that you can use with 
-		/// <see cref="LNode.Printer"/> and <see cref="LNode.PushPrinter"/>,
-		/// or null if there is no corresponding printer available for the parser
-		/// reresented by this object.</summary>
-		LNodePrinter Printer { get; }
-
-		/// <summary>Converts the specified syntax tree to a string.</summary>
-		/// <param name="node">A syntax tree to print.</param>
-		/// <param name="options">A set of options to control printer behavior. If null,
-		/// an appropriate default set of options should be used. Some languages may
-		/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
-		/// <param name="sink">An object used to print warning and error messages. If 
-		/// this is null, messages are sent to <see cref="MessageSink.Current"/>.</param>
-		/// <param name="mode">Indicates the context in which the node(s) to be printed 
-		/// should be understood (e.g. is it a statement or an expression?).</param>
-		string Print(LNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
-
-		/// <summary>Converts the specified list of syntax trees to a string.</summary>
-		/// <remarks>Most implementations can simply call <see cref="ParsingService.PrintMultiple"/>.</remarks>
-		string Print(IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
 	}
 	
-	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
+	/// <summary>Standard extension methods for <see cref="IParsingService"/>.</summary>
 	public static class ParsingService
 	{
 		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();
@@ -278,27 +257,6 @@ namespace Loyc.Syntax
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Tokenize(parser, stream, fileName, msgs);
-		}
-		/// <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
-		/// <param name="printer">Printer for a single LNode.</param>
-		/// <param name="mode">A language-specific way of modifying printer behavior.
-		/// The printer ignores the mode object if it does not not understand it.</param>
-		/// <param name="sb">Buffer to append to (null to allocate automatically)</param>
-		/// <returns>A string form of the nodes.</returns>
-		/// <remarks>The newline between two nodes is suppressed if the second 
-		/// node has a #trivia_appendStatement attribute.</remarks>
-		public static string PrintMultiple(LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null, StringBuilder sb = null)
-		{
-			sb = sb ?? new StringBuilder();
-			var lineSeparator = (options != null ? options.NewlineString : null) ?? "\n";
-			bool first = true;
-			foreach (LNode node in nodes) {
-				if (!first)
-					sb.Append(node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null ? lineSeparator : " ");
-				printer(node, sb, sink, mode, options);
-				first = false;
-			}
-			return sb.ToString();
 		}
 	}
 }

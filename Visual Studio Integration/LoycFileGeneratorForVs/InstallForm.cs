@@ -254,6 +254,9 @@ namespace SingleFileGenerator
 		// 2015 ***********************************************************************
 		public static readonly VSType VS2015 = new VSType("VS 2015", 14.0, "SOFTWARE\\Microsoft\\VisualStudio\\14.0", null, true);
 
+		// 2017 ***********************************************************************
+		public static readonly VSType VS2017 = new VSType("VS 2017", 15.0, "SOFTWARE\\Microsoft\\VisualStudio\\15.0", null, true);
+
 		public static readonly List<VSType> VSEditions = new List<VSType> {
 			VS2002, VS2003,
 			VS2005, VSExpress2005CSharp, VSExpress2005VB, VSExpress2005Web,
@@ -261,7 +264,8 @@ namespace SingleFileGenerator
 			VS2010, VSExpress2010CSharp, VSExpress2010VB, VSExpress2010Web,
 			VS2012, VSExpress2012Desktop,
 			VS2013, VSExpress2013Desktop,
-			VS2015
+			VS2015,
+			VS2017
 		};
 	}
 

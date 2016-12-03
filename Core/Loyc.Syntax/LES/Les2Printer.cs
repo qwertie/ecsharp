@@ -15,7 +15,7 @@ namespace Loyc.Syntax.Les
 {
 	/// <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
 	/// <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
-	public class LesNodePrinter
+	public class Les2Printer
 	{
 		INodePrinterWriter _out;
 		IMessageSink _errors;
@@ -33,18 +33,17 @@ namespace Loyc.Syntax.Les
 		#region Constructors and default Printer
 		
 		[ThreadStatic]
-		static LesNodePrinter _printer;
-		public static readonly LNodePrinter Printer = Print;
+		static Les2Printer _printer;
 
 		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
 		{
-			var p = _printer = _printer ?? new LesNodePrinter(TextWriter.Null, null);
+			var p = _printer = _printer ?? new Les2Printer(TextWriter.Null, null);
 			var oldOptions = p._o;
 			var oldWriter = p.Writer;
 			var oldSink = p.Errors;
 			p.Errors = sink;
 			p.SetOptions(options);
-			p.Writer = new LesNodePrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n");
+			p.Writer = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n");
 
 			if (mode == ParsingMode.Expressions)
 				p.Print(node, StartStmt, "");
@@ -56,15 +55,15 @@ namespace Loyc.Syntax.Les
 			p.Errors = oldSink;
 		}
 
-		internal LesNodePrinter(TextWriter target, ILNodePrinterOptions options = null)
+		internal Les2Printer(TextWriter target, ILNodePrinterOptions options = null)
 		{
 			SetOptions(options);
-			Writer = new LesNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			Writer = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
 		}
-		internal LesNodePrinter(StringBuilder target, ILNodePrinterOptions options = null)
+		internal Les2Printer(StringBuilder target, ILNodePrinterOptions options = null)
 		{
 			SetOptions(options);
-			Writer = new LesNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			Writer = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
 		}
 
 		#endregion
@@ -427,8 +426,8 @@ namespace Loyc.Syntax.Les
 		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
 
 		static StringBuilder _staticStringBuilder = new StringBuilder();
-		static LesNodePrinterWriter _staticWriter = new LesNodePrinterWriter(_staticStringBuilder);
-		static LesNodePrinter _staticPrinter = new LesNodePrinter(_staticStringBuilder);
+		static Les2PrinterWriter _staticWriter = new Les2PrinterWriter(_staticStringBuilder);
+		static Les2Printer _staticPrinter = new Les2Printer(_staticStringBuilder);
 
 		public static string PrintId(Symbol name)
 		{
@@ -469,12 +468,12 @@ namespace Loyc.Syntax.Les
 			bool special = false, first = true;
 			foreach (char c in name.Name)
 			{
-				if (!LesLexer.IsIdContChar(c)) {
-					if (LesLexer.IsSpecialIdChar(c))
+				if (!Les2Lexer.IsIdContChar(c)) {
+					if (Les2Lexer.IsSpecialIdChar(c))
 						special = true;
 					else
 						backquote = true;
-				} else if (first && !LesLexer.IsIdStartChar(c))
+				} else if (first && !Les2Lexer.IsIdStartChar(c))
 					special = true;
 				first = false;
 			}
@@ -525,7 +524,7 @@ namespace Loyc.Syntax.Les
 			_out.Write(quoteType, true);
 		}
 
-		static Pair<RuntimeTypeHandle,Action<LesNodePrinter, object, NodeStyle>> P<T>(Action<LesNodePrinter, object, NodeStyle> handler) 
+		static Pair<RuntimeTypeHandle,Action<Les2Printer, object, NodeStyle>> P<T>(Action<Les2Printer, object, NodeStyle> handler) 
 			{ return Pair.Create(typeof(T).TypeHandle, handler); }
 		static Pair<K,V> P<K,V>(K key, V value) 
 			{ return Pair.Create(key, value); }
@@ -536,7 +535,7 @@ namespace Loyc.Syntax.Les
 				d.Add(input[i].Key, input[i].Value);
 			return d;
 		}
-		static Dictionary<RuntimeTypeHandle,Action<LesNodePrinter, object, NodeStyle>> LiteralPrinters = Dictionary(
+		static Dictionary<RuntimeTypeHandle,Action<Les2Printer, object, NodeStyle>> LiteralPrinters = Dictionary(
 			P<int>       ((np, value, style) => np.PrintIntegerToString(value, style, "")),
 			P<long>      ((np, value, style) => np.PrintIntegerToString(value, style, "L")),
 			P<uint>      ((np, value, style) => np.PrintIntegerToString(value, style, "u")),
@@ -654,7 +653,7 @@ namespace Loyc.Syntax.Les
 		}
 		private bool PrintLiteralCore(object value, NodeStyle style)
 		{
-			Action<LesNodePrinter, object, NodeStyle> p;
+			Action<Les2Printer, object, NodeStyle> p;
 			if (value == null)
 				_out.Write("@null", true);
 			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
@@ -667,7 +666,7 @@ namespace Loyc.Syntax.Les
 		#endregion
 	}
 
-	/// <summary>Options to control the way Loyc trees are printed by <see cref="LesNodePrinter"/>.</summary>
+	/// <summary>Options to control the way Loyc trees are printed by <see cref="Les2Printer"/>.</summary>
 	public sealed class Les2PrinterOptions : LNodePrinterOptions
 	{
 		public Les2PrinterOptions() { }

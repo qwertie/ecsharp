@@ -18,7 +18,7 @@ namespace LeMP
 	/// </summary>
 	public class InputOutput
 	{
-		public InputOutput(ICharSource text, string fileName, IParsingService input = null, LNodePrinter outPrinter = null, string outFileName = null)
+		public InputOutput(ICharSource text, string fileName, IParsingService input = null, ILNodePrinter outPrinter = null, string outFileName = null)
 		{
 			Text = text; FileName = fileName ?? ""; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
 		}
@@ -27,7 +27,7 @@ namespace LeMP
 		public IParsingService InputLang;
 		public bool? PreserveComments; // null means unassigned (to use the Compiler default)
 		public ParsingMode ParsingMode; // inputType argument when parsing with IParsingService.Parse
-		public LNodePrinter OutPrinter;
+		public ILNodePrinter OutPrinter;
 		public string OutFileName;
 		public VList<LNode> Output;
 		public override string ToString()
@@ -253,14 +253,14 @@ namespace LeMP
 		#endregion
 
 		[ThreadStatic]
-		internal static int _nextTempCounter = 10;
+		internal static int _nextTempCounter;
 		
 		/// <summary>Gets the next number to use as a suffix for temporary variables (without incrementing).</summary>
-		public static int NextTempCounter { get { return _nextTempCounter; } }
+		public static int NextTempCounter { get { return Math.Max(10, _nextTempCounter); } }
 		/// <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
 		/// <remarks>MacroProcessor currently starts this counter at 10 to avoid 
 		/// collisions with names like tmp_2 and tmp_3 that might be names chosen 
 		/// by a developer; tmp_10 is much less likely to collide.</remarks>
-		public static int IncrementTempCounter() { return _nextTempCounter++; }
+		public static int IncrementTempCounter() { _nextTempCounter = NextTempCounter; return _nextTempCounter++; }
 	}
 }

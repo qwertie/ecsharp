@@ -90,7 +90,7 @@ namespace LeMP
 			{
 				WarnAboutUnknownOptions(options, filter, 
 					KnownOptions.With("nologo", Pair.Create("", "")));
-				using (LNode.PushPrinter(EcsNodePrinter.PrintPlainCSharp))
+				using (LNode.PushPrinter(EcsLanguageService.WithPlainCSharpPrinter))
 					c.Run();
 			}
 		}
@@ -271,7 +271,7 @@ namespace LeMP
 			if (options.TryGetValue("outlang", out value)) {
 				IParsingService lang = null;
 				ApplyLanguageOption(sink, "--outlang", value, ref lang);
-				c.OutLang = lang.Printer ?? c.OutLang;
+				c.OutLang = (lang as ILNodePrinter) ?? c.OutLang;
 			}
 			if (options.TryGetValue("forcelang", out value) && (value == null || value == "true"))
 				c.ForceInLang = true;
@@ -376,7 +376,7 @@ namespace LeMP
 		public IParsingService InLang;  // null to choose by extension or use ParsingService.Current
 		public bool PreserveComments = true; // whether to preserve comments by default, if supported by input and output lang
 		public ParsingMode ParsingMode = ParsingMode.File;
-		public LNodePrinter OutLang;    // null to use LNode.Printer
+		public ILNodePrinter OutLang;   // null to use LNode.Printer
 		public string OutExt;           // output extension and optional suffix (includes leading '.'); null for same ext
 		public bool ForceInLang;        // InLang overrides input file extension
 
@@ -415,7 +415,7 @@ namespace LeMP
 				var outLang = OutLang;
 				if (outLang == null && OutExt != null) {
 					var lang = ParsingService.GetServiceForFileName(OutExt); 
-					if (lang != null) outLang = lang.Printer;
+					if (lang != null) outLang = lang as ILNodePrinter;
 				}
 				file.OutPrinter = outLang ?? LNode.Printer;
 			}
@@ -476,17 +476,12 @@ namespace LeMP
 
 			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
-				var sb = new StringBuilder();
-				foreach (LNode node in io.Output) {
-					var options = new LNodePrinterOptions {
-						IndentString = IndentString,
-						NewlineString = NewlineString
-					};
-					io.OutPrinter(node, sb, Sink, null, options);
-					writer.Write(sb.ToString());
-					writer.Write(NewlineString);
-					sb.Length = 0; // Clear() is new in .NET 4
-				}
+				var options = new LNodePrinterOptions {
+					IndentString = IndentString,
+					NewlineString = NewlineString
+				};
+				var str = io.OutPrinter.Print(io.Output, Sink, null, options);
+				writer.Write(str);
 			}
 		}
 

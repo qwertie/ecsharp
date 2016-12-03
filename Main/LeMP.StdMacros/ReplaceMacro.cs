@@ -172,7 +172,7 @@ namespace LeMP
 			if (!node.Args[0, LNode.Missing].IsIdNamed(_replace))
 				return null;
 			LNode replaceKw, macroName, args, body;
-			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn)
+			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn || body == null)
 				return null;
 
 			MacroMode mode, modes = 0;

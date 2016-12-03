@@ -993,7 +993,7 @@ namespace LeMP
 					for (int i2 = i + 1; i2 < results.Count; i2++) {
 						if ((r2 = results[i2]).NewNode != null) {
 							allowed |= (r2.Macro.Mode & MacroMode.AllowDuplicates) != 0;
-							if (!r.NewNode.Equals(r2.NewNode))
+							if (!r.NewNode.Equals(r2.NewNode, LNode.CompareMode.IgnoreTrivia))
 								return false;
 						}
 					}

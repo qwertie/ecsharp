@@ -57,7 +57,7 @@ namespace Loyc.Syntax.Les
 		}
 		internal string LiteralTypeAsLes3Identifier()
 		{
-			if (LesNodePrinter.IsNormalIdentifier(TypeMarker))
+			if (Les2Printer.IsNormalIdentifier(TypeMarker))
 				return TypeMarker.Name;
 			else
 				return "`" + ParseHelpers.EscapeCStyle(TypeMarker.Name, EscapeC.Control, '`') + "`";

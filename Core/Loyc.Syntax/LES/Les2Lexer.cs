@@ -20,10 +20,10 @@ namespace Loyc.Syntax.Les
 	/// <summary>Lexer for EC# source code.</summary>
 	/// <seealso cref="ILexer{Token}"/>
 	/// <seealso cref="TokensToTree"/>
-	public partial class LesLexer : BaseILexer<ICharSource, Token>, ILexer<Token>, ICloneable<LesLexer>
+	public partial class Les2Lexer : BaseILexer<ICharSource, Token>, ILexer<Token>, ICloneable<Les2Lexer>
 	{
-		public LesLexer(UString text, IMessageSink errorSink) : this(text, "", errorSink) { }
-		public LesLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
+		public Les2Lexer(UString text, IMessageSink errorSink) : this(text, "", errorSink) { }
+		public Les2Lexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
 			ErrorSink = sink;
 		}
 
@@ -69,9 +69,9 @@ namespace Loyc.Syntax.Les
 		}
 		protected override bool SupportDotIndents() { return true; }
 		
-		public LesLexer Clone()
+		public Les2Lexer Clone()
 		{
-			return (LesLexer)MemberwiseClone();
+			return (Les2Lexer)MemberwiseClone();
 		}
 
 		#region Token value parsers

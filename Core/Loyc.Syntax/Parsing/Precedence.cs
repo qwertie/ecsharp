@@ -86,7 +86,7 @@ namespace Loyc.Syntax
 	/// which are a precedence range that determines whether and how the operator 
 	/// can be mixed with other operators, as explained below.
 	/// <para/>
-	/// A printer (e.g. <see cref="LesNodePrinter"/>) has a different way of analyzing
+	/// A printer (e.g. <see cref="LesLanguageService"/>) has a different way of analyzing
 	/// precedence. It starts with a known parse tree and then has to figure out 
 	/// how to output something that the parser will reconstruct into the original
 	/// tree. This is more difficult if perfect round-tripping is required: parentheses
@@ -94,45 +94,43 @@ namespace Loyc.Syntax
 	/// round-tripping is desired, the printer cannot simply put everything in parens 
 	/// "just to be safe".
 	/// <para/>
-	/// Generally, the printer has two ways of printing any expression tree: (1) 
-	/// with operators (e.g. a+b), and (2) with prefix notation (e.g. @+(a, b)).
-	/// The tree <c>@+(@*(a, b), c)</c> will be printed as "a*b+c" (unless prefix
+	/// The LES and EC# printers have two ways of printing any expression tree: (1) 
+	/// with operators (e.g. a+b), and (2) with prefix notation (e.g. `'+`(a, b)).
+	/// The tree <c>`'+`(`'*`(a, b), c)</c> will be printed as "a*b+c" (unless prefix
 	/// notation is specifically requested) because the precedence rules allow it,
-	/// but <c>@*(@+(a, b), c)</c> will be printed as <c>@+(a, b)*c</c> because 
+	/// but <c>`'*`(`'+`(a, b), c)</c> will be printed as <c>`'+`(a, b)*c</c> because 
 	/// both "a+b*c" and "(a+b)*c" are different from the original tree.
 	/// <para/>
 	/// While a parser proceeds from left to right, a printer proceeds from parents
-	/// to children. So the printer for @*(@+(a, b), c) starts at @* with no 
+	/// to children. So the printer for `'*`(`'+`(a, b), c) starts at <c>`'*`</c> with no 
 	/// precedence restrictions, and roughly speaking will set the precedence floor
 	/// to <see cref="LesPrecedence"/>.Multiply in order to print its two children.
-	/// Since the precedence of @+ (Add) is below Multiply, the + operator is not
-	/// allowed in that context and either prefix notation or extra parenthesis
-	/// is used as a fallback (depending on the <see cref="LesNodePrinter.AllowExtraParenthesis"/> 
-	/// option that permits <c>(a+b)*c</c>).
+	/// Since the precedence of `'+` (Add) is below Multiply, the + operator is not
+	/// allowed in that context.
 	/// <para/>
 	/// Printing has numerous "gotchas"; the ones related to precedence are
 	/// <ol>
 	/// <li>Although <see cref="LesPrecedence"/>.Add has the "same" precedence on the
-	///     Left and Right, <c>@-(@-(a, b), c)</c> can be printed <c>a - b - c</c> but
-	///     <c>@-(a, @-(b, c))</c> would have to be printed <c>a - @-(b, c)</c> 
+	///     Left and Right, <c>`'-`(`'-`(a, b), c)</c> can be printed <c>a - b - c</c> but
+	///     <c>`'-`(a, `'-`(b, c))</c> would have to be printed <c>a - `'-`(b, c)</c> 
 	///     instead. Clearly, the left and right sides must be treated somehow
 	///     differently.</li>
 	/// <li>Similarly, the different arguments in <c>a?b:c</c> and <c>a=>b</c> must
 	///     be treated differently. And careful handling is needed for the dot 
-	///     operator in particular due to its high precedence; e.g. <c>@.(a(b))</c> 
-	///     cannot be printed <c>.a(b)</c> because that would mean <c>@.(a)(b)</c>.</li>
+	///     operator in particular due to its high precedence; e.g. <c>`'.`(a(b))</c> 
+	///     cannot be printed <c>.a(b)</c> because that would mean <c>`'.`(a)(b)</c>.</li>
 	/// <li>The LES parser, at least, allows a prefix operator to appear on the 
 	///     right-hand side of any infix or prefix operator, regardless of the 
 	///     precedence of the two operators; "$ ++x" is permitted even though ++ has
 	///     lower precedence than $. Another example is that <c>a.-b.c</c> can be 
-	///     parsed with the interpretation <c>a.(-b).c</c>, even though @- has 
-	///     lower precedence than @$. Ideally the printer would replicate this 
+	///     parsed with the interpretation <c>a.(-b).c</c>, even though '- has 
+	///     lower precedence than '$. Ideally the printer would replicate this 
 	///     rule, but whether it does ot not, it also must take care that 
-	///     <c>@.(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
-	///     similar expression <c>@*(a, @-(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
+	///     <c>`'.`(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
+	///     similar expression <c>`'*`(a, `'-`(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
 	/// <li>Prefix notation is needed when an operator's arguments have attributes;
-	///     <c>@+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
-	///     that would mean <c>[Foo] @+(a, b)</c>.</li>
+	///     <c>`'+`([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
+	///     that would mean <c>[Foo] `'+`(a, b)</c>.</li>
 	/// </ol>
 	/// 
 	/// <h3>Printing and parsing are different</h3>
@@ -155,7 +153,7 @@ namespace Loyc.Syntax
 	/// the right-hand operator was "*" instead of "??", the following printout 
 	/// would be wrong:
 	/// <code>
-	///     a = b + c * d   // actual syntax tree: a = @+(b, c) * d
+	///     a = b + c * d   // actual syntax tree: a = `'+`(b, c) * d
 	/// </code>
 	/// The same reasoning applies to the left-hand side (imagine if "=" was 
 	/// "*" instead.)

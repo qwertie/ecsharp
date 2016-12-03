@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.0.0.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.0.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -44,7 +44,7 @@ namespace LeMP
 		{
 			LNode @class, fn;
 			GetFnAndClassName(context, out @class, out fn);
-			var ps = ParsingService.Current;
+			var ps = LNode.Printer;
 			if (fn == null)
 				return @class == null ? null : ps.Print(@class, MessageSink.Null, ParsingMode.Expressions);
 			else if (@class == null)
@@ -75,7 +75,7 @@ namespace LeMP
 				var results = LNode.List();
 				foreach (var condition in node.Args) {
 					string name = GetFnAndClassNameString(context) ?? "";
-					var ps = ParsingService.Current;
+					var ps = LNode.Printer;
 					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
 					name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
 				

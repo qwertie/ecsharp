@@ -7,7 +7,7 @@ using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
 {
-	public class Les3LanguageService : IParsingService
+	public class Les3LanguageService : IParsingService, ILNodePrinter
 	{
 		public static readonly Les3LanguageService Value = new Les3LanguageService();
 
@@ -19,22 +19,27 @@ namespace Loyc.Syntax.Les
 		static readonly string[] _fileExtensions = new[] { "les3", "was" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
-		public LNodePrinter Printer
+		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			get { return Les3Printer.Printer; }
+			Print((ILNode)node, target, sink, mode, options);
 		}
-		public string Print(LNode node, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			var sb = new StringBuilder();
-			Les3Printer.Print(node, sb, msgs, mode, options);
-			return sb.ToString();
+			Print(nodes.Upcast<ILNode, LNode>(), target, sink, mode, options);
 		}
-		public string Print(IEnumerable<LNode> nodes, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
-			var sb = new StringBuilder();
-			Les3Printer.Print(nodes.Upcast<ILNode, LNode>(), sb, msgs, mode, options);
-			return sb.ToString();
+			CheckParam.IsNotNull("target", target);
+			var p = new Les3Printer(target, sink, options);
+			p.Print(node);
 		}
+		public void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		{
+			CheckParam.IsNotNull("target", target);
+			var p = new Les3Printer(target, sink, options);
+			p.Print(nodes);
+		}
+
 		public bool HasTokenizer
 		{
 			get { return true; }

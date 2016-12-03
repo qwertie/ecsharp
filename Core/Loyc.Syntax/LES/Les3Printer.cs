@@ -64,21 +64,6 @@ namespace Loyc.Syntax.Les
 		/// suppresses newlines within braced blocks.</summary>
 		protected bool _isOneLiner = false;
 
-		public static readonly LNodePrinter Printer = Print;
-
-		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
-		{
-			CheckParam.IsNotNull("target", target);
-			var p = new Les3Printer(target, sink, options);
-			p.Print(node);
-		}
-		internal static void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
-		{
-			CheckParam.IsNotNull("target", target);
-			var p = new Les3Printer(target, sink, options);
-			p.Print(nodes);
-		}
-
 		internal StringBuilder Print(IEnumerable<ILNode> list)
 		{
 			var neglist = list as INegListSource<ILNode> ?? list.ToList().AsNegList(0);
@@ -268,7 +253,7 @@ namespace Loyc.Syntax.Les
 
 		public static bool IsNormalIdentifier(Symbol name)
 		{
-			return LesNodePrinter.IsNormalIdentifier(name) && !name.Name.StartsWith("#");
+			return Les2Printer.IsNormalIdentifier(name) && !name.Name.StartsWith("#");
 		}
 
 		public void PrintIdCore(Symbol name, bool startToken, bool forceQuote = false)

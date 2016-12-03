@@ -164,15 +164,15 @@
     </Compile>
     <Compile Include="LES\Les3PrettyPrinter.cs" />
     <Compile Include="LES\Les3Printer.cs" />
-    <Compile Include="LES\LesLexerGrammar.out.cs">
+    <Compile Include="LES\Les2LexerGrammar.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>LesLexerGrammar.les</DependentUpon>
+      <DependentUpon>Les2LexerGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="LES\LesParserGrammar.out.cs">
+    <Compile Include="LES\Les2ParserGrammar.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>LesParserGrammar.les</DependentUpon>
+      <DependentUpon>Les2ParserGrammar.les</DependentUpon>
     </Compile>
     <Compile Include="LES\Les3.cs" />
     <Compile Include="LES\SpecialLiteral.cs" />
@@ -183,6 +183,7 @@
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
     <Compile Include="LNodes\ILNode.cs" />
+    <Compile Include="LNodes\ILNodePrinter.cs" />
     <Compile Include="LNodes\ILNodePrintingOptions.cs" />
     <Compile Include="LNodes\ParsingMode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
@@ -190,12 +191,12 @@
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IParsingService.cs" />
-    <Compile Include="LES\LesLanguageService.cs" />
-    <Compile Include="LES\LesLexer.cs" />
-    <Compile Include="LES\LesNodePrinter.cs" />
+    <Compile Include="LES\Les2LanguageService.cs" />
+    <Compile Include="LES\Les2Lexer.cs" />
+    <Compile Include="LES\Les2Printer.cs" />
     <Compile Include="LES\INodePrinterWriter.cs" />
-    <Compile Include="LES\LesNodePrinterWriter.cs" />
-    <Compile Include="LES\LesParser.cs">
+    <Compile Include="LES\Les2PrinterWriter.cs" />
+    <Compile Include="LES\Les2Parser.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LES\LesPrecedence.cs" />
@@ -280,14 +281,14 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>Les3Lexer.out.cs</LastGenOutput>
     </None>
-    <None Include="LES\LesLexerGrammar.les">
+    <None Include="LES\Les2LexerGrammar.les">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>LesLexerGrammar.out.cs</LastGenOutput>
+      <LastGenOutput>Les2LexerGrammar.cs</LastGenOutput>
     </None>
-    <None Include="LES\LesParserGrammar.les">
+    <None Include="LES\Les2ParserGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
-      <LastGenOutput>LesParserGrammar.out.cs</LastGenOutput>
+      <LastGenOutput>Les2ParserGrammar.cs</LastGenOutput>
     </None>
     <None Include="LES\Les3Parser.ecs">
       <Generator>LeMP</Generator>

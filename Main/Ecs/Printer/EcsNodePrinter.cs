@@ -29,19 +29,15 @@ namespace Loyc.Ecs
 	// The code for printing expressions and statements is in separate source files
 	// (EcsNodePrinter--expressions.cs and EcsNodePrinter--statements.cs).
 
-	/// <summary>Prints a Loyc tree to EC# source code.</summary>
+	/// <summary>Encapsulates the code for printing an <see cref="LNode"/> 
+	/// to EC# source code.</summary>
 	/// <remarks>
-	/// The typical way to print EC# code is to call <see cref="EcsLanguageService.Print"/>,
-	/// via <see cref="EcsLanguageService.WithPlainCSharpPrinter"/> or via
-	/// <see cref="EcsLanguageService.Value"/>, but this class, which contains the 
-	/// implementation, is sometimes useful as it provides various options to tweak 
-	/// the output.
-	/// <para/>
-	/// To avoid printing EC# syntax that does not exist in C#, you can call
-	/// <see cref="SetPlainCSharpMode"/> or the static method 
-	/// <see cref="PrintPlainCSharp"/>, but this only works if the syntax tree
-	/// does not contain invalid structure or EC#-specific code such as "==>", 
-	/// "alias", and template arguments ($T).
+	/// To print EC# code, you not use this class directly. Instead, call 
+	/// <see cref="EcsLanguageService.Print"/> via 
+	/// <see cref="EcsLanguageService.WithPlainCSharpPrinter"/> or via
+	/// <see cref="EcsLanguageService.Value"/>. This class does have some static
+	/// methods like <see cref="PrintLiteral"/> and <see cref="PrintId"/> that
+	/// are useful for printing tokens efficiently.
 	/// <para/>
 	/// This class is designed to faithfully preserve most Loyc trees; almost any 
 	/// Loyc tree that can be represented as EC# source code will be represented 
@@ -51,7 +47,8 @@ namespace Loyc.Ecs
 	/// back, but Enhanced C# is syntactically very complicated and as a result 
 	/// this printer may contain bugs or (for the sake of practicality) minor 
 	/// intentional limitations that cause round-tripping not to work in rare 
-	/// cases. If you need perfect round-tripping, use LES instead.
+	/// cases. If you need perfect round-tripping, use LES instead 
+	/// (<see cref="LesLanguageService"/>).
 	/// <para/>
 	/// Only the attributes, head (<see cref="LiteralNode.Value"/>, 
 	/// <see cref="IdNode.Name"/> or <see cref="CallNode.Target"/>), and arguments 
@@ -80,12 +77,6 @@ namespace Loyc.Ecs
 	///     after semantic analysis, so there is no way to faithfully represent
 	///     the results of semantic analysis.</li>
 	/// </ol>
-	/// This class contains some configuration options that will defeat round-
-	/// tripping but will make the output look better. For example,
-	/// <see cref="AllowExtraBraceForIfElseAmbig"/> will print a tree such as 
-	/// <c>#if(a, #if(b, f()), g())</c> as <c>if (a) { if (b) f(); } else g();</c>,
-	/// by adding braces to eliminate prefix notation, even though braces make the 
-	/// Loyc tree different.
 	/// </remarks>
 	public partial class EcsNodePrinter
 	{
@@ -112,7 +103,6 @@ namespace Loyc.Ecs
 
 		[ThreadStatic]
 		static EcsNodePrinter _printer;
-		public static readonly LNodePrinter Printer = PrintECSharp;
 		static bool _isDebugging = System.Diagnostics.Debugger.IsAttached;
 
 		/// <summary>Prints a node while avoiding syntax specific to Enhanced C#.</summary>
@@ -1196,6 +1186,15 @@ namespace Loyc.Ecs
 	}
 
 	/// <summary>Options to control the way <see cref="EcsNodePrinter"/>'s output is formatted.</summary>
+	/// <remarks>
+	/// <see cref="EcsPrinterOptions"/> has some configuration options that will 
+	/// defeat round-tripping (from <see cref="LNode"/> to text and back) but will 
+	/// make the output look better. For example, 
+	/// <see cref="AllowExtraBraceForIfElseAmbig"/> will print a tree such as 
+	/// <c>#if(a, #if(b, f()), g())</c> as <c>if (a) { if (b) f(); } else g();</c>,
+	/// by adding braces to eliminate prefix notation, even though braces make the 
+	/// Loyc tree different.
+	/// </remarks>
 	public sealed class EcsPrinterOptions : LNodePrinterOptions
 	{
 		public EcsPrinterOptions() : this(null) { }

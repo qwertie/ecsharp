@@ -27,14 +27,12 @@ namespace Loyc.Ecs.Tests
 			options.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
 				configure(options);
-			var printer = new EcsNodePrinter(options);
 			var sb = new StringBuilder();
-			if (exprMode)
-				printer.Print(input, sb, MessageSink.Current, ParsingMode.Expressions);
-			else if (input.Calls(S.Splice))
-				ParsingService.PrintMultiple(EcsNodePrinter.Printer, input.Args, MessageSink.Current, ParsingMode.Statements, options, sb: sb);
+			var mode2 = exprMode ? ParsingMode.Expressions : ParsingMode.Statements;
+			if (input.Calls(S.Splice))
+				EcsLanguageService.Value.Print(input.Args, sb, MessageSink.Current, mode2, options);
 			else
-				printer.Print(input, sb, MessageSink.Current, ParsingMode.Statements);
+				EcsLanguageService.Value.Print(input, sb, MessageSink.Current, mode2, options);
 			AreEqual(result, sb.ToString());
 		}
 

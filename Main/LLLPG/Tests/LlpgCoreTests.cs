@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 		[SetUpAttribute]
 		public void SetUp()
 		{
-			LNode.Printer = EcsNodePrinter.Printer;
+			LNode.Printer = Ecs.EcsLanguageService.Value;
 			_pg = new LLParserGenerator(new IntStreamCodeGenHelper());
 			_pg.Sink = new MessageSinkFromDelegate(OutputMessage);
 			_messageCounter = 0;

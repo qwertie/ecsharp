@@ -43,14 +43,16 @@ namespace LeMP.Tests
 		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
 		{
 			var lemp = NewLemp(maxExpand, inLang);
-			using (ParsingService.PushCurrent(inLang))
+			
+			// The current printer affects the assert macro and contract macros
+			using (LNode.PushPrinter((ILNodePrinter)outLang))
 			{
 				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Current));
 				var results = lemp.ProcessSynchronously(inputCode);
 				var expectCode = outLang.Parse(expected, MessageSink.Current);
 				if (!results.SequenceEqual(expectCode))
 				{	// TEST FAILED, print error
-					string resultStr = results.Select(n => outLang.Print(n)).Join("\n");
+					string resultStr = results.Select(n => ((ILNodePrinter)outLang).Print(n)).Join("\n");
 					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
 									TestCompiler.StripExtraWhitespace(resultStr));
 					// In some tests, the text is equal even though the trees are different,

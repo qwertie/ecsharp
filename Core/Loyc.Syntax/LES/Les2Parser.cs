@@ -20,19 +20,19 @@ namespace Loyc.Syntax.Les
 	/// You can use <see cref="Les2LanguageService.Value"/> with <see cref="ParsingService.Parse"/>
 	/// to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
 	/// <para/>
-	/// This class expects to receive tokens from <see cref="LesLexer"/> that have been 
+	/// This class expects to receive tokens from <see cref="Les2Lexer"/> that have been 
 	/// preprocessed by <see cref="TokensToTree"/>, with whitespace tokens filtered out.
 	/// </remarks>
-	public partial class LesParser : BaseParserForList<Token, int>
+	public partial class Les2Parser : BaseParserForList<Token, int>
 	{
 		protected LNodeFactory F;
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
 
 		new const TT EOF = TT.EOF;
 
-		public LesParser(IListAndListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this((IList<Token>)tokens, file, messageSink) {}
-		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this(tokens.AsList(), file, messageSink) {}
-		public LesParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
+		public Les2Parser(IListAndListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this((IList<Token>)tokens, file, messageSink) {}
+		public Les2Parser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this(tokens.AsList(), file, messageSink) {}
+		public Les2Parser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
 			: base(tokens, default(Token), file, startIndex)
 		{
 			ErrorSink = messageSink;
