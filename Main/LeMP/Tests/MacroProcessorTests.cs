@@ -43,7 +43,7 @@ namespace LeMP.Tests
 				return node.WithArgs(node[1], node[0]);
 			return null;
 		}
-		[LexicalMacro("braceTheRest", "Put the rest of the statements in braces")]
+		[LexicalMacro("braceTheRest", "Put the rest of the statements in braces", Mode = MacroMode.MatchIdentifier)]
 		public static LNode braceTheRest(LNode node, IMacroContext context)
 		{
 			context.DropRemainingNodes = true;
@@ -75,6 +75,17 @@ namespace LeMP.Tests
 					}) {
 						Mode = MacroMode.PriorityOverride // needed by the unit test
 					})));
+		}
+
+		[LexicalMacro("bob", "= bobby")]
+		public static LNode bob(LNode node, IMacroContext context)
+		{
+			return LNode.Id("bobby");
+		}
+		[LexicalMacro("tom", "= tommy", Mode = MacroMode.MatchIdentifier)]
+		public static LNode tom(LNode node, IMacroContext context)
+		{
+			return LNode.Id("tommy");
 		}
 	}
 }
@@ -252,6 +263,13 @@ namespace LeMP
 			// Make sure that scoping works
 			Test("{ import_macros LeMP.Tests; Hi(1); replaceTarget(Hi, Hello); { Hi(2); overrideTarget(Hi, Bye); Hi(3); }; Hi(4); }",
 				 "{ Hi(1); { Hello(2); Bye(3); } Hello(4); }");
+		}
+
+		[Test]
+		public void MatchIdentifierTest()
+		{
+			Test("import_macros LeMP.Tests; bob(); tom();", "bobby; tommy;");
+			Test("import_macros LeMP.Tests; bob; tom;",     "bob; tommy;");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);

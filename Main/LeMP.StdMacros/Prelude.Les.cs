@@ -497,7 +497,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 		
-		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default")]
+		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @default1(LNode node, IMessageSink sink)
 		{
 			if (node.IsId)
@@ -603,7 +603,7 @@ namespace LeMP.Prelude.Les
 			return node;
 		}
 
-		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
+		[LexicalMacro("throw; throw Expr", "Returns to the caller of the current method or lambda function.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @throw(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount > 1) return null;
@@ -626,13 +626,13 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro("this(Params...)", "Calls a constructor in the same class. Can only be used inside a constructor.")]
+		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @this(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.This);
 		}
 
-		[LexicalMacro("base(Params...)", "Calls a constructor in the base class. Can only be used inside a constructor.")]
+		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @base(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Base);

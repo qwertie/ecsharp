@@ -36,7 +36,8 @@ namespace LeMP
 				return runSeq.WithoutLast(1);
 			return runSeq;
 		}
-		[LexicalMacro("#useSequenceExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", "Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows." + "Technically this allows any executable code in an expression context, such as while and for-loops, " + "but its name comes from the fact that it is usually used to allow variable declarations. " + "#useSequenceExpressions expects to be used in a declaration context, " + "e.g. at class or namespace level, not within a function.", "#useSequenceExpressions", Mode = MacroMode.NoReprocessing)]
+		[LexicalMacro("#useSequenceExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", "Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows." + "Technically this allows any executable code in an expression context, such as while and for-loops, " + "but its name comes from the fact that it is usually used to allow variable declarations. " + "#useSequenceExpressions expects to be used in a declaration context, " + "e.g. at class or namespace level, not within a function.", 
+			"#useSequenceExpressions", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifier)]
 		public static LNode useSequenceExpressions(LNode node, IMacroContext context)
 		{
 			var tmp_0 = context.GetArgsAndBody(true);

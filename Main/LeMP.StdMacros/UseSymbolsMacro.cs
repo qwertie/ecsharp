@@ -16,7 +16,7 @@ namespace LeMP
 		[LexicalMacro("#useSymbols; ... @@Foo ...", 
 			"Enables @@symbols to be used in the code that follows. A static readonly variable named sy_X will be created for each symbol @@X. "
 			+"The #useSymbols macro can be invoked at global scope, or inside a type definition where static variables are allowed. Cannot be used inside a method.",
-			"#useSymbols", "use_symbols" /*old name*/, Mode = MacroMode.NoReprocessing)]
+			"#useSymbols", "use_symbols" /*old name*/, Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifier)]
 		public static LNode useSymbols(LNode input, IMacroContext context)
 		{
 			bool inType = context.Ancestors.Any(parent => {

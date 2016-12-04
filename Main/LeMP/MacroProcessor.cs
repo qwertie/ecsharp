@@ -28,6 +28,7 @@ namespace LeMP
 		public bool? PreserveComments; // null means unassigned (to use the Compiler default)
 		public ParsingMode ParsingMode; // inputType argument when parsing with IParsingService.Parse
 		public ILNodePrinter OutPrinter;
+		public ILNodePrinterOptions OutOptions;
 		public string OutFileName;
 		public VList<LNode> Output;
 		public override string ToString()

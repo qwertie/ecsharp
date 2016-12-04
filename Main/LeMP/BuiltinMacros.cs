@@ -115,7 +115,7 @@ namespace LeMP.Prelude
 							descr.Append("\t");
 							LNode line = mi.Names.Length == 1  
 								? (LNode)LNode.Id(mi.Names[0]) 
-								: LNode.Call(S.Tuple, LNode.List(mi.Names.Select(name => LNode.Id(name))));
+								: LNode.Call(S.Tuple, LNode.List(mi.Names.Select(name => (LNode)LNode.Id(name))));
 
 							string methodName = mi.Macro.Method.Name, @class = mi.Macro.Method.DeclaringType.Name;
 							string postComment = " " + @class + "." + methodName;

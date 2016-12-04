@@ -250,7 +250,7 @@ namespace LeMP
 		#endregion
 
 		[LexicalMacro("#ecs;", "Typically used at the top of a file, this macro enable certain EC# features before the EC# compiler is written, by implementing those features as macro. "
-			+"Currently, `#ecs` expands to `#useSymbols; #useSequenceExpressions`.", "#ecs")]
+			+"Currently, `#ecs` expands to `#useSymbols; #useSequenceExpressions`.", "#ecs", Mode = MacroMode.MatchIdentifier)]
 		public static LNode ecs(LNode node, IMacroContext context)
 		{
 			if (node.IsCall)

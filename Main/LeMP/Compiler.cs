@@ -53,6 +53,13 @@ namespace LeMP
 			{ "set",       Pair.Create("key=literal", "Associate a value with a key (use #get(key) to read it back)") },
 			{ "snippet",   Pair.Create("key=code", "Associate code with a key (use #get(key) to read it back)") },
 			{ "preserve-comments", Pair.Create("bool", "Preserve comments and newlines (where supported)\n  Default value: true") },
+			{ "o-indent-spaces",   Pair.Create("count", "Sets number of spaces per indentation level (0 for tabs)") },
+			{ "o-allow-change-parens", Pair.Create("bool", "Sets ILNodePrintingOptions.AllowChangeParentheses") },
+			{ "o-omit-comments",       Pair.Create("bool", "Sets ILNodePrintingOptions.OmitComments") },
+			{ "o-omit-unknown-trivia", Pair.Create("bool", "Sets ILNodePrintingOptions.OmitUnknownTrivia") },
+			{ "o-explicit-trivia",     Pair.Create("bool", "Sets ILNodePrintingOptions.PrintTriviaExplicitly") },
+			{ "o-compatibility-mode",  Pair.Create("bool", "Sets ILNodePrintingOptions.CompatibilityMode") },
+			{ "o-compact-mode",        Pair.Create("bool", "Sets ILNodePrintingOptions.CompactMode") },
 		};
 
 		#region Main()
@@ -217,6 +224,8 @@ namespace LeMP
 		{
 			Compiler c = this;
 			string value;
+			bool? flag;
+			double? num;
 			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.Note);
 
 			if (warnAboutUnknownOptions)
@@ -235,8 +244,8 @@ namespace LeMP
 			
 			IMessageSink sink = c.Sink = filter;
 			
-			if (options.TryGetValue("max-expand", out value))
-				TryCatch("While parsing max-expand", sink, () => c.MaxExpansions = int.Parse(value));
+			if ((num = ParseNumericOption(options, "max-expand", sink, 0, 99999)) != null)
+				c.MaxExpansions = (int)num.Value;
 
 			foreach (var macroDll in options["macros"])
 			{
@@ -261,10 +270,12 @@ namespace LeMP
 					c.AddMacros(assembly);
 				});
 			}
-			if (options.TryGetValue("noparallel", out value) && (value == null || value == "true"))
-				c.Parallel = false;
-			if (options.TryGetValue("outext", out c.OutExt) && c.OutExt != null && !c.OutExt.StartsWith("."))
-				c.OutExt = "." + c.OutExt;
+			if ((flag = ParseBoolOption(options, "noparallel", sink)) != null)
+				c.Parallel = flag.Value;
+			if (options.TryGetValue("outext", out c.OutExt)) {
+				if (c.OutExt != null && !c.OutExt.StartsWith("."))
+					c.OutExt = "." + c.OutExt;
+			}
 			if (options.TryGetValue("inlang", out value)) {
 				ApplyLanguageOption(sink, "--inlang", value, ref c.InLang);
 			}
@@ -273,17 +284,13 @@ namespace LeMP
 				ApplyLanguageOption(sink, "--outlang", value, ref lang);
 				c.OutLang = (lang as ILNodePrinter) ?? c.OutLang;
 			}
-			if (options.TryGetValue("forcelang", out value) && (value == null || value == "true"))
-				c.ForceInLang = true;
+			if ((flag = ParseBoolOption(options, "forcelang", sink)) != null)
+				c.ForceInLang = flag.Value;
 			if (!options.ContainsKey("outlang") && c.OutExt != null && ParsingService.GetServiceForFileName(c.OutExt) == null)
 				sink.Write(Severity.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
-			double num;
-			if (options.TryGetValue("timeout", out value)) {
-				if (!double.TryParse(value, out num) || !(num >= 0))
-					sink.Write(Severity.Error, "--timeout", "Invalid or missing timeout value", c.OutExt);
-				else
-					c.AbortTimeout = TimeSpan.FromSeconds(num);
-			}
+			if ((num = ParseNumericOption(options, "timeout", sink)) != null)
+				c.AbortTimeout = TimeSpan.FromSeconds(num.Value);
+
 			foreach (string exprStr in options["set"])
 				SetPropertyHelper(exprStr, quote: false);
 			foreach (string exprStr in options["snippet"])
@@ -295,6 +302,22 @@ namespace LeMP
 			if (options.TryGetValue("preserve-comments", out value))
 				PreserveComments = value == null || !value.ToString().ToLowerInvariant().IsOneOf("false", "0");
 
+			// Printing options
+			if ((num = ParseNumericOption(options, "o-indent-spaces", sink, 0, 20)) != null)
+				OutOptions.IndentString = num.Value <= 0 ? "\t" : new string(' ', (int)num.Value);
+			if ((flag = ParseBoolOption(options, "o-allow-change-parens", sink)) != null)
+				OutOptions.AllowChangeParentheses = flag.Value;
+			if ((flag = ParseBoolOption(options, "o-omit-comments", sink)) != null)
+				OutOptions.OmitComments = flag.Value;
+			if ((flag = ParseBoolOption(options, "o-omit-unknown-trivia", sink)) != null)
+				OutOptions.OmitUnknownTrivia = flag.Value;
+			if ((flag = ParseBoolOption(options, "o-explicit-trivia", sink)) != null)
+				OutOptions.PrintTriviaExplicitly = flag.Value;
+			if ((flag = ParseBoolOption(options, "o-compatibility-mode", sink)) != null)
+				OutOptions.CompatibilityMode = flag.Value;
+			if ((flag = ParseBoolOption(options, "o-compact-mode", sink)) != null)
+				OutOptions.CompactMode = flag.Value;
+
 			if (inputFiles != null) {
 				this.Files = new List<InputOutput>(OpenSourceFiles(Sink, inputFiles));
 				if (inputFiles.Count != 0 && Files.Count == 0)
@@ -302,6 +325,40 @@ namespace LeMP
 			}
 
 			return true;
+		}
+
+		private double? ParseNumericOption(BMultiMap<string, string> options, string key, IMessageSink sink, double? min = null, double? max = null)
+		{
+			string value;
+			if (!options.TryGetValue(key, out value))
+				return null;
+			double num;
+			if (double.TryParse(value, out num)) {
+				if ((min == null || num >= min.Value) && 
+					(max == null || num <= max.Value))
+					return num;
+			}
+			if (sink != null) {
+				if (min != null && max != null)
+					sink.Write(Severity.Error, "--" + key, "Expected numeric value between {0} and {1}", min.Value, max.Value);
+				else
+					sink.Write(Severity.Error, "--" + key, "Expected numeric value");
+			}
+			return null;
+		}
+
+		private bool? ParseBoolOption(BMultiMap<string, string> options, string key, IMessageSink sink)
+		{
+			string value;
+			if (!options.TryGetValue(key, out value))
+				return null;
+			if (value.Equals("true", StringComparison.InvariantCultureIgnoreCase) || value == "1")
+				return true;
+			if (value.Equals("false", StringComparison.InvariantCultureIgnoreCase) || value == "0")
+				return false;
+			if (sink != null)
+				sink.Write(Severity.Error, "--" + key, "Expected boolean `true` or `false`");
+			return null;
 		}
 
 		/// <summary>Adds standard macros from LeMP.StdMacros.dll, and adds the 
@@ -377,6 +434,7 @@ namespace LeMP
 		public bool PreserveComments = true; // whether to preserve comments by default, if supported by input and output lang
 		public ParsingMode ParsingMode = ParsingMode.File;
 		public ILNodePrinter OutLang;   // null to use LNode.Printer
+		public LNodePrinterOptions OutOptions = new LNodePrinterOptions { IndentString = "\t", NewlineString = "\n" };
 		public string OutExt;           // output extension and optional suffix (includes leading '.'); null for same ext
 		public bool ForceInLang;        // InLang overrides input file extension
 
@@ -419,6 +477,8 @@ namespace LeMP
 				}
 				file.OutPrinter = outLang ?? LNode.Printer;
 			}
+			if (file.OutOptions == null)
+                file.OutOptions = OutOptions;
 			if (file.PreserveComments == null)
 				file.PreserveComments = PreserveComments;
 			if (file.ParsingMode == null)

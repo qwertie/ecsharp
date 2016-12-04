@@ -467,15 +467,17 @@ namespace LeMP
 
 		#region Find macros by name: GetApplicableMacros
 
-		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found)
+		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found, bool isIdentifier)
 		{
 			VList<MacroInfo> candidates;
 			if (_curScope._macros.TryGetValue(name, out candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
 					if (openNamespaces.Contains(info.Namespace) || info.Namespace == null) {
-						count++;
-						found.Add(info);
+						if (!isIdentifier || (info.Mode & MacroMode.MatchIdentifier) != 0) {
+							count++;
+							found.Add(info);
+						}
 					}
 				}
 				return count;
@@ -674,7 +676,8 @@ namespace LeMP
 				try {
 					if (_s.FoundMacros.Count == 0) {
 						nodeQueue = _s.NodeQueue;
-						return ApplyMacrosToChildrenOf(curNode, maxExpansions) ?? resultNode;
+						bool skipTarget = curNode.HasSimpleHeadWithoutPAttrs();
+						return ApplyMacrosToChildrenOf(curNode, maxExpansions, skipTarget) ?? resultNode;
 					}
 
 					// USER MACROS RUN HERE!
@@ -683,7 +686,8 @@ namespace LeMP
 						// Macro(s) had no effect (not in this iteration, anyway), 
 						// so move on to processing children.
 						nodeQueue = _s.NodeQueue;
-						return _s.Preprocessed ?? ApplyMacrosToChildrenOf(curNode, maxExpansions) ?? resultNode;
+						bool skipTarget = curNode.HasSimpleHeadWithoutPAttrs() && !_s.FoundMacros.Any(m => (m.Mode & MacroMode.MatchIdentifier) != 0);
+						return _s.Preprocessed ?? ApplyMacrosToChildrenOf(curNode, maxExpansions, skipTarget) ?? resultNode;
 					}
 					result = result_.Value;
 				} finally {
@@ -724,12 +728,12 @@ namespace LeMP
 		{
 			LNode target;
 			if (curNode.HasSimpleHead()) {
-				GetApplicableMacros(_curScope.OpenNamespaces, curNode.Name, foundMacros);
+				GetApplicableMacros(_curScope.OpenNamespaces, curNode.Name, foundMacros, curNode.IsId);
 			} else if ((target = curNode.Target).Calls(S.Dot, 2) && target.Args[1].IsId) {
 				Symbol name = target.Args[1].Name;
 				if (_macros.ContainsKey(name)) {
 					Symbol @namespace = NamespaceToSymbol(target.Args[0]);
-					GetApplicableMacros(ListExt.Single(@namespace), name, foundMacros);
+					GetApplicableMacros(ListExt.Single(@namespace), name, foundMacros, false);
 				}
 			}
 		}
@@ -897,7 +901,7 @@ namespace LeMP
 				results.Add(result);
 		}
 
-		LNode ApplyMacrosToChildrenOf(LNode node, int maxExpansions)
+		LNode ApplyMacrosToChildrenOf(LNode node, int maxExpansions, bool skipTarget = false)
 		{
 			if (maxExpansions <= 0)
 				return null;
@@ -911,17 +915,20 @@ namespace LeMP
 				node = node.WithAttrs(newAttrs);
 				changed = true;
 			}
-			LNode target = node.Target;
-			if (target != null && target.Kind != LNodeKind.Literal)
+			if (!skipTarget)
 			{
-				DList<Pair<LNode, int>> _ = null;
-				LNode newTarget = ApplyMacros(target, maxExpansions, true, true, ref _);
-				if (newTarget != null)
+				LNode target = node.Target;
+				if (target != null && target.Kind != LNodeKind.Literal)
 				{
-					if (newTarget.Calls(S.Splice, 1))
-						newTarget = newTarget.Args[0];
-					node = node.WithTarget(newTarget);
-					changed = true;
+					DList<Pair<LNode, int>> _ = null;
+					LNode newTarget = ApplyMacros(target, maxExpansions, true, true, ref _);
+					if (newTarget != null)
+					{
+						if (newTarget.Calls(S.Splice, 1))
+							newTarget = newTarget.Args[0];
+						node = node.WithTarget(newTarget);
+						changed = true;
+					}
 				}
 			}
 			var newArgs = ApplyMacrosToList(old = node.Args, maxExpansions, false);
