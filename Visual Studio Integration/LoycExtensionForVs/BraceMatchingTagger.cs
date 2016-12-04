@@ -17,7 +17,8 @@ namespace VS.Common
 	// Compared to ITaggerProvider, IViewTaggerProvider is associated with a 'view' 
 	// as well as a text buffer. Needed for brace matching to know the caret position.
 	[Export(typeof(IViewTaggerProvider))]
-	[ContentType("LES")] // any ContentType that wants brace matching
+	[ContentType("LES2")] // any ContentType that wants brace matching
+	[ContentType("LES3")] // any ContentType that wants brace matching
 	[ContentType("EC#")] // any ContentType that wants brace matching
 	[TagType(typeof(TextMarkerTag))]
 	public sealed class DefaultBraceMatchingTaggerProvider : IViewTaggerProvider

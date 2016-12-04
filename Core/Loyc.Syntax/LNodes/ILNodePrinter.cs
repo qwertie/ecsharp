@@ -24,7 +24,7 @@ namespace Loyc.Syntax
 		void Print(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
 
 		/// <summary>Serializes a list of syntax trees to a StringBuilder in the syntax supported by this object.</summary>
-		/// <param name="node">Syntax trees to print.</param>
+		/// <param name="nodes">Syntax trees to print.</param>
 		/// <param name="target">An output buffer, to which output is appended.</param>
 		/// <param name="sink">An object used to print warning and error messages. If 
 		/// this is null, messages are sent to <see cref="MessageSink.Current"/>.</param>

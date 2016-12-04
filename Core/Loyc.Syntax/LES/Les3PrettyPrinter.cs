@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Les
 	/// <see cref="LesColorCode"/> control codes. 
 	/// </summary>
 	/// <remarks>
-	/// Call <see cref="New"/> to create an instance, then call 
+	/// Create an instance by invoking the constructor, then call 
 	/// <see cref="PrintToConsole"/> for console output, <see cref="PrintToHtml"/> 
 	/// for HTML output, or <see cref="Les3Printer.Print(IEnumerable{ILNode})"/> 
 	/// for just control codes.
@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	public sealed class Les3PrettyPrinter : Les3Printer
 	{
 		/// <summary>The lookup table of strings for control codes (<see cref="LesColorCode"/> 
-		/// values) to HTML classes, used by <see cref="PrintToHtml(ILNode, StringBuilder, bool, string)"/>.</summary>
+		/// values) to HTML classes, used by <see cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, bool)"/>.</summary>
 		/// <remarks>This property is null by default, which causes the default 
 		/// table to be used. See <see cref="GetDefaultCssClassTable()"/> for more 
 		/// information.</remarks>
@@ -180,14 +180,10 @@ namespace Loyc.Syntax.Les
 		internal static readonly string[] DefaultCssClassTable = GetDefaultCssClassTable();
 
 		/// <summary>Prints an LNode as LESv3 with HTML syntax highlighting elements.</summary>
-		/// <param name="node">A syntax tree to print.</param>
+		/// <param name="nodes">Syntax trees to print.</param>
 		/// <param name="output">Output StringBuilder for HTML code.</param>
-		/// <param name="messageSink">A sink for warning messages, if any.</param>
 		/// <param name="addPreCode">Whether to wrap the output in "&lt;pre class='highlight'>&lt;code>" tags.</param>
-		/// <param name="indentString">How to indent inner lines of the output (usually a tab or spaces).</param>
-		/// <param name="newlineString">What to write to <c>output</c> for each newline.</param>
-		/// <param name="colorCodesToCssClasses">CSS class table for span tags, 
-		/// see <see cref="GetDefaultCssClassTable"/>.</param>
+		/// <param name="options">Options to control the style for code printing.</param>
 		/// <returns>The output StringBuilder</returns>
 		public static StringBuilder PrintToHtml(
 				IEnumerable<ILNode> nodes, StringBuilder output = null, 
@@ -198,7 +194,7 @@ namespace Loyc.Syntax.Les
 			return pp.PrintToHtml(nodes, output, addPreCode);
 		}
 
-		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, IMessageSink, bool, string, string)"/>
+		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, bool, IMessageSink, ILNodePrinterOptions)"/>
 		public StringBuilder PrintToHtml(IEnumerable<ILNode> nodes, StringBuilder output = null, bool addPreCode = true)
 		{
 			var newline = Options.NewlineString;
@@ -208,7 +204,7 @@ namespace Loyc.Syntax.Les
 			return PrintToHtmlCore(SB, output, addPreCode, newline, ColorCodesToCssClasses);
 		}
 
-		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, IMessageSink, bool, string, string)"/>
+		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, bool, IMessageSink, ILNodePrinterOptions)"/>
 		public StringBuilder PrintToHtml(ILNode node, StringBuilder output = null, bool addPreCode = true)
 		{
 			var newline = Options.NewlineString;

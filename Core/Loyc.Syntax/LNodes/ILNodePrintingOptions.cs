@@ -32,8 +32,7 @@ namespace Loyc.Syntax
 		/// spaces to be printed as attributes in order to ensure faithful round-trip 
 		/// parsing.</summary>
 		/// <remarks>Note: Some printers may ignore <see cref="OmitUnknownTrivia"/>,
-		/// <see cref="OmitSpaceTrivia"/> and <see cref="OmitComments"/> when this 
-		/// flag is true.</remarks>
+		/// and <see cref="OmitComments"/> when this flag is true.</remarks>
 		bool PrintTriviaExplicitly { get; }
 
 		/// <summary>If there are multiple ways to print a given node, this option 

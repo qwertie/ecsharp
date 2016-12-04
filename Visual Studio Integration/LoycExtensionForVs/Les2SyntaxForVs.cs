@@ -19,38 +19,34 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.VisualStudio
 {
-	/// <summary>Boilerplate factory class for <see cref="LesSyntaxForVS"/> that 
-	/// associates it with content type "LES", and associates file extensions such 
-	/// as .les with content type "LES".</summary>
+	/// <summary>Boilerplate factory class for <see cref="Les2SyntaxForVS"/> that 
+	/// associates it with content type "LES2", and associates file extensions such 
+	/// as .les with content type "LES2".</summary>
 	[Export(typeof(IClassifierProvider))]
 	[Export(typeof(ITaggerProvider))]
 	[TagType(typeof(ClassificationTag))]
 	[TagType(typeof(ErrorTag))]
-	[ContentType("LES")]
-	internal class LesSyntaxForVSProvider : ITaggerProvider, IClassifierProvider
+	[ContentType("LES2")]
+	internal class Les2SyntaxForVSProvider : ITaggerProvider, IClassifierProvider
 	{
 		[Export]
-		[Name("LES")] // Must match the [ContentType] attributes
+		[Name("LES2")] // Must match the [ContentType] attributes
 		[BaseDefinition("code")]
 		internal static ContentTypeDefinition _ = null;
 		[Export]
 		[FileExtension(".les")]
-		[ContentType("LES")]
+		[ContentType("LES2")]
 		internal static FileExtensionToContentTypeDefinition _1 = null;
 		[Export]
-		[FileExtension(".lemp")]
-		[ContentType("LES")]
+		[FileExtension(".les2")]
+		[ContentType("LES2")]
 		internal static FileExtensionToContentTypeDefinition _2 = null;
-		[Export]
-		[FileExtension(".lel")]
-		[ContentType("LES")]
-		internal static FileExtensionToContentTypeDefinition _3 = null;
 
 		[Import] VSImports _vs = null;
 
-		public static LesSyntaxForVS Get(VSImports vs, ITextBuffer buffer)
+		public static Les2SyntaxForVS Get(VSImports vs, ITextBuffer buffer)
 		{
-			return buffer.Properties.GetOrCreateSingletonProperty<LesSyntaxForVS>(() => new LesSyntaxForVS(new VSBuffer(vs, buffer)));
+			return buffer.Properties.GetOrCreateSingletonProperty<Les2SyntaxForVS>(() => new Les2SyntaxForVS(new VSBuffer(vs, buffer)));
 		}
 		public IClassifier GetClassifier(ITextBuffer buffer)
 		{
@@ -62,9 +58,9 @@ namespace Loyc.VisualStudio
 		}
 	}
 
-	internal class LesSyntaxForVS : SyntaxAnalyzerForVS<IListSource<ITagSpan<ITag>>>
+	internal class Les2SyntaxForVS : SyntaxAnalyzerForVS<IListSource<ITagSpan<ITag>>>
 	{
-		public LesSyntaxForVS(VSBuffer ctx) : base(ctx)
+		public Les2SyntaxForVS(VSBuffer ctx) : base(ctx)
 		{
 			var registry = ctx.VS.ClassificationRegistry;
 			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
@@ -129,15 +125,15 @@ namespace Loyc.VisualStudio
 		protected override ILexer<Token> PrepareLexer(ILexer<Token> lexer, ICharSource file, int position)
 		{
 			if (lexer == null)
-				return new LesLexer(file, "?", _lexerMessageSink, position);
-			((LesLexer)lexer).Reset(file, "?", position);
+				return new Les2Lexer(file, "?", _lexerMessageSink, position);
+			((Les2Lexer)lexer).Reset(file, "?", position);
 			return lexer;
 		}
 
 		protected override bool IsSpecialIdentifier(object value)
 		{
 			return CommonKeywords.Contains(value) ||
-				(value is Symbol) && ((Symbol)value).Name.StartsWith("#");
+				(value is Symbol) && LNode.IsSpecialName((Symbol)value);
 		}
 
 		#endregion
@@ -153,7 +149,7 @@ namespace Loyc.VisualStudio
 		static ClassificationTag _keywordTag;
 		static ClassificationTag _callTargetTag;
 
-		class MyLesParser : LesParser
+		class MyLesParser : Les2Parser
 		{
 			private TextSnapshotAsSourceFile _file;
 			private IAdd<ITagSpan<ClassificationTag>> _results;

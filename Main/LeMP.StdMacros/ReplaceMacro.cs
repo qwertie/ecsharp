@@ -178,7 +178,7 @@ namespace LeMP
 			MacroMode mode, modes = 0;
 			var leftoverAttrs = node.Attrs.SmartWhere(attr =>
 			{
-				if (attr.IsId && Enum.TryParse(attr.Name.Name, out mode))
+				if (attr.IsId && Loyc.Compatibility.EnumStatic.TryParse(attr.Name.Name, out mode))
 				{
 					modes |= mode;
 					return false;

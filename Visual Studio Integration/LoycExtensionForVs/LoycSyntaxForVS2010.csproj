@@ -83,8 +83,9 @@
     <Compile Include="BackgroundAnalyzerForVS.cs" />
     <Compile Include="BraceMatchingTagger.cs" />
     <Compile Include="EcsSyntaxForVS.cs" />
-    <Compile Include="LesSyntaxForVs.cs" />
+    <Compile Include="Les2SyntaxForVs.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Les3SyntaxForVS.cs" />
     <Compile Include="LesSyntaxForVSFormat.cs" />
     <Compile Include="SampleLanguage.cs" />
     <Compile Include="SyntaxAnalyzerForVS.cs" />

@@ -137,7 +137,7 @@ namespace Loyc.Syntax
 	/// the Target is not a symbol, the call has no name.)
 	/// <para/>
 	/// An expression in parenthesis is now represented by a call with the
-	/// #trivia_inParens attribute; use <see cref="IsParenthesizedExpr"/> to 
+	/// #trivia_inParens attribute; use <see cref="LNodeExt.IsParenthesizedExpr"/> to 
 	/// detect the parentheses.
 	/// <para/>
 	/// The problems that motivated a redesign are described at
@@ -727,7 +727,7 @@ namespace Loyc.Syntax
 		/// </code>
 		/// </remarks>
 		public static PushedPrinter PushPrinter(ILNodePrinter printer) { return new PushedPrinter(printer); }
-		/// <summary>Returned by <see cref="PushPrinter(LNodePrinter)"/>.</summary>
+		/// <summary>Returned by <see cref="PushPrinter(ILNodePrinter)"/>.</summary>
 		public struct PushedPrinter : IDisposable
 		{
 			ILNodePrinter old;
@@ -780,7 +780,7 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Compares two lists of nodes for structural equality.</summary>
-		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
+		/// <param name="mode">Whether to pay attention to <see cref="Style"/> and trivia attributes</param>
 		/// <remarks>Position information is not compared.</remarks>
 		public static bool Equals(VList<LNode> a, VList<LNode> b, CompareMode mode = CompareMode.Normal)
 		{
@@ -792,7 +792,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 		
-		/// <inheritdoc cref="Equals(LNode, bool)"/>
+		/// <inheritdoc cref="Equals(ILNode, CompareMode)"/>
 		public static bool Equals(ILNode a, ILNode b, CompareMode mode = CompareMode.Normal)
 		{
 			if ((object)a == b)
@@ -850,7 +850,7 @@ namespace Loyc.Syntax
 		/// <summary>Compares two nodes for structural equality. Two nodes are 
 		/// considered equal if they have the same kind, the same name, the same 
 		/// value, the same arguments, and the same attributes.</summary>
-		/// <param name="compareStyles">Whether to compare values of <see cref="Style"/></param>
+		/// <param name="mode">Whether to pay attention to <see cref="Style"/> and trivia attributes</param>
 		/// <remarks>Position information (<see cref="Range"/>) is not compared.</remarks>
 		public virtual bool Equals(ILNode other, CompareMode mode) { return Equals(this, other, mode); }
 		public bool Equals(LNode other) { return Equals(this, other); }
@@ -1119,7 +1119,7 @@ namespace Loyc.Syntax
 		/// <see cref="Args"/>) using the specified selector. This method can also
 		/// be used for simple searching, by giving a selector that always returns 
 		/// null.</summary>
-		/// <param name="selector">The selector is called for each descendant, and
+		/// <param name="matcher">This method is called for each descendant, and
 		/// optionally the root node. If the selector returns a node, the new node 
 		/// replaces the node that was passed to <c>selector</c> and the children of 
 		/// the new node are ignored. If the selector returns null, children of the 

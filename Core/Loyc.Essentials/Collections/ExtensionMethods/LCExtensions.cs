@@ -73,23 +73,23 @@ namespace Loyc.Collections
 
 		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
-			#if DotNet4 || DotNet4_5
-			return source;
-			#else
+			#if DotNet2 || DotNet3
 			if (source == null)
 				return null;
 			return new UpCastSource<T, TResult>(source);
+			#else
+			return source;
 			#endif
 		}
 		
 		public static IListSource<TResult> UpCast<T, TResult>(this IListSource<T> source) where T : class, TResult
 		{
-			#if DotNet4 || DotNet4_5
-			return source;
-			#else
+			#if DotNet2 || DotNet3
 			if (source == null)
 				return null;
 			return new UpCastListSource<T, TResult>(source);
+			#else
+			return source;
 			#endif
 		}
 

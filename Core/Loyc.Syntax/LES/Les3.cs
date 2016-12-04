@@ -13,10 +13,12 @@ using Loyc.Syntax;        // For BaseParser<Token> and LNode
 using System.Diagnostics;
 using System.Numerics;
 using Loyc.Collections.Impl;
+using System.ComponentModel;
 
 namespace Loyc.Syntax.Les
 {
-	partial class Les3Lexer : Les2Lexer
+	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
+	public partial class Les3Lexer : Les2Lexer
 	{
 		// When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
 		// data from an `ICharSource`, which the string wrapper `UString` implements.
@@ -248,7 +250,8 @@ namespace Loyc.Syntax.Les
 		}
 	}
 
-	partial class Les3Parser : Les2Parser
+	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
+	public partial class Les3Parser : Les2Parser
 	{
 		//LNodeFactory F;
 

@@ -61,7 +61,7 @@ namespace Loyc.VisualStudio
 
 		protected override bool IsSpecialIdentifier(object value)
 		{
-			return (value is Symbol) && ((Symbol)value).Name.StartsWith("#");
+			return (value is Symbol) && Loyc.Syntax.LNode.IsSpecialName((Symbol)value);
 		}
 
 		protected static IClassificationType _preprocessorType;

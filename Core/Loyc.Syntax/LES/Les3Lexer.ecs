@@ -121,12 +121,6 @@ public partial class Les3Lexer
 
 	// Identifiers and named literals ------------------------------------------
 
-	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z' ;
-
-	private NormalId : 
-		IdStartChar 
-		greedy(IdStartChar | '#' | '0'..'9' | '\'' &!("''"))*;
-
 	private token Id returns [object result] :
 		{object boolOrNull = NoValue.Value;}
 		idtext:IdCore[ref boolOrNull]
@@ -139,6 +133,13 @@ public partial class Les3Lexer
 			}
 		)?
 		{return boolOrNull != NoValue.Value ? boolOrNull : IdToSymbol(idtext);};
+
+	// LES3 might not officially treat # as an identifier character, but it's handy for now
+	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#' ;
+
+	private NormalId : 
+		IdStartChar 
+		greedy(IdStartChar | '0'..'9' | '\'' &!("''"))*;
 
 	private token IdCore[ref object boolOrNull] returns [UString result] :
 		( BQString {$result = ParseStringCore(false);}

@@ -117,7 +117,7 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <summary>Writes a newline and the appropriate amount of indentation afterward.</summary>
-		/// <param name="indent">Whether to call Indent() beore writing the newline</param>
+		/// <param name="changeIndentLevel">Amount by which to change <see cref="IndentLevel"/> before writing the newline</param>
 		/// <returns>A <see cref="Checkpoint"/> that can be used to revoke the newline</returns>
 		/// <remarks>Note that "revoking" a newline does NOT restore the original indent level.</remarks>
 		public Checkpoint Newline(int changeIndentLevel = 0)

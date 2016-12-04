@@ -567,8 +567,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if ((TT) LA(0 + 1) != TT.Newline) {
-								if (CanParse(context, 0, out prec))
+							if (CanParse(context, 0, out prec)) {
+								if ((TT) LA(0 + 1) != TT.Newline)
 									goto matchExpr;
 								else
 									goto stop;

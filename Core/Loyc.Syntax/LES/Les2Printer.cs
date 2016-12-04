@@ -454,7 +454,7 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Returns true if the given symbol can be printed as a 
 		/// normal identifier, without an "@" prefix. Note: identifiers 
-		/// starting with "#" still count as normal; call <see cref="ILNode.HasSpecialName"/> 
+		/// starting with "#" still count as normal; call <see cref="LNode.HasSpecialName"/> 
 		/// to detect this.</summary>
 		public static bool IsNormalIdentifier(Symbol name)
 		{
@@ -686,8 +686,8 @@ namespace Loyc.Syntax.Les
 		/// <summary>Causes comments and spaces to be printed as attributes in order 
 		/// to ensure faithful round-trip parsing. By default, only "raw text" and
 		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
-		/// always printed as parentheses, and <see cref="OmitUnknownTrivia"/> has
-		/// no effect when this flag is true.</summary>
+		/// always printed as parentheses, and <see cref="ILNodePrinterOptions.OmitUnknownTrivia"/> 
+		/// has no effect when this flag is true.</summary>
 		public override bool PrintTriviaExplicitly { get { return base.PrintTriviaExplicitly; } set { base.PrintTriviaExplicitly = value; } }
 
 		/// <summary>When an argument to a method or macro has the value <c>@``</c>,

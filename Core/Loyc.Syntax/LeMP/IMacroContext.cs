@@ -217,9 +217,6 @@ namespace LeMP
 	}
 
 	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
-	/// <remarks>If this type is provided an empty list of macro names, the name 
-	/// of the method associated with the macro delegate is used as a name, so that 
-	/// the <see cref="Names"/> list will never be empty.</remarks>
 	public class MacroInfo : LexicalMacroAttribute
 	{
 		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
