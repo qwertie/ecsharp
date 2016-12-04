@@ -308,9 +308,9 @@ System.Collections.IEnumerator System.Collections.IEnumerable.&#160;</td><td cla
 <tr class="memitem:a9a77edaf2c94da806d9b00080177c1ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a77edaf2c94da806d9b00080177c1ce"></a>
 <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1IToken.html">IToken</a>&lt; int &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1IToken.html">IToken</a>&lt; int &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a9a77edaf2c94da806d9b00080177c1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab61247cd5631cdf1994299913710d67a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab61247cd5631cdf1994299913710d67a"></a>
-object&#160;</td><td class="memItemRight" valign="bottom"><b>ToSourceRange</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
-<tr class="separator:ab61247cd5631cdf1994299913710d67a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34aa76f3d380f41a38bd5db6b671e52f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a34aa76f3d380f41a38bd5db6b671e52f"></a>
+<a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ToSourceRange</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
+<tr class="separator:a34aa76f3d380f41a38bd5db6b671e52f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af57697d0fcacb14f45fbff248d173bb8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af57697d0fcacb14f45fbff248d173bb8">ToLNode</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file)</td></tr>
 <tr class="memdesc:af57697d0fcacb14f45fbff248d173bb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> to a <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. <a href="#af57697d0fcacb14f45fbff248d173bb8">More...</a><br /></td></tr>
 <tr class="separator:af57697d0fcacb14f45fbff248d173bb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -542,7 +542,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 
 <p>Location in the orginal source file where the token starts, or -1 for a synthetic token.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>.</p>
 
 </div>
 </div>
@@ -578,7 +578,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 
 <p><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> type.</p>
 
-<p>Referenced by <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aef5489c9124dca77e6b5d963ef08067c">Loyc.Syntax.Lexing.Token.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc">Loyc.Syntax.Les.TokenExt.Type()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#a94e2c2e19079de89e40d2a1a04588166">Loyc.Ecs.Parser.TokenExt.Type()</a>.</p>
+<p>Referenced by <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aef5489c9124dca77e6b5d963ef08067c">Loyc.Syntax.Lexing.Token.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc">Loyc.Syntax.Les.TokenExt.Type()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#a94e2c2e19079de89e40d2a1a04588166">Loyc.Ecs.Parser.TokenExt.Type()</a>.</p>
 
 </div>
 </div>
@@ -612,7 +612,7 @@ For spaces and comments: for performance reasons, it is not recommended to extra
 When no value is needed (because the Type() is enough): null </li>
 </ul>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aef5489c9124dca77e6b5d963ef08067c">Loyc.Syntax.Lexing.Token.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7c35e9a1a97668343ccf7b249c82ebcd">Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.NextToken()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af57697d0fcacb14f45fbff248d173bb8">Loyc.Syntax.Lexing.Token.ToLNode()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240">Loyc.Syntax.Les.TokenExt.ToString()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aef5489c9124dca77e6b5d963ef08067c">Loyc.Syntax.Lexing.Token.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7c35e9a1a97668343ccf7b249c82ebcd">Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.NextToken()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af57697d0fcacb14f45fbff248d173bb8">Loyc.Syntax.Lexing.Token.ToLNode()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240">Loyc.Syntax.Les.TokenExt.ToString()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>.</p>
 
 </div>
 </div>
@@ -729,6 +729,8 @@ When no value is needed (because the Type() is enough): null </li>
 
 <p>Length of the token in the source file, or 0 for a synthetic or implied token.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a9ca5d5ce34192300dd9005f6116aaac8"></a>
@@ -783,7 +785,7 @@ When no value is needed (because the Type() is enough): null </li>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:46 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

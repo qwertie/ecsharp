@@ -157,6 +157,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>LineStartIndex</b><cod
 <tr class="memitem:a9967d2510b2d4fd89f3417c78e93345e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9967d2510b2d4fd89f3417c78e93345e"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexInCurrentLine</b><code> [get]</code></td></tr>
 <tr class="separator:a9967d2510b2d4fd89f3417c78e93345e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af396cfa94770d912dfe5bb1e0b3544b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af396cfa94770d912dfe5bb1e0b3544b8"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexInCurrentLineAfterIndent</b><code> [get]</code></td></tr>
+<tr class="separator:af396cfa94770d912dfe5bb1e0b3544b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad9f114944425a9f4e1794b830924652"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad9f114944425a9f4e1794b830924652"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AtStartOfLine</b><code> [get]</code></td></tr>
+<tr class="separator:aad9f114944425a9f4e1794b830924652"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33d17a29e93dfb5ce01ebaee90e1e002"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html#a33d17a29e93dfb5ce01ebaee90e1e002">Length</a><code> [get]</code></td></tr>
 <tr class="memdesc:a33d17a29e93dfb5ce01ebaee90e1e002"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current length of the output string <a href="#a33d17a29e93dfb5ce01ebaee90e1e002">More...</a><br /></td></tr>
 <tr class="separator:a33d17a29e93dfb5ce01ebaee90e1e002"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -184,6 +190,12 @@ StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Append</b> (
 <tr class="memitem:a7b96f0b91765de18bdbb7f6a65f1378b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html#a7b96f0b91765de18bdbb7f6a65f1378b">RevokeOrCommitNewlines</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState_1_1Checkpoint.html">Checkpoint</a> cp, int maxLineWidth)</td></tr>
 <tr class="memdesc:a7b96f0b91765de18bdbb7f6a65f1378b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revokes or commits newlines added since the specified checkpoint. Recent newlines are revoked if the combined line length after revokation does not exceed <code>maxLineWidth</code>, otherwise ALL newlines are committed permanently. <a href="#a7b96f0b91765de18bdbb7f6a65f1378b">More...</a><br /></td></tr>
 <tr class="separator:a7b96f0b91765de18bdbb7f6a65f1378b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d809d4f3de9630289a0a1c9effb488a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d809d4f3de9630289a0a1c9effb488a"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>CommitNewlines</b> ()</td></tr>
+<tr class="separator:a1d809d4f3de9630289a0a1c9effb488a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4909c3bc10e341d4c59261c8ac5c6c3f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4909c3bc10e341d4c59261c8ac5c6c3f"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>RevokeNewlinesSince</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState_1_1Checkpoint.html">Checkpoint</a> cp)</td></tr>
+<tr class="separator:a4909c3bc10e341d4c59261c8ac5c6c3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a4f63680db5b4cfeb88698e5b840addf1"></a>
@@ -211,7 +223,7 @@ StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Append</b> (
 <p>Writes a newline and the appropriate amount of indentation afterward.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">indent</td><td>Whether to call Indent() beore writing the newline</td></tr>
+    <tr><td class="paramname">changeIndentLevel</td><td>Amount by which to change IndentLevel before writing the newline</td></tr>
   </table>
   </dd>
 </dl>
@@ -287,7 +299,7 @@ StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Append</b> (
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

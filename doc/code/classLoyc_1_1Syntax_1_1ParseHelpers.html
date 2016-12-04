@@ -328,7 +328,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 "&lt;/c&gt; maps to &lt;c&gt;"Foo\"\<br />
 "</code> by default.</p>
 
-<p>Referenced by <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html#a0b83b20e04cb0d36f9cd61709d70be03">Loyc.LLParserGenerator.IntRange.CompareTo()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5857944390ef4425d81198e0bf1529c3">Loyc.Syntax.Les.LesNodePrinter.IsNormalIdentifier()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab0a6036bb9deaf51fff90e741a79e206">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.PrintChar()</a>, <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#adbcb33cfb2630be8a4284d3209f2437e">Loyc.MiniTest.Assert.Success()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#a28059720b6ea3dabd232191354c93a7a">Loyc.Syntax.Les.LesLexer.UnescapeString()</a>.</p>
+<p>Referenced by <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html#a0b83b20e04cb0d36f9cd61709d70be03">Loyc.LLParserGenerator.IntRange.CompareTo()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html#a54b87ddf6c84c5d8f8ebe0704a1c46c2">Loyc.Syntax.Les.Les2Printer.IsNormalIdentifier()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab0a6036bb9deaf51fff90e741a79e206">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.PrintChar()</a>, <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#adbcb33cfb2630be8a4284d3209f2437e">Loyc.MiniTest.Assert.Success()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6906dd3e2f2685923a21be2353246409">Loyc.Syntax.Les.Les2Lexer.UnescapeString()</a>.</p>
 
 </div>
 </div>
@@ -634,7 +634,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
   </dd>
 </dl>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#aa99aa1c1e84c6845cde40914b8234f27">Loyc.Syntax.Les.LesLexer.ParseNumberCore()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a2f5bdaa0ccdff63d9d79aab102bf9fa8">Loyc.Syntax.Les.Les2Lexer.ParseNumberCore()</a>.</p>
 
 </div>
 </div>
@@ -685,7 +685,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
   </dd>
 </dl>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#aa99aa1c1e84c6845cde40914b8234f27">Loyc.Syntax.Les.LesLexer.ParseNumberCore()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a2f5bdaa0ccdff63d9d79aab102bf9fa8">Loyc.Syntax.Les.Les2Lexer.ParseNumberCore()</a>.</p>
 
 </div>
 </div>
@@ -1070,7 +1070,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 <p>This method never throws. It shrinks the slice <code>s</code> as it parses, so if parsing fails, <code>s[0]</code> will be the character at which parsing fails. If base&gt;36, parsing can succeed but digits above 35 (Z) cannot be represented in the input string. If the number cannot fit in <code>result</code>, the return value is false and the method's exact behavior depends on whether you used <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e" title="Changes overflow handling behavior when parsing an integer, so that the result does not overflow (wra...">ParseNumberFlag.StopBeforeOverflow</a>. </p>
 <p>When parsing input such as "12.34", the parser stops and returns true at the dot (with a result of 12 in this case). </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#aa99aa1c1e84c6845cde40914b8234f27">Loyc.Syntax.Les.LesLexer.ParseNumberCore()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a2f5bdaa0ccdff63d9d79aab102bf9fa8">Loyc.Syntax.Les.Les2Lexer.ParseNumberCore()</a>.</p>
 
 </div>
 </div>
@@ -1214,7 +1214,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

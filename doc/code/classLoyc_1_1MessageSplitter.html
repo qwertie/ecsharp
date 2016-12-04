@@ -109,7 +109,7 @@ Inheritance diagram for Loyc.MessageSplitter:</div>
  <div class="center">
   <img src="classLoyc_1_1MessageSplitter.png" usemap="#Loyc.MessageSplitter_map" alt=""/>
   <map id="Loyc.MessageSplitter_map" name="Loyc.MessageSplitter_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink" shape="rect" coords="0,0,134,24"/>
+<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;" shape="rect" coords="0,0,318,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -129,8 +129,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab854476457801b8c472f16bf56d5231b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab854476457801b8c472f16bf56d5231b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>MessageSplitter</b> (params <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>[] targets)</td></tr>
 <tr class="separator:ab854476457801b8c472f16bf56d5231b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1dd1d1d21846f577142c1a096a61d989"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSplitter.html#a1dd1d1d21846f577142c1a096a61d989">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
-<tr class="memdesc:a1dd1d1d21846f577142c1a096a61d989"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a1dd1d1d21846f577142c1a096a61d989">More...</a><br /></td></tr>
+<tr class="memitem:a1dd1d1d21846f577142c1a096a61d989"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1dd1d1d21846f577142c1a096a61d989"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
 <tr class="separator:a1dd1d1d21846f577142c1a096a61d989"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ceab63c13c3861ca919bae9491682fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ceab63c13c3861ca919bae9491682fc"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, object arg0, object arg1=null)</td></tr>
@@ -167,69 +167,13 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns true if <code>s.IsEnabled(type)</code> is true for at least one target message sink 's'.</p>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a77fa394b05a1f42adcd07a4d1fc89de5">Loyc.IMessageSink</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1dd1d1d21846f577142c1a096a61d989"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> Loyc.MessageSplitter.Write </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">object&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>format</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Writes a message to the target that this object represents.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">type</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
-    <tr><td class="paramname">context</td><td>An object that the message is related to, or that represents the location that the message applies to. The message sink may try to convert this object to a string and include it in its output. See also <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Gets the location information from the specified object, or converts the object to a string...">MessageSink.LocationString</a>().</td></tr>
-    <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83">Loyc.IMessageSink</a>.</p>
-
-<p>References <a class="el" href="classLoyc_1_1ConsoleMessageSink.html#a3886711aa5f202c142ae124c0fffe57d">Loyc.ConsoleMessageSink.Write()</a>.</p>
-
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

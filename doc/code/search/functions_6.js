@@ -14,6 +14,7 @@ var searchData=
   ['getat',['GetAt',['../classLoyc_1_1Collections_1_1WListProtected.html#a78cbbf27af2241280d9d0e198a4c99f6',1,'Loyc::Collections::WListProtected']]],
   ['getatdff',['GetAtDff',['../classLoyc_1_1Collections_1_1WListProtected.html#aef110c80beea59feb74763219633bad6',1,'Loyc::Collections::WListProtected']]],
   ['getbyid',['GetById',['../classLoyc_1_1SymbolPool.html#a6e9b76dc64b672e52894b30765136c5f',1,'Loyc::SymbolPool']]],
+  ['getcaptureidentifier',['GetCaptureIdentifier',['../classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63',1,'Loyc::Syntax::LNodeExt']]],
   ['getcases',['GetCases',['../classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a108285fdaa441d5cf01a4bcd6241779d',1,'Loyc.LLParserGenerator.CodeGenHelperBase.GetCases()'],['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a42210a1d19f69deafba34e7830a19cdf',1,'Loyc.LLParserGenerator.GeneralCodeGenHelper.GetCases()'],['../classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a0b52bcc0054c098d3bf3dc580ff796a3',1,'Loyc.LLParserGenerator.IntStreamCodeGenHelper.GetCases()']]],
   ['getdefaultcssclasstable',['GetDefaultCssClassTable',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a5588a79e05953240ce87620a3b4e91bf',1,'Loyc::Syntax::Les::Les3PrettyPrinter']]],
   ['getdomain',['GetDomain',['../classLoyc_1_1Threading_1_1ThreadEx.html#ac0825a49786308bc8fda6ae96631e366',1,'Loyc::Threading::ThreadEx']]],

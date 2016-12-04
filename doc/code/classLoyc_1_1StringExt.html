@@ -125,12 +125,6 @@ static char&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (th
 <tr class="memitem:a7dc6b1c75b91f576b5b4283f8a327237"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7dc6b1c75b91f576b5b4283f8a327237"></a>
 static char&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (this string s, int index, char defaultValue)</td></tr>
 <tr class="separator:a7dc6b1c75b91f576b5b4283f8a327237"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af99958fa57f42096363d8ddb192792a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af99958fa57f42096363d8ddb192792a3"></a>
-static char&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (this StringBuilder s, int index)</td></tr>
-<tr class="separator:af99958fa57f42096363d8ddb192792a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acadef86b938bfd3d47dae5862cf3b924"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acadef86b938bfd3d47dae5862cf3b924"></a>
-static char&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (this StringBuilder s, int index, char defaultValue)</td></tr>
-<tr class="separator:acadef86b938bfd3d47dae5862cf3b924"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a406ac0804920f5a3ab9a8d4bfab00790"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a406ac0804920f5a3ab9a8d4bfab00790">SafeSubstring</a> (this string s, int startIndex, int length=int.MaxValue)</td></tr>
 <tr class="memdesc:a406ac0804920f5a3ab9a8d4bfab00790"><td class="mdescLeft">&#160;</td><td class="mdescRight">A variation on String.Substring() that never throws. <a href="#a406ac0804920f5a3ab9a8d4bfab00790">More...</a><br /></td></tr>
 <tr class="separator:a406ac0804920f5a3ab9a8d4bfab00790"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,54 +146,8 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 <tr class="memitem:aa6678cf856018db0940007295877a337"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">EliminateNamedArgs</a> (string format, params object[] args)</td></tr>
 <tr class="memdesc:aa6678cf856018db0940007295877a337"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by Format to replace named placeholders with numeric placeholders in format strings. <a href="#aa6678cf856018db0940007295877a337">More...</a><br /></td></tr>
 <tr class="separator:aa6678cf856018db0940007295877a337"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abed3ca9fa21afd5921341e52b51b9086"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#abed3ca9fa21afd5921341e52b51b9086">AppendCodePoint</a> (this StringBuilder s, int c)</td></tr>
-<tr class="memdesc:abed3ca9fa21afd5921341e52b51b9086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Appends a unicode code point in the range 0 to 0x10FFFF to StringBuilder in UTF-16. <a href="#abed3ca9fa21afd5921341e52b51b9086">More...</a><br /></td></tr>
-<tr class="separator:abed3ca9fa21afd5921341e52b51b9086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="abed3ca9fa21afd5921341e52b51b9086"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static StringBuilder Loyc.StringExt.AppendCodePoint </td>
-          <td>(</td>
-          <td class="paramtype">this StringBuilder&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>c</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Appends a unicode code point in the range 0 to 0x10FFFF to StringBuilder in UTF-16.</p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">ArgumentOutOfRangeException</td><td>Invalid character c</td></tr>
-    <tr><td class="paramname">NullReferenceException</td><td>null StringBuildre</td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="aa6678cf856018db0940007295877a337"></a>
 <div class="memitem">
 <div class="memproto">
@@ -490,7 +438,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

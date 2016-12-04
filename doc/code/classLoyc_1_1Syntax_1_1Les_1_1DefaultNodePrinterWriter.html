@@ -100,10 +100,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Prints a Loyc tree to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. 
+<p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/LesNodePrinterWriter.cs'>/Core/Loyc.Syntax/LES/LesNodePrinterWriter.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/Les2PrinterWriter.cs'>/Core/Loyc.Syntax/LES/Les2PrinterWriter.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.Les.DefaultNodePrinterWriter:</div>
@@ -116,7 +116,7 @@ Inheritance diagram for Loyc.Syntax.Les.DefaultNodePrinterWriter:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Prints a Loyc tree to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>.</p>
+<div class="textblock"><p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -228,6 +228,9 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>_indentPending</b><
 <tr class="memitem:a2c764a34c1edfa16c44476c03d38606e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c764a34c1edfa16c44476c03d38606e"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_lineNumber</b> = 1</td></tr>
 <tr class="separator:a2c764a34c1edfa16c44476c03d38606e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac068fa5bf0ccf833a96f3cd5fb3a3c5f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac068fa5bf0ccf833a96f3cd5fb3a3c5f"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>_lastNewlineAt</b> = 0</td></tr>
+<tr class="separator:ac068fa5bf0ccf833a96f3cd5fb3a3c5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74e929f39e8ae02672f3ee396abf9e93"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74e929f39e8ae02672f3ee396abf9e93"></a>
 TextWriter&#160;</td><td class="memItemRight" valign="bottom"><b>_out</b></td></tr>
 <tr class="separator:a74e929f39e8ae02672f3ee396abf9e93"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -240,7 +243,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_indentLevel</b> = 0</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

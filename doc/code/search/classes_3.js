@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['deepcomparer',['DeepComparer',['../classLoyc_1_1Syntax_1_1LNode_1_1DeepComparer.html',1,'Loyc::Syntax::LNode']]],
   ['defaulterrorbranch',['DefaultErrorBranch',['../classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html',1,'Loyc::LLParserGenerator']]],
   ['defaultnodeprinterwriter',['DefaultNodePrinterWriter',['../classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html',1,'Loyc::Syntax::Les']]],
   ['descendantsframe',['DescendantsFrame',['../structLoyc_1_1Syntax_1_1DescendantsFrame.html',1,'Loyc::Syntax']]],

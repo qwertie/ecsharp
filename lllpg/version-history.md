@@ -5,9 +5,25 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
 
+### LLLPG v2.1.0: December 3, 2016 ###
+
+No functional changes. Updated to match LoycCore and LeMP.
+
+### LLLPG v1.9.5: November 14, 2016 ###
+
+- LLLPG now bundles four `case`s per line when generating a `switch` statement.
+- LLLPG.exe: fixed regression: output was not written sometimes (workaround: `--noparallel`)
+
+### LLLPG v1.9.4: October 25, 2016 ###
+
+- Generally, EC# can now preserve newlines and comments. However, this doesn't work inside `LLLPG @{}` blocks or individual rules because token trees were not designed to deal with trivia.
+- Added a newline between rule methods.
+- Bug fix (regression): while turning off hoisting by default for semantic `&{...}` predicates, hoisting was accidentally forced off for syntactic `&(...)` predicates too (even though the latter doesn't even expose any way for users to do that).
+- Bug fix: `#line 0` was sometimes written before `return result`, which is a C# compiler error.
+
 ### LLLPG v1.9.2: September 3, 2016 ###
 
-- &{[Local]} is now the default, rather than &{[Hoist]}. Semantic (`&{...}`) predicates are no longer hoisted into other rules by default, but syntactic predicates (`&(...)`) still are.
+- `&{[Local]}` is now the default, rather than `&{[Hoist]}`. Semantic (`&{...}`) predicates are no longer hoisted into other rules by default, but syntactic predicates (`&(...)`) still are.
 - Bug fix in `BaseLexer` : error messages were broken when the expected set was a `HashSet`.
 - Bug fix: `out` is no longer stripped out of `out $grammarLabel`
 

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['macroprocessor',['MacroProcessor',['../classLeMP_1_1MacroProcessor.html#a60f20ca2a7e04e9f369047851eb04bee',1,'LeMP.MacroProcessor.MacroProcessor(IMessageSink sink)'],['../classLeMP_1_1MacroProcessor.html#a8e26649ac0f34bc3b9c180416b573370',1,'LeMP.MacroProcessor.MacroProcessor(IMessageSink sink, Type prelude)']]],
   ['makededenttoken',['MakeDedentToken',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#aac98d95b000862a8ca35574b62c0f228',1,'Loyc::Syntax::Lexing::IndentTokenGenerator']]],
   ['makeendoflinetoken',['MakeEndOfLineToken',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#ae3543c3c1ee2c4c175f1b98334dfab55',1,'Loyc::Syntax::Lexing::IndentTokenGenerator']]],
   ['makeindenttoken',['MakeIndentToken',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a5d837138bb5c52255da9a68bbd2c4b52',1,'Loyc::Syntax::Lexing::IndentTokenGenerator']]],
@@ -7,6 +8,7 @@ var searchData=
   ['maketriviaattribute',['MakeTriviaAttribute',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9',1,'Loyc::Syntax::StandardTriviaInjector']]],
   ['makevalidfilename',['MakeValidFileName',['../classLoyc_1_1G.html#a4dada93256dc937f5f387c075aad2e45',1,'Loyc::G']]],
   ['map',['Map',['../classLoyc_1_1Collections_1_1Map.html#a494b4a26d13f221de9624376e3820dcd',1,'Loyc.Collections.Map.Map()'],['../classLoyc_1_1Collections_1_1Map.html#af297cdcf5ea1f655806a7b87b20056d1',1,'Loyc.Collections.Map.Map(IEqualityComparer&lt; K &gt; comparer)'],['../classLoyc_1_1Collections_1_1Map.html#a056c90bc045df675f7b559dcf97d5a03',1,'Loyc.Collections.Map.Map(IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; list)'],['../classLoyc_1_1Collections_1_1Map.html#a64a221024f9722efb59fb948034a2cd9',1,'Loyc.Collections.Map.Map(IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; list, IEqualityComparer&lt; K &gt; comparer)']]],
+  ['markoneliner',['MarkOneLiner',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a97177c46d447e5678c99e4c87e51a2a6',1,'Loyc::Syntax::AbstractTriviaInjector']]],
   ['matchespattern',['MatchesPattern',['../classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303',1,'Loyc::Syntax::LNodeExt']]],
   ['maxordefault_3c_20t_20_3e',['MaxOrDefault&lt; T &gt;',['../classLoyc_1_1Collections_1_1EnumerableExt.html#aab12bb537a998412880799cbb353fda2',1,'Loyc.Collections.EnumerableExt.MaxOrDefault&lt; T &gt;(this IEnumerable&lt; T &gt; list, Func&lt; T, int &gt; selector, T defaultValue=default(T))'],['../classLoyc_1_1Collections_1_1EnumerableExt.html#a8cfcb2c73ea017aa28def0439cb2c6ea',1,'Loyc.Collections.EnumerableExt.MaxOrDefault&lt; T &gt;(this IEnumerable&lt; T &gt; list, Func&lt; T, double &gt; selector, T defaultValue=default(T))']]],
   ['maycontain',['MayContain',['../classLoyc_1_1SymbolSet.html#adc83e8de19e20fe568684aa671474df0',1,'Loyc::SymbolSet']]],

@@ -28,7 +28,7 @@ var searchData=
   ['mathu16',['MathU16',['../structLoyc_1_1Math_1_1MathU16.html',1,'Loyc::Math']]],
   ['mathu8',['MathU8',['../structLoyc_1_1Math_1_1MathU8.html',1,'Loyc::Math']]],
   ['mathul',['MathUL',['../structLoyc_1_1Math_1_1MathUL.html',1,'Loyc::Math']]],
-  ['maybe',['Maybe',['../classLoyc_1_1Maybe.html',1,'Loyc.Maybe'],['../structLoyc_1_1Maybe.html',1,'Loyc.Maybe&lt; T &gt;']]],
+  ['maybe',['Maybe',['../structLoyc_1_1Maybe.html',1,'Loyc.Maybe&lt; T &gt;'],['../classLoyc_1_1Maybe.html',1,'Loyc.Maybe']]],
   ['maybe_3c_20loyc_3a_3asyntax_3a_3alexing_3a_3atoken_20_3e',['Maybe&lt; Loyc::Syntax::Lexing::Token &gt;',['../classLoyc_1_1Maybe.html',1,'Loyc']]],
   ['maybe_3c_20token_20_3e',['Maybe&lt; Token &gt;',['../classLoyc_1_1Maybe.html',1,'Loyc']]],
   ['memoizedtypename',['MemoizedTypeName',['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc.MemoizedTypeName'],['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc.MemoizedTypeName&lt; T &gt;']]],

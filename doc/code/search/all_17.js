@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['warnaboutunprintableliterals',['WarnAboutUnprintableLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a26370d2ccb096c26929610d80dd93c43',1,'Loyc::Syntax::Les::Les3Printer']]],
+  ['warnaboutunprintableliterals',['WarnAboutUnprintableLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#ab3aead16ac990470e89235761f91ac54',1,'Loyc::Syntax::Les::Les3PrinterOptions']]],
   ['weakkeycomparer',['WeakKeyComparer',['../classLoyc_1_1Collections_1_1WeakKeyComparer.html',1,'Loyc::Collections']]],
   ['weakkeycomparer_3c_20tkey_20_3e',['WeakKeyComparer&lt; TKey &gt;',['../classLoyc_1_1Collections_1_1WeakKeyComparer.html',1,'Loyc::Collections']]],
   ['weakkeydictionary',['WeakKeyDictionary',['../classLoyc_1_1Collections_1_1WeakKeyDictionary.html',1,'Loyc::Collections']]],
@@ -31,6 +31,6 @@ var searchData=
   ['wlistprotected',['WListProtected',['../classLoyc_1_1Collections_1_1WListProtected.html',1,'Loyc::Collections']]],
   ['wrapperbase',['WrapperBase',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
   ['wrapperbase_3c_20isourcefile_20_3e',['WrapperBase&lt; ISourceFile &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['write',['Write',['../interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83',1,'Loyc.IMessageSink.Write()'],['../classLoyc_1_1ConsoleMessageSink.html#a3886711aa5f202c142ae124c0fffe57d',1,'Loyc.ConsoleMessageSink.Write()'],['../classLoyc_1_1NullMessageSink.html#a5a7debbe881d1adc644ae7bfb15f0449',1,'Loyc.NullMessageSink.Write()'],['../classLoyc_1_1TraceMessageSink.html#a6cebf14b0cf4cc985b2f461692a0cef0',1,'Loyc.TraceMessageSink.Write()'],['../classLoyc_1_1MessageHolder.html#a8a1532e7248448fc601906300c89a3ec',1,'Loyc.MessageHolder.Write()'],['../classLoyc_1_1MessageFilter.html#a9825b92b37e5da89c498d114d63491ee',1,'Loyc.MessageFilter.Write()'],['../classLoyc_1_1SeverityMessageFilter.html#aea79e3a81ace68596acdde5bd0544e47',1,'Loyc.SeverityMessageFilter.Write()'],['../classLoyc_1_1MessageSplitter.html#a1dd1d1d21846f577142c1a096a61d989',1,'Loyc.MessageSplitter.Write()'],['../classLoyc_1_1MessageSinkFromDelegate.html#a6a858d861e88ebc68093fa073a415f53',1,'Loyc.MessageSinkFromDelegate.Write()']]],
+  ['write',['Write',['../interfaceLoyc_1_1IMessageSink.html#a55458d5e70762d6491cb76d8dce93619',1,'Loyc::IMessageSink']]],
   ['writemessagefn',['WriteMessageFn',['../namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f',1,'Loyc']]]
 ];

@@ -661,6 +661,8 @@ Static Public Member Functions</h2></td></tr>
 
 <p>Synonym for <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a9060ebd876553a443e2ab3f893eb2c47" title="Inserts an item at the front (index 0) of the FVList.">Add()</a>; adds an item to the front of the list.</p>
 
+<p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9">Loyc.Collections.Add</a>.</p>
+
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1FWList.html#a1ebb2435b419e0801adff54da9dd5272">Loyc.Collections.FWList&lt; T &gt;.ToArray()</a>.</p>
 
 </div>
@@ -709,6 +711,8 @@ Static Public Member Functions</h2></td></tr>
 <p>This method helps write functional code in which you process an input list and produce an output list that may or may not be the same as the input list. In case the output list is identical, you would prefer to return the original input list rather than wasting memory on a new list. <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> helps you do this. The following method demonstrates <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> by removing all negative numbers from a list: </p>
 <p><a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure. ">FVList</a>&lt;int&gt; RemoveNegative(<a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure. ">FVList</a>&lt;int&gt; input) { var output = <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure. ">FVList</a>&lt;int&gt;.Empty; // Enumerate tail-to-head foreach (int n in (<a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList. ">VList</a>&lt;int&gt;)input) if (n &gt;= 0) output.SmartAdd(n, input); return output; } </p>
 <p>You could also do the same thing with input.Filter(delegate(int i) { return i; } &gt;= 0) </p>
+
+<p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9">Loyc.Collections.Add</a>.</p>
 
 </div>
 </div>
@@ -1117,7 +1121,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:46 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

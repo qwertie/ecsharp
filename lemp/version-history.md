@@ -2,10 +2,41 @@
 title: "LeMP & EC# Release Notes"
 tagline: "Gathered from commit messages. Trivial changes omitted."
 layout: article
-redirectDomain: ecsharp.net
 ---
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
+
+### v2.0.0: November 23, 2016 ###
+
+- `IParsingService` and other APIs were changed in v2.0 and v2.1; for details see the [LoycCore release notes](http://core.loyc.net/version-history.html).
+- EC# parser no longer uses `SourcePos` for the context of `IMessageSink.Write()`; `SourceRange` is used instead.
+- EC# bug fix: `delegate() {...}` did not copy properly to output file
+- EC# aesthetic fix: Comments/newlines after attributes now appear _after_ ']'
+
+### v1.9.6: November 23, 2016 ###
+
+- Added new method-style `replace` macro.
+- Old `replace` macro: if either side of `=>` is in braces, the braces are now ignored even when the other side is not in braces.
+- LeMP: Added `IMacroContext.RegisterMacro()` and `#registerMacro()` macro. Macros registered by other macros are scoped to the current braced block.
+- EC# bug fix: properties tended to grab trivia that they didn't own.
+- EC# bug fix: property `where` clause, if any, comes _after_ argument list, if any.
+
+### v1.9.5: November 14, 2016 ###
+
+- EC# printer: fixed regression where `(#return(x))` could be printed `(return x` with a single parenthesis
+- LeMP.exe: fixed regression: output was not written sometimes (workaround: `--noparallel`)
+- EC#: add `#C#PPRawText` node for guaranteeing that the text appears on a line by itself despite `NodeStyle.OneLiner` on a parent (used by LLLPG for `#line` directives).
+
+### v1.9.4: October 25, 2016 ###
+
+- Enhanced C# can now preserve comments and newlines. Note: by default, the printer now writes fewer newlines when no trivia is present, since newlines can be added with `#trivia_newline`.
+- EC# printer: unknown trivia is no longer dropped by default in EC# mode; it will be printed out.
+- EC# lexer no longer produces `Spaces` tokens.
+- LeMP.Compiler: add PreserveComments and ParsingMode options (--preserve-comments:false available on command line)
+- LeMP: SetOrCreateMember macro now keeps attributes on the argument unless you mark the attribute with `field:` or `property:`.
+- Added a few minor extension methods
+- Fixed a few bugs related to source ranges and trivia handling
+- EC# bug fix: attributes like `[A] [foo: B]` produced an attribute list like `[foo: A] [foo: B]`
 
 ### v1.9.2: September 3, 2016 ###
 

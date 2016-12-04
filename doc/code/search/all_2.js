@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['back',['Back',['../interfaceLoyc_1_1Collections_1_1IBRange.html#afc0fa6973e30c574e2872c45535aa93d',1,'Loyc.Collections.IBRange.Back()'],['../interfaceLoyc_1_1Collections_1_1IMBRange.html#a349699de2e5857fa53d2edcc841519d4',1,'Loyc.Collections.IMBRange.Back()']]],
   ['backslashx',['BackslashX',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afab7ed9d803ea10cb2e99329b2e02d10e5',1,'Loyc::Syntax']]],
   ['barehtmlentitynameforascii',['BareHtmlEntityNameForAscii',['../classLoyc_1_1G.html#ad0d8e0cbc602e3f8a0f38500328e6078',1,'Loyc::G']]],
   ['base',['Base',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#acf0b0606a0239be7b574c8df07d920ed',1,'Loyc::Syntax::CodeSymbols']]],

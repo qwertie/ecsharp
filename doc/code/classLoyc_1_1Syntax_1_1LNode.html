@@ -117,13 +117,18 @@ Inheritance diagram for Loyc.Syntax.LNode:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1LNode.png" usemap="#Loyc.Syntax.LNode_map" alt=""/>
   <map id="Loyc.Syntax.LNode_map" name="Loyc.Syntax.LNode_map">
-<area href="interfaceLoyc_1_1ICloneable.html" alt="Loyc.ICloneable&lt; LNode &gt;" shape="rect" coords="0,0,257,24"/>
-<area href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string." alt="Loyc.IHasLocation" shape="rect" coords="534,0,791,24"/>
-<area href="interfaceLoyc_1_1IHasValue.html" alt="Loyc.IHasValue&lt; object &gt;" shape="rect" coords="801,0,1058,24"/>
-<area href="interfaceLoyc_1_1Collections_1_1INegListSource.html" alt="Loyc.Collections.INegListSource&lt; LNode &gt;" shape="rect" coords="1068,0,1325,24"/>
-<area href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y..." alt="Loyc.Syntax.CallNode" shape="rect" coords="267,112,524,136"/>
-<area href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)..." alt="Loyc.Syntax.IdNode" shape="rect" coords="534,112,791,136"/>
-<area href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;." alt="Loyc.Syntax.LiteralNode" shape="rect" coords="801,112,1058,136"/>
+<area href="interfaceLoyc_1_1Syntax_1_1ILNode.html" title="A read-only interface for objects that act as Loyc trees." alt="Loyc.Syntax.ILNode" shape="rect" coords="540,56,800,80"/>
+<area href="interfaceLoyc_1_1ICloneable.html" alt="Loyc.ICloneable&lt; LNode &gt;" shape="rect" coords="810,56,1070,80"/>
+<area href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;." alt="Loyc.IHasLocation" shape="rect" coords="1350,56,1610,80"/>
+<area href="interfaceLoyc_1_1IHasValue.html" alt="Loyc.IHasValue&lt; object &gt;" shape="rect" coords="1620,56,1880,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1INegListSource.html" alt="Loyc.Collections.INegListSource&lt; LNode &gt;" shape="rect" coords="1890,56,2150,80"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IToLNode.html" title="An interface for objects that can be converted to LNode." alt="Loyc.Syntax.IToLNode" shape="rect" coords="0,0,260,24"/>
+<area href="interfaceLoyc_1_1IHasValue.html" alt="Loyc.IHasValue&lt; object &gt;" shape="rect" coords="540,0,800,24"/>
+<area href="interfaceLoyc_1_1Collections_1_1INegListSource.html" alt="Loyc.Collections.INegListSource&lt; ILNode &gt;" shape="rect" coords="810,0,1070,24"/>
+<area href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;." alt="Loyc.IHasLocation" shape="rect" coords="1080,0,1340,24"/>
+<area href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y..." alt="Loyc.Syntax.CallNode" shape="rect" coords="945,168,1205,192"/>
+<area href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)..." alt="Loyc.Syntax.IdNode" shape="rect" coords="1215,168,1475,192"/>
+<area href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;." alt="Loyc.Syntax.LiteralNode" shape="rect" coords="1485,168,1745,192"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -161,7 +166,7 @@ Extensibility. <a class="el" href="namespaceLoyc.html" title="Main Loyc namespac
 <p>This implementation has been redesigned (in Subversion, the last version based on the old design is revision 289.) The core concept is the same as described in my blog at <a href="http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html">http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html</a> except that the concept of a "Head" has mostly been eliminated, although you might see it occasionally because it still has a meaning. The "head" of a node refers either to the Name of a symbol, the Value of a literal, or the Target of a call (i.e. the name of the method being called, which could be an arbitrarily complex node). In the original implementation, it was also possible to have a complex head (a head that is itself a node) even when the node was not a call; this situation was used to represent an expression in parenthesis. </p>
 <p>This didn't quite feel right, so I changed it. Now, only calls can be "complex", and the head of a call (the method being called) is called the Target. </p>
 <p>In the new version, there are explicitly three types of nodes: symbols, literals, and calls. There is no longer a Head property, instead there are three separate properties for the three kinds of heads, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> (a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>), <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">Value</a> (an Object), and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> (an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>). Only call nodes have a Target, and only literal nodes have a Value. Identifier nodes have a Name, but I thought it would be useful for some call nodes to also have a Name, which is defined as the name of the Target if the Target is an identifier (if the Target is not a symbol, the call has no name.) </p>
-<p>An expression in parenthesis is now represented by a call with the #trivia_inParens attribute; use IsParenthesizedExpr to detect the parentheses. </p>
+<p>An expression in parenthesis is now represented by a call with the #trivia_inParens attribute; use LNodeExt.IsParenthesizedExpr to detect the parentheses. </p>
 <p>The problems that motivated a redesign are described at <a href="http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html">http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html</a> </p>
 <p>One very common use of mutable nodes is building lists of statements, e.g. you might create an empty braced block or an empty loop and then add statements to the body of the block or loop. To do this without mutable nodes, create a mutable <a class="el" href="classLoyc_1_1Collections_1_1WList.html">WList&lt;LNode&gt;</a> instead and add statements there; once the list is finished, create the braced block or loop afterward. The new design stores arguments and attributes in <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList&lt;LNode&gt;</a> objects; you can instantly convert your WList to a VList by calling WListBase&lt;LNode&gt;.ToVList(). </p>
 <p>During the redesign I've decided on some small changes to the representation of certain expressions in EC#. </p><ul>
@@ -195,10 +200,10 @@ The \ and $ characters have been changed; @S now denotes a symbol S, $S now deno
 <li>
 <a class="el" href="classLoyc_1_1Range.html">Range</a>: indicates the source file that the node came from and location in that source file. </li>
 <li>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a>: an 8-bit flag value that is used as a hint to the node printer about how the node should be printed. For example, a hex literal like 0x10 has the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1" title="If this node has two styles in which it can be printed, this selects the second (either the less comm...">NodeStyle.Alternate</a> style to distinguish it from decimal literals such as 16. Custom display styles that do not fit in the Style property can be expressed with attributes. </li>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a>: an 8-bit flag value that is used as a hint to the node printer about how the node should be printed. For example, a hex literal like 0x10 has the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1" title="If this node has two styles in which it can be printed, this selects the second (the less common styl...">NodeStyle.Alternate</a> style to distinguish it from decimal literals such as 16. Custom display styles that do not fit in the Style property can be expressed with attributes. </li>
 </ol>
 <p>The argument and attribute lists cannot be null, since they have type VList&lt;Node&gt; which is a struct. </p>
-<p><code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a></code> implements INegListSource&lt;T&gt;, so you can loop through all children of the node like this: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = node.Min; i &lt;= node.Max; i++) {</div><div class="line">    LNode child = node[i];</div><div class="line">}</div></div><!-- fragment --><p> You can also use <code>foreach</code>. The children are numbered like this: </p><ul>
+<p><code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a></code> implements <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource&lt;T&gt;</a>, so you can loop through all children of the node like this: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = node.Min; i &lt;= node.Max; i++) {</div><div class="line">    LNode child = node[i];</div><div class="line">}</div></div><!-- fragment --><p> You can also use <code>foreach</code>. The children are numbered like this: </p><ul>
 <li>
 if i is less than -1, node[i] refers to an attribute. Specifically, node[i] means node.Attrs[i + node.Attrs.Count + 1] in that case. </li>
 <li>
@@ -212,15 +217,17 @@ Non-negative values are indexes of Args, e.g. node[i] means node.Args[i]. </li>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode_1_1DeepComparer.html">DeepComparer</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An IEqualityComparer that compares nodes structurally. <a href="classLoyc_1_1Syntax_1_1LNode_1_1DeepComparer.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434" title="Helps you change printers temporarily. Usage in C#: using (LNode.PushPrinter(myPrinter)) { ...">PushPrinter(LNodePrinter)</a>. <a href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a7cd82ddd023c04603e5dc0eec6eaaa39" title="Helps you change printers temporarily. Usage in C#: using (LNode.PushPrinter(myPrinter)) { ...">PushPrinter(ILNodePrinter)</a>. <a href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
+<tr class="memitem:ab71ac39fafd45027f8c090b889265feb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab71ac39fafd45027f8c090b889265feb"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>CompareMode</b> { <b>Normal</b> = 0, 
+<b>Styles</b> = 1, 
+<b>IgnoreTrivia</b> = 2
+ }</td></tr>
+<tr class="separator:ab71ac39fafd45027f8c090b889265feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65b96869ebac52b05a7acf09d0376dd5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> { <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a93d8912e6db9b22e29f5ed5022fbc990">ReplaceOpt.ReplaceRoot</a> = 1, 
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a4b861eb315e6ceef712815a76d7c2904">ReplaceOpt.ProcessAttrs</a> = 2, 
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67">ReplaceOpt.Default</a> = ReplaceRoot | ProcessAttrs
@@ -289,15 +296,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasValue</b><code> [g
 <tr class="memitem:aef941397a7ad3198591a8f1255444844"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Args</a><code> [get]</code></td></tr>
 <tr class="memdesc:aef941397a7ad3198591a8f1255444844"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the argument list of this node. Always empty when <code>IsCall==false</code>. <a href="#aef941397a7ad3198591a8f1255444844">More...</a><br /></td></tr>
 <tr class="separator:aef941397a7ad3198591a8f1255444844"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a130548f4529a1da652da4e9cbd851ca8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a130548f4529a1da652da4e9cbd851ca8">Printer</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a130548f4529a1da652da4e9cbd851ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the default node printer on the current thread, which controls how nodes are serialized to text by default. <a href="#a130548f4529a1da652da4e9cbd851ca8">More...</a><br /></td></tr>
-<tr class="separator:a130548f4529a1da652da4e9cbd851ca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a091721bc13bdbb204412aa414e7967e3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html">ILNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a091721bc13bdbb204412aa414e7967e3">Printer</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a091721bc13bdbb204412aa414e7967e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the default node printer on the current thread, which controls how nodes are serialized to text by default. <a href="#a091721bc13bdbb204412aa414e7967e3">More...</a><br /></td></tr>
+<tr class="separator:a091721bc13bdbb204412aa414e7967e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0b9160daf754be89525f86e7d683c42"><td class="memItemLeft" align="right" valign="top">virtual object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa0b9160daf754be89525f86e7d683c42">TriviaValue</a><code> [get]</code></td></tr>
 <tr class="memdesc:aa0b9160daf754be89525f86e7d683c42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value of <code>Args[0].Value</code>, if Args[0] exists; otherwise, returns NoValue.Value. <a href="#aa0b9160daf754be89525f86e7d683c42">More...</a><br /></td></tr>
 <tr class="separator:aa0b9160daf754be89525f86e7d683c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6d6bb500fe9dcd085ece0e610e57bc3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6d6bb500fe9dcd085ece0e610e57bc3"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasTokenValue</b><code> [get]</code></td></tr>
-<tr class="separator:ae6d6bb500fe9dcd085ece0e610e57bc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac77f0c372e04f35d4bc2d6ce4555a08a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac77f0c372e04f35d4bc2d6ce4555a08a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>ArgCount</b><code> [get]</code></td></tr>
 <tr class="separator:ac77f0c372e04f35d4bc2d6ce4555a08a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -322,24 +326,50 @@ virtual int&#160;</td><td class="memItemRight" valign="bottom"><b>Max</b><code> 
 <tr class="memitem:a0bfca557baa99ab7bfdeca7936070403"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0bfca557baa99ab7bfdeca7936070403"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:a0bfca557baa99ab7bfdeca7936070403"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1IHasLocation"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasLocation')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasLocation.html">Loyc.IHasLocation</a></td></tr>
-<tr class="memitem:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97ffacc6ac52815c15c26212474f150d"></a>
-object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
-<tr class="separator:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1ILNode')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">Loyc.Syntax.ILNode</a></td></tr>
+<tr class="memitem:a84a32f7e9fd4614c7ab79f4b7302ff67 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a84a32f7e9fd4614c7ab79f4b7302ff67"></a>
+<a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">LNodeKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a84a32f7e9fd4614c7ab79f4b7302ff67">Kind</a><code> [get]</code></td></tr>
+<tr class="separator:a84a32f7e9fd4614c7ab79f4b7302ff67 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54d22833b94c7394ced9c393ec60ad49 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54d22833b94c7394ced9c393ec60ad49"></a>
+<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a54d22833b94c7394ced9c393ec60ad49">Name</a><code> [get]</code></td></tr>
+<tr class="separator:a54d22833b94c7394ced9c393ec60ad49 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44cd23fa321194016941d2ae7bb6234f inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a44cd23fa321194016941d2ae7bb6234f"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a44cd23fa321194016941d2ae7bb6234f">Target</a><code> [get]</code></td></tr>
+<tr class="separator:a44cd23fa321194016941d2ae7bb6234f inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d190323f409608e937d6b54f548b69b inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d190323f409608e937d6b54f548b69b"></a>
+<a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a2d190323f409608e937d6b54f548b69b">Range</a><code> [get]</code></td></tr>
+<tr class="separator:a2d190323f409608e937d6b54f548b69b inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa89e114fb6f473a26e1bed876ceff9a6 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa89e114fb6f473a26e1bed876ceff9a6"></a>
+<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#aa89e114fb6f473a26e1bed876ceff9a6">Style</a><code> [get, set]</code></td></tr>
+<tr class="separator:aa89e114fb6f473a26e1bed876ceff9a6 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1IHasValue"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasValue')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasValue.html">Loyc.IHasValue&lt; object &gt;</a></td></tr>
 <tr class="memitem:a8b63e9edc4a6b4d3877a0621c17be20c inherit properties_interfaceLoyc_1_1IHasValue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b63e9edc4a6b4d3877a0621c17be20c"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get]</code></td></tr>
 <tr class="separator:a8b63e9edc4a6b4d3877a0621c17be20c inherit properties_interfaceLoyc_1_1IHasValue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; ILNode &gt;</a></td></tr>
+<tr class="memitem:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Min</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#ac91ff7dfc46c3b3e174a1b213742be9d">More...</a><br /></td></tr>
+<tr class="separator:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Max</a><code> [get]</code></td></tr>
+<tr class="memdesc:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#a9ed8d45675c80490286b2cd38f3d880a">More...</a><br /></td></tr>
+<tr class="separator:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">this[int index]</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#ac77166fcd7e5f4f0a7941bc299291e14">More...</a><br /></td></tr>
+<tr class="separator:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1IHasLocation"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasLocation')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasLocation.html">Loyc.IHasLocation</a></td></tr>
+<tr class="memitem:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97ffacc6ac52815c15c26212474f150d"></a>
+object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
+<tr class="separator:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; LNode &gt;</a></td></tr>
-<tr class="memitem:a3b4abe39d422062742981c0e2a927410 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a3b4abe39d422062742981c0e2a927410">Min</a><code> [get]</code></td></tr>
-<tr class="memdesc:a3b4abe39d422062742981c0e2a927410 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#a3b4abe39d422062742981c0e2a927410">More...</a><br /></td></tr>
-<tr class="separator:a3b4abe39d422062742981c0e2a927410 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac61b28277f531bef9ba405bbceecb03a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac61b28277f531bef9ba405bbceecb03a">Max</a><code> [get]</code></td></tr>
-<tr class="memdesc:ac61b28277f531bef9ba405bbceecb03a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#ac61b28277f531bef9ba405bbceecb03a">More...</a><br /></td></tr>
-<tr class="separator:ac61b28277f531bef9ba405bbceecb03a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb44062dcf9be5cbf40968dddd697e5c inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#aeb44062dcf9be5cbf40968dddd697e5c">this[int index]</a><code> [get]</code></td></tr>
-<tr class="memdesc:aeb44062dcf9be5cbf40968dddd697e5c inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#aeb44062dcf9be5cbf40968dddd697e5c">More...</a><br /></td></tr>
-<tr class="separator:aeb44062dcf9be5cbf40968dddd697e5c inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Min</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#ac91ff7dfc46c3b3e174a1b213742be9d">More...</a><br /></td></tr>
+<tr class="separator:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Max</a><code> [get]</code></td></tr>
+<tr class="memdesc:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#a9ed8d45675c80490286b2cd38f3d880a">More...</a><br /></td></tr>
+<tr class="separator:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">this[int index]</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#ac77166fcd7e5f4f0a7941bc299291e14">More...</a><br /></td></tr>
+<tr class="separator:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -451,18 +481,21 @@ abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:a9a2736a0deb93cacdff60d9c34de153f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a2736a0deb93cacdff60d9c34de153f"></a>
 abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodeVisitor.html">ILNodeVisitor</a> visitor)</td></tr>
 <tr class="separator:a9a2736a0deb93cacdff60d9c34de153f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6288055b1982ec02cf87e62220028e8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6288055b1982ec02cf87e62220028e8"></a>
-virtual string&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="separator:ad6288055b1982ec02cf87e62220028e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40497c8468a09006ef60be930e0fdbfb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40497c8468a09006ef60be930e0fdbfb"></a>
+virtual string&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode=null, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
+<tr class="separator:a40497c8468a09006ef60be930e0fdbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04b67eef3f619f74dcb1dad964276a44"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04b67eef3f619f74dcb1dad964276a44"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:a04b67eef3f619f74dcb1dad964276a44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e2b5e15d6e0b6e25e52d833f36c32eb"><td class="memItemLeft" align="right" valign="top">abstract bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a8e2b5e15d6e0b6e25e52d833f36c32eb">Equals</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> other, bool compareStyles)</td></tr>
-<tr class="memdesc:a8e2b5e15d6e0b6e25e52d833f36c32eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two nodes for structural equality. Two green nodes are considered equal if they have the same name, the same value, the same arguments, and the same attributes. IsCall must be the same, but they need not have the same values of SourceWidth or IsFrozen. <a href="#a8e2b5e15d6e0b6e25e52d833f36c32eb">More...</a><br /></td></tr>
-<tr class="separator:a8e2b5e15d6e0b6e25e52d833f36c32eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e1d38f975bb92a58c6ab783917db7ba"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4e1d38f975bb92a58c6ab783917db7ba">Equals</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> other, CompareMode mode)</td></tr>
+<tr class="memdesc:a4e1d38f975bb92a58c6ab783917db7ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two nodes for structural equality. Two nodes are considered equal if they have the same kind, the same name, the same value, the same arguments, and the same attributes. <a href="#a4e1d38f975bb92a58c6ab783917db7ba">More...</a><br /></td></tr>
+<tr class="separator:a4e1d38f975bb92a58c6ab783917db7ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8474bb4eb33df18acc3346deab18c7aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8474bb4eb33df18acc3346deab18c7aa"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> other)</td></tr>
 <tr class="separator:a8474bb4eb33df18acc3346deab18c7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a753afc89742ac16036dfa3cdb673ff8d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a753afc89742ac16036dfa3cdb673ff8d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> other)</td></tr>
+<tr class="separator:a753afc89742ac16036dfa3cdb673ff8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0933e912c6108837110686a96b22a6b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0933e912c6108837110686a96b22a6b5"></a>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (object other)</td></tr>
 <tr class="separator:a0933e912c6108837110686a96b22a6b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -475,8 +508,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasPAttrs</b> ()</td>
 <tr class="memitem:a711058841a984342c0163e721deedea2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a711058841a984342c0163e721deedea2"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PAttrs</b> ()</td></tr>
 <tr class="separator:a711058841a984342c0163e721deedea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48ba76d2600b73aca2aa8f04fe17bfc6"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
+<tr class="memitem:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a48ba76d2600b73aca2aa8f04fe17bfc6">Calls</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
+<tr class="memdesc:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>Name == name</code> and <code>Max + 1 == argCount</code> (which implies <code>Kind == LNodeKind.Call</code> if argCount != -1). <a href="#a48ba76d2600b73aca2aa8f04fe17bfc6">More...</a><br /></td></tr>
 <tr class="separator:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a346f7e1f265262261551bb4dfd36a3cd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a346f7e1f265262261551bb4dfd36a3cd"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (string name, int argCount)</td></tr>
@@ -517,9 +550,6 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdNamed</b>
 <tr class="memitem:abdbf259c8e012ec0ddd2990fffb2af24"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdbf259c8e012ec0ddd2990fffb2af24"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdNamed</b> (string name)</td></tr>
 <tr class="separator:abdbf259c8e012ec0ddd2990fffb2af24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56d8d042eb801b07a16970bd954d5934"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56d8d042eb801b07a16970bd954d5934"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsParenthesizedExpr</b> ()</td></tr>
-<tr class="separator:a56d8d042eb801b07a16970bd954d5934"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6069132cd52cd9bb9f63105386ffc41a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6069132cd52cd9bb9f63105386ffc41a"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithSplicedArgs</b> (int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> from, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
 <tr class="separator:a6069132cd52cd9bb9f63105386ffc41a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -556,17 +586,24 @@ IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>
 <tr class="memitem:a3eae4ca2623210ff4d6ae5356211de52"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3eae4ca2623210ff4d6ae5356211de52"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReplaceRecursive</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; matcher, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> options=<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67">ReplaceOpt.Default</a>)</td></tr>
 <tr class="separator:a3eae4ca2623210ff4d6ae5356211de52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; ILNode &gt;</a></td></tr>
+<tr class="memitem:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a> (int index, out bool fail)</td></tr>
+<tr class="memdesc:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a238c28f7c77ade400dfa3329ef5fdb86">More...</a><br /></td></tr>
+<tr class="separator:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a0c0466927c95d573bbc32ba1a0ca8c77">More...</a><br /></td></tr>
+<tr class="separator:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1ICloneable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1ICloneable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1ICloneable.html">Loyc.ICloneable&lt; LNode &gt;</a></td></tr>
 <tr class="memitem:a3e23b2ef8eae98cfa0bc268c5d705c31 inherit pub_methods_interfaceLoyc_1_1ICloneable"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e23b2ef8eae98cfa0bc268c5d705c31"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a3e23b2ef8eae98cfa0bc268c5d705c31 inherit pub_methods_interfaceLoyc_1_1ICloneable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; LNode &gt;</a></td></tr>
-<tr class="memitem:a4514a4c2643e0ed3c623455c58150203 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a4514a4c2643e0ed3c623455c58150203">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a4514a4c2643e0ed3c623455c58150203 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a4514a4c2643e0ed3c623455c58150203">More...</a><br /></td></tr>
-<tr class="separator:a4514a4c2643e0ed3c623455c58150203 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24c7905bbfb82623ec8f6d1e20a3ade8 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a24c7905bbfb82623ec8f6d1e20a3ade8">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a24c7905bbfb82623ec8f6d1e20a3ade8 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a24c7905bbfb82623ec8f6d1e20a3ade8">More...</a><br /></td></tr>
-<tr class="separator:a24c7905bbfb82623ec8f6d1e20a3ade8 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a> (int index, out bool fail)</td></tr>
+<tr class="memdesc:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a238c28f7c77ade400dfa3329ef5fdb86">More...</a><br /></td></tr>
+<tr class="separator:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a0c0466927c95d573bbc32ba1a0ca8c77">More...</a><br /></td></tr>
+<tr class="separator:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -654,45 +691,45 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#1
 <tr class="memitem:a6ee9e4af4414bcbbb16d98119b653aee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ee9e4af4414bcbbb16d98119b653aee"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
 <tr class="separator:a6ee9e4af4414bcbbb16d98119b653aee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0d0ee8cabbb353858715952e6e2643c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0d0ee8cabbb353858715952e6e2643c"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0)</td></tr>
-<tr class="separator:af0d0ee8cabbb353858715952e6e2643c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53b91646fac76c39faec13cba466dbf1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53b91646fac76c39faec13cba466dbf1"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0)</td></tr>
-<tr class="separator:a53b91646fac76c39faec13cba466dbf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a934776e5b90473c1c50885cf82a0d239"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a934776e5b90473c1c50885cf82a0d239"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0)</td></tr>
-<tr class="separator:a934776e5b90473c1c50885cf82a0d239"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51d84115924da2bc74e5fbbfe9feca54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51d84115924da2bc74e5fbbfe9feca54"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0)</td></tr>
-<tr class="separator:a51d84115924da2bc74e5fbbfe9feca54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa633c9afbc31ea312a19bd6601f1e74e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa633c9afbc31ea312a19bd6601f1e74e"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:aa633c9afbc31ea312a19bd6601f1e74e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92c743c7f42573f123107dceec78793f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92c743c7f42573f123107dceec78793f"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a92c743c7f42573f123107dceec78793f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac04c15bba54475df56c657570602e548"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac04c15bba54475df56c657570602e548"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:ac04c15bba54475df56c657570602e548"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d210ff38dab108c4511c6344bea4118"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d210ff38dab108c4511c6344bea4118"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a3d210ff38dab108c4511c6344bea4118"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa19c21f56008e0d9431dd928c4af07d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa19c21f56008e0d9431dd928c4af07d6"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:aa19c21f56008e0d9431dd928c4af07d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa974716cebb8cfb24066f47fe89914d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa974716cebb8cfb24066f47fe89914d"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:afa974716cebb8cfb24066f47fe89914d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a683b7448d1342f13eaba9c2dc45c12dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a683b7448d1342f13eaba9c2dc45c12dc"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a683b7448d1342f13eaba9c2dc45c12dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1773e84632b3165ee5640b13cb4cabc4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1773e84632b3165ee5640b13cb4cabc4"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a1773e84632b3165ee5640b13cb4cabc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1b284ee869eb33e9f16b47903c1def6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac1b284ee869eb33e9f16b47903c1def6"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=0, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:ac1b284ee869eb33e9f16b47903c1def6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47c86395fd14c09adfd3d30e77f831b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a47c86395fd14c09adfd3d30e77f831b0"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null)</td></tr>
+<tr class="separator:a47c86395fd14c09adfd3d30e77f831b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2795a0de1d74c39057b28b5d01718bfc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2795a0de1d74c39057b28b5d01718bfc"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null)</td></tr>
+<tr class="separator:a2795a0de1d74c39057b28b5d01718bfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e5cd09fc101e3b1e7500305c95316ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e5cd09fc101e3b1e7500305c95316ab"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null)</td></tr>
+<tr class="separator:a1e5cd09fc101e3b1e7500305c95316ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e13ceb3aa5c23eee010b61e9ea27c7f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e13ceb3aa5c23eee010b61e9ea27c7f"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null)</td></tr>
+<tr class="separator:a7e13ceb3aa5c23eee010b61e9ea27c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af46aa51a95549f7ad3de7eae25efb621"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af46aa51a95549f7ad3de7eae25efb621"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:af46aa51a95549f7ad3de7eae25efb621"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a752b6ff39459d903f558335936a39769"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a752b6ff39459d903f558335936a39769"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:a752b6ff39459d903f558335936a39769"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa96fab8457dbbdb3ce9628c9f6ca0bd9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa96fab8457dbbdb3ce9628c9f6ca0bd9"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:aa96fab8457dbbdb3ce9628c9f6ca0bd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6eb12f31c87dd7d03d78bea372cd29fb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6eb12f31c87dd7d03d78bea372cd29fb"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:a6eb12f31c87dd7d03d78bea372cd29fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6833bf5dfb667934a552b09fc11dfa3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6833bf5dfb667934a552b09fc11dfa3e"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:a6833bf5dfb667934a552b09fc11dfa3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab921ae44a20d16bdaa20c82ac8269209"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab921ae44a20d16bdaa20c82ac8269209"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:ab921ae44a20d16bdaa20c82ac8269209"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2fe7c1ae115b4bbdb4957a9b27df557"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa2fe7c1ae115b4bbdb4957a9b27df557"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:aa2fe7c1ae115b4bbdb4957a9b27df557"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a899794c09d1f9fe0f8b938ab53a1cc96"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a899794c09d1f9fe0f8b938ab53a1cc96"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:a899794c09d1f9fe0f8b938ab53a1cc96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a850156fdd6a04938dc32cf1aa84e84e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a850156fdd6a04938dc32cf1aa84e84e5"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:a850156fdd6a04938dc32cf1aa84e84e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac26a0ec013dd0f4a987375272532fda3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac26a0ec013dd0f4a987375272532fda3"></a>
 static <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
 <tr class="separator:ac26a0ec013dd0f4a987375272532fda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -714,15 +751,18 @@ static <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt
 <tr class="memitem:a691c2767cb951665f7d654161031f068"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a691c2767cb951665f7d654161031f068">IsSpecialName</a> (string name)</td></tr>
 <tr class="memdesc:a691c2767cb951665f7d654161031f068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>name</code> is considered a "special" name that starts with any character below 48 in ASCII, such as '#', '\'', and '.'. <a href="#a691c2767cb951665f7d654161031f068">More...</a><br /></td></tr>
 <tr class="separator:a691c2767cb951665f7d654161031f068"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec680a7dbb7699e35b109ac15dd9b434"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434">PushPrinter</a> (<a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> printer)</td></tr>
-<tr class="memdesc:aec680a7dbb7699e35b109ac15dd9b434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helps you change printers temporarily. Usage in C#: <code>using (LNode.PushPrinter(myPrinter)) { ... }</code> <a href="#aec680a7dbb7699e35b109ac15dd9b434">More...</a><br /></td></tr>
-<tr class="separator:aec680a7dbb7699e35b109ac15dd9b434"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade7b6705a30f3c495032695cf4524558"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade7b6705a30f3c495032695cf4524558"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ade7b6705a30f3c495032695cf4524558">Equals</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> b, bool compareStyles=false)</td></tr>
-<tr class="separator:ade7b6705a30f3c495032695cf4524558"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf6a7f1abe7b71318de17bdecb402517"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abf6a7f1abe7b71318de17bdecb402517">Equals</a> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; a, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; b, bool compareStyles=false)</td></tr>
-<tr class="memdesc:abf6a7f1abe7b71318de17bdecb402517"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two lists of nodes for structural equality. <a href="#abf6a7f1abe7b71318de17bdecb402517">More...</a><br /></td></tr>
-<tr class="separator:abf6a7f1abe7b71318de17bdecb402517"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84c9fa6bbefa81a816e8c836ca0af1d5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a84c9fa6bbefa81a816e8c836ca0af1d5"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsSpecialName</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+<tr class="separator:a84c9fa6bbefa81a816e8c836ca0af1d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cd82ddd023c04603e5dc0eec6eaaa39"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a7cd82ddd023c04603e5dc0eec6eaaa39">PushPrinter</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html">ILNodePrinter</a> printer)</td></tr>
+<tr class="memdesc:a7cd82ddd023c04603e5dc0eec6eaaa39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helps you change printers temporarily. Usage in C#: <code>using (LNode.PushPrinter(myPrinter)) { ... }</code> <a href="#a7cd82ddd023c04603e5dc0eec6eaaa39">More...</a><br /></td></tr>
+<tr class="separator:a7cd82ddd023c04603e5dc0eec6eaaa39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac252d624be0aed0ef05145f9a7df984c"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ac252d624be0aed0ef05145f9a7df984c">Equals</a> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; a, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; b, CompareMode mode=CompareMode.Normal)</td></tr>
+<tr class="memdesc:ac252d624be0aed0ef05145f9a7df984c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two lists of nodes for structural equality. <a href="#ac252d624be0aed0ef05145f9a7df984c">More...</a><br /></td></tr>
+<tr class="separator:ac252d624be0aed0ef05145f9a7df984c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a551bede12aca5a71018b343399167836"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a551bede12aca5a71018b343399167836"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a551bede12aca5a71018b343399167836">Equals</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> a, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> b, CompareMode mode=CompareMode.Normal)</td></tr>
+<tr class="separator:a551bede12aca5a71018b343399167836"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a3de98272cbbebd9bd71bdf12cfe1841a">MergeLists</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node1, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node2, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
 <tr class="memdesc:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Some <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>s are used to represent lists. This method merges two nodes, forming or appending a list (see remarks). <a href="#a3de98272cbbebd9bd71bdf12cfe1841a">More...</a><br /></td></tr>
 <tr class="separator:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -790,6 +830,49 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a48ba76d2600b73aca2aa8f04fe17bfc6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool Loyc.Syntax.LNode.Calls </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argCount</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if <code>Name == name</code> and <code>Max + 1 == argCount</code> (which implies <code>Kind == LNodeKind.Call</code> if argCount != -1).</p>
+<p>This could have been an extension method, but when verifying that you have a certain kind of node, it's common to check <em>both</em> the Name and ArgCount(); checking both in one call avoids extra interface invocations.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a45361090d3199d92f36a927e67290fdd">Loyc.Syntax.ILNode</a>.</p>
+
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a97cbbde12e9e2b2d964ce838003f65b7">Loyc.Syntax.CallNode</a>.</p>
+
+<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a20914d16176e09238978f06b1c49f9b1">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#a05046ea3b5b3fc26361e3dea02b04dd1">Loyc.Ecs.Parser.EcsTriviaInjector.DoneAttaching()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html#a3a92d7d6d89c2598442d768e5376762a">Loyc.LLParserGenerator.PGIntSet.ExprComplexity()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63">Loyc.Syntax.LNodeExt.GetCaptureIdentifier()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a16d715f858f8036340c77d246a4e34f3">Loyc.LLParserGenerator.Rule.GetMethodSignature()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a8acbed868ee589edec4ef0e04267dc36">Loyc.Syntax.StandardTriviaInjector.HasImplicitLeadingNewline()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a3de98272cbbebd9bd71bdf12cfe1841a">Loyc.Syntax.LNode.MergeLists()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a32f3909c6207236b677cf9771ef4802c">Loyc.Syntax.StandardTriviaInjector.StandardTriviaInjector()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a92779d545d490e91bdf71816b38f283f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -824,9 +907,11 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 
 <p>Returns true if this is a call with the specified name and the specified minimum number of arguments.</p>
 
+<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a41bd389c7fdb447ca4af2de38b36be6d">Loyc.Syntax.ILNode</a>.</p>
+
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a6631db51103cf661bca67e213cf0364a">Loyc.Syntax.CallNode</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#a05046ea3b5b3fc26361e3dea02b04dd1">Loyc.Ecs.Parser.EcsTriviaInjector.DoneAttaching()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
 
 </div>
 </div>
@@ -895,7 +980,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 
 </div>
 </div>
-<a class="anchor" id="abf6a7f1abe7b71318de17bdecb402517"></a>
+<a class="anchor" id="ac252d624be0aed0ef05145f9a7df984c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -917,8 +1002,8 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>compareStyles</em> = <code>false</code>&#160;</td>
+          <td class="paramtype">CompareMode&#160;</td>
+          <td class="paramname"><em>mode</em> = <code>CompareMode.Normal</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -936,7 +1021,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 <p>Compares two lists of nodes for structural equality.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">compareStyles</td><td>Whether to compare values of <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a></td></tr>
+    <tr><td class="paramname">mode</td><td>Whether to pay attention to <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a> and trivia attributes</td></tr>
   </table>
   </dd>
 </dl>
@@ -944,9 +1029,11 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 
 <p>References <a class="el" href="structLoyc_1_1Collections_1_1VList.html#a436ad98f6f524870b45ece96733ffcf8">Loyc.Collections.VList&lt; T &gt;.Pop()</a>.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#aa1b094b14dabcd0eb539c9e4595bb6bb">Loyc.LLParserGenerator.AndPred.Clone()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper.CodeToTerminalPred()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
+
 </div>
 </div>
-<a class="anchor" id="a8e2b5e15d6e0b6e25e52d833f36c32eb"></a>
+<a class="anchor" id="a4e1d38f975bb92a58c6ab783917db7ba"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -954,16 +1041,16 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract bool Loyc.Syntax.LNode.Equals </td>
+          <td class="memname">virtual bool Loyc.Syntax.LNode.Equals </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>&#160;</td>
           <td class="paramname"><em>other</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>compareStyles</em>&#160;</td>
+          <td class="paramtype">CompareMode&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -973,21 +1060,23 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compares two nodes for structural equality. Two green nodes are considered equal if they have the same name, the same value, the same arguments, and the same attributes. IsCall must be the same, but they need not have the same values of SourceWidth or IsFrozen.</p>
+<p>Compares two nodes for structural equality. Two nodes are considered equal if they have the same kind, the same name, the same value, the same arguments, and the same attributes.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">compareStyles</td><td>Whether to compare values of <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a></td></tr>
+    <tr><td class="paramname">mode</td><td>Whether to pay attention to <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a> and trivia attributes</td></tr>
   </table>
   </dd>
 </dl>
 <p>Position information (<a class="el" href="classLoyc_1_1Range.html">Range</a>) is not compared.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4e1d38f975bb92a58c6ab783917db7ba">Loyc.Syntax.LNode.Equals()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4e1d38f975bb92a58c6ab783917db7ba">Loyc.Syntax.LNode.Equals()</a>.</p>
 
 </div>
 </div>
@@ -1015,7 +1104,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 <p>Gets the hash code based on the structure of the tree.</p>
 <p>If the tree is large, less than the entire tree is scanned to produce the hashcode (in the absolute worst case, about 4000 nodes are examined, but usually it is less than 100). </p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a14e141047050da26c09fd06649ad368c">Loyc.Syntax.LNode.GetHashCode()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a14e141047050da26c09fd06649ad368c">Loyc.Syntax.LNode.GetHashCode()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1VList.html#a866e9f0ea9f9c84da69cd5b567aa78a4">Loyc.Collections.VList&lt; T &gt;.SmartWhere()</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a14e141047050da26c09fd06649ad368c">Loyc.Syntax.LNode.GetHashCode()</a>.</p>
 
@@ -1098,11 +1187,13 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 </div><div class="memdoc">
 
 <p>Returns true if <code>name</code> is considered a "special" name that starts with any character below 48 in ASCII, such as '#', '\'', and '.'.</p>
-<p>This returns false for the empty string. </p>
+<p>This returns false for the empty string or null. </p>
 <p>In order to keep the check trivially simple, this returns true for '$' even though it is <em>not</em> special in some languages (e.g. JavaScript). </p>
 <p>Letters, underscores, digits, and some punctuation do not count as special. The full list of specials is <code>! " # $ % &amp; ' ( ) * + , - . /</code> plus the space character and the control characters. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a55349ee3b7d9d675ec49c24f7fad44bc">Loyc.Syntax.Les.Les3PrettyPrinter.New()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63">Loyc.Syntax.LNodeExt.GetCaptureIdentifier()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a1ee92bb97a30441812a4b08712eb1186">Loyc.Syntax.Les.Les3PrettyPrinter.Les3PrettyPrinter()</a>.</p>
 
 </div>
 </div>
@@ -1155,7 +1246,7 @@ static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNo
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>If either node1 or node2 is null, this method returns the other node (node1 ?? node2), otherwise the nodes are joined with the specified operator.</dd></dl>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Loyc.Collections.INegListSource&lt; out out T &gt;.Slice()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1IToLNode.html#ad5201c1d950c2bb71480482a18722738">Loyc.Syntax.IToLNode.ToLNode()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
@@ -1219,11 +1310,13 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </ul>
 <dl class="section see"><dt>See also</dt><dd>LNodeExt.WithSpliced</dd></dl>
 
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a48ba76d2600b73aca2aa8f04fe17bfc6">Loyc.Syntax.LNode.Calls()</a>.</p>
+
 <p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aec680a7dbb7699e35b109ac15dd9b434"></a>
+<a class="anchor" id="a7cd82ddd023c04603e5dc0eec6eaaa39"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1233,7 +1326,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
         <tr>
           <td class="memname">static <a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a> Loyc.Syntax.LNode.PushPrinter </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html">ILNodePrinter</a>&#160;</td>
           <td class="paramname"><em>printer</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1246,7 +1339,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </div><div class="memdoc">
 
 <p>Helps you change printers temporarily. Usage in C#: <code>using (LNode.PushPrinter(myPrinter)) { ... }</code></p>
-<p>For example, to switch to the EC# printer, use <code>using (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434" title="Helps you change printers temporarily. Usage in C#: using (LNode.PushPrinter(myPrinter)) { ...">LNode.PushPrinter</a>(EcsNodePrinter.Printer)) { ... }</code>. This changes the default printer. If you don't want to change the default printer, please invoke the printer directly: </p><div class="fragment"><div class="line">var sb = <span class="keyword">new</span> StringBuilder();</div><div class="line">EcsNodePrinter.Printer(node, sb, MessageSink.Trace);</div></div><!-- fragment --> 
+<p>For example, to switch to the EC# printer, use <code>using (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a7cd82ddd023c04603e5dc0eec6eaaa39" title="Helps you change printers temporarily. Usage in C#: using (LNode.PushPrinter(myPrinter)) { ...">LNode.PushPrinter</a>(EcsNodePrinter.Printer)) { ... }</code>. This changes the default printer. If you don't want to change the default printer, please invoke the printer directly: </p><div class="fragment"><div class="line">var sb = <span class="keyword">new</span> StringBuilder();</div><div class="line">EcsNodePrinter.Printer(node, sb, MessageSink.Trace);</div></div><!-- fragment --> 
 <p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html#a4d5404b4221ec44af88cd18407ea5614">Loyc.LLParserGenerator.Program.QuickRun()</a>.</p>
 
 </div>
@@ -1286,7 +1379,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <p>Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selector</td><td>The selector is called for each descendant, and optionally the root node. If the selector returns a node, the new node replaces the node that was passed to <code>selector</code> and the children of the new node are ignored. If the selector returns null, children of the child are scanned recursively. If the selector returns <a class="el" href="structLoyc_1_1Maybe.html" title="Same as Nullable&lt;T&gt; except that it behaves like a normal type, i.e. (1) T is allowed to be a referenc...">Maybe</a>{<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>}.<a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a> then the current node is deleted if it is an argument or attribute. If the current node is a target, it cannot be deleted, so it is replaced with <code>#splice()</code> which, by convention, represents an empty list. If you delete the root node then this method returns <a class="el" href="structLoyc_1_1Maybe.html" title="Same as Nullable&lt;T&gt; except that it behaves like a normal type, i.e. (1) T is allowed to be a referenc...">Maybe</a>{<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>}.<a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>.</td></tr>
+    <tr><td class="paramname">matcher</td><td>This method is called for each descendant, and optionally the root node. If the selector returns a node, the new node replaces the node that was passed to <code>selector</code> and the children of the new node are ignored. If the selector returns null, children of the child are scanned recursively. If the selector returns <a class="el" href="structLoyc_1_1Maybe.html" title="Same as Nullable&lt;T&gt; except that it behaves like a normal type, i.e. (1) T is allowed to be a referenc...">Maybe</a>{<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>}.<a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a> then the current node is deleted if it is an argument or attribute. If the current node is a target, it cannot be deleted, so it is replaced with <code>#splice()</code> which, by convention, represents an empty list. If you delete the root node then this method returns <a class="el" href="structLoyc_1_1Maybe.html" title="Same as Nullable&lt;T&gt; except that it behaves like a normal type, i.e. (1) T is allowed to be a referenc...">Maybe</a>{<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>}.<a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>.</td></tr>
     <tr><td class="paramname">options</td><td>Options, see <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a>.</td></tr>
   </table>
   </dd>
@@ -1294,7 +1387,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <dl class="section return"><dt>Returns</dt><dd>The new node produced after all replacements have occurred.</dd></dl>
 <p>If <code>replaceFunc</code> always returns null (or if <code>replaceRoot</code> is false and the root has no children), <code>ReplaceRecursive</code> returns <code>this</code>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af726d256f8c9d004c8cd322bb42e36ea">Loyc.Syntax.LNode.Select()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>.</p>
 
@@ -1338,7 +1431,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#afbd1c05ec418a4df7eed80ae53d43d0a">Loyc.Syntax.CallNode</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#aa2470b10caff56cc773c502ae14f612a">Loyc.LLParserGenerator.GeneralCodeGenHelper.GenerateMatchExpr()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">Loyc.Syntax.LNode.ReplaceRecursive()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#aa2470b10caff56cc773c502ae14f612a">Loyc.LLParserGenerator.GeneralCodeGenHelper.GenerateMatchExpr()</a>.</p>
 
 </div>
 </div>
@@ -1584,7 +1677,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <p>Returns the argument list of this node. Always empty when <code>IsCall==false</code>.</p>
 <p>Depending on the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, Args may represent an actual argument list, or it may represent some other kind of list. For example, if the target is "{}" then Args represents a list of statements in a braced block, and if the target is "&gt;=" then Args represents the two arguments to the "&gt;=" operator. </p>
 
-<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a20914d16176e09238978f06b1c49f9b1">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a4ada4acb7780613d399da5fa1b250429">Loyc.LLParserGenerator.Rule.CreateMethod()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307">LeMP.MacroContext.GetArgsAndBody()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a16d715f858f8036340c77d246a4e34f3">Loyc.LLParserGenerator.Rule.GetMethodSignature()</a>, <a class="el" href="classLeMP_1_1MacroContext.html#a1536a9346e03f3adc67d822deaf99ace">LeMP.MacroContext.GetOptions()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
+<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a20914d16176e09238978f06b1c49f9b1">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a4ada4acb7780613d399da5fa1b250429">Loyc.LLParserGenerator.Rule.CreateMethod()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#a05046ea3b5b3fc26361e3dea02b04dd1">Loyc.Ecs.Parser.EcsTriviaInjector.DoneAttaching()</a>, <a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307">LeMP.MacroContext.GetArgsAndBody()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63">Loyc.Syntax.LNodeExt.GetCaptureIdentifier()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a16d715f858f8036340c77d246a4e34f3">Loyc.LLParserGenerator.Rule.GetMethodSignature()</a>, <a class="el" href="classLeMP_1_1MacroContext.html#a1536a9346e03f3adc67d822deaf99ace">LeMP.MacroContext.GetOptions()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase.VisitInput()</a>.</p>
 
 </div>
 </div>
@@ -1608,7 +1701,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 <p>Returns the attribute list for this node.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a167c56617f50985bc6ad2c4f293248e8">Loyc.Syntax.LNodeExt.GetTrailingTrivia()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ac0886e6964687a300ed15d71beb72d74">Loyc.Syntax.LNodeExt.PlusTrailingTrivia()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#aeae2a48353eaa972462120151cf55fb9">Loyc.Syntax.LNodeExt.WithTrailingTrivia()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a167c56617f50985bc6ad2c4f293248e8">Loyc.Syntax.LNodeExt.GetTrailingTrivia()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ac0886e6964687a300ed15d71beb72d74">Loyc.Syntax.LNodeExt.PlusTrailingTrivia()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#aeae2a48353eaa972462120151cf55fb9">Loyc.Syntax.LNodeExt.WithTrailingTrivia()</a>.</p>
 
 </div>
 </div>
@@ -1678,7 +1771,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 <p>Returns the <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212" title="The three kinds of nodes in a Loyc tree">LNodeKind</a>: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
 
 </div>
 </div>
@@ -1710,11 +1803,11 @@ x += y       Call    +=
 x.Foo(y)     Call    
 5.0          Literal 
 </pre> 
-<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>.</p>
+<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">Loyc.Syntax.LNodeExt.AsLNode()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a130548f4529a1da652da4e9cbd851ca8"></a>
+<a class="anchor" id="a091721bc13bdbb204412aa414e7967e3"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1722,7 +1815,7 @@ x.Foo(y)     Call
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> Loyc.Syntax.LNode.Printer</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html">ILNodePrinter</a> Loyc.Syntax.LNode.Printer</td>
         </tr>
       </table>
   </td>
@@ -1760,7 +1853,7 @@ x.Foo(y)     Call
 <p>Returns the location and range in source code of this node.</p>
 <p>A parser should record a sufficiently wide range for each parent node, such that all children are fully contained within the range. However, this is not an invariant; macros can splice together syntax trees from different source files or add synthetic nodes, so that the parent range does not necessarily include all child ranges. (In fact, in general it is impossible to ensure that parent ranges include child ranges because a parent can only specify a single source file, while children can come from several source files.) </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a24d960b328eb51fa70ca9cf6a8f8d815">Loyc.LLParserGenerator.Pred.ChooseGotoLabel()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a6dba224e3944d9dafb689cd4f9c9fd00">Loyc.Syntax.LNodeExt.InParens()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a24d960b328eb51fa70ca9cf6a8f8d815">Loyc.LLParserGenerator.Pred.ChooseGotoLabel()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#a05046ea3b5b3fc26361e3dea02b04dd1">Loyc.Ecs.Parser.EcsTriviaInjector.DoneAttaching()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a7109a7eb2172249ff4d5e2e41e55cc5b">Loyc.Syntax.AbstractTriviaInjector&lt; Token &gt;.RunCore()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a55ca8f463eeb50031536e69d53e91c27">Loyc.Syntax.LNodeFactory.Trivia()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>.</p>
 
 </div>
 </div>
@@ -1809,7 +1902,7 @@ x.Foo(y)     Call
 <p>Indicates the preferred style to use when printing the node to a text string.</p>
 <p>The Style is an 8-bit value that acts as a hint to the node printer about how the node should be printed. Custom display styles that do not fit in the Style property can be expressed with special attributes that have a <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> starting with "#trivia_". ("#trivia" attributes, which are also used to store comments in the syntax tree, are not printed like normal attributes and are normally ignored if the node printer does not specifically recognize them.) </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5857944390ef4425d81198e0bf1529c3">Loyc.Syntax.Les.LesNodePrinter.IsNormalIdentifier()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a15e3f6bc884f4444ba9c256479eafb4f">Loyc.Ecs.EcsNodePrinter.SetPlainCSharpMode()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a16d715f858f8036340c77d246a4e34f3">Loyc.LLParserGenerator.Rule.GetMethodSignature()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ad9b83d5453cb836d0509239c279e8f8e">Loyc.Ecs.EcsNodePrinter.PrintECSharp()</a>.</p>
 
 </div>
 </div>
@@ -1833,7 +1926,7 @@ x.Foo(y)     Call
 
 <p>Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no name (GSymbol.Empty) to represent a parenthesized expression, if there is one argument.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#afbd1c05ec418a4df7eed80ae53d43d0a">Loyc.Syntax.CallNode.Select()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#a05046ea3b5b3fc26361e3dea02b04dd1">Loyc.Ecs.Parser.EcsTriviaInjector.DoneAttaching()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#afbd1c05ec418a4df7eed80ae53d43d0a">Loyc.Syntax.CallNode.Select()</a>.</p>
 
 </div>
 </div>
@@ -1881,7 +1974,7 @@ x.Foo(y)     Call
 
 <p>Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is false).</p>
 
-<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5857944390ef4425d81198e0bf1529c3">Loyc.Syntax.Les.LesNodePrinter.IsNormalIdentifier()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02">Loyc.LLPG.Macros.LLLPG_lexer()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">Loyc.Syntax.LNode.ReplaceRecursive()</a>.</p>
+<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02">Loyc.LLPG.Macros.LLLPG_lexer()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a9e269bdc9ef105b9f7f4c011eec7712b">Loyc.Ecs.Parser.EcsPreprocessor.NextToken()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">Loyc.Syntax.LNode.ReplaceRecursive()</a>.</p>
 
 </div>
 </div>
@@ -1889,7 +1982,7 @@ x.Foo(y)     Call
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -256,9 +256,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a7645fde0e536d6ca81a557dead81b15b"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7645fde0e536d6ca81a557dead81b15b">IndentChangedUnexpectedly</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> tokenBeforeNewline, ref <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokenAfterNewline, ref int deltaIndent)</td></tr>
 <tr class="memdesc:a7645fde0e536d6ca81a557dead81b15b"><td class="mdescLeft">&#160;</td><td class="mdescRight">A method that is called when the indent level changed without a corresponding indent trigger. <a href="#a7645fde0e536d6ca81a557dead81b15b">More...</a><br /></td></tr>
 <tr class="separator:a7645fde0e536d6ca81a557dead81b15b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a667f1d9c4d9c9b1d6b90401df2b54bee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a667f1d9c4d9c9b1d6b90401df2b54bee"></a>
-virtual <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>IndexToLine</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> token)</td></tr>
-<tr class="separator:a667f1d9c4d9c9b1d6b90401df2b54bee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d63e3da3ba67d3d0a04f18babd4c56f"><td class="memItemLeft" align="right" valign="top">virtual object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7d63e3da3ba67d3d0a04f18babd4c56f">IndexToMsgContext</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> token)</td></tr>
+<tr class="memdesc:a7d63e3da3ba67d3d0a04f18babd4c56f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the context for use in error messages, which by convention is a <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a>. <a href="#a7d63e3da3ba67d3d0a04f18babd4c56f">More...</a><br /></td></tr>
+<tr class="separator:a7d63e3da3ba67d3d0a04f18babd4c56f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a413abe932b67ea6186a3072e92c16825"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a413abe932b67ea6186a3072e92c16825"></a>
 virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CheckForIndentStyleMismatch</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> indent1, <a class="el" href="structLoyc_1_1UString.html">UString</a> indent2, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> next)</td></tr>
 <tr class="separator:a413abe932b67ea6186a3072e92c16825"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -461,6 +461,33 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#ae3543c3c1ee2c4c175f1b98334dfab55" title="Returns a token to represent the end of a line, or null to avoid generating such a token...">MakeEndOfLineToken</a> should be called as usual, or false to suppress EOL genertion. EOL can only be suppressed in case of an unexpected indent (<code>deltaIndent&gt;0</code>), not an unindent.</dd></dl>
 <p>The default implementation always returns true. It normally writes an error message, but switches to a warning in case <code>OuterIndents[OuterIndents.Count-1] == OuterIndents[OuterIndents.Count-2]</code>, which this class interprets as a single unindent. </p>
+
+</div>
+</div>
+<a class="anchor" id="a7d63e3da3ba67d3d0a04f18babd4c56f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual object <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html">Loyc.Syntax.Lexing.IndentTokenGenerator</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;.IndexToMsgContext </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>token</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the context for use in error messages, which by convention is a <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a>.</p>
+<p>The base class uses Lexer.InputPosition as a fallback if the token doesn't implement <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ISimpleToken.html" title="Basic information about a token as expected by BaseParser&lt;Token&gt;: a token Type, which is the type of ...">ISimpleToken</a>{int}.</p>
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>.</p>
 
@@ -715,7 +742,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:46 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

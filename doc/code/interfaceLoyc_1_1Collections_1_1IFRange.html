@@ -124,7 +124,7 @@ A random-access range is a sequence that provides array-like access to a section
 </ul>
 <p>A range is read-only by default, but has a writable variant marked with the letter M, meaning "Mutable": IMFRange&lt;T&gt;, IMBRange&lt;T&gt;, IMRange&lt;T&gt;. </p>
 <p>It is fair to ask why <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html" title="A forward range. Allows you to read the first element from the range or skip it. The forward range la...">IFRange</a> exists&ndash;since it behaves like an enumerator, why not simply use IEnumerator directly? Well, this interface serves as the base interface for the other ranges, so its interface needs to make sense in that context. IEnumerator has "Current" and "MoveNext" methods, but in a bidirectional or random-access range, there is no single "Current" or "Next" item. </p>
-<p>Also, when used through an interface, <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html" title="A forward range. Allows you to read the first element from the range or skip it. The forward range la...">IFRange</a> is potentially more efficient than IEnumerator: you only need to call a single method, PopFirst(), to get the next item, unlike IEnumerator which requires two interface calls per iteration. That can improve performance, since interface calls cannot be inlined. It is a bit inconvenient to use <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad5122a277fd0d4d8fd29b412b4176dab" title="Removes the first item from the range and returns it.">PopFront(out bool)</a> because of its "out" argument, and more convenient extension methods would have been provided if C# supported "ref Type this", which would be needed since ranges are often value types. </p>
+<p>Also, when used through an interface, <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html" title="A forward range. Allows you to read the first element from the range or skip it. The forward range la...">IFRange</a> is potentially more efficient than IEnumerator: you only need to call a single method, <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad80d39323c4514531ffd7b3818ddb5c7" title="Removes the first item from the range and returns it.">PopFirst()</a>, to get the next item, unlike IEnumerator which requires two interface calls per iteration. That can improve performance, since interface calls cannot be inlined. It is a bit inconvenient to use <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad80d39323c4514531ffd7b3818ddb5c7" title="Removes the first item from the range and returns it.">PopFirst(out bool)</a> because of its "out" argument, and more convenient extension methods would have been provided if C# supported "ref Type this", which would be needed since ranges are often value types. </p>
 <p>Ranges are useful for implementing algorithms; they are comparable to the concept of "iterators" in C++, except that a range represents a pair of iterators instead of a single iterator. And like C++ iterators, they are a useful starting point for writing generic algorithms. </p>
 <p>When using a range that is not typed <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange&lt;T&gt;</a>, you need to be careful how you use it because the range could be a struct type. Much like an enumerator, a range is often a small wrapper around a larger data structure; therefore, it often makes sense to implement a range as a struct. When a range is a struct, normally you are making a copy of it whenever you assign it to a different variable, or pass it to another method: </p><div class="fragment"><div class="line">Range b = a;</div><div class="line">a.PopFirst(); <span class="comment">// may not affect b if Range is a struct</span></div></div><!-- fragment --><p> In fact, a range should not be copied this way because assignment may or may not create a copy. You should avoid simple assignment, and use Clone() to copy a range instead: </p><div class="fragment"><div class="line">Range b = a.Clone();</div><div class="line">a.PopFirst(); <span class="comment">// will not affect b, and you can be sure of it</span></div></div><!-- fragment --><p> However, if a range is a reference type or a reference to <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html" title="A forward range. Allows you to read the first element from the range or skip it. The forward range la...">IFRange</a>, you are not making a copy of it when you assign it or pass it to another method: </p><div class="fragment"><div class="line">IFRange&lt;T&gt; a = ...;</div><div class="line">IFRange&lt;T&gt; b = a;</div><div class="line">a.PopFirst(); <span class="comment">// The item was popped from b also</span></div></div><!-- fragment --><p> When writing generic code, you may want to use range types directly, as in: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> DoSomethingWithRange&lt;R,T&gt;(R range) where R : IRange&lt;T&gt; {...}</div></div><!-- fragment --><p> Using a range type directly can improve performance if R happens to be a struct type, since there is no need to box the range when passing it to this method. However, it is very important to keep in mind that "R" may be a struct or a class. If this method is not intended to modify the range from the perspective of the caller, the method must start by cloning the range, in case R is a class or interface type: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> DoSomethingWithRange&lt;R,T&gt;(R range) where R : IBRange&lt;T&gt; {</div><div class="line">    range = range.Clone();</div><div class="line">    ...</div><div class="line">}</div></div><!-- fragment --><p> On the other hand, if this method <em>wants</em> the caller to see the changes to the range, R must be passed by reference, in case it is a struct type: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> DoSomethingWithRange&lt;R,T&gt;(ref R range) where R : IBRange&lt;T&gt; {</div><div class="line">    ...</div><div class="line">}</div></div><!-- fragment --><p> To avoid these subtle difficulties, you can access the range through the <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange&lt;T&gt;</a> interface; just remember to Clone() the range when necessary. </p>
 <p>Remember that a range is an alias for some underlying data structure. If the original data structure is modified, a range will "see" those changes. For instance, suppose that a range provides a slice from indexes 5 to 12 inclusive within an IList&lt;T&gt; object that contains 15 items: </p><pre>
@@ -142,9 +142,9 @@ A random-access range is a sequence that provides array-like access to a section
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:adc13093898f14546b43b238527603509"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#adc13093898f14546b43b238527603509">Front</a><code> [get]</code></td></tr>
-<tr class="memdesc:adc13093898f14546b43b238527603509"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first value in the range, without popping it. <a href="#adc13093898f14546b43b238527603509">More...</a><br /></td></tr>
-<tr class="separator:adc13093898f14546b43b238527603509"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af95c7d95e8b82f0f3642776a8d544ec5"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#af95c7d95e8b82f0f3642776a8d544ec5">First</a><code> [get]</code></td></tr>
+<tr class="memdesc:af95c7d95e8b82f0f3642776a8d544ec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first value in the range, without popping it. <a href="#af95c7d95e8b82f0f3642776a8d544ec5">More...</a><br /></td></tr>
+<tr class="separator:af95c7d95e8b82f0f3642776a8d544ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
 <tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
@@ -152,17 +152,17 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad5122a277fd0d4d8fd29b412b4176dab"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad5122a277fd0d4d8fd29b412b4176dab">PopFront</a> (out bool fail)</td></tr>
-<tr class="memdesc:ad5122a277fd0d4d8fd29b412b4176dab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the first item from the range and returns it. <a href="#ad5122a277fd0d4d8fd29b412b4176dab">More...</a><br /></td></tr>
-<tr class="separator:ad5122a277fd0d4d8fd29b412b4176dab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad80d39323c4514531ffd7b3818ddb5c7"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad80d39323c4514531ffd7b3818ddb5c7">PopFirst</a> (out bool fail)</td></tr>
+<tr class="memdesc:ad80d39323c4514531ffd7b3818ddb5c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the first item from the range and returns it. <a href="#ad80d39323c4514531ffd7b3818ddb5c7">More...</a><br /></td></tr>
+<tr class="separator:ad80d39323c4514531ffd7b3818ddb5c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ad5122a277fd0d4d8fd29b412b4176dab"></a>
+<a class="anchor" id="ad80d39323c4514531ffd7b3818ddb5c7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">Loyc.Collections.IFRange</a>&lt; out out T &gt;.PopFront </td>
+          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">Loyc.Collections.IFRange</a>&lt; out out T &gt;.PopFirst </td>
           <td>(</td>
           <td class="paramtype">out bool&#160;</td>
           <td class="paramname"><em>fail</em></td><td>)</td>
@@ -187,7 +187,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="adc13093898f14546b43b238527603509"></a>
+<a class="anchor" id="af95c7d95e8b82f0f3642776a8d544ec5"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -195,7 +195,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">Loyc.Collections.IFRange</a>&lt; out out T &gt;.Front</td>
+          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">Loyc.Collections.IFRange</a>&lt; out out T &gt;.First</td>
         </tr>
       </table>
   </td>
@@ -213,7 +213,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>A possible default implementation: </p><pre>
-T Front { get { return Range.PopFront(Clone()); } }
+T First { get { return Range.PopFirst(Clone()); } }
 </pre> 
 </div>
 </div>
@@ -221,7 +221,7 @@ T Front { get { return Range.PopFront(Clone()); } }
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:33 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:46 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

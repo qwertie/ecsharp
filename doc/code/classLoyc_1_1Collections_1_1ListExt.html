@@ -1282,7 +1282,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 </div><div class="memdoc">
 
 <p>Performs a stable sort, i.e. a sort that preserves the relative order of items that compare equal.</p>
-<p>This algorithm uses a quicksort and therefore runs in O(N log N) time, but it requires O(N) temporary space (specifically, an array of N integers) and is slower than a standard quicksort, so you should use it only if you need a stable sort. </p>
+<p>On larger inputs, this algorithm uses a quicksort and therefore runs in O(N log N) time, but it requires O(N) temporary space (specifically, an array of N integers) and is slower than a standard quicksort, so you should use it only if you need a stable sort or if the input is usually small (in which case insertion sort is used). </p>
 
 </div>
 </div>
@@ -1622,7 +1622,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

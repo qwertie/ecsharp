@@ -1,13 +1,13 @@
 var searchData=
 [
   ['allknownmacros',['AllKnownMacros',['../interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab',1,'LeMP::IMacroContext']]],
-  ['allowchangeparentheses',['AllowChangeParentheses',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25',1,'Loyc::Ecs::EcsNodePrinter']]],
-  ['allowconstructorambiguity',['AllowConstructorAmbiguity',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a27c0c08455eecdc6cd15a79618c784ec',1,'Loyc::Ecs::EcsNodePrinter']]],
-  ['allowextrabraceforifelseambig',['AllowExtraBraceForIfElseAmbig',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a7ff3d207c9d4d6a069e0058ae249856f',1,'Loyc::Ecs::EcsNodePrinter']]],
-  ['allowextraparenthesis',['AllowExtraParenthesis',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a6638c43aad7f29bf11c79f07a523610c',1,'Loyc.Syntax.Les.Les3Printer.AllowExtraParenthesis()'],['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a4d145df5580f529b86a120ce6795b9c6',1,'Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis()']]],
+  ['allowchangeparentheses',['AllowChangeParentheses',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a2c752d6b46277ffe1f1d6d157e9b882f',1,'Loyc.Syntax.Les.Les2PrinterOptions.AllowChangeParentheses()'],['../interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a591f28b23a1a6c17b36f8a72202c0d18',1,'Loyc.Syntax.ILNodePrinterOptions.AllowChangeParentheses()']]],
+  ['allowconstructorambiguity',['AllowConstructorAmbiguity',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#ad3b48848ba7c5144fb5d46a48710e89d',1,'Loyc::Ecs::EcsPrinterOptions']]],
+  ['allowextrabraceforifelseambig',['AllowExtraBraceForIfElseAmbig',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#af76102730e6d5ce6444bdb2ec654e994',1,'Loyc::Ecs::EcsPrinterOptions']]],
+  ['allowextraparenthesis',['AllowExtraParenthesis',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aeddfdf09a00ee0b670a93e4a62dae4cf',1,'Loyc::Syntax::Les::Les3PrinterOptions']]],
   ['allowparallel',['AllowParallel',['../classLoyc_1_1MiniTest_1_1TestAttribute.html#ad901a02120fb594214a7dfd1d46812e9',1,'Loyc::MiniTest::TestAttribute']]],
   ['ancestors',['Ancestors',['../interfaceLeMP_1_1IMacroContext.html#abb6b2fbd85b1bb5fb33bf25f04aa890b',1,'LeMP::IMacroContext']]],
   ['args',['Args',['../classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844',1,'Loyc::Syntax::LNode']]],
   ['attrs',['Attrs',['../classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5',1,'Loyc::Syntax::LNode']]],
-  ['avoidmacrosyntax',['AvoidMacroSyntax',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a0dc60a9291182d3136c6de03535172a2',1,'Loyc::Ecs::EcsNodePrinter']]]
+  ['avoidmacrosyntax',['AvoidMacroSyntax',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a4985450810fc5d17c74a5ec6ea423b95',1,'Loyc::Ecs::EcsPrinterOptions']]]
 ];

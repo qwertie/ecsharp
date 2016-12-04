@@ -115,7 +115,7 @@ It must not include the newline character in the range of a single-line comment.
 <li>
 Generally, newlines (including the newline after a single-line comment) must be included in the trivia list, as the algorithm relies on these newlines instead of asking <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">LNode.Range</a> for line numbers, which is slower. If newlines are omitted then a comment right after a statement (e.g. on the same line) will be associated with the next statement instead. </li>
 </ul>
-<p>Typically one will wrap the lexer in TriviaSaver, which saves trivia while filtering out whitespace so that the parser doesen't see it. </p>
+<p>Typically one will wrap the lexer in <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TriviaSaver.html" title="A lexer wrapper that saves whitespace tokens into a list (TriviaList).">Lexing.TriviaSaver</a>, which saves trivia while filtering out whitespace so that the parser doesen't see it. </p>
 <p>Your language's parser needs to follow the following rules:</p>
 <ul>
 <li>
@@ -141,7 +141,7 @@ If an expression/statement is terminated by a semicolon/comma, it's best (but no
     argument2 + 2); // Comment attached to Foo() call
   Area = 3.14159265/*PI* / * /*radius* /r**2;
   // Comment attached to «Area =» statement, preceded by newline trivia?</pre><pre>  // Comment attached to Bar()
-  @ BarAttr // Comment attached to BarAttr attribute
+   // Comment attached to BarAttr attribute
   Bar();</pre><pre>  // Comment attached to Bar() because there are no statements afterward
 }
 </pre><p> When there is a single newline between two nodes, <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aa8d088768a4d80c19dda40cf547ce752" title="Attaches trivia to the input nodes provided.">Run</a> will associate it with the second one. When there is a blank line between two nodes (two newlines), the first newline (and any before) is associated with the first node and the second newline (and any following) is associated with the second. </p>
@@ -169,6 +169,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a17d8ed7113eeae833c0c4443d60fc2c7">AttachTriviaTo</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt; trivia, TriviaLocation loc, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
 <tr class="memdesc:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class should associate the given list of trivia with the specified node. Leading trivia will be attached to a given node before trailing trivia. <a href="#a17d8ed7113eeae833c0c4443d60fc2c7">More...</a><br /></td></tr>
 <tr class="separator:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97177c46d447e5678c99e4c87e51a2a6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a97177c46d447e5678c99e4c87e51a2a6">MarkOneLiner</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
+<tr class="memdesc:a97177c46d447e5678c99e4c87e51a2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method is called when a node has no newlines or comments within it (although the node may still have a leading or trailing comment). It informs the derived class that <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b" title="Initializes the SortedTrivia property.">AbstractTriviaInjector&lt;Trivia&gt;</a> will not traverse into the node. <a href="#a97177c46d447e5678c99e4c87e51a2a6">More...</a><br /></td></tr>
+<tr class="separator:a97177c46d447e5678c99e4c87e51a2a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2351a0e69beee2926543292cd3c9420"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ae2351a0e69beee2926543292cd3c9420">GetRange</a> (Trivia trivia)</td></tr>
 <tr class="memdesc:ae2351a0e69beee2926543292cd3c9420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia. <a href="#ae2351a0e69beee2926543292cd3c9420">More...</a><br /></td></tr>
 <tr class="separator:ae2351a0e69beee2926543292cd3c9420"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -282,7 +285,7 @@ static IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The same node with trivia attributes added. If loc indicates trailing trivia, the derived class can say "I don't want trivia to be associated with 
 this node" by returning null; the base class will, if possible, associate it with the next node instead, but this doesn't work for the last child in a sequence; in that case this method is called again with the same trivia and loc is set to TriviaLocation.TrailingExtra.</dd></dl>
-<p>This method is STILL called for a given node when there is no trivia associated with that node.</p>
+<p>This method may STILL called for a given node when there is no trivia associated with that node, IF the node is at the top level or its sibling nodes in the same parent have associated trivia.</p>
 
 </div>
 </div>
@@ -418,6 +421,33 @@ this node" by returning null; the base class will, if possible, associate it wit
 
 </div>
 </div>
+<a class="anchor" id="a97177c46d447e5678c99e4c87e51a2a6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.MarkOneLiner </td>
+          <td>(</td>
+          <td class="paramtype">ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>node</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method is called when a node has no newlines or comments within it (although the node may still have a leading or trailing comment). It informs the derived class that <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b" title="Initializes the SortedTrivia property.">AbstractTriviaInjector&lt;Trivia&gt;</a> will not traverse into the node.</p>
+<p>The default implementation sets the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf" title="Indicates that the there is no comment or newline trivia associated with the children of this node...">NodeStyle.OneLiner</a> style flag.</p>
+
+</div>
+</div>
 <a class="anchor" id="aa8d088768a4d80c19dda40cf547ce752"></a>
 <div class="memitem">
 <div class="memproto">
@@ -537,7 +567,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 08:03:04 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

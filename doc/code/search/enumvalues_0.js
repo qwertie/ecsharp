@@ -14,7 +14,6 @@ var searchData=
   ['allowunassignedvardecl',['AllowUnassignedVarDecl',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a17ae6185722f0f73997608c3ca841b1d',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['allowunmatchedmethods',['AllowUnmatchedMethods',['../namespaceLoyc_1_1Utilities.html#a0b991347be36ec89ac569a0b7042a6fead0c4247972aa28bab7668d8fcae1ba39',1,'Loyc::Utilities']]],
   ['alternate',['Alternate',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1',1,'Loyc::Syntax']]],
-  ['alternate2',['Alternate2',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8adbb22e2551d9969f35984d1608e16013',1,'Loyc::Syntax']]],
   ['as',['As',['../namespaceLoyc_1_1Utilities.html#a0b991347be36ec89ac569a0b7042a6fea27baf79af932bd1592a6f4d5d61e96a9',1,'Loyc::Utilities']]],
   ['assignment',['Assignment',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903af3b92fc0f97f128818cfb44321376bca',1,'Loyc::Syntax::Lexing']]],
   ['attrkeyword',['AttrKeyword',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a72a607596995b75b33f6fedcd89387d1',1,'Loyc::Syntax::Lexing']]]

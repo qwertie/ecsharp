@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Enhanced C#: Loyc.Collections.INegListSource&lt; T &gt; Interface Template Reference</title>
+<title>Enhanced C#: Loyc.Collections.INegListSource&lt; out out T &gt; Interface Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -94,7 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="interfaceLoyc_1_1Collections_1_1INegListSource-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Loyc.Collections.INegListSource&lt; T &gt; Interface Template Reference</div>  </div>
+<div class="title">Loyc.Collections.INegListSource&lt; out out T &gt; Interface Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -104,17 +104,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Interfaces/INegListSource.cs'>/Core/Loyc.Essentials/Collections/Interfaces/INegListSource.cs</a></li>
 </ul>
 <div class="dynheader">
-Inheritance diagram for Loyc.Collections.INegListSource&lt; T &gt;:</div>
+Inheritance diagram for Loyc.Collections.INegListSource&lt; out out T &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="interfaceLoyc_1_1Collections_1_1INegListSource.png" usemap="#Loyc.Collections.INegListSource_3C_20T_20_3E_map" alt=""/>
-  <map id="Loyc.Collections.INegListSource_3C_20T_20_3E_map" name="Loyc.Collections.INegListSource&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1INegArray.html" title="This interface models the capabilities of an array: getting and setting elements by index..." alt="Loyc.Collections.INegArray&lt; T &gt;" shape="rect" coords="260,112,510,136"/>
-<area href="structLoyc_1_1Collections_1_1NegListSlice.html" title="Adapter: a random-access range for a slice of an INegListSource&lt;T&gt;." alt="Loyc.Collections.NegListSlice&lt; T &gt;" shape="rect" coords="520,112,770,136"/>
-<area href="structLoyc_1_1Collections_1_1NegListSource.html" title="Adapter: provides a view of an IListSource&lt;T&gt; in which the Count is the same, but the minimum index i..." alt="Loyc.Collections.NegListSource&lt; T &gt;" shape="rect" coords="780,112,1030,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1INegAutoSizeArray.html" title="An auto-sizing array is a list structure that allows you to modify the element at any index..." alt="Loyc.Collections.INegAutoSizeArray&lt; T &gt;" shape="rect" coords="0,168,250,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1INegDeque.html" title="Represents a Deque that supports negative indexes. In this kind of Deque, pushing and popping element..." alt="Loyc.Collections.INegDeque&lt; T &gt;" shape="rect" coords="260,168,510,192"/>
-<area href="structLoyc_1_1Collections_1_1NegList.html" title="Adapter: provides a view of an IList&lt;T&gt; in which the Count is the same, but the minimum index is not ..." alt="Loyc.Collections.NegList&lt; T &gt;" shape="rect" coords="520,168,770,192"/>
+  <img src="interfaceLoyc_1_1Collections_1_1INegListSource.png" usemap="#Loyc.Collections.INegListSource_3C_20out_20out_20T_20_3E_map" alt=""/>
+  <map id="Loyc.Collections.INegListSource_3C_20out_20out_20T_20_3E_map" name="Loyc.Collections.INegListSource&lt; out out T &gt;_map">
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -122,32 +116,32 @@ Inheritance diagram for Loyc.Collections.INegListSource&lt; T &gt;:</div>
 <p>Be careful not to write a loop that relies on <a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html#a08d479898a458b28bb483892304a5837" title="Gets the number of items in the collection.">ICount.Count</a> or starts at zero! You must always loop from Min to Max, like so: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = list.Min; i &lt;= list.Max; i++) { ... }</div></div><!-- fragment --> </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:a3b4abe39d422062742981c0e2a927410"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a3b4abe39d422062742981c0e2a927410">Min</a><code> [get]</code></td></tr>
-<tr class="memdesc:a3b4abe39d422062742981c0e2a927410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#a3b4abe39d422062742981c0e2a927410">More...</a><br /></td></tr>
-<tr class="separator:a3b4abe39d422062742981c0e2a927410"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac61b28277f531bef9ba405bbceecb03a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac61b28277f531bef9ba405bbceecb03a">Max</a><code> [get]</code></td></tr>
-<tr class="memdesc:ac61b28277f531bef9ba405bbceecb03a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#ac61b28277f531bef9ba405bbceecb03a">More...</a><br /></td></tr>
-<tr class="separator:ac61b28277f531bef9ba405bbceecb03a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb44062dcf9be5cbf40968dddd697e5c"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#aeb44062dcf9be5cbf40968dddd697e5c">this[int index]</a><code> [get]</code></td></tr>
-<tr class="memdesc:aeb44062dcf9be5cbf40968dddd697e5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#aeb44062dcf9be5cbf40968dddd697e5c">More...</a><br /></td></tr>
-<tr class="separator:aeb44062dcf9be5cbf40968dddd697e5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac91ff7dfc46c3b3e174a1b213742be9d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Min</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac91ff7dfc46c3b3e174a1b213742be9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#ac91ff7dfc46c3b3e174a1b213742be9d">More...</a><br /></td></tr>
+<tr class="separator:ac91ff7dfc46c3b3e174a1b213742be9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed8d45675c80490286b2cd38f3d880a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Max</a><code> [get]</code></td></tr>
+<tr class="memdesc:a9ed8d45675c80490286b2cd38f3d880a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#a9ed8d45675c80490286b2cd38f3d880a">More...</a><br /></td></tr>
+<tr class="separator:a9ed8d45675c80490286b2cd38f3d880a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac77166fcd7e5f4f0a7941bc299291e14"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">this[int index]</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac77166fcd7e5f4f0a7941bc299291e14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#ac77166fcd7e5f4f0a7941bc299291e14">More...</a><br /></td></tr>
+<tr class="separator:ac77166fcd7e5f4f0a7941bc299291e14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4514a4c2643e0ed3c623455c58150203"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a4514a4c2643e0ed3c623455c58150203">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a4514a4c2643e0ed3c623455c58150203"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a4514a4c2643e0ed3c623455c58150203">More...</a><br /></td></tr>
-<tr class="separator:a4514a4c2643e0ed3c623455c58150203"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24c7905bbfb82623ec8f6d1e20a3ade8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a24c7905bbfb82623ec8f6d1e20a3ade8">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a24c7905bbfb82623ec8f6d1e20a3ade8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a24c7905bbfb82623ec8f6d1e20a3ade8">More...</a><br /></td></tr>
-<tr class="separator:a24c7905bbfb82623ec8f6d1e20a3ade8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a238c28f7c77ade400dfa3329ef5fdb86"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a> (int index, out bool fail)</td></tr>
+<tr class="memdesc:a238c28f7c77ade400dfa3329ef5fdb86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a238c28f7c77ade400dfa3329ef5fdb86">More...</a><br /></td></tr>
+<tr class="separator:a238c28f7c77ade400dfa3329ef5fdb86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a0c0466927c95d573bbc32ba1a0ca8c77">More...</a><br /></td></tr>
+<tr class="separator:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a24c7905bbfb82623ec8f6d1e20a3ade8"></a>
+<a class="anchor" id="a0c0466927c95d573bbc32ba1a0ca8c77"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt;T&gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; T &gt;.Slice </td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt;T&gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.Slice </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>start</em>, </td>
@@ -168,16 +162,16 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns a sub-range of this list.</p>
 
-<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a9f4d81bc192016edb40ecda8cb9aadc2">Loyc.Collections.NegListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a27476d49de71360ae0bd4e1db92a45fe">Loyc.Collections.NegListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#acb12efe29c512ffcbede009997a38986">Loyc.Collections.NegListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegList.html#af645e0146c08310b2251402acd2f6e62">Loyc.Collections.NegList&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html#a5f56a428023d47bdf2529c81c62b7a06">Loyc.Collections.NegListSource&lt; T &gt;</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#ae6576e6a2900ed4dbb3a4b070f6bc838">Loyc.Collections.NegListSlice&lt; T &gt;.NegListSlice()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a4514a4c2643e0ed3c623455c58150203"></a>
+<a class="anchor" id="a238c28f7c77ade400dfa3329ef5fdb86"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; T &gt;.TryGet </td>
+          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.TryGet </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>index</em>, </td>
@@ -205,13 +199,13 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The element at the specified index, or default(T) if the index is not valid.</dd></dl>
-<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a4514a4c2643e0ed3c623455c58150203">TryGet</a>(<span class="keywordtype">int</span> index, ref <a class="code" href="namespaceT.html">T</a> value);</div><div class="line"><a class="code" href="namespaceT.html">T</a> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a4514a4c2643e0ed3c623455c58150203">TryGet</a>(<span class="keywordtype">int</span>, <a class="code" href="namespaceT.html">T</a> defaultValue);</div></div><!-- fragment --> 
-<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a2dea7082bbd74e2bc73a85037be993e1">Loyc.Collections.NegListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html#a76cb3bbbf73d0f42c2a6ac3b3542fb0d">Loyc.Collections.NegListSource&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegList.html#a5869eb359e58968e932a2de489e54d36">Loyc.Collections.NegList&lt; T &gt;</a>.</p>
+<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span> index, ref <a class="code" href="namespaceT.html">T</a> value);</div><div class="line"><a class="code" href="namespaceT.html">T</a> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span>, <a class="code" href="namespaceT.html">T</a> defaultValue);</div></div><!-- fragment --> 
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="ac61b28277f531bef9ba405bbceecb03a"></a>
+<a class="anchor" id="a9ed8d45675c80490286b2cd38f3d880a"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -219,7 +213,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; T &gt;.Max</td>
+          <td class="memname">int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.Max</td>
         </tr>
       </table>
   </td>
@@ -232,11 +226,11 @@ Public Member Functions</h2></td></tr>
 <p>Returns the maximum valid index in the collection.</p>
 <p>Count must equal Max-Min+1. If Count is 0, Max = Min-1</p>
 
-<p>Referenced by <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a9f4d81bc192016edb40ecda8cb9aadc2">Loyc.Collections.NegListSlice&lt; T &gt;.Slice()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a551bede12aca5a71018b343399167836">Loyc.Syntax.LNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63">Loyc.Syntax.LNodeExt.GetCaptureIdentifier()</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#ae6576e6a2900ed4dbb3a4b070f6bc838">Loyc.Collections.NegListSlice&lt; T &gt;.NegListSlice()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a2b5c31fa6b37c8b5ef1feef8b4663f13">Loyc.Syntax.LNodeExt.ToLNode()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a3b4abe39d422062742981c0e2a927410"></a>
+<a class="anchor" id="ac91ff7dfc46c3b3e174a1b213742be9d"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -244,7 +238,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; T &gt;.Min</td>
+          <td class="memname">int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.Min</td>
         </tr>
       </table>
   </td>
@@ -256,11 +250,11 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns the minimum valid index in the collection.</p>
 
-<p>Referenced by <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a7e10d4045d629e04dab17d182118689e">Loyc.Collections.NegListSlice&lt; T &gt;.NegListSlice()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#a9f4d81bc192016edb40ecda8cb9aadc2">Loyc.Collections.NegListSlice&lt; T &gt;.Slice()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a551bede12aca5a71018b343399167836">Loyc.Syntax.LNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a64e2f62371be0b603619419195bdea63">Loyc.Syntax.LNodeExt.GetCaptureIdentifier()</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#ae6576e6a2900ed4dbb3a4b070f6bc838">Loyc.Collections.NegListSlice&lt; T &gt;.NegListSlice()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a2b5c31fa6b37c8b5ef1feef8b4663f13">Loyc.Syntax.LNodeExt.ToLNode()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aeb44062dcf9be5cbf40968dddd697e5c"></a>
+<a class="anchor" id="ac77166fcd7e5f4f0a7941bc299291e14"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -268,7 +262,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; T &gt;.this[int index]</td>
+          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.this[int index]</td>
         </tr>
       </table>
   </td>
@@ -299,7 +293,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

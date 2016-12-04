@@ -118,7 +118,7 @@ Inheritance diagram for Loyc.Syntax.IIndexToLine:</div>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html" title="A version of BaseLexer&lt;CharSrc&gt; that implements ILexer&lt;Token&gt;. You should use this base class if you ..." alt="Loyc.Syntax.Lexing.BaseILexer&lt; CharSrc, Token &gt;" shape="rect" coords="1053,168,1394,192"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html" title="This class only exists to work around a limitation of the C# language: &quot;cannot change access modifier..." alt="Loyc.Syntax.Lexing.LexerSourceWorkaround&lt; CharSrc &gt;" shape="rect" coords="1053,224,1394,248"/>
 <area href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer&lt;Token&gt;)." alt="Loyc.Ecs.Parser.EcsLexer" shape="rect" coords="1755,112,2096,136"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html" title="Lexer for EC# source code." alt="Loyc.Syntax.Les.LesLexer" shape="rect" coords="1755,168,2096,192"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html" title="Lexer for EC# source code." alt="Loyc.Syntax.Les.Les2Lexer" shape="rect" coords="1755,168,2096,192"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html" title="A version of BaseLexer&lt;CharSrc&gt; that implements ILexer&lt;Token&gt;. You should use this base class if you ..." alt="Loyc.Syntax.Lexing.BaseILexer&lt; CharSrc, Token &gt;" shape="rect" coords="1755,224,2096,248"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html" title="A base class for wrappers that modify lexer behavior. Implements the ILexer interface, except for the NextToken() method." alt="Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;" shape="rect" coords="1755,280,2096,304"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html" title="Adapter: converts IEnumerable(Token) to the ILexer&lt;Token&gt; interface." alt="Loyc.Syntax.Lexing.TokenListAsLexer" shape="rect" coords="1755,336,2096,360"/>
@@ -158,7 +158,7 @@ Public Member Functions</h2></td></tr>
 <p>Returns the position in a source file of the specified index.</p>
 <p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#afeff8a11670655e4fb27d4d0613bf868">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a35d6b4643767c13d6b7402705394e35d">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#ad3bec690df9009da2d5826fc1ba8e1e8">Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a46ca6bb1122ece3978b16a59261a55a3">Loyc.Syntax.Lexing.TokenListAsLexer</a>, <a class="el" href="classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html#aaf23a3b09ad0792fe80252bf14eef912">Loyc.Syntax.SourceFileWithLineRemaps</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html#a4eaca838f05454e3798d37cf842bbf6b">Loyc.Syntax.EmptySourceFile</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab53ed2c550ac6e738972acc41ad71757">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a35d6b4643767c13d6b7402705394e35d">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#ad3bec690df9009da2d5826fc1ba8e1e8">Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a46ca6bb1122ece3978b16a59261a55a3">Loyc.Syntax.Lexing.TokenListAsLexer</a>, <a class="el" href="classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html#aaf23a3b09ad0792fe80252bf14eef912">Loyc.Syntax.SourceFileWithLineRemaps</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html#a4eaca838f05454e3798d37cf842bbf6b">Loyc.Syntax.EmptySourceFile</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a9dd12f51322630573ed588eafd1a8cc8">Loyc.Syntax.Lexing.TokenListAsLexer.NextToken()</a>.</p>
 
@@ -184,6 +184,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Gets the file name used in results returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a>.</p>
+<p>It is not guaranteed that <em>all</em> return values from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a> use this filename; for example, the file may vary in mappings from <a class="el" href="classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html" title="An wrapper around ISourceFile that applies line remapping information (if the source file uses it)...">SourceFileWithLineRemaps</a>.</p>
 
 </div>
 </div>
@@ -191,7 +192,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:43 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

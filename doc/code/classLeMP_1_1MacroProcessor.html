@@ -107,11 +107,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Encapsulates the <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> engine, a simple LISP-style macro processor, suitable for running LLLPG and other lexical macros. </p>
-<p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> itself only cares about a few nodes including #importMacros and #unimportMacros, and { braces } (for scoping the #import statements). The macro processor should be configured with any needed macros like this: </p><div class="fragment"><div class="line">var prelude = typeof(<a class="code" href="namespaceLeMP.html">LeMP</a>.<a class="code" href="namespaceLeMP_1_1Prelude.html">Prelude</a>.<a class="code" href="classLeMP_1_1Prelude_1_1BuiltinMacros.html">BuiltinMacros</a>); <span class="comment">// the default prelude</span></div><div class="line">var MP = <span class="keyword">new</span> MacroProcessor(prelude, sink);</div><div class="line">MP.AddMacros(typeof(<a class="code" href="namespaceLeMP.html">LeMP</a>.StandardMacros).Assembly);</div><div class="line">MP.PreOpenedNamespaces.Add((Symbol) <span class="stringliteral">&quot;LeMP.Prelude&quot;</span>); <span class="comment">// already done for you</span></div><div class="line">MP.PreOpenedNamespaces.Add((Symbol) <span class="stringliteral">&quot;LeMP&quot;</span>);</div></div><!-- fragment --><p> In order for the input code to have access to macros, two steps are necessary: you have to add the macro classes with AddMacros and then you have to import the namespace that contains the class(es). Higher-level code (e.g. <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">Compiler</a>) can define "always-open" namespaces by adding entries to PreOpenedNamespaces, and the code being processed can open additional namespaces with a #importMacros(Namespace) statement (in LES, "import_macros Namespace" can be used as a synonym if PreOpenedNamespaces contains <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a>). </p>
+<p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> itself only cares about a few nodes including #importMacros and #unimportMacros, and { braces } (for scoping the #import statements). The macro processor should be configured with any needed macros like this: </p><div class="fragment"><div class="line">var prelude = typeof(<a class="code" href="namespaceLeMP.html">LeMP</a>.<a class="code" href="namespaceLeMP_1_1Prelude.html">Prelude</a>.<a class="code" href="classLeMP_1_1Prelude_1_1BuiltinMacros.html">BuiltinMacros</a>); <span class="comment">// the default prelude</span></div><div class="line">var MP = <span class="keyword">new</span> <a class="code" href="classLeMP_1_1MacroProcessor.html#a60f20ca2a7e04e9f369047851eb04bee">MacroProcessor</a>(prelude, sink);</div><div class="line">MP.AddMacros(typeof(<a class="code" href="namespaceLeMP.html">LeMP</a>.StandardMacros).Assembly);</div><div class="line">MP.PreOpenedNamespaces.Add((Symbol) <span class="stringliteral">&quot;LeMP.Prelude&quot;</span>); <span class="comment">// already done for you</span></div><div class="line">MP.PreOpenedNamespaces.Add((Symbol) <span class="stringliteral">&quot;LeMP&quot;</span>);</div></div><!-- fragment --><p> In order for the input code to have access to macros, two steps are necessary: you have to add the macro classes with AddMacros and then you have to import the namespace that contains the class(es). Higher-level code (e.g. <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">Compiler</a>) can define "always-open" namespaces by adding entries to PreOpenedNamespaces, and the code being processed can open additional namespaces with a #importMacros(Namespace) statement (in LES, "import_macros Namespace" can be used as a synonym if PreOpenedNamespaces contains <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a>). </p>
 <p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> is not aware of any distinction between "statements" and "expressions"; it will run macros no matter where they are located, whether as standalone statements, attributes, or arguments to functions. </p>
 <p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a>'s main responsibilities are to keep track of a table of registered macros (call AddMacros to register more), to keep track of which namespaces are open (namespaces can be imported by <code>#import</code>, or by <code>import</code> which is defined in the LES prelude); to scan the input for macros to call; and to control the printout of messages. </p>
 <p>This class processes a batch of files at once. Call either <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns...">ProcessParallel</a>. Parallelizing on a file-by-file basis is easy; each source file is completely independent, since no semantic analysis is being done. </p>
-<p>TODO: add method for processing an LNode instead of a list of source files. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -119,7 +118,7 @@ Public fields</h2></td></tr>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>MaxExpansions</b> = 255</td></tr>
 <tr class="separator:ac7343c2dcf09aff781140f25137620ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98d06ae7e836d56deaec67e5eb620d8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html">MMap</a>&lt; object, object &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a98d06ae7e836d56deaec67e5eb620d8a">DefaultScopedProperties</a> = new <a class="el" href="classLoyc_1_1Collections_1_1MMap.html">MMap</a>&lt;object, object&gt;()</td></tr>
-<tr class="memdesc:a98d06ae7e836d56deaec67e5eb620d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default values of scoped properties. This map is empty by default. <a href="#a98d06ae7e836d56deaec67e5eb620d8a">More...</a><br /></td></tr>
+<tr class="memdesc:a98d06ae7e836d56deaec67e5eb620d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default values of scoped properties. <a href="#a98d06ae7e836d56deaec67e5eb620d8a">More...</a><br /></td></tr>
 <tr class="separator:a98d06ae7e836d56deaec67e5eb620d8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -142,9 +141,12 @@ TimeSpan&#160;</td><td class="memItemRight" valign="bottom"><b>AbortTimeout</b><
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a30db3a0792f643f761edf2413c37122e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30db3a0792f643f761edf2413c37122e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MacroProcessor</b> (Type prelude, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="separator:a30db3a0792f643f761edf2413c37122e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60f20ca2a7e04e9f369047851eb04bee"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a60f20ca2a7e04e9f369047851eb04bee">MacroProcessor</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
+<tr class="memdesc:a60f20ca2a7e04e9f369047851eb04bee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> with default prelude. <a href="#a60f20ca2a7e04e9f369047851eb04bee">More...</a><br /></td></tr>
+<tr class="separator:a60f20ca2a7e04e9f369047851eb04bee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e26649ac0f34bc3b9c180416b573370"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a8e26649ac0f34bc3b9c180416b573370">MacroProcessor</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude)</td></tr>
+<tr class="memdesc:a8e26649ac0f34bc3b9c180416b573370"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a>. <a href="#a8e26649ac0f34bc3b9c180416b573370">More...</a><br /></td></tr>
+<tr class="separator:a8e26649ac0f34bc3b9c180416b573370"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9fac836358bd581ab7dc61c335aeedf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9fac836358bd581ab7dc61c335aeedf"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Type type)</td></tr>
 <tr class="separator:af9fac836358bd581ab7dc61c335aeedf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +172,76 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a4288fb3010912dd8ac56a1082880dbaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next number to use as a suffix for temporary variables, then increments it. <a href="#a4288fb3010912dd8ac56a1082880dbaa">More...</a><br /></td></tr>
 <tr class="separator:a4288fb3010912dd8ac56a1082880dbaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a60f20ca2a7e04e9f369047851eb04bee"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">LeMP.MacroProcessor.MacroProcessor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>sink</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> with default prelude.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8e26649ac0f34bc3b9c180416b573370"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">LeMP.MacroProcessor.MacroProcessor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>sink</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Type&#160;</td>
+          <td class="paramname"><em>prelude</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sink</td><td>The destination for warning and error messages. NOTE: this class can process files in parallel. Consider using a thread-safe implementation of IMessageSink.</td></tr>
+    <tr><td class="paramname">prelude</td><td>An initial type from which to add macros. Omit this parameter to use typeof(<a class="el" href="classLeMP_1_1Prelude_1_1BuiltinMacros.html" title="Defines noMacro(...) for suppressing macro expansion and import macros your.namespace.name as an alias for #importMacros(your.namespace.name). ">LeMP.Prelude.BuiltinMacros</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a4288fb3010912dd8ac56a1082880dbaa"></a>
 <div class="memitem">
@@ -349,8 +421,9 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Default values of scoped properties. This map is empty by default.</p>
-<p>The @#inputFolder and @#inputFileName properties (note: @ is EC# syntax for Symbol) are not normally stored in this collection; when you use <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns...">ProcessParallel</a>, @#inputFolder and @#inputFileName are set according to the folder and filename in InputOutput.FileName. However, @#inputFolder is not set if the filename has no folder component, so this collection could be used to override @#inputFolder in that case. </p>
+<p>Default values of scoped properties.</p>
+<p>Code being processed can look up a scoped property named "N" with <code>#getScopedProperty("N")</code> in LESv2 or EC#. This map is empty by default. Scoped properties are "scoped" in the sense that setting a property with <code>#setScopedProperty(keyLiteral, valueLiteral)</code> takes effect only until the end of the braced block in which it appears. </p>
+<p>The @#inputFolder and @#inputFileName properties (note: @ is EC# syntax for Symbol) are not normally stored in this collection; when you use <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns...">ProcessParallel</a>, @#inputFolder and @#inputFileName are set according to the folder and filename in InputOutput.FileName. However, @#inputFolder is not set if the filename has no folder component, so this collection could be used to provide a value of @#inputFolder in that case. </p>
 
 <p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>.</p>
 
@@ -429,7 +502,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

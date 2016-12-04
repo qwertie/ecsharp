@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
@@ -110,69 +111,87 @@ Inheritance diagram for Loyc.Syntax.Les.Les3PrettyPrinter:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.png" usemap="#Loyc.Syntax.Les.Les3PrettyPrinter_map" alt=""/>
   <map id="Loyc.Syntax.Les.Les3PrettyPrinter_map" name="Loyc.Syntax.Les.Les3PrettyPrinter_map">
-<area href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html" alt="Loyc.Syntax.Les.Les3Printer" shape="rect" coords="0,56,208,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1ILNodeVisitor.html" title="Interface for people that want to implement the visitor pattern with LNode. If your visitor does not ..." alt="Loyc.Syntax.ILNodeVisitor" shape="rect" coords="0,0,208,24"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html" alt="Loyc.Syntax.Les.Les3Printer" shape="rect" coords="0,0,208,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A variant of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a> that adds syntax highlighting in one of three ways: as console output, as HTML output, or as <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> control codes. </p>
-<p>Call the PrintToConsole static method for console output, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a97a16897801090bc5a7229fc5f086a7c" title="Prints an LNode as LESv3 with HTML syntax highlighting elements.">PrintToHtml</a> for HTML output and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a55349ee3b7d9d675ec49c24f7fad44bc" title="Creates an instance of this class, which produces plain LES augmented with control codes...">New</a> for just control codes. </p>
+<p>Create an instance by invoking the constructor, then call PrintToConsole for console output, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#accb0ddb96b7011f8f1871f80d0cba8cf" title="Prints an LNode as LESv3 with HTML syntax highlighting elements.">PrintToHtml</a> for HTML output, or Les3Printer.Print(IEnumerable&lt;ILNode&gt;) for just control codes. </p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
+Properties</h2></td></tr>
+<tr class="memitem:a36df2d02ac7e332c4f286286da07e570"><td class="memItemLeft" align="right" valign="top">string[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a36df2d02ac7e332c4f286286da07e570">ColorCodesToCssClasses</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a36df2d02ac7e332c4f286286da07e570"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lookup table of strings for control codes (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> values) to HTML classes, used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#ad7a822172ef73da4e66173d0765a258a">PrintToHtml(IEnumerable&lt;ILNode&gt;, StringBuilder, bool)</a>. <a href="#a36df2d02ac7e332c4f286286da07e570">More...</a><br /></td></tr>
+<tr class="separator:a36df2d02ac7e332c4f286286da07e570"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
+<tr class="memitem:a60578786e6fa24a9e8e12b3956a0cf19 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60578786e6fa24a9e8e12b3956a0cf19"></a>
+StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>SB</b><code> [get, set]</code></td></tr>
+<tr class="separator:a60578786e6fa24a9e8e12b3956a0cf19 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ab87a3ebfc197b34b0b6eb03129123403">MessageSink</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Target for warning messages. <a href="#ab87a3ebfc197b34b0b6eb03129123403">More...</a><br /></td></tr>
+<tr class="separator:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a666eff24cbbdd86eac8446f765dd33fb inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a666eff24cbbdd86eac8446f765dd33fb"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html">Les3PrinterOptions</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Options</b><code> [get]</code></td></tr>
+<tr class="separator:a666eff24cbbdd86eac8446f765dd33fb inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a17b0ab15d68ddbb28aed8f31e94b81b7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a17b0ab15d68ddbb28aed8f31e94b81b7"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les3PrettyPrinter</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html">PrinterState</a> ps, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
-<tr class="separator:a17b0ab15d68ddbb28aed8f31e94b81b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aade1badae1b8bd5babc4ada64e31dfbc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#aade1badae1b8bd5babc4ada64e31dfbc">Les3PrettyPrinter</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
+<tr class="memdesc:aade1badae1b8bd5babc4ada64e31dfbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an instance of this class, which produces plain LES augmented with control codes. <a href="#aade1badae1b8bd5babc4ada64e31dfbc">More...</a><br /></td></tr>
+<tr class="separator:aade1badae1b8bd5babc4ada64e31dfbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ee92bb97a30441812a4b08712eb1186"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a1ee92bb97a30441812a4b08712eb1186">Les3PrettyPrinter</a> (StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options)</td></tr>
+<tr class="memdesc:a1ee92bb97a30441812a4b08712eb1186"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an instance of this class, which produces plain LES augmented with control codes. <a href="#a1ee92bb97a30441812a4b08712eb1186">More...</a><br /></td></tr>
+<tr class="separator:a1ee92bb97a30441812a4b08712eb1186"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a525f6a1cc328c3a5767a7aee84a6e74a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a525f6a1cc328c3a5767a7aee84a6e74a"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintToConsole</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, bool endWithNewline=true)</td></tr>
+<tr class="separator:a525f6a1cc328c3a5767a7aee84a6e74a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa233f91ee1ddb4867111aea587429080"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa233f91ee1ddb4867111aea587429080"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintToConsole</b> (IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> &gt; nodes, bool endWithNewline=true)</td></tr>
+<tr class="separator:aa233f91ee1ddb4867111aea587429080"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7a822172ef73da4e66173d0765a258a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad7a822172ef73da4e66173d0765a258a"></a>
+StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#ad7a822172ef73da4e66173d0765a258a">PrintToHtml</a> (IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> &gt; nodes, StringBuilder output=null, bool addPreCode=true)</td></tr>
+<tr class="separator:ad7a822172ef73da4e66173d0765a258a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34464458f8bb3e8e7150c20d42a836e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a34464458f8bb3e8e7150c20d42a836e2"></a>
+StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a34464458f8bb3e8e7150c20d42a836e2">PrintToHtml</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, StringBuilder output=null, bool addPreCode=true)</td></tr>
+<tr class="separator:a34464458f8bb3e8e7150c20d42a836e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:ae67280629111c3bc54e2537a4ca2516c inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae67280629111c3bc54e2537a4ca2516c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les3Printer</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html">PrinterState</a> ps, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
-<tr class="separator:ae67280629111c3bc54e2537a4ca2516c inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4abd7b91857b959224406d9e2b187b6 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4abd7b91857b959224406d9e2b187b6"></a>
-StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, string terminator=null)</td></tr>
-<tr class="separator:ad4abd7b91857b959224406d9e2b187b6 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6b7a28e385d627184923fad8dcb7d2b inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa6b7a28e385d627184923fad8dcb7d2b"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetOptions</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options)</td></tr>
+<tr class="separator:aa6b7a28e385d627184923fad8dcb7d2b inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fda7582553d63eaac21cd1fcd118e7d inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fda7582553d63eaac21cd1fcd118e7d"></a>
+StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, string suffix=null)</td></tr>
+<tr class="separator:a4fda7582553d63eaac21cd1fcd118e7d inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0a339a1dc1876b3840972a5042aff5d inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac0a339a1dc1876b3840972a5042aff5d"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:ac0a339a1dc1876b3840972a5042aff5d inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0d1a84a2709cc24a4e487ffcffb1f55 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad0d1a84a2709cc24a4e487ffcffb1f55"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a> node)</td></tr>
-<tr class="separator:ad0d1a84a2709cc24a4e487ffcffb1f55 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a094d83ca31def5567bbc6c96598c1100 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a094d83ca31def5567bbc6c96598c1100"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VisitId</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node)</td></tr>
+<tr class="separator:a094d83ca31def5567bbc6c96598c1100 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ada3c85be1f1bb46ede152b0da7a5a6 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ada3c85be1f1bb46ede152b0da7a5a6"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintIdCore</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, bool startToken, bool forceQuote=false)</td></tr>
 <tr class="separator:a3ada3c85be1f1bb46ede152b0da7a5a6 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5a51badc19b2f6d4739ff47148278cf inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5a51badc19b2f6d4739ff47148278cf"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a> node)</td></tr>
-<tr class="separator:af5a51badc19b2f6d4739ff47148278cf inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4cfd3310c359b086d5393010ea1d628 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac4cfd3310c359b086d5393010ea1d628"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a> node)</td></tr>
-<tr class="separator:ac4cfd3310c359b086d5393010ea1d628 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f37c1bf3b6290808f999152dcda4898 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f37c1bf3b6290808f999152dcda4898"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VisitLiteral</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node)</td></tr>
+<tr class="separator:a2f37c1bf3b6290808f999152dcda4898 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bf1802c9f1ff89f18c9ec88f87ae52a inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9bf1802c9f1ff89f18c9ec88f87ae52a"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VisitCall</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node)</td></tr>
+<tr class="separator:a9bf1802c9f1ff89f18c9ec88f87ae52a inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a55349ee3b7d9d675ec49c24f7fad44bc"><td class="memItemLeft" align="right" valign="top">static new <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a55349ee3b7d9d675ec49c24f7fad44bc">New</a> (StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink=null, string indentString=&quot;  &quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="memdesc:a55349ee3b7d9d675ec49c24f7fad44bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an instance of this class, which produces plain LES augmented with control codes. <a href="#a55349ee3b7d9d675ec49c24f7fad44bc">More...</a><br /></td></tr>
-<tr class="separator:a55349ee3b7d9d675ec49c24f7fad44bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec77295612ef7a98f285f25b24e6f7e1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec77295612ef7a98f285f25b24e6f7e1"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintToConsole</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink=null, string indentString=&quot;  &quot;, bool endWithNewline=true)</td></tr>
-<tr class="separator:aec77295612ef7a98f285f25b24e6f7e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac49db16ad318498373f748d13d5eb2e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac49db16ad318498373f748d13d5eb2e4"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintToConsole</b> (StringBuilder input, bool endWithNewline=true)</td></tr>
-<tr class="separator:ac49db16ad318498373f748d13d5eb2e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a170e89c5702bc93d361f85a4324c3dbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a170e89c5702bc93d361f85a4324c3dbc"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintToConsoleCore</b> (StringBuilder input, bool endWithNewline=true)</td></tr>
+<tr class="separator:a170e89c5702bc93d361f85a4324c3dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5588a79e05953240ce87620a3b4e91bf"><td class="memItemLeft" align="right" valign="top">static string[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a5588a79e05953240ce87620a3b4e91bf">GetDefaultCssClassTable</a> ()</td></tr>
 <tr class="memdesc:a5588a79e05953240ce87620a3b4e91bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lookup table of strings for control codes (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> values) to HTML classes. <a href="#a5588a79e05953240ce87620a3b4e91bf">More...</a><br /></td></tr>
 <tr class="separator:a5588a79e05953240ce87620a3b4e91bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97a16897801090bc5a7229fc5f086a7c"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a97a16897801090bc5a7229fc5f086a7c">PrintToHtml</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder output=null, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink=null, bool addPreCode=true, string indentString=&quot;  &quot;, string newlineString=&quot;\n&quot;, string[] colorCodesToCssClasses=null)</td></tr>
-<tr class="memdesc:a97a16897801090bc5a7229fc5f086a7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> as LESv3 with HTML syntax highlighting elements. <a href="#a97a16897801090bc5a7229fc5f086a7c">More...</a><br /></td></tr>
-<tr class="separator:a97a16897801090bc5a7229fc5f086a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9c0d5620a9cdbacaa37d29eb00679f5"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#ad9c0d5620a9cdbacaa37d29eb00679f5">PrintToHtml</a> (StringBuilder input, StringBuilder output=null, bool addPreCode=true, string newline=&quot;\n&quot;, string[] colorCodesToCssClasses=null)</td></tr>
-<tr class="memdesc:ad9c0d5620a9cdbacaa37d29eb00679f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a StringBuilder with <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> control codes to HTML with Pygments CSS class codes. <a href="#ad9c0d5620a9cdbacaa37d29eb00679f5">More...</a><br /></td></tr>
-<tr class="separator:ad9c0d5620a9cdbacaa37d29eb00679f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accb0ddb96b7011f8f1871f80d0cba8cf"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#accb0ddb96b7011f8f1871f80d0cba8cf">PrintToHtml</a> (IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> &gt; nodes, StringBuilder output=null, bool addPreCode=true, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
+<tr class="memdesc:accb0ddb96b7011f8f1871f80d0cba8cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> as LESv3 with HTML syntax highlighting elements. <a href="#accb0ddb96b7011f8f1871f80d0cba8cf">More...</a><br /></td></tr>
+<tr class="separator:accb0ddb96b7011f8f1871f80d0cba8cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a319ba7e6f55fe4cd2ca9006e530e8933"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a319ba7e6f55fe4cd2ca9006e530e8933">PrintToHtmlCore</a> (StringBuilder input, StringBuilder output=null, bool addPreCode=true, string newline=&quot;\n&quot;, string[] colorCodesToCssClasses=null)</td></tr>
+<tr class="memdesc:a319ba7e6f55fe4cd2ca9006e530e8933"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a StringBuilder with <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> control codes to HTML with Pygments CSS class codes. <a href="#a319ba7e6f55fe4cd2ca9006e530e8933">More...</a><br /></td></tr>
+<tr class="separator:a319ba7e6f55fe4cd2ca9006e530e8933"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:a31280298c058c8b81b78050d51ead445 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31280298c058c8b81b78050d51ead445"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (StringBuilder target=null, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="separator:a31280298c058c8b81b78050d51ead445 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3deff3c8104d7b300fe916ba07d9ea4c inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3deff3c8104d7b300fe916ba07d9ea4c"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="separator:a3deff3c8104d7b300fe916ba07d9ea4c inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2237f154804f4752d63e5bc5b2cc0016 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2237f154804f4752d63e5bc5b2cc0016"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsNormalIdentifier</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a2237f154804f4752d63e5bc5b2cc0016 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,9 +205,12 @@ override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 override <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ColorCodeForId</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a3f19fa3d3841c6ac59b038ad51804751"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:a3b52f3177a8ea1301fcdc8ef582b88f9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b52f3177a8ea1301fcdc8ef582b88f9"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, string terminator=null)</td></tr>
-<tr class="separator:a3b52f3177a8ea1301fcdc8ef582b88f9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a354366d7a06647cd87fd37f15977df48 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a354366d7a06647cd87fd37f15977df48"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, string suffix=null, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">NewlineContext</a> nlContext=NewlineContext.AutoDetect)</td></tr>
+<tr class="separator:a354366d7a06647cd87fd37f15977df48 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7af0c5cae339d4bdd4e32d3a8b80d57 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad7af0c5cae339d4bdd4e32d3a8b80d57"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintCore</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, string suffix)</td></tr>
+<tr class="separator:ad7af0c5cae339d4bdd4e32d3a8b80d57 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9b970d87fe18ced42f0cfce6f58fc3b inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9b970d87fe18ced42f0cfce6f58fc3b"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteToken</b> (char firstChar, <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> tokenSet)</td></tr>
 <tr class="separator:ae9b970d87fe18ced42f0cfce6f58fc3b inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -204,78 +226,18 @@ override <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed2
 <tr class="memitem:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35de13166154c23413b7c4276ba2e565"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartToken</b> (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> startSet, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> endSet)</td></tr>
 <tr class="separator:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f7f70980d2ade1b3518d6b10b7a5b18 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f7f70980d2ade1b3518d6b10b7a5b18"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EndToken</b> ()</td></tr>
-<tr class="separator:a4f7f70980d2ade1b3518d6b10b7a5b18 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e93128306e1f138c9e96b82e4094703 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e93128306e1f138c9e96b82e4094703"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Newline</b> ()</td></tr>
-<tr class="separator:a1e93128306e1f138c9e96b82e4094703 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72c3a1361b5643d83962c60007937774 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a72c3a1361b5643d83962c60007937774"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteOutsideToken</b> (char space)</td></tr>
+<tr class="separator:a72c3a1361b5643d83962c60007937774 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1224bdd1cf361275b6a31a1668aca6f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae1224bdd1cf361275b6a31a1668aca6f"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Newline</b> (bool avoidExtraNewline=false)</td></tr>
+<tr class="separator:ae1224bdd1cf361275b6a31a1668aca6f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2a934a9be4b5974aef5075c7f623358 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2a934a9be4b5974aef5075c7f623358"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Space</b> (bool condition=true)</td></tr>
 <tr class="separator:ab2a934a9be4b5974aef5075c7f623358 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Public fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:a10405a30f198195faec672ad345bb067 inherit pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10405a30f198195faec672ad345bb067"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAroundInfixStopPrecedence</b> = LesPrecedence.Power.Lo</td></tr>
-<tr class="separator:a10405a30f198195faec672ad345bb067 inherit pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99d3c8c4559cf65e388455869e26e5f8 inherit pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99d3c8c4559cf65e388455869e26e5f8"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAfterPrefixStopPrecedence</b> = LesPrecedence.Prefix.Lo</td></tr>
-<tr class="separator:a99d3c8c4559cf65e388455869e26e5f8 inherit pub_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Public static fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:a332cdcfec805e21f264b250591ca69fe inherit pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a332cdcfec805e21f264b250591ca69fe"></a>
-static readonly <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Printer</b> = Print</td></tr>
-<tr class="separator:a332cdcfec805e21f264b250591ca69fe inherit pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
-<tr class="memitem:a60578786e6fa24a9e8e12b3956a0cf19 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60578786e6fa24a9e8e12b3956a0cf19"></a>
-StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>SB</b><code> [get, set]</code></td></tr>
-<tr class="separator:a60578786e6fa24a9e8e12b3956a0cf19 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93fc49fc57db65180baa97df8c406558 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a93fc49fc57db65180baa97df8c406558">PreferredLineWidth</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a93fc49fc57db65180baa97df8c406558 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">The printer tries to keep the line width under this size (note: it won't always succeed and it is only willing to put line breaks in certain locations). <a href="#a93fc49fc57db65180baa97df8c406558">More...</a><br /></td></tr>
-<tr class="separator:a93fc49fc57db65180baa97df8c406558 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6daf09e3aedcb428f878c802f492396d inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a6daf09e3aedcb428f878c802f492396d">SpaceInsideListBrackets</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a6daf09e3aedcb428f878c802f492396d inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a space inside square brackets for lists <code>[ ... ]</code>. <a href="#a6daf09e3aedcb428f878c802f492396d">More...</a><br /></td></tr>
-<tr class="separator:a6daf09e3aedcb428f878c802f492396d inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e85ea07a3eff5924a1a8f9b54dcf68c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a0e85ea07a3eff5924a1a8f9b54dcf68c">SpaceInsideArgLists</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a0e85ea07a3eff5924a1a8f9b54dcf68c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a space inside argument lists like <code>f( ... )</code>. <a href="#a0e85ea07a3eff5924a1a8f9b54dcf68c">More...</a><br /></td></tr>
-<tr class="separator:a0e85ea07a3eff5924a1a8f9b54dcf68c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa7a4df2ec4f3f3e896d11901aac5b3e inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#afa7a4df2ec4f3f3e896d11901aac5b3e">SpaceInsideGroupingParens</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:afa7a4df2ec4f3f3e896d11901aac5b3e inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a space inside grouping parentheses <code>( ... )</code>. <a href="#afa7a4df2ec4f3f3e896d11901aac5b3e">More...</a><br /></td></tr>
-<tr class="separator:afa7a4df2ec4f3f3e896d11901aac5b3e inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c9ab2b894fd285e0f2a4e5e7a30dbc7 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a4c9ab2b894fd285e0f2a4e5e7a30dbc7">SpaceInsideTuples</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a4c9ab2b894fd285e0f2a4e5e7a30dbc7 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a space inside tuples like <code>f( ...; )</code>. <a href="#a4c9ab2b894fd285e0f2a4e5e7a30dbc7">More...</a><br /></td></tr>
-<tr class="separator:a4c9ab2b894fd285e0f2a4e5e7a30dbc7 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e71c65dd9ad788a483d93360abb71e4 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a3e71c65dd9ad788a483d93360abb71e4">SpaceAfterComma</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a3e71c65dd9ad788a483d93360abb71e4 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a space after each comma in an argument list. <a href="#a3e71c65dd9ad788a483d93360abb71e4">More...</a><br /></td></tr>
-<tr class="separator:a3e71c65dd9ad788a483d93360abb71e4 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6638c43aad7f29bf11c79f07a523610c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a6638c43aad7f29bf11c79f07a523610c">AllowExtraParenthesis</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a6638c43aad7f29bf11c79f07a523610c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow perfect round-tripping. <a href="#a6638c43aad7f29bf11c79f07a523610c">More...</a><br /></td></tr>
-<tr class="separator:a6638c43aad7f29bf11c79f07a523610c inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06de30478b647c764ff21223233a07c3 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a06de30478b647c764ff21223233a07c3">PrefixNotationOnly</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a06de30478b647c764ff21223233a07c3 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print purely in prefix notation, e.g. <code>`'+`(2,3)</code> instead of <code>2 + 3</code>.  <a href="#a06de30478b647c764ff21223233a07c3">More...</a><br /></td></tr>
-<tr class="separator:a06de30478b647c764ff21223233a07c3 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24d2a4aadcbc9fbdd7f89710b1b30de5 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a24d2a4aadcbc9fbdd7f89710b1b30de5">OmitSpaceTrivia</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a24d2a4aadcbc9fbdd7f89710b1b30de5 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter). <a href="#a24d2a4aadcbc9fbdd7f89710b1b30de5">More...</a><br /></td></tr>
-<tr class="separator:a24d2a4aadcbc9fbdd7f89710b1b30de5 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19a4f0467187316255783d3a041e5258 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a19a4f0467187316255783d3a041e5258">OmitComments</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a19a4f0467187316255783d3a041e5258 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, comment trivia attributes are ignored (e.g. CodeSymbols.TriviaSLCommentAfter). <a href="#a19a4f0467187316255783d3a041e5258">More...</a><br /></td></tr>
-<tr class="separator:a19a4f0467187316255783d3a041e5258 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26370d2ccb096c26929610d80dd93c43 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a26370d2ccb096c26929610d80dd93c43">WarnAboutUnprintableLiterals</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a26370d2ccb096c26929610d80dd93c43 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a warning when an "unprintable" literal is encountered. In any case the literal is converted to a string, placed in double quotes and prefixed by the unqualified Type of the Value. <a href="#a26370d2ccb096c26929610d80dd93c43">More...</a><br /></td></tr>
-<tr class="separator:a26370d2ccb096c26929610d80dd93c43 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a492b576073ab044406cfde0adf549111 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a492b576073ab044406cfde0adf549111">OmitUnknownTrivia</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a492b576073ab044406cfde0adf549111 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output. <a href="#a492b576073ab044406cfde0adf549111">More...</a><br /></td></tr>
-<tr class="separator:a492b576073ab044406cfde0adf549111 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a534bb0eccedc9209824017dad4b4bd4f inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a534bb0eccedc9209824017dad4b4bd4f">PrintTriviaExplicitly</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a534bb0eccedc9209824017dad4b4bd4f inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses. <a href="#a534bb0eccedc9209824017dad4b4bd4f">More...</a><br /></td></tr>
-<tr class="separator:a534bb0eccedc9209824017dad4b4bd4f inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac5a554099c574bc7984005e142d87493 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac5a554099c574bc7984005e142d87493">ObeyRawText</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ac5a554099c574bc7984005e142d87493 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes raw text to be printed verbatim, as the EC# printer does. When this option is false, raw text trivia is printed as a normal attribute. <a href="#ac5a554099c574bc7984005e142d87493">More...</a><br /></td></tr>
-<tr class="separator:ac5a554099c574bc7984005e142d87493 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ab87a3ebfc197b34b0b6eb03129123403">MessageSink</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Target for warning and error messages. <a href="#ab87a3ebfc197b34b0b6eb03129123403">More...</a><br /></td></tr>
-<tr class="separator:ab87a3ebfc197b34b0b6eb03129123403 inherit properties_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Protected Types inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
 <tr class="memitem:ac3f44cd68d595c31416420c57f2f3867 inherit pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> { <br />
 &#160;&#160;<b>Delimiter</b> = 0, 
@@ -296,27 +258,51 @@ StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>SB</b><code>
 <br />
 &#160;&#160;<b>BQId</b> = 64, 
 <b>StringStart</b> = DoubleQuote | Id | BQId, 
-<b>At</b> = 128
+<b>At</b> = 128, 
+<br />
+&#160;&#160;<b>Space</b> = 256, 
+<b>SLComment</b> = 512
 <br />
  }<tr class="memdesc:ac3f44cd68d595c31416420c57f2f3867"><td class="mdescLeft">&#160;</td><td class="mdescRight">Based on these flags, StartToken() and WriteToken() ensure that two adjacent tokens aren't treated like a single token when reparsed, by printing a space between them if necessary.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:ac3f44cd68d595c31416420c57f2f3867 inherit pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30490372385ebcbe3dda64e9f018e121 inherit pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">NewlineContext</a> { <br />
+&#160;&#160;<b>NewlineUnsafe</b> = 0, 
+<b>NewlineSafeAfter</b> = 1, 
+<b>NewlineSafeBefore</b> = 2, 
+<br />
+&#160;&#160;<b>AfterBinOp</b> = 4, 
+<b>StatementLevel</b> = NewlineSafeBefore | NewlineSafeAfter, 
+<b>AutoDetect</b> = 8
+<br />
+ }<tr class="memdesc:a30490372385ebcbe3dda64e9f018e121"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to help keep track of where newline trivia (and single- line comments ending in a newline) are permitted, to avoid printing newline trivia where it would count as "end of expression". <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a30490372385ebcbe3dda64e9f018e121 inherit pro_types_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Protected fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
 <tr class="memitem:ac844e9f5d044979ac9068338ea68267a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac844e9f5d044979ac9068338ea68267a"></a>
 <a class="el" href="structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html">PrinterState</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PS</b></td></tr>
 <tr class="separator:ac844e9f5d044979ac9068338ea68267a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8cfb3d0062ea0794c23fe69e4bad376 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae8cfb3d0062ea0794c23fe69e4bad376"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_n</b></td></tr>
-<tr class="separator:ae8cfb3d0062ea0794c23fe69e4bad376 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a939a3334dc738e05ef1f2626778931c5 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a939a3334dc738e05ef1f2626778931c5"></a>
+<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_n</b></td></tr>
+<tr class="separator:a939a3334dc738e05ef1f2626778931c5 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa04281a3c32f3bc8f9580567898a80e8 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa04281a3c32f3bc8f9580567898a80e8"></a>
 <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_context</b> = Precedence.MinValue</td></tr>
 <tr class="separator:aa04281a3c32f3bc8f9580567898a80e8 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e30449a9c0533fd4442fd7b61ae854a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e30449a9c0533fd4442fd7b61ae854a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">NewlineContext</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_nlContext</b> = NewlineContext.NewlineUnsafe</td></tr>
+<tr class="separator:a2e30449a9c0533fd4442fd7b61ae854a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af81c25aa914a7154d442e514bdb49187"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_curSet</b> = 0</td></tr>
 <tr class="separator:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0c00f8f8a688810d288705ae93e234d inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad0c00f8f8a688810d288705ae93e234d"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_allowBlockCalls</b> = true</td></tr>
 <tr class="separator:ad0c00f8f8a688810d288705ae93e234d inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7f9438ad0dae7f843a823782db65728 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7f9438ad0dae7f843a823782db65728"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_inParensOrBracks</b> = false</td></tr>
+<tr class="separator:ae7f9438ad0dae7f843a823782db65728 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a5b509817c4c61d4912a529cadf79a09f">_isOneLiner</a> = false</td></tr>
+<tr class="memdesc:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates whether the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf" title="Indicates that the there is no comment or newline trivia associated with the children of this node...">NodeStyle.OneLiner</a> flag is present on the current node or any of its parents. It suppresses newlines within braced blocks. <a href="#a5b509817c4c61d4912a529cadf79a09f">More...</a><br /></td></tr>
+<tr class="separator:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Protected static fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
 <tr class="memitem:a705ca746983a417cf26b76ad7ed4a63f inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a705ca746983a417cf26b76ad7ed4a63f"></a>
 static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_s</b> = GSymbol.Get(&quot;s&quot;)</td></tr>
@@ -346,6 +332,87 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_number</b> = GSymbol.Get(&quot;number&quot;)</td></tr>
 <tr class="separator:a183c558481c7e70342c7be4e3759d41f inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="aade1badae1b8bd5babc4ada64e31dfbc"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.Les.Les3PrettyPrinter.Les3PrettyPrinter </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>sink</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
+          <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates an instance of this class, which produces plain LES augmented with control codes.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1ee92bb97a30441812a4b08712eb1186"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.Les.Les3PrettyPrinter.Les3PrettyPrinter </td>
+          <td>(</td>
+          <td class="paramtype">StringBuilder&#160;</td>
+          <td class="paramname"><em>target</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>sink</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
+          <td class="paramname"><em>options</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates an instance of this class, which produces plain LES augmented with control codes.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a691c2767cb951665f7d654161031f068">Loyc.Syntax.LNode.IsSpecialName()</a>, and <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a5588a79e05953240ce87620a3b4e91bf"></a>
 <div class="memitem">
@@ -393,57 +460,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 </pre> 
 </div>
 </div>
-<a class="anchor" id="a55349ee3b7d9d675ec49c24f7fad44bc"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static new <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a> Loyc.Syntax.Les.Les3PrettyPrinter.New </td>
-          <td>(</td>
-          <td class="paramtype">StringBuilder&#160;</td>
-          <td class="paramname"><em>target</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
-          <td class="paramname"><em>messageSink</em> = <code>null</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>indentString</em> = <code>&quot;&#160;&#160;&quot;</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>lineSeparator</em> = <code>&quot;\n&quot;</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Creates an instance of this class, which produces plain LES augmented with control codes.</p>
-
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a691c2767cb951665f7d654161031f068">Loyc.Syntax.LNode.IsSpecialName()</a>, and <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a97a16897801090bc5a7229fc5f086a7c"></a>
+<a class="anchor" id="accb0ddb96b7011f8f1871f80d0cba8cf"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -453,8 +470,8 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
         <tr>
           <td class="memname">static StringBuilder Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
-          <td class="paramname"><em>node</em>, </td>
+          <td class="paramtype">IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> &gt;&#160;</td>
+          <td class="paramname"><em>nodes</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -465,32 +482,20 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
-          <td class="paramname"><em>messageSink</em> = <code>null</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>addPreCode</em> = <code>true</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>indentString</em> = <code>&quot;&#160;&#160;&quot;</code>, </td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>sink</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>newlineString</em> = <code>&quot;\n&quot;</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string[]&#160;</td>
-          <td class="paramname"><em>colorCodesToCssClasses</em> = <code>null</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
+          <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -508,13 +513,10 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 <p>Prints an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> as LESv3 with HTML syntax highlighting elements.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">node</td><td>A syntax tree to print.</td></tr>
+    <tr><td class="paramname">nodes</td><td><a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> trees to print.</td></tr>
     <tr><td class="paramname">output</td><td>Output StringBuilder for HTML code.</td></tr>
-    <tr><td class="paramname">messageSink</td><td>A sink for warning messages, if any.</td></tr>
     <tr><td class="paramname">addPreCode</td><td>Whether to wrap the output in "&amp;lt;pre class='highlight'&gt;&amp;lt;code&gt;" tags.</td></tr>
-    <tr><td class="paramname">indentString</td><td>How to indent inner lines of the output (usually a tab or spaces).</td></tr>
-    <tr><td class="paramname">newlineString</td><td>What to write to <code>output</code> for each newline.</td></tr>
-    <tr><td class="paramname">colorCodesToCssClasses</td><td>CSS class table for span tags, see <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a5588a79e05953240ce87620a3b4e91bf" title="The lookup table of strings for control codes (LesColorCode values) to HTML classes.">GetDefaultCssClassTable</a>.</td></tr>
+    <tr><td class="paramname">options</td><td>Options to control the style for code printing.</td></tr>
   </table>
   </dd>
 </dl>
@@ -522,7 +524,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 
 </div>
 </div>
-<a class="anchor" id="ad9c0d5620a9cdbacaa37d29eb00679f5"></a>
+<a class="anchor" id="a319ba7e6f55fe4cd2ca9006e530e8933"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -530,7 +532,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static StringBuilder Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml </td>
+          <td class="memname">static StringBuilder Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtmlCore </td>
           <td>(</td>
           <td class="paramtype">StringBuilder&#160;</td>
           <td class="paramname"><em>input</em>, </td>
@@ -588,11 +590,35 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 
 </div>
 </div>
+<h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="a36df2d02ac7e332c4f286286da07e570"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">string [] Loyc.Syntax.Les.Les3PrettyPrinter.ColorCodesToCssClasses</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The lookup table of strings for control codes (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> values) to HTML classes, used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#ad7a822172ef73da4e66173d0765a258a">PrintToHtml(IEnumerable&lt;ILNode&gt;, StringBuilder, bool)</a>.</p>
+<p>This property is null by default, which causes the default table to be used. See <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a5588a79e05953240ce87620a3b4e91bf" title="The lookup table of strings for control codes (LesColorCode values) to HTML classes.">GetDefaultCssClassTable()</a> for more information.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

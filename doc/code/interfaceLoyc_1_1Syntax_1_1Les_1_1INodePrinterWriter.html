@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>This interface is implemented by helper objects that handle the low-level details of node printing. It is used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a>. 
+<p>This interface is implemented by helper objects that handle the low-level details of node printing. It is used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a>. 
  <a href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/INodePrinterWriter.cs'>/Core/Loyc.Syntax/LES/INodePrinterWriter.cs</a></li>
@@ -110,11 +110,11 @@ Inheritance diagram for Loyc.Syntax.Les.INodePrinterWriter:</div>
   <img src="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.png" usemap="#Loyc.Syntax.Les.INodePrinterWriter_map" alt=""/>
   <map id="Loyc.Syntax.Les.INodePrinterWriter_map" name="Loyc.Syntax.Les.INodePrinterWriter_map">
 <area href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html" title="Abstract base class for INodePrinterWriter. Has an protected _indentLevel field that is increased by ..." alt="Loyc.Syntax.Les.NodePrinterWriterBase" shape="rect" coords="0,56,252,80"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html" title="Base class for the helper classes of LesNodePrinter and Ecs.EcsNodePrinter, called LesNodePrinterWrit..." alt="Loyc.Syntax.Les.DefaultNodePrinterWriter" shape="rect" coords="0,112,252,136"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html" title="Base class for the helper classes of Les2Printer and Ecs.EcsNodePrinter, called LesNodePrinterWriter ..." alt="Loyc.Syntax.Les.DefaultNodePrinterWriter" shape="rect" coords="0,112,252,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>This interface is implemented by helper objects that handle the low-level details of node printing. It is used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a>.</p>
+<div class="textblock"><p>This interface is implemented by helper objects that handle the low-level details of node printing. It is used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a>.</p>
 <p>Specifically, <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a> objects are in charge of how much to indent lines of code, and ensuring that there are spaces between tokens whenever omitting a space would screw up parsing. </p>
 <p>Although this interface is also used by EC#, I've kept it in the <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html" title="Contains classes related to Loyc Expression Syntax (LES), including the parser and printer (reachable...">Les</a> namespace because I'm not yet confident that it's a <em>good</em> design for arbitrary languages.</p>
 </div><table class="memberdecls">
@@ -190,7 +190,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>Dedent</b> ()</td></tr
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

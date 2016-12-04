@@ -90,8 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax Namespace Reference</div>  </div>
 </div><!--header-->
@@ -126,8 +125,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class of all nodes that represent calls such as <code>f(x)</code>, operator calls such as <code>x + y</code>, braced blocks, and all other things that are not simple symbols and literals. <a href="classLoyc_1_1Syntax_1_1CallNode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>CharIndexPositionMapperTests</b></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html">CodeSymbols</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of common symbols that have special meaning somewhere in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> or EC#: operators, built-in data types, keywords, trivia, etc.  <a href="classLoyc_1_1Syntax_1_1CodeSymbols.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +143,15 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html">IIndexToLine</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine</a> method. <a href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A read-only interface for objects that act as <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. <a href="interfaceLoyc_1_1Syntax_1_1ILNode.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html">ILNodePrinter</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface allows serializing <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> objects into the syntax of a particular programming language. <a href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A set of relatively universal printing options that <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html" title="Standard extension methods for ILNodePrinter.">LNodePrinter</a>s should understand. <a href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodeVisitor.html">ILNodeVisitor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for people that want to implement the visitor pattern with <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. If your visitor does not need a base class, use <a class="el" href="classLoyc_1_1Syntax_1_1LNodeVisitor.html" title="Base class for people that want to implement the visitor pattern with LNode.">LNodeVisitor</a> as the base class. <a href="interfaceLoyc_1_1Syntax_1_1ILNodeVisitor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,10 +159,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class for mapping from indexes to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> and back.  <a href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. <a href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. <a href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a text file with a file name and its textual content, plus the data necessary to convert between line-column positions and 0-based integer indexes. <a href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IToLNode.html">IToLNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interface for objects that can be converted to <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. <a href="interfaceLoyc_1_1Syntax_1_1IToLNode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LineAndCol.html">LineAndCol</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds a line number (Line) and a position in the line (PosInLine). This class isn't really needed in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> but is separated from <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> in case anyone might want position without a filename. <a href="classLoyc_1_1Syntax_1_1LineAndCol.html#details">More...</a><br /></td></tr>
@@ -176,6 +185,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html">LNodeFactory</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains helper methods for creating <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s. An <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> holds a reference to the current source file (File) so that it does not need to be repeated every time you create a node.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html">LNodePrinter</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html" title="This interface allows serializing LNode objects into the syntax of a particular programming language...">ILNodePrinter</a>. <a href="classLoyc_1_1Syntax_1_1LNodePrinter.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinterOptions.html">LNodePrinterOptions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A concrete class that users can pass to an <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html" title="Standard extension methods for ILNodePrinter.">LNodePrinter</a>. <a href="classLoyc_1_1Syntax_1_1LNodePrinterOptions.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>LNodeTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeVisitor.html">LNodeVisitor</a></td></tr>
@@ -188,10 +203,10 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the LLLPG Parser API, used with the LLLPG options <code>inputSource</code> and <code>inputClass</code>. <a href="classLoyc_1_1Syntax_1_1ParserSource.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard parsing modes used with <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by Loyc trees.">IParsingService</a>. These modes should also be understood by printers (text serializers). <a href="classLoyc_1_1Syntax_1_1ParsingMode.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard parsing modes used with <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer and parser of a programming language, or a non-programming l...">IParsingService</a> and <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand.">ILNodePrinterOptions</a>. <a href="classLoyc_1_1Syntax_1_1ParsingMode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html">ParsingService</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by Loyc trees.">IParsingService</a>. <a href="classLoyc_1_1Syntax_1_1ParsingService.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer and parser of a programming language, or a non-programming l...">IParsingService</a>. <a href="classLoyc_1_1Syntax_1_1ParsingService.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A four-byte tuple that represents the precedence and miscibility of an operator. <a href="structLoyc_1_1Syntax_1_1Precedence.html#details">More...</a><br /></td></tr>
@@ -317,8 +332,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a3cc0bc90d0030465139158b9c11f479f">NodeStyle.TQStringLiteral</a> = 6, 
 <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a4e961fc5a16c1a0aca144906957d7a2d">NodeStyle.TDQStringLiteral</a> = 7, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1">NodeStyle.Alternate</a> = 8, 
-<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8adbb22e2551d9969f35984d1608e16013">NodeStyle.Alternate2</a> = 16, 
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1">NodeStyle.Alternate</a> = 16, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ab3e89dbb0704ab342331b8760dbfbc23">NodeStyle.InjectedTrivia</a> = 32, 
 <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf">NodeStyle.OneLiner</a> = 64, 
 <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed">NodeStyle.Handled</a> = 128
@@ -338,12 +353,6 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:a160f7be65e55bdcaf1992b3e252ad302"><td class="mdescLeft">&#160;</td><td class="mdescRight">An enum of common operator formats. <a href="namespaceLoyc_1_1Syntax.html#a160f7be65e55bdcaf1992b3e252ad302">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a160f7be65e55bdcaf1992b3e252ad302"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="memItemLeft" align="right" valign="top">delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="memdesc:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signature for a method that serializes a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to text. Each programming language will have one (when complete). <a href="#a6ba7daec9d30e5569a3cc8b4b50e507e">More...</a><br /></td></tr>
-<tr class="separator:a6ba7daec9d30e5569a3cc8b4b50e507e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Loyc.Syntax.dll: contains <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>), lexing stuff, LLLPG base classes (<a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol...">BaseParser</a>{T} and BaseLexer), the LES parser and printer, data types related to source code management (e.g. <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a>) and other general-purpose code related to the manipulation of syntax. </p>
@@ -538,17 +547,17 @@ Functions</h2></td></tr>
 <p>Used for a triple-double-quoted string literal like <code>"""foo"""</code>.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8a918bba63d066b83c418905067fc5cfd1"></a>Alternate&#160;</td><td class="fielddoc">
-<p>If this node has two styles in which it can be printed, this selects the second (either the less common style, or in EC#, the EC# style for features of C# with new syntax in EC#). In EC#, it denotes x(-&gt;int) as opposed to (int)x, and x (as Y) as opposed to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate style for X =&gt; Y, and it forces parens and braces as a side-effect.</p>
+<p>If this node has two styles in which it can be printed, this selects the second (the less common style, or less-well-supported style). In EC#, it denotes x(-&gt;int) as opposed to (int)x, and x (as Y) as opposed to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate style for X =&gt; Y; it forces parens and braces as a side-effect.</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8adbb22e2551d9969f35984d1608e16013"></a>Alternate2&#160;</td><td class="fielddoc">
-<p>Another alternate style flag. In LES and EC#, this is used for binary-format numbers. In LES, it is used for triple-quoted strings that use single quotes.</p>
+<tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8ab3e89dbb0704ab342331b8760dbfbc23"></a>InjectedTrivia&#160;</td><td class="fielddoc">
+<p>Injected trivia (see AbstractTriviaInjector&lt;Trivia&gt;) will have this bit set.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf"></a>OneLiner&#160;</td><td class="fielddoc">
 <p>Indicates that the there is no comment or newline trivia associated with the children of this node, and therefore when printing this node, automatic newlines can be suppressed.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed"></a>Handled&#160;</td><td class="fielddoc">
 <p>Indicates that some part of a compiler has seen the node and done something with it.</p>
-<p>The idea behind this flag relates to compilers that allow user-defined attributes for plug-ins that add functionality. For example, internationalization plug-in might notice a language marker: </p><div class="fragment"><div class="line">MessageBox.Show([en] <span class="stringliteral">&quot;Hello, World!&quot;</span>);</div></div><!-- fragment --><p> If an attribute is not used by any plug-in, the compiler should print a warning that the attribute is unused. This leads to the question, how can a compiler tell if an attribute was used or not? The Handled flag is one possible mechanism; when any part of the compiler or its plug- ins use an attribute, the Handled flag should be set to disable the compiler warning. </p>
+<p>The motivation for this flag relates to compilers that allow user-defined attributes for plug-ins that add functionality. For example, internationalization plug-in might notice a language marker: </p><div class="fragment"><div class="line">MessageBox.Show([en] <span class="stringliteral">&quot;Hello, World!&quot;</span>);</div></div><!-- fragment --><p> If an attribute is not used by any plug-in, the compiler should print a warning that the attribute is unused. This leads to the question, how can a compiler tell if an attribute was ever used? The Handled flag is one possible mechanism; when any part of the compiler or its plug- ins use an attribute, the Handled flag could be set to disable the compiler warning. </p>
 <p>Remember that the same node can theoretically appear in multiple places in a syntax tree, which typically happens when a statement or expression is duplicated by a macro, without being changed. Remember that when a style is changed on such a node, the change is visible at all locations where the same node is used. However, style flags are not synchronized between copies of a node. </p>
 </td></tr>
 </table>
@@ -620,77 +629,11 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a6ba7daec9d30e5569a3cc8b4b50e507e"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">delegate <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Syntax.LNodePrinter </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
-          <td class="paramname"><em>node</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">StringBuilder&#160;</td>
-          <td class="paramname"><em>target</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
-          <td class="paramname"><em>errors</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">object&#160;</td>
-          <td class="paramname"><em>mode</em> = <code>null</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>indentString</em> = <code>&quot;\t&quot;</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>lineSeparator</em> = <code>&quot;\n&quot;</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Signature for a method that serializes a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to text. Each programming language will have one (when complete).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">node</td><td>Node to print</td></tr>
-    <tr><td class="paramname">target</td><td>Output buffer</td></tr>
-    <tr><td class="paramname">mode</td><td>A language-specific way of modifying printer behavior. The printer should ignore the mode object if it does not not understand it.</td></tr>
-    <tr><td class="paramname">indentString</td><td>A string to print for each level of indentation, such as a tab or four spaces.</td></tr>
-    <tr><td class="paramname">lineSeparator</td><td>Line separator, typically "\n" or "\r\n".</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This delegate only prints to a StringBuilder. Printing directly to a stream requires language-specific facilities.</p>
-
-<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>.</p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 08:03:04 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -14,6 +14,7 @@ var searchData=
   ['_5feofposition',['_eofPosition',['../classLoyc_1_1Syntax_1_1StreamCharSource.html#a0b02fffcf7b99fd8a191fa2479725e87',1,'Loyc::Syntax::StreamCharSource']]],
   ['_5fimmcount',['_immCount',['../classLoyc_1_1Collections_1_1VListBlock.html#a959e141487361548360e7b6be59957d5',1,'Loyc::Collections::VListBlock']]],
   ['_5fisfrozen',['_isFrozen',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a6995d02e3d7f430f2a21bfd47bd6d0e3',1,'Loyc::Collections::Impl::AListNode']]],
+  ['_5fisoneliner',['_isOneLiner',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a5b509817c4c61d4912a529cadf79a09f',1,'Loyc::Syntax::Les::Les3Printer']]],
   ['_5fkey',['_key',['../structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#a174c5c93a167f1cc1a891aa4906e0fd6',1,'Loyc::Collections::Impl::KeyWalker']]],
   ['_5fleft',['_left',['../structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#a2b752105a4f9e09c58484d4a31619338',1,'Loyc::Collections::Impl::KeyWalker']]],
   ['_5fmaxnodesize',['_maxNodeSize',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a9d2b4503ed721b25b806622a79e8edc6',1,'Loyc::Collections::Impl::AListNode']]],

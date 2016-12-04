@@ -110,8 +110,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs'>/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/NegListSource.cs'>/Core/Loyc.Essentials/Collections/Adapters/NegListSource.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/ReversedListSource.cs'>/Core/Loyc.Essentials/Collections/Adapters/ReversedListSource.cs</a></li>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/SelectNegLists.cs'>/Core/Loyc.Essentials/Collections/Adapters/SelectNegLists.cs</a></li>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/SelectNegListSources.cs'>/Core/Loyc.Essentials/Collections/Adapters/SelectNegListSources.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/SourceAsCollection.cs'>/Core/Loyc.Essentials/Collections/Adapters/SourceAsCollection.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/ExtensionMethods/LCExtensions.cs'>/Core/Loyc.Essentials/Collections/ExtensionMethods/LCExtensions.cs</a></li>
 </ul>
@@ -163,30 +161,21 @@ static <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlic
 <tr class="memitem:a8cfb154f7f8651be29e8063f922bd415"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html">ISparseListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a8cfb154f7f8651be29e8063f922bd415">AsSparse&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html">ISparseListSource</a>&lt; T &gt; list)</td></tr>
 <tr class="memdesc:a8cfb154f7f8651be29e8063f922bd415"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>list</code> itself. This overload exists to prevent you from accidentally wrapping a sparse list in ListSourceAsSparse&lt;T&gt;, which would block access to knowledge of any empty spaces in the list. <a href="#a8cfb154f7f8651be29e8063f922bd415">More...</a><br /></td></tr>
 <tr class="separator:a8cfb154f7f8651be29e8063f922bd415"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9d9da7c9170fb405a65b516c371632e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9d9da7c9170fb405a65b516c371632e"></a>
-static <a class="el" href="structLoyc_1_1Collections_1_1NegList.html">NegList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#aa9d9da7c9170fb405a65b516c371632e">NegView&lt; T &gt;</a> (this IList&lt; T &gt; list, int zeroOffset)</td></tr>
-<tr class="separator:aa9d9da7c9170fb405a65b516c371632e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b94af86b600f3b363a6fdc4d8884ab7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b94af86b600f3b363a6fdc4d8884ab7"></a>
-static <a class="el" href="structLoyc_1_1Collections_1_1NegList.html">NegList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a8b94af86b600f3b363a6fdc4d8884ab7">NegView&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, int zeroOffset)</td></tr>
-<tr class="separator:a8b94af86b600f3b363a6fdc4d8884ab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60deccc53320ebd6b3513923cff79a36"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60deccc53320ebd6b3513923cff79a36"></a>
-static <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a60deccc53320ebd6b3513923cff79a36">Slice&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int start, int count)</td></tr>
-<tr class="separator:a60deccc53320ebd6b3513923cff79a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bee9cf54cf705d4aa4024225f10a0a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5bee9cf54cf705d4aa4024225f10a0a3"></a>
-static <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html">NegListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a5bee9cf54cf705d4aa4024225f10a0a3">NegView&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int zeroOffset)</td></tr>
-<tr class="separator:a5bee9cf54cf705d4aa4024225f10a0a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb242c00231d06400802af6288ff1fdf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb242c00231d06400802af6288ff1fdf"></a>
+static <a class="el" href="structLoyc_1_1Collections_1_1NegList.html">NegList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#acb242c00231d06400802af6288ff1fdf">AsNegList&lt; T &gt;</a> (this IList&lt; T &gt; list, int zeroOffset)</td></tr>
+<tr class="separator:acb242c00231d06400802af6288ff1fdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27dff03374ac6c3d0b18425cd8477165"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27dff03374ac6c3d0b18425cd8477165"></a>
+static <a class="el" href="structLoyc_1_1Collections_1_1NegList.html">NegList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a27dff03374ac6c3d0b18425cd8477165">AsNegList&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, int zeroOffset)</td></tr>
+<tr class="separator:a27dff03374ac6c3d0b18425cd8477165"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab61aabf57b341fa6b3643de2a9b2d9f2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab61aabf57b341fa6b3643de2a9b2d9f2"></a>
+static <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ab61aabf57b341fa6b3643de2a9b2d9f2">Slice&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int start, int count=int.MaxValue)</td></tr>
+<tr class="separator:ab61aabf57b341fa6b3643de2a9b2d9f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a901a20be3508a24caf12469d86e63aef"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a901a20be3508a24caf12469d86e63aef"></a>
+static <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html">NegListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a901a20be3508a24caf12469d86e63aef">AsNegList&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int zeroOffset)</td></tr>
+<tr class="separator:a901a20be3508a24caf12469d86e63aef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03ee5fea63cd0cf56fe4e07ed01ae02c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Collections_1_1ReversedListSource.html">ReversedListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a03ee5fea63cd0cf56fe4e07ed01ae02c">Reverse&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; c)</td></tr>
 <tr class="memdesc:a03ee5fea63cd0cf56fe4e07ed01ae02c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a reversed view of a read-only list. <a href="#a03ee5fea63cd0cf56fe4e07ed01ae02c">More...</a><br /></td></tr>
 <tr class="separator:a03ee5fea63cd0cf56fe4e07ed01ae02c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a32cdcd0a8ccabc1df539d04d06cdae6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32cdcd0a8ccabc1df539d04d06cdae6f"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1SelectNegLists.html">SelectNegLists</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NegLists&lt; T &gt;</b> (this IList&lt; T &gt; source)</td></tr>
-<tr class="separator:a32cdcd0a8ccabc1df539d04d06cdae6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0adbb4cda031e3208ab75f282f1f909"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0adbb4cda031e3208ab75f282f1f909"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1SelectNegLists.html">SelectNegLists</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NegLists&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; source)</td></tr>
-<tr class="separator:af0adbb4cda031e3208ab75f282f1f909"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a715019abfef7ab0e17b367d30afba9b9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a715019abfef7ab0e17b367d30afba9b9"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1SelectNegListSources.html">SelectNegListSources</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NegLists&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; source)</td></tr>
-<tr class="separator:a715019abfef7ab0e17b367d30afba9b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10751599a72fcd15e0402a9e6cc55207"><td class="memItemLeft" align="right" valign="top">static ICollection&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a10751599a72fcd15e0402a9e6cc55207">AsCollection&lt; T &gt;</a> (this IReadOnlyCollection&lt; T &gt; c)</td></tr>
 <tr class="memdesc:a10751599a72fcd15e0402a9e6cc55207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats any IReadOnlyCollection{T} as a read-only ICollection{T}. <a href="#a10751599a72fcd15e0402a9e6cc55207">More...</a><br /></td></tr>
 <tr class="separator:a10751599a72fcd15e0402a9e6cc55207"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -199,9 +188,6 @@ static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">ILi
 <tr class="memitem:a4283bb7a879466494adfccadc902f510"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4283bb7a879466494adfccadc902f510"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>Join</b> (this System.Collections.IEnumerable list, string separator)</td></tr>
 <tr class="separator:a4283bb7a879466494adfccadc902f510"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f01837db820c1ff6acb82809153d560"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f01837db820c1ff6acb82809153d560"></a>
-static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; TResult &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Select&lt; T, TResult &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; source, Func&lt; T, TResult &gt; selector)</td></tr>
-<tr class="separator:a6f01837db820c1ff6acb82809153d560"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a10751599a72fcd15e0402a9e6cc55207"></a>
@@ -395,7 +381,7 @@ static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">ILi
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Nov 5 2016 07:35:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Dec 4 2016 11:50:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
