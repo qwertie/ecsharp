@@ -16,6 +16,7 @@ using Loyc.Threading;
 using Loyc.Ecs;
 using LeMP.Prelude;
 using System.Threading;
+using System.Xml.Linq;
 
 namespace LeMP
 {
@@ -333,7 +334,7 @@ namespace LeMP
 			if (!options.TryGetValue(key, out value))
 				return null;
 			double num;
-			if (double.TryParse(value, out num)) {
+			if (double.TryParse(value ?? "", out num)) {
 				if ((min == null || num >= min.Value) && 
 					(max == null || num <= max.Value))
 					return num;
@@ -352,6 +353,8 @@ namespace LeMP
 			string value;
 			if (!options.TryGetValue(key, out value))
 				return null;
+			if (value == null)
+				return true;
 			if (value.Equals("true", StringComparison.InvariantCultureIgnoreCase) || value == "1")
 				return true;
 			if (value.Equals("false", StringComparison.InvariantCultureIgnoreCase) || value == "0")
