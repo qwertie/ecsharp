@@ -139,32 +139,40 @@ namespace Loyc
 		_Emergency = 120, // log4net: Emergency = 120000
 	}
 
-	/// <summary>Holds the default message sink for this thread (<see cref="Current"/>),
+	/// <summary>Holds the default message sink for this thread (<see cref="Default"/>),
 	/// <see cref="Symbol"/>s for the common message types, such as Warning and 
 	/// Error, and default instances of <see cref="ConsoleMessageSink"/>,
 	/// <see cref="TraceMessageSink"/> and <see cref="NullMessageSink"/>.</summary>
 	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{
-		[ThreadStatic]
-		static IMessageSink CurrentTLV = null;
+		static ThreadLocalVariable<IMessageSink> DefaultTLV = new ThreadLocalVariable<IMessageSink>();
+		public static IMessageSink Default
+		{
+			get { return DefaultTLV.Value ?? Null; }
+			set { DefaultTLV.Value = value ?? Null; }
+		}
+		[Obsolete("This property is now called Default")]
 		public static IMessageSink Current
 		{
-			get { return CurrentTLV ?? Null; }
-			set { CurrentTLV = value ?? Null; }
+			get { return Default; }
+			set { Default = value; }
 		}
-		/// <summary>Used to change the <see cref="MessageSink.Current"/> property temporarily.</summary>
+		/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
 		/// <example><code>
 		/// using (var old = MessageSink.PushCurrent(MessageSink.Console))
 		///     MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
 		/// </code></example>
-		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
+		public static PushedCurrent SetDefault(IMessageSink sink) { return new PushedCurrent(sink); }
+		[Obsolete("This method is now called SetDefault()")]
+		public static PushedCurrent PushCurrent(IMessageSink sink) { return SetDefault(sink); }
+
 		/// <summary>Returned by <see cref="PushCurrent(IMessageSink)"/>.</summary>
 		public struct PushedCurrent : IDisposable
 		{
 			public readonly IMessageSink OldValue;
-			public PushedCurrent(IMessageSink @new) { OldValue = Current; Current = @new; }
-			public void Dispose() { Current = OldValue; }
+			public PushedCurrent(IMessageSink @new) { OldValue = Default; Default = @new; }
+			public void Dispose() { Default = OldValue; }
 		}
 
 		/// <summary>Gets the location information from the specified object, or

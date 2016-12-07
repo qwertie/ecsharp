@@ -69,7 +69,7 @@ namespace Samples
 						stmt.ReplaceRecursive(node => {
 							var name = PlayPen.GetName(node);
 							if (name != null)
-								MessageSink.Current.Write(Severity.Note, node,
+								MessageSink.Default.Write(Severity.Note, node,
 									"Found {0} named {1}", node.Name, name);
 							return null; // do not change anything
 						});

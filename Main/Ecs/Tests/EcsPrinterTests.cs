@@ -30,9 +30,9 @@ namespace Loyc.Ecs.Tests
 			var sb = new StringBuilder();
 			var mode2 = exprMode ? ParsingMode.Expressions : ParsingMode.Statements;
 			if (input.Calls(S.Splice))
-				EcsLanguageService.Value.Print(input.Args, sb, MessageSink.Current, mode2, options);
+				EcsLanguageService.Value.Print(input.Args, sb, MessageSink.Default, mode2, options);
 			else
-				EcsLanguageService.Value.Print(input, sb, MessageSink.Current, mode2, options);
+				EcsLanguageService.Value.Print(input, sb, MessageSink.Default, mode2, options);
 			AreEqual(result, sb.ToString());
 		}
 

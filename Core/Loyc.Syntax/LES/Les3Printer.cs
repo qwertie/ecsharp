@@ -29,7 +29,7 @@ namespace Loyc.Syntax.Les
 		IMessageSink _messageSink;
 		/// <summary>Target for warning messages.</summary>
 		public IMessageSink MessageSink {
-			get { return _messageSink ?? Loyc.MessageSink.Current; }
+			get { return _messageSink ?? Loyc.MessageSink.Default; }
 			set { _messageSink = value; }
 		}
 

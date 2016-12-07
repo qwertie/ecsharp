@@ -107,7 +107,7 @@ namespace Loyc.Ecs
 				if (parser == null)
 					_parser = parser = new EcsParser(input, file, msgs);
 				else {
-					parser.ErrorSink = msgs ?? MessageSink.Current;
+					parser.ErrorSink = msgs ?? MessageSink.Default;
 					parser.Reset(input, file);
 				}
 				if (inputType == ParsingMode.Expressions)

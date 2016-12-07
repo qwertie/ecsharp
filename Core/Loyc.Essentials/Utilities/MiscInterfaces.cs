@@ -40,4 +40,8 @@ namespace Loyc
 	{
 		T Value { get; }
 	}
+	public interface IHasMutableValue<T> : IHasValue<T>
+	{
+		new T Value { get; set; }
+	}
 }

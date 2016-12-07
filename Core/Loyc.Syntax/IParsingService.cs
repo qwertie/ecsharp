@@ -66,7 +66,7 @@ namespace Loyc.Syntax
 		/// lexer returned by Tokenize() and begins parsing.</summary>
 		/// <param name="input">A source of tokens.</param>
 		/// <param name="msgs">Error and warning messages are sent to this object. 
-		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
+		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Default"/>.</param>
 		/// <param name="mode">Indicates how the input should be parsed.
 		/// <c>null</c> is a synonym for <see cref="ParsingMode.File"/></param>
 		/// <param name="preserveComments">Whether to preserve comments and newlines 
@@ -85,7 +85,7 @@ namespace Loyc.Syntax
 		/// <param name="tokens">List of tokens</param>
 		/// <param name="file">A source file to associate with errors, warnings, and output nodes.</param>
 		/// <param name="msgs">Error and warning messages are sent to this object.
-		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Current"/>.</param>
+		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Default"/>.</param>
 		/// <param name="inputType">Indicates how the input should be parsed.</param>
 		/// <remarks>
 		/// Some languages may offer token literals, which are stored as token trees
@@ -206,12 +206,12 @@ namespace Loyc.Syntax
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Tokenize(ICharSource, string, IMessageSink)"/> using an empty string as the file name.</summary>
 		public static ILexer<Token> Tokenize(this IParsingService parser, UString input, IMessageSink msgs = null)
 		{
-			return parser.Tokenize(input, "", msgs ?? MessageSink.Current);
+			return parser.Tokenize(input, "", msgs ?? MessageSink.Default);
 		}
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Parse(ICharSource, string, IMessageSink, ParsingMode, bool)"/> using an empty string as the file name.</summary>
 		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
-			return parser.Parse(input, "", msgs ?? MessageSink.Current, inputType, preserveComments);
+			return parser.Parse(input, "", msgs ?? MessageSink.Default, inputType, preserveComments);
 		}
 		/// <summary>Parses a string and expects exactly one output.</summary>
 		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>

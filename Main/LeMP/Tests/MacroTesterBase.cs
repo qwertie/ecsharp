@@ -18,7 +18,7 @@ namespace LeMP.Tests
 		[SetUp]
 		public void SetUp() {
 			// Block verbose messages
-			MessageSink.Current = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+			MessageSink.Default = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
 			_msgHolder = new MessageHolder();
 		}
 
@@ -47,9 +47,9 @@ namespace LeMP.Tests
 			// The current printer affects the assert macro and contract macros
 			using (LNode.PushPrinter((ILNodePrinter)outLang))
 			{
-				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Current));
+				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Default));
 				var results = lemp.ProcessSynchronously(inputCode);
-				var expectCode = outLang.Parse(expected, MessageSink.Current);
+				var expectCode = outLang.Parse(expected, MessageSink.Default);
 				if (!results.SequenceEqual(expectCode))
 				{	// TEST FAILED, print error
 					string resultStr = results.Select(n => ((ILNodePrinter)outLang).Print(n)).Join("\n");
@@ -63,7 +63,7 @@ namespace LeMP.Tests
 		}
 		protected virtual MacroProcessor NewLemp(int maxExpand, IParsingService inLang)
 		{
-			var lemp = new MacroProcessor(MessageSink.Current, typeof(LeMP.Prelude.BuiltinMacros));
+			var lemp = new MacroProcessor(MessageSink.Default, typeof(LeMP.Prelude.BuiltinMacros));
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));

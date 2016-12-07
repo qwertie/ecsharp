@@ -120,14 +120,14 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		/// <summary>Throws LogException when it receives an error. Non-errors
-		/// are sent to <see cref="MessageSink.Current"/>.</summary>
+		/// are sent to <see cref="MessageSink.Default"/>.</summary>
 		public static readonly IMessageSink LogExceptionErrorSink = MessageSink.FromDelegate(
 			(sev, location, fmt, args) => {
 				LogMessage msg = new LogMessage(sev, location, fmt, args);
 				if (sev >= Severity.Error)
 					throw new LogException(msg);
 				else
-					msg.WriteTo(MessageSink.Current);
+					msg.WriteTo(MessageSink.Default);
 			});
 		[Obsolete("Please use LogExceptionErrorSink instead")]
 		public static readonly IMessageSink FormatExceptionErrorSink = MessageSink.FromDelegate(
@@ -135,7 +135,7 @@ namespace Loyc.Syntax.Lexing
 				if (sev >= Severity.Error)
 					throw new FormatException(MessageSink.LocationString(location) + ": " + Localize.Localized(fmt, args));
 				else
-					MessageSink.Current.Write(sev, location, fmt, args);
+					MessageSink.Default.Write(sev, location, fmt, args);
 			});
 
 		private IMessageSink _errorSink;

@@ -92,7 +92,7 @@ namespace Loyc.Utilities
 		/// a standard <see cref="Dictionary{K,V}"/> to hold the options, an 
 		/// exception will occur when this method calls Add() to add the duplicate. 
 		/// The exception is caught, the first ocurrance is kept, and a warning 
-		/// message is printed to <see cref="MessageSink.Current"/>.
+		/// message is printed to <see cref="MessageSink.Default"/>.
 		/// <para/>
 		/// To allow duplicates, store options in a different data structure such as 
 		/// <c>List(KeyValuePair(string, string))</c> or <c>BMultiMap(string,string)</c>.
@@ -198,7 +198,7 @@ namespace Loyc.Utilities
 					if (File.Exists(fullpath))
 						fileContents = File.OpenText(fullpath).ReadToEnd();
 				} catch (Exception e) {
-					MessageSink.Current.Write(Severity.Error, s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
+					MessageSink.Default.Write(Severity.Error, s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
 				}
 				if (fileContents != null) {
 					List<string> list = G.SplitCommandLineArguments(fileContents);
@@ -206,7 +206,7 @@ namespace Loyc.Utilities
 					int maxMore = System.Math.Max(0, argLimit - args.Count);
 					if (list.Count > maxMore) {
 						// oops, command limit exceeded
-						MessageSink.Current.Write(Severity.Warning, s, "Limit of {0} commands exceeded", argLimit);
+						MessageSink.Default.Write(Severity.Warning, s, "Limit of {0} commands exceeded", argLimit);
 						list.RemoveRange(maxMore, list.Count - maxMore);
 					}
 
@@ -231,7 +231,7 @@ namespace Loyc.Utilities
 			try {
 				options.Add(new KeyValuePair<string, string>(name.ToLower(), value));
 			} catch {
-				MessageSink.Current.Write(Severity.Warning, option,
+				MessageSink.Default.Write(Severity.Warning, option,
 					"Option --{0} was specified more than once. Only the first instance is used.", name);
 			}
 		}

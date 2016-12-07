@@ -15,7 +15,7 @@ namespace Loyc.Syntax
 		/// <param name="node">A syntax tree to print.</param>
 		/// <param name="target">An output buffer, to which output is appended.</param>
 		/// <param name="sink">An object used to print warning and error messages. If 
-		/// this is null, messages are sent to <see cref="MessageSink.Current"/>.</param>
+		/// this is null, messages are sent to <see cref="MessageSink.Default"/>.</param>
 		/// <param name="mode">Indicates the context in which the node(s) to be printed 
 		/// should be understood (e.g. is it a statement or an expression?).</param>
 		/// <param name="options">A set of options to control printer behavior. If null,
@@ -27,7 +27,7 @@ namespace Loyc.Syntax
 		/// <param name="nodes">Syntax trees to print.</param>
 		/// <param name="target">An output buffer, to which output is appended.</param>
 		/// <param name="sink">An object used to print warning and error messages. If 
-		/// this is null, messages are sent to <see cref="MessageSink.Current"/>.</param>
+		/// this is null, messages are sent to <see cref="MessageSink.Default"/>.</param>
 		/// <param name="mode">Indicates the context in which the node(s) to be printed 
 		/// should be understood (e.g. is it a statement or an expression?).</param>
 		/// <param name="options">A set of options to control printer behavior. If null,

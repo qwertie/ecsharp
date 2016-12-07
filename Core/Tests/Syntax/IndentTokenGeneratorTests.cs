@@ -183,7 +183,7 @@ namespace Loyc.Syntax.Lexing
 		private void Test(string input, string expectOutput, int expectMessages = 0, Severity expectSev = 0)
 		{
 			// Install token-to-string stategy to aid debugging
-			using (G.PushTLV(Token.ToStringStrategyTLV, t => (t.Value ?? ((CalcTokenType)t.TypeInt).ToString()).ToString())) {
+			using (Token.SetToStringStrategy(t => (t.Value ?? ((CalcTokenType)t.TypeInt).ToString()).ToString())) {
 				MessageHolder errorList;
 				var input2 = StripInitialNewline(input);
 				var lexer = new CalculatorLexer(input2) { ErrorSink = errorList = new MessageHolder() };

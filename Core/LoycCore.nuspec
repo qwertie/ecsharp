@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!-- NuGet package specification.
-     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg -->
+     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg 
+     Publishing: see https://docs.nuget.org/ndocs/create-packages/publish-a-package
+-->
 <package >
   <metadata>
     <id>LoycCore</id>

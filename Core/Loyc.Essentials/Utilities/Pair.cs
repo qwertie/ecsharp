@@ -162,7 +162,7 @@ namespace Loyc
 	/// This type is different from the standard <c>Tuple{T}</c> in that the 
 	/// <see cref="Value"/> is a mutable field.
 	/// </remarks>
-	public class Holder<T> : IHasValue<T>
+	public class Holder<T> : IHasMutableValue<T>
 	{
 		public Holder(T value) { Value = value; }
 		public Holder() { }
@@ -170,6 +170,7 @@ namespace Loyc
 		/// <summary>Any value of type T.</summary>
 		public T Value;
 		T IHasValue<T>.Value { get { return Value; } }
+		T IHasMutableValue<T>.Value { get { return Value; } set { Value = value; } }
 
 		public override bool Equals(object obj)
 		{

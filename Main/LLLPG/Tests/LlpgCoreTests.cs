@@ -114,7 +114,7 @@ namespace Loyc.LLParserGenerator
 
 		protected void CheckResult(LNode result, string verbatim)
 		{
-			string output = EcsLanguageService.WithPlainCSharpPrinter.Print(result, MessageSink.Current);
+			string output = EcsLanguageService.WithPlainCSharpPrinter.Print(result, MessageSink.Default);
 			Assert.AreEqual(StripExtraWhitespace(verbatim), StripExtraWhitespace(output));
 		}
 		public static string StripExtraWhitespace(string a)

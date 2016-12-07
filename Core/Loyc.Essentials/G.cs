@@ -220,22 +220,5 @@ namespace Loyc
 			HtmlEntityTable.TryGetValue(c, out name);
 			return name;
 		}
-
-		/// <summary>Helper function for a using statement that temporarily 
-		/// modifies a thread-local variable.</summary>
-		/// <param name="variable">Variable to change</param>
-		/// <param name="newValue">New value</param>
-		/// <example>
-		/// // Temporarily change the method used to convert tokens to strings
-		/// using (G.PushTLV(Token.ToStringStrategyTLV, t => /* TODO */))
-		/// {
-		///	    Token t = new Token(...);
-		///	    Console.WriteLine(t.ToString());
-		/// }
-		/// </example>
-		public static PushedTLV<T> PushTLV<T>(ThreadLocalVariable<T> variable, T newValue)
-		{
-			return new PushedTLV<T>(variable, newValue);
-		}
 	}
 }

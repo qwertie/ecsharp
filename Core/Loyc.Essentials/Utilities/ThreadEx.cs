@@ -465,7 +465,7 @@ namespace Loyc.Threading
 	/// TODO: consider switching from TinyReaderWriterLock+Dictionary to 
 	/// ConcurrentDictionary which has fine-grained locking (.NET 4 only).
 	/// </remarks>
-	public class ThreadLocalVariable<T> : ThreadLocalVariableBase
+	public class ThreadLocalVariable<T> : ThreadLocalVariableBase, IHasMutableValue<T>
 	{
 		public delegate TResult Func<TArg0, TResult>(TArg0 arg0);
 

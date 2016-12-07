@@ -285,7 +285,12 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Returns true if the specified type and value match this token.</summary>
 		public bool Is(int type, object value) { return type == TypeInt && object.Equals(value, Value); }
 
-		public static readonly ThreadLocalVariable<Func<Token, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,string>>(Loyc.Syntax.Les.TokenExt.ToString);
+		static readonly ThreadLocalVariable<Func<Token, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,string>>(Loyc.Syntax.Les.TokenExt.ToString);
+		public static SavedValue<Func<Token, string>> SetToStringStrategy(Func<Token, string> newValue)
+		{
+			return new SavedValue<Func<Token, string>>(ToStringStrategyTLV, newValue);
+		}
+
 		/// <summary>Gets or sets the strategy used by <see cref="ToString"/>.</summary>
 		public static Func<Token, string> ToStringStrategy
 		{
