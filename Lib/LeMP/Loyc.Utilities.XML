@@ -4,834 +4,482 @@
         <name>Loyc.Utilities</name>
     </assembly>
     <members>
-        <member name="T:Loyc.Geometry.BoundingBoxMath">
-            <summary>Math and extension methods for <see cref="T:Loyc.Geometry.BoundingBox`1"/>.</summary>
-            <remarks>This contains many methods that could be considered "core" methods.
-            they are implemented as extension methods instead for performance reasons,
-            because as a generic class, <see cref="T:Loyc.Geometry.BoundingBox`1"/> cannot do 
-            arithmetic quickly.</remarks>
+        <member name="M:Loyc.Collections.Impl.CPBitArrayLeaf`1.MoveFirst(Loyc.Collections.Impl.CPEnumerator{`0})">
+            (1) Add()s an Entry to e.Stack pointing to the first (lowest) item in 
+                the node, using e.Key.Offset as the value of Entry.KeyOffset;
+            (2) extracts the key to e.Key such that e.Key.Offset+e.Key.Left is the
+                length of the complete key (if e.Key.Buffer is too small, it is
+                copied to a larger buffer as needed);
+            (3) if the current item points to a child, this method advances e.Key 
+                to the end of the key so that e.Key.Left is 0, and calls MoveFirst 
+                on the child;
+            (4) otherwise, this method leaves e.Key.Offset equal to
+                e.Stack.Last.KeyOffset, so that e.Key.Left is the number of bytes
+                of the key that are stored in this node.
         </member>
-        <member name="T:Loyc.Geometry.LineMath">
-            <summary>Contains algorithms that operate on lines.</summary>
+        <member name="T:Loyc.Collections.Impl.CPBNode`1">
+            <summary>This CPTrie "bitmap" node splits the 8-bit alphabet space into 8
+            buckets of 5 bytes each; a CPSNode is used to store the keys in each
+            bucket.</summary>
+            <typeparam name="T">Type of values associated with each key</typeparam>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)">
-            <summary>Simplifies a polyline using the Douglas-Peucker line 
-            simplification algorithm. This algorithm removes points that are 
-            deemed unimportant; the output is a subset of the input.</summary>
-            <typeparam name="List">Original unsimplified polyline</typeparam>
-            <param name="output">The output polyline is added in order to this collection</param>
-            <param name="tolerance">The distance between the input polyline and the 
-            output polyline will never exceed this distance. Increase this value to 
-            simplify more aggressively.</param>
-            <returns>The number of output points.</returns>
-            <remarks>
-            The average time complexity of this algorithm is O(N log N). 
-            The worst-case time complexity is O(N^2).
-            </remarks>
+        <member name="F:Loyc.Collections.Impl.CPBNode`1._zlk">
+            <summary>The value associated with a zero-length key, if any, is stored
+            here directly rather than in any of the children.</summary>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Double}},System.Double)">
-            <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
+        <member name="T:Loyc.Collections.Impl.CPByteTrie`1">
+            <summary>A compact patricia trie that uses byte arrays as keys.</summary>
+            <typeparam name="TValue">Type of value associated with each key.</typeparam>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Performs projection, which finds the point on a line segment 
-            or infinite line that is nearest to a specified point.</summary>
-            <param name="seg">The line segment</param>
-            <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
-            <param name="end">Set to 0 if the point is on the line segment (including
-            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
-            <returns>The projected point.</returns>
-            <remarks>
-            This algorithm is fast and accurate, and can be easily adapted to 3D.
-            A special advantage of this approach is that it runs fastest when the 
-            point is projected onto one of the endpoints (when infiniteLine is 
-            false).
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.Add(System.Byte[],`0)">
+            <summary>Adds the specified key-value pair to the trie, throwing an
+            exception if the key is already present.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.Add(System.Byte[],System.Int32,System.Int32,`0)">
+            <summary>Adds the specified key-value pair to the trie, throwing an
+            exception if the key is already present.</summary>
+            <param name="key">An array that contains the key to add. The offset
+            and length parameters specify a substring of this array to use as the key.</param>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.TryAdd(System.Byte[],`0)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <param name="value">A value to associate with the specified key if the
+            key does not already exist.</param>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.TryAdd(System.Byte[],System.Int32,System.Int32,`0@)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <param name="key">An array that contains the key to find. The offset
+            and length parameters specify a substring of this array to use as the key.</param>
+            <param name="value">On entry, value specifies the value to associate
+            with the specified key, but if the key already exists, value is changed
+            to the value associated with the existing key.</param>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.ContainsKey(System.Byte[])">
+            <summary>Searches for the specified key, returning true if it is
+            present in the trie.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.ContainsKey(System.Byte[],System.Int32,System.Int32)">
+            <summary>Searches for the specified key, returning true if it is
+            present in the trie.</summary>
+            <param name="key">An array that contains the key to find. The offset
+            and length parameters specify a substring of this array to use as the key.</param>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.Remove(System.Byte[])">
+            <summary>Removes the specified key and associated value, returning true
+            if the entry was found and removed.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.Remove(System.Byte[],System.Int32,System.Int32,`0@)">
+            <summary>Removes the specified key and associated value, returning true
+            if the entry was found and removed.</summary>
+            <param name="key">An array that contains the key to find. The offset
+            and length parameters specify a substring of this array to use as the key.</param>
+            <param name="oldValue">If the key is found, the associated value is
+            assigned to this parameter. Otherwise, this parameter is not changed.</param>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPByteTrie`1.TryGetValue(System.Byte[],`0@)">
+            <summary>Finds the specified key and gets its associated value,
+            returning true if the key was found.</summary>
+        </member>
+        <member name="P:Loyc.Collections.Impl.CPByteTrie`1.Item(System.Byte[],`0)">
+            <summary>Finds the specified key and returns its associated value. If 
+            the key did not exist, TryGetValue returns defaultValue instead.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.CPIntTrie`1">
+            <summary>A trie that supports signed and unsigned keys with sizes up to 64
+            bits. Special encodings are used to preserve the sort order among integers
+            of different sizes while using variable-length keys.</summary>
+            <typeparam name="TValue">Type of value associated with each key.</typeparam>
+            <remarks>This trie allows you to insert integers of different sizes. Two
+            integers of different sizes that have the same value are considered
+            equivalent. You can insert a key as an Int16, then extract it as an Int32,
+            for example.
             <para/>
-            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-            See section "Distance of a Point to a Ray or Segment"
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Gets the projection of a point onto a line, expressed as a 
-            fraction where 0 represents the start of the line and 1 represents the 
-            end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
-            (0, 1) if the projection is outside the line segment. If this is false,
-            the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
-            <returns>The fraction of p along seg, as explained already. If seg is
-            zero-length, the result is always 0.</returns>
-            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Single},System.Single)">
-            <summary>Given a fraction between zero and one, calculates a point 
-            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
-            <remarks>If you just want the midpoint, call Midpoint() which 
-            is faster. If the fraction is outside the range [0,1], the result
-            will be along the infinite extension of the line. If the two points
-            are the same, this method always returns the same point as long as
-            the math doesn't overflow, possibly with slight deviations caused 
-            by floating-point rounding.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Single})">
-            <summary>Returns the midpoint, (A + B) >> 1.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@)">
-            <summary>Computes the location that lines, rays or line segments 
-            intersect, expressed as a fraction of the distance along each 
-            LineSegment.</summary>
-            <param name="P">First line segment</param>
-            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
-            <param name="pFrac">Fraction along P of the intersection point. If this
-            method returns false, pFrac is still computed. If the hypothetical
-            intersection point of the infinite extension of P and Q is beyond the 
-            P.A side of the line, pFrac is set to an appropriate negative value if 
-            pType is Infinite and 0 otherwise. If the hypothetical intersection
-            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
-            and a value above 1 otherwise.</param>
-            <param name="Q">Second line segment</param>
-            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
-            <param name="qFrac">Fraction along Q of the intersection point. If this
-            method returns false, qFrac may be <c>NaN</c> if the analysis of line
-            P already determined that pFrac is beyond the range of line P. In other 
-            words, if Q is assumed to be an infinite line and P still does not 
-            intersect with Q, qFrac is set to NaN because the method aborts 
-            analysis to avoid wasting CPU time. On the other hand, if this method 
-            determines that P might intersect with Q, but a full analysis shows 
-            that it does not, the method returns false and sets qFrac to a real 
-            number. qFrac is set to 0 if the intersection point of the infinite 
-            extension of Q is on the Q.A side of the line, and 1 if the 
-            intersection point is on the Q.B side of the line.</param>
-            <returns>True if the lines intersect, false otherwise.</returns>
-            <remarks>
-            This method does not do a bounding-box check. If you are doing 
-            calculations with line segments and you expect the majority of your
-            intersection calculations to return false, you may save time by 
-            testing whether the bounding boxes of the lines overlap before calling 
-            this method.
+            This collection implements two versions of IDictionary: one using Int32
+            keys and another using Int64 keys. When calling a method on the class
+            itself (i.e. not on an interface), Int64 is used in case of ambiguity (for
+            example, GetEnumerator() doesn't know if you want to decode the keys into
+            Int32 or Int64, so it uses Int64.) When not accessing CPIntTrie through an
+            interface, most methods accept any of the following integer types: Int16,
+            UInt16, Int32, UInt32, Int64, UInt64.
             <para/>
-            If the input segments contain NaNs, the result is false and pFrac/qFrac
-            will be NaN.
+            The trie does not choose the key length based on an integer's size (e.g.
+            Int32 or Int64), rather it is chosen based on the key's magnitude. Keys
+            ranging from -0x10000 to 0xFAFFFF are encoded most compactly (usually in one
+            4-byte cell); 40-bit keys as low as -0xFFFFFFFFFF and as high as
+            0xFFFFFFFFFF are usually encoded in 2 cells; and all larger keys require 3 
+            cells.
             <para/>
-            If the either of the line segments are degenerate (single points), 
-            overlap can still be detected and the LineType of the degenerate line
-            has no effect; the degenerate line is always treated as a point.
-            If both lines are points, the method will return true iff they are the
-            same point, and if true is returned, pFrac will be 0.5f
+            I say "usually" because normally CPSNode can hold 3 bytes per cell, but
+            keys whose low-order byte is 0xFD, 0xFE or 0xFF require one extra cell.
             <para/>
-            The output fractions pFrac and qFrac will be infinite if the magnitude 
-            of the result overflows.
-            <para/>
-            If the two line segments are parallel but do not overlap, this method
-            returns false; pFrac and qFrac are both set to NaN. If the two lines 
-            are parallel and overlap, a region of overlap is detected and pFrac
-            and qFrac refer to the center of this region of overlap. If, in this
-            case, P and/or Q are rays or infinite lines, this method behaves as
-            though P and/or Q are extended to cover each other. For instance, 
-            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
-            Q.A.X=10, Q.B.X=16:
-            <pre>
-                   P.A---------------P.B         Q.B---------------------Q.A
-            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-            </pre>
-            If P and Q are both line segments, there is no overlap and this method 
-            will return false. However, if Q is a Ray or an infinite line, it 
-            extends toward negative infinity and the minimum overlap between the 
-            lines is 0..6. In this case, the region of overlap is considered to be 
-            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
-            line. If P is a line segment, the midpoint is 3, and pFrac will be set
-            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
-            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
-            qFrac will be 1.333.
+            Negative 64-bit numbers can be held in the same trie as unsigned 64-bit 
+            numbers; therefore, there is no way to represent all keys using a single
+            primitive data type. The LongEnumerator returns Int64s, and you will find 
+            that if a huge unsigned number like 0x8877665544332211 is in the trie, it 
+            will come out as a negative Int64. To find out whether the long number is 
+            signed or unsigned, call ContainsKey(Int64) - if it returns true, the
+            number is signed, otherwise it is unsigned (so its signed representation
+            was not found). If it is unsigned, convert the key returned by the
+            enumerator to UInt64.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Computes the intersection point between two lines, rays or 
-            line segments.</summary>
-            <remarks>This method is implemented based on the other overload,
-            <see cref="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@)"/>.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.BoundingBox{System.Single})">
-            <summary>Quickly clips a line to a bounding box.</summary>
-            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
-            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Performs projection, which finds the point on a line segment 
-            or infinite line that is nearest to a specified point.</summary>
-            <param name="seg">The line segment</param>
-            <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
-            <param name="end">Set to 0 if the point is on the line segment (including
-            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
-            <returns>The projected point.</returns>
-            <remarks>
-            This algorithm is fast and accurate, and can be easily adapted to 3D.
-            A special advantage of this approach is that it runs fastest when the 
-            point is projected onto one of the endpoints (when infiniteLine is 
-            false).
-            <para/>
-            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-            See section "Distance of a Point to a Ray or Segment"
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Gets the projection of a point onto a line, expressed as a 
-            fraction where 0 represents the start of the line and 1 represents the 
-            end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
-            (0, 1) if the projection is outside the line segment. If this is false,
-            the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
-            <returns>The fraction of p along seg, as explained already. If seg is
-            zero-length, the result is always 0.</returns>
-            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Double},System.Double)">
-            <summary>Given a fraction between zero and one, calculates a point 
-            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
-            <remarks>If you just want the midpoint, call Midpoint() which 
-            is faster. If the fraction is outside the range [0,1], the result
-            will be along the infinite extension of the line. If the two points
-            are the same, this method always returns the same point as long as
-            the math doesn't overflow, possibly with slight deviations caused 
-            by floating-point rounding.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Double})">
-            <summary>Returns the midpoint, (A + B) >> 1.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@)">
-            <summary>Computes the location that lines, rays or line segments 
-            intersect, expressed as a fraction of the distance along each 
-            LineSegment.</summary>
-            <param name="P">First line segment</param>
-            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
-            <param name="pFrac">Fraction along P of the intersection point. If this
-            method returns false, pFrac is still computed. If the hypothetical
-            intersection point of the infinite extension of P and Q is beyond the 
-            P.A side of the line, pFrac is set to an appropriate negative value if 
-            pType is Infinite and 0 otherwise. If the hypothetical intersection
-            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
-            and a value above 1 otherwise.</param>
-            <param name="Q">Second line segment</param>
-            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
-            <param name="qFrac">Fraction along Q of the intersection point. If this
-            method returns false, qFrac may be <c>NaN</c> if the analysis of line
-            P already determined that pFrac is beyond the range of line P. In other 
-            words, if Q is assumed to be an infinite line and P still does not 
-            intersect with Q, qFrac is set to NaN because the method aborts 
-            analysis to avoid wasting CPU time. On the other hand, if this method 
-            determines that P might intersect with Q, but a full analysis shows 
-            that it does not, the method returns false and sets qFrac to a real 
-            number. qFrac is set to 0 if the intersection point of the infinite 
-            extension of Q is on the Q.A side of the line, and 1 if the 
-            intersection point is on the Q.B side of the line.</param>
-            <returns>True if the lines intersect, false otherwise.</returns>
-            <remarks>
-            This method does not do a bounding-box check. If you are doing 
-            calculations with line segments and you expect the majority of your
-            intersection calculations to return false, you may save time by 
-            testing whether the bounding boxes of the lines overlap before calling 
-            this method.
-            <para/>
-            If the input segments contain NaNs, the result is false and pFrac/qFrac
-            will be NaN.
-            <para/>
-            If the either of the line segments are degenerate (single points), 
-            overlap can still be detected and the LineType of the degenerate line
-            has no effect; the degenerate line is always treated as a point.
-            If both lines are points, the method will return true iff they are the
-            same point, and if true is returned, pFrac will be 0.5f
-            <para/>
-            The output fractions pFrac and qFrac will be infinite if the magnitude 
-            of the result overflows.
-            <para/>
-            If the two line segments are parallel but do not overlap, this method
-            returns false; pFrac and qFrac are both set to NaN. If the two lines 
-            are parallel and overlap, a region of overlap is detected and pFrac
-            and qFrac refer to the center of this region of overlap. If, in this
-            case, P and/or Q are rays or infinite lines, this method behaves as
-            though P and/or Q are extended to cover each other. For instance, 
-            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
-            Q.A.X=10, Q.B.X=16:
-            <pre>
-                   P.A---------------P.B         Q.B---------------------Q.A
-            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-            </pre>
-            If P and Q are both line segments, there is no overlap and this method 
-            will return false. However, if Q is a Ray or an infinite line, it 
-            extends toward negative infinity and the minimum overlap between the 
-            lines is 0..6. In this case, the region of overlap is considered to be 
-            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
-            line. If P is a line segment, the midpoint is 3, and pFrac will be set
-            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
-            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
-            qFrac will be 1.333.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Computes the intersection point between two lines, rays or 
-            line segments.</summary>
-            <remarks>This method is implemented based on the other overload,
-            <see cref="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@)"/>.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.BoundingBox{System.Double})">
-            <summary>Quickly clips a line to a bounding box.</summary>
-            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
-            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
-        </member>
-        <member name="T:Loyc.Geometry.LineType">
-            <summary>Indicates how a <see cref="T:Loyc.Geometry.LineSegment`1"/> should be treated in
-            a math algorithm: as a segment (the default), as a ray originating at A 
-            (extending B infinitely), or as an line that is infinite in both directions.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.PointMath">
-            <summary>Math and extension methods for <see cref="T:Loyc.Geometry.Point`1"/>.</summary>
-            <remarks>This contains many methods that should be considered "core" 
-            functionality, including many methods such as Add(), Sub() and Mul() that 
-            would ordinarily be implemented as operators (+ - *) if it weren't for 
-            limitations of C#. These operations are implemented as extension methods for 
-            performance reasons, because as a generic class, <see cref="T:Loyc.Geometry.Point`1"/> 
-            cannot do arithmetic quickly. The extension methods provide operations that 
-            are optimized for specific data types (currently int, float and double).</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross``1(Loyc.Geometry.Vector{``0},Loyc.Geometry.Vector{``0})">
-            <summary>Computes the "cross product" of a pair of vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90``1(Loyc.Geometry.Vector{``0})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector``1(Loyc.Geometry.LineSegment{``0})">
-            <summary>Returns the vector from A to B (seg.B - seg.A)</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.HalfwayTo``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
-            <summary>Returns the midpoint between A and B ((a + b) / 2)</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Int32})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Single})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Single})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Double})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Double})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.Point)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.PointF)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Point)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Vector)">
-            <summary>Converts a BCL Vector to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.Point)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.PointF)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Windows.Point)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.To``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
-            <summary>Constructs a <see cref="T:Loyc.Geometry.LineSegment`1"/> from two points.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the absolute value of vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector3{``0})">
-            <summary>Gets the absolute value of vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Int32},Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Int32})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Single},Loyc.Geometry.Vector3{System.Single})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Single})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Single})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Single})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Single})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Single})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Double},Loyc.Geometry.Vector3{System.Double})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Double})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Double})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Double})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Double})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Double})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="T:Loyc.Geometry.PolygonMath">
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.TryAdd(System.Int32,`0)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <param name="value">A value to associate with the specified key if the
+            key does not already exist.</param>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.TryAdd(System.Int32,`0@)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <param name="value">On entry, value specifies the value to associate
+            with the specified key, but if the key already exists, value is changed
+            to the value associated with the existing key.</param>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.Add(System.Int32,`0)">
+            <summary>Adds the specified key-value pair to the trie, throwing an
+            exception if the key is already present.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.ContainsKey(System.Int32)">
+            <summary>Searches for the specified key, returning true if it is
+            present in the trie.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.Remove(System.Int32)">
+            <summary>Removes the specified key and associated value, returning true
+            if the entry was found and removed.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.Remove(System.Int32,`0@)">
+            <summary>Removes the specified key and associated value, returning true
+            if the entry was found and removed.</summary>
+            <param name="key">Key to remove.</param>
+            <param name="oldValue">If the key is found, the associated value is
+            assigned to this parameter. Otherwise, this parameter is not changed.</param>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPIntTrie`1.TryGetValue(System.Int32,`0@)">
+            <summary>Finds the specified key and gets its associated value,
+            returning true if the key was found.</summary>
+        </member>
+        <member name="P:Loyc.Collections.Impl.CPIntTrie`1.Item(System.Int32,`0)">
+            <summary>Finds the specified key and returns its associated value. If 
+            the key did not exist, returns defaultValue instead.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.SCell">
+            <summary>Standard cell, used to encode keys in a CPSNode</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.CPSNode`1">
+            <summary>This CPTrie "sparse" or "standard" node stores up to 34 keys or
+            partial keys and their associated values. See my CPTrie article on 
+            CodeProject.com for more information.</summary>
+            <typeparam name="T">Type of values associated with each key</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPSNode`1.PrepareSpace(System.Int32,Loyc.Collections.Impl.CPNode{`0}@)">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            Makes sure there is a free cell at _count, and that there are enough 
+            free cells for a new key of the specified length. Child node(s) are 
+            created if necessary; in the worst case, the whole node is converted
+            to a bitmap node.
             </summary>
+            <param name="keyLeft"></param>
+            <param name="self"></param>
+            <returns>Returns the first index affected by any modifications, or -1 
+            if 'self' changed</returns>
+            <remarks>
+            Sparse nodes are "reorganized" when they run out of free space, when
+            Count reaches MaxCount, or when the number of values reaches 32.
+            <para/>
+            Well, actually if we run out of free space we can either reorganize, or
+            allocate more space, unless the number of cells reaches MaxCells.
+            <para/>
+            Another problem that this method must address is what to do if there are
+            enough free cells, but the cell at _count is in use. This problem only 
+            occurs if there is fragmentation in the free cell list.  In that case an
+            O(_count+_extraCellsUsed) scan would be needed to find who is using the 
+            cell and relocate it, but it's easier (and not much slower) just to do 
+            the same compaction process that is done when enlarging _cells.
+            <para/>
+            Compaction moves all free cells to the middle of the array, which helps
+            ensure that when _count needs to increase, _cells[_count] is free.
+            <para/>
+            There are two "reorganizing" options:
+            1. Create a child node to free up space (can be done repeatedly)
+            2. Convert this node to a JPBitmap node (TODO)
+            <para/>
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPSNode`1.ExtractKey(System.Int32,Loyc.Collections.Impl.KeyWalker@,System.Int32@)">
+            <summary>Appends the key at the specified index to kw, allocating new 
+            buffer space if needed.</summary>
+            <param name="index">Index of the key to extract</param>
+            <param name="kw">The key is written to kw starting at kw.Buffer[kw.Offset]</param>
+            <param name="finalP">The value of LCell.P in the key's final cell.</param>
+            <remarks>kw.Left is 0 on exit.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPSNode`1.FindCommonPrefix(System.Int32@,System.Int32@,System.Int32@)">
+            <summary>Finds the "best" common prefix to factor out into a child node.</summary>
+            <param name="bestIndex">First index of a range of items with a common prefix</param>
+            <param name="bestLength">Number of items with a common prefix (minimum 2)</param>
+            <param name="bestPrefixBytes">Number of bytes this range of items has in common</param>
+            <returns>An estimate of the number of cells that will be freed up by 
+            creating a child node, or 0 if there are no common prefixes in this 
+            node.</returns>
+        </member>
+        <member name="P:Loyc.Collections.Impl.CPSNode`1.CellInfo">
+            <summary>Debugging aid: spits out the contents of each 4-byte cell</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.CPEnumerator`1">
+            <summary>Traverses a <see cref="T:Loyc.Collections.CPTrie`1"/>. Returned by 
+            <see cref="M:Loyc.Collections.CPTrie`1.ValueEnumerator"/>.</summary>
+        </member>
+        <member name="P:Loyc.Collections.Impl.CPEnumerator`1.IsValid">
+            <summary>Returns true if this enumerator points to an item and Current
+            is valid.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.KeyWalker">
+            <summary>Internal implementation class. Represents a pointer to a location 
+            within a byte array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPNode`1.MoveFirst(Loyc.Collections.Impl.CPEnumerator{`0})">
+            <summary>Sets up the specified enumerator to point at the first item in
+            this node.</summary>
+            <remarks>
+            On entry to the method, e.Key.Buffer[0..e.Key.Offset] specifies the
+            prefix on all keys in the node. On exit, e.Key.Offset should remain the
+            same unless MoveFirst was called on a child node.
+            <para/>
+            This method
+            (1) Add()s an Entry to e.Stack pointing to the first (lowest) item in 
+                the node, using e.Key.Offset as the value of Entry.KeyOffset;
+            (2) extracts the key to e.Key such that e.Key.Offset+e.Key.Left is the
+                length of the complete key (if e.Key.Buffer is too small, it is
+                copied to a larger buffer as needed);
+            (3) if the current item points to a child, this method advances e.Key 
+                to the end of the key so that e.Key.Left is 0, and calls MoveFirst 
+                on the child;
+            (4) otherwise, this method leaves e.Key.Offset equal to
+                e.Stack.Last.KeyOffset, so that e.Key.Left is the number of bytes
+                of the key that are stored in this node.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPNode`1.MoveLast(Loyc.Collections.Impl.CPEnumerator{`0})">
+            <summary>Does the same thing as MoveFirst except that the last item is
+            retrieved instead of the first one.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPNode`1.MoveNext(Loyc.Collections.Impl.CPEnumerator{`0})">
+            <summary>Moves to the next item in the node.</summary>
+            <returns>Returns true if the next item was extracted or false if the 
+            end of the node was reached.</returns>
+            <remarks>
+            Upon entry to this method, e.Stack.Last.Node == this
+                                   and e.Stack.Last.KeyOffset == e.Key.Offset.
+            <para/>
+            This method
+            (1) increases e.Stack.Last.Index to point to the next item in the node;
+            (2) returns false if Index has advanced past the last item in the node;
+            (3) otherwise, repeats steps (2)-(4) in the documentation of
+                MoveFirst() and returns true.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.CPNode`1.MovePrev(Loyc.Collections.Impl.CPEnumerator{`0})">
+            <summary>Does the same thing as MovePrev except that it moves to the
+            previous item instead of the next item.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.KeylessHashtable`1">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            A fairly obscure space-saving hashtable that offers no built-in way to 
+            store keys, only values. Because there are no keys, the hashtable cannot
+            be rehashed when it is full, and searching for a given key finds all
+            values in the same bucket, some of which may be unrelated.
             </summary>
+            <remarks>
+            My primary primary motivation for this data structure is compactness. It's 
+            comparable to a "counting bloom filter", in that searching for a key can
+            find false positives, but not false negatives, but it offers the additional
+            feature that one or more values can be associated with each key.
+            <para/>
+            The size per entry dependends on the size of the hashtable. This data 
+            structure is the most compact when its size is limited to 65536 entries and 
+            buckets; its overhead doubles when you exceed this limit, since "shorts" 
+            become "ints".
+            <para/>
+            The Count is allowed to exceed the Capacity, but it is not allowed to cross
+            a size threshold (255 or 65535). Capacity returns the number of buckets,
+            so if Count exceeds Capacity, it simply means there are more items than 
+            buckets, so there will be a larger-than-normal amount of "false positives" 
+            (multiple items will typically be returned from a search).
+            <para/>
+            The size requirement per entry is 2 bytes (plus sizeof(T)) for a table of
+            size 255 or less, 4 bytes (plus sizeof(T)) for a table of size 65535 or 
+            less, and 8 bytes (plus sizeof(T)) for larger tables. Prime number sizes
+            are generally preferred for best performance.
+            <para/>
+            The memory for buckets (1-4 bytes) is allocated up-front, but other memory
+            is allocated on-demand. For example, if you create a new hashtable with 
+            capacity 251 and add 50 items, 251 bytes are allocated up-front, but less
+            than 100 * (1+sizeof(T)) additional bytes are allocated.
+            <para/>
+            By its very nature, KeylessHashtable allows multiple values to be 
+            associated with a single key.
+            <para/>
+            A normal hashtable could theoretically be built on top of this one by
+            storing the key and value together in type T.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.Impl.KeylessHashtable`3">
+            <summary>The concrete implementation of <see cref="T:Loyc.Collections.Impl.KeylessHashtable`1"/>.
+            Do not use directly; instead, call <see cref="M:Loyc.Collections.Impl.KeylessHashtable`1.New(System.Int32)"/>.</summary>
+        </member>
+        <member name="T:Loyc.Collections.CPStringTrie`1">
+            <summary>A compact patricia trie that uses strings as keys.</summary>
+            <remarks>This data structure can be very space-efficient when asked to 
+            store a large numbers of keys with common prefixes; maximum efficiency is
+            achieved when the associated values are all (or almost all) null.</remarks>
+            <typeparam name="TValue">Type of value associated with each key.</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.CPStringTrie`1.TryAdd(System.String,`0)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.CPStringTrie`1.TryAdd(System.String,`0@)">
+            <summary>Adds the specified key-value pair only if the specified key is
+            not already present in the trie.</summary>
+            <param name="value">On entry, value specifies the value to associate
+            with the specified key, but if the key already exists, value is changed
+            to the value associated with the existing key.</param>
+            <returns>Returns true if the key-value pair was added or false if
+            the key already existed. In the false case, the trie is not modified.</returns>
+        </member>
+        <member name="T:Loyc.Collections.CPStringTrie`1.Enumerator">
+            <summary>Enumerates key-value pairs in a CPStringTrie.</summary>
+            <remarks>Reading the key is more expensive than reading the value
+            because the key must be decoded from the bytes it is made up of.
+            If you call CurrentValue instead of Current or CurrentKey, the
+            work of decoding the key will be avoided. If you only need to
+            enumerate the values, enumerate the Values collection instead of 
+            the trie class itself.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.CPStringTrie`1.KeyEnumerator">
+            <summary>Enumerates keys of a CPStringTrie.</summary>
+            <remarks>
+            Avoid calling Current more than once per key, as each call requires the
+            key to be decoded from the bytes it is made up of.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.CPStringTrie`1.KeyCollection">
+            <summary>Return value of <see cref="P:Loyc.Collections.CPStringTrie`1.Keys"/>.</summary>
+        </member>
+        <member name="T:Loyc.Collections.CPTrie`1">
+            <summary>Compact patricia tree class that stores keys as byte arrays.
+            This class is intended to be use as a base class; a derived class can
+            give meaning to the byte arrays, e.g. CPStringTrie encodes strings into
+            byte arrays so they can be placed in the trie.</summary>
+            <remarks>
+            An <a href="http://www.codeproject.com/Articles/61230/CPTrie-A-sorted-data-structure-for-NET">article</a>
+            is available online the CPTrie data types.
+            </remarks>
+            <typeparam name="T">Type of values to be associated with the keys. CPTrie
+            can save memory if many or all values are null; therefore, if you wish
+            to store a set rather than a dictionary, set T=object and associate null
+            with every key.</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.CPTrie`1.StringToBytes(System.String)">
+            <summary>Converts a string to a sequence of bytes suitable for use in 
+            the trie. For speed, a simplified UTF-8 encoding is used, where 
+            surrogate pairs are not specially handled.</summary>
+            <param name="key">Key to convert to bytes.</param>
+            <returns>The key encoded in bytes.</returns>
+        </member>
+        <member name="M:Loyc.Collections.CPTrie`1.BytesToString(System.Byte[],System.Int32)">
+            <summary>Converts a sequence of bytes (key[0..keyLength-1]) that was 
+            previously encoded with StringToBytes to a string</summary>
+            <remarks>The buffer length is not relevant, as this method may store 
+            the key in a scratch buffer that is longer than the key; therefore
+            the second parameter specifies the length.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.CPTrie`1.Find(Loyc.Collections.Impl.KeyWalker@,`0@)">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            Retrieves the value associated with the specified key; does nothing if
+            the key does not exist.
             </summary>
+            <returns>Returns true if the key was found.</returns>
+        </member>
+        <member name="M:Loyc.Collections.CPTrie`1.Set(Loyc.Collections.Impl.KeyWalker@,`0@,Loyc.Collections.Impl.CPMode)">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            Associates the specified value with the specified key.
             </summary>
+            <param name="key">A key to find or create; if key.Offset > 0, bytes
+            before that offset are ignored.</param>
+            <param name="value">Value to assign to the node, depending on the value
+            of mode. On return, value is set to the previous value for the given key.</param>
+            <param name="mode">Specifies whether to create an entry if the key is
+            not present, and whether to change an existing entry. If mode is Find,
+            Set() only retrieves an existing value; it does not change the trie.</param>
+            <returns>Returns true if the specified key already existed and false if 
+            it did not.</returns>
+        </member>
+        <member name="M:Loyc.Collections.CPTrie`1.Remove(Loyc.Collections.Impl.KeyWalker@,`0@)">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            Removes the specified key and associated value.
             </summary>
+            <param name="key">Key to find; if key.Offset > 0, bytes before that 
+            offset are ignored.</param>
+            <param name="value">If the key was found, its associated value is
+            stored in this parameter; otherwise, the parameter is left unchanged.</param>
+            <returns>Returns true if the specified key was found and removed.</returns>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
+        <member name="M:Loyc.Collections.CPTrie`1.CountMemoryUsage(System.Int32)">
+            <summary>Calculates the memory usage of this object, assuming a 32-bit
+            architecture.</summary>
+            <param name="sizeOfT">Size of data type T. CountMemoryUsage doesn't use
+            sizeof(T), as it would force the code to be marked "unsafe".</param>
+            <returns>Estimated number of bytes used by this object</returns>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
+        <member name="T:Loyc.Collections.CPValueCollection`1">
+            <summary>Provides read-only access to the values of a CPTrie.</summary>
+            <typeparam name="T">Type of values in the collection</typeparam>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
+        <member name="M:Loyc.Collections.CPTrieBenchmark.GetIntClusters(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>Builds a set of clustered keys for benchmarking CPIntTrie.
+            "clustered" means that keys come in groups called clusters. Keys in a
+            cluster are near one other.</summary>
+            <param name="clusterMax">Number of keys per cluster will be in the range clusterMax/2..clusterMax.</param>
+            <param name="spacerMax">Each cluster is separated by a spacer of size 1..spacerMax.</param>
+            <param name="clusterSpread">Difference between consecutive keys within the cluster is 1..clusterSpread.</param>
+            <param name="numKeys">Number of keys total</param>
+            <returns></returns>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
+        <member name="M:Loyc.Collections.CPTrieBenchmark.GetLongClusters(System.Int32,System.Int32,System.Int64,System.Int32,System.Int64)">
+            <summary>Same as GetIntClusters, but gets longs instead.</summary>
+        </member>
+        <member name="T:Loyc.Collections.CPTrieTests">
+            <summary>
+            Test suite for CPStringTrie, CPByteTrie and CPIntTrie
+            </summary>
             <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
+            This is a fairly basic set of tests. Quite a few methods are untested,
+            incuding the entire CPValueCollection, CPStringTrie.KeyCollection and
+            CPByteTrie.KeyCollection classes. Also, the benchmark (CPTrieBenchmark) is
+            meant to serve as a large-scale stress test, but there is no stress test
+            for CPBNode, as the alphabet in the benchmark is not large enough to cause
+            CPSNode to split into CPBNode.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Geometry.PointExt">
-            <summary>Contains methods for manipulating points in generic code.</summary>
-            <remarks>Using <see cref="T:Loyc.Geometry.PointMath"/> extension methods is easier. These
-            methods may be faster but they require a "math" structure (see <see cref="T:Loyc.Math.Maths`1"/>).</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Add``3(``2,``0,``0)">
-            <summary>Returns the sum of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Subtract``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Returns the difference between two points or vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Multiply``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector multiplied by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Divide``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector divided by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftLeft``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled up by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftRight``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled down by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.MulDiv``2(``1,Loyc.Geometry.IPoint{``0},``0,``0)">
-            <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Dot``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the dot product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Cross``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the cross product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Rot90``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector rotated 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Negate``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector with its direction reversed.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Quadrance``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the square of the length of a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Length``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the length of a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Angle``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
+        <member name="M:Loyc.Collections.ByteArrayComparer.Compare(System.Byte[],System.Byte[])">
+            <summary>Compares two byte arrays, returning -1 if A is less than B and
+            1 if A is greater than B.</summary>
+            <remarks>null is considered "less" than any non-null array.</remarks>
         </member>
         <member name="T:Loyc.Utilities.GoInterface">
             <summary>Mainly for internal use by the other GoInterface classes.</summary>
@@ -1494,7 +1142,7 @@
             a standard <see cref="T:System.Collections.Generic.Dictionary`2"/> to hold the options, an 
             exception will occur when this method calls Add() to add the duplicate. 
             The exception is caught, the first ocurrance is kept, and a warning 
-            message is printed to <see cref="P:Loyc.MessageSink.Current"/>.
+            message is printed to <see cref="P:Loyc.MessageSink.Default"/>.
             <para/>
             To allow duplicates, store options in a different data structure such as 
             <c>List(KeyValuePair(string, string))</c> or <c>BMultiMap(string,string)</c>.

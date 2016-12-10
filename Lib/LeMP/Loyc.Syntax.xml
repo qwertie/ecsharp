@@ -4,98 +4,17 @@
         <name>Loyc.Syntax</name>
     </assembly>
     <members>
-        <member name="T:Loyc.Syntax.Les.LesIndentTokenGenerator">
-            <summary>Indent postprocessor for Loyc Expression Syntax</summary>
-            <remarks>
-            LES's "Python mode" is comparable to Python's rules, but I want LES with 
-            Python mode to be able to parse <i>most</i> of the code that was designed 
-            for LES without Python mode. For example, in LES (without indentation 
-            processing) you could write a statement like
-            <code>
-            if foo "foo "
-                + "detected " +
-                "here";
-            </code>
-            And I'd like this code to still parse OK when <c>IndentTokenGenerator</c> 
-            is inserted into the pipeline. Therefore, <see cref="T:Loyc.Syntax.Les.LesIndentTokenGenerator"/>
-            will allow unexpected indentation and treat it as a way of continuing 
-            the previous statement.
-            <para/>
-            Code like
-            <code>
-              if condition:
-                 then();
-              if condition:
-                 then();
-              :else:
-                 otherwise();
-              foo
-              : bar;
-            </code>
-            is translated to this (where [ and ] represent Indent and Dedent):
-            <code>
-              if condition: [
-                 then(); };
-              ] ;
-              if condition: [
-                 then();
-              ] else [
-                 otherwise(); 
-              ] ;
-              foo bar;
-            </code>
-            Notice that dedents are normally followed by semicolons, and that colons 
-            are suppressed if they appear at the beginning of a line AND block the 
-            generation of a semicolon. A colon is not suppressed if it does not have
-            this effect; forexample
-            <code>
-            :
-                hi();
-                : Foo;
-            </code>
-            means
-            <code>
-            {
-                hi();
-                `:` Foo;
-            };
-            </code>
-            <para/>
-            Note: originally I allowed code such as
-            <code>
-            if foo: if bar: print(foo + bar);
-                print(foo only);
-            </code>
-            as equivalent to
-            <code>
-            if foo { if bar { print(foo + bar);
-                print(foo only); }; };
-            </code>
-            But I decided it would be better to treat code such as
-            <code>
-            x = a:b;
-            </code>
-            as a simple statement instead. This means, however, that
-            <code>
-            if Foo: x = 5;
-            </code>
-            does not have the meaning you would expect! You must use braces for this:
-            <code>
-            if Foo { x = 5; };
-            </code>
-            </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesLexer">
+        <member name="T:Loyc.Syntax.Les.Les2Lexer">
             <summary>Lexer for EC# source code.</summary>
             <seealso cref="T:Loyc.Syntax.Lexing.ILexer`1"/>
             <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
         </member>
-        <member name="F:Loyc.Syntax.Les.LesLexer.SkipValueParsing">
+        <member name="F:Loyc.Syntax.Les.Les2Lexer.SkipValueParsing">
             <summary>Used for syntax highlighting, which doesn't care about token values.
             This option causes the Token.Value to be set to a default, like '\0' for 
             single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},Loyc.UString,System.Boolean)">
+        <member name="M:Loyc.Syntax.Les.Les2Lexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},Loyc.UString,System.Boolean)">
             <summary>Parses a normal or triple-quoted string that still includes 
             the quotes. Supports quote types '\'', '"' and '`'.</summary>
             <param name="sourceText">input text</param>
@@ -104,9 +23,9 @@
             following a newline is ignored as long as it matches this string. 
             For example, if the text following a newline is "\t\t Foo" and this
             string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
-            <param name="ecsTQIndents">Enable EC# triple-quoted string indent
+            <param name="les3TQIndents">Enable EC# triple-quoted string indent
             rules, which allow an additional one tab or three spaces of indent.
-            (It hasn't been decided whether to support this in LES.)</param>
+            (I'm leaning toward also supporting this in LES; switched on in v3)</param>
             <returns>The decoded string</returns>
             <remarks>This method recognizes LES and EC#-style string syntax.
             Firstly, it recognizes triple-quoted strings (''' """ ```). These 
@@ -123,12 +42,12 @@
             NOT supported.
             </remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString,System.Boolean)">
+        <member name="M:Loyc.Syntax.Les.Les2Lexer.UnescapeQuotedString(Loyc.UString@,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString,System.Boolean)">
             <summary>Parses a normal or triple-quoted string that still includes 
             the quotes (see documentation of the first overload) into a 
             StringBuilder.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.UnescapeString(Loyc.UString@,System.Char,System.Boolean,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString,System.Boolean)">
+        <member name="M:Loyc.Syntax.Les.Les2Lexer.UnescapeString(Loyc.UString@,System.Char,System.Boolean,System.Action{System.Int32,System.String},System.Text.StringBuilder,Loyc.UString,System.Boolean)">
             <summary>Parses a normal or triple-quoted string whose starting quotes 
             have been stripped out. If triple-quote parsing was requested, stops 
             parsing at three quote marks; otherwise, stops parsing at a single 
@@ -138,7 +57,7 @@
             a string that is not triple-quoted).</returns>
             <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.ParseIdentifier(Loyc.UString@,System.Action{System.Int32,System.String},System.Boolean@)">
+        <member name="M:Loyc.Syntax.Les.Les2Lexer.ParseIdentifier(Loyc.UString@,System.Action{System.Int32,System.String},System.Boolean@)">
             <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
             <c>@`foo`</c> or <c>@--punctuation--</c>.
             </summary>
@@ -151,7 +70,7 @@
             it is an LES named literal such as @false or @null.</param>
             <returns>The parsed version of the identifier.</returns>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesLexer.ParseNumberCore(Loyc.UString,System.Boolean,System.Int32,System.Boolean,Loyc.Symbol,System.String@)">
+        <member name="M:Loyc.Syntax.Les.Les2Lexer.ParseNumberCore(Loyc.UString,System.Boolean,System.Int32,System.Boolean,Loyc.Symbol,System.String@)">
             <summary>Parses the digits of a literal (integer or floating-point),
             not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
             <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
@@ -164,79 +83,335 @@
             if isNegative is true but the type suffix is unsigned or the number 
             is larger than long.MaxValue.</returns>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesLanguageService">
-            <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
-            parser and printer for Loyc Expression Syntax (LES).</summary>
+        <member name="T:Loyc.Syntax.Les.Les2Parser">
+            <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
+            trees (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
             <remarks>
-            LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+            You can use <see cref="F:Loyc.Syntax.Les.Les2LanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/>
+            to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
+            <para/>
+            This class expects to receive tokens from <see cref="T:Loyc.Syntax.Les.Les2Lexer"/> that have been 
+            preprocessed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>, with whitespace tokens filtered out.
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesNodePrinter">
-            <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
-            <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
+        <member name="M:Loyc.Syntax.Les.Les2Parser.Start(Loyc.Holder{Loyc.Syntax.Les.TokenType})">
+            <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
         </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis">
+        <member name="P:Loyc.Syntax.Les.Les3Lexer.PreferCustomLiterals">
+            <summary>If this flag is true, all literals except plain strings and
+            true/false/null are stored as CustomLiteral, bypassing number parsing 
+            so that all original characters are preserved if the output is written 
+            back to text.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3Parser.ToPositiveLiteral(Loyc.Syntax.Lexing.Token)">
+            <summary>Helper method used in Expr for cases like x-2, which is an 
+            Id token followed by a NegativeLiteral token, which needs to be 
+            reinterpreted as a subtraction by <i>positive</i> 2.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.Les3PrettyPrinter">
+            <summary>
+            A variant of <see cref="T:Loyc.Syntax.Les.Les3Printer"/> that adds syntax highlighting 
+            in one of three ways: as console output, as HTML output, or as 
+            <see cref="T:Loyc.Syntax.Les.LesColorCode"/> control codes. 
+            </summary>
+            <remarks>
+            Create an instance by invoking the constructor, then call 
+            <see cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToConsole(Loyc.Syntax.ILNode,System.Boolean)"/> for console output, <see cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean,Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)"/> 
+            for HTML output, or <see cref="M:Loyc.Syntax.Les.Les3Printer.Print(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode})"/> 
+            for just control codes.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrettyPrinter.ColorCodesToCssClasses">
+            <summary>The lookup table of strings for control codes (<see cref="T:Loyc.Syntax.Les.LesColorCode"/> 
+            values) to HTML classes, used by <see cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean)"/>.</summary>
+            <remarks>This property is null by default, which causes the default 
+            table to be used. See <see cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.GetDefaultCssClassTable"/> for more 
+            information.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.#ctor(Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Creates an instance of this class, which produces plain LES 
+            augmented with control codes.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.#ctor(System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Creates an instance of this class, which produces plain LES 
+            augmented with control codes.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.GetDefaultCssClassTable">
+            <summary>The lookup table of strings for control codes (<see cref="T:Loyc.Syntax.Les.LesColorCode"/> values) to HTML classes.</summary>
+            <remarks>
+            For example, <c>GetDefaultCssClassTable()[(int)LesColorCode.Number]</c> indicates 
+            the default CSS class to use for numbers.
+            <para/>
+            If the entry for a given code is null, no span element is emitted, which 
+            shortens the output.
+            <para/>
+            The default class names are shared with the Pygments syntax highlighting
+            system. A list of the CSS classes available in Pygments is available 
+            <a href="https://github.com/zeke/pygments-tokens">at this link</a>.
+            Only a small subset of these classes are used in this table.
+            <para/>
+            Here is some suitable CSS:
+            <pre>
+            .highlight { background-color: #f8f8f8; color: #111; }
+            .highlight .c  { color: #5A5; } /* Comment */
+            .highlight .n  { color: #111; } /* Name (omitted by default) */
+            .highlight .m  { color: #909; } /* Number */
+            .highlight .s  { color: #B44; } /* String */
+            .highlight .l  { color: #B04; } /* Literal (other) */
+            .highlight .kc { color: #41F; } /* Keyword.Constant */
+            .highlight .o  { color: #940; } /* Operator */
+            .highlight .p  { color: #111; } /* Punctuation (omitted by default) */
+            .highlight .kp { color: #33A; } /* Keyword.Pseudo (@attribute) */
+            .highlight .nb { color: #007; } /* Name.Builtin (#specialId) */
+            .highlight .k  { color: #11F; } /* Keyword (.dotId) */
+            .highlight .x  { color: #D00; } /* Other */
+            .highlight .pi { color: #B50; } /* Parenthesis Inner (()) */
+            </pre>
+            <para/>
+            Note: LesTokenCode.Opener and LesTokenCode.Closer are handled 
+            specially. An opener and its matching closer (e.g. '(' and ')') are always 
+            given the same color, but nested parens/brackets are given alternating 
+            colors (CSS classes), with the entry for LesTokenCode.Opener used for outer
+            parens and the entry for LesTokenCode.Closer used for inner parens. The
+            default class name is "pi" for inner parentheses; no class name is used
+            for outer parens. "pi" is not a standard name, so if you're using a 
+            standard Pygment stylesheet you should add an extra line, e.g.
+            <pre>
+            .highlight .p { color: #111; } /* Punctuation (includes , ; { }) */
+            .highlight .pi { color: #B50; } /* Parenthesis Inner */
+            </pre>
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean,Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Prints an LNode as LESv3 with HTML syntax highlighting elements.</summary>
+            <param name="nodes">Syntax trees to print.</param>
+            <param name="output">Output StringBuilder for HTML code.</param>
+            <param name="addPreCode">Whether to wrap the output in "&lt;pre class='highlight'>&lt;code>" tags.</param>
+            <param name="options">Options to control the style for code printing.</param>
+            <returns>The output StringBuilder</returns>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean)">
+            <inheritdoc cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean,Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)"/>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(Loyc.Syntax.ILNode,System.Text.StringBuilder,System.Boolean)">
+            <inheritdoc cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtml(System.Collections.Generic.IEnumerable{Loyc.Syntax.ILNode},System.Text.StringBuilder,System.Boolean,Loyc.IMessageSink,Loyc.Syntax.ILNodePrinterOptions)"/>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3PrettyPrinter.PrintToHtmlCore(System.Text.StringBuilder,System.Text.StringBuilder,System.Boolean,System.String,System.String[])">
+            <summary>Converts a StringBuilder with <see cref="T:Loyc.Syntax.Les.LesColorCode"/> 
+            control codes to HTML with Pygments CSS class codes.</summary>
+            <param name="input">Input containing <see cref="T:Loyc.Syntax.Les.LesColorCode"/> control characters.</param>
+            <param name="output">Output StringBuilder for HTML code. If null, a new one is created.</param>
+            <param name="addPreCode">Whether to wrap the output in "&lt;pre class='highlight'>&lt;code>" tags.</param>
+            <param name="newline">What to write to <c>output</c> when '\n' is encountered.</param>
+            <param name="colorCodesToCssClasses">CSS class table for span tags, 
+            see <see cref="M:Loyc.Syntax.Les.Les3PrettyPrinter.GetDefaultCssClassTable"/>.</param>
+            <returns>The output StringBuilder.</returns>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesColorCode">
+            <summary>These codes are produced as control characters (i.e. cast to char)
+            in the output of <see cref="T:Loyc.Syntax.Les.Les3PrettyPrinter"/>.</summary>
+            <remarks>
+            A note about implementation coupling: <see cref="T:Loyc.Syntax.Les.Les3PrettyPrinter"/> relies 
+            on color codes provided to it by the base class <see cref="T:Loyc.Syntax.Les.Les3Printer"/>.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3Printer.MessageSink">
+            <summary>Target for warning messages.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les3Printer._isOneLiner">
+            <summary>Indicates whether the <see cref="F:Loyc.Syntax.NodeStyle.OneLiner"/> 
+            flag is present on the current node or any of its parents. It 
+            suppresses newlines within braced blocks.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.Les3Printer.Chars">
+            <summary>
+            Based on these flags, StartToken() and WriteToken() ensure that two 
+            adjacent tokens aren't treated like a single token when reparsed, by 
+            printing a space between them if necessary.
+            </summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.Les3Printer.NewlineContext">
+            <summary>Used to help keep track of where newline trivia (and single-
+            line comments ending in a newline) are permitted, to avoid printing
+            newline trivia where it would count as "end of expression".</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceInsideListBrackets">
+            <summary>Whether to print a space inside square brackets for lists <c>[ ... ]</c>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceInsideArgLists">
+            <summary>Whether to print a space inside argument lists like <c>f( ... )</c>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceInsideGroupingParens">
+            <summary>Whether to print a space inside grouping parentheses <c>( ... )</c>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceInsideTuples">
+            <summary>Whether to print a space inside tuples like <c>f( ...; )</c>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceAfterComma">
+            <summary>Whether to print a space after each comma in an argument list.</summary>
+            <remarks>Initial value: true</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.AllowExtraParenthesis">
             <summary>Introduces extra parenthesis to express precedence, without
             using an empty attribute list [] to allow perfect round-tripping.</summary>
             <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
             <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
             add the trivia attribute #trivia_inParens.)</remarks>
         </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitMissingArguments">
-            <summary>When an argument to a method or macro has the value <c>@``</c>,
-            it will be omitted completely if this flag is set.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitSpaceTrivia">
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.OmitSpaceTrivia">
             <summary>When this flag is set, space trivia attributes are ignored
             (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
         </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitComments">
-            <summary>When this flag is set, comment trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.WarnAboutUnprintableLiterals">
+            <summary>Whether to print a warning when an "unprintable" literal is 
+            encountered. In any case the literal is converted to a string, placed 
+            in double quotes and prefixed by the unqualified Type of the Value.</summary>
+            <remarks>Initial value: true</remarks>
         </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals">
-            <summary>When the printer encounters an unprintable literal, it calls
-            Value.ToString(). When this flag is set, the string is placed in double
-            quotes; when this flag is clear, it is printed as raw text.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitUnknownTrivia">
-            <summary>Causes unknown trivia (other than comments, spaces and raw 
-            text) to be dropped from the output.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.PrintExplicitTrivia">
-            <summary>Causes comments and spaces to be printed as attributes in order 
-            to ensure faithful round-trip parsing. By default, only "raw text" and
-            unrecognized trivia is printed this way. Note: #trivia_inParens is 
-            always printed as parentheses.</summary>
-        </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.ObeyRawText">
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.ObeyRawText">
             <summary>Causes raw text to be printed verbatim, as the EC# printer does.
             When this option is false, raw text trivia is printed as a normal 
             attribute.</summary>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesNodePrinter.Mode">
-            <summary>TODO: these modes no longer apply, remove them</summary>
+        <member name="F:Loyc.Syntax.Les.Les3PrinterOptions.SpacesBetweenAppendedStatements">
+            <summary>Whether to add a space between multiple statements printed on
+            one line (initial value: true).</summary>
         </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.Wsa">
-            <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
-            python-style code block.</summary>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.UseRedundantSemicolons">
+            <summary>If true, a semicolon is used in addition to the usual newline to 
+            terminate each expression inside braced blocks and at the top level.</summary>
+            <remarks>Regardless of this flag, a semicolon is forced to appear when a 
+            node uses <see cref="F:Loyc.Syntax.CodeSymbols.TriviaAppendStatement"/> to put multiple 
+            expressions on one line.</remarks>
         </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.InParens">
-            <summary>Inside parenthesis (implies Wsa, and additionally allows 
-            ':' as an operator).</summary>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.PrefixNotationOnly">
+            <summary>
+            Print purely in prefix notation, e.g. <c>`'+`(2,3)</c> instead of <c>2 + 3</c>.
+            </summary>
         </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartStmt">
+        <member name="F:Loyc.Syntax.Les.Les3PrinterOptions.SpaceAroundInfixStopPrecedence">
+            <summary>The printer avoids printing spaces around infix (binary) 
+            operators that have the specified precedence or higher.</summary>
+            <seealso cref="T:Loyc.Syntax.Les.LesPrecedence"/>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les3PrinterOptions.SpaceAfterPrefixStopPrecedence">
+            <summary>The printer avoids printing spaces after prefix operators 
+            that have the specified precedence or higher.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.ForcedLineBreakThreshold">
+            <summary>Although the LES3 printer is not designed to insert line breaks
+            mid-expression or to keep lines under a certain length, this option can 
+            avoid extremely long lines in some cases, by (1) inserting line breaks 
+            after commas in argument lists, or after very long attribute lists, and 
+            (2) ignoring the <see cref="F:Loyc.Syntax.NodeStyle.OneLiner"/> flag or 
+            <see cref="F:Loyc.Syntax.CodeSymbols.TriviaAppendStatement"/> attribute when an 
+            expression within a braced block starts after this column on a line.
+            </summary>
+            <remarks>
+            The default value is 120.
+            <para/>
+            Setting the threshold to zero forces all "statements" (expressions 
+            in braces) to appear on a new line. Lines can still be arbitrarily long 
+            with this option, since breaks are only added at the end of expressions 
+            within a braced block.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.CustomLiteral">
+            <summary>A custom literal is a normal number or string paired with a 
+            (typically unrecognized) type prefix or suffix.</summary>
+            <remarks>This structure is used as the value of an LESv3 token to 
+            represent non-standard numbers and strings such as <c>1.1unum</c> 
+            and <c>bytes"ab cd"</c></remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.CustomLiteral.Value">
+            <summary>The numeric or string value of the literal.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.CustomLiteral.TypeMarker">
+            <summary>A prefix or suffix on the literal that represents some 
+            additional meaning.</summary>
+            <remarks>In LESv3, this field becomes the sole parameter <c>s</c> 
+            of a <c>#trivia_literalType(s)</c> attribute attached to the <see cref="T:Loyc.Syntax.LNode"/>
+            that represents the literal.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.Les2LanguageService">
+            <summary>The <see cref="F:Loyc.Syntax.Les.Les2LanguageService.Value"/> property provides easy access to the lexer, 
+            parser and printer for Loyc Expression Syntax (LES).</summary>
+            <remarks>
+            LES overview: http://loyc.net/les
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesLanguageService">
+            <summary>Alternate name for Les2LanguageService (will change to Les3LanguageService in the future)</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.Les2Printer">
+            <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
+            <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les2Printer._isOneLiner">
+            <summary>Indicates whether the <see cref="F:Loyc.Syntax.NodeStyle.OneLiner"/> 
+            flag is present on the current node or any of its parents. It 
+            suppresses newlines within braced blocks.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les2Printer.StartStmt">
             <summary>Context: beginning of main expression (potential superexpression)</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesNodePrinter.IsNormalIdentifier(Loyc.Symbol)">
+        <member name="M:Loyc.Syntax.Les.Les2Printer.IsNormalIdentifier(Loyc.Symbol)">
             <summary>Returns true if the given symbol can be printed as a 
             normal identifier, without an "@" prefix. Note: identifiers 
             starting with "#" still count as normal; call <see cref="P:Loyc.Syntax.LNode.HasSpecialName"/> 
             to detect this.</summary>
         </member>
+        <member name="T:Loyc.Syntax.Les.Les2PrinterOptions">
+            <summary>Options to control the way Loyc trees are printed by <see cref="T:Loyc.Syntax.Les.Les2Printer"/>.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.AllowChangeParentheses">
+            <summary>Introduces extra parenthesis to express precedence, without
+            using an empty attribute list [] to allow perfect round-tripping.</summary>
+            <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
+            <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
+            add the trivia attribute #trivia_inParens.)</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.PrintTriviaExplicitly">
+            <summary>Causes comments and spaces to be printed as attributes in order 
+            to ensure faithful round-trip parsing. By default, only "raw text" and
+            unrecognized trivia is printed this way. Note: #trivia_inParens is 
+            always printed as parentheses, and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia"/> 
+            has no effect when this flag is true.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.OmitMissingArguments">
+            <summary>When an argument to a method or macro has the value <c>@``</c>,
+            it will be omitted completely if this flag is set.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.OmitSpaceTrivia">
+            <summary>When this flag is set, space trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaNewline"/>).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.QuoteUnprintableLiterals">
+            <summary>When the printer encounters an unprintable literal, it calls
+            Value.ToString(). When this flag is set, the string is placed in double
+            quotes; when this flag is clear, it is printed as raw text.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.ObeyRawText">
+            <summary>Causes raw text to be printed verbatim, as the EC# printer does.
+            When this option is false, raw text trivia is printed as a normal 
+            attribute.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les2PrinterOptions.SpacesBetweenAppendedStatements">
+            <summary>Whether to add a space between multiple statements printed on
+            one line (initial value: true).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les2PrinterOptions.SpaceAroundInfixStopPrecedence">
+            <summary>The printer avoids printing spaces around infix (binary) 
+            operators that have the specified precedence or higher.</summary>
+            <seealso cref="T:Loyc.Syntax.Les.LesPrecedence"/>
+        </member>
+        <member name="F:Loyc.Syntax.Les.Les2PrinterOptions.SpaceAfterPrefixStopPrecedence">
+            <summary>The printer avoids printing spaces after prefix operators 
+            that have the specified precedence or higher.</summary>
+        </member>
         <member name="T:Loyc.Syntax.Les.INodePrinterWriter">
             <summary>This interface is implemented by helper objects that handle the 
-            low-level details of node printing. It is used by <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>.</summary>
+            low-level details of node printing. It is used by <see cref="T:Loyc.Syntax.Les.Les2Printer"/>.</summary>
             <remarks>Specifically, INodePrinterWriter objects are in charge of how much
             to indent lines of code, and ensuring that there are spaces between tokens
             whenever omitting a space would screw up parsing.
@@ -254,27 +429,13 @@
             decreased by Dedent().</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.DefaultNodePrinterWriter">
-            <summary>Base class for the helper classes of <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>
+            <summary>Base class for the helper classes of <see cref="T:Loyc.Syntax.Les.Les2Printer"/>
             and <see cref="!:Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
             EcsNodePrinterWriter. See <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>.</summary>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesNodePrinterWriter">
-            <summary>Helper class of <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/> that ensures there is 
+        <member name="T:Loyc.Syntax.Les.Les2PrinterWriter">
+            <summary>Helper class of <see cref="T:Loyc.Syntax.Les.Les2Printer"/> that ensures there is 
             a tokens are spaced apart properly.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Les.LesParser">
-            <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
-            trees (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
-            <remarks>
-            You can use <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/>
-            to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
-            <para/>
-            This class expects to receive tokens from <see cref="T:Loyc.Syntax.Les.LesLexer"/> that have been 
-            preprocessed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>, with whitespace tokens filtered out.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.Les.LesParser.Start(Loyc.Holder{Loyc.Syntax.Les.TokenType})">
-            <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.LesPrecedence">
              <summary>Contains <see cref="T:Loyc.Syntax.Precedence"/> objects that represent the 
@@ -283,68 +444,81 @@
              In LES, the precedence of an operator is decided based simply on the text 
              of the operator. The precedence of each one-character operator is 
              predefined; the precedence of any operator with two or more characters 
-             is decided based on the last character, or the first and last character;
-             the middle characters, if any, do not affect precedence.
+             is decided based on the first and last characters (according to
+             the rules below). Other characters, if any, do not affect precedence.
              <para/>
-             The LES precedence table is designed to match most programming languages.
-             <para/>
-             As a nod to functional languages, the arrow operator "->" is right-
-             associative and has a precedence below '*' so that <c>int * int -> int</c>
-             parses as <c>(int * int) -> int</c> rather than <c>int * (int -> int)</c> 
-             as in the C family of languages.
+             The LES precedence table mostly matches popular programming languages,
+             i.e. those in the C family.
              <para/>
              An operator consists of a sequence of the following characters:
              <pre>
-                ~ ! % ^ &amp; * \ - + = | &lt; > / ? : . $
+                ~ ! % ^ * - + = | &lt; > / ? : . &amp;
              </pre>
-             Or a backslash (\) followed by a sequence of the above characters and/or 
-             letters, numbers, underscores or #s. Or a string with `backtick quotes`.
+             In addition, the $ character is allowed as the first character and, if
+             present, it forces the operator to be interpreted as a prefix operator.
              <para/>
-             "@" is not considered an operator. It is used to mark a sequence of 
-             punctuation and/or non-punctuation characters as an identifier, a symbol,
-             or a special literal. "#" is not an operator; like an underscore, the 
-             hash sign is considered to be an identifier character, and while it is 
-             conventionally used to mark "keywords", the parser does not assign any 
-             special meaning to it.
+             LESv3 also has operators that start with a single quote, which can include
+             both letters and punctuation (e.g. <c>'|foo|</c>). The quote itself is 
+             ignored for the purpose of choosing precedence. LESv2 has <c>`backquoted`</c> 
+             operators instead, whereas in LESv3 backquoted strings are simply 
+             identifiers. 
              <para/>
-             "," and ";" are not considered operators; rather they are separators, and
-             they cannot be combined with operators. For example, "?,!" is parsed as 
-             three separate tokens.
+             It is notable that the following punctuation cannot be used in operators:
+             <ul>
+             <li>"@" is used for multiple other purposes.</li>
+             <li>"#" is conventionally used to mark "keywords" (although in LESv2, the 
+             parser treats it like an underscore or a letter.)</li>
+             <li>"," and ";" are separators, so for example, "?,!" is parsed as three 
+             separate tokens.</li>
+             <li>The backslash "\" is reserved for future use.</li>
+             </ul>
              <para/>
              The following table shows all the precedence levels and associativities
-             of the "built-in" LES operators, except `backtick` and the "lambda" 
-             operator =>, which is special. Each precedence level has a name, which 
-             corresponds to a static field of this class. All binary operators are 
-             left-associative unless otherwise specified.
+             of the "built-in" LES operators, except a couple of special operators such
+             as the "lambda" operator =>, whose precedence is different on the left side 
+             than on the right side. Each precedence level has a name, which corresponds 
+             to a static field of this class. All binary operators are left-associative 
+             unless otherwise specified.
              <ol>
              <li>Substitute: prefix $ . :</li>
              <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
              <li>NullDot: binary ?. ::</li>
              <li>DoubleBang: binary right-associative !!</li>
-             <li>Prefix: prefix ~ ! % ^ &amp; * - + `backtick`</li>
+             <li>Prefix: prefix ~ ! % ^ * / - + &amp; `backtick` (LESv2 only)</li>
              <li>Power: binary **</li>
-             <li>Suffix2: suffix \\</li>
              <li>Multiply: binary * / % \ >> &lt;&lt;</li>
              <li>Add: binary + -</li>
              <li>Arrow: binary right-associative -> &lt;-</li>
-             <li>AndBits: binary &amp;</li>
-             <li>OrBits: binary | ^</li>
-             <li>OrIfNull: binary ??</li>
              <li>PrefixDots: prefix ..</li>
              <li>Range: binary right-associative ..</li>
              <li>Compare: binary != == >= > &lt; &lt;=</li>
              <li>And: binary &amp;&amp;</li>
              <li>Or: binary || ^^</li>
              <li>IfElse: binary right-associative ? :</li>
-             <li>Assign: binary right-associative =</li>
+             <li>LowerKeyword: a lowercase keyword</li>
              <li>PrefixOr: |</li>
              </ol>
-             Not listed in table: binary => ~ &lt;> `backtick`; prefix / \ &lt; > ? =
+             Not listed in table: binary <c>=> ~ = ?? >> ^ | &amp; &lt;&lt; </c>; prefix <c>? = > &lt;</c>;
+             non-lowercase keywords.
              <para/>
              Notice that the precedence of an operator depends on how it is used. The 
-             prefix operator '-' has higher precedence than the binary operator '-', 
-             so for example <c>- y * z</c> is parsed as <c>(- y) * z</c>, while 
-             <c>x - y * z</c> is parsed as <c>x - (y * z)</c>.
+             prefix operator <c>-</c> has higher precedence than the binary operator 
+             <c>-</c>, so for example <c>- y * z</c> is parsed as <c>(- y) * z</c>, 
+             while <c>x - y * z</c> is parsed as <c>x - (y * z)</c>.
+             <para/>
+             Programmers often use the shift operators <c>>></c> and <c>&lt;&lt;</c> 
+             in place of multiplication or division, so their <i>natural</i> precedence
+             is the same as <c>*</c> and <c>/</c>. However, traditionally the C
+             family of languages confusingly give the shift operators a precedence 
+             below <c>+</c>. Therefore, LES does not allow mixing of shift operators
+             with <c>+ - * /</c>; <c>a >> b + c</c> should produce a parse error.
+             This is called immiscibility as explained in the documentation of 
+             <see cref="T:Loyc.Syntax.Precedence"/>. Parsing may still complete, but the exact 
+             output tree is unspecified (may be <c>(a >> b) + c</c> or 
+             <c>a >> (b + c)</c>).
+             <para/>
+             Likewise, the bitwise <c>^ | &amp;</c> operators cannot be mixed with
+             comparison operators as in <c>a | 1 == 3</c>.
              <para/>
              The Lambda operator =>, which is right-associative, has a precedence 
              level above Multiply on the left side, but below Assign on the right 
@@ -355,19 +529,36 @@
              two sides of an operator may seem strange; see the documentation of 
              <see cref="T:Loyc.Syntax.Precedence"/> for more explanation.
              <para/>
-             In addition to these, the binary `backtick` operators have a 
-             "precedence range" that is above Compare and below Power. This means that 
-             they are immiscible with the Multiply, Add, Arrow, AndBits, OrBits, 
-             OrIfNull, PrefixDots, and Range operators, as explained in the 
-             documentation of <see cref="T:Loyc.Syntax.Precedence"/>. 
+             Similarly, all assignment operators (including compound assignments like
+             +=) have a high precedence on the left side and low precedence on the 
+             right. This decision was made for WebAssembly, in which an expression like
+             <c>2 * i32_store[$f(),4] = 3 * $g()</c> is best parsed as 
+             <c>2 * (i32_store[$f(),4] = (3 * $g()))</c> (NOTE: this example will 
+             surely be wrong by the time Wasm is released).
+             <para/>
+             As a nod to functional languages, the arrow operator "->" is right-
+             associative and has a precedence below '*' so that <c>int * int -> int</c>
+             parses as <c>(int * int) -> int</c> rather than <c>int * (int -> int)</c> 
+             as in the C family of languages.
+             <para/>
+             Some operators like <c>'this-one</c> do not begin with punctuation. These
+             "keyword operators" must be used as binary operators. They either start
+             with a lowercase letter or they don't. If they do start with a lowercase
+             letter, their precedence is LowerKeyword, which is very low, below 
+             assignment, so that <c>a = b 'then x = y</c> parses like 
+             <c>(a = b) 'then (x = y)</c>.
+             <para/>
+             If they do not start with a lowercase letter (as in <c>'Foo</c> or 
+             <c>'123</c>) then they have an indeterminate precedence, below power
+             (**) but above comparison (==). This means that an operator like 'XOR
+             or 'Mod cannot be mixed with operators of precedence Multiply, Add, 
+             Arrow, AndBits, OrBits, OrIfNull, PrefixDots, and Range operators.
+             Mixing operators illegally (e.g. <c>x 'Mod y + z</c>) will produce a 
+             parse error.
              <para/>
              After constructing an initial table based on common operators from other
              languages, I noticed that 
              <ul>
-             <li>All the suffix operators (++ --) had the same precedence, so
-             I added \...\ as an extra suffix operator with a lower precedence
-             (but, not seeing a purpose for low-precedence suffixes, it's still
-             above * and /.)</li>
              <li>None of the high-precedence operators were right-associative, so I 
              added the !! operator to "fill in the gap".</li>
              <li>There were no prefix operators with low precedence, so I added ".." 
@@ -377,14 +568,11 @@
              </ul>
              I also wanted to have a little "room to grow"--to defer the precedence 
              decision to a future time for some operators. So the precedence of the 
-             binary operators ~ and &lt;> is constrained to be above Compare and below 
-             NullDot; mixing one of these operators with any operator in this range 
-             will produce a "soft" parse error (meaning that parsing still proceeds 
-             but the exact precedence is undefined.)
+             binary operator ~ has a range of operators with which it cannot be
+             mixed, the same range as for uppercase operators without punctuation;
+             for example, <c>x ~ y + z</c> is invalid but <c>x ~ y == z</c> is allowed.
              <para/>
-             The operators / \ &lt; > ? = can be used as prefix operators, but their
-             precedence is is similarly undefined (but definitely above Compare and
-             below NullDot).
+             The operators <c>\ ? = > &lt;</c> cannot be used as prefix operators.
              <para/>
              The way that low-precedence prefix operators are parsed deserves some 
              discussion... TODO.
@@ -400,10 +588,9 @@
              ambiguous (it could be parsed as either of two superexpressions, 
              <c>(x -*-) (y)</c> or <c>(x) (-*- y)</c>) and it is illegal.
              <para/>
-             Operators that end with $ can only be prefix operators (not binary or 
-             suffix). Operators that start and end with \ can only be suffix (not 
-             binary or prefix) operators. Having only a single role makes these 
-             operators unambiguous inside superexpressions.
+             Operators that start with $ can only be prefix operators (not binary or 
+             suffix). Having only a single role makes these operators unambiguous 
+             inside superexpressions (LESv2) or with juxtaposition (LESv3).
              <para/>
              An operator cannot have all three roles (suffix, prefix and binary); that 
              would be overly ambiguous. For example, if "-" could also be a suffix 
@@ -424,48 +611,38 @@
              To determine the precedence of any given operator, first you must
              decide, mainly based on the context in which the operator appears and the
              text of the operator, whether it is a prefix, binary, or suffix operator. 
-             Suffix operators can only be derived from the operators <c>++, --, \\</c>
+             Suffix operators can only be derived from the operators <c>++, --</c>
              ("derived" means that you can add additional operator characters in the 
              middle, e.g. <c>+++</c> and <c>-%-</c> are can be prefix or suffix 
              operators.)
              <para/>
-             If an operator starts with a backslash (\), the backslash is not considered 
-             part of the operator name and it not used for the purpose of choosing 
-             precedence either (rather, it is used to allow letters and digits in the 
-             operator name). A `backquoted` operator always has precedence of 
-             <see cref="F:Loyc.Syntax.Les.LesPrecedence.Backtick"/> and again, the backticks are not considered part
-             of the operator name.
+             If an operator starts with a single quote in LESv3 ('), the quote is not
+             considered for the purpose of choosing precedence (rather, it is used to 
+             allow letters and digits in the operator name).
              <para/>
-             Next, if the operator is only one character, simply find it 
-             in the above table. If the operator is two or more characters, take the 
-             first character A and the last character Z, and apply the following rules 
-             in order:
+             Next, if the operator is only one character, simply find it in the list
+             of operators in the previous section to learn its precedence. If the 
+             operator is two or more characters, take the first character A and the 
+             and the last character Z, and of the following rules, use the <b>first</b>
+             rule that applies:
              <ol>
-             <li>If the operator is binary and it is exactly equal to ">=" or "&lt;=" 
-             or "!=", the precedence is Compare.</li>
-             <li>If the operator is binary, A is NOT '=', and Z is '=', then the 
-             precedence is Assign.</li>
-             <li>Look for an operator named AZ. If it is defined, the operator 
-             will have the same precedence. For example, binary "=|>" has the same 
-             precedence as binary "=>".</li>
-             <li>Otherwise, look for an entry in the table for Z. For example,
-             binary "%+" has the same precedence as binary "+" and unary "%+" has
-             the same precedence as unary "+".</li>
-             <li>If no other rule applies (e.g. \word-operator), use Reserved for
-             punctuation-based operators with undefined precedence and BackslashWord
-             for all other operators (which will have started with a backslash).</li>
+             <li>If AZ is "!=" or "==", or if the operator is exactly two characters 
+             long (ignoring the initial single quote) and equal to ">=", or "&lt;=",
+             its precedence is Compare. This rule separates comparison operators from 
+             assignment operators, so that ">>=" is different from ">=", and "===" 
+             counts as a comparison operator.</li>
+             <li>If it's an infix operator and Z is '=', the precedence is Assign.</li>
+             <li>Look for an operator named AZ from the section above. If it is defined,
+             the operator will have the same precedence. For example, binary <c>=|></c>
+             has the same precedence as binary "=>".</li>
+             <li>Otherwise, look for an entry in the table for A. For example,
+             binary "%+" has the same precedence as binary "%" and unary "-*" has
+             the same precedence as unary "-".</li>
+             <li>If the operator is not an infix operator, it is illegal
+             (e.g. prefix ?? doesn't exist).</li>
+             <li>If A is a lowercase letter, the precedence is LowerKeyword.</li>
+             <li>Otherwise, the operator's precedence is Other.</li>
              </ol>
-             The first two rules are special cases that exist for the sake of the 
-             shift operators, so that ">>=" has the same precedence as "=" instead 
-             of ">=".
-             <para/>
-             Please note that the plain colon ':' is not treated as an operator at
-             statement level; it is assumed to introduce a nested block, as in the 
-             languages Python and boo (e.g. in "if x: y();" is interpreted as 
-             "if x { y(); }"). However, ':' is allowed as an operator inside a 
-             parenthesized expression. ([June 2014] Python-style blocks are not
-             yet implemented.)
-             <para/>
              The double-colon :: has the "wrong" precedence according to C# and C++
              rules; <c>a.b::c.d</c> is parsed <c>(a.b)::(c.d)</c> although it would 
              be parsed <c>((a.b)::c).d</c> in C# and C++. The change in precedence 
@@ -476,28 +653,19 @@
              There are no ternary operators in LES. '?' and ':' are right-associative 
              binary operators, so <c>c ? a : b</c> is parsed as <c>c ? (a : b)</c>.
              The lack of an official ternary operator reduces the complexity of the
-             parser; C-style conditional expressions could still be parsed in LEL 
-             with the help of a macro, but they are generally not necessary since the 
-             if-else superexpression is preferred: <c>if c a else b</c>.
+             parser.
              <para/>
-             I suppose I should also mention the way operators map to function names.
-             In LES, there is no semantic distinction between operators and functions;
-             <c>x += y</c> is equivalent to the function call <c>@+=(x, y)</c>, and 
-             the actual name of the function is "+=" (the @ character informs the 
-             lexer that a special identifier name follows.) Thus, the name of most 
-             operators exactly matches the operator; the + operator is named "+",
-             the |*| operator is named "|*|", and so forth. There are a couple of 
-             exceptions:
-             <ul>
-             <li>While prefix ++ and -- are named "++" and "--", the suffix versions
-             are named "suf++" and "suf--" to distinguish them.</li>
-             <li>The backslash is stripped from operators that start with a backslash.
-             So \+ is named "+" and \foo\ is named "foo\". \+ means the same thing as 
-             the normal + operator, it just has a different precedence. However, a 
-             single backslash (\) followed by whitespace is named "\".</li>
-             <li>For operators surrounded by `backquotes`, the backquotes are not 
-             part of the name either; \> and `>` and > differ only in precedence.</li>
-             </ul>
+             LES represents Loyc trees, which do not distinguish operators and 
+             functions except by name; <c>x += y</c> is equivalent to the function 
+             call <c>`'+=`(x, y)</c> in LESv3 (<c>@'+=(x, y)</c> in LESv2), and 
+             the actual name of the function is <c>'+=</c>. Operators that do not
+             start with a single quote in LES <b>do</b> start with a single quote
+             in the final output (e.g. <c>2 + 2</c> is equivalent to <c>2 '+ 2</c>).
+             There is an exception: While prefix ++ and -- are named <c>'++</c> and 
+             <c>'--</c>, the suffix versions are named <c>'++suf</c> and 
+             <c>'--suf</c> in the output tree. For LESv2 operators surrounded by 
+             `backquotes`, the backquotes are not included in the output tree (e.g.
+             <c>`sqrt` x</c> is equivalent to <c>sqrt(x)</c>).
              </remarks>
              <seealso cref="T:Loyc.Syntax.Precedence"/>
         </member>
@@ -510,33 +678,45 @@
             <summary>Forgets previously encountered operators to save memory.</summary>
         </member>
         <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.Find(Loyc.Syntax.OperatorShape,System.Object,System.Boolean)">
-            <summary>Gets the precedence of a prefix, suffix, or infix operator in 
-            LES, under the assumption that the operator isn't surrounded in 
-            backticks (in which case its precedence is always Backtick).</summary>
+            <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
+            <param name="shape">Specifies which precedence table and rules to use 
+            (Prefix, Suffix or Infix). Note: when this is Suffix, "suf" must not be 
+            part of the name in <c>op</c> (see <see cref="M:Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@,System.Boolean)"/>)</param>
             <param name="op">Parsed form of the operator. op must be a Symbol, but 
             the parameter has type object to avoid casting Token.Value in the parser.</param>
         </member>
         <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsOpChar(System.Char)">
             <summary>Returns true if this character is one of those that operators are normally made out of in LES.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsNaturalOperator(Loyc.Symbol)">
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsOpCharEx(System.Char)">
+            <summary>Returns true if this character is one of those that can appear 
+            in "extended" LESv3 operators that start with an apostrophe.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsNaturalOperator(System.String)">
             <summary>Returns true if the given Symbol can be printed as an operator 
-            without escaping it.</summary>
+            without escaping it (LESv2) or adding an apostrophe on the front (LESv3).</summary>
             <remarks>The parser should read something like <c>+/*</c> as an operator
             with three characters, rather than "+" and a comment, but the printer 
-            should be conservative, so this function returns false in such a case:
-            "Be liberal in what you accept, and conservative in what you produce."</remarks>
+            is more conservative, so this function returns false in such a case.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsExtendedOperator(System.String,System.String)">
+            <summary>Returns true if the given Symbol can ever be used as an "extended" 
+            binary operator in LESv3.</summary>
+            <remarks>A binary operator's length must be between 2 and 255, its name must
+            start with an apostrophe, and each remaining character must be punctuation marks 
+            from natural operators and/or characters from the set 
+            {'#', '_', 'a'..'z', 'A'..'Z', '0'..'9', '$'}.</remarks>
         </member>
         <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.ToSuffixOpName(System.Object)">
-            <summary>Given a normal operator symbol like <c>(Symbol)"++"</c>, gets
-            the suffix form of the name, such as <c>(Symbol)"suf++"</c>.</summary>
+            <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
+            the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
             <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
         </member>
         <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@,System.Boolean)">
             <summary>Decides whether the name appears to represent a suffix operator 
             of the form <c>sufOP</c> or <c>OP\</c>.</summary>
             <param name="name">Potential operator name to evaluate.</param>
-            <param name="bareName">If the name starts with "suf", this is the same 
+            <param name="bareName">If the name ends with "suf", this is the same 
             name without "suf", otherwise it is set to <c>name</c> itself. This
             output is calculated even if the function returns false.</param>
             <param name="checkNatural">If true, part of the requirement for 
@@ -558,7 +738,7 @@
             For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
             to its source file, so this method cannot return the original string.
             <para/>
-            The results are undefined if the token was not produced by <see cref="T:Loyc.Syntax.Les.LesLexer"/>.
+            The results are undefined if the token was not produced by <see cref="T:Loyc.Syntax.Les.Les2Lexer"/>.
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.Lexing.BaseILexer`2">
@@ -651,9 +831,7 @@
             on a line. Each pair of dot+(tab/spaces) prior to the first non-space 
             token is counted the same way as a tab character (\t). Dot indents are 
             useful for posting source code on "bad" blog software or forums that 
-            do not preseve indentation. Since LES is a partially indent-sensitive 
-            language, preserving indentation may be important, and dot indents 
-            increase the likelihood of preserving indents correctly.</remarks>
+            do not preseve indentation.</remarks>
         </member>
         <member name="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline">
             <summary>The lexer must call this method exactly once after it advances 
@@ -681,6 +859,19 @@
             This function is called automatically by <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline"/>,
             but should be called manually on the very first line of the file.</summary>
             <remarks>Parameters are documented at <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline(System.Boolean,System.Boolean)"/></remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.TriviaSaver">
+            <summary>A lexer wrapper that saves whitespace tokens into a list (<see cref="P:Loyc.Syntax.Lexing.TriviaSaver.TriviaList"/>).</summary>
+            <remarks>Typically used with <seealso cref="T:Loyc.Syntax.StandardTriviaInjector"/>.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.TriviaSaver.#ctor(Loyc.Syntax.Lexing.ILexer{Loyc.Syntax.Lexing.Token},System.Int32)">
+            <summary>Initializer.</summary>
+            <param name="lexer">Lexer to wrap.</param>
+            <param name="newlineTypeInt">This wrapper filters out and saves whitespace 
+            tokens (where <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> is <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>) 
+            but in some languages, newlines are not considered whitespace but they
+            still need to be saved in the trivia list. If the <see cref="F:Loyc.Syntax.Lexing.Token.TypeInt"/> 
+            equals this value, the token is saved but NOT filtered out.</param>
         </member>
         <member name="T:Loyc.Syntax.Lexing.IndentTokenGenerator`1">
             <summary>
@@ -768,7 +959,7 @@
             <param name="tokenAfterNewline">The first non-whitespace un-indented 
             token after the unindent, or NoValue at the end of the file. The 
             derived class is allowed to change this token, or delete it by 
-            changing it to NoValue (<see cref="T:Loyc.Syntax.Les.LesIndentTokenGenerator"/> does this).</param>
+            changing it to NoValue.</param>
             <remarks>This class considers the indented block to be "over" even if 
             this method returns no tokens.</remarks>
         </member>
@@ -802,6 +993,10 @@
             <c>OuterIndents[OuterIndents.Count-1] == OuterIndents[OuterIndents.Count-2]</c>, 
             which this class interprets as a single unindent.
             </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.IndentTokenGenerator`1.IndexToMsgContext(`0)">
+            <summary>Gets the context for use in error messages, which by convention is a <see cref="T:Loyc.Syntax.SourceRange"/>.</summary>
+            <remarks>The base class uses Lexer.InputPosition as a fallback if the token doesn't implement ISimpleToken{int}.</remarks>
         </member>
         <member name="T:Loyc.Syntax.Lexing.IndentTokenGenerator">
             <summary>
@@ -942,11 +1137,6 @@
             statement (i.e. illegal in a non-block statement context). Since a semicolon
             is not treated the same way as a newline, the <see cref="P:Loyc.Syntax.Lexing.IndentTokenGenerator.EolToken"/> should 
             be a special token, not a semicolon.
-            
-            <h3>Configuration for LES</h3>
-            
-            For more information about LES's indent processing, see
-            <see cref="T:Loyc.Syntax.Les.LesIndentTokenGenerator"/> .
             </remarks>
             <seealso cref="T:Loyc.Syntax.Lexing.IndentTokenGenerator`1"/>
         </member>
@@ -1071,7 +1261,7 @@
         </member>
         <member name="F:Loyc.Syntax.Lexing.BaseLexer`1.LogExceptionErrorSink">
             <summary>Throws LogException when it receives an error. Non-errors
-            are sent to <see cref="P:Loyc.MessageSink.Current"/>.</summary>
+            are sent to <see cref="P:Loyc.MessageSink.Default"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.Lexing.BaseLexer`1.ErrorSink">
             <summary>Gets or sets the object to which error messages are sent. The
@@ -1147,6 +1337,7 @@
         </member>
         <member name="P:Loyc.Syntax.Lexing.ILexer`1.SourceFile">
             <summary>The file being lexed.</summary>
+            <remarks>This property should never be null.</remarks>
         </member>
         <member name="M:Loyc.Syntax.Lexing.ILexer`1.NextToken">
             <summary>Scans the next token and returns information about it.</summary>
@@ -1591,10 +1782,16 @@
             <summary>e.g. int, bool, double, void</summary>
         </member>
         <member name="F:Loyc.Syntax.Lexing.TokenKind.OtherKeyword">
-            <summary>e.g. sizeof, struct</summary>
+            <summary>e.g. sizeof, struct. Does not include literal keywords (true, false, null)</summary>
         </member>
         <member name="F:Loyc.Syntax.Lexing.TokenKind.Other">
             <summary>For token types not covered by other token kinds.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.BracketFlag">
+            <summary>Openers and closers all have this bit set.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.CloserFlag">
+            <summary>Closers all have this bit set.</summary>
         </member>
         <member name="T:Loyc.Syntax.Lexing.TokensToTree">
             <summary>
@@ -1605,6 +1802,226 @@
             <remarks>
             The close bracketis not treated as one of the children of the opening bracket.
             </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ILNode">
+            <summary>A read-only interface for objects that act as Loyc trees.</summary>
+            <remarks>
+            To simplify implementations of this interface, there is no separate 
+            list of attributes and arguments; ILNode itself acts as a list of child
+            nodes. The argument list is numbered from 0 to Max, so the number of 
+            arguments is <c>Max + 1</c> (which is what the ArgCount() extension method 
+            returns).
+            <para/>
+            A node with no children must report <c>Min = -1</c> and <c>Max = -2</c>,
+            or some extension methods will malfunction.
+            <para/>
+            You can think of any node <c>N</c> as having a single contiguous list 
+            of child nodes indexed from <c>N.Min</c> to <c>N.Max</c>. Items with
+            non-negative indexes (e.g. <c>N[0], N[1]</c>) are arguments; <c>N[-1]</c>
+            is an alias for <c>Target</c>; and indexes below -1 refer to attributes
+            (e.g. <c>N[-2]</c> is the last attribute in the attribute list)
+            <para/>
+            ArgCount() and AttrCount() are implemented as extension methods; they
+            return <c>Max + 1</c> and <c>-Min - 1</c> respectively (note: ArgCount()
+            is different from <see cref="P:Loyc.Syntax.LNode.ArgCount"/> in case 
+            <c>Kind != LNodeKind.Call</c>: ArgCount() returns -1 in that case while
+            <see cref="P:Loyc.Syntax.LNode.ArgCount"/> reurns zero.
+            <para/>
+            The IsId(), IsLiteral() and IsCall() extension methods are useful 
+            shorthand for testing the <see cref="P:Loyc.Syntax.ILNode.Kind"/> property.
+            <para/>
+            The Attrs() and Args() extension methods return slices of this node
+            corresponding to the attributes and arguments.
+            <para/>
+            Tip: the LES node printer can print any ILNode as a string. See
+            <see cref="!:Loyc.Syntax.Les.LesLanguageService.Print(ILNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)"/>
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNode.Kind">
+            <inheritdoc cref="P:Loyc.Syntax.LNode.Kind"/>
+        </member>
+        <member name="P:Loyc.Syntax.ILNode.Name">
+            <inheritdoc cref="P:Loyc.Syntax.LNode.Name"/>
+        </member>
+        <member name="P:Loyc.Syntax.ILNode.Target">
+            <inheritdoc cref="P:Loyc.Syntax.LNode.Target"/>
+        </member>
+        <member name="P:Loyc.Syntax.ILNode.Range">
+            <inheritdoc cref="P:Loyc.Syntax.LNode.Range"/>
+        </member>
+        <member name="P:Loyc.Syntax.ILNode.Style">
+            <inheritdoc cref="P:Loyc.Syntax.LNode.Style"/>
+        </member>
+        <member name="M:Loyc.Syntax.ILNode.CallsMin(Loyc.Symbol,System.Int32)">
+            <summary>Returns true if <c>Kind == LNodeKind.Call</c>, <c>Name == name</c>, 
+            and <c>Max + 1 >= argCount</c>.</summary>
+            <seealso cref="M:Loyc.Syntax.LNodeExt.Calls(Loyc.Syntax.ILNode,Loyc.Symbol)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ILNode.Calls(Loyc.Symbol,System.Int32)">
+            <summary>Returns true if <c>Name == name</c> and <c>Max + 1 == argCount</c>
+            (which implies <c>Kind == LNodeKind.Call</c> if argCount != -1).</summary>
+            <remarks>This could have been an extension method, but when verifying that
+            you have a certain kind of node, it's common to check <i>both</i> the Name 
+            and ArgCount(); checking both in one call avoids extra interface invocations.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.IToLNode">
+            <summary>An interface for objects that can be converted to <see cref="T:Loyc.Syntax.LNode"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.IToLNode.ToLNode">
+            <summary>Converts this object to an <see cref="T:Loyc.Syntax.LNode"/>, or returns 
+            <c>this</c> if the object is already an <see cref="T:Loyc.Syntax.LNode"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ILNodePrinter">
+            <summary>This interface allows serializing <see cref="T:Loyc.Syntax.LNode"/> objects into the
+            syntax of a particular programming language.</summary>
+            <remarks>The ToString() method of an object that implements this interface should
+            return the name of the programming language that it is able to print.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ILNodePrinter.Print(Loyc.Syntax.LNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Serializes the specified syntax tree to a StringBuilder in the syntax supported by this object.</summary>
+            <param name="node">A syntax tree to print.</param>
+            <param name="target">An output buffer, to which output is appended.</param>
+            <param name="sink">An object used to print warning and error messages. If 
+            this is null, messages are sent to <see cref="P:Loyc.MessageSink.Default"/>.</param>
+            <param name="mode">Indicates the context in which the node(s) to be printed 
+            should be understood (e.g. is it a statement or an expression?).</param>
+            <param name="options">A set of options to control printer behavior. If null,
+            an appropriate default set of options should be used. Some languages may
+            support additional option interfaces beyond <see cref="T:Loyc.Syntax.ILNodePrinterOptions"/>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.ILNodePrinter.Print(System.Collections.Generic.IEnumerable{Loyc.Syntax.LNode},System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Serializes a list of syntax trees to a StringBuilder in the syntax supported by this object.</summary>
+            <param name="nodes">Syntax trees to print.</param>
+            <param name="target">An output buffer, to which output is appended.</param>
+            <param name="sink">An object used to print warning and error messages. If 
+            this is null, messages are sent to <see cref="P:Loyc.MessageSink.Default"/>.</param>
+            <param name="mode">Indicates the context in which the node(s) to be printed 
+            should be understood (e.g. is it a statement or an expression?).</param>
+            <param name="options">A set of options to control printer behavior. If null,
+            an appropriate default set of options should be used. Some languages may
+            support additional option interfaces beyond <see cref="T:Loyc.Syntax.ILNodePrinterOptions"/>.</param>
+            <remarks>Some implementations can simply call <see cref="M:Loyc.Syntax.LNodePrinter.PrintMultiple(Loyc.Syntax.ILNodePrinter,System.Collections.Generic.IEnumerable{Loyc.Syntax.LNode},System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)"/>.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.LNodePrinter">
+            <summary>Standard extension methods for <see cref="T:Loyc.Syntax.ILNodePrinter"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodePrinter.Print(Loyc.Syntax.ILNodePrinter,Loyc.Syntax.LNode,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Serializes the specified syntax tree to a string in the 
+            syntax supported by the specified <see cref="T:Loyc.Syntax.ILNodePrinter"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodePrinter.Print(Loyc.Syntax.ILNodePrinter,System.Collections.Generic.IEnumerable{Loyc.Syntax.LNode},Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Serializes a list of syntax trees to a string in the 
+            syntax supported by the specified <see cref="T:Loyc.Syntax.ILNodePrinter"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodePrinter.PrintMultiple(Loyc.Syntax.ILNodePrinter,System.Collections.Generic.IEnumerable{Loyc.Syntax.LNode},System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
+            <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
+            <param name="printer">Printer to be used for each single LNode.</param>
+            <remarks>The newline between two nodes is suppressed if the second 
+            node has a <c>#trivia_appendStatement</c> attribute.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ILNodePrinterOptions">
+            <summary>A set of relatively universal printing options that 
+            <see cref="T:Loyc.Syntax.LNodePrinter"/>s should understand.</summary>
+            <seealso cref="T:Loyc.Syntax.LNodePrinterOptions"/>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.AllowChangeParentheses">
+            <summary>Indicates that it is preferable to add (or remove) parenthesis 
+            to produce good-looking output, rather than to express faithfully whether 
+            or not parentheses were present in the Loyc tree being printed.</summary>
+            <remarks>For example, the Loyc tree <c>x * `+`(a, b)</c> (LESv3 notation)
+            will be printed <c>x * (a + b)</c>, which is a slightly different tree 
+            (the parenthesis add the trivia attribute #trivia_inParens.)</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.OmitComments">
+            <summary>When this flag is set, comment trivia attributes are suppressed
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia">
+            <summary>Causes trivia that the printer does not recognize (other than 
+            comments, spaces and raw text) to be dropped from the output rather than
+            printed as attributes.</summary>
+            <remarks>Note: Some printers may force all unknown trivia to be dropped.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.PrintTriviaExplicitly">
+            <summary>If supported by the printer, this option causes comments and 
+            spaces to be printed as attributes in order to ensure faithful round-trip 
+            parsing.</summary>
+            <remarks>Note: Some printers may ignore <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia"/>,
+            and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitComments"/> when this flag is true.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.CompatibilityMode">
+            <summary>If there are multiple ways to print a given node, this option 
+            indicates that the printer should prefer an older, more compatible 
+            syntactic style over new ones, where applicable.</summary>
+            <remarks>For example, it tells the EC# printer to use C# printing mode.
+            This option does not prevent printing of new constructs if such are 
+            present in the code, however.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.CompactMode">
+            <summary>When this flag is set, the amount of whitespace in the output
+            is reduced in a printer-defined way, in order to save bits.</summary>
+            <remarks>This option should not suppress newlines, indents or trivia.
+            To suppress newlines or indents, the user can use empty strings for 
+            <see cref="P:Loyc.Syntax.ILNodePrinterOptions.IndentString"/> and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.NewlineString"/>.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.IndentString">
+            <summary>Specifies the string to use for each level of indentation of 
+            nested constructs in the language, e.g. a tab or four spaces.</summary>
+            <remarks>
+            If this option is null, the printer should use its default indent string.
+            <para/>
+            Indentation-sensitive languages should treat an empty string the same as null.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ILNodePrinterOptions.NewlineString">
+            <summary>Specifies the string to use for line breaks (typically "\n").</summary>
+            <remarks>
+            If this option is null, the printer should use its default newline string, which
+            is almost always "\n".
+            <para/>
+            Newline-sensitive languages should treat an empty string the same as null.
+            <para/>
+            This string may or may not be used for line breaks inside multiline strings, 
+            depending on how strings are defined in the language being printed.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.LNodePrinterOptions">
+            <summary>A concrete class that users can pass to an <see cref="T:Loyc.Syntax.LNodePrinter"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ParsingMode">
+            <summary>Standard parsing modes used with <see cref="T:Loyc.Syntax.IParsingService"/> and
+            <see cref="T:Loyc.Syntax.ILNodePrinterOptions"/>.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.Expressions">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input 
+            as a single expression or expression list (which, in most languages, 
+            is comma-separated).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.Statements">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
+            as a list of statements. If the language makes a distinction between 
+            executable and declaration contexts, this refers to the executable 
+            context.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.Declarations">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
+            as a list of statements. If the language makes a distinction between 
+            executable and declaration contexts, this refers to the declaration
+            context, in which types, methods, and properties are recognized.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.Types">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
+            as a list of types (or a single type, if a list is not supported).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.FormalArguments">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
+            as a formal argument list (parameter names with types).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParsingMode.File">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
+            as a complete source file (this should be the default, i.e. null will
+            do the same thing).</summary>
         </member>
         <member name="T:Loyc.Syntax.BaseParser`2">
             <summary>
@@ -1628,7 +2045,7 @@
         </member>
         <member name="F:Loyc.Syntax.BaseParser`2.LogExceptionErrorSink">
             <summary>Throws LogException when it receives an error. Non-errors
-            are sent to <see cref="P:Loyc.MessageSink.Current"/>.</summary>
+            are sent to <see cref="P:Loyc.MessageSink.Default"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.BaseParser`2.ErrorSink">
             <summary>Gets or sets the object to which error messages are sent. The
@@ -1674,11 +2091,10 @@
             last token in the file.
             </remarks>
         </member>
-        <member name="M:Loyc.Syntax.BaseParser`2.LaIndexToSourcePos(System.Int32)">
-            <summary>Converts a lookahead token index to a <see cref="T:Loyc.Syntax.SourcePos"/>
-            object using <see cref="M:Loyc.Syntax.BaseParser`2.LaIndexToCharIndex(System.Int32)"/> and <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/>.</summary>
-            <remarks>If the derived class initialized <c>SourceFile</c> to null, 
-            returns "At index {0}" where {0} is the character index.</remarks>
+        <member name="M:Loyc.Syntax.BaseParser`2.LaIndexToMsgContext(System.Int32)">
+            <summary>Converts a lookahead token index to a <see cref="T:Loyc.Syntax.SourceRange"/>
+            (or to a string if <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/> was initialized to null.)</summary>
+            <remarks>The base class can only return a zero-width SourceRange.</remarks>
         </member>
         <member name="M:Loyc.Syntax.BaseParser`2.Error(System.Int32,System.String)">
             <summary>Records an error or throws an exception.</summary>
@@ -1937,17 +2353,15 @@
             current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
             form of <c>using X = Y</c> in EC#.</summary>
         </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore">
-            if `#trivia_rawText` has the string "eat my shorts!" attached as its Value,
-            then `[#trivia_rawText] x;` is printed "eat my shorts!x;". It can also be
-            structured as a call: `[#trivia_rawText("eat my shorts!")] x;`
+        <member name="F:Loyc.Syntax.CodeSymbols.TriviaRawText">
+            `[#trivia_rawText("eat my shorts!")] x;` is printed as "eat my shorts!x;".
         </member>
         <member name="F:Loyc.Syntax.CodeSymbols.TriviaWordAttribute">
             "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
         </member>
         <member name="F:Loyc.Syntax.CodeSymbols.RawText">
-            #rawText must have a Value, or be a call with a single literal argument.
-            The Value is converted to a string and printed out by EcsNodePrinter 
+            #rawText must be a call with a single literal argument. The Value of
+            the argument is converted to a string and printed out by EcsNodePrinter 
             without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
         </member>
         <member name="M:Loyc.Syntax.CodeSymbols.IsArrayKeyword(Loyc.Symbol)">
@@ -1964,8 +2378,8 @@
             dimensions, e.g. <c>GetArrayKeyword(3)</c> returns <c>[,,]</c>.</summary>
         </member>
         <member name="T:Loyc.Syntax.IParsingService">
-            <summary>An interface that encapsulates the lexer, parser, and printer
-            of a programming language, or a non-programming language that can be 
+            <summary>An interface that encapsulates the lexer and parser of a 
+            programming language, or a non-programming language that can be 
             represented by Loyc trees.</summary>
             <remarks>
             The simplest way to parse code is with the extension method 
@@ -1982,7 +2396,10 @@
             dots, with the first one being the most common.</summary>
         </member>
         <member name="P:Loyc.Syntax.IParsingService.HasTokenizer">
-            <summary>Returns true if the Tokenize() method is available.</summary>
+            <summary>Returns true if the <see cref="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink)"/> method is available.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.IParsingService.CanPreserveComments">
+            <summary>Returns true if the parser supports preserving comments.</summary>
         </member>
         <member name="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink)">
             <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
@@ -1992,29 +2409,37 @@
             <remarks>
             The returned lexer should be a "simple" tokenizer. If the language uses 
             tree lexing (in which tokens are grouped by parentheses and braces),
-            the returned lexer should NOT include the grouping process, and it 
-            should not remove comments, although it may skip spaces and perhaps
-            newlines. If there is a preprocessor, it should not run.
+            the returned lexer should NOT include the grouping process.
+            <para/>
+            It is recommended that the implementation of this method filter out 
+            spaces (for best performance) but not comments or newlines. 
+            If there is a preprocessor, it should not run.
             </remarks>
         </member>
-        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)">
+        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
             <summary>Parses a source file into one or more Loyc trees.</summary>
             <param name="text">input file or string.</param>
-            <param name="msgs">output sink for error and warning messages.</param>
-            <param name="inputType">Indicates the kind of input: <c>Exprs</c> (one 
-            or more expressions, typically seprated by commas but this is language-
-            defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
-            entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
+            <param name="fileName">A file name to associate with errors, warnings, and output nodes.</param>
+            <param name="msgs">Error and warning messages are sent to this object.</param>
+            <param name="mode">Indicates the kind of input, e.g. <c>File</c> 
+            (an entire source file), <c>FormalArguments</c> (function parameter list), etc. 
+            <c>null</c> is a synonym for <c>File</c>.</param>
+            <param name="preserveComments">Whether to preserve comments and newlines 
+            by attaching trivia attributes to the output. If the property
+            <see cref="P:Loyc.Syntax.IParsingService.CanPreserveComments"/> is false, this parameter will not work.</param>
         </member>
-        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.Lexing.ILexer{Loyc.Syntax.Lexing.Token},Loyc.IMessageSink,Loyc.Syntax.ParsingMode)">
+        <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Syntax.Lexing.ILexer{Loyc.Syntax.Lexing.Token},Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
             <summary>If <see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is true, this method accepts a 
             lexer returned by Tokenize() and begins parsing.</summary>
-            <param name="msgs">output sink for error and warning messages.</param>
-            <param name="inputType">Indicates how the input should be interpreted,
-            e.g. <see cref="F:Loyc.Syntax.ParsingMode.File"/>, <see cref="F:Loyc.Syntax.ParsingMode.Expressions"/> or
-            <see cref="F:Loyc.Syntax.ParsingMode.Statements"/>. The default input type should be
-            File.</param>
-            <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
+            <param name="input">A source of tokens.</param>
+            <param name="msgs">Error and warning messages are sent to this object. 
+            If this parameter is null, messages should be sent to <see cref="P:Loyc.MessageSink.Default"/>.</param>
+            <param name="mode">Indicates how the input should be parsed.
+            <c>null</c> is a synonym for <see cref="F:Loyc.Syntax.ParsingMode.File"/></param>
+            <param name="preserveComments">Whether to preserve comments and newlines 
+            by attaching trivia attributes to the output. If the property
+            <see cref="P:Loyc.Syntax.IParsingService.CanPreserveComments"/> is false, this parameter will not work.</param>
+            <exception cref="T:System.NotSupportedException"><see cref="P:Loyc.Syntax.IParsingService.HasTokenizer"/> is false.</exception>
             <remarks>
             This method adds any preprocessing steps to the lexer (tree-ification 
             or token preprocessing) that are required by this language before it 
@@ -2024,6 +2449,11 @@
         </member>
         <member name="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.IListSource{Loyc.Syntax.Lexing.Token},Loyc.Syntax.ISourceFile,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)">
             <summary>Parses a token tree, such as one that came from a token literal.</summary>
+            <param name="tokens">List of tokens</param>
+            <param name="file">A source file to associate with errors, warnings, and output nodes.</param>
+            <param name="msgs">Error and warning messages are sent to this object.
+            If this parameter is null, messages should be sent to <see cref="P:Loyc.MessageSink.Default"/>.</param>
+            <param name="inputType">Indicates how the input should be parsed.</param>
             <remarks>
             Some languages may offer token literals, which are stored as token trees
             that can be processed by "macros" or compiler plugins. A macro may wish 
@@ -2034,61 +2464,12 @@
             <exception cref="T:System.NotSupportedException">This feature is not supported 
             by this parsing service.</exception>
         </member>
-        <member name="P:Loyc.Syntax.IParsingService.Printer">
-            <summary>Gets a printer delegate that you can use with 
-            <see cref="P:Loyc.Syntax.LNode.Printer"/> and <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)"/>,
-            or null if there is no corresponding printer available for the parser
-            reresented by this object.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.IParsingService.Print(Loyc.Syntax.LNode,Loyc.IMessageSink,System.Object,System.String,System.String)">
-            <summary>Converts the specified syntax tree to a string.</summary>
-            <param name="node">A syntax tree to print.</param>
-            <param name="msgs">If errors or warnings occur during printing, 
-            they are sent here. If this is null, messages shall be sent to
-            <see cref="P:Loyc.MessageSink.Current"/>.</param>
-            <param name="mode">Language-defined configuration. It is suggested 
-            that the printing service should accept the members of 
-            <see cref="T:Loyc.Syntax.ParsingMode"/> (e.g. ParsingMode.Statements) as possible 
-            printing modes.</param>
-            <param name="indentString">Indent character for multi-line nodes</param>
-            <param name="lineSeparator">Newline string for multi-line nodes</param>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Expressions">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input 
-            as a single expression or expression list (which, in most languages, 
-            is comma-separated).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Statements">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
-            as a list of statements. If the language makes a distinction between 
-            executable and declaration contexts, this refers to the executable 
-            context.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Declarations">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
-            as a list of statements. If the language makes a distinction between 
-            executable and declaration contexts, this refers to the declaration
-            context, in which types, methods, and properties are recognized.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Types">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
-            as a list of types (or a single type, if a list is not supported).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.FormalArguments">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
-            as a formal argument list (parameter names with types).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.File">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
-            as a complete source file (this should be the default, i.e. null will
-            do the same thing).</summary>
-        </member>
         <member name="T:Loyc.Syntax.ParsingService">
-            <summary>Extension methods for <see cref="T:Loyc.Syntax.IParsingService"/>.</summary>
+            <summary>Standard extension methods for <see cref="T:Loyc.Syntax.IParsingService"/>.</summary>
         </member>
-        <member name="P:Loyc.Syntax.ParsingService.Current">
+        <member name="P:Loyc.Syntax.ParsingService.Default">
             <summary>Gets or sets the active language service on this thread. If 
-            no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/>.</summary>
+            no service has been assigned on this thread, returns <see cref="!:LesLanguageService.Value"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.ParsingService.RegisteredLanguages">
             <summary>Dictionary of registered parsing services, keyed by file extension 
@@ -2126,14 +2507,31 @@
         <member name="T:Loyc.Syntax.ParsingService.PushedCurrent">
             <summary>Returned by <see cref="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)"/>.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParsingService.PrintMultiple(Loyc.Syntax.LNodePrinter,System.Collections.Generic.IEnumerable{Loyc.Syntax.LNode},Loyc.IMessageSink,System.Object,System.String,System.String)">
-            <summary>Converts a sequences of LNodes to strings, adding a newline after each.</summary>
-            <param name="printer">Printer for a single LNode.</param>
-            <param name="mode">A language-specific way of modifying printer behavior.
-            The printer ignores the mode object if it does not not understand it.</param>
-            <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
-            <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
-            <returns>A string form of the nodes.</returns>
+        <member name="M:Loyc.Syntax.ParsingService.Tokenize(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink)">
+            <summary>Parses a string by invoking <see cref="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink)"/> using an empty string as the file name.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
+            <summary>Parses a string by invoking <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> using an empty string as the file name.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.ParseSingle(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
+            <summary>Parses a string and expects exactly one output.</summary>
+            <exception cref="T:System.InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.ParseSingle(Loyc.Syntax.IParsingService,Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
+            <summary>Parses a string and expects exactly one output.</summary>
+            <exception cref="T:System.InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,System.IO.Stream,System.String,Loyc.Syntax.ParsingMode,Loyc.IMessageSink,System.Boolean)">
+            <summary>Parses a Stream.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.Tokenize(Loyc.Syntax.IParsingService,System.IO.Stream,System.String,Loyc.IMessageSink)">
+            <summary>Parses a Stream.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.ParseFile(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
+            <summary>Opens the specified file and parses it.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.TokenizeFile(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink)">
+            <summary>Opens the specified file and tokenizes it.</summary>
         </member>
         <member name="T:Loyc.Syntax.IdNode">
             <summary>Base class of all nodes that represent simple identifiers (including special symbols such as #foo).</summary>
@@ -2156,18 +2554,6 @@
         </member>
         <member name="T:Loyc.Syntax.LNodeKind">
             <summary>The three kinds of nodes in a Loyc tree</summary>
-        </member>
-        <member name="T:Loyc.Syntax.LNodePrinter">
-            <summary>Signature for a method that serializes a Loyc tree to text. Each
-            programming language will have one (when complete).</summary>
-            <param name="node">Node to print</param>
-            <param name="target">Output buffer</param>
-            <param name="mode">A language-specific way of modifying printer behavior.
-            The printer should ignore the mode object if it does not not understand it.</param>
-            <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
-            <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
-            <remarks>This delegate only prints to a StringBuilder. Printing directly to 
-            a stream requires language-specific facilities.</remarks>
         </member>
         <member name="T:Loyc.Syntax.LNode">
              <summary>All nodes in a Loyc syntax tree share this base class.</summary>
@@ -2264,231 +2650,6 @@
              "detach" a node from one place, or duplicate it, before it can be inserted 
              in another place.
             
-             <!-- screws up doxygen
-             <h3>Loyc and EC#</h3>
-             
-             Now let's talk about EC# syntax and how it relates to this class.
-             <para/>
-             EC# supports a generalized C-style syntax which will be described briefly
-             here. Basically, almost any code that a programming student might mistake 
-             for real C# code is legal, and there is some odd-looking syntax you've 
-             never seen before that is also legal.
-             <para/>
-             Also, virtually any tree of nodes can be represented in EC# source code 
-             using a prefix notation, which helps you understand Loyc ASTs because
-             the prefix notation closely corresponds to the AST. For example, 
-             @=(x, @*(y, 2)) is equivalent to the expression x = y * 2. This notation 
-             tells you that 
-             - there are two nodes with two arguments each, 
-             - the outer one is named "=" and the inner is named "*"
-             The syntax tree built from these two representations is identical.
-             <para/>
-             Prefix notation can be freely mixed with normal EC# code, although usually 
-             there is no reason to do so:
-             <para/>
-             public Point OneTwo = MakePoint(1, 2);
-             public #var(Point, Origin(MakePoint(0, 0)));
-             public static #fn(MakePoint, #(int x, int y), System.Drawing.Point, #{
-            		return new Point(x, y);
-            	});
-             <para/>
-             The prefix notation often involves special identifiers of the form #X, 
-             where X is an identifier (or keyword). In the LES and EC# parsers, the # 
-             character is considered a normal part of an identifier, no different than
-             a letter (A-Z) or an underscore (_). However, the # is "special" in the
-             sense that when a special construct (like a method, or a field declaration)
-             is converted to a Loyc tree, the Loyc tree represents that special 
-             construct using an identifier that starts with "#".
-             <para/>
-             Code in prefix notation also often has identifiers of the form @X, where X is
-             <ol>
-             <li>An operator such as + or ==</li>
-             <li>A C# keyword</li>
-             <li>A backquoted string</li>
-             </ol>
-             The @ character is <i>not</i> part of the identifier; it merely indicates
-             that the characters after the @ symbol represent an identifier, rather than
-             an operator or keyword. For example, "==" is normally an operator, and 
-             "class" is normally a keyword, but @== and @class are both identifiers,
-             not operators or keywords.
-             <para/>
-             The following examples show how source code text is translated into symbol names:
-             <pre>
-             #foo     ==> "#foo"        @>>           ==> ">>"
-             #?       ==> "?"           @`{}`         ==> "{}"
-             #while   ==> "#while"      @`#Newline\n` ==> "#Newline\n"
-             @#while  ==> "#while"      @`hi there!`  ==> "hi there!"
-             @while   ==> "while"
-             </pre>
-             Identifiers that start with # are parsed like normal identifiers, but 
-             are reserved for things that have special semantic meaning. For example, 
-             "#class" is treated by the parser like any other identifier, but it has
-             the same semantic meaning as "class", although a structure defined with 
-             "#class" looks quite different from the same structure defined using 
-             "class". For example, the following forms are equivalent:
-             <pre>
-             #class(X, #(), @`{}`(int x));
-             class X { int x; }
-             </pre>
-             The #class(...) form uses prefix notation, and it demonstrates the
-             structure of the Loyc tree for a class declaration.
-             <para/>
-             As another example, "#return(7);" is syntactically a function call to a 
-             function called "#return". Although the parser treats it like a function 
-             call, it produces the same syntax tree as "return 7;" does.
-             <para/>
-             Ordinary method calls like <c>Foo(x, y)</c> count as prefix notation, and 
-             in EC# there is actually a non-prefix notation for this call: <c>x `Foo` y</c>.
-             Both forms are equivalent, but the infix notation can only be used when you
-             are calling a method that takes two arguments (also, the string `Foo` should
-             be a simple identifier; if it contains a dot, it is treated as part of the
-             identifier name, not as a normal dot operator.)
-             <para/>
-             So #class is a keyword that is parsed like an identifier, but this is 
-             different from the notation @class which already exists in plain C#.
-             @class is an ordinary identifier that has a "@" sign in front to ensure 
-             that the compiler does not treat it like a keyword at all. #class is a 
-             special identifier that is parsed like an identifier but then treated like 
-             a keyword after parsing is complete.
-             <para/>
-             In other words, to the parser, @struct and #struct are the same except that 
-             the parser removes the @ sign but not the # sign. However, later stages of 
-             the compiler treat @struct (now stored without the @ sign) and #struct quite 
-             differently, as <c>#struct</c> is treated like a keyword and <c>struct</c> 
-             is not.
-             <para/>
-             Since the "#" character is already reserved in plain C# for preprocessor 
-             directives, any node name such as "#if" and "#else" that could be mistaken
-             for an old-fashioned preprocessor directive must be preceded by "@" at the 
-             beginning of a line. For example, the statement "if (failed) return;" can 
-             be represented in prefix notation as "@#if(failed, return)", although the 
-             node name of "@#if" is actually "#if" (while the node name of the 
-             preprocessor directive "#if" would be "##if", and the node name of "return"
-             is actually "#return"). Please note that preprocessor directives themselves 
-             are not part of the normal syntax tree, because they can appear 
-             midstatement. For example, this is valid C#:
-             <pre>
-             if (condition1
-                #if DEBUG
-                   &amp;&amp; condition2
-                #endif
-                ) return;
-             </pre>
-             Preprocessor statements will be processed early in the compiler and then 
-             deleted.
-             <para/>
-             The special #X tokens don't require an argument list, although the compiler
-             expects most of them to have one (and often it must have a specific length).
-             Again, this doesn't matter for parsing, only for later stages of analysis.
-             <para/>
-             Any statement or expression can have attributes attached to it; when 
-             attributes are seen beside a statement, they are attached to the root node 
-             of that statement. In this example, the attribute is attached to the = 
-             operator:
-             <pre>
-             [PointlessAttribute(true)] x = y * 2;
-             </pre>
-             Attributes are allowed not just at the beginning of a statement, but at the 
-             beginning of any subexpression in parenthesis:
-             <pre>
-             Debug.Assert(x == ([PointlessAttribute(true)] y + 2));
-             </pre>
-             Here, the PointlessAttribute is attached to the addition operator (+).
-             These attributes are simply normal EC# nodes (arbitrary expressions), so 
-             they don't have to look like normal attributes:
-             <pre>
-             [TheKing is dead] LongLive(TheKing);
-             </pre>
-             Applying attributes to executable statements has no predefined meaning; A 
-             warning is issued if the compiler encounters an attribute where one is not 
-             allowed in plain C#, or if the syntax cannot be interpreted as an 
-             attribute. The parser supports this feature because it is sometimes useful 
-             in metaprogramming and DSLs.
-             <para/>
-             Because an attribute must be attached to something, an "assembly:" 
-             attribute is represented as an #assembly node with an attribute attached:
-             <pre>
-             [assembly: AssemblyTitle("MyApp")]  // Normal EC#
-             [AssemblyTitle("MyApp")] #assembly; // The way EC# sees it internally
-             </pre>
-             (assembly and module attributes must be special-cased anyway, since it 
-             doesn't make sense for them to be attached to whatever follows them.)
-             <para/>
-             Unlike in plain C#, by the way, EC# labels do not have to be attached to 
-             anything; they are considered statements by themselves:
-             <pre>
-             void f() {
-                goto end;
-                end:       // OK in EC#, syntax error in plain C#
-             }
-             </pre>
-             Perhaps the most interesting thing about EC# is that it is actually an 
-             expression-based language, like LISP: everything in EC# can be considered
-             an expression! For example, instead of writing a method as a list of 
-             statements, we can write it as a list of expressions:
-             <pre>
-             // Normal EC#
-            	public static char HexDigitChar(int value)
-            	{
-            		Debug.Assert(16u > (uint)value);
-            		if ((uint)value >= 10)
-            			return (char)('A' - 10 + value);
-            		else
-            			return (char)('0' + value);
-            	}
-            	// Bizarro EC#
-            	[#public, #static] #fn(HexDigitChar, #(#var(int, value)), #char, #
-            	(
-            		Debug.Assert(16u > (uint)value),
-            		#if ((uint)value >= 10,
-            			#return((char)('A' - 10 + value)),
-            			#return((char)('0' + value)));
-            	);
-             </pre>
-             Just so we're clear, you're not supposed to write "bizarro" code, but this
-             notation can help you understand the underlying representation. The parser
-             basically operates in two modes, one for expressions and one for
-             statements. Statement mode allows certain constructs like "if", "while" 
-             and "class" that expression mode does not understand. But once parsing is 
-             finished, the code is just a tree of nodes with almost nothing to
-             distinguish statements from expressions.
-             <para/>
-             EC# adopts a convention from LISP: the value of the final statement in a 
-             block is the value of the block as a whole. This can be used to simplify 
-             method and property definitions:
-             <para/>
-            	int _value;
-            	public int Value { get { _value } }
-             <para/>
-             The EC# if-else and switch statements (but not loops) work the same way, 
-             and you can put a braced block in the middle of any expression:
-             <pre>
-             int hexChar = {
-            			if ((uint)value >= 10)
-            				'A' - 10
-            			else
-            				'0'
-            		} + value;
-             </pre>
-             The braced block is represented by a {} node, which introduces a new scope.
-             In contrast, the special # node type (the "list marker"), does not create 
-             a new scope. It is normally used with expression syntax:
-             <pre>
-             var three = #(Console.WriteLine("Fetching the three!"), 3);
-             var eight = #(int x = 5, three + x);
-             var seven = x + 2;
-             </pre>
-             Since # does not create a new scope, the variable "x" is created in the 
-             outer scope, where it can be used to compute the value of seven.
-             The # keyword is intended mostly to express lists with prefix notation, but 
-             it can be used with braces in case there is a need to switch back to 
-             statement notation. 
-             <para/>
-             The above code is a bit confusing because of how it is written; EC# is 
-             meant for mature people who have enough sense not to write confusing code 
-             like this.
-             -->
-             
              <h3>The reimplementation</h3>
              
              This implementation has been redesigned (in Subversion, the last version
@@ -2519,7 +2680,7 @@
              the Target is not a symbol, the call has no name.)
              <para/>
              An expression in parenthesis is now represented by a call with the
-             #trivia_inParens attribute; use <see cref="M:Loyc.Syntax.LNode.IsParenthesizedExpr"/> to 
+             #trivia_inParens attribute; use <see cref="M:Loyc.Syntax.LNodeExt.IsParenthesizedExpr(Loyc.Syntax.LNode)"/> to 
              detect the parentheses.
              <para/>
              The problems that motivated a redesign are described at
@@ -2639,6 +2800,9 @@
         <member name="F:Loyc.Syntax.LNode.Missing">
             <summary>The empty identifier, used to represent missing information.</summary>
         </member>
+        <member name="F:Loyc.Syntax.LNode.InParensTrivia">
+            <summary>Used by the <c>quote {...}</c> macro.</summary>
+        </member>
         <member name="P:Loyc.Syntax.LNode.Range">
             <summary>Returns the location and range in source code of this node.</summary>
             <remarks>
@@ -2656,7 +2820,7 @@
             <summary>Returns the source file (shortcut for <c><see cref="P:Loyc.Syntax.LNode.Range"/>.Source</c>).</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.Loyc#IHasLocation#Location">
-            <summary>Gets Range.Begin.ToString().</summary>
+            <summary>Returns Range.</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.Style">
             <summary>Indicates the preferred style to use when printing the node to a text string.</summary>
@@ -2699,8 +2863,23 @@
             </remarks>
         </member>
         <member name="P:Loyc.Syntax.LNode.HasSpecialName">
-            <summary>Returns true if <see cref="P:Loyc.Syntax.LNode.Name"/> starts with '#'.</summary>
+            <summary>Returns true if <see cref="P:Loyc.Syntax.LNode.Name"/> is a "special" name 
+            (i.e. starts with '#' or '\'' or '.' or any character below 48 in ASCII).</summary>
             <remarks>Note that this property returns false for the empty identifier <c>@``</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.IsSpecialName(System.String)">
+            <summary>Returns true if <c>name</c> is considered a "special" name that
+            starts with any character below 48 in ASCII, such as '#', '\'', and '.'.</summary>
+            <remarks>
+            This returns false for the empty string or null. 
+            <para/>
+            In order to keep the check trivially simple, this returns true for '$'
+            even though it is <i>not</i> special in some languages (e.g. JavaScript).
+            <para/>
+            Letters, underscores, digits, and some punctuation do not count as special.
+            The full list of specials is <c>! " # $ % &amp; ' ( ) * + , - . /</c> plus
+            the space character and the control characters.
+            </remarks>
         </member>
         <member name="M:Loyc.Syntax.LNode.WithName(Loyc.Symbol)">
             <summary>Creates a node with a new value for Name.</summary>
@@ -2764,7 +2943,7 @@
             <remarks>The LES printer is the default, and will be used if you try
             to set this property to null.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)">
+        <member name="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.ILNodePrinter)">
             <summary>Helps you change printers temporarily. Usage in C#: 
             <c>using (LNode.PushPrinter(myPrinter)) { ... }</c></summary>
             <remarks>For example, to switch to the EC# printer, use
@@ -2778,7 +2957,7 @@
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.LNode.PushedPrinter">
-            <summary>Returned by <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)"/>.</summary>
+            <summary>Returned by <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.ILNodePrinter)"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.TriviaValue">
             <summary>Gets the value of <c>Args[0].Value</c>, if Args[0] exists; 
@@ -2801,20 +2980,19 @@
             <c>Args[0].Value</c>.
             </remarks>
         </member>
-        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.LNode,Loyc.Syntax.LNode,System.Boolean)">
-            <inheritdoc cref="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.LNode,System.Boolean)"/>
-        </member>
-        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean)">
+        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Syntax.LNode.CompareMode)">
             <summary>Compares two lists of nodes for structural equality.</summary>
-            <param name="compareStyles">Whether to compare values of <see cref="P:Loyc.Syntax.LNode.Style"/></param>
+            <param name="mode">Whether to pay attention to <see cref="P:Loyc.Syntax.LNode.Style"/> and trivia attributes</param>
             <remarks>Position information is not compared.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.LNode,System.Boolean)">
-            <summary>Compares two nodes for structural equality. Two green nodes 
-            are considered equal if they have the same name, the same value, the
-            same arguments, and the same attributes. IsCall must be the same, but
-            they need not have the same values of SourceWidth or IsFrozen.</summary>
-            <param name="compareStyles">Whether to compare values of <see cref="P:Loyc.Syntax.LNode.Style"/></param>
+        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.ILNode,Loyc.Syntax.ILNode,Loyc.Syntax.LNode.CompareMode)">
+            <inheritdoc cref="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.ILNode,Loyc.Syntax.LNode.CompareMode)"/>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.ILNode,Loyc.Syntax.LNode.CompareMode)">
+            <summary>Compares two nodes for structural equality. Two nodes are 
+            considered equal if they have the same kind, the same name, the same 
+            value, the same arguments, and the same attributes.</summary>
+            <param name="mode">Whether to pay attention to <see cref="P:Loyc.Syntax.LNode.Style"/> and trivia attributes</param>
             <remarks>Position information (<see cref="P:Loyc.Syntax.LNode.Range"/>) is not compared.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNode.GetHashCode">
@@ -2824,9 +3002,6 @@
             the hashcode (in the absolute worst case, about 4000 nodes are examined, 
             but usually it is less than 100).
             </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.LNode.DeepComparer">
-            <summary>An IEqualityComparer that compares nodes structurally.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNode.CallsMin(Loyc.Symbol,System.Int32)">
             <summary>Returns true if this is a call with the specified name and the specified minimum number of arguments.</summary>
@@ -2879,9 +3054,11 @@
             the attributes of an LNode, returning another LNode of the same Kind. If 
             the selector makes no changes, Select() returns <c>this</c>.</summary>
             <remarks>The selector is not allowed to return null, but it can return
-            <c>NoValue.Value</c> to delete a parameter or target. If you're wondering 
-            why we don't use <c>null</c> for this purpose, it is because the 
-            functionality of this method is actually implemented by 
+            <c>NoValue.Value</c> to delete a parameter or target. If the current 
+            node is a target, it cannot be deleted, so it is replaced with 
+            <c>#splice()</c> which, by convention, represents an empty list.
+            If you're wondering why we don't use <c>null</c> for deletions, it is 
+            because the functionality of this method is actually implemented by 
             <see cref="M:Loyc.Collections.VList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})"/>; since T could be a 
             value type, that method cannot use null as a signal to delete items from 
             the collection.
@@ -2908,12 +3085,16 @@
             <see cref="P:Loyc.Syntax.LNode.Args"/>) using the specified selector. This method can also
             be used for simple searching, by giving a selector that always returns 
             null.</summary>
-            <param name="selector">The selector is called for each descendant, and
+            <param name="matcher">This method is called for each descendant, and
             optionally the root node. If the selector returns a node, the new node 
             replaces the node that was passed to <c>selector</c> and the children of 
             the new node are ignored. If the selector returns null, children of the 
-            child are scanned recursively.</param>
-            <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
+            child are scanned recursively. If the selector returns Maybe{LNode}.NoValue
+            then the current node is deleted if it is an argument or attribute. If 
+            the current node is a target, it cannot be deleted, so it is replaced 
+            with <c>#splice()</c> which, by convention, represents an empty list.
+            If you delete the root node then this method returns Maybe{LNode}.NoValue.</param>
+            <param name="options">Options, see <see cref="T:Loyc.Syntax.LNode.ReplaceOpt"/>.</param>
             <returns>The new node produced after all replacements have occurred.</returns>
             <remarks>If <c>replaceFunc</c> always returns null (or if <c>replaceRoot</c>
             is false and the root has no children), <c>ReplaceRecursive</c> returns 
@@ -2922,18 +3103,80 @@
         <member name="T:Loyc.Syntax.LNodeExt">
             <summary>Standard extension methods for <see cref="T:Loyc.Syntax.LNode"/>.</summary>
         </member>
+        <member name="M:Loyc.Syntax.LNodeExt.GetTrailingTrivia(Loyc.Syntax.LNode)">
+            <summary>Gets all trailing trivia attached to the specified node.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.GetTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Gets all trailing trivia attached to the specified node.</summary>
+            <remarks>Trailing trivia is represented by a call to #trivia_trailing in
+            a node's attribute list; each argument to #trivia_trailing represents one
+            piece of trivia. If the attribute list has multiple calls to 
+            #trivia_trailing, this method combines those lists into a single list.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.WithTrailingTrivia(Loyc.Syntax.LNode,Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Removes a node's trailing trivia and adds a new list of trailing trivia.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.WithTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Removes all existing trailing trivia from an attribute list and adds a new list of trailing trivia.</summary>
+            <remarks>This method has a side-effect of recreating the #trivia_trailing
+            node, if there is one, at the end of the attribute list. If <c>trivia</c>
+            is empty then all calls to #trivia_trailing are removed.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.WithoutTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Gets a new list with any #trivia_trailing attributes removed.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.WithoutTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode}@)">
+            <summary>Gets a new list with any #trivia_trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Syntax.LNode,Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Adds additional trailing trivia to a node.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Syntax.LNode,Loyc.Syntax.LNode)">
+            <summary>Adds additional trailing trivia to a node.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Adds additional trailing trivia to an attribute list. Has no effect if <c>trivia</c> is empty.</summary>
+            <remarks>
+            Trailing trivia is represented by a call to #trivia_trailing in a node's 
+            attribute list; each argument to #trivia_trailing represents one piece of 
+            trivia.
+            <para/>
+            In the current design, this method has a side-effect of recreating the #trivia_trailing
+            node at the end of the attribute list, and if there are multiple #trivia_trailing
+            lists, consolidating them into a single list, but only if the specified <c>trivia</c> 
+            list is not empty.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Syntax.LNode)">
+            <summary>Adds additional trailing trivia to an attribute list.</summary>
+        </member>
         <member name="M:Loyc.Syntax.LNodeExt.AsList(Loyc.Syntax.LNode,Loyc.Symbol)">
             <summary>Interprets a node as a list by returning <c>block.Args</c> if 
-            <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
-            with <c>block</c> as the only item.</summary>
+            <c>block.Calls(listIdentifier)</c>, otherwise returning a one-item list 
+            of nodes with <c>block</c> as the only item.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.AsLNode(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Symbol)">
             <summary>Converts a list of LNodes to a single LNode by using the list 
             as the argument list in a call to the specified identifier, or, if the 
             list contains a single item, by returning that single item.</summary>
             <param name="listIdentifier">Target of the node that is created if <c>list</c>
-            does not contain exactly one item. Typical values include "{}" and "#splice".</param>
+            does not contain exactly one item. Typical values include "'{}" and "#splice".</param>
             <remarks>This is the reverse of the operation performed by <see cref="M:Loyc.Syntax.LNodeExt.AsList(Loyc.Syntax.LNode,Loyc.Symbol)"/>.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.InParens(Loyc.Syntax.LNode)">
+            <summary>Returns the same node with a parentheses attribute added.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.InParens(Loyc.Syntax.LNode,Loyc.Syntax.SourceRange)">
+            <summary>Returns the same node with a parentheses attribute added.</summary>
+            <remarks>The node's range is changed to the provided <see cref="T:Loyc.Syntax.SourceRange"/>
+            and the original range of the node is assigned to the parentheses attribute.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.InParens(Loyc.Syntax.LNode,Loyc.Syntax.ISourceFile,System.Int32,System.Int32)">
+            <summary>Returns the same node with a parentheses attribute added.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.WithoutOuterParens(Loyc.Syntax.LNode)">
+            <summary>Removes a single pair of parentheses, if the node has a 
+            #trivia_inParens attribute. Returns the same node when no parens are 
+            present.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)">
             <summary>Determines whether one Loyc tree "matches" another. This is 
@@ -2981,11 +3224,30 @@
             a pattern.
             </remarks>
         </member>
+        <member name="M:Loyc.Syntax.LNodeExt.GetCaptureIdentifier(Loyc.Syntax.LNode,System.Boolean)">
+            <summary>Checks if <c>pattern</c> matches one of the syntax trees 
+            <c>$x</c> or <c>$(..x)</c> or <c>$(...x)</c> for some identifier <c>x</c>.
+            These are conventionally used to represent partial syntax trees.</summary>
+            <returns>The matched identifier (<c>x</c> in the examples above), or null 
+            if <c>pattern</c> was not a match.</returns>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.ToLNode(Loyc.Syntax.ILNode)">
+            <summary>Converts <see cref="T:Loyc.Syntax.ILNode"/> to <see cref="T:Loyc.Syntax.LNode"/> recursively.
+            If the specified node is already an <see cref="T:Loyc.Syntax.LNode"/>, this method simply
+            does a cast.</summary>
+        </member>
         <member name="T:Loyc.Syntax.LNodeFactory">
             <summary>Contains helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
             An LNodeFactory holds a reference to the current source file (<see cref="P:Loyc.Syntax.LNodeFactory.File"/>) 
             so that it does not need to be repeated every time you create a node.
             </summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeFactory.OnNewLine(Loyc.Syntax.LNode)">
+            <summary>Adds a leading newline to the node if the first attribute isn't a newline.</summary>
+            <remarks>By convention, in Loyc languages, top-level nodes and nodes within 
+            braces have an implicit newline, such that a leading blank line appears
+            if you add <see cref="F:Loyc.Syntax.CodeSymbols.TriviaNewline"/>. For all other nodes,
+            this method just ensures there is a line break.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeFactory.Trivia(System.String,System.Object)">
             <summary>Creates a trivia node named <c>"#trivia_" + suffix</c> with the 
@@ -3029,59 +3291,82 @@
             style automatically.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Operator">
-            <summary>The node should be printed with operator notation (infix, prefix, 
-            suffix) instead of prefix notation if applicable (can be used to request 
-            `backquote notation` in LES and EC#).</summary>
+            <summary>Indicates that a node was parsed as an operator (infix, prefix, 
+            suffix, or other operator), or that it should be printed with operator 
+            notation if possible.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Statement">
             <summary>The node's immediate children (and/or the node itself) should be 
             printed in statement notation, if possible in the context in which it is 
             located.</summary>
+            <remarks>Used to mark braced blocks. In LES, marks a call in which ';'
+            is used as the argument separator.</remarks>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Special">
             <summary>A language-specific special notation should be used for this
-            node. In LES, this marker requests that the arguments to a call be
-            broken out into separate expressions, forming a "superexpression", e.g.
-            in "if c {a();} else {b();}", which actually means "if(c,{a();},else,{b();})",
-            the "if(...)" node will have this style.</summary>
+            node. In LESv3, the parser puts this style on block call nodes (e.g. 
+            <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.PrefixNotation">
-            <summary>The node should be printed in prefix notation, e.g. <c>@.(X, Y)</c>
-            instead of <c>X.Y</c>.</summary>
+            <summary>The node should be printed in prefix notation (even if it is 
+            not the natural notation to use). An example in EC# notation is 
+            <c>@`'+`(X, Y)</c> instead of <c>X + Y</c>.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Expression">
             <summary>The node(s) should be printed as a normal expression, rather
             than using a special or statement notation.</summary>
+            <remarks>In EC#, braced initializer blocks have this style. The EC# 
+            node printer will refuse to print a node with this style as a statement.</remarks>
         </member>
-        <member name="F:Loyc.Syntax.NodeStyle.DataType">
-            <summary>The node should be printed like a data type, if the type 
-            notation is somehow different from expression notation. (Note: in 
-            general, one cannot expect data types to have this style).</summary>
+        <member name="F:Loyc.Syntax.NodeStyle.Reserved">
+            <summary>Unassigned.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.OldStyle">
             <summary>Use an older or backward-compatible notation.</summary>
+            <remarks>In EC#: prints lambda as delegate; forces old cast notation in EC#.</remarks>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.BaseStyleMask">
             <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
-            base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
+            base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.BinaryLiteral">
+            <summary>Used for a binary (base-2) literal like 0b11111.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.HexLiteral">
+            <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.OctalLiteral">
+            <summary>Used for an octal (base-7) literal like 0o37.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.VerbatimStringLiteral">
+            <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.TQStringLiteral">
+            <summary>Used for a triple-quoted string literal like <c>'''foo'''</c>.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.TDQStringLiteral">
+            <summary>Used for a triple-double-quoted string literal like <c>"""foo"""</c>.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Alternate">
-            <summary>If this node has two common styles in which it is printed, this
-            selects the second (either the less common style, or the EC# style for
-            features of C# with new syntax in EC#). In LES and EC#, alternate style
-            denotes hex numbers. In EC#, it denotes verbatim strings, x(->int) as 
-            opposed to (int)x, x (as Y) as opposed to (x as Y). delegate(X) {Y;} is 
-            considered to be the alternate style for X => Y, and it forces parens 
-            and braces as a side-effect.</summary>
+            <summary>If this node has two styles in which it can be printed, this
+            selects the second (the less common style, or less-well-supported style).
+            In EC#, it denotes x(->int) as opposed to (int)x, and x (as Y) as opposed 
+            to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate 
+            style for X => Y; it forces parens and braces as a side-effect.</summary>
         </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Alternate2">
-            <summary>Another alternate style flag. In LES and EC#, this is used for
-            binary-format numbers.</summary>
+        <member name="F:Loyc.Syntax.NodeStyle.InjectedTrivia">
+            <summary>Injected trivia (see <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1"/>) 
+            will have this bit set.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.NodeStyle.OneLiner">
+            <summary>Indicates that the there is no comment or newline trivia associated
+            with the children of this node, and therefore when printing this node,
+            automatic newlines can be suppressed.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Handled">
             <summary>Indicates that some part of a compiler has seen the node and 
             done something with it.</summary>
-            <remarks>The idea behind this flag relates to compilers that allow 
+            <remarks>The motivation for this flag relates to compilers that allow 
             user-defined attributes for plug-ins that add functionality. For 
             example, internationalization plug-in might notice a language marker:
             <code>
@@ -3089,9 +3374,9 @@
             </code>
             If an attribute is not used by any plug-in, the compiler should print 
             a warning that the attribute is unused. This leads to the question, how
-            can a compiler tell if an attribute was used or not? The Handled flag
+            can a compiler tell if an attribute was ever used? The Handled flag
             is one possible mechanism; when any part of the compiler or its plug-
-            ins use an attribute, the Handled flag should be set to disable the
+            ins use an attribute, the Handled flag could be set to disable the
             compiler warning.
             <para/>
             Remember that the same node can theoretically appear in multiple
@@ -3103,8 +3388,9 @@
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.StdTriviaNode">
-            <summary>A node that has both a Name and a Value. </summary>
+            <summary>A simple call node with a single literal argument. </summary>
             <remarks>
+            Essentially, this is a special kind of node with both a name and a value.
             Since there is no syntax (or <see cref="T:Loyc.Syntax.LNodeKind"/>) for a node that has
             both a Name and a Value, the node pretends that it is has a single argument,
             Args[0], which allows this node to be printed as if it were a normal call
@@ -3121,6 +3407,482 @@
             <summary>An enum of common operator formats.</summary>
             <remarks>It is intentional that the absolute value of each OperatorShape
             (except Other) is the arity of (number of arguments to) that shape.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ParseHelpers">
+            <summary>Static methods that help with common parsing jobs, such as 
+            parsing integers, floats, and strings with C escape sequences.</summary>
+            <seealso cref="T:Loyc.Syntax.PrintHelpers"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseHex(Loyc.UString,System.Int32@)">
+            <summary>A simple method to parse a sequence of hex digits, without
+            overflow checks or other features supported by methods like 
+            <see cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>.</summary>
+            <returns><c>true</c> iff the entire string was consumed and the string was nonempty.</returns>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseHex(Loyc.UString@,System.Int32@)">
+            <summary>A simple method to parse a sequence of hex digits, without
+            overflow checks or other features supported by methods like 
+            <see cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>.</summary>
+            <returns>The number of digits parsed</returns>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.HexDigitValue(System.Char)">
+            <summary>Gets the integer value for the specified hex digit, or -1 if 
+            the character is not a hex digit.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.Base36DigitValue(System.Char)">
+            <summary>Gets the integer value for the specified digit, where 'A' maps 
+            to 10 and 'Z' maps to 35, or -1 if the character is not a digit or
+            letter.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,System.Boolean)">
+            <summary>Unescapes a string that uses C-style escape sequences, e.g. 
+            "\\\n\\\r" becomes "\n\r".</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC@,System.Boolean)">
+            <summary>Unescapes a string that uses C-style escape sequences, e.g. 
+            "\\\n\\\r" becomes "\n\r".</summary>
+            <param name="encountered">Returns information about whether escape 
+            sequences were encountered, and which categories.</param>
+            <param name="removeUnnecessaryBackslashes">Causes the backslash before 
+            an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
+            <remarks>See <see cref="!:UnescapeChar(string, ref int, ref EscapeC)"/> for details.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeChar(Loyc.UString@,Loyc.Syntax.EscapeC@)">
+            <summary>Unescapes a single character of a string. Returns the 
+            first character if it is not a backslash, or <c>\</c> if it is a 
+            backslash but no escape sequence could be discerned.</summary>
+            <param name="s">Slice of a string to be unescaped. When using a
+            <c>ref UString</c> overload of this method, <c>s</c> will be shorter upon
+            returning from this method, as the parsed character(s) are clipped 
+            from the beginning (<c>s.InternalStart</c> is incremented by one 
+            normally and more than one in case of an escape sequence.)</param>
+            <param name="encountered">Bits of this parameter are set according
+            to which escape sequence is encountered, if any.</param>
+            <remarks>
+            This function also decodes (non-escaped) surrogate pairs.
+            <para/>
+            Code points with 5 or 6 digits such as \u1F4A9 are supported.
+            \x escapes must be two digits and set the EscapeC.BackslashX flag.
+            \u escapes must be 4 to 6 digits. If a \u escape has more than 4 
+            digits, the EscapeC.HasLongEscapes flag is set. Invalid 6-digit 
+            escapes like \u123456 are "made valid" by being treated as 5 digits
+            (the largest valid escape is <c>\u10FFFF</c>.)
+            <para/>
+            Supported escapes: <c>\u \x \\ \n \r \0 \' \" \` \t \a \b \f \v</c>
+            </remarks>
+            <example>
+            EscapeC e = 0; 
+            UString str = @"\nfoo";
+            char c = UnescapeChar(ref str, ref e);
+            Contract.Assert(str == "foo");
+            Contract.Assert(e == EscapeC.HasEscapes);
+            </example>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)">
+            <summary>Tries to parse a string to an integer. Unlike <see cref="M:System.Int32.TryParse(System.String,System.Int32@)"/>,
+            this method allows parsing to start at any point in the string, it 
+            allows non-numeric data after the number, and it can parse numbers that
+            are not in base 10.</summary>
+            <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.
+            Must be in the range 2 to 36.</param>
+            <param name="index">Location at which to start parsing</param>
+            <param name="flags"><see cref="T:Loyc.Syntax.ParseNumberFlag"/>s that affect parsing behavior.</param>
+            <param name="skipSpaces">Whether to skip spaces before parsing. Only 
+            the ' ' and '\t' characters are treated as spaces. No space is allowed 
+            between '-' and the digits of a negative number, even with this flag.</param>
+            <returns>True if a number was found starting at the specified index
+            and it was successfully converted to a number, or false if not.</returns>
+            <remarks>
+            This method never throws. If parsing fails, index is left unchanged, 
+            except that spaces are still skipped if you set the skipSpaces flag. 
+            If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
+            in the output number. If the input number cannot fit in 'result', the 
+            return value is false but index increases anyway, and 'result' is a 
+            bitwise truncated version of the number.
+            <para/>
+            When parsing input such as "12.34", the parser stops and returns true
+            at the dot (with a result of 12 in this case).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int32@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int64@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseUInt(Loyc.UString@,System.UInt64@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Tries to parse a string to an unsigned integer.</summary>
+            <param name="s">A slice of a string to be parsed.</param>
+            <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.
+            Normally in the range 2 to 36.</param>
+            <param name="flags"><see cref="T:Loyc.Syntax.ParseNumberFlag"/>s that affect parsing behavior.</param>
+            <returns>True if a number was found starting at the specified index
+            and it was successfully converted to a number, or false if not.</returns>
+            <remarks>
+            This method never throws. It shrinks the slice <c>s</c> as it parses,
+            so if parsing fails, <c>s[0]</c> will be the character at which parsing 
+            fails. If base>36, parsing can succeed but digits above 35 (Z) cannot 
+            be represented in the input string. If the number cannot fit in 
+            <c>result</c>, the return value is false and the method's exact behavior
+            depends on whether you used <see cref="F:Loyc.Syntax.ParseNumberFlag.StopBeforeOverflow"/>.
+            <para/>
+            When parsing input such as "12.34", the parser stops and returns true
+            at the dot (with a result of 12 in this case).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseUInt(Loyc.UString@,System.Numerics.BigInteger@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseUInt(Loyc.UString@,System.UInt64@,System.Int32,Loyc.Syntax.ParseNumberFlag)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Low-level method that identifies the parts of a float literal
+            of arbitrary base (typically base 2, 10, or 16) with no prefix or 
+            suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
+            <param name="radix">Base of the number to parse; must be between 2
+            and 36.</param>
+            <param name="mantissa">Integer magnitude of the number.</param>
+            <param name="exponentBase2">Base-2 exponent to apply, as specified by
+            the 'p' suffix, or 0 if there is no 'p' suffix..</param>
+            <param name="exponentBase10">Base-10 exponent to apply, as specified by
+            the 'e' suffix, or 0 if there is no 'e' suffix..</param>
+            <param name="exponentBaseR">Base-radix exponent to apply. This number
+            is based on the front part of the number only (not including the 'p' or
+            'e' suffix). Negative values represent digits after the decimal point,
+            while positive numbers represent 64-bit overflow. For example, if the
+            input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
+            <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
+            <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
+            overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
+            with <c>exponentBaseR=3</c>.</param>
+            <param name="numDigits">Set to the number of digits in the number, not 
+            including the exponent part.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <remarks>
+            The syntax required is
+            <code>
+              ( '+'|'-' )?
+              ( Digits ('.' Digits?)? | '.' Digits )
+              ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
+              ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
+            </code>
+            where Digits refers to one or more digits in the requested base, 
+            possibly including underscores or spaces if the flags allow it; similarly, 
+            DecimalDigits refers to base-10 digits and is also affected by the
+            flags.
+            <para/>
+            Returns false if there was an error interpreting the input.
+            <para/>
+            To keep the parser relatively simple, it does not roll back in case of 
+            error the way the int parser does. For example, given the input "23p", 
+            the 'p' is consumed and causes the method to return false, even though
+            the parse could have been successful if it had ignored the 'p'.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses the parts of a floating-point string. See the other 
+            overload for details.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="negative">true if the string began with '-'.</param>
+            <param name="mantissa">Integer magnitude of the number.</param>
+            <param name="exponentBase2">Base-2 exponent to apply.</param>
+            <param name="exponentBase10">Base-10 exponent to apply.</param>
+            <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <remarks>
+            This method is a wrapper around the other overload that combines 
+            the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
+            depending on the radix. For example, when radix=10, this method 
+            adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseDouble(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses a string to a double-precision float, returning NaN on 
+            failure or an infinity value on overflow.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloat(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses a string to a single-precision float, returning NaN on 
+            failure or an infinity value on overflow.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(Loyc.UString)">
+            <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
+            <remarks>Only ' ' and '\t' are treated as spaces.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ParseNumberFlag">
+            <summary>Flags that can be used with 
+            <see cref="!:ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)"/>
+            </summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInFront">
+            <summary>Skip spaces before the number. Without this flag, initial spaces make parsing fail.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInsideNumber">
+            <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.StopBeforeOverflow">
+            <summary>Changes overflow handling behavior when parsing an integer,
+            so that the result does not overflow (wrap), and the digit(s) at the 
+            end of the string, that would have caused overflow, are ignored. In 
+            this case, the return value is still false.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipUnderscores">
+            <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSingleQuotes">
+            <summary>Skip single quotes inside number. Without this flag, single quotes make parsing stop.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.AllowCommaDecimalPoint">
+            <summary>Whether to treat comma as a decimal point when parsing a float. 
+            The dot '.' is always treated as a decimal point.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.StandardTriviaInjector">
+            <summary>Encapsulates an algorithm that consumes trivia (comments and 
+            newlines) from a list and adds it as trivia attributes into LNodes.</summary>
+            <remarks>
+            Usage: Call the constructor, then call <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/>.
+            See <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1"/> for more information.
+            <para/>
+            In brief, given input code with C-style comments like
+            <pre>
+            {
+            	// Leading Comment 1
+            	/* Leading Comment 2 * /
+            	/* Leading Comment 3 * / x = y; // Trailing Comment 1
+            	/* Trailing Comment 2 * /
+            	
+            	y = z; TheEnd();
+            }
+            </pre>
+            [NOTE: the space in "* /" is a workaround for a serious bug in Doxygen, the html doc generator]
+            
+            The output, expressed in LESv2, is
+            <pre>
+            {
+            	@[#trivia_SLComment(" Leading Comment 1"),
+            	  #trivia_MLComment(" Leading Comment 2 "),
+            	  #trivia_newline,
+            	  #trivia_MLComment(" Leading Comment 3 "),
+            	  #trivia_beginTrailingTrivia,
+            	  #trivia_SLComment(" Trailing Comment 1"),
+            	  #trivia_MLComment(" Trailing Comment 2 "),
+            	  #trivia_newline]
+            	x = y;
+            	y = z;
+            	@[#trivia_appendStatement] TheEnd();
+            }
+            </pre>
+            By default, printers add newlines between statements within a braced 
+            block. Therefore, this class does not add trivia to mark a single newline 
+            between statements; instead, it adds a #trivia_appendStatement attribute 
+            when the expected newline prior to a statement in a braced block was NOT 
+            present. Also, a newline is expected after a single-line comment and no 
+            <c>#trivia_newline</c> is created for the expected newline.
+            <para/>
+            Finally, since printers typically add a newline before the closing brace by
+            default, this class avoids adding an attribute for that newline, if present.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.StandardTriviaInjector.#ctor(Loyc.Collections.IListSource{Loyc.Syntax.Lexing.Token},Loyc.Syntax.ISourceFile,System.Int32,System.String,System.String,System.String)">
+            <summary>Initializes <see cref="T:Loyc.Syntax.StandardTriviaInjector"/>.</summary>
+            <param name="sortedTrivia">A list of trivia that will be injected into the 
+            nodes passed to <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/>. Normally,
+            text of comments is extracted from the provided <see cref="T:Loyc.Syntax.ISourceFile"/>,
+            but comment tokens could instead store their text as a string in their
+            <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>.</param>
+            <param name="sourceFile">This is used as the source file of the <see cref="P:Loyc.Syntax.LNode.Range"/> of all trivia attributes that the algorithm injects.</param>
+            <param name="newlineTypeInt">A token is interpreted as a newline when this value equals <see cref="F:Loyc.Syntax.Lexing.Token.TypeInt"/>.</param>
+            <param name="mlCommentPrefix">If a token's text begins with this prefix it is assumed to be a multi-line comment and the prefix is removed.</param>
+            <param name="mlCommentSuffix">If a multi-line comment's text ends with this suffix, the suffix is removed.</param>
+            <param name="slCommentPrefix">If a token's text begins with this prefix it is assumed to be a single-line comment and the prefix is removed.</param>
+        </member>
+        <member name="M:Loyc.Syntax.StandardTriviaInjector.HasImplicitLeadingNewline(Loyc.Syntax.LNode,Loyc.Syntax.LNode,System.Int32)">
+            <summary>Called to find out if a newline is to be added implicitly 
+            before the current child of the specified node.</summary>
+            <returns>By default, returns true if the node is a braced block.</returns>
+        </member>
+        <member name="M:Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute(Loyc.Syntax.Lexing.Token)">
+            <summary>Called to transform a trivia token into a trivia attribute.</summary>
+            <remarks>If a trivia token is not recognized, null is returned to ignore the trivia.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.AbstractTriviaInjector`1">
+             <summary>Encapsulates an algorithm that consumes trivia (comments and 
+             newlines) from a list and adds it as trivia attributes into LNodes.</summary>
+             <remarks>
+             Call <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/> to invoke the algorithm. One must also write a
+             derived class that knows how to interpret the trivia and associate it with
+             a specific <see cref="T:Loyc.Syntax.LNode"/>, or use the standard derived class 
+             <see cref="T:Loyc.Syntax.StandardTriviaInjector"/>.
+             <para/>
+             The algorithm is designed to postprocess output from a parser that works in
+             a typical way. The lexer for your language needs to follow the following rules:
+             
+             <ul>
+             <li>It must not include the newline character in the range of a single-line 
+             comment.</li>
+             <li>Generally, newlines (including the newline after a single-line comment)
+             must be included in the trivia list, as the algorithm relies on these newlines
+             instead of asking <see cref="P:Loyc.Syntax.LNode.Range"/> for line numbers, which is
+             slower. If newlines are omitted then a comment right after a statement (e.g.
+             on the same line) will be associated with the next statement instead.</li>
+             </ul>
+             
+             Typically one will wrap the lexer in <see cref="T:Loyc.Syntax.Lexing.TriviaSaver"/>, which 
+             saves trivia while filtering out whitespace so that the parser doesen't see it.
+             <para/>
+             Your language's parser needs to follow the following rules:
+             
+             <ul>
+             <li>The parser should assign minimal boundaries to each node: the 
+             <see cref="P:Loyc.Syntax.LNode.Range"/> should not be wider than necessary. If there is 
+             a comment before an expression like <c>/*!* / x + y</c>, the parser should 
+             not include the comment as part of the range unless it wants the comment to 
+             be associated with a child node (<c>x</c>) instead of with the entire 
+             expression (<c>x + y</c>).</li>
+             <li>If a node has normal (non-trivia) attributes attached to it, the range of
+             the node should include those attributes.</li>
+             <li>The parser should use <see cref="M:Loyc.Syntax.LNodeFactory.InParens(Loyc.Syntax.LNode)"/> to place a
+             node in parentheses and include the index of the opening and closing parens.</li>
+             <li>If an expression/statement is terminated by a semicolon/comma, it's 
+             best (but not crucial) to include the semicolon/comma in the LNode.Range, 
+             but if a statement is terminated by a newline, the newline should not be 
+             included in the range. If general, when the terminator is included in the 
+             range, then any comment that appears before the terminator is attached
+             to the final child node rather than to the node as a whole. (e.g. in 
+             <c>x = y /*y* /;</c>, the comment is associated with <c>y</c> if the
+             comment is within the range of the statement as a whole.)</li>
+             </ul>
+             This example shows how comments are associated with nodes:
+             [NOTE: the space in "* /" is a workaround for a serious bug in Doxygen, the html doc generator]
+             <pre>
+             // Comment attached to block
+             {
+               // Comment attached to Foo() call
+               Foo(
+            		// Comment attached to «argument1 + 1». Note that the comma is 
+            		// generally invisible to the injector since it is not part of the LNode 
+            		// tree, so the 1st and 2nd comments will both be attached to the sum-
+            		// expression as a whole.
+            		argument1 + 1 /*1st comment* /, // 2nd comment
+            		// Comment attached to «argument2 + 2»
+            		argument2 + 2); // Comment attached to Foo() call
+            	  Area = 3.14159265/*PI* / * /*radius* /r**2;
+            	  // Comment attached to «Area =» statement, preceded by newline trivia?
+            
+            	  // Comment attached to Bar()
+            	  @BarAttr // Comment attached to BarAttr attribute
+            	  Bar();
+            	  
+            	  // Comment attached to Bar() because there are no statements afterward
+             }
+             </pre>
+             When there is a single newline between two nodes, <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/> will
+             associate it with the second one. When there is a blank line between two 
+             nodes (two newlines), the first newline (and any before) is associated with 
+             the first node and the second newline (and any following) is associated with 
+             the second.
+             </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.AbstractTriviaInjector`1.SortedTrivia">
+            <summary>List of trivia to be injected by <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/>. Must be sorted.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.AbstractTriviaInjector`1.NextIndex">
+            <summary>Index of next trivia to be injected.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.#ctor(Loyc.Collections.IListSource{`0})">
+            <summary>Initializes the <see cref="P:Loyc.Syntax.AbstractTriviaInjector`1.SortedTrivia"/> property.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.AttachTriviaTo(Loyc.Syntax.LNode@,Loyc.Collections.IListSource{`0},Loyc.Syntax.AbstractTriviaInjector{`0}.TriviaLocation,Loyc.Syntax.LNode,System.Int32)">
+            <summary>Derived class should associate the given list of trivia with the 
+            specified node. Leading trivia will be attached to a given node before 
+            trailing trivia.</summary>
+            <param name="node">The node.</param>
+            <param name="trivia">Trivia to be associated with <c>node</c>.</param>
+            <param name="loc">Location of the trivia. For a given node, the base class
+            calls this method at most once for each value of <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1.TriviaLocation"/>.
+            </param>
+            <param name="parent">(Original version of) parent of <c>node</c>.</param>
+            <param name="indexInParent">Index of <c>node</c> within <c>parent</c>.</param>
+            <returns>The same node with trivia attributes added. If loc indicates trailing
+            trivia, the derived class can say "I don't want trivia to be associated with 
+            this node" by returning null; the base class will, if possible, associate it 
+            with the next node instead, but this doesn't work for the last child in a 
+            sequence; in that case this method is called again with the same trivia and
+            loc is set to TriviaLocation.TrailingExtra.</returns>
+            <remarks>This method may STILL called for a given node when there is no trivia 
+            associated with that node, IF the node is at the top level or its sibling 
+            nodes in the same parent have associated trivia.</remarks>
+        </member>
+        <member name="F:Loyc.Syntax.AbstractTriviaInjector`1.TriviaLocation.Leading">
+            <summary>Trivia that appeared before a node</summary>
+        </member>
+        <member name="F:Loyc.Syntax.AbstractTriviaInjector`1.TriviaLocation.Trailing">
+            <summary>Trivia associated with a node that came before it</summary>
+        </member>
+        <member name="F:Loyc.Syntax.AbstractTriviaInjector`1.TriviaLocation.TrailingExtra">
+            <summary>Trivia attached to the last node in an argument list or last statement in a block</summary>
+        </member>
+        <member name="F:Loyc.Syntax.AbstractTriviaInjector`1.TriviaLocation.Ambiguous">
+            <summary>The trivia begins within the range of an identifier or literal. 
+            This occurs, for example, if a list of arguments or attributes includes a
+            comma in the range of each argument, and there is trivia before the comma,
+            e.g. in <c>Foo(x/* trivia * /, y);</c>, this occurs if the range of <c>x</c> 
+            includes the comma token. The trivia injector is not aware of <c>x</c> or
+            the comma; all it knows is that the trivia is "inside" the range of <c>x</c>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.MarkOneLiner(Loyc.Syntax.LNode@)">
+            <summary>This method is called when a node has no newlines or comments within it
+            (although the node may still have a leading or trailing comment). It informs the
+            derived class that <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1"/> will not traverse 
+            into the node.</summary>
+            <remarks>The default implementation sets the <see cref="F:Loyc.Syntax.NodeStyle.OneLiner"/> 
+            style flag.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.GetRange(`0)">
+            <summary>Gets the <see cref="T:Loyc.Syntax.SourceRange"/> for an element of trivia.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.IsNewline(`0)">
+            <summary>Returns true if the trivia represents a newline, false otherwise.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.GetEmptyResultSet">
+            <summary>A method called to create a virtual node to apply trivia to an empty source file.</summary>
+            <remarks>Default implementation attaches all trivia to a "missing" node 
+            (zero-length identifier). If this method returns null then the result is discarded.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.DoneAttaching(Loyc.Syntax.LNode,Loyc.Syntax.LNode,System.Int32)">
+            <summary>This method is called after a node has been processed and any 
+            applicable trivia was attached.</summary>
+            <param name="node">Node (after trivia attached)</param>
+            <param name="parent">Parent of <c>node</c> (old version, before changes to children are applied)</param>
+            <param name="indexInParent">Index of <c>node</c> within <c>parent</c>.</param>
+            <returns>Should return <c>node</c> or an altered version of <c>node</c>.</returns>
+            <remarks>This method gives the derived class one final chance to 
+            rearrange or alter the interpretation of the attached trivia. Note
+            that this method may be called on some nodes to which trivia was
+            not attached, when siblings of the same parent had trivia attached.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})">
+            <summary>Attaches trivia to the input nodes provided.</summary>
+            <param name="nodes">List of input nodes. This method calls nodes.MoveNext()
+            before calling nodes.Current.</param>
+            <remarks>Trailing trivia after all nodes is attached to the final node. If 
+            <c>nodes</c> is empty then <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.GetEmptyResultSet"/> is called to
+            create a dummy node and attach all trivia to it.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.AbstractTriviaInjector`1.RunCore(System.Collections.Generic.IEnumerator{Loyc.Pair{Loyc.Syntax.LNode,System.Int32}},Loyc.Syntax.LNode)">
+            <summary>Core trivia associaton algorithm.</summary>
+            <remarks>
+            NOTE: the enumerator may DRIVE lexing and actually cause the trivia list
+            (SortedTrivia) to increase in size. For this reason, this algorithm is careful
+            to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this
+            precaution is sufficient to preserve trivia in all "streaming" cases, but it
+            seems to work in at least most cases.
+            </remarks>
         </member>
         <member name="T:Loyc.Syntax.ParserSource`3">
             <summary>An implementation of the LLLPG Parser API, used with the LLLPG
@@ -3263,7 +4025,7 @@
             which are a precedence range that determines whether and how the operator 
             can be mixed with other operators, as explained below.
             <para/>
-            A printer (e.g. <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>) has a different way of analyzing
+            A printer (e.g. <see cref="T:Loyc.Syntax.Les.LesLanguageService"/>) has a different way of analyzing
             precedence. It starts with a known parse tree and then has to figure out 
             how to output something that the parser will reconstruct into the original
             tree. This is more difficult if perfect round-tripping is required: parentheses
@@ -3271,45 +4033,43 @@
             round-tripping is desired, the printer cannot simply put everything in parens 
             "just to be safe".
             <para/>
-            Generally, the printer has two ways of printing any expression tree: (1) 
-            with operators (e.g. a+b), and (2) with prefix notation (e.g. @+(a, b)).
-            The tree <c>@+(@*(a, b), c)</c> will be printed as "a*b+c" (unless prefix
+            The LES and EC# printers have two ways of printing any expression tree: (1) 
+            with operators (e.g. a+b), and (2) with prefix notation (e.g. `'+`(a, b)).
+            The tree <c>`'+`(`'*`(a, b), c)</c> will be printed as "a*b+c" (unless prefix
             notation is specifically requested) because the precedence rules allow it,
-            but <c>@*(@+(a, b), c)</c> will be printed as <c>@+(a, b)*c</c> because 
+            but <c>`'*`(`'+`(a, b), c)</c> will be printed as <c>`'+`(a, b)*c</c> because 
             both "a+b*c" and "(a+b)*c" are different from the original tree.
             <para/>
             While a parser proceeds from left to right, a printer proceeds from parents
-            to children. So the printer for @*(@+(a, b), c) starts at @* with no 
+            to children. So the printer for `'*`(`'+`(a, b), c) starts at <c>`'*`</c> with no 
             precedence restrictions, and roughly speaking will set the precedence floor
             to <see cref="T:Loyc.Syntax.Les.LesPrecedence"/>.Multiply in order to print its two children.
-            Since the precedence of @+ (Add) is below Multiply, the + operator is not
-            allowed in that context and either prefix notation or extra parenthesis
-            is used as a fallback (depending on the <see cref="P:Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis"/> 
-            option that permits <c>(a+b)*c</c>).
+            Since the precedence of `'+` (Add) is below Multiply, the + operator is not
+            allowed in that context.
             <para/>
             Printing has numerous "gotchas"; the ones related to precedence are
             <ol>
             <li>Although <see cref="T:Loyc.Syntax.Les.LesPrecedence"/>.Add has the "same" precedence on the
-                Left and Right, <c>@-(@-(a, b), c)</c> can be printed <c>a - b - c</c> but
-                <c>@-(a, @-(b, c))</c> would have to be printed <c>a - @-(b, c)</c> 
+                Left and Right, <c>`'-`(`'-`(a, b), c)</c> can be printed <c>a - b - c</c> but
+                <c>`'-`(a, `'-`(b, c))</c> would have to be printed <c>a - `'-`(b, c)</c> 
                 instead. Clearly, the left and right sides must be treated somehow
                 differently.</li>
             <li>Similarly, the different arguments in <c>a?b:c</c> and <c>a=>b</c> must
                 be treated differently. And careful handling is needed for the dot 
-                operator in particular due to its high precedence; e.g. <c>@.(a(b))</c> 
-                cannot be printed <c>.a(b)</c> because that would mean <c>@.(a)(b)</c>.</li>
+                operator in particular due to its high precedence; e.g. <c>`'.`(a(b))</c> 
+                cannot be printed <c>.a(b)</c> because that would mean <c>`'.`(a)(b)</c>.</li>
             <li>The LES parser, at least, allows a prefix operator to appear on the 
                 right-hand side of any infix or prefix operator, regardless of the 
                 precedence of the two operators; "$ ++x" is permitted even though ++ has
                 lower precedence than $. Another example is that <c>a.-b.c</c> can be 
-                parsed with the interpretation <c>a.(-b).c</c>, even though @- has 
-                lower precedence than @$. Ideally the printer would replicate this 
+                parsed with the interpretation <c>a.(-b).c</c>, even though '- has 
+                lower precedence than '$. Ideally the printer would replicate this 
                 rule, but whether it does ot not, it also must take care that 
-                <c>@.(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
-                similar expression <c>@*(a, @-(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
+                <c>`'.`(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
+                similar expression <c>`'*`(a, `'-`(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
             <li>Prefix notation is needed when an operator's arguments have attributes;
-                <c>@+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
-                that would mean <c>[Foo] @+(a, b)</c>.</li>
+                <c>`'+`([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
+                that would mean <c>[Foo] `'+`(a, b)</c>.</li>
             </ol>
             
             <h3>Printing and parsing are different</h3>
@@ -3332,7 +4092,7 @@
             the right-hand operator was "*" instead of "??", the following printout 
             would be wrong:
             <code>
-                a = b + c * d   // actual syntax tree: a = @+(b, c) * d
+                a = b + c * d   // actual syntax tree: a = `'+`(b, c) * d
             </code>
             The same reasoning applies to the left-hand side (imagine if "=" was 
             "*" instead.)
@@ -3462,10 +4222,98 @@
             on the right, has higher precedence than the current operator 'this'.</summary>
             <returns><c>rightOp.Left > this.Right</c></returns>
         </member>
+        <member name="T:Loyc.Syntax.Impl.PrinterState">
+            <summary>A helper type for printer objects. Its primary purposes are to
+            manage indentation and to "revoke" newlines; it also tracks the current 
+            line/column number.</summary>
+            <remarks>
+            Be careful not to duplicate this structure.
+            <para/>
+            When pretty-printing any language as text, it's a challenge to decide
+            where to place newlines. You may want to break up long lines into
+            shorter ones, as in
+            <pre>
+            if (ReallyLongIdentifier[Fully.Qualified.Name(multiple, parameters)] 
+               > SomeConstant)
+            {
+               return ReallyLongIdentifier[firstThing + secondThing] 
+                  + thirdThing + fourthThing;
+            }
+            </pre>
+            Conversely, you may want to print something on one line that you would
+            ordinarily print on two:
+            <pre>
+                if (c) break;
+            </pre>
+            Of course, the problem is, you don't know how long the syntax tree 
+            will be in text form until after you try to print it.
+            <para/>
+            My first idea to solve this problem was to use a 
+            <a href="https://en.wikipedia.org/wiki/Rope_(data_structure)">rope</a> 
+            tree data structure - inner syntax trees would produce small strings 
+            that could be "roped" together to produce a bigger tree. But ropes tend
+            not to use memory efficiently, and there was the challenge, which I 
+            didn't see how to solve, of how to keep the tree balanced efficiently 
+            (for this particular application perhaps a balanced tree wasn't needed,
+            but as a perfectionist I didn't want to implement a "half-baked" data 
+            structure.)
+            <para/>
+            Next I thought of the solution used here, a simpler solution based on an 
+            ordinary StringBuilder. My idea was to insert newlines "pessimistically" 
+            - insert them everywhere in which they might be needed - and then 
+            selectively "revoke" them later if they turn out to be unnecessary. Only 
+            the most recently-written newline(s) can be revoked, which keeps the 
+            implementation simple and also limits the performance cost of deleting 
+            the newlines.
+            <para/>
+            To use, call Newline() to write a newline (with indentation). To make 
+            a decision about whether to keep or revoke the most recent newline(s), 
+            call RevokeOrCommitNewlines(cp, maxLineLength) where cp is a "checkpoint"
+            representing some point before the first newline want to potentially
+            revoke, and maxLineLength is the line length threshold: if the line length 
+            after combining lines, starting at the line on which the checkpoint is 
+            located, does not exceed maxLineLength, then the newlines are revoked, 
+            otherwise ALL newlines are committed (so earlier newlines can no longer 
+            be revoked.)
+            <para/>
+            This design allows a potentially long series of newlines to be deleted
+            in the reverse order that they were created, but if any newline is kept
+            then previous ones can no longer be deleted.
+            <para/>
+            For an example of how this is used, see the JSON printer in LLLPG samples
+            or look at the implementation of the LESv3 printer.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Impl.PrinterState.Length">
+            <summary>Current length of the output string</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Impl.PrinterState.Newline(System.Int32)">
+            <summary>Writes a newline and the appropriate amount of indentation afterward.</summary>
+            <param name="changeIndentLevel">Amount by which to change <see cref="F:Loyc.Syntax.Impl.PrinterState.IndentLevel"/> before writing the newline</param>
+            <returns>A <see cref="T:Loyc.Syntax.Impl.PrinterState.Checkpoint"/> that can be used to revoke the newline</returns>
+            <remarks>Note that "revoking" a newline does NOT restore the original indent level.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Impl.PrinterState.RevokeOrCommitNewlines(Loyc.Syntax.Impl.PrinterState.Checkpoint,System.Int32)">
+            <summary>Revokes or commits newlines added since the specified 
+            checkpoint. Recent newlines are revoked if the combined line length 
+            after revokation does not exceed <c>maxLineWidth</c>, otherwise ALL
+            newlines are committed permanently.</summary>
+            <returns>0 if the method had no effect, -N if N newlines were 
+            revoked, and +N if N newlines were committed.</returns>
+            <remarks>This method does not affect the indent level.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Impl.PrinterState.Revoke(Loyc.Syntax.Impl.PrinterState.Revokable)">
+            <summary>Revokes (deletes) the last newline created, and its indent.</summary>
+            <param name="r">Object returned from Newline()</param>
+            <remarks>Only the most recent newline can be revoked, and of course, 
+            it can only be revoked once. Multiple newlines can be revoked if 
+            they are revoked in the reverse order in which they were created.</remarks>
+        </member>
         <member name="T:Loyc.Syntax.EmptySourceFile">
             <summary>
-            A dummy implementation of ISourceFile that has only a filename, no source text.
-            Used as the source file of synthetic syntax nodes.
+            A dummy implementation of <see cref="T:Loyc.Syntax.ISourceFile"/> that has only a 
+            filename, no source text. Used as the source file of synthetic syntax 
+            nodes.
             </summary>
         </member>
         <member name="T:Loyc.Syntax.IIndexToLine">
@@ -3481,6 +4329,9 @@
         </member>
         <member name="P:Loyc.Syntax.IIndexToLine.FileName">
             <summary>Gets the file name used in results returned by <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/>.</summary>
+            <remarks>It is not guaranteed that <i>all</i> return values from 
+            <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> use this filename; for example, the
+            file may vary in mappings from <see cref="T:Loyc.Syntax.SourceFileWithLineRemaps"/>.</remarks>
         </member>
         <member name="T:Loyc.Syntax.IIndexPositionMapper">
             <summary>
@@ -3563,6 +4414,11 @@
             recovers the original index.
             </remarks>
         </member>
+        <member name="T:Loyc.Syntax.SourcePosAndIndex">
+            <summary>A <see cref="T:Loyc.Syntax.SourcePos"/> that also includes the original index 
+            from which the Line and PosInLine were derived.</summary>
+            <remarks>Returned by <see cref="M:Loyc.Syntax.SourceFileWithLineRemaps.IndexToLine(System.Int32)"/>.</remarks>
+        </member>
         <member name="T:Loyc.Syntax.LineRemapper">
             <summary>A small helper class for languages such as C# and C++ that permit 
             the locations reported by error messages to be remapped. This class stores
@@ -3601,10 +4457,6 @@
             Line and column numbering both start at one (1). Line=0 signifies nowhere 
             in particular. Instances are immutable.
             </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.SourcePosAndIndex">
-            <summary>A <see cref="T:Loyc.Syntax.SourcePos"/> that also includes the original index 
-            from which the Line and PosInLine were derived.</summary>
         </member>
         <member name="T:Loyc.Syntax.SourceRange">
             <summary>
@@ -3715,7 +4567,7 @@
             <para/>
             If the currently-running macro fails, the result may be thrown away
             and the effort of processing the children will have been wasted. If
-            the macro succeeds, and its <see cref="T:LeMP.LexicalMacro"/> attribute uses
+            the macro succeeds, and its <see cref="T:LeMP.LexicalMacroAttribute"/> uses
             the default <c>MacroMode.Normal</c> processing mode, the children 
             will (normally) be processed again after the macro returns.
             </remarks>
@@ -3779,6 +4631,16 @@
         <member name="M:LeMP.IMacroContext.IncrementTempCounter">
             <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
         </member>
+        <member name="M:LeMP.IMacroContext.RegisterMacro(LeMP.MacroInfo)">
+            <summary>Registers a new macro in the current scope.</summary>
+            <param name="macroInfo"></param>
+            <remarks>The macro will be forgotten at the end of the current scope. Macros 
+            in child scopes do not shadow macros in outer scopes; if there are macros 
+            with the same name in the outer scope, conflicts are handled in the same way 
+            as with groups of macros that are imported in the same scope. For example,
+            <c>Mode = <see cref="F:LeMP.MacroMode.PriorityOverride"/></c> can be used to make 
+            macros that override normal-priority macros.</remarks>
+        </member>
         <member name="T:LeMP.MacroContext">
             <summary>Standard extension methods for <see cref="T:LeMP.IMacroContext"/>.</summary>
         </member>
@@ -3837,9 +4699,6 @@
         <member name="T:LeMP.MacroInfo">
             <summary>Data returned from <see cref="P:LeMP.IMacroContext.AllKnownMacros"/></summary>
         </member>
-        <member name="M:LeMP.MacroInfo.CompareTo(LeMP.MacroInfo)">
-            <summary>Compare priorities of two macros. Will sort in descending order.</summary>
-        </member>
         <member name="T:LeMP.LexicalMacro">
             <summary>Method signature of an LeMP macro.</summary>
             <param name="node">The node that caused the macro to be invoked (includes 
@@ -3879,6 +4738,12 @@
             signature must be <see cref="T:LeMP.LexicalMacro"/>. A class will not be automatically
             searched for macros unless the class is marked with <see cref="T:LeMP.ContainsMacrosAttribute"/>.</remarks>
         </member>
+        <member name="M:LeMP.LexicalMacroAttribute.#ctor(System.String,System.String,System.String[])">
+            <summary>LexicalMacroAttribute constuctor.</summary>
+            <param name="syntax">A string that shows the expected syntax used to call the node.</param>
+            <param name="description"></param>
+            <param name="names"></param>
+        </member>
         <member name="T:LeMP.MacroMode">
             <summary>Flags that affect the way that <see cref="!:LeMP.MacroProcessor"/>
             uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
@@ -3904,7 +4769,12 @@
         </member>
         <member name="F:LeMP.MacroMode.DropRemainingListItems">
             <summary>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</summary>
-            <remarks>Tyically this option is used by macros that splice together the list of <see cref="P:LeMP.IMacroContext.RemainingNodes"/> into their own result.</remarks>
+            <remarks>This option may be used by macros that splice together the list of <see cref="P:LeMP.IMacroContext.RemainingNodes"/> into their own result.
+            It is more common, however, to set the <see cref="P:LeMP.IMacroContext.DropRemainingNodes"/> property inside the macro.</remarks>
+        </member>
+        <member name="F:LeMP.MacroMode.MatchIdentifier">
+            <summary>If this flag is present, the macro can match a plain identifier. By default, a macro must be a call.</summary>
+            <remarks>This flag does <i>not</i> prevent the macro from matching calls.</remarks>
         </member>
         <member name="F:LeMP.MacroMode.PriorityFallbackMin">
             <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>

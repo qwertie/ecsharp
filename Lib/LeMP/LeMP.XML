@@ -118,12 +118,21 @@
             <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
             Parallelizing on a file-by-file basis is easy; each source file is completely 
             independent, since no semantic analysis is being done. 
-            <para/>
-            TODO: add method for processing an LNode instead of a list of source files.
             </remarks>
         </member>
         <member name="P:LeMP.MacroProcessor.Current">
             <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.#ctor(Loyc.IMessageSink)">
+            <summary>Initializes MacroProcessor with default prelude.</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.#ctor(Loyc.IMessageSink,System.Type)">
+            <summary>Initializes MacroProcessor.</summary>
+            <param name="sink">The destination for warning and error messages. NOTE: 
+            this class can process files in parallel. Consider using a thread-safe
+            implementation of <see cref="T:Loyc.IMessageSink"/>.</param>
+            <param name="prelude">An initial type from which to add macros.
+            Omit this parameter to use typeof(LeMP.Prelude.BuiltinMacros).</param>
         </member>
         <member name="P:LeMP.MacroProcessor.PreOpenedNamespaces">
             <summary>Macros in these namespaces will be available without an explicit 
@@ -131,15 +140,20 @@
             @@LeMP.Prelude (i.e. (Symbol)"LeMP.Prelude")</summary>
         </member>
         <member name="F:LeMP.MacroProcessor.DefaultScopedProperties">
-            <summary>Default values of scoped properties. This map is empty by 
-            default.</summary>
-            <remarks>The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
+            <summary>Default values of scoped properties.</summary>
+            <remarks>Code being processed can look up a scoped property named "N" with 
+            <c>#getScopedProperty("N")</c> in LESv2 or EC#. This map is empty by default.
+            Scoped properties are "scoped" in the sense that setting a property with 
+            <c>#setScopedProperty(keyLiteral, valueLiteral)</c> takes effect only until 
+            the end of the braced block in which it appears.
+            <para/>
+            The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
             syntax for <see cref="T:Loyc.Symbol"/>) are not normally stored in this collection; 
             when you use <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>, 
             @@#inputFolder and @@#inputFileName are set according to the folder and 
             filename in <see cref="F:LeMP.InputOutput.FileName"/>. However, @@#inputFolder 
             is not set if the filename has no folder component, so this collection 
-            could be used to override @@#inputFolder in that case.
+            could be used to provide a value of @@#inputFolder in that case.
             </remarks>
         </member>
         <member name="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})">

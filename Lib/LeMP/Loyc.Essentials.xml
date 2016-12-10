@@ -4,15 +4,23 @@
         <name>Loyc.Essentials</name>
     </assembly>
     <members>
-        <member name="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)">
-            <summary>Gets the item at the specified index.</summary>
-            <exception cref="T:System.ArgumentOutOfRangeException">The index was not valid
-            in this list.</exception>
-            <param name="index">An index in the range 0 to Count-1.</param>
-            <returns>The element at the specified index.</returns>
+        <member name="T:Loyc.Collections.SelectList`2">
+            <summary>
+            Helper class: provides a modified view of an IList by transforming each element 
+            on-demand. Objects of this type are returned from 
+            <see cref="M:Loyc.Collections.LinqToCollections.Select``2(System.Collections.Generic.IList{``0},System.Func{``0,``1})"/>
+            </summary>
+            <typeparam name="T">input type</typeparam>
+            <typeparam name="TResult">output type</typeparam>
         </member>
-        <member name="T:System.Collections.Generic.IReadOnlyDictionary`2">
-            <summary>Read-only dictionary interface defined in .NET 4.5</summary>
+        <member name="T:Loyc.Collections.SelectListSource`2">
+            <summary>
+            Helper class: provides a modified view of an IListSource by transforming each element 
+            on-demand. Objects of this type are returned from 
+            <see cref="M:Loyc.Collections.LinqToCollections.Select``2(Loyc.Collections.IListSource{``0},System.Func{``0,``1})"/>
+            </summary>
+            <typeparam name="T">input type</typeparam>
+            <typeparam name="TResult">output type</typeparam>
         </member>
         <member name="T:Loyc.Collections.Impl.BaseDictionary`2">
             <summary>A base class for user-defined dictionaries that want to implement 
@@ -494,13 +502,13 @@
             of the sequence, although it does create a new wrapper object if <c>c</c>
             does not implement <see cref="T:System.Collections.Generic.IList`1"/>.</remarks>
         </member>
-        <member name="M:Loyc.Collections.LCExt.NegView``1(System.Collections.Generic.IList{``0},System.Int32)">
+        <member name="M:Loyc.Collections.LCExt.AsNegList``1(System.Collections.Generic.IList{``0},System.Int32)">
             <inheritdoc cref="M:Loyc.Collections.NegList`1.#ctor"/>
         </member>
-        <member name="M:Loyc.Collections.LCExt.NegView``1(Loyc.Collections.IListAndListSource{``0},System.Int32)">
+        <member name="M:Loyc.Collections.LCExt.AsNegList``1(Loyc.Collections.IListAndListSource{``0},System.Int32)">
             <inheritdoc cref="M:Loyc.Collections.NegList`1.#ctor"/>
         </member>
-        <member name="M:Loyc.Collections.LCExt.NegView``1(Loyc.Collections.IListSource{``0},System.Int32)">
+        <member name="M:Loyc.Collections.LCExt.AsNegList``1(Loyc.Collections.IListSource{``0},System.Int32)">
             <inheritdoc cref="M:Loyc.Collections.NegListSource`1.#ctor"/>
         </member>
         <member name="M:Loyc.Collections.LCExt.Reverse``1(Loyc.Collections.IListSource{``0})">
@@ -526,14 +534,21 @@
         </member>
         <member name="T:Loyc.Collections.LinqToCollections">
             <summary>
-            Work in progress. This class will enhance LINQ-to-Objects with 
-            type-preserving and/or higher-performance extension methods.
+            This class enhances LINQ-to-Objects with extension methods that preserve the
+            interface (e.g. Take(List&lt;int>) returns IList&lt;int>) and/or have higher
+            performance than the ones in System.Linq.Enumerable.
             </summary><remarks>
-            For example, the <see cref="!:Enumerable.Last(IEnumerable&lt;T&gt;)"/> extension 
+            For example, the <see cref="!:Enumerable.Last()"/> extension 
             method scans the entire list before returning the last item, while 
             <see cref="!:Last(IReadOnlyList&lt;T&gt;)"/> and <see cref="!:Last(IList&lt;T&gt;)"/> simply
             return the last item directly.
             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToCollections.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>Copies the contents of an IListSource or IReadOnlyList to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToCollections.ToArray``1(Loyc.Collections.INegListSource{``0})">
+            <summary>Copies the contents of an <see cref="T:Loyc.Collections.INegListSource`1"/> to an array.</summary>
         </member>
         <member name="T:Loyc.Collections.ListExt">
             <summary>Extension methods and helper methods for <see cref="T:System.Collections.Generic.List`1"/>,
@@ -635,10 +650,11 @@
             <summary>Performs a stable sort, i.e. a sort that preserves the 
             relative order of items that compare equal.</summary>
             <remarks>
-            This algorithm uses a quicksort and therefore runs in O(N log N) time,
-            but it requires O(N) temporary space (specifically, an array of N 
-            integers) and is slower than a standard quicksort, so you should use
-            it only if you need a stable sort.
+            On larger inputs, this algorithm uses a quicksort and therefore runs 
+            in O(N log N) time, but it requires O(N) temporary space (specifically, 
+            an array of N integers) and is slower than a standard quicksort, so 
+            you should use it only if you need a stable sort or if the input is
+            usually small (in which case insertion sort is used).
             </remarks>
         </member>
         <member name="M:Loyc.Collections.ListExt.SortLowestK``1(System.Collections.Generic.IList{``0},System.Int32)">
@@ -854,7 +870,7 @@
         <member name="T:Loyc.Collections.NegList`1">
             <summary>
             Adapter: provides a view of an <see cref="T:System.Collections.Generic.IList`1"/> in which the Count is the same, but the 
-            minimum index is not necessarily zero. Returned from <see cref="M:Loyc.Collections.LCExt.NegView``1(System.Collections.Generic.IList{``0},System.Int32)"/>.
+            minimum index is not necessarily zero. Returned from <see cref="!:LCExt.NegView&lt;T&gt;(IList&lt;T&gt;,int)"/>.
             </summary>
             <remarks>This wrapper is a structure in order to offer high performance in 
             certain scenarios.</remarks>
@@ -913,7 +929,7 @@
             <summary>
             Adapter: provides a view of an <see cref="T:Loyc.Collections.IListSource`1"/> in which the Count 
             is the same, but the minimum index is not necessarily zero. Returned from 
-            <see cref="M:Loyc.Collections.LCExt.NegView``1(Loyc.Collections.IListSource{``0},System.Int32)"/>.
+            <see cref="!:LCExt.NegView&lt;T&gt;(IListSource&lt;T&gt;,int)"/>.
             </summary>
             <remarks>
             This wrapper is a structure in order to offer high performance in certain 
@@ -978,14 +994,14 @@
             <summary>Represents a range of integers of a specified data type.</summary>
             <typeparam name="Num">Any numeric type</typeparam>
             <typeparam name="Math">Trait type that implements math operations for the 
-            type, e.g. for in, use Loyc.Math.MathI.</typeparam>
+            type, e.g. for Int32, use Loyc.Math.MathI.</typeparam>
             <remarks>
             TODO: unit tests.
             <para/>
             Note: if the low value is the minimum value of an integer type (e.g. 
-            int.MinValue of int) then the Enumerator will not work. Also, if the difference
-            between the min and max value is int.MaxValue or more, the Count property will
-            overflow and return an incorrect value.
+            int.MinValue of int) then the Enumerator will not work (MoveNext() will return
+            false). Also, if the difference between the min and max value is int.MaxValue 
+            or more, the Count property will overflow and return an incorrect value.
             </remarks>
         </member>
         <member name="T:Loyc.Collections.RangeEnumerator`1">
@@ -1033,33 +1049,6 @@
         <member name="T:Loyc.Collections.ReversedListSource`1">
             <summary>Adapter: reversed view of <see cref="T:Loyc.Collections.IListSource`1"/> returned 
             from <see cref="M:Loyc.Collections.LCExt.Reverse``1(Loyc.Collections.IListSource{``0})"/>.</summary>
-        </member>
-        <member name="T:Loyc.Collections.SelectListSource`2">
-            <summary>
-            Helper class: provides a modified view of an IListSource by transforming each element 
-            on-demand. Objects of this type are returned from 
-            <see cref="M:Loyc.Collections.LCExt.Select``2(Loyc.Collections.IListSource{``0},System.Func{``0,``1})"/>
-            </summary>
-            <typeparam name="T">input type</typeparam>
-            <typeparam name="TResult">output type</typeparam>
-        </member>
-        <member name="T:Loyc.Collections.SelectNegLists`1">
-            <summary>Adapter:
-            provides a view of an <see cref="T:System.Collections.Generic.IList`1"/> in which element [i] is a 
-            <see cref="T:Loyc.Collections.NegList`1"/> N such that N[0] refers to element [i] in the 
-            original list. See <see cref="M:Loyc.Collections.LCExt.NegLists``1(System.Collections.Generic.IList{``0})"/> for more 
-            information.
-            </summary>
-            <seealso cref="T:Loyc.Collections.SelectNegListSources`1"/>
-        </member>
-        <member name="T:Loyc.Collections.SelectNegListSources`1">
-            <summary>Adapter: 
-            provides view of an <see cref="T:Loyc.Collections.IListSource`1"/> in which element [i] is a
-            <see cref="T:Loyc.Collections.NegListSource`1"/> N such that N[0] refers to element [i] in the 
-            original list. See <see cref="M:Loyc.Collections.LCExt.NegLists``1(Loyc.Collections.IListSource{``0})"/> for more 
-            information.
-            </summary>
-            <seealso cref="T:Loyc.Collections.SelectNegLists`1"/>
         </member>
         <member name="T:Loyc.Collections.Slice_`1">
             <summary>Adapter: a random-access range for a slice of an 
@@ -1370,9 +1359,6 @@
         <member name="M:Loyc.Collections.LCInterfaces.LastIndexWhere``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
         </member>
-        <member name="M:Loyc.Collections.LCInterfaces.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>Copies the contents of an IListSource to an array.</summary>
-        </member>
         <member name="M:Loyc.Collections.LCInterfaces.TryGet``1(Loyc.Collections.INegListSource{``0},System.Int32,``0@)">
             <summary>Tries to get a value from the list at the specified index.</summary>
             <param name="index">The index to access. Valid indexes are between Min and Max.</param>
@@ -1384,6 +1370,11 @@
             <param name="index">The index to access. Valid indexes are between Min and Max.</param>
             <param name="defaultValue">A value to return if the index is not valid.</param>
             <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
+        </member>
+        <member name="M:Loyc.Collections.LCInterfaces.TryGet``1(Loyc.Collections.INegListSource{``0},System.Int32)">
+            <summary>Tries to get a value from the list at the specified index.</summary>
+            <param name="index">The index to access. Valid indexes are between Min and Max.</param>
+            <returns>The retrieved value, or <see cref="P:Loyc.Maybe`1.NoValue"/> if the index provided was not valid.</returns>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.IndexOf``1(Loyc.Collections.INegListSource{``0},``0)">
             <summary>Determines the index of a specific value.</summary>
@@ -1563,7 +1554,7 @@
             PopFirst(), to get the next item, unlike IEnumerator which requires two 
             interface calls per iteration. That can improve performance, since 
             interface calls cannot be inlined. It is a bit inconvenient to use
-            <see cref="M:Loyc.Collections.IFRange`1.PopFront(System.Boolean@)"/> because of its "out" argument, and 
+            <see cref="M:Loyc.Collections.IFRange`1.PopFirst(System.Boolean@)"/> because of its "out" argument, and 
             more convenient extension methods would have been provided if C# 
             supported "ref Type this", which would be needed since ranges are
             often value types.
@@ -1695,24 +1686,24 @@
                     and RangeMEnumerator for IMEnumerator{T}.
             </remarks>
         </member>
-        <member name="P:Loyc.Collections.IFRange`1.Front">
+        <member name="P:Loyc.Collections.IFRange`1.First">
             <summary>Returns the first value in the range, without popping it.</summary>
             <exception cref="T:Loyc.Collections.EmptySequenceException">The sequence is empty.</exception>
             <remarks>
             A possible default implementation:
             <pre>
-            T Front { get { return Range.PopFront(Clone()); } }
+            T First { get { return Range.PopFirst(Clone()); } }
             </pre>
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.IFRange`1.PopFront(System.Boolean@)">
+        <member name="M:Loyc.Collections.IFRange`1.PopFirst(System.Boolean@)">
             <summary>Removes the first item from the range and returns it.</summary>
             <param name="fail">Receives the current value of <see cref="P:Loyc.Collections.IIsEmpty.IsEmpty"/>.</param>
             <returns>The first item of the range, or default(T) if IsEmpty.</returns>
             <remarks>This method is a little unweildy in plain C#, but in EC# it 
             will be a bit more convenient to use via extension methods like 
-            <c>PopFirst(ref this Range range, T defaultValue)</c> and
-            <c>PopFirst(ref this Range range)</c>, which are illegal in plain C#.
+            <c>T PopFirst(ref this Range range, T defaultValue)</c> and
+            <c>T? PopFirst(ref this Range range)</c>, which are illegal in plain C#.
             <para/>
             I wanted to give this method the signature "bool PopFirst(out T first)"
             but the generic parameter "T" is covariant, i.e. it is marked "out T" 
@@ -1723,7 +1714,7 @@
         <member name="T:Loyc.Collections.IMFRange`1">
             <summary>A mutable forward range.</summary>
             <remarks>
-            This range lets you change the value of <see cref="P:Loyc.Collections.IMFRange`1.Front"/>.
+            This range lets you change the value of <see cref="P:Loyc.Collections.IMFRange`1.First"/>.
             <para/>
             Please see <see cref="T:Loyc.Collections.IFRange`1"/> for general documentation about ranges.
             <para/>
@@ -1746,7 +1737,7 @@
             </code>
             </remarks>
         </member>
-        <member name="P:Loyc.Collections.IMFRange`1.Front">
+        <member name="P:Loyc.Collections.IMFRange`1.First">
             <summary>Gets or sets the value of the first item in the range.</summary>
             <exception cref="T:Loyc.Collections.EmptySequenceException">The sequence is empty.</exception>
         </member>
@@ -1761,30 +1752,30 @@
             Please see <see cref="T:Loyc.Collections.IFRange`1"/> for general documentation about ranges.
             </remarks>
         </member>
-        <member name="P:Loyc.Collections.IBRange`1.Back">
+        <member name="P:Loyc.Collections.IBRange`1.Last">
             <summary>Returns the value of the last item in the range.</summary>
             <exception cref="T:Loyc.Collections.EmptySequenceException">The sequence is empty.</exception>
             <remarks>
             A reasonable default implementation:
             <pre>
-            T Back { get { return Range.PopBack(Clone()); } }
+            T Last { get { return Range.PopLast(Clone()); } }
             </pre>
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.IBRange`1.PopBack(System.Boolean@)">
+        <member name="M:Loyc.Collections.IBRange`1.PopLast(System.Boolean@)">
             <summary>Removes the last item from the range and returns it.</summary>
             <param name="fail">Receives the current value of IsEmpty.</param>
             <returns>The first item of the range, or default(T) if IsEmpty.</returns>
-            <remarks>The remarks of <see cref="M:Loyc.Collections.IFRange`1.PopFront(System.Boolean@)"/> apply to this method.</remarks>
+            <remarks>The remarks of <see cref="M:Loyc.Collections.IFRange`1.PopFirst(System.Boolean@)"/> apply to this method.</remarks>
         </member>
         <member name="T:Loyc.Collections.IMBRange`1">
             <summary>A mutable bidirectional range.</summary>
-            <remarks>This range lets you change the value of <see cref="P:Loyc.Collections.IMFRange`1.Front"/> and <see cref="P:Loyc.Collections.IMBRange`1.Back"/>.
+            <remarks>This range lets you change the value of <see cref="P:Loyc.Collections.IMFRange`1.First"/> and <see cref="P:Loyc.Collections.IMBRange`1.Last"/>.
             <para/>
             Please see <see cref="T:Loyc.Collections.IFRange`1"/> for general documentation about ranges.
             </remarks>
         </member>
-        <member name="P:Loyc.Collections.IMBRange`1.Back">
+        <member name="P:Loyc.Collections.IMBRange`1.Last">
             <summary>Gets or sets the value of the last item in the range.</summary>
             <exception cref="T:Loyc.Collections.EmptySequenceException">The sequence is empty.</exception>
         </member>
@@ -2404,10 +2395,19 @@
             <summary>An exception thrown by methods or properties that require a non-empty
             sequence but were provided with an empty sequence.</summary>
         </member>
-        <member name="T:Loyc.Threading.PushedTLV`1">
+        <member name="T:Loyc.Compatibility.EnumStatic">
+            <summary>Implements Enum.TryParse in .NET 3.5</summary>
+        </member>
+        <member name="T:Loyc.Threading.SavedValue`1">
             <summary>
-            Designed to be used in a "using" statement to alter a thread-local variable 
-            temporarily.
+            Designed to be used in a "using" statement to temporarily alter a 
+            <see cref="T:Loyc.Threading.ThreadLocalVariable`1"/> or <see cref="T:Loyc.Holder`1"/>.
+            </summary>
+        </member>
+        <member name="T:Loyc.Threading.SavedThreadLocal`1">
+            <summary>
+            Designed to be used in a "using" statement to temporarily alter a 
+            <see cref="T:System.Threading.ThreadLocal`1"/>.
             </summary>
         </member>
         <member name="T:Loyc.Threading.ThreadEx">
@@ -2761,213 +2761,6 @@
         <member name="P:Loyc.Threading.ScratchBuffer`1.Value">
             <summary>Please see the documentation of <see cref="T:Loyc.Threading.ScratchBuffer`1"/> itself.</summary>
         </member>
-        <member name="T:Loyc.Math.FPI8">
-            <summary>Fixed-point type based on Int32 with 8 fractional bits</summary>
-        </member>
-        <member name="T:Loyc.Math.FPI16">
-            <summary>Fixed-point type based on Int32 with 16 fractional bits</summary>
-        </member>
-        <member name="T:Loyc.Math.FPI23">
-            <summary>Fixed-point type based on Int32 with 23 fractional bits</summary>
-        </member>
-        <member name="T:Loyc.Math.FPL16">
-            <summary>Fixed-point type based on Int64 with 16 fractional bits</summary>
-        </member>
-        <member name="T:Loyc.Math.FPL32">
-            <summary>Fixed-point type based on Int64 with 32 fractional bits</summary>
-        </member>
-        <member name="T:Loyc.Math.Math128">
-            <summary>Contains methods for manipulating 128-bit numbers, multiplying 
-            64-bit numbers to produce 128-bit results, and dividing 128-bit numbers 
-            by 64-bit numbers.</summary>
-            <remarks>
-            MathEx.MulDiv and MathEx.MulShift rely on this class for 64x64 MulDiv() 
-            and MulShift().
-            <para/>
-            Some functionality is incomplete at this time, e.g. there are no 
-            comparison methods or 128+128 addition/subtraction.
-            <para/>
-            This class works on raw Int64 values, so a 128-bit number is represented 
-            by a pair of Int64s, one with high bits and one with low bits. By 
-            convention, the low 64 bits are always unsigned (because they contain no
-            sign bit), and the high 64 bits may be signed or unsigned, which 
-            represents the sign of the 128-bit number as a whole.
-            <para/>
-            Many methods pass the low 64 bits by reference and the high 64 bits by 
-            value, returning the "new" high 64 bits as the return value. This is done 
-            to help implement signed math in terms of unsigned math. If the parameter
-            type is "ref ulong", C# does not allow you to pass "ref long", even with
-            a cast. Passing the high bits by value is therefore less cumbersome.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.Math128.Divide(System.Int64,System.UInt64,System.Int64,System.Int64@,System.Boolean)">
-            <summary>Divides an signed 128-bit number by a signed 64-bit 
-            number to produce a 64-bit result.</summary>
-            <returns>Returns the division result (known as the "quotient"). If the 
-            result is too large to represent, long.MinValue or long.MaxValue is 
-            returned instead.</returns>
-            <inheritdoc cref="M:Loyc.Math.Math128.Divide(System.Int64,System.UInt64,System.Int64,System.Int64@,System.Int64@,System.Boolean)"/>
-        </member>
-        <member name="M:Loyc.Math.Math128.Divide(System.Int64,System.UInt64,System.Int64,System.Int64@,System.Int64@,System.Boolean)">
-            <summary>Divides an signed 128-bit number by a signed 64-bit 
-            number to produce a 128-bit result.</summary>
-            <param name="roundDown">If true, the result is rounded down, instead
-            of being rounded toward zero, which changes the remainder and 
-            quotient if a is negative but b is positive.</param>
-            <remarks>
-            When dividing a negative number by a positive number, it is 
-            conventionally rounded toward zero. Consequently, the remainder is zero 
-            or negative to satisfy the standard integer division equation 
-            <c>a = b*q + r</c>, where q is the quotient (result) and r is the 
-            remainder.
-            <para/>
-            This is not always what you want. So, if roundDown is true, the result 
-            is rounded down instead of toward zero. This ensures that if 'a' is 
-            negative and 'b' is positive, the remainder is positive too, a fact 
-            which is useful for modulus arithmetic. The table below illustrates 
-            the difference:
-            <pre>
-            inputs   | standard  | roundDown
-                     |  output   |  output  
-             a   b   |   q   r   |   q   r
-            --- ---  |  --- ---  |  --- ---
-             7   3   |   2   1   |   2   1
-            -7   3   |  -2  -1   |  -3   2
-             7  -3   |  -2   1   |  -3  -2
-            -7  -3   |   2  -1   |   2  -1
-            </pre>
-            </remarks>
-            <inheritdoc cref="M:Loyc.Math.Math128.Divide(System.UInt64,System.UInt64,System.UInt64,System.UInt64@,System.UInt64@)"/>
-        </member>
-        <member name="M:Loyc.Math.Math128.Divide(System.UInt64,System.UInt64,System.UInt64,System.UInt64@)">
-            <summary>Divides an signed 128-bit number by a signed 64-bit 
-            number to produce a 64-bit result.</summary>
-            <remarks>If the result did not fit in 64 bits, this method returns 
-            ulong.MaxValue.</remarks>
-            <inheritdoc cref="M:Loyc.Math.Math128.Divide(System.UInt64,System.UInt64,System.UInt64,System.UInt64@,System.UInt64@)"/>
-        </member>
-        <member name="M:Loyc.Math.Math128.Divide(System.UInt64,System.UInt64,System.UInt64,System.UInt64@,System.UInt64@)">
-            <summary>Divides an unsigned 128-bit number by an unsigned 64-bit 
-            number to produce a 128-bit result.</summary>
-            <param name="aH">High 64 bits of the dividend.</param>
-            <param name="aL">Low 64 bits of the dividend.</param>
-            <param name="b">The divisor.</param>
-            <param name="resultHi">High 64 bits of result.</param>
-            <param name="remainder">Remainder of the division.</param>
-            <returns>The low 64 bits of the result (known as the "quotient").</returns>
-            <exception cref="T:System.DivideByZeroException">b was zero.</exception>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftLeft(System.UInt64,System.UInt64@,System.Int32)">
-            <summary>Shifts a 128-bit value left.</summary>
-            <param name="aH">High 64 bits</param>
-            <param name="aL">Low 64 bits</param>
-            <param name="amount">Number of bits to shift.</param>
-            <returns>The new value of aH</returns>
-            <remarks>The convention is that signed numbers use Int64 for aH and 
-            unsigned numbers used UInt64 for aH. The fact that aH is not passed 
-            by reference makes it easier to shift a signed number left by casting 
-            aH to UInt64. The cast would not be allowed if passing by reference.
-            Of course, right shift, on the other hand, requires two separate 
-            methods since it behaves differently for signed and unsigned inputs.
-            <para/>
-            This method does not allow shifting by a negative amount. The reason 
-            is that there is only one ShiftLeft, so if the amount is negative, 
-            it's not known whether a signed or unsigned ShiftRight is intended.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftLeftFast(System.UInt64,System.UInt64@,System.Int32)">
-            <summary>Variation of ShiftLeft() for cases when you know 64 > amount >= 0.</summary>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftLeftEx(System.UInt64@,System.UInt64@,System.Int32)">
-            <summary>Shifts a 128-bit value left and saves the overflowed bits.</summary>
-            <param name="aH">High 64 bits</param>
-            <param name="aL">Low 64 bits</param>
-            <param name="amount">Number of bits to shift. Negative amounts are not permitted.</param>
-            <returns>The bits that were shifted off the left side.</returns>
-            <remarks>Asserts that amount > 0 (no exception)</remarks>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftRight(System.UInt64,System.UInt64@,System.Int32)">
-            <summary>Shifts a 128-bit value right.</summary>
-            <param name="aH">High 64 bits</param>
-            <param name="aL">Low 64 bits</param>
-            <param name="amount">Number of bits to shift.</param>
-            <returns>The new value of aH</returns>
-            <remarks>This method, unlike ShiftLeft(), allows shifting by a negative 
-            amount, which is translated to a left shift.
-            <para/>
-            TODO: ShiftRightEx</remarks>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftRightFast(System.UInt64,System.UInt64@,System.Int32)">
-            <summary>Variation of ShiftRight() for cases when you know 64 > amount >= 0.</summary>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftRight(System.Int64,System.UInt64@,System.Int32)">
-            <inheritdoc cref="M:Loyc.Math.Math128.ShiftRight(System.UInt64,System.UInt64@,System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.Math128.ShiftRightFast(System.Int64,System.UInt64@,System.Int32)">
-            <summary>Variation of ShiftRight() for cases when you know 64 > amount >= 0.</summary>
-        </member>
-        <member name="M:Loyc.Math.Math128.Add(System.UInt64,System.UInt64@,System.UInt64)">
-            <summary>Adds a 64-bit number to a 128-bit number.</summary>
-            <param name="aH">High 64 bits of 128-bit number</param>
-            <param name="aL">Low 64 bits of 128-bit number</param>
-            <param name="amount">Amount to add</param>
-            <returns>The high 64 bits of the result.</returns>
-        </member>
-        <member name="M:Loyc.Math.Math128.Subtract(System.UInt64,System.UInt64@,System.UInt64)">
-            <summary>Subtracts a 64-bit number from a 128-bit number.</summary>
-            <param name="aH">High 64 bits of 128-bit number</param>
-            <param name="aL">Low 64 bits of 128-bit number</param>
-            <param name="amount">Amount to subtract</param>
-            <returns>The high 64 bits of the result.</returns>
-        </member>
-        <member name="M:Loyc.Math.Math128.Add(System.Int64,System.UInt64@,System.Int64)">
-            <inheritdoc cref="M:Loyc.Math.Math128.Add(System.UInt64,System.UInt64@,System.UInt64)"/>
-        </member>
-        <member name="M:Loyc.Math.Math128.Subtract(System.Int64,System.UInt64@,System.Int64)">
-            <inheritdoc cref="M:Loyc.Math.Math128.Subtract(System.UInt64,System.UInt64@,System.UInt64)"/>
-        </member>
-        <member name="T:Loyc.Math.Maths`1">
-            <summary>
-            This class helps generic code to perform calculations on numbers of 
-            unknown type, by providing access to various math interfaces.
-            </summary>
-            <typeparam name="T">A numeric type.</typeparam>
-            <remarks>
-            If a certain math interface is not available for a certain type, 
-            then the corresponding field will be null. For example, 
-            Maths&lt;int>.FloatMath is null because int is not floating-point.
-            The <see cref="F:Loyc.Math.Maths`1.Traits"/>, <see cref="F:Loyc.Math.Maths`1.Math"/>, and related properties 
-            will be null for non-numeric types.
-            <para/>
-            TODO: support non-builtin types!
-            <para/>
-            Generic code that uses Maths&lt;T> is slower than code that uses a
-            generic parameter with a math constraint. That's because generic 
-            struct parameters are early-bound and can be inlined, while calls 
-            through an interface such as IMath&lt;T> are normal late-bound 
-            interface calls and cannot be inlined. Compare the two examples 
-            below.
-            </remarks>
-            <example>
-            // Calculates the length of a vector with magnitude (x, y):
-            // Slower version based on Maths&lt;T>. Example: Length(3.0,4.0)
-            public T Length&lt;T>(T x, T y)
-            {
-                var m = Maths&lt;T>.Math;
-                return m.Sqrt(m.Add(m.Square(x), m.Square(y)));
-            }
-            
-            // Calculates the length of a vector with magnitude (x, y):
-            // Faster version based on Maths&lt;T>. Unfortunately, this version is 
-            // inconvenient to call because the caller must specify which math 
-            // provider to use. Example: Length&lt;double,MathD>(3.0,4.0)
-            public T Length&lt;T,M>(T x, T y) where M:struct,IMath&lt;T>
-            {
-                var m = default(M);
-                return m.Sqrt(m.Add(m.Square(x), m.Square(y)));
-            }
-            </example>
-        </member>
         <member name="T:Loyc.Math.IConvertTo`1">
             <summary>
             Provides methods for converting common numeric types to another numeric type "T".
@@ -2982,8 +2775,8 @@
             <summary>Provides comparison function for type T along with absolute value 
             (Abs), and the minimum or maximum of two values (Min, Max).</summary>
         </member>
-        <member name="T:Loyc.Math.MathExtensions">
-            <summary>Standard extension methods for generic math interfaces such as <see cref="T:Loyc.Math.IOrdered`1"/>.</summary>
+        <member name="T:Loyc.Math.IOrderedExt">
+            <summary>Extension methods for <see cref="T:Loyc.Math.IOrdered`1"/>.</summary>
         </member>
         <member name="T:Loyc.Math.IZeroProvider`1">
             <summary>Provides the value of "zero" for type T.</summary>
@@ -3251,301 +3044,6 @@
             complex numbers of course do support IHasRoot.
             </summary>
         </member>
-        <member name="T:Loyc.Math.MathEx">
-            <summary>
-            Provides additional math functions that are not available in System.Math.
-            </summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sign``1(``0)">
-            <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sign(System.Int32)">
-            <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sign(System.Int64)">
-            <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sign(System.Single)">
-            <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sign(System.Double)">
-            <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulShift(System.Int32,System.Int32,System.Int32)">
-            <summary>Multiplies two integers, internally producing a double-size 
-            result so that overflow is not possible, then divides the result by the 
-            specified power of two using a right shift.</summary>
-            <returns>a * mulBy >> shiftBy, without overflow during multiplication.</returns>
-            <remarks>This method does not handle the case that the result is too
-            large to fit in the original data type.</remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulShift(System.UInt32,System.UInt32,System.Int32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulShift(System.Int32,System.Int32,System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulShift(System.Int64,System.Int64,System.Int32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulShift(System.Int32,System.Int32,System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulShift(System.UInt64,System.UInt64,System.Int32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulShift(System.Int32,System.Int32,System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32,System.Int32@)">
-            <summary>Multiplies two integers, internally producing a double-size 
-            result so that overflow is not possible, then divides the result by the 
-            specified number.</summary>
-            <param name="remainder">The remainder of the division is placed here. 
-            The remainder is computed properly even if the main result overflows.</param>
-            <returns>a * mulBy / divBy, without overflow during multiplication.</returns>
-            <remarks>If the final result does not fit in the original data type, 
-            this method returns largest possible value of the result type 
-            (int.MaxValue, or int.MinValue if the overflowing result is negative).
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.UInt32,System.UInt32,System.UInt32,System.UInt32@)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32,System.Int32@)"/>
-            <remarks>If the final result does not fit in the original data type, 
-            this method returns largest possible value of the result type 
-            (uint.MaxValue).</remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.Int64,System.Int64,System.Int64,System.Int64@)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32,System.Int32@)"/>
-            <remarks>If the final result does not fit in the original data type, 
-            this method returns largest possible value of the result type 
-            (long.MaxValue, or long.MinValue if the overflowing result is negative).
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.UInt64,System.UInt64,System.UInt64,System.UInt64@)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32,System.Int32@)"/>
-            <remarks>If the final result does not fit in the original data type, 
-            this method returns largest possible value of the result type 
-            (ulong.MaxValue).</remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.Int32,System.Int32,System.Int32,System.Int32@)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.UInt32,System.UInt32,System.UInt32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.UInt32,System.UInt32,System.UInt32,System.UInt32@)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.Int64,System.Int64,System.Int64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.Int64,System.Int64,System.Int64,System.Int64@)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.MulDiv(System.UInt64,System.UInt64,System.UInt64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.MulDiv(System.UInt64,System.UInt64,System.UInt64,System.UInt64@)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.UInt32,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.Int32,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.UInt64,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.Int64,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.UInt16,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoL(System.Byte,System.Int32)">
-            <summary>Rotates a bit pattern left by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.UInt32,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.Int32,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.UInt64,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.Int64,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.UInt16,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.RoR(System.Byte,System.Int32)">
-            <summary>Rotates a bit pattern right by the specified number of bits.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Sqrt(System.Int64)">
-            Algorithms from http://aggregate.org/MAGIC and possibly
-            http://www.devmaster.net/articles/fixed-point-optimizations/ or
-            http://graphics.stanford.edu/~seander/bithacks.html
-        </member>
-        <member name="M:Loyc.Math.MathEx.CountOnes(System.UInt32)">
-            <summary>Returns the number of '1' bits in x</summary>
-            <remarks>
-            For example, CountOnes(0xF0) == 4.
-            <para/>
-            Some processors have a dedicated instruction for this operation, but
-            the .NET framework provides no access to it.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.CountOnes(System.Byte)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.CountOnes(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.CountOnes(System.UInt16)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.CountOnes(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.CountOnes(System.Int64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.CountOnes(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.CountOnes(System.UInt64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.CountOnes(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Log2Floor(System.UInt32)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.Log2Floor(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Log2Floor(System.Int32)">
-            <summary>
-            Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
-            </summary><remarks>
-            The return value is -1 for an input that is zero or negative.
-            <para/>
-            Some processors have a dedicated instruction for this operation, but
-            the .NET framework provides no access to it.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Log2Floor(System.UInt64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.Log2Floor(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Log2Floor(System.Int64)">
-            <inheritdoc cref="M:Loyc.Math.MathEx.Log2Floor(System.Int32)"/>
-        </member>
-        <member name="M:Loyc.Math.MathEx.NextPowerOf2(System.UInt32)">
-            <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
-            <remarks>For negative values of x, NextPowerOf2((uint)x) is 0.</remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.NextPowerOf2(System.UInt64)">
-            <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>
-            <remarks>For negative values of (long)x, NextPowerOf2((ulong)x) is 0.</remarks>
-        </member>
-        <member name="M:Loyc.Math.MathEx.NextPowerOf2(System.Int32)">
-            <summary>Calls <see cref="M:Loyc.Math.MathEx.NextPowerOf2(System.UInt32)"/>.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.NextPowerOf2(System.Int64)">
-            <summary>Calls <see cref="M:Loyc.Math.MathEx.NextPowerOf2(System.UInt64)"/>.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.FindFirstOne(System.UInt32)">
-            <summary>Returns the bit position of the first '1' bit in a uint, or -1 
-            the input is zero.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.FindFirstZero(System.UInt32)">
-            <summary>Returns the bit position of the first '0' bit in a uint, or -1
-            if there are no zeros.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.FindLastOne(System.UInt32)">
-            <summary>Returns the bit position of the first '1' bit in a uint, or -1 
-            the input is zero.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Average(System.Int32,System.Int32)">
-            <summary>Computes the average of two integers. Will not overflow.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Average(System.Int64,System.Int64)">
-            <summary>Computes the average of two integers. Will not overflow.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Average(System.Single,System.Single)">
-            <summary>Computes the average of two numbers. Will not overflow.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Average(System.Double,System.Double)">
-            <summary>Computes the average of two numbers. Will not overflow.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.Average``1(``0,``0)">
-            <summary>Computes the average of two numbers. Slow. No overflow protection.</summary>
-        </member>
-        <member name="M:Loyc.Math.MathEx.IsPrime(System.Int32)">
-            <summary>Returns true if <c>num</c> is a prime number, meaning 
-            that it is greater than 1 and is divisible only by 1 and itself.
-            </summary>
-            <param name="num">A number to test.</param>
-            <remarks>
-            This test takes O(sqrt(num)) time and it is moderately optimized, 
-            although faster algorithms exist (e.g. the Sieve of Eratosthenes 
-            can be faster <i>per number</i>, but is designed to find a list of 
-            <i>all</i> the prime numbers rather than to test a single number.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Math.MathI8">
-            <summary>Implements <see cref="T:Loyc.Math.IIntMath`1"/> for numbers of type System.SByte.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathU8">
-            <summary>Implements <see cref="T:Loyc.Math.IUIntMath`1"/> for numbers of type System.Byte.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathI16">
-            <summary>Implements <see cref="T:Loyc.Math.IIntMath`1"/> for numbers of type System.Int16.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathU16">
-            <summary>Implements <see cref="T:Loyc.Math.IUIntMath`1"/> for numbers of type System.UInt16.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathI">
-            <summary>Implements <see cref="T:Loyc.Math.IIntMath`1"/> for numbers of type System.Int32.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathU">
-            <summary>Implements <see cref="T:Loyc.Math.IUIntMath`1"/> for numbers of type System.UInt32.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathL">
-            <summary>Implements <see cref="T:Loyc.Math.IIntMath`1"/> for numbers of type System.Int64.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathUL">
-            <summary>Implements <see cref="T:Loyc.Math.IUIntMath`1"/> for numbers of type System.UInt64.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathF">
-            <summary>Implements <see cref="T:Loyc.Math.IFloatMath`1"/> for numbers of type System.Single.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathD">
-            <summary>Implements <see cref="T:Loyc.Math.IFloatMath`1"/> for numbers of type System.Double.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathF8">
-            <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI8.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathF16">
-            <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI16.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathF23">
-            <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI23.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathFL16">
-            <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPL16.</summary>
-        </member>
-        <member name="T:Loyc.Math.MathFL32">
-            <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPL32.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.BoundingBox`1">
-            <summary>Holds a mutable 2D bounding rectangle.</summary>
-            <typeparam name="T">Data type of each coordinate.</typeparam>
-            <remarks>
-            Many extension methods are provided in <see cref="T:Loyc.Geometry.BoundingBoxExt"/>.
-            They are separate from the class itself so that specialized versions are
-            available for particular types (notably int, double and float).
-            <para/>
-            X1 and Y1 should contains the minimum coordinates, while X2 and Y2 
-            should contain the maximum coordinates. BoundingBox generally does not 
-            guarantee that this is true unless you call <see cref="M:Loyc.Geometry.BoundingBoxExt.Normalize``1(Loyc.Geometry.BoundingBox{``0})"/>,
-            or if you use a constructor that accepts two points (rather than 
-            explicit minimum and maximum coordinates.) Some methods will not work
-            correctly if the "maximum" coordinate is less than the "minimum" 
-            coordinate; they may simply assume that the maximum exceeds the 
-            minumum.
-            <para/>
-            A BoundingBox is considered to include both the minimum and maximum 
-            coordinates. A point on the border is considered to be within the 
-            bounding box, and the Width and Height are incremented to account
-            for this. For example, if T is int and (X1,X2)=(0,10), the Width is
-            11; if T is float and (X1,X2)=(0,10), the Width is infitessimally
-            more than 10 (the result is incremented with MathEx.NextHigher()).
-            </remarks>
-        </member>
-        <member name="T:Loyc.Geometry.BoundingBoxExt">
-            <summary>Extension methods for <see cref="T:Loyc.Geometry.BoundingBox`1"/>.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.LineSegment`1">
-            <summary>Holds a 2D line segment.</summary>
-            <typeparam name="T">Coordinate type</typeparam>
-        </member>
-        <member name="T:Loyc.Geometry.LineSegment3`1">
-            <summary>Holds a 3D line segment.</summary>
-            <typeparam name="T">Coordinate type</typeparam>
-        </member>
         <member name="T:Loyc.Geometry.IPointReader`1">
             <summary>Interface for reading the coordinates of a 2D point.</summary>
             <typeparam name="T">Coordinate type.</typeparam>
@@ -3591,7 +3089,7 @@
             <para/>
             Normally this interface is not used directly, and the only operation
             provided is New(). It is provided in case you want it, but generally
-            it's better to use <see cref="T:Loyc.Geometry.Point`1"/>.
+            it's better to use <see cref="!:Point&lt;T&gt;"/>.
             <para/>
             In order for this interface to work more easily in generic code, there is 
             no corresponding IVector type for vectors because generic code must declare 
@@ -3606,7 +3104,7 @@
             separate interface (<see cref="T:Loyc.Geometry.IPointBase`1"/>) from the New() method in
             <see cref="T:Loyc.Geometry.INewPoint`2"/>. Without this separation, it's impossible 
             to write fast generic code that can operate on both IPoint itself and on 
-            concrete types such as <see cref="T:Loyc.Geometry.Point`1"/>. The reason for this is very 
+            concrete types such as <see cref="!:Point&lt;T&gt;"/>. The reason for this is very 
             subtle. To understand it, consider the following generic method that adds 
             two points together:
             <para/>
@@ -3722,7 +3220,7 @@
             provided as extension methods on IPoint.) Still, if you've read this far,
             you're probably now afraid of the effort required to write generic code! 
             Your fear may be justified. But there is another, easier way that you can 
-            write generic code, based on <see cref="T:Loyc.Geometry.Point`1"/> instead of IPoint:
+            write generic code, based on <see cref="!:Point&lt;T&gt;"/> instead of IPoint:
             <code>
             public static Point&lt;T> Add&lt;T>(Point&lt;T> a, Point&lt;T> b)
             {
@@ -3829,7 +3327,7 @@
             <para/>
             A rectangle may or may not require X2 >= X1 and Y2 >= Y1. If X1>X2 or
             Y1>Y2, the rectangle is said to be "not normalized" and the 
-            <see cref="M:Loyc.Geometry.RectangleExt.IsNormal``2(``0)"/> extension method returns false.
+            <see cref="!:RectangleExt.IsNormal"/> extension method returns false.
             </remarks>
         </member>
         <member name="T:Loyc.Geometry.IRectangleBase`1">
@@ -3853,7 +3351,7 @@
             all four coordinates at once.
             </remarks>
             <seealso cref="T:Loyc.Geometry.IRectangle`1"/>
-            <seealso cref="T:Loyc.Geometry.BoundingBox`1"/>
+            <seealso cref="!:BoundingBox&lt;T&gt;"/>
         </member>
         <member name="T:Loyc.Geometry.INewRectangle`2">
             <summary>This interface exists to work around a limitation of C#; see
@@ -3868,44 +3366,6 @@
             divided into <see cref="T:Loyc.Geometry.IPointBase`1"/> and <see cref="T:Loyc.Geometry.INewPoint`2"/>,
             as explained in the documentation of <see cref="T:Loyc.Geometry.IPoint`1"/>. 
             </remarks>
-        </member>
-        <member name="T:Loyc.Geometry.RectangleExt">
-            <summary>Contains methods to manipulate rectangles.</summary>
-            <remarks>Unfortunately, C# often can't infer the type parameters. Many of 
-            these methods must be called with explicit type parameters.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.Union``2(``0,``0)">
-            <summary>Computes the union of two <i>normalized</i> rectangles,
-            i.e. a rectangle large enough to cover both original rectangles.</summary>
-            <remarks>The results may be incorrect if one or both rectangles 
-            are not normalized.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.Intersect``2(``0,``0)">
-            <summary>Computes the intersection of two <i>normalized</i> rectangles,
-            i.e. the region covered by both original rectangles.</summary>
-            <remarks>The results may be incorrect if one or both rectangles are
-            not normalized. If the rectangles do not overlap, a non-normalized 
-            rectangle is returned.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.ExpandToInclude``3(``0,``1)">
-            <summary>Expands a rectangle's boundaries to include a given point.</summary>
-            <returns>Returns true if the rectangle changed.</returns>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.ExpandToInclude``3(``0,System.Collections.Generic.IEnumerable{``1})">
-            <summary>Expands a rectangle's boundaries to include a series of points.</summary>
-            <returns>Returns true if the rectangle changed.</returns>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.Contains``3(``0,``1)">
-            <summary>Determines whether a rectangle contains a given point.</summary>
-            <remarks>Returns false if the rectangle is not normalized.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.Contains``2(``0,``0)">
-            <summary>Determines whether a rectangle fully contains another rectangle.</summary>
-            <remarks>May not work correctly if either of the rectangles is not normalized.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.RectangleExt.Overlaps``2(``0,``0)">
-            <summary>Determines whether a rectangle overlaps another rectangle.</summary>
-            <remarks>May not work correctly if either of the rectangles is not normalized.</remarks>
         </member>
         <member name="T:Loyc.Geometry.ISize3Reader`1">
             <summary>Interface for reading the size of a 3D object.</summary>
@@ -3937,7 +3397,7 @@
             <para/>
             The object may or may not require X2 >= X1 and Y2 >= Y1 and Z2 >= Z1.
             If X1>X2 or Y1>Y2 or Z1>Z2, the rectangle is said to be "not 
-            normalized" and the <see cref="M:Loyc.Geometry.Rectangle3Ext.IsNormal``2(``0)"/> extension 
+            normalized" and the <see cref="!:Rectangle3Ext.IsNormal"/> extension 
             method returns false.
             </remarks>
         </member>
@@ -3976,110 +3436,6 @@
             divided into <see cref="T:Loyc.Geometry.IPointBase`1"/> and <see cref="T:Loyc.Geometry.INewPoint`2"/>,
             as explained in the documentation of <see cref="T:Loyc.Geometry.IPoint`1"/>. 
             </remarks>
-        </member>
-        <member name="T:Loyc.Geometry.Rectangle3Ext">
-            <summary>Contains methods to manipulate rectangles.</summary>
-            <remarks>Unfortunately, C# often can't infer the type parameters. Many of 
-            these methods must be called with explicit type parameters.</remarks>
-        </member>
-        <member name="T:Loyc.Geometry.Point`1">
-            <summary>A 2D point (X-Y pair) structure.</summary>
-            <remarks>Although this structure contains operators such as + and -, their 
-            performance is suboptimal due to limitations of C#. The <see cref="!:PointMath"/>
-            class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
-            that perform faster on common coordindate types such as int and double.</remarks>
-            <typeparam name="T">Coordinate type.</typeparam>
-            <seealso cref="!:PointMath"/>
-            <seealso cref="T:Loyc.Geometry.Vector`1"/>
-        </member>
-        <member name="T:Loyc.Geometry.Point3`1">
-            <summary>A 3D point (X-Y-Z triplet) structure.</summary>
-            <typeparam name="T">Coordinate type.</typeparam>
-            <seealso cref="!:PointMath"/>
-            <seealso cref="T:Loyc.Geometry.Vector3`1"/>
-        </member>
-        <member name="T:Loyc.Geometry.Vector3`1">
-            <summary>Represents a three-dimensional vector, i.e. a magnitude and 
-            direction or the difference between two points, stored as X, Y and Z
-            components.</summary>
-            <remarks>A vector is the same as a point except for the operations it
-            supports. For example, it usually does not make sense to add two points,
-            but you can add two vectors (to get another vector) or you can add a 
-            vector to a point (to get a point).
-            <para/>
-            If you really do need to add two points together or something like 
-            that, you can typecast from <see cref="T:Loyc.Geometry.Point3`1"/> to 
-            <see cref="T:Loyc.Geometry.Vector3`1"/>.
-            </remarks>
-            <seealso cref="!:Loyc.Geometry.PointMath"/>
-            <seealso cref="T:Loyc.Geometry.VectorMath`1"/>
-            <seealso cref="T:Loyc.Geometry.Point3`1"/>
-        </member>
-        <member name="M:Loyc.Geometry.Vector3`1.op_Multiply(Loyc.Geometry.Vector3{`0},Loyc.Geometry.Vector3{`0})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.Vector3`1.op_UnaryNegation(Loyc.Geometry.Vector3{`0})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.Vector3Math`1">
-            <summary>Implementation of <see cref="T:Loyc.Math.IAdditionGroup`1"/> for <see cref="T:Loyc.Geometry.Vector`1"/>.</summary>
-            <typeparam name="T">Coordinate type.</typeparam>
-        </member>
-        <member name="T:Loyc.Geometry.VectorExt">
-            <summary>Extension methods for vectors. TODO: reconsider distribution of
-            methods between this class and <see cref="!:PointMath"/> in Loyc.Utilities.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.VectorExt.Cross``1(Loyc.Geometry.Vector3{``0},Loyc.Geometry.Vector3{``0})">
-            <summary>Computes the "cross product" of a pair of vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.VectorExt.Quadrance``1(Loyc.Geometry.Vector3{``0})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.VectorExt.Length``1(Loyc.Geometry.Vector3{``0})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.Vector`1">
-            <summary>Represents a two-dimensional vector, i.e. a magnitude and 
-            direction or the difference between two points, stored as X and Y
-            components.</summary>
-            <remarks>A vector is the same as a point except for the operations it
-            supports. For example, it usually does not make sense to add two points,
-            but you can add two vectors (to get another vector) or you can add a 
-            vector to a point (to get a point).
-            <para/>
-            If you really do need to add two points together or something like 
-            that, you can typecast from <see cref="T:Loyc.Geometry.Point`1"/> to 
-            <see cref="T:Loyc.Geometry.Vector`1"/>.
-            <para/>
-            Although this structure contains operators such as + and -, their 
-            performance is suboptimal due to limitations of C#. The <see cref="!:PointMath"/>
-            class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
-            that perform faster on common coorindate types such as int and double.</remarks>
-            <seealso cref="!:Loyc.Geometry.PointMath"/>
-            <seealso cref="T:Loyc.Geometry.VectorMath`1"/>
-            <seealso cref="T:Loyc.Geometry.Point`1"/>
-        </member>
-        <member name="M:Loyc.Geometry.Vector`1.op_Multiply(Loyc.Geometry.Vector{`0},Loyc.Geometry.Vector{`0})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.Vector`1.op_UnaryNegation(Loyc.Geometry.Vector{`0})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.VectorMath`1">
-            <summary>An implementation of <see cref="T:Loyc.Math.IAdditionGroup`1"/> for <see cref="T:Loyc.Geometry.Vector`1"/>.</summary>
-            <typeparam name="T">Coordinate type.</typeparam>
         </member>
         <member name="T:Loyc.MiniTest.TestFixtureAttribute">
             <summary>Identifies a class that contains unit tests, or methods that 
@@ -4225,8 +3581,6 @@
             the most common assertions used in NUnit.
             </summary>
             <remarks>
-            WORK IN PROGRESS. TEST RUNNER IS NOT FINISHED YET.
-            <para/>
             This class is mostly a drop-in replacement for "old-style" NUnit tests, 
             i.e. those that do not use constraint classes or the "Is" class.
             <para/>
@@ -4381,149 +3735,64 @@
             <summary>Runs all tests in an array of test objects.</summary>
             <returns>The total number of tests that unexpectedly failed.</returns>
         </member>
-        <member name="T:Loyc.Syntax.ParseHelpers">
-            <summary>Static methods that help with common parsing jobs, such as 
-            parsing integers, floats, and strings with C escape sequences.</summary>
-            <remarks>This class also contains a few <i>inverse</i> methods, e.g. 
-            <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/> is the inverse of the
-            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,System.Boolean)"/>.</remarks>
+        <member name="T:Loyc.Syntax.PrintHelpers">
+            <summary>Static methods that help to print literals, such as 
+            <see cref="M:Loyc.Syntax.PrintHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/> which escapes special characters with backslashes.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.HexDigitValue(System.Char)">
-            <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
+        <member name="M:Loyc.Syntax.PrintHelpers.HexDigitChar(System.Int32)">
+            <summary>Gets the hex digit character for the specified value, 
+            or '?' if the value is not in the range 0...15. Uses uppercase.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.HexDigitChar(System.Int32)">
-            <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
+        <member name="M:Loyc.Syntax.PrintHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)">
+            <summary>Escapes characters in a string using C style, e.g. the string 
+            <c>"Foo\"\n"</c> maps to <c>"Foo\\\"\\\n"</c> by default.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,System.Boolean)">
-            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+        <member name="M:Loyc.Syntax.PrintHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC,System.Char)">
+            <summary>Escapes characters in a string using C style.</summary>
+            <param name="flags">Specifies which characters should be escaped.</param>
+            <param name="quoteType">Specifies a character that should always be 
+            escaped (typically one of <c>' " `</c>)</param>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String,System.Int32,System.Int32,Loyc.Syntax.EscapeC@,System.Boolean)">
-            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-            <param name="encountered">Returns information about whether escape 
-            sequences were encountered, and which categories.</param>
-            <param name="removeUnnecessaryBackslashes">Causes the backslash before 
-            an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
+        <member name="M:Loyc.Syntax.PrintHelpers.EscapeCStyle(System.Int32,System.Text.StringBuilder,Loyc.Syntax.EscapeC,System.Char)">
+            <summary>Writes a character <c>c</c> to a StringBuilder, either as a normal 
+            character or as a C-style escape sequence.</summary>
+            <param name="flags">Specifies which characters should be escaped.</param>
+            <param name="quoteType">Specifies a character that should always be 
+            escaped (typically one of <c>' " `</c>)</param>
+            <returns>true if an escape sequence was emitted, false if not.</returns>
+            <remarks><see cref="F:Loyc.Syntax.EscapeC.HasLongEscape"/> can be used to force a 6-digit 
+            unicode escape; this may be needed if the next character after this one 
+            is a digit.</remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Syntax.ParseHelpers.UnescapeChar(System.String,System.Int32@,Loyc.Syntax.EscapeC@)" -->
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)">
-            <summary>Tries to parse a string to an integer. Unlike <see cref="M:System.Int32.TryParse(System.String,System.Int32@)"/>,
-            this method allows parsing to start at any point in the string, it 
-            allows non-numeric data after the number, and it can parse numbers that
-            are not in base 10.</summary>
-            <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
-            <param name="index">Location at which to start parsing</param>
-            <param name="flags"><see cref="T:Loyc.Syntax.ParseNumberFlag"/>s that affect parsing behavior.</param>
-            <param name="skipSpaces">Whether to skip spaces before parsing. Only 
-            the ' ' and '\t' characters are treated as spaces. No space is allowed 
-            between '-' and the digits of a negative number, even with this flag.</param>
-            <returns>True if a number was found starting at the specified index
-            and it was successfully converted to a number, or false if not.</returns>
-            <remarks>
-            This method never throws. If parsing fails, index is left unchanged, 
-            except that spaces are still skipped if you set the skipSpaces flag. 
-            If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
-            in the output number. If the input number cannot fit in 'result', the 
-            return value is false but index increases anyway, and 'result' is a 
-            bitwise truncated version of the number.
-            <para/>
-            When parsing input such as "12.34", the parser stops and returns true
-            at the dot (with a result of 12 in this case).
-            </remarks>
+        <member name="M:Loyc.Syntax.PrintHelpers.IntegerToString(System.Int64,System.String,System.Int32,System.Int32,System.Char)">
+            <summary>Converts an integer to a string, optionally with separator characters for readability.</summary>
+            <param name="value">Integer to be converted</param>
+            <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
+            <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
+            <param name="separatorInterval">Number of digits in a group</param>
+            <param name="separatorChar">Digit group separator</param>
+            <returns>The number as a string.</returns>
+            <remarks>Example: <c>IntegerToString(-1234567, "0", 10, 3, '\'') == "-01'234'567"</c></remarks>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int32@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
-            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int64@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
-            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
-            <summary>Low-level method that identifies the parts of a float literal
-            of arbitrary base (typically base 2, 10, or 16) with no prefix or 
-            suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
-            <param name="radix">Base of the number to parse; must be between 2
-            and 36.</param>
-            <param name="mantissa">Integer magnitude of the number.</param>
-            <param name="exponentBase2">Base-2 exponent to apply, as specified by
-            the 'p' suffix, or 0 if there is no 'p' suffix..</param>
-            <param name="exponentBase10">Base-10 exponent to apply, as specified by
-            the 'e' suffix, or 0 if there is no 'e' suffix..</param>
-            <param name="exponentBaseR">Base-radix exponent to apply. This number
-            is based on the front part of the number only (not including the 'p' or
-            'e' suffix). Negative values represent digits after the decimal point,
-            while positive numbers represent 64-bit overflow. For example, if the
-            input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
-            <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
-            <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
-            overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
-            with <c>exponentBaseR=3</c>.</param>
-            <param name="numDigits">Set to the number of digits in the number, not 
-            including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-            <remarks>
-            The syntax required is
-            <code>
-              ( '+'|'-' )?
-              ( Digits ('.' Digits?)? | '.' Digits )
-              ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
-              ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
-            </code>
-            where Digits refers to one digits in the requested base, possibly 
-            including underscores or spaces if the flags allow it; similarly, 
-            DecimalDigits refers to base-10 digits and is also affected by the
-            flags.
-            <para/>
-            Returns false if there was an error interpreting the input.
-            <para/>
-            To keep the parser relatively simple, it does not roll back in case of 
-            error the way the int parser does. For example, given the input "23p", 
-            the 'p' is consumed and causes the method to return false, even though
-            the parse could have been successful if it had ignored the 'p'.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
-            <summary>Parses the parts of a floating-point string. See the other 
-            overload for details.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="negative">true if the string began with '-'.</param>
-            <param name="mantissa">Integer magnitude of the number.</param>
-            <param name="exponentBase2">Base-2 exponent to apply.</param>
-            <param name="exponentBase10">Base-10 exponent to apply.</param>
-            <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-            <remarks>
-            This method is a wrapper around the other overload that combines 
-            the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
-            depending on the radix. For example, when radix=10, this method 
-            adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseDouble(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
-            <summary>Parses a string to a double-precision float, returning NaN on 
-            failure or an infinity value on overflow.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloat(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
-            <summary>Parses a string to a single-precision float, returning NaN on 
-            failure or an infinity value on overflow.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-        </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(Loyc.UString)">
-            <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
-            <remarks>Only ' ' and '\t' are treated as spaces.</remarks>
+        <member name="M:Loyc.Syntax.PrintHelpers.AppendIntegerTo(System.Text.StringBuilder,System.Int64,System.String,System.Int32,System.Int32,System.Char)">
+            <summary>Same as <see cref="M:Loyc.Syntax.PrintHelpers.IntegerToString(System.Int64,System.String,System.Int32,System.Int32,System.Char)"/> 
+            except that the target StringBuilder must be provided as a parameter.</summary>
+            <param name="value">Integer to be converted</param>
+            <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
+            <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
+            <param name="separatorInterval">Number of digits in a group</param>
+            <param name="separatorChar">Digit group separator</param>
+            <returns>The target StringBuilder.</returns>
         </member>
         <member name="T:Loyc.Syntax.EscapeC">
-            <summary>Flags to control <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/>.</summary>
+            <summary>Flags to control <seealso cref="M:Loyc.Syntax.PrintHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/>
+            and the reverse operation in ParseHelpers.</summary>
         </member>
         <member name="F:Loyc.Syntax.EscapeC.Minimal">
             <summary>Only \r, \n, \0 and backslash are escaped.</summary>
         </member>
         <member name="F:Loyc.Syntax.EscapeC.Default">
-            <summary>Default option</summary>
+            <summary>Default option for escaping</summary>
         </member>
         <member name="F:Loyc.Syntax.EscapeC.NonAscii">
             <summary>Escape ALL characters with codes above 127 as \xNN or \uNNNN</summary>
@@ -4546,35 +3815,92 @@
         <member name="F:Loyc.Syntax.EscapeC.Quotes">
             <summary>Escape single and double quotes</summary>
         </member>
+        <member name="F:Loyc.Syntax.EscapeC.UnicodeNonCharacters">
+            <summary>Escape non-character unicode code points such as the Byte Order Mark 
+            and unpaired surrogate pair characters.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.UnicodePrivateUse">
+            <summary>Escape unicode private-use code points.</summary>
+        </member>
         <member name="F:Loyc.Syntax.EscapeC.HasEscapes">
             <summary>While unescaping, a backslash was encountered.</summary>
         </member>
         <member name="F:Loyc.Syntax.EscapeC.Unrecognized">
             <summary>While unescaping, an unrecognized escape was encountered .</summary>
         </member>
-        <member name="T:Loyc.Syntax.ParseNumberFlag">
-            <summary>Flags that can be used with 
-            <see cref="!:ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)"/>
-            </summary>
+        <member name="F:Loyc.Syntax.EscapeC.HasLongEscape">
+            <summary>While unescaping, a valid \u escape was encountered with more than 4 digits.
+            To detect whether the value was above 0xFFFF, however, one must check the output.</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInFront">
-            <summary>Skip spaces before the number. Without this flag, spaces make parsing fail.</summary>
+        <member name="F:Loyc.Syntax.EscapeC.HasInvalid6DigitEscape">
+            <summary>While unescaping, a valid \u escape was encountered with 6 digits, but the
+            number was more than 0x10FFFF and had to be treated as 5 digits to make it valid.</summary>
+            <remarks>Always appears with HasLongEscape | HasEscapes</remarks>
         </member>
-        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInsideNumber">
-            <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
+        <member name="T:Loyc.StringBuilderExt">
+            <summary>Extension methods that add some functionality of <c>string</c> to <c>StringBuilder</c>.</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParseNumberFlag.StopBeforeOverflow">
-            <summary>Changes overflow handling behavior when parsing an integer,
-            so that the result does not overflow (wrap), and the digit(s) at the 
-            end of the string, that would have caused overflow, are ignored. In 
-            this case, the return value is still false.</summary>
+        <member name="M:Loyc.StringBuilderExt.Substring(System.Text.StringBuilder,System.Int32,System.Int32)">
+            <summary>Extracts a substring from the specified StringBuiler.</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipUnderscores">
-            <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
+        <member name="M:Loyc.StringBuilderExt.Last(System.Text.StringBuilder)">
+            <summary>Returns the last character of the string</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParseNumberFlag.AllowCommaDecimalPoint">
-            <summary>Whether to treat comma as a decimal point when parsing a float. 
-            The dot '.' is always treated as a decimal point.</summary>
+        <member name="M:Loyc.StringBuilderExt.LastOrDefault(System.Text.StringBuilder,System.Char)">
+            <summary>Returns the last character of the string, or a default character if the string is empty.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.TrimStart(System.Text.StringBuilder)">
+            <summary>Removes all leading occurrences of spaces and tabs from the StringBuilder object.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.TrimStart(System.Text.StringBuilder,System.Char[])">
+            <summary>Removes all leading occurrences of the specified set of characters from the StringBuilder object.</summary>
+            <param name="trimChars">An array of Unicode characters to remove.</param>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.TrimEnd(System.Text.StringBuilder)">
+            <summary>Removes all trailing occurrences of spaces and tabs from the StringBuilder object.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.TrimEnd(System.Text.StringBuilder,System.Char[])">
+            <summary>Removes all trailing occurrences of the specified set of characters from the StringBuilder object.</summary>
+            <param name="trimChars">An array of Unicode characters to remove.</param>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.Trim(System.Text.StringBuilder)">
+            <summary>Removes all leading and trailing occurrences of spaces and tabs from the StringBuilder object.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.Trim(System.Text.StringBuilder,System.Char[])">
+            <summary>Removes all leading and trailing occurrences of the specified set of characters from the StringBuilder object.</summary>
+            <param name="trimChars">An array of Unicode characters to remove.</param>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.IndexOf(System.Text.StringBuilder,System.Char,System.Int32)">
+            <summary>Gets the index of a character in a StringBuilder</summary>
+            <returns>Index of the first instance of the specified character in the string, or -1 if not found</returns>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.IndexOf(System.Text.StringBuilder,Loyc.UString,System.Int32,System.Boolean)">
+            <summary>Gets the index of a substring in a StringBuilder</summary>
+            <returns>Index of the first instance of the specified substring in the StringBuilder, or -1 if not found</returns>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.LastIndexOf(System.Text.StringBuilder,System.Char,System.Int32)">
+            <summary>Gets the index of a character in a StringBuilder</summary>
+            <returns>Index of the last instance of the specified character in the StringBuilder, or -1 if not found</returns>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.LastIndexOf(System.Text.StringBuilder,Loyc.UString,System.Int32,System.Boolean)">
+            <summary>Gets the index of a substring in a StringBuilder</summary>
+            <returns>Index of the last instance of the specified substring in the StringBuilder, or -1 if not found</returns>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.EndsWith(System.Text.StringBuilder,Loyc.UString,System.Boolean)">
+            <summary>Finds out whether the StringBuilder ends with the specified substring.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.StartsWith(System.Text.StringBuilder,Loyc.UString,System.Boolean)">
+            <summary>Finds out whether the StringBuilder starts with the specified substring.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.SubstringEquals(System.Text.StringBuilder,System.Int32,Loyc.UString,System.Boolean)">
+            <summary>Checks if the sequences of characters <c>what</c> is equal to
+            <c>sb.Substring(start, what.Length)</c>, without actually creating a 
+            substring object.</summary>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.AppendCodePoint(System.Text.StringBuilder,System.Int32)">
+            <summary>Appends a unicode code point in the range 0 to 0x10FFFF to StringBuilder in UTF-16.</summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">Invalid character c</exception>
+            <exception cref="T:System.NullReferenceException">null StringBuildre</exception>
         </member>
         <member name="T:Loyc.UString">
             <summary>UString is a slice of a string. It is a wrapper around string that 
@@ -4657,14 +3983,8 @@
         <member name="M:Loyc.UString.DecodeAt(System.Int32)">
             <summary>Returns the UCS code point that starts at the specified index.</summary>
             <param name="index">Code unit index at which to decode.</param>
-            <returns>The code point starting at this index, or a negative number.</returns>
-            <exception cref="T:System.IndexOutOfRangeException">Oops.</exception>
-            <remarks>
-            If decoding fails, either because the index points to the "middle" of a
-            multi-code-unit sequence or because the string contains an invalid
-            UTF sequence, this method returns a negative value (the bitwise 'not' of 
-            the invalid char). If the index is invalid, this method returns -1.
-            </remarks>
+            <returns>The code point starting at this index.</returns>
+            <exception cref="T:System.IndexOutOfRangeException">invalid <c>index</c>.</exception>
         </member>
         <member name="P:Loyc.UString.Item(System.Int32)">
             <summary>Returns the code unit (16-bit value) at the specified index.</summary>
@@ -4680,6 +4000,19 @@
         </member>
         <member name="M:Loyc.UString.Substring(System.Int32,System.Int32)">
             <summary>Synonym for Slice()</summary>
+        </member>
+        <member name="M:Loyc.UString.Substring(System.Int32)">
+            <summary>Returns the sequence of code units from this UString starting
+            at the index <c>start</c>, e.g. Substring(1) returns all code units 
+            except the first.</summary>
+        </member>
+        <member name="M:Loyc.UString.Left(System.Int32)">
+            <summary>Returns the leftmost <c>length</c> code units of the string, 
+            or fewer if the string length is less than <c>length</c>.</summary>
+        </member>
+        <member name="M:Loyc.UString.Right(System.Int32)">
+            <summary>Returns the rightmost <c>length</c> code units of the string,
+            or fewer if the string length is less than <c>length</c>.</summary>
         </member>
         <member name="M:Loyc.UString.Find(System.Int32,System.Boolean)">
             <summary>Finds the specified UCS-4 character.</summary>
@@ -4747,7 +4080,7 @@
         <member name="T:Loyc.G">
             <summary>Contains global functions that don't belong in any specific class.</summary>
             <remarks>Note: helper methods for parsing and printing tokens and hex 
-            digits have been moved to <see cref="T:Loyc.Syntax.ParseHelpers"/>.</remarks>
+            digits have been moved to <see cref="!:Loyc.Syntax.ParseHelpers"/>.</remarks>
         </member>
         <member name="M:Loyc.G.With``1(``0,System.Action{``0})">
             <summary>Calls <c>action(obj)</c>, then returns the same object.</summary>
@@ -4777,7 +4110,7 @@
             <summary>Converts an <see cref="T:System.Collections.Generic.IComparer`1"/> to a <see cref="T:System.Comparison`1"/>.</summary>
         </member>
         <member name="M:Loyc.G.ToComparisonFunc``1(System.Collections.Generic.IComparer{``0})">
-            <summary>Converts an <see cref="T:System.Collections.Generic.IComparer`1"/> to a <see cref="!:Func&lt;T,T,int&gt;"/>.</summary>
+            <summary>Converts an <see cref="T:System.Collections.Generic.IComparer`1"/> to a Func(T,T,int).</summary>
         </member>
         <member name="M:Loyc.G.MakeValidFileName(System.String,System.Nullable{System.Char},System.Boolean)">
             <summary>Replaces characters in <c>text</c> that are not allowed in 
@@ -4792,19 +4125,31 @@
             evaluated even in a Release build.</summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)" -->
-        <member name="M:Loyc.G.PushTLV``1(Loyc.Threading.ThreadLocalVariable{``0},``0)">
-            <summary>Helper function for a using statement that temporarily 
-            modifies a thread-local variable.</summary>
-            <param name="variable">Variable to change</param>
-            <param name="newValue">New value</param>
-            <example>
-            // Temporarily change the method used to convert tokens to strings
-            using (G.PushTLV(Token.ToStringStrategyTLV, t => /* TODO */))
-            {
-                Token t = new Token(...);
-                Console.WriteLine(t.ToString());
-            }
-            </example>
+        <member name="M:Loyc.G.CountOnes(System.Byte)">
+            <summary>Returns the number of bits that are set in the specified integer.</summary>
+        </member>
+        <member name="M:Loyc.G.CountOnes(System.Int32)">
+            <summary>Returns the number of bits that are set in the specified integer.</summary>
+            <remarks>This is a duplicate of MathEx.CountOnes() needed by Loyc.Collections,
+            which does not have a reference to Loyc.Math.dll which contains MathEx.
+            However this uses a compact SWAR implementation, whereas Loyc.Math uses
+            a potentially faster lookup table.</remarks>
+        </member>
+        <member name="M:Loyc.G.CountOnes(System.UInt32)">
+            <inheritdoc cref="M:Loyc.G.CountOnes(System.Int32)"/>
+        </member>
+        <member name="M:Loyc.G.Log2Floor(System.UInt32)">
+            <inheritdoc cref="M:Loyc.G.Log2Floor(System.Int32)"/>
+        </member>
+        <member name="M:Loyc.G.Log2Floor(System.Int32)">
+            <summary>
+            Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
+            </summary><remarks>
+            The return value is -1 for an input that is zero or negative.
+            <para/>
+            Some processors have a dedicated instruction for this operation, but
+            the .NET framework provides no access to it.
+            </remarks>
         </member>
         <member name="T:Loyc.EzStopwatch">
             <summary>
@@ -4958,7 +4303,7 @@
             a base class but can be used on its own.
             </summary>
         </member>
-        <member name="T:Loyc.IMessageSink">
+        <member name="T:Loyc.IMessageSink`2">
             <summary>A general-purpose interface for a class that accepts formatted 
             messages with context information.</summary>
             <remarks>
@@ -4966,12 +4311,13 @@
             messages; it could be used for log messages, compiler error messages, or
             to report the progress of a process, for instance.
             <para/>
+            It is typical to use <see cref="T:Loyc.IMessageSink"/> without type parameters.
+            <para/>
             Since .NET does not allow static members in an interface, the static
             members can be found in <see cref="T:Loyc.MessageSink"/>.
             <para/>
-            Each message has a "type" <see cref="T:Loyc.Symbol"/> which indicates the 
-            type of message being printed. For message sinks that are used as 
-            loggers, this should be one of the following logging levels, listed
+            Each message has a <see cref="T:Loyc.Severity"/>. For message sinks that are used 
+            as loggers, this should be one of the following logging levels, listed
             in order of importance: Fatal, Error, Warning, Note, Debug, Verbose.
             <para/>
             For message sinks that are used for compiler messages, the standard
@@ -4980,14 +4326,14 @@
             for independent messages that are less severe than warnings (e.g. lints).
             Some compilers may distiguish "soft" errors (which do not prevent the
             program from starting) from "critical" errors (which do). In that case, 
-            Error may represents such a "soft" error and Critical may represent a
+            Error may represent such a "soft" error and Critical may represent a
             "hard" error. Fatal, in contrast, represents an error that causes the
             compiler to halt immediately.
             <para/>
             The message sink itself should perform localization, which can be done
             with <see cref="M:Loyc.Localize.Localized(Loyc.Symbol,System.String,System.Object[])"/>.
             <para/>
-            Only a single Write() method is truly needed (<see cref="M:Loyc.IMessageSink.Write(Loyc.Severity,System.Object,System.String,System.Object[])"/>),
+            Only a single Write() method is truly needed (<see cref="!:Write(Severity, object, string, object[])"/>),
             but for efficiency reasons the interface contains two other writers. It 
             is expected to be fairly common that a message sink will drop some or
             all messages without printing them, e.g. if a message sink is used for 
@@ -5001,10 +4347,18 @@
             an overload that takes no formatting arguments (this indicates that 
             parameter substitution is not required and should not be attempted.)
             <para/>
-            In addition, the caller can call <see cref="M:Loyc.IMessageSink.IsEnabled(Loyc.Severity)"/> to avoid 
+            In addition, the caller can call <see cref="!:IsEnabled(Severity)"/> to avoid 
             doing any work required to prepare a message for printing when a certain
             category of output is disabled.
             </remarks>
+            <typeparam name="TSeverity">The type of the first parameter to <c>Write</c>, 
+            which is used to indicate the "kind" of message being logged. Typically this 
+            parameter is <see cref="T:Loyc.Severity"/>, which includes values like Note, Warning 
+            and Error.</typeparam>
+            <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
+            which indicates where the error occurs. If the message relates to a text
+            file or source code, the location is typically indicated with an object of
+            type <see cref="!:Loyc.Syntax.SourceRange"/> or <see cref="!:Loyc.Syntax.LNode"/>.</typeparam>
             <seealso cref="T:Loyc.MessageSink"/>
             <seealso cref="T:Loyc.ConsoleMessageSink"/>
             <seealso cref="T:Loyc.TraceMessageSink"/>
@@ -5012,8 +4366,9 @@
             <seealso cref="T:Loyc.MessageFilter"/>
             <seealso cref="T:Loyc.MessageHolder"/>
             <seealso cref="T:Loyc.MessageSplitter"/>
+            <seealso cref="T:Loyc.IHasLocation"/>
         </member>
-        <member name="M:Loyc.IMessageSink.Write(Loyc.Severity,System.Object,System.String)">
+        <member name="M:Loyc.IMessageSink`2.Write(`0,`1,System.String)">
             <summary>Writes a message to the target that this object represents.</summary>
             <param name="type">Severity or importance of the message; widely-used
             types include Error, Warning, Note, Debug, and Verbose. The special 
@@ -5026,9 +4381,17 @@
             <param name="format">A message to display. If there are additional 
             arguments, placeholders such as {0} and {1} refer to these arguments.</param>
         </member>
-        <member name="M:Loyc.IMessageSink.IsEnabled(Loyc.Severity)">
+        <member name="M:Loyc.IMessageSink`2.IsEnabled(`0)">
             <summary>Returns true if messages of the specified type will actually be 
-            printed, or false if Write(type, ...) is a no-op.</summary>
+            printed, or false if Write(type, ...) has no effect.</summary>
+        </member>
+        <member name="T:Loyc.IMessageSink`1">
+            <summary>Alias for IMessageSink&lt;Severity, TContext>.</summary>
+            <seealso cref="T:Loyc.IMessageSink`2"/>
+        </member>
+        <member name="T:Loyc.IMessageSink">
+            <summary>Alias for IMessageSink&lt;Severity, object>.</summary>
+            <seealso cref="T:Loyc.IMessageSink`2"/>
         </member>
         <member name="T:Loyc.Severity">
             <summary>A linear scale to categorize the importance and seriousness of 
@@ -5048,14 +4411,14 @@
             </remarks>
         </member>
         <member name="T:Loyc.MessageSink">
-            <summary>Holds the default message sink for this thread (<see cref="P:Loyc.MessageSink.Current"/>),
+            <summary>Holds the default message sink for this thread (<see cref="P:Loyc.MessageSink.Default"/>),
             <see cref="T:Loyc.Symbol"/>s for the common message types, such as Warning and 
             Error, and default instances of <see cref="T:Loyc.ConsoleMessageSink"/>,
             <see cref="T:Loyc.TraceMessageSink"/> and <see cref="T:Loyc.NullMessageSink"/>.</summary>
             <seealso cref="T:Loyc.IMessageSink"/>
         </member>
-        <member name="M:Loyc.MessageSink.PushCurrent(Loyc.IMessageSink)">
-            <summary>Used to change the <see cref="P:Loyc.MessageSink.Current"/> property temporarily.</summary>
+        <member name="M:Loyc.MessageSink.SetDefault(Loyc.IMessageSink)">
+            <summary>Used to change the <see cref="P:Loyc.MessageSink.Default"/> property temporarily.</summary>
             <example><code>
             using (var old = MessageSink.PushCurrent(MessageSink.Console))
                 MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
@@ -5107,13 +4470,17 @@
             <summary>Sends all messages to a user-defined method.</summary>
         </member>
         <member name="T:Loyc.IHasLocation">
-            <summary>This interface allows an object to declare its "location". It is
-            used by <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/>, which helps convert
-            the "context" of a message into a string.</summary>
+            <summary>This interface allows an object to declare its "location".</summary>
             <remarks>For example, <see cref="!:Loyc.Syntax.LNode"/> implements this 
             interface so that when a compiler error refers to a source code construct,
             the error message contains the location of that source code rather than the
-            code itself.</remarks>
+            code itself.
+            <para/>
+            Given a context object that may or may not implement this interface, it's
+            handy to use <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/> to convert the 
+            "context" of a message into a string, or <see cref="M:Loyc.MessageSink.LocationOf(System.Object)"/> 
+            to unwrap objects that implement IHasLocation.
+            </remarks>
         </member>
         <member name="T:Loyc.WriteMessageFn">
             <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 
@@ -5264,11 +4631,11 @@
             </remarks>
         </member>
         <member name="P:Loyc.Localize.Localizer">
-            <summary>Localizer method (thread-local)</summary>
+            <summary>Localizer method (thread-local), which is a do-nothing pass-through by default</summary>
         </member>
         <member name="P:Loyc.Localize.Formatter">
             <summary>Formatting delegate (thread-local), which is set to 
-            <see cref="!:StringExt.Format"/> by default.</summary>
+            <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> by default.</summary>
         </member>
         <member name="M:Loyc.Localize.Passthru(Loyc.Symbol,System.String)">
             <summary>
@@ -5366,6 +4733,7 @@
             <summary>Minimum severity level at which the severity level is printed.
             For example, if set to Severity.Error, then the prefix "Error:" is printed
             for errors but the prefix "Warning:" is not printed for warnings.</summary>
+            <remarks>Initial value: Severity.Warning</remarks>
         </member>
         <member name="M:Loyc.ConsoleMessageSink.IsEnabled(Loyc.Severity)">
             <summary>Always returns true.</summary>
@@ -5384,7 +4752,7 @@
             <summary>Always returns true.</summary>
         </member>
         <member name="T:Loyc.LogMessage">
-            <summary>Holds an argument list compatible with <see cref="M:Loyc.IMessageSink.Write(Loyc.Severity,System.Object,System.String)"/>.
+            <summary>Holds an argument list compatible with <see cref="!:IMessageSink.Write"/>.
             Typically used with <see cref="T:Loyc.MessageHolder"/>.</summary>
         </member>
         <member name="T:Loyc.MessageHolder">
@@ -5573,10 +4941,22 @@
             string msg = "You need to run {dist,6:###.00} km to reach {0}".Localized(
             	cityName, "dist", 2.9);
             </code>
-            This method will ignore the first N+1 arguments in args, where {N}
-            is the largest numeric placeholder. It is assumed that the placeholder 
-            name ends at the first comma or colon; hence the placeholder in this 
-            example is called "dist", not "dist,6:###.00".
+            It is assumed that the placeholder name ends at the first comma or colon; 
+            hence the placeholder in this example is called "dist", not "dist,6:###.00".
+            <para/>
+            Typically, the named arguments are expected to start at index N+1 in the 
+            variable argument array, where {N} is the largest numeric placeholder, and 
+            if there are no numeric placeholders then the named arguments should begin 
+            at index 0. In this example there is a {0}, so the named arguments should
+            start at index 1. However, since named arguments always come in pairs, an 
+            extra rule increments the N if the number of remaining arguments starting
+            at N is not an even number. For example, in
+            <code>
+            string msg = "Hello {0}, you'll go to {school name} next year.".Localized(
+            	firstName, lastName, "school name", schoolName);
+            </code>
+            There are three args left after the numeric ones, so the first remaining
+            argument is ignored to make it an even number.
             <para/>
             If a placeholder name is not found in the argument list then it is not
             replaced with a number before the call to string.Format, so a 
@@ -5853,6 +5233,16 @@
             <para/>
             Also, this value converts implicitly to <see cref="P:Loyc.Maybe`1.NoValue"/>.
             </remarks>
+        </member>
+        <member name="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)">
+            <summary>Gets the item at the specified index.</summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The index was not valid
+            in this list.</exception>
+            <param name="index">An index in the range 0 to Count-1.</param>
+            <returns>The element at the specified index.</returns>
+        </member>
+        <member name="T:System.Collections.Generic.IReadOnlyDictionary`2">
+            <summary>Read-only dictionary interface defined in .NET 4.5</summary>
         </member>
     </members>
 </doc>

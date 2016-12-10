@@ -4,5 +4,10 @@
         <name>Tests</name>
     </assembly>
     <members>
+        <member name="M:EmailAddress.Parse(Loyc.UString)">
+            <summary>Parses email addresses according to RFC 5322, not including 
+            quoted usernames or non-ASCII addresses (TODO: support Unicode).</summary>
+            <exception cref="T:System.FormatException">The input is not a legal email address.</exception>
+        </member>
     </members>
 </doc>
