@@ -2,7 +2,6 @@
 title: "LeMP Macro Reference Manual"
 layout: article
 date: 20 Mar 2016
-redirectDomain: ecsharp.net
 ---
 
 Look up by category

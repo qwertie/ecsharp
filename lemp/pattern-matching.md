@@ -4,7 +4,6 @@ layout: article
 date: 7 Mar 2016
 tagline: Well, not literally. LeMP/EC# supports pattern matching, ADTs, and tuples, so C# gets all that by transitivity.
 toc: true
-redirectDomain: ecsharp.net
 ---
 
 _March 7, 2016_

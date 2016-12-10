@@ -3,7 +3,6 @@ title: "LeMP Macro Reference: Standard Macros"
 layout: article
 date: Updated 23 Nov 2016
 toc: true
-redirectDomain: ecsharp.net
 ---
 {% raw %}
 

@@ -4,7 +4,6 @@ layout: article
 toc: true
 date: 2 Mar 2016 (edited March 5)
 tagline: "LeMP enhances C# in many ways. Today we'll see how easy it is to write a program to generate C# code, or even analyze existing code."
-redirectDomain: ecsharp.net
 ---
 
 Introduction

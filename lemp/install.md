@@ -1,7 +1,6 @@
 ---
 title: "Installing LeMP"
 layout: article
-redirectDomain: ecsharp.net
 ---
 
 First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub, or just download the [latest release](https://github.com/qwertie/ecsharp/releases). If you cloned the repo, browse to the `Lib\LeMP` folder. If you downloaded the latest release, unzip it to a new folder of your choice, and go there.

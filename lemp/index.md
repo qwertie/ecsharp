@@ -3,7 +3,6 @@ title: "LeMP Home Page"
 layout: page
 tagline: "the Lexical Macro Processor for C#"
 toc: true
-redirectDomain: ecsharp.net
 ---
 ## Introduction ##
 
