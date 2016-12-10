@@ -5,7 +5,7 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
 
-### LLLPG v2.1.0: December 3, 2016 ###
+### LLLPG v2.3.1: December 11, 2016 ###
 
 No functional changes. Updated to match LoycCore and LeMP.
 

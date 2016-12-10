@@ -6,6 +6,16 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.3.1: December 11, 2016 ###
+
+- Note: [Loyc.Essentials was split](http://core.loyc.net/version-history.html) into Loyc.Essentials and Loyc.Math.
+- Bug fix: `replace` now avoids a fatal `StackOverflowException` in case you write `replace($x => ...)` (which matches everything)
+
+### v2.1.2: December 6, 2016 ###
+
+- Bug fix in handling LeMP command-line args that caused `LeMP --editor` to throw on startup.
+
+
 ### v2.1.1: December 4, 2016 ###
 
 - Macro processor now pays attention to `MacroMode.MatchIdentifier`.
