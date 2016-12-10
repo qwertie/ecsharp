@@ -7,65 +7,114 @@ toc: true
 
 Introduction
 ------------
-LeMP is a tool that runs user-defined methods to transform syntax trees into other syntax trees.  Each method takes a syntax tree as input, and returns another one as output. LeMP has a bunch of macros built in, and I will only cover four of the most useful ones in this initial article. You can write your own macros too, but I'll save that for a future article.
+
+LeMP is a tool that transforms a source file by running user-defined code to transform syntax trees into other syntax trees. Code that is designed to transform a file's syntax is called a "macro". LeMP has a bunch of macros built in, and I will only cover a few of the most useful ones in this initial article. You can write your own macros too, which is discussed in a future article.
 
 ![LeMP in Visual Studio](LeMPInVS.png)
 
-I've been working on this and related software for a couple of years, but it's only now that I think this thing is actually useful enough to present to a general audience. Let's get started!
+I've been working on this and related software for a couple of years, but it's only now that I think this thing is actually useful enough to present to a general audience. LeMP comes with a Visual Studio Syntax Highlighter (optional), a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows & Linux. All with complete source code.
 
-LeMP comes with a Visual Studio Syntax Highlighter, a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows & Linux. All with complete source code.
+This article is a sampling of a few of the things you can do with LeMP.
 
-Three really useful macros
---------------------------
+on_finally
+----------
 
-C/C++ famously have lexical macros defined with the `#define` directive. These "macros" are not well-liked for several reasons:
+Java introduced the `try-finally` construct to make sure cleanup happens in case of an exception. This article isn't designed for beginners, so you should already know that it looks something like this:
+
+    {
+        var obj1 = new Class1();
+        try {
+            var obj2 = obj1.MakeAnotherObject();
+            try {
+                obj2.DoSomethingElse();
+                obj1.DoSomethingMore();
+            } finally {
+                obj2.Dispose();
+            }
+        } finally {
+            obj1.Dispose();
+        }
+    }
+
+Try-finally is a little clumsy to use, so C# introduced the `using` statement. Code that uses `using` is not only more compact, it's also easier to write code correctly with it:
+
+    {
+        using (var obj1 = new Class1())
+        using (var obj2 = obj1.MakeAnotherObject()) {
+            obj2.DoSomethingElse();
+            obj1.DoSomethingMore();
+        }
+    }
+
+However, the `using` statement can only be used if you have some kind of object with a `Dispose` method. Occasionally you need to do some other cleanup, like restoring a global variable to an old value. In that case, C# still requires you to use try-finally.
+
+It turns out that it's easier to remember to write cleanup code if you write it _first_, up front, rather than waiting until the end. LeMP's `on_finally { Cleanup(); }` statement allows you to do this. `on_finally` wraps the rest of the statements in the current braced block in a "try" statement, then adds a `finally { Cleanup(); }` at the end.
+
+Here's how the original code above looks like if we use `on_finally` instead of `try-finally`:
+
+    {
+        var obj1 = new Class1();
+        on_finally { obj1.Dispose(); }
+        var obj2 = obj1.MakeAnotherObject();
+        on_finally { obj2.Dispose(); }
+        obj2.DoSomethingElse();
+        obj1.DoSomethingMore();
+    }
+
+This code is translated into the original code you saw above. `on_finally` is perhaps not _quite_ as nice as `using`, but in situations where cleanup isn't as simple as calling `Dispose()`, `on_finally` is more convenient than using `try-finally` directly.
+
+Code find-and-replace
+---------------------
+
+C and C++ famously have lexical macros defined with the `#define` directive. These "macros" are not well-liked for several reasons:
 
 1. **Oblivious to structure**: C/C++ macros work at the lexical level, basically pasting text. Since they do not understand the underlying language, you can have bugs like this one:
 
-~~~cpp
-	/// Input
-	#define SQUARE(x) x * x
-	const int one_hundred = SQUARE(5+5)
-	/// Output
-	const int one_hundred = 5+5 * 5+5;  // oops, that's 35
-~~~
+    ~~~cpp
+    	// Input
+    	#define SQUARE(x)  x * x
+    	const int one_hundred = SQUARE(5 + 5)
+	
+    	// Output
+    	const int one_hundred = 5 + 5 * 5 + 5;  // oops, that's 35
+    ~~~
 
 	In contrast, LeMP parses the entire source file, _then_ manipulates the syntax tree. Converting the tree back to C# code is the very last step, and this step will do things like automatically inserting parentheses to prevent this kind of problem.
 
-2. **Spooky action at a distance**: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `replace` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently.
+2. **Spooky action at a distance**: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `replace` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently (well, except the Visual Studio plugin can't).
 
-3. **Limited ability**: there just aren't that many things you can accomplish with C/C++ macros; With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article, and not super convenient yet).
+3. **Limited ability**: there just aren't that many things you can accomplish with C/C++ macros. With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article).
 
 4. **Weird language**: the C/C++ preprocessor has a different syntax from normal C/C++. In contrast, LeMP code simply looks like some kind of enhanced C#.
 
-So let's start with `replace`, the LeMP equivalent of `#define`.
+So let's talk about `replace`, the LeMP equivalent of `#define`.
 
 ### Replace ###
 
 `replace() {...}` is a macro that finds things that match a given pattern and replaces all instances of the pattern with some other pattern. For example,
 
 ~~~csharp
-/// Input
+// Input
 replace (MB => MessageBox.Show, 
-		 FMT($fmt, $arg) => string.Format($fmt, $arg))
+         FMT($fmt, $arg) => string.Format($fmt, $arg))
 {
 	MB(FMT("Hi, I'm {0}...", name));
 	MB(FMT("I am {0} years old!", name.Length));
 }
 
-/// Output
+// Output of LeMP
 MessageBox.Show(string.Format("Hi, I'm {0}...", name));
 MessageBox.Show(string.Format("I am {0} years old!", name.Length));
 ~~~
 
 The braces are optional. If the braces are present, replacement occurs only inside the braces; if you end with a semicolon instead of braces, replacement occurs on all remaining statements in the same block.
 
-This example requires `FMT` to take exactly two arguments called `$fmt` and `$arg`, but we could also capture any number of arguments or statements by adding the `params` keyword as shown here:
+As you can see, placeholders like `$fmt` and `$arg` are used to "capture" expressions, which are then copied to the output. In the example above, `$arg` captures `name` inside the first call to `FMT`, and in the second call, it captures `name.Length`. Placeholders marked with `$` can capture a syntax tree of any size, from a single integer up to an entire class definition.
 
-	FMT($fmt, $(params args)) => string.Format($fmt, $args) // 1 or more args
-	FMT($(params args)) => string.Format($args)             // 0 or more args
+This example requires `FMT` to take exactly two arguments called `$fmt` and `$arg`, but we could also capture _any number_ of arguments or statements by adding the `..` operator as shown here:
 
-**Note**: `$(...args)` can now be used instead of `$(params args)`. The new `...` operator was added mainly to support [pattern matching](pattern-matching.html), but it seemed appropriate to support it in this situation, too.
+	FMT($fmt, $(..args)) => string.Format($fmt, $args) // 1 or more arguments
+	FMT($(..args)) => string.Format($args)             // 0 or more arguments
 
 `replace` is more sophisticated tool than C's `#define` directive. Consider this example:
 
@@ -81,14 +130,13 @@ replace ({
 		}
 	}
 })
-{
-	var numbers = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	Console.WriteLine("I wanna tell you about my digits!")
-	foreach (var even in numbers.Where(n => n % 2 == 0))
-		Console.WriteLine("{0} is even!", even);
-	foreach (var odd  in numbers.Where(n => n % 2 == 1))
-		Console.WriteLine("{0} is odd!", odd);
-}
+
+var numbers = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+Console.WriteLine("I wanna tell you about my digits!")
+foreach (var even in numbers.Where(n => n % 2 == 0))
+	Console.WriteLine("{0} is even!", even);
+foreach (var odd  in numbers.Where(n => n % 2 == 1))
+	Console.WriteLine("{0} is odd!", odd);
 ~~~
 
 Here, `replace` searches for `foreach` loops that have a specific form, and replaces them with a more optimized form:
@@ -112,49 +160,126 @@ foreach (var n in numbers) {
 }
 ~~~
 
-### Unroll ###
+### Replace: method-style ###
 
-`unroll..in` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike `replace`, `unroll` can only match simple identifiers on the left side of `in`.
+There is an alternate syntax for `replace`, which looks like you're defining a method (or an operator). Here is a simple example:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace MakeSquare($T) { 
+	$T Square($T x) { return x*x; }
+}
+MakeSquare(int);
+MakeSquare(double);
+MakeSquare(float);
+~~~
 
 ~~~csharp
-/// Input
-void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+// Output of LeMP
+int Square(int x) {
+  return x * x;
+}
+double Square(double x) {
+  return x * x;
+}
+float Square(float x) {
+  return x * x;
+}
+~~~
+</div>
+
+`replace` is a great way to construct a series of very similar methods, as this example shows. First I define `MakeSquare`, a macro that takes a single argument. Technically, `$T` can capture any syntax tree, but for this example to work properly, it must be a type name. `MakeSquare` uses that argument to generate a method called `Square`.
+
+You might run into a small problem when you're doing this: the parser is unaware of what macros exist so it has no idea that `MakeSquare` is expecting a type name as its argument (`replace` itself is also unaware of this fact, but that's another story). Because of this, certain types cannot be passed to `MakeSquare`. Most notably, a nullable type like `MakeSquare(int?)` will cause a syntax error. Use `MakeSquare(Nullable<int>)` instead.
+
+Before I give you the second example I'd like to introduce a special macro called `concatId`:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+concatId(Con, sole).WriteLine("What the...?");
+~~~
+
+~~~csharp
+// Output of LeMP
+Console.WriteLine("What the...?");
+~~~
+</div>
+
+`concatId` combines two identifiers into a single identifier; in this case `Con` is combined with `sole` to get `Console`. This may be useful inside a `replace` macro for deriving new names from  existing names, which is what we will do in this next example:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+replace SaveAndRestore($var = $newValue) {
+	replace (TMP => concatId(old, $var));
+	var TMP = $var;
+	$var = $newValue;
+	on_finally { $var = TMP; }
+}
+
+string _curTask = "<No task running>";
+
+void DoPizza(IEnumerable<Topping> toppings)
 {
-	unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
-		if (VAR != null) throw new ArgumentNullException(nameof(VAR));
+	SaveAndRestore(_curTask = "Make pizza");
+	var d = PrepareDough();
+	FlattenDough(d);
+	AddToppings(d, toppings);
+	Bake(d, TimeSpan.FromMinutes(12));
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+string _curTask = "<No task running>";
+
+void DoPizza(IEnumerable<Topping> toppings)
+{
+	var old_curTask = _curTask;
+	_curTask = "Make pizza";
+	try {
+		var d = PrepareDough();
+		FlattenDough(d);
+		AddToppings(d, toppings);
+		Bake(d, TimeSpan.FromMinutes(12));
+	} finally {
+		_curTask = old_curTask;
 	}
-	...
-}
-/// Output
-void SetInfo(string firstName, string lastName, object data, string phoneNumber)
-{
-	if (firstName != null) 
-		throw new ArgumentNullException(nameof("firstName"));
-	if (lastName != null)
-		throw new ArgumentNullException(nameof("lastName"));
-	if (data != null)
-		throw new ArgumentNullException(nameof("data"));
-	if (phoneNumber != null)
-		throw new ArgumentNullException(nameof("phoneNumber"));
-	...
 }
 ~~~
+</div>
 
-This example also used the `stringify()` macro to convert each variable name to a string. It's one of the simplest macros; here's its implementation in [`StandardMacros.cs`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/StandardMacros.cs):
+Here I've used both styles of `replace`, nested inside each other. One of these `replace` commands changes `TMP` to `concatId(old, $var)`. Later in the code, where it says `SaveAndRestore(_curTask = "Make pizza")`, the syntax variable `$var` becomes `_curTask`, so `concatId(old, $var)` turns into `concatId(old, _curTask)` before the replacement actually occurs. So in effect, this example creates a variable called `old_curTask` to hold the old value of `_curTask`. Then, `on_finally` is used to restore the old value of `_curTask` at the end of the method.
+
+`SaveAndRestore` requires that its single argument is some kind of assignment statement. If it's not - for example, if you write
+
+    SaveAndRestore(a + b);
+
+you'll get a warning message that "1 macro(s) saw the input and declined to process it", and `SaveAndRestore(a + b);` will appear unchanged in the output.
+
+Method-style `replace` can also match operators. For example
+
+<div class='sbs' markdown='1'>
+~~~csharp
+[Passive]
+replace operator=(Foo[$index], $value) {
+	Foo.SetAt($index, $value);
+}
+x = Foo[y] = z;
+~~~
 
 ~~~csharp
-[LexicalMacro(@"stringify(expr)", "Converts an expression to a string "+
-	"(note: original formatting is not preserved)")]
-public static LNode stringify(LNode node, IMacroContext context)
-{
-	if (node.ArgCount != 1)
-		return null; // reject
-	return F.Literal(ParsingService.Current.Print(node.Args[0], 
-					 context.Sink, ParsingService.Exprs));
-}
+// Output of LeMP
+x = Foo.SetAt(y, z);
 ~~~
+</div>
 
-Some developers have to implement the `INotifyPropertyChanged` interface a lot. Implementing this interface often involves a lot of boilerplate and code duplication, and it's error prone because the compiler won't tell you if the string you send to `PropertyChanged` is incorrect (Plus, I would personally question whether `INotifyPropertyChanged` is the right way to accomplish change notification, but that's a subject for another day). Using normal C#, you can avoid some code duplication by sharing common code in a common method, like this:
+This example has a couple of interesting elements. First, notice that the first parameter of this "operator" is `Foo[$index]`. This means that the macro has no effect unless the left-hand side of `=` matches `Foo[$index]`. For example, `Bar[index]` would not match this pattern, but `Foo[x + y]` would. Another intersting thing is the `[Passive]` attribute. This tells the macro processor not to print a warning when an `=` operator is found that does not match the pattern. In the code afterward there are two usages of the `=` operator (the outer one, `x = (Foo[y] = z)`, and the inner one, `Foo[y] = z`). Only the inner one matches and is replaced.
+
+Technically, the method-style `replace` macro is more than stylistically different from the original `replace` macro described above. The first `replace` _directly_ performs a search-and-replace of the code that follows it. On the other hand, method-style `replace` actually _creates a new macro by the specified name_, which allows any replacements it performs to happen later on, interleaved with other macro evaluations. However, this fact doesn't make a difference in most cases.
+
+### Real-world use case: INotifyPropertyChanged ###
+
+Some developers have to implement the [`INotifyPropertyChanged`](https://msdn.microsoft.com/en-us/library/system.componentmodel.inotifypropertychanged(v=vs.110).aspx) interface a lot. Implementing this interface often involves a lot of boilerplate and code duplication, and it's easy to make mistakes as you copy, paste and modify your properties. Using normal C#, you can avoid some code duplication by sharing common code in a common method, like this:
 
 ~~~
 public class DemoCustomer : INotifyPropertyChanged
@@ -165,7 +290,7 @@ public class DemoCustomer : INotifyPropertyChanged
 	protected bool ChangeProperty<T>(ref T field, T newValue, 
 		string propertyName, IEqualityComparer<T> comparer = null)
 	{
-		comparer ??= EqualityComparer<T>.Default;
+		comparer = comparer ?? EqualityComparer<T>.Default;
 		if (field == null ? newValue != null : !field.Equals(newValue))
 		{
 			field = newValue;
@@ -194,69 +319,139 @@ public class DemoCustomer : INotifyPropertyChanged
 	public  string CompanyName
 	{
 		get { return _companyName; }
-		set { ChangeProperty(ref _companyName, value, "AdditionalData"); }
+		set { ChangeProperty(ref _companyName, value, "CompanyName"); }
 	}
 
 	private string _phoneNumber = "";
 	public  string PhoneNumber
 	{
 		get { return _phoneNumber; }
-		set { ChangeProperty(ref _phoneNumber, value, "PhoneNumber"); }
+		set { ChangeProperty(ref _customerName, value, "PhoneNumber"); }
 	}
 }
 ~~~
 
-That's not bad, but with `unroll` we can define those four properties more quickly and without making the mistake I just made (did you spot the mistake?):
+That's not too bad, but you may need to repeat the `ChangeProperty` method in multiple classes (in some cases), and there is still some code duplication, and thus, opportunities to make mistakes (did you notice the mistake in the code above?)
+
+Here's how you can factor out the common stuff into a `replace` macro:
 
 ~~~csharp
-unroll ((TYPE, PROP_NAME) in (
-	(string, CustomerName), 
-	(object, AdditionalData), 
-	(string, CompanyName), 
-	(string, PhoneNumber)
-)) {
-	replace(FIELD_NAME => concatId(_, PROP_NAME));
-
-	private TYPE FIELD_NAME = "";
-	public  TYPE PROP_NAME
-	{
-		get { return FIELD_NAME; }
-		set { ChangeProperty(ref FIELD_NAME, value, nameof(PROP_NAME)); }
-	}
-}
-~~~
-
-This code produces four properties, and each additional property only requires one line of code! Here's the first output:
-
-~~~
-private string _CustomerName = "";
-public string CustomerName
+replace ImplementNotifyPropertyChanged({ $(..properties); })
 {
-	get {
-		return _CustomerName;
+	// ***
+	// *** Generated by ImplementNotifyPropertyChanged
+	// ***
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected bool ChangeProperty<T>(ref T field, T newValue, 
+		string propertyName, IEqualityComparer<T> comparer = null)
+	{
+		comparer ??= EqualityComparer<T>.Default;
+		if (field == null ? newValue != null : !field.Equals(newValue))
+		{
+			field = newValue;
+			if (PropertyChanged != null)
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			return true;
+		}
+		return false;
 	}
-	set {
-		ChangeProperty(ref _CustomerName, value, "CustomerName");
+	
+	// The [$(..attrs)] part of this example is puts all attributes into a list called 
+	// `attrs`. This is important because in EC#/LeMP, modifiers like `public` are 
+	// considered to be attributes. So we need this to preserve `public` in the output.
+	replace ({
+		[$(..attrs)] $Type $PropName { get; set; }
+	} => {
+		replace (FieldName => concatId(_, $PropName));
+		private $Type FieldName;
+		[$(..attrs)]
+		$Type $PropName {
+			get { return FieldName; }
+			set { ChangeProperty(ref FieldName, value, nameof($PropName)); }
+		}
+	});
+
+	$properties;
+}
+
+The triply-nested `replace` commands may seem a little complicated, but you can save it in a separate file, such as ImplementNPC.ecs, and forget about those implementation details. Then you can use it in any of your source files like this:
+
+~~~csharp
+includeFile("ImplementNPC.ecs");
+
+public class DemoCustomer : INotifyPropertyChanged
+{
+	public DemoCustomer(string n)
+	{
+		CustomerName = n;
+	}
+
+	ImplementNotifyPropertyChanged
+	{
+		public string CustomerName { get; set; }
+		public object AdditionalData { get; set; }
+		public string CompanyName { get; set; }
+		public string PhoneNumber { get; set; }
 	}
 }
 ~~~
 
-This code is using two extra tricks beyond just `unroll` and `replace`:
+Nice. **Note:** The `[$(..attrs)]` part of this example requires LeMP version 2.3.0 or higher.
 
-- `nameof(PROP_NAME)` converts PROP_NAME to a string (it was a part of LeMP before it was a part of C# 6).
-- `concatId(_, PROP_NAME)` concatenates two identifiers to produce a new identifier; in this case I'm just adding an underscore to the beginning of the `PROP_NAME`. A synonym for `concatId` is ``_`##`PROP_NAME``, which rembles the `##` operator in C/C++, and you can even write `##(_, PROP_NAME)`. Finally, you can use this to convert strings to identifiers (`concatId("dog")`) or concatenate more than two things (`concatId("dog", 'h', 0, use)`).
+### unroll & notnull ###
 
-Please note that the `replace` command is actually required in this example, because the parser understands that 
+`unroll..in` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike `replace`, `unroll` can only match simple identifiers on the left side of `in`.
 
-	private TYPE FIELD_NAME = "";
+~~~csharp
+/// Input
+void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+{
+	unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
+		if (VAR != null) throw new ArgumentNullException(stringify(VAR));
+	}
+	...
+}
+/// Output
+void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+{
+	if (firstName != null) 
+		throw new ArgumentNullException("firstName");
+	if (lastName != null)
+		throw new ArgumentNullException("lastName");
+	if (data != null)
+		throw new ArgumentNullException("data");
+	if (phoneNumber != null)
+		throw new ArgumentNullException("phoneNumber");
 
-is creating a variable, whereas
+  implementation here;
+}
+~~~
 
-	private TYPE concatId(_, PROP_NAME) = "";
+This example also used the `stringify()` macro to convert each variable name to a string.
 
-would just confuse the parser: the code appears to be declaring a method called `concatId` and assigning a value to it.
+However you could also just use the `notnull` attribute to get a similar effect, albeit with a different exception type:
 
-**Note**: when using `replace` inside `unroll` one should generally include curly braces (i.e. `replace (...) {...}`) so that there are two sets of braces in total. The reason is that when `unroll` is done, the outer braces disappear, which means that if you didn't use braces with `replace`, your `replace` command applies to the _entire_ rest of the block instead of the small bit of code you intended.
+<div class='sbs' markdown='1'>
+~~~csharp
+void SetInfo(notnull string firstName, notnull string lastName, notnull object data, notnull string phoneNumber)
+{
+  implementation here;
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+{
+	Contract.Assert(firstName != null, "Precondition failed: firstName != null");
+	Contract.Assert(lastName != null, "Precondition failed: lastName != null");
+	Contract.Assert(data != null, "Precondition failed: data != null");
+	Contract.Assert(phoneNumber != null, "Precondition failed: phoneNumber != null");
+  implementation here;
+}
+~~~
+</div>
 
 ### Automagic field generation ###
 
@@ -366,14 +561,12 @@ To use the custom tool,
 3. Right-click your .ecs file in Solution Explorer and click Properties
 4. In the Properties panel, change the Custom Tool field to "LeMP" (it's not case sensitive). An output file should appear with an extension of `.out.cs`.
 
-I hope you don't get the dreaded "Cannot find custom tool 'LeMP' on this system." because that error has many different causes and I have worked very hard to try to avoid it.
-
 By the way, if you'd like me to write an article about how to write VS syntax highlighters, I can do that too... I already wrote one for [Single file generators](http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator), after all...
 
 Introducing LLLPG
 -----------------
 
-There's one more macro I have to tell you about, and it's huge - literally, it comes in its own 353 KB assembly. That's pretty big for a macro.
+There's one more macro I'll mention, and it's huge - literally, it comes in its own 353 KB assembly. That's pretty big for a macro.
 
 LLLPG, the Loyc LL(k) Parser Generator, generates parsers and lexers from LL(k) grammars. It's best illustrated by an example. Here's a function that parses integers:
 
@@ -386,14 +579,14 @@ static class MyParser
 	// Configure the parser generator to read data from 'src'
 	LLLPG(lexer(inputSource(src), inputClass(LexerSource)));
 	
-	public static rule int ParseInt(string input) @[
+	public static rule int ParseInt(string input) @{
 		{var src = (LexerSource)input;}
 		' '*
 		(neg:'-')?
 		(d:'0'..'9' {$result = $result * 10 + ($d - '0');})+ 
 		{if (neg == '-') return -$result;}
 		// LLLPG returns $result automatically
-	];
+	};
 }
 
 /// Output
@@ -445,19 +638,20 @@ To use this macro you also need an implementation of the API functions that you 
 Introducing Enhanced C#
 -----------------------
 
-Enhanced C# is normal C# with a bunch of extra syntax. This actually has nothing to do with LeMP, aside from the fact that a some of the new syntax exists simply to allow macros to make use of it. Unlike some other macro systems, LeMP and EC# **do not** allow you to define new syntax. EC# is a "fixed-function" parser, not a programmable one.
+Enhanced C# is normal C# with a bunch of extra syntax. This actually has nothing to do with LeMP, aside from the fact that a lot of the new syntax exists simply to allow macros to make use of it. Unlike some other macro systems, LeMP and EC# **do not** allow macros to define new syntax. EC# is a "fixed-function" parser, not a programmable one.
 
 A few bits of this syntax have been used in the article already:
 
+- The `$` and `..` operators, which are used for capturing syntax trees as you have seen.
+- Word attributes: I observed that normal C# has something called "contextual keywords" like `yield` and `partial` that are normally _not_ keywords, unless used in a specific context. I generalized this idea by allowing my parser to treat _any_ identifier as a contextual keyword. Thus `set` is a contextual keyword in `set string _existingField` and `rule` is a contextual keyword in `public static rule int ParseInt(string input)`.
 - Macro blocks: there is a new statement of the form `identifier (args) {statements;}`. It is used to invoke macros, although there are also many macros that don't use this syntax. Macro blocks can also have the simpler form `identifier {statements;}`. Property getters and setters like `get {...}` and `set {...}` are actually parsed using this rule.
 - Methods as binary operators: given a method like `Add(x, y)`, you are allowed to write ``x `Add` y`` instead. It means the same thing.
-- Attributes on expressions: words like `public`, `static`, `override`, and `params` are "attribute keywords" that modify the meaning of whatever comes afterward. In normal C# you can only put these attributes on things like fields, methods, and classes; but enhanced C# allows you to put attributes on _any_ expression, in case a macro might use the attribute. That explains why `Constructor(public readonly int Foo) {}` is a valid statement. It also explains why `$(params args)` is used in the `replace` macro: the `replace` macro is taking advantage of the fact that `params` is already defined as a C# attribute keyword!
-- Word attributes: I observed that normal C# has something called "contextual keywords" like `yield` and `partial` that are normally _not_ keywords, unless used in a specific context. I generalized this idea by allowing my parser to treat _any_ identifier as a contextual keyword. Thus `set` is a contextual keyword in `set string _existingField` and `rule` is a contextual keyword in `public static rule int ParseInt(string input)`.
+- Attributes on expressions: words like `public`, `static`, `override`, and `params` are "attribute keywords" that modify the meaning of whatever comes afterward. In normal C# you can only put these attributes on things like fields, methods, and classes; but enhanced C# allows you to put attributes on _any_ expression, in case a macro might use the attribute. That explains why `Constructor(public readonly int Foo) {}` is a valid statement.
 - Token trees: as I mentioned, EC# is a fixed language with a fixed syntax. However, one of the bits of syntax is called a token tree, which has the form `@{ list of tokens }`. A token tree is a collection of tokens with parentheses, brackets and braces grouped together (e.g. `@{ ] }` is an invalid token tree because the closing bracket isn't matched with an opening bracket). Long after the file is parsed, the token tree can be reparsed by a macro (e.g. LLLPG) to give meaning to its contents.
 
 EC# includes many other adjustments to the syntax of C#, and they are very nearly 100% backward compatible with standard C#, although the parser may contain bugs and I welcome your bug reports.
 
-You might be wondering, "hey, didn't you have to do a lot of work to extend the C# parser to support all this extra syntax?" and the answer is: actually, no, not really; I mean it was a lot of work to parse C# from scratch, but in fact the Enhanced C# parser is _less_ complex than the standard one. Last time I checked, Roslyn's parser was 10,525 lines of code (442 KB), while the EC# parser is 1979 lines of code (with comparable quantities of comments in both). EC# uses LLLPG, with 5160 lines of generated output code (137 KB).
+You might be wondering, "hey, didn't you have to do a lot of work to extend the C# parser to support all this extra syntax?" and the answer is: actually, no, not really; I mean it was a lot of work to parse C# from scratch, but in fact the Enhanced C# parser is _less_ complex than the standard one. Last time I checked, Roslyn's parser was 10,525 lines of code (442 KB), while the EC# parser is about 2500 lines of code (with comparable quantities of comments in both). EC# uses LLLPG, with about 5000 lines of generated output code (137 KB).
 
 How can it be smaller when it has more syntax? Well, LINQ isn't done yet, so that's a factor. But in many ways the syntax of EC# is more _regular_ than standard C#; for instance, a method's formal parameters are essentially just a list of expressions, so this method is parsed successfully:
 
@@ -471,7 +665,7 @@ Effectively, I've shifted some of the burden of checking valid input to later st
 
 		replace ($obj.ToString() => (string)$obj) {...}
 
-    The expression `$obj.ToString() => (string)$obj` re-uses the lambda operator `=>` for a new purpose it was never designed for. In order for this to parse successfully, the lambda operator is treated almost identically to other operators like `+` or `=`; it merely has a different precedence and enables recognition of unassigned variable declarations on the left-hand side. By _not_ treating `=>` as a special case, I simultaneously made the parser simpler and "added" a new form of operator overloading for it (which, to be clear, is completely different than the operator overloading you're used to - it's available only to macros).
+    The expression `$obj.ToString() => (string)$obj` re-uses the lambda operator `=>` for a new purpose it was never designed for. In order for this to parse successfully, the lambda operator is treated almost identically to other operators like `+` or `=`; it merely has a different precedence and enables recognition of unassigned variable declarations on the left-hand side. By _not_ treating `=>` as a special case, I simultaneously made the parser simpler and added a new form of operator overloading for it (which, to be clear, is completely different than the operator overloading you're used to - it's available only to macros).
 
 Everything is an expression
 ---------------------------

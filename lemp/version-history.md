@@ -6,6 +6,11 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.1.1: December 4, 2016 ###
+
+- Macro processor now pays attention to `MacroMode.MatchIdentifier`.
+- EC# & LES printers now ignore obsolete trivia like `#trivia_SLCommentBefore` (use `#trivia_SLComment` instead).
+
 ### v2.0.0: November 23, 2016 ###
 
 - `IParsingService` and other APIs were changed in v2.0 and v2.1; for details see the [LoycCore release notes](http://core.loyc.net/version-history.html).
