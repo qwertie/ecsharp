@@ -160,6 +160,11 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\ExtensionMethods\LinqToCollections.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LinqToCollections.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Collections\HelperClasses\SelectListSource.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -177,11 +182,6 @@
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
-    <Compile Include="Collections\ExtensionMethods\LinqToCollections.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>LinqToCollections.ecs</DependentUpon>
-    </Compile>
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsSparse.cs" />
     <Compile Include="Collections\ExtensionMethods\Range.cs" />
@@ -285,7 +285,7 @@
     <None Include="app.config" />
     <None Include="Collections\ExtensionMethods\LinqToCollections.ecs">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>LinqToCollections.cs</LastGenOutput>
+      <LastGenOutput>LinqToCollections.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
