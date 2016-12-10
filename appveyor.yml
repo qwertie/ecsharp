@@ -1,4 +1,4 @@
-version: 2.3.0.{build}
+version: 2.3.1.{build}
 
 before_build:
     - nuget restore Loyc-Slim.sln
@@ -6,7 +6,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=2.3.0
+    - set SEMVER=2.3.1
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
@@ -23,9 +23,9 @@ after_build:
     # Package ends up in LoycCore.$SEMVER.nupkg
 
 test_script:
-    # Unfortunately, test set 7 (LLLPG) sometimes fails due to nondeterminism.
-    - Bin\Release.NET45\Tests.exe 1234
-    - Bin\Release.NET45\Tests.exe 56
+    # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
+    - Bin\Release.NET45\Tests.exe 12345
+    - Bin\Release.NET45\Tests.exe 67
 
 assembly_info:
     patch: true

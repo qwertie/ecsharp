@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.1.0.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.3.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -567,8 +567,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if (CanParse(context, 0, out prec)) {
-								if ((TT) LA(0 + 1) != TT.Newline)
+							if ((TT) LA(0 + 1) != TT.Newline) {
+								if (CanParse(context, 0, out prec))
 									goto matchExpr;
 								else
 									goto stop;

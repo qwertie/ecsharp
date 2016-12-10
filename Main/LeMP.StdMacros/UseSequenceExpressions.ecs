@@ -42,7 +42,7 @@ namespace LeMP
 			+"but its name comes from the fact that it is usually used to allow variable declarations. "
 			+"#useSequenceExpressions expects to be used in a declaration context, "
 			+"e.g. at class or namespace level, not within a function.",
-			"#useSequenceExpressions", Mode = MacroMode.NoReprocessing)]
+			"#useSequenceExpressions", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifier)]
 		public static LNode useSequenceExpressions(LNode node, IMacroContext context)
 		{
 			(var args, var body) = context.GetArgsAndBody(true);
@@ -51,7 +51,7 @@ namespace LeMP
 
 			{
 				context.ScopedProperties[_useSequenceExpressionsIsRunning] = G.BoxedTrue;
-				on_finally { context.ScopedProperties.Remove(_useSequenceExpressionsIsRunning); };
+				on_finally { context.ScopedProperties.Remove(_useSequenceExpressionsIsRunning); }
 				body = context.PreProcess(body);
 			}
 			var ers = new EliminateRunSequences(context);

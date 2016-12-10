@@ -44,6 +44,17 @@ namespace LeMP.Tests
 				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b"")));");
 			TestEcs("quote { a; b; }",
 				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b"")));");
+			TestEcs("quote([a, b] /* trivia is ignored */ $foo)",
+			       @"foo.PlusAttrs(LNode.List(LNode.Id((Symbol) ""a""), LNode.Id((Symbol) ""b"")))");
+		}
+
+		[Test]
+		public void TestCodeQuoteWithTrivia()
+		{
+			TestEcs("quoteWithTrivia(/* cool! */ $foo)", 
+			       @"foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")))");
+			TestEcs("rawQuoteWithTrivia(/* cool! */ $foo)",
+			       @"LNode.Call(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")), CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""foo"")))");
 		}
 	}
 }

@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.0.1.0
+// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.3.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -174,13 +174,22 @@ namespace Loyc.Ecs.Parser
 			var oldState = _tentative;
 			_tentative = new TentativeState(true);
 			{
-				try { bool failed = false; result.Result = Expr(StartExpr).PlusAttrs(attrs); if ((LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma)) {
+				try {
+					bool failed = false;
+					result.Result = Expr(StartExpr).PlusAttrs(attrs);
+					if ((LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma)) {
 						failed = true;
-					} result.Errors = _tentative.DeferredErrors; result.InputPosition = InputPosition; if (failed || _tentative.LocalErrorCount != 0) {
+					}
+					result.Errors = _tentative.DeferredErrors;
+					result.InputPosition = InputPosition;
+					if (failed || _tentative.LocalErrorCount != 0) {
 						// error(s) occurred.
 						InputPosition = result.OldPosition;
 						return null;
-					} } finally { _tentative = oldState; }
+					}
+				} finally {
+					_tentative = oldState;
+				}
 			
 			}
 			return Apply(result);	// must Apply after finally block
@@ -197,7 +206,11 @@ namespace Loyc.Ecs.Parser
 			var oldState = _tentative;
 			_tentative = new TentativeState(true);
 			{
-				try { bool failed = false; int _; var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr); if ((cat != StmtCat.MethodOrPropOrVar)) {
+				try {
+					bool failed = false;
+					int _;
+					var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr);
+					if ((cat != StmtCat.MethodOrPropOrVar)) {
 						failed = true;
 						result.Result = F.Missing;
 					} else {
@@ -206,11 +219,17 @@ namespace Loyc.Ecs.Parser
 						if ((!hasInitializer && !allowUnassigned)) {
 							Error(-1, "An unassigned variable declaration is not allowed in this context");
 						}
-					} result.Errors = _tentative.DeferredErrors; result.InputPosition = InputPosition; if (failed || _tentative.LocalErrorCount != 0) {
+					}
+					result.Errors = _tentative.DeferredErrors;
+					result.InputPosition = InputPosition;
+					if (failed || _tentative.LocalErrorCount != 0) {
 						// error(s) occurred.
 						InputPosition = result.OldPosition;
 						return null;
-					} } finally { _tentative = oldState; }
+					}
+				} finally {
+					_tentative = oldState;
+				}
 			
 			}
 			return Apply(result);	// must Apply after finally block
@@ -3998,8 +4017,8 @@ namespace Loyc.Ecs.Parser
 			// Line 1627: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
-				if (isArray) {
-					if (Down(0) && Up(HasNoSemicolons())) {
+				if (Down(0) && Up(HasNoSemicolons())) {
+					if (isArray) {
 						la1 = LA(1);
 						if (la1 == TT.RBrace) {
 							var lb = MatchAny();

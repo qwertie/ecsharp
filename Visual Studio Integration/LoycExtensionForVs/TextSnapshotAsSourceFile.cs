@@ -81,7 +81,7 @@ namespace Loyc.VisualStudio
 			if (pos.Line >= _ss.LineCount)
 				return _ss.Length;
 			var line = _ss.GetLineFromLineNumber(pos.Line);
-			return line.Start.Position + Range.PutInRange(pos.PosInLine - 1, 0, line.Length + 1);
+			return line.Start.Position + (pos.PosInLine - 1).PutInRange(0, line.Length + 1);
 		}
 		public int LineToIndex(int lineNo)
 		{

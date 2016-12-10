@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.0.1.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.3.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -255,8 +255,8 @@ namespace LeMP
 		static LNode GetVarName(LNode arg)
 		{
 			{
-				LNode tmp_0 = null, variableName;
-				if (arg.Calls(CodeSymbols.Var, 2) && (tmp_0 = arg.Args[1]) != null && tmp_0.Calls(CodeSymbols.Assign, 2) && (variableName = tmp_0.Args[0]) != null || arg.Calls(CodeSymbols.Var, 2) && (variableName = arg.Args[1]) != null)
+				LNode tmp_10 = null, variableName;
+				if (arg.Calls(CodeSymbols.Var, 2) && (tmp_10 = arg.Args[1]) != null && tmp_10.Calls(CodeSymbols.Assign, 2) && (variableName = tmp_10.Args[0]) != null || arg.Calls(CodeSymbols.Var, 2) && (variableName = arg.Args[1]) != null)
 					return variableName;
 				else
 					return arg.WithoutAttrs();
@@ -314,7 +314,12 @@ namespace LeMP
 			private LNode FullMethodName;
 			private IMacroContext Context;
 			internal CodeContractRewriter(LNode returnType, LNode fullMethodName, IMacroContext context)
-			{ ReturnType = returnType; FullMethodName = fullMethodName; Context = context; PrependStmts = new VList<LNode>(); }
+			{
+				ReturnType = returnType;
+				FullMethodName = fullMethodName;
+				Context = context;
+				PrependStmts = new VList<LNode>();
+			}
 		
 			// Looks for contract attributes in a list and creates statements that 
 			// should be inserted at the beginning of the method that those attributes 

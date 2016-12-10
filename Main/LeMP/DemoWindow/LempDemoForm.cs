@@ -16,15 +16,20 @@ namespace TextEditor
 	public partial class LempDemoForm : Form
 	{
 		string DemoText =
+			"#ecs;\n" +
 			"using System(, .Collections.Generic);\n" +
 			"using Loyc(, .Collections, .Syntax, .Syntax.Lexing);\n" +
 			"namespace Example;\n" +
-			"replace (w => Console.WriteLine);\n\n" +
-			"public class Program {\n" +
-			"	public static void Main(string[] args) {\n" +
-			"		w(\"Hello, World!\");\n" +
-			"	}\n" +
-			"}\n";
+			"\n" +
+			"// Create a class with some properties\n" +
+			"public class Class\n" +
+			"{\n" +
+			"	public this(\n" +
+			"	       public string PropertyA { get; private set; },\n" +
+			"	       public Symbol PropertyB { get; private set; } = @@Hello) {}\n" +
+			"}\n\n" +
+			"static string RemoveCommentFromEndOfLine(string line) =>\n" +
+			"	line.IndexOf(\"//\")::i > -1 ? line.Substring(0, i) : line;\n";
 
 		public LempDemoForm()
 		{
@@ -64,6 +69,7 @@ namespace TextEditor
 			fileTabs.Controls.Add(tab);
 
 			panel.Editor.Text = initialText;
+			panel.SetModifiedFlag(false);
 			return panel;
 		}
 

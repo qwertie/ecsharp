@@ -151,6 +151,16 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="LES\Les2LexerGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Les2LexerGrammar.les</DependentUpon>
+    </Compile>
+    <Compile Include="LES\Les2ParserGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Les2ParserGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="LES\Les3LanguageService.cs" />
     <Compile Include="LES\Les3Lexer.out.cs">
       <AutoGen>True</AutoGen>
@@ -164,16 +174,6 @@
     </Compile>
     <Compile Include="LES\Les3PrettyPrinter.cs" />
     <Compile Include="LES\Les3Printer.cs" />
-    <Compile Include="LES\Les2LexerGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Les2LexerGrammar.les</DependentUpon>
-    </Compile>
-    <Compile Include="LES\Les2ParserGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Les2ParserGrammar.les</DependentUpon>
-    </Compile>
     <Compile Include="LES\Les3.cs" />
     <Compile Include="LES\SpecialLiteral.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
@@ -284,12 +284,12 @@
     </None>
     <None Include="LES\Les2LexerGrammar.les">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>Les2LexerGrammar.cs</LastGenOutput>
+      <LastGenOutput>Les2LexerGrammar.out.cs</LastGenOutput>
     </None>
     <None Include="LES\Les2ParserGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
-      <LastGenOutput>Les2ParserGrammar.cs</LastGenOutput>
+      <LastGenOutput>Les2ParserGrammar.out.cs</LastGenOutput>
     </None>
     <None Include="LES\Les3Parser.ecs">
       <Generator>LeMP</Generator>

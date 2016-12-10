@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 1.9.0.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.3.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -9,16 +9,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc;
-using Loyc.Collections;
-using Loyc.Syntax;
-using Loyc.Ecs;
+using Loyc;	// For Symbol
+using Loyc.Collections;	// For VList<LNode>
+using Loyc.Syntax;	// For LNode
+using Loyc.Ecs;	// For EcsLanguageService
 using S = Loyc.Syntax.CodeSymbols;
+
 namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", "Generates multiple using-statements from a single one.", "#import", Mode = MacroMode.Passive | MacroMode.Normal)]
+		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", 
+		"Generates multiple using-statements from a single one.", 
+		"#import", Mode = MacroMode.Passive | MacroMode.Normal)] 
 		public static LNode UsingMulti(LNode stmt, IMacroContext context)
 		{
 			{
@@ -35,16 +38,17 @@ namespace LeMP
 			}
 			return null;
 		}
-		static IEnumerable<LNode> GetNamespaces(LNode multiName)
-		{
+	
+		static IEnumerable<LNode> GetNamespaces(LNode multiName) {
 			{
 				LNode outerNamespace;
 				VList<LNode> args;
-				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) {
-				} else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
+				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
 					args = multiName.Args;
+					// Allow Namespace { stuff; } as alternate notation; just ignore the braces
 					if (args.Count == 1 && args[0].Calls(S.Braces))
 						args = args[0].Args;
+				
 					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg)).Select(subNS => MergeIdentifiers(outerNamespace, subNS));
 				}
 			}
@@ -59,9 +63,9 @@ namespace LeMP
 			{
 				LNode right1, right2;
 				if (right.Calls(CodeSymbols.Dot, 1) && (right2 = right.Args[0]) != null)
-					return LNode.Call(CodeSymbols.Dot, LNode.List(left, right2));
+					return LNode.Call(CodeSymbols.Dot, LNode.List(left, right2)).SetStyle(NodeStyle.Operator);
 				else if (right.Calls(CodeSymbols.Dot, 2) && (right1 = right.Args[0]) != null && (right2 = right.Args[1]) != null)
-					return LNode.Call(CodeSymbols.Dot, LNode.List(MergeIdentifiers(left, right1), right2));
+					return LNode.Call(CodeSymbols.Dot, LNode.List(MergeIdentifiers(left, right1), right2)).SetStyle(NodeStyle.Operator);
 				else
 					throw new LogException(Severity.Note, right, "Multi-using statement seems malformed. Correct example: `using System(.Text, .Linq));`");
 			}
