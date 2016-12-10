@@ -1,18 +1,19 @@
 ---
-title: Avoid tedious coding with LeMP, Part 1
+title: Avoid tedious coding with LeMP
 layout: article
 tagline: "The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor."
 toc: true
+date: 24 Aug 2015 (updated 10 Dec 2016)
 ---
 
 Introduction
 ------------
 
-LeMP is a tool that transforms a source file by running user-defined code to transform syntax trees into other syntax trees. Code that is designed to transform a file's syntax is called a "macro". LeMP has a bunch of macros built in, and I will only cover a few of the most useful ones in this initial article. You can write your own macros too, which is discussed in a future article.
+LeMP is a tool I wrote that transforms a source file by running user-defined code to transform syntax trees into other syntax trees. Code that is designed to transform a file's syntax is called a "macro". LeMP has a bunch of macros built in, and I will only cover a few of the most useful ones in this initial article. You can write your own macros too, which is discussed elsewhere.
 
 ![LeMP in Visual Studio](LeMPInVS.png)
 
-I've been working on this and related software for a couple of years, but it's only now that I think this thing is actually useful enough to present to a general audience. LeMP comes with a Visual Studio Syntax Highlighter (optional), a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows & Linux. All with complete source code.
+LeMP comes with a Visual Studio Syntax Highlighter (optional), a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows & Linux. All open-source.
 
 This article is a sampling of a few of the things you can do with LeMP.
 
@@ -70,16 +71,14 @@ C and C++ famously have lexical macros defined with the `#define` directive. The
 
 1. **Oblivious to structure**: C/C++ macros work at the lexical level, basically pasting text. Since they do not understand the underlying language, you can have bugs like this one:
 
-    ~~~cpp
-    	// Input
-    	#define SQUARE(x)  x * x
-    	const int one_hundred = SQUARE(5 + 5)
-	
-    	// Output
-    	const int one_hundred = 5 + 5 * 5 + 5;  // oops, that's 35
-    ~~~
+        // Input
+        #define SQUARE(x)  x * x
+        const int one_hundred = SQUARE(5 + 5)
+    
+        // Output
+        const int one_hundred = 5 + 5 * 5 + 5;  // oops, that's 35
 
-	In contrast, LeMP parses the entire source file, _then_ manipulates the syntax tree. Converting the tree back to C# code is the very last step, and this step will do things like automatically inserting parentheses to prevent this kind of problem.
+    In contrast, LeMP parses the entire source file, _then_ manipulates the syntax tree. Converting the tree back to C# code is the very last step, and this step will do things like automatically inserting parentheses to prevent this kind of problem.
 
 2. **Spooky action at a distance**: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `replace` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently (well, except the Visual Studio plugin can't).
 
@@ -98,8 +97,8 @@ So let's talk about `replace`, the LeMP equivalent of `#define`.
 replace (MB => MessageBox.Show, 
          FMT($fmt, $arg) => string.Format($fmt, $arg))
 {
-	MB(FMT("Hi, I'm {0}...", name));
-	MB(FMT("I am {0} years old!", name.Length));
+    MB(FMT("Hi, I'm {0}...", name));
+    MB(FMT("I am {0} years old!", name.Length));
 }
 
 // Output of LeMP
@@ -113,50 +112,50 @@ As you can see, placeholders like `$fmt` and `$arg` are used to "capture" expres
 
 This example requires `FMT` to take exactly two arguments called `$fmt` and `$arg`, but we could also capture _any number_ of arguments or statements by adding the `..` operator as shown here:
 
-	FMT($fmt, $(..args)) => string.Format($fmt, $args) // 1 or more arguments
-	FMT($(..args)) => string.Format($args)             // 0 or more arguments
+    FMT($fmt, $(..args)) => string.Format($fmt, $args) // 1 or more arguments
+    FMT($(..args)) => string.Format($args)             // 0 or more arguments
 
 `replace` is more sophisticated tool than C's `#define` directive. Consider this example:
 
 ~~~csharp
 replace ({ 
-	foreach ($type $item in $obj.Where($w => $wpred))
-		$body;
+    foreach ($type $item in $obj.Where($w => $wpred))
+        $body;
 } => {
-	foreach ($type $w in $obj) {
-		if ($wpred) {
-			var $item = $w;
-			$body;
-		}
-	}
+    foreach ($type $w in $obj) {
+        if ($wpred) {
+            var $item = $w;
+            $body;
+        }
+    }
 })
 
 var numbers = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 Console.WriteLine("I wanna tell you about my digits!")
 foreach (var even in numbers.Where(n => n % 2 == 0))
-	Console.WriteLine("{0} is even!", even);
+    Console.WriteLine("{0} is even!", even);
 foreach (var odd  in numbers.Where(n => n % 2 == 1))
-	Console.WriteLine("{0} is odd!", odd);
+    Console.WriteLine("{0} is odd!", odd);
 ~~~
 
 Here, `replace` searches for `foreach` loops that have a specific form, and replaces them with a more optimized form:
 
 ~~~csharp
 var numbers = new[] { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9
+    1, 2, 3, 4, 5, 6, 7, 8, 9
 };
 Console.WriteLine("I wanna tell you about my digits!")
 foreach (var n in numbers) {
-	if (n % 2 == 0) {
-		var even = n;
-		Console.WriteLine("{0} is even!", even);
-	}
+    if (n % 2 == 0) {
+        var even = n;
+        Console.WriteLine("{0} is even!", even);
+    }
 }
 foreach (var n in numbers) {
-	if (n % 2 == 1) {
-		var odd = n;
-		Console.WriteLine("{0} is odd!", odd);
-	}
+    if (n % 2 == 1) {
+        var odd = n;
+        Console.WriteLine("{0} is odd!", odd);
+    }
 }
 ~~~
 
@@ -167,7 +166,7 @@ There is an alternate syntax for `replace`, which looks like you're defining a m
 <div class='sbs' markdown='1'>
 ~~~csharp
 replace MakeSquare($T) { 
-	$T Square($T x) { return x*x; }
+    $T Square($T x) { return x*x; }
 }
 MakeSquare(int);
 MakeSquare(double);
@@ -196,12 +195,12 @@ Before I give you the second example I'd like to introduce a special macro calle
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-concatId(Con, sole).WriteLine("What the...?");
+concatId(Con, sole).WriteLine("Huh?");
 ~~~
 
 ~~~csharp
 // Output of LeMP
-Console.WriteLine("What the...?");
+Console.WriteLine("Huh?");
 ~~~
 </div>
 
@@ -210,21 +209,21 @@ Console.WriteLine("What the...?");
 <div class='sbs' markdown='1'>
 ~~~csharp
 replace SaveAndRestore($var = $newValue) {
-	replace (TMP => concatId(old, $var));
-	var TMP = $var;
-	$var = $newValue;
-	on_finally { $var = TMP; }
+  replace (TMP => concatId(old, $var));
+  var TMP = $var;
+  $var = $newValue;
+  on_finally { $var = TMP; }
 }
 
 string _curTask = "<No task running>";
 
 void DoPizza(IEnumerable<Topping> toppings)
 {
-	SaveAndRestore(_curTask = "Make pizza");
-	var d = PrepareDough();
-	FlattenDough(d);
-	AddToppings(d, toppings);
-	Bake(d, TimeSpan.FromMinutes(12));
+  SaveAndRestore(_curTask = "Make pizza");
+  var d = PrepareDough();
+  FlattenDough(d);
+  AddToppings(d, toppings);
+  Bake(d, TimeSpan.FromMinutes(12));
 }
 ~~~
 
@@ -234,16 +233,16 @@ string _curTask = "<No task running>";
 
 void DoPizza(IEnumerable<Topping> toppings)
 {
-	var old_curTask = _curTask;
-	_curTask = "Make pizza";
-	try {
-		var d = PrepareDough();
-		FlattenDough(d);
-		AddToppings(d, toppings);
-		Bake(d, TimeSpan.FromMinutes(12));
-	} finally {
-		_curTask = old_curTask;
-	}
+  var old_curTask = _curTask;
+  _curTask = "Make pizza";
+  try {
+    var d = PrepareDough();
+    FlattenDough(d);
+    AddToppings(d, toppings);
+    Bake(d, TimeSpan.FromMinutes(12));
+  } finally {
+    _curTask = old_curTask;
+  }
 }
 ~~~
 </div>
@@ -262,7 +261,7 @@ Method-style `replace` can also match operators. For example
 ~~~csharp
 [Passive]
 replace operator=(Foo[$index], $value) {
-	Foo.SetAt($index, $value);
+    Foo.SetAt($index, $value);
 }
 x = Foo[y] = z;
 ~~~
@@ -281,99 +280,99 @@ Technically, the method-style `replace` macro is more than stylistically differe
 
 Some developers have to implement the [`INotifyPropertyChanged`](https://msdn.microsoft.com/en-us/library/system.componentmodel.inotifypropertychanged(v=vs.110).aspx) interface a lot. Implementing this interface often involves a lot of boilerplate and code duplication, and it's easy to make mistakes as you copy, paste and modify your properties. Using normal C#, you can avoid some code duplication by sharing common code in a common method, like this:
 
-~~~
+~~~csharp
 public class DemoCustomer : INotifyPropertyChanged
 {
-	public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler PropertyChanged;
 
-	/// Common code shared between all the properties
-	protected bool ChangeProperty<T>(ref T field, T newValue, 
-		string propertyName, IEqualityComparer<T> comparer = null)
-	{
-		comparer = comparer ?? EqualityComparer<T>.Default;
-		if (field == null ? newValue != null : !field.Equals(newValue))
-		{
-			field = newValue;
-			if (PropertyChanged != null)
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			return true;
-		}
-		return false;
-	}
+    /// Common code shared between all the properties
+    protected bool ChangeProperty<T>(ref T field, T newValue, 
+        string propertyName, IEqualityComparer<T> comparer = null)
+    {
+        comparer = comparer ?? EqualityComparer<T>.Default;
+        if (field == null ? newValue != null : !field.Equals(newValue))
+        {
+            field = newValue;
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+        return false;
+    }
 
-	private string _customerName = "";
-	public  string CustomerName
-	{
-		get { return _customerName; }
-		set { ChangeProperty(ref _customerName, value, "CustomerName"); }
-	}
+    private string _customerName = "";
+    public  string CustomerName
+    {
+        get { return _customerName; }
+        set { ChangeProperty(ref _customerName, value, "CustomerName"); }
+    }
 
-	private object _additionalData = null;
-	public  object AdditionalData
-	{
-		get { return _additionalData; }
-		set { ChangeProperty(ref _additionalData, value, "AdditionalData"); }
-	}
-	
-	private string _companyName = "";
-	public  string CompanyName
-	{
-		get { return _companyName; }
-		set { ChangeProperty(ref _companyName, value, "CompanyName"); }
-	}
+    private object _additionalData = null;
+    public  object AdditionalData
+    {
+        get { return _additionalData; }
+        set { ChangeProperty(ref _additionalData, value, "AdditionalData"); }
+    }
+    
+    private string _companyName = "";
+    public  string CompanyName
+    {
+        get { return _companyName; }
+        set { ChangeProperty(ref _companyName, value, "CompanyName"); }
+    }
 
-	private string _phoneNumber = "";
-	public  string PhoneNumber
-	{
-		get { return _phoneNumber; }
-		set { ChangeProperty(ref _customerName, value, "PhoneNumber"); }
-	}
+    private string _phoneNumber = "";
+    public  string PhoneNumber
+    {
+        get { return _phoneNumber; }
+        set { ChangeProperty(ref _customerName, value, "PhoneNumber"); }
+    }
 }
 ~~~
 
-That's not too bad, but you may need to repeat the `ChangeProperty` method in multiple classes (in some cases), and there is still some code duplication, and thus, opportunities to make mistakes (did you notice the mistake in the code above?)
+That's not too bad, but you may need to repeat the `ChangeProperty` method in multiple classes, and there is still some code duplication, and thus, opportunities to make mistakes (did you notice the mistake in the code above?)
 
 Here's how you can factor out the common stuff into a `replace` macro:
 
 ~~~csharp
 replace ImplementNotifyPropertyChanged({ $(..properties); })
 {
-	// ***
-	// *** Generated by ImplementNotifyPropertyChanged
-	// ***
-	public event PropertyChangedEventHandler PropertyChanged;
+    // ***
+    // *** Generated by ImplementNotifyPropertyChanged
+    // ***
+    public event PropertyChangedEventHandler PropertyChanged;
 
-	protected bool ChangeProperty<T>(ref T field, T newValue, 
-		string propertyName, IEqualityComparer<T> comparer = null)
-	{
-		comparer ??= EqualityComparer<T>.Default;
-		if (field == null ? newValue != null : !field.Equals(newValue))
-		{
-			field = newValue;
-			if (PropertyChanged != null)
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			return true;
-		}
-		return false;
-	}
-	
-	// The [$(..attrs)] part of this example is puts all attributes into a list called 
-	// `attrs`. This is important because in EC#/LeMP, modifiers like `public` are 
-	// considered to be attributes. So we need this to preserve `public` in the output.
-	replace ({
-		[$(..attrs)] $Type $PropName { get; set; }
-	} => {
-		replace (FieldName => concatId(_, $PropName));
-		private $Type FieldName;
-		[$(..attrs)]
-		$Type $PropName {
-			get { return FieldName; }
-			set { ChangeProperty(ref FieldName, value, nameof($PropName)); }
-		}
-	});
+    protected bool ChangeProperty<T>(ref T field, T newValue, 
+        string propertyName, IEqualityComparer<T> comparer = null)
+    {
+        comparer ??= EqualityComparer<T>.Default;
+        if (field == null ? newValue != null : !field.Equals(newValue))
+        {
+            field = newValue;
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+        return false;
+    }
+    
+    // The [$(..attrs)] part of this example is puts all attributes into a list called 
+    // `attrs`. This is important because in EC#/LeMP, modifiers like `public` are 
+    // considered to be attributes. So we need this to preserve `public` in the output.
+    replace ({
+        [$(..attrs)] $Type $PropName { get; set; }
+    } => {
+        replace (FieldName => concatId(_, $PropName));
+        private $Type FieldName;
+        [$(..attrs)] $Type $PropName {
+            get { return FieldName; }
+            set { ChangeProperty(ref FieldName, value, nameof($PropName)); }
+        }
+    });
 
-	$properties;
+    $properties;
 }
+~~~
 
 The triply-nested `replace` commands may seem a little complicated, but you can save it in a separate file, such as ImplementNPC.ecs, and forget about those implementation details. Then you can use it in any of your source files like this:
 
@@ -382,49 +381,50 @@ includeFile("ImplementNPC.ecs");
 
 public class DemoCustomer : INotifyPropertyChanged
 {
-	public DemoCustomer(string n)
-	{
-		CustomerName = n;
-	}
+    public DemoCustomer(string n)
+    {
+        CustomerName = n;
+    }
 
-	ImplementNotifyPropertyChanged
-	{
-		public string CustomerName { get; set; }
-		public object AdditionalData { get; set; }
-		public string CompanyName { get; set; }
-		public string PhoneNumber { get; set; }
-	}
+    ImplementNotifyPropertyChanged
+    {
+        public string CustomerName { get; set; }
+        public object AdditionalData { get; set; }
+        public string CompanyName { get; set; }
+        public string PhoneNumber { get; set; }
+    }
 }
 ~~~
 
 Nice. **Note:** The `[$(..attrs)]` part of this example requires LeMP version 2.3.0 or higher.
 
-### unroll & notnull ###
+unroll & notnull
+----------------
 
 `unroll..in` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike `replace`, `unroll` can only match simple identifiers on the left side of `in`.
 
 ~~~csharp
 /// Input
-void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+void ProcessInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-	unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
-		if (VAR != null) throw new ArgumentNullException(stringify(VAR));
-	}
-	...
+    unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
+        if (VAR != null) throw new ArgumentNullException(stringify(VAR));
+    }
+    implementation here;
 }
 /// Output
-void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+void ProcessInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-	if (firstName != null) 
-		throw new ArgumentNullException("firstName");
-	if (lastName != null)
-		throw new ArgumentNullException("lastName");
-	if (data != null)
-		throw new ArgumentNullException("data");
-	if (phoneNumber != null)
-		throw new ArgumentNullException("phoneNumber");
+    if (firstName != null) 
+        throw new ArgumentNullException("firstName");
+    if (lastName != null)
+        throw new ArgumentNullException("lastName");
+    if (data != null)
+        throw new ArgumentNullException("data");
+    if (phoneNumber != null)
+        throw new ArgumentNullException("phoneNumber");
 
-  implementation here;
+    implementation here;
 }
 ~~~
 
@@ -436,7 +436,7 @@ However you could also just use the `notnull` attribute to get a similar effect,
 ~~~csharp
 void SetInfo(notnull string firstName, notnull string lastName, notnull object data, notnull string phoneNumber)
 {
-  implementation here;
+    implementation here;
 }
 ~~~
 
@@ -444,42 +444,43 @@ void SetInfo(notnull string firstName, notnull string lastName, notnull object d
 // Output of LeMP
 void SetInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-	Contract.Assert(firstName != null, "Precondition failed: firstName != null");
-	Contract.Assert(lastName != null, "Precondition failed: lastName != null");
-	Contract.Assert(data != null, "Precondition failed: data != null");
-	Contract.Assert(phoneNumber != null, "Precondition failed: phoneNumber != null");
-  implementation here;
+    Contract.Assert(firstName != null, "Precondition failed: firstName != null");
+    Contract.Assert(lastName != null, "Precondition failed: lastName != null");
+    Contract.Assert(data != null, "Precondition failed: data != null");
+    Contract.Assert(phoneNumber != null, "Precondition failed: phoneNumber != null");
+    implementation here;
 }
 ~~~
 </div>
 
-### Automagic field generation ###
+Automagic field generation
+--------------------------
 
 I don't know about you, but I write a lot of "simple" classes and structs, particularly the kind known as "plain-old data" or POD, meaning, little groups of fields like this:
 
 ~~~csharp
 public class FullAddress
 {
-	public readonly string Address;
-	public readonly string City;
-	public readonly string Province;
-	public readonly string Country;
-	public readonly string PostalCode;
-	internal FullAddress(string address, string city, 
-					string province, string country, 
-					string postalCode, bool log = false)
-	{
-		Address = address;
-		City = city;
-		Province = province;
-		Country = country;
-		PostalCode = postalCode;
-		if (Address != null && City == null)
-			throw new ArgumentException("Hey, you forgot the city!");
-		if (log)
-			Trace.WriteLine("OMG a new address was just created!!!");
-	}
-	...
+    public readonly string Address;
+    public readonly string City;
+    public readonly string Province;
+    public readonly string Country;
+    public readonly string PostalCode;
+    internal FullAddress(string address, string city, 
+                    string province, string country, 
+                    string postalCode, bool log = false)
+    {
+        Address = address;
+        City = city;
+        Province = province;
+        Country = country;
+        PostalCode = postalCode;
+        if (Address != null && City == null)
+            throw new ArgumentException("Hey, you forgot the city!");
+        if (log)
+            Trace.WriteLine("OMG a new address was just created!!!");
+    }
+    ...
 }
 ~~~
 
@@ -489,20 +490,20 @@ With LeMP and Enhanced C# you get the same effect with much shorter code:
 
 ~~~csharp
 public class FullAddress {
-	internal this(
-		public readonly string Address,
-		public readonly string City,
-		public readonly string Province,
-		public readonly string Country,
-		public readonly string PostalCode,
-		bool log = false) 
-	{
-		if (Address != null && City == null)
-			throw new ArgumentException("Hey, you forgot the city!");
-		if (log)
-			Trace.WriteLine("OMG a new address was just created!!!");
-	}
-	...
+    internal this(
+        public readonly string Address,
+        public readonly string City,
+        public readonly string Province,
+        public readonly string Country,
+        public readonly string PostalCode,
+        bool log = false) 
+    {
+        if (Address != null && City == null)
+            throw new ArgumentException("Hey, you forgot the city!");
+        if (log)
+            Trace.WriteLine("OMG a new address was just created!!!");
+    }
+    ...
 }
 ~~~
 
@@ -513,9 +514,9 @@ A feature similar to this was being considered for C# 6, called "primary constru
 ~~~csharp
 struct Pair<T>(T first, T second)
 {
-	public T First { get; } = first;
-	public T Second { get; } = second;
-	...
+    public T First { get; } = first;
+    public T Second { get; } = second;
+    ...
 }
 ~~~
 
@@ -541,9 +542,9 @@ string _existingField;
 private int _createNewField;
 public float Example(string existingField, int createNewField, float num)
 {
-	_existingField = existingField;
-	_createNewField = createNewField;
-	return num * num;
+    _existingField = existingField;
+    _createNewField = createNewField;
+    return num * num;
 }
 ~~~
 
@@ -566,74 +567,9 @@ By the way, if you'd like me to write an article about how to write VS syntax hi
 Introducing LLLPG
 -----------------
 
-There's one more macro I'll mention, and it's huge - literally, it comes in its own 353 KB assembly. That's pretty big for a macro.
+There's one more macro I'll mention, and it's huge - literally, it comes in its own 353 KB assembly.
 
-LLLPG, the Loyc LL(k) Parser Generator, generates parsers and lexers from LL(k) grammars. It's best illustrated by an example. Here's a function that parses integers:
-
-~~~csharp
-/// Input
-#importMacros(Loyc.LLPG); /// this line is optional if Custom Tool is LLLPG
-using Loyc.Syntax.Lexing;
-static class MyParser
-{
-	// Configure the parser generator to read data from 'src'
-	LLLPG(lexer(inputSource(src), inputClass(LexerSource)));
-	
-	public static rule int ParseInt(string input) @{
-		{var src = (LexerSource)input;}
-		' '*
-		(neg:'-')?
-		(d:'0'..'9' {$result = $result * 10 + ($d - '0');})+ 
-		{if (neg == '-') return -$result;}
-		// LLLPG returns $result automatically
-	};
-}
-
-/// Output
-using Loyc.Syntax.Lexing;
-static class MyParser
-{
-	public static int ParseInt(string input)
-	{
-		int la0;
-		int d = 0;
-		int neg = 0;
-		int result = 0;
-		// line 10
-		var src = (LexerSource) input;
-		// Line 11: ([ ])*
-		for (;;) {
-			la0 = src.LA0;
-			if (la0 == ' ')
-				src.Skip();
-			else
-				break;
-		}
-		// Line 12: ([\-])?
-		la0 = src.LA0;
-		if (la0 == '-')
-			neg = src.MatchAny();
-		d = src.MatchRange('0', '9');
-		// line 13
-		result = result * 10 + (d - '0');
-		// Line 13: ([0-9])*
-		for (;;) {
-			la0 = src.LA0;
-			if (la0 >= '0' && la0 <= '9') {
-				d = src.MatchAny();
-				// line 13
-				result = result * 10 + (d - '0');
-			} else
-				break;
-		}
-		if (neg == '-')
-			return -result;
-		return result;
-	}
-}
-~~~
-
-To use this macro you also need an implementation of the API functions that you see in the generated code, such as `LA0`, `Skip()`, etc. The recommended implementations of these APIs are the `LexerSource` and `ParserSource<Token>` classes in Loyc.Syntax.dll, but standalone (no-DLL) implementations of the LLLPG APIs are also bundled with [LLLPG](/lllpg).
+It's called [LLLPG](http://ecsharp.net/lllpg), the Loyc LL(k) Parser Generator, and it generates parsers and lexers from LL(k) grammars.
 
 Introducing Enhanced C#
 -----------------------
@@ -655,7 +591,7 @@ You might be wondering, "hey, didn't you have to do a lot of work to extend the 
 
 How can it be smaller when it has more syntax? Well, LINQ isn't done yet, so that's a factor. But in many ways the syntax of EC# is more _regular_ than standard C#; for instance, a method's formal parameters are essentially just a list of expressions, so this method is parsed successfully:
 
-	public void Foo<T>(new T[] { "I don't think this belongs here" }) {}
+    public void Foo<T>(new T[] { "I don't think this belongs here" }) {}
 
 Effectively, I've shifted some of the burden of checking valid input to later stages of the compiler--stages which, incidentally, don't exist yet. This design has two advantages:
 
@@ -663,7 +599,7 @@ Effectively, I've shifted some of the burden of checking valid input to later st
 
 2. Macros can take advantage of any strange syntax this allows. For example, remember the replace macro?
 
-		replace ($obj.ToString() => (string)$obj) {...}
+        replace ($obj.ToString() => (string)$obj) {...}
 
     The expression `$obj.ToString() => (string)$obj` re-uses the lambda operator `=>` for a new purpose it was never designed for. In order for this to parse successfully, the lambda operator is treated almost identically to other operators like `+` or `=`; it merely has a different precedence and enables recognition of unassigned variable declarations on the left-hand side. By _not_ treating `=>` as a special case, I simultaneously made the parser simpler and added a new form of operator overloading for it (which, to be clear, is completely different than the operator overloading you're used to - it's available only to macros).
 
@@ -678,23 +614,23 @@ But EC# tries hard to transform C# into an expression-based language, and once p
 
 For example, although no translation is implemented from this to plain C#, I hope this will work someday soon:
 
-	int digit = '0' + { 
-		switch(str)
-		{
-			case "one":   1
-			case "two":   2
-			case "three": 3
-		}
-	}; // for now, outer braces are required
+    int digit = '0' + { 
+        switch(str)
+        {
+            case "one":   1
+            case "two":   2
+            case "three": 3
+        }
+    }; // for now, outer braces are required
 
 There being no distinction between statements and expressions, it's no big surprise that this works:
 
-	/// Input
-	string nums = string.Concat(
-		unroll(N in (1,2,3,4,5,6,7)) { stringify(N); }, " [the end]"
-	);
-	/// Output
-	string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
+    /// Input
+    string nums = string.Concat(
+        unroll(N in (1,2,3,4,5,6,7)) { stringify(N); }, " [the end]"
+    );
+    /// Output
+    string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
 
 `unroll` doesn't know or care that it's located in an "expression context" instead of a "statement context".
 
@@ -702,17 +638,17 @@ When the parser is parsing expressions (e.g. `1,2,3`) they are separated by comm
 
 On the other hand if we simply write
 
-	unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }
+    unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }
 
 The output _is_ separated by semicolons:
 
-	"1";
-	"2";
-	"3";
-	"4";
-	"5";
-	"6";
-	"7";
+    "1";
+    "2";
+    "3";
+    "4";
+    "5";
+    "6";
+    "7";
 
 This output, of course, isn't valid C#, but it is a perfectly valid syntax tree. Actually more of a list. Whatever.
 
@@ -720,32 +656,32 @@ This output, of course, isn't valid C#, but it is a perfectly valid syntax tree.
 
 This concept of an expression-based language explains some otherwise puzzling things about EC#. For example, if I give EC# the following input:
 
-	[#static]
-	#fn(int, Square, #(#var(int, x)), @`{}`( #return(x*x) ));
+    [#static]
+    #fn(int, Square, #(#var(int, x)), @`{}`( #return(x*x) ));
 
 It spits out the following output:
 
-	static int Square(int x)
-	{
-		return x * x;
-	}
+    static int Square(int x)
+    {
+        return x * x;
+    }
 
-What the hell happened? No, `#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". The `#` sign is otherwise _not_ special to the parser; unless you write a preprocessor directive like `#if something`, `#` is treated as an identifier character, not unlike an underscore.
+What the hell happened? No, `#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". The `#` sign is otherwise _not_ special to the parser; unless you write a preprocessor directive (like `#if`), `#` is treated as an identifier character, not more special than an underscore.
 
 `#fn` takes four arguments (and an unlimited number of attributes): the return type (`int`), the method name (`Square`), the argument list (`#(#var(int, x))` is a list containing a single item; `#var(int, x)` declares a variable called `x`), and the method body. The rarely-used notation ``@`{}` `` is an identifier named `"{}"` that is being "called" with one parameter, the `#return` statement. Of course, the braces themselves are not a function, and when I say ``@`{}` `` is being "called", I simply mean that subexpressions are being associated with an identifier named "{}". These subexpressions are said to be the "arguments" of ``@`{}` ``.
 
 There's something called an "EC# node printer" whose job is to print C# code. When it sees a tree like
-	
-	@#fn(#of(@`?`, double), Sqrt, #(#var(double, x)), 
-		{ return x < 0 ? null : Math.Sqrt(x); }
-	);
+    
+    @#fn(#of(@`?`, double), Sqrt, #(#var(double, x)), 
+        { return x < 0 ? null : Math.Sqrt(x); }
+    );
 
 It recognizes this as a perfectly normal syntax tree for a function declaration, so it  prints
 
-	double? Sqrt(double x)
-	{
-		return x < 0 ? null : Math.Sqrt(x);
-	}
+    double? Sqrt(double x)
+    {
+        return x < 0 ? null : Math.Sqrt(x);
+    }
 
 As you can see, you can freely mix "prefix notation" like `#var(double, x)` with ordinary notation like `Math.Sqrt(x)`. I recommend _not_ using things like `#fn` or `#var` directly, since the actual syntax tree for a method or variable declaration is not what I'd call stable; I might reform these trees in the future. 
 
@@ -755,24 +691,24 @@ The other nice thing about Loyc trees is that LeMP can operate on any Loyc tree,
 
 You might find it fun to go in the reverse direction and see what kind of syntax tree your ordinary C# code is parsed as. Just write some normal C# code in your .ecs file:
 
-	using System.Collections.Generic;
+    using System.Collections.Generic;
 
-	class MyList<T> : IList<T> {
-		int _count;
-		public int Count { get { return this._count; } }
-	}
+    class MyList<T> : IList<T> {
+        int _count;
+        public int Count { get { return this._count; } }
+    }
 
 Then change the Visual Studio Custom Tool to "LeMP_les" to see the output as an [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) syntax tree:
 
-	#import(System.Collections.Generic);
-	#class(#of(MyList, T), #(#of(IList, T)), {
-		#var(#int32, _count);
-		[#public] #property(#int32, Count, {
-			get({
-				#return(#this._count);
-			});
-		});
-	});
+    #import(System.Collections.Generic);
+    #class(#of(MyList, T), #(#of(IList, T)), {
+        #var(#int32, _count);
+        [#public] #property(#int32, Count, {
+            get({
+                #return(#this._count);
+            });
+        });
+    });
 
 Okay, that's enough bizzaro world for one day.
 
@@ -783,4 +719,4 @@ Final thought: if you could add features to C#, what would they be? If there's a
 
 You can post comments on the [old version of this article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part) originally published on CodeProject.
 
-I have many more macros to show you, so please visit the [home page](/lemp) to find more articles about LeMP!
+To learn about more of the macros available, please visit the [home page](/lemp). If you're puzzled about how to accomplish something with LeMP, maybe I can help - just ask!
