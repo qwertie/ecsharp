@@ -209,7 +209,7 @@ namespace MiniTestRunner.WinForms
 				return;
 			
 			double frac = (double)container.SplitterDistance / (horizontal ? container.Height : container.Width);
-			frac = Range.PutInRange(frac, 0.01, 0.99);
+			frac = frac.PutInRange(0.01, 0.99);
 			container.Orientation = o;
 			container.SplitterDistance = (int)(frac * (horizontal ? container.Width : container.Height));
 		}

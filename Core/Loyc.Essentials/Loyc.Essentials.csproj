@@ -176,10 +176,6 @@
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
-    <None Include="Utilities\Range.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>Range.out.cs</LastGenOutput>
-    </None>
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToCollections.cs">
       <AutoGen>True</AutoGen>
@@ -248,32 +244,23 @@
     <Compile Include="Compatibility\IReadOnlyCollections.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
     <Compile Include="Utilities\Exceptions.cs" />
-    <Compile Include="G.cs" />
-    <Compile Include="Geometry\BoundingBox.cs" />
-    <Compile Include="Geometry\LineSegment.cs" />
+    <Compile Include="Utilities\G.cs" />
     <Compile Include="Geometry\IPoint.cs" />
     <Compile Include="Geometry\IPoint3.cs" />
     <Compile Include="Geometry\IRectangle.cs" />
     <Compile Include="Geometry\IRectangle3.cs" />
-    <Compile Include="Geometry\PointT.cs" />
-    <Compile Include="Geometry\Vector3T.cs" />
-    <Compile Include="Geometry\VectorT.cs" />
-    <Compile Include="Math\FixedPoint.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FixedPoint.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Math\Math128.cs" />
-    <Compile Include="Math\MathsT.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Math\Interfaces.cs" />
-    <Compile Include="Math\MathEx.cs" />
-    <Compile Include="Math\Maths.cs">
+    <Compile Include="Utilities\Extensions.cs" />
+    <None Include="Utilities\GRange.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>GRange.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Utilities\GRange.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Maths.tt</DependentUpon>
+      <DependentUpon>GRange.ecs</DependentUpon>
     </Compile>
-    <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
     <Compile Include="Utilities\Localize.cs" />
@@ -282,14 +269,9 @@
     <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\MiscInterfaces.cs" />
-    <Compile Include="Utilities\ParseHelpers.cs" />
+    <Compile Include="Utilities\PrintHelpers.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\SavedValue.cs" />
-    <Compile Include="Utilities\Range.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Range.ecs</DependentUpon>
-    </Compile>
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
     <Compile Include="Utilities\Symbol.cs" />
@@ -305,15 +287,6 @@
       <Generator>LLLPG</Generator>
       <LastGenOutput>LinqToCollections.cs</LastGenOutput>
     </None>
-    <None Include="Math\FixedPoint.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FixedPoint.cs</LastGenOutput>
-    </None>
-    <None Include="Math\Maths.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Maths.cs</LastGenOutput>
-    </None>
-    <None Include="Math\NumTraits.ttinclude" />
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>

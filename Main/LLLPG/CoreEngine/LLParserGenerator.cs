@@ -1263,7 +1263,7 @@ namespace Loyc.LLParserGenerator
 				StringBuilder temp = new StringBuilder();
 				foreach (var set in seq)
 					temp.Append(_helper.ExampleChar(set));
-				result.Append(ParseHelpers.EscapeCStyle(temp.ToString(), EscapeC.Default, '»'));
+				result.Append(PrintHelpers.EscapeCStyle(temp.ToString(), EscapeC.Default, '»'));
 			} else {
 				result.Append(seq.Select(set => _helper.Example(set)).Join(" "));
 			}

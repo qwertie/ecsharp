@@ -51,6 +51,12 @@ namespace LeMP
 						}
 						if (repl.Calls(S.Braces))
 							repl = repl.WithTarget(S.Splice);
+						
+						// Avoid StackOverflowException when pattern is $Id (sadly, it
+						// is uncatchable so it can crash LeMP.exe and even Visual Studio)
+						if (LNodeExt.GetCaptureIdentifier(pattern) != null)
+ 							return Reject(context, pattern, "The left side of `=>` cannot be a capture. Remove the `$`.");
+
 						patterns[i] = Pair.Create(pattern, repl);
 					} else {
 						string msg = "Expected 'pattern => replacement'.";
@@ -188,6 +194,7 @@ namespace LeMP
 
 			LNode pattern = F.Call(macroName, args.Args).PlusAttrs(leftoverAttrs);
 			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice).PlusAttrs(replaceKw.Attrs);
+			replacement.Style &= ~NodeStyle.OneLiner;
 
 			WarnAboutMissingDollarSigns(args, context1, pattern, replacement);
 

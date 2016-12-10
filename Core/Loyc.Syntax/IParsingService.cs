@@ -102,14 +102,25 @@ namespace Loyc.Syntax
 	/// <summary>Standard extension methods for <see cref="IParsingService"/>.</summary>
 	public static class ParsingService
 	{
-		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();
+		static ThreadLocalVariable<IParsingService> _default = new ThreadLocalVariable<IParsingService>();
 		/// <summary>Gets or sets the active language service on this thread. If 
 		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
-		public static IParsingService Current
+		public static IParsingService Default
 		{
-			get { return _current.Value ?? LesLanguageService.Value; }
-			set { _current.Value = value; }
+			get { return _default.Value ?? LesLanguageService.Value; }
+			set { _default.Value = value; }
 		}
+        [Obsolete("This property was renamed to 'Default'")]
+        public static IParsingService Current
+		{
+			get { return Default; }
+			set { Default = value; }
+		}
+
+        public static SavedValue<IParsingService> SetDefault(IParsingService newValue)
+        {
+            return new SavedValue<IParsingService>(_default, newValue);
+        }
 
 		#region Management of registered languages
 
@@ -197,8 +208,8 @@ namespace Loyc.Syntax
 		public struct PushedCurrent : IDisposable
 		{
 			public readonly IParsingService OldValue;
-			public PushedCurrent(IParsingService @new) { OldValue = Current; Current = @new; }
-			public void Dispose() { Current = OldValue; }
+			public PushedCurrent(IParsingService @new) { OldValue = Default; Default = @new; }
+			public void Dispose() { Default = OldValue; }
 		}
 
 		#endregion

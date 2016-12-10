@@ -98,7 +98,7 @@ namespace LeMP
 			{
 				WarnAboutUnknownOptions(options, filter, 
 					KnownOptions.With("nologo", Pair.Create("", "")));
-				using (LNode.PushPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+				using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
 					c.Run();
 			}
 		}

@@ -1,4 +1,4 @@
-// Generated from Range.ecs by LeMP custom tool. LeMP version: 1.5.1.0
+// Generated from Range.ecs by LeMP custom tool. LeMP version: 2.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -11,246 +11,188 @@ using System.Linq;
 using System.Text;
 using Loyc.Math;
 using Loyc.Collections;
+
 namespace Loyc
 {
+	/// <summary>
+	/// Contains the functions used by the Enhanced C# <c>in</c>, <c>..</c> and 
+	/// <c>...</c> operators... plus the handy <c>PutInRange()</c> methods.
+	/// </summary>
+	/// <remarks>
+	/// Note: the following <c>InRange</c> extension methods have been moved to 
+	/// class <see cref="G"/> in Loyc.Essentials so that Loyc.Syntax can use them:
+	/// <ul>
+	/// <li><c>n.IsInRange(lo, hi)</c> returns true if <c>n >= lo && hi >= n</c>, 
+	///     which corresponds to <c>n in lo...hi</c> in EC#.</li>
+	/// <li><c>n.IsInRangeExcludeHi(lo, hi)</c> returns true if <c>n >= lo && hi > n</c>,
+	///     which corresponds to <c>n in lo..hi</c> in EC#.</li>
+	/// </ul>
+	/// If `in` and a range operator are not used together, something 
+	/// slightly different happens:
+	/// <ul>
+	/// <li><c>var r = lo..hi</c> becomes Range.ExcludeHi(lo, hi)</c> 
+	///     (<c>Range.Inclusive</c> for <c>...</c>).</li>
+	/// <li><c>x in r</c> becomes <c>r.Contains(x)</c>.</li>
+	/// </ul>
+	/// </remarks>
 	public static class Range
 	{
-		public static bool IsInRangeExcludeHi(this int num, int lo, int hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this int num, int lo, int hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static int PutInRange(this int n, int min, int max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi(this uint num, uint lo, uint hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this uint num, uint lo, uint hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static uint PutInRange(this uint n, uint min, uint max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi(this long num, long lo, long hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this long num, long lo, long hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static long PutInRange(this long n, long min, long max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi(this ulong num, ulong lo, ulong hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this ulong num, ulong lo, ulong hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static ulong PutInRange(this ulong n, ulong min, ulong max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi(this float num, float lo, float hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this float num, float lo, float hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static float PutInRange(this float n, float min, float max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi(this double num, double lo, double hi)
-		{
-			return num >= lo && num < hi;
-		}
-		public static bool IsInRange(this double num, double lo, double hi)
-		{
-			return num >= lo && num <= hi;
-		}
-		public static double PutInRange(this double n, double min, double max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static bool IsInRangeExcludeHi<T>(this T num, T lo, T hi) where T: IComparable<T>
-		{
-			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) < 0;
-		}
-		public static bool IsInRange<T>(this T num, T lo, T hi) where T: IComparable<T>
-		{
-			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) <= 0;
-		}
-		public static T PutInRange<T>(this T n, T min, T max) where T: IComparable<T>
-		{
-			if (n.CompareTo(min) <= 0)
-				return min;
-			if (n.CompareTo(max) >= 0)
-				return max;
-			return n;
-		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<int,MathI> Inclusive(int lo, int hi)
 		{
 			return new NumRange<int,MathI>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<int,MathI> ExcludeHi(int lo, int hi)
 		{
 			return new NumRange<int,MathI>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<int,MathI> StartingAt(int lo)
 		{
 			return new NumRange<int,MathI>(lo, int.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<int,MathI> Only(int num)
 		{
 			return new NumRange<int,MathI>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<uint,MathU> Inclusive(uint lo, uint hi)
 		{
 			return new NumRange<uint,MathU>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<uint,MathU> ExcludeHi(uint lo, uint hi)
 		{
 			return new NumRange<uint,MathU>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<uint,MathU> StartingAt(uint lo)
 		{
 			return new NumRange<uint,MathU>(lo, uint.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<uint,MathU> Only(uint num)
 		{
 			return new NumRange<uint,MathU>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<long,MathL> Inclusive(long lo, long hi)
 		{
 			return new NumRange<long,MathL>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<long,MathL> ExcludeHi(long lo, long hi)
 		{
 			return new NumRange<long,MathL>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<long,MathL> StartingAt(long lo)
 		{
 			return new NumRange<long,MathL>(lo, long.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<long,MathL> Only(long num)
 		{
 			return new NumRange<long,MathL>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<ulong,MathUL> Inclusive(ulong lo, ulong hi)
 		{
 			return new NumRange<ulong,MathUL>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<ulong,MathUL> ExcludeHi(ulong lo, ulong hi)
 		{
 			return new NumRange<ulong,MathUL>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<ulong,MathUL> StartingAt(ulong lo)
 		{
 			return new NumRange<ulong,MathUL>(lo, ulong.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<ulong,MathUL> Only(ulong num)
 		{
 			return new NumRange<ulong,MathUL>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<float,MathF> Inclusive(float lo, float hi)
 		{
 			return new NumRange<float,MathF>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<float,MathF> ExcludeHi(float lo, float hi)
 		{
 			return new NumRange<float,MathF>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<float,MathF> StartingAt(float lo)
 		{
 			return new NumRange<float,MathF>(lo, float.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<float,MathF> Only(float num)
 		{
 			return new NumRange<float,MathF>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<double,MathD> Inclusive(double lo, double hi)
 		{
 			return new NumRange<double,MathD>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<double,MathD> ExcludeHi(double lo, double hi)
 		{
 			return new NumRange<double,MathD>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<double,MathD> StartingAt(double lo)
 		{
 			return new NumRange<double,MathD>(lo, double.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<double,MathD> Only(double num)
 		{
 			return new NumRange<double,MathD>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<FPI8,MathF8> Inclusive(FPI8 lo, FPI8 hi)
 		{
 			return new NumRange<FPI8,MathF8>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<FPI8,MathF8> ExcludeHi(FPI8 lo, FPI8 hi)
 		{
 			return new NumRange<FPI8,MathF8>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<FPI8,MathF8> StartingAt(FPI8 lo)
 		{
 			return new NumRange<FPI8,MathF8>(lo, FPI8.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<FPI8,MathF8> Only(FPI8 num)
 		{
 			return new NumRange<FPI8,MathF8>(num, num);
 		}
+		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
 		public static NumRange<FPI16,MathF16> Inclusive(FPI16 lo, FPI16 hi)
 		{
 			return new NumRange<FPI16,MathF16>(lo, hi);
 		}
+		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
 		public static NumRange<FPI16,MathF16> ExcludeHi(FPI16 lo, FPI16 hi)
 		{
 			return new NumRange<FPI16,MathF16>(lo, hi - 1);
 		}
+		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
 		public static NumRange<FPI16,MathF16> StartingAt(FPI16 lo)
 		{
 			return new NumRange<FPI16,MathF16>(lo, FPI16.MaxValue);
 		}
+		/// <summary>Returns the same range as Incl(num, num).</summary>
 		public static NumRange<FPI16,MathF16> Only(FPI16 num)
 		{
 			return new NumRange<FPI16,MathF16>(num, num);

@@ -345,7 +345,7 @@ namespace Loyc.Syntax.Les
 							flags |= EscapeC.BackslashX;
 						}
 					}
-					ParseHelpers.EscapeCStyle(c, SB, flags, quoteType);
+					PrintHelpers.EscapeCStyle(c, SB, flags, quoteType);
 				}
 			}
 			SB.Append(quoteType);
@@ -512,12 +512,12 @@ namespace Loyc.Syntax.Les
 				forceQuote = suffix0 == '_';
 			}
 			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
-				ParseHelpers.AppendIntegerTo(SB, value, "0x", 16, 4, '_');
+				PrintHelpers.AppendIntegerTo(SB, value, "0x", 16, 4, '_');
 				forceQuote |= suffix0 >= 'a' && suffix0 <= 'f' || suffix0 >= 'A' && suffix0 <= 'F';
 			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral)
-				ParseHelpers.AppendIntegerTo(SB, value, "0b", 2, 8, '_');
+				PrintHelpers.AppendIntegerTo(SB, value, "0b", 2, 8, '_');
 			else
-				ParseHelpers.AppendIntegerTo(SB, value, "", 10, 3, '_');
+				PrintHelpers.AppendIntegerTo(SB, value, "", 10, 3, '_');
 			if (suffix != null)
 				PrintIdCore(suffix, startToken: false, forceQuote: forceQuote);
 		}

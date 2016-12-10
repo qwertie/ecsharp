@@ -143,7 +143,7 @@ namespace LeMP.Tests
 		{
 			// First, a couple of situations where on_return will have no effect except a warning message.
 			var msgs = _msgHolder;
-			using (MessageSink.PushCurrent(_msgHolder)) {
+			using (MessageSink.SetDefault(_msgHolder)) {
 				msgs.List.Clear();
 				TestEcs(@"void Foo() { { on_return() { H(); } F(G()); } }",
 				        @"void Foo() { {                      F(G()); } }");

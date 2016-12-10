@@ -383,7 +383,7 @@ namespace LeMP.Tests
 				}");
 
 			// Test lambda function
-			using (MessageSink.PushCurrent(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
+			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
 				_msgHolder.List.Clear();
 				TestCs(@"#useSequenceExpressions;
 					void f() {

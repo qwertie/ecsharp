@@ -50,8 +50,8 @@ namespace Loyc.Math
 		T Min(T a, T b);
 	}
 
-	/// <summary>Standard extension methods for generic math interfaces such as <see cref="IOrdered{T}"/>.</summary>
-	public static partial class MathExtensions
+	/// <summary>Extension methods for <see cref="IOrdered{T}"/>.</summary>
+	public static partial class IOrderedExt
 	{
 		public static bool IsGreater<T,C>(this C c, T a, T b) where C : IOrdered<T>, new()
 		{

@@ -21,10 +21,10 @@ namespace Loyc.Collections
 			return list;
 		}
 
-		public static IRange<T> Slice<T>(this IListSource<T> list, NumRange<int, MathI> range)
-		{
-			return list.Slice(range.Lo, range.Count);
-		}
+		//public static IRange<T> Slice<T>(this IListSource<T> list, NumRange<int, MathI> range)
+		//{
+		//	return list.Slice(range.Lo, range.Count);
+		//}
 	}
 
 	/// <summary>Adapter: a random-access range for a slice of an 

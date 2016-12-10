@@ -74,7 +74,7 @@ namespace Loyc
 	/// lexing stuff, LLLPG base classes (BaseParser{T} and BaseLexer), the LES parser and 
 	/// printer, data types related to source code management (e.g. <see cref="ISourceFile"/>, 
 	/// <see cref="SourceRange"/>) and other general-purpose code related to the 
-	/// manipulation of syntax.
+	/// manipulation of syntax.</summary>
 	namespace Syntax
 	{
 		/// <summary>Contains classes related to Loyc Expression Syntax (LES),

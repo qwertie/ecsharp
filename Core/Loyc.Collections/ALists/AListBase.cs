@@ -1044,14 +1044,14 @@
 			_freezeMode = other._freezeMode = FrozenForConcurrency;
 			try {
 				if (swapObservers) {
-					MathEx.Swap(ref _listChanging, ref other._listChanging);
-					MathEx.Swap(ref _observer, ref other._observer);
+					G.Swap(ref _listChanging, ref other._listChanging);
+					G.Swap(ref _observer, ref other._observer);
 				}
-				MathEx.Swap(ref _root, ref other._root);
-				MathEx.Swap(ref _count, ref other._count);
-				MathEx.Swap(ref _maxLeafSize, ref other._maxLeafSize);
-				MathEx.Swap(ref _treeHeight, ref other._treeHeight);
-				MathEx.Swap(ref _version, ref other._version);
+				G.Swap(ref _root, ref other._root);
+				G.Swap(ref _count, ref other._count);
+				G.Swap(ref _maxLeafSize, ref other._maxLeafSize);
+				G.Swap(ref _treeHeight, ref other._treeHeight);
+				G.Swap(ref _version, ref other._version);
 			}
 			finally
 			{

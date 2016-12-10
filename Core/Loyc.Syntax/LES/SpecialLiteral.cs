@@ -49,7 +49,7 @@ namespace Loyc.Syntax.Les
 		public override string ToString()
 		{
 			if (Value is string)
-				return LiteralTypeAsLes3Identifier() + "\"" + ParseHelpers.EscapeCStyle((string)Value, EscapeC.Control | EscapeC.DoubleQuotes) + "\"";
+				return LiteralTypeAsLes3Identifier() + "\"" + PrintHelpers.EscapeCStyle((string)Value, EscapeC.Control | EscapeC.DoubleQuotes) + "\"";
 			else if (Value is double)
 				return ((double)Value).ToString("0.0") + LiteralTypeAsLes3Identifier();
 			else
@@ -60,7 +60,7 @@ namespace Loyc.Syntax.Les
 			if (Les2Printer.IsNormalIdentifier(TypeMarker))
 				return TypeMarker.Name;
 			else
-				return "`" + ParseHelpers.EscapeCStyle(TypeMarker.Name, EscapeC.Control, '`') + "`";
+				return "`" + PrintHelpers.EscapeCStyle(TypeMarker.Name, EscapeC.Control, '`') + "`";
 		}
 	}
 }

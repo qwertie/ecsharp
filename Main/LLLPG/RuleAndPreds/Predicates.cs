@@ -655,8 +655,8 @@ namespace Loyc.LLParserGenerator
 			foreach (var div in _divisions)
 			{
 				if (div.Slash &&
-					Loyc.Range.IsInRange(armA, div.Left, div.Right - 1) &&
-					Loyc.Range.IsInRange(armB, div.Left, div.Right - 1) &&
+					armA.IsInRange(div.Left, div.Right - 1) &&
+					armB.IsInRange(div.Left, div.Right - 1) &&
 					(armA < div.Mid) != (armB < div.Mid))
 					return true;
 			}

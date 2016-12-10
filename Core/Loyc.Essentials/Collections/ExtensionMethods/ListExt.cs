@@ -495,7 +495,7 @@ namespace Loyc.Collections
 				if (iBegin != iPivot) {
 					Swap(list, iBegin, iPivot);
 					if (indexes != null)
-						MathEx.Swap(ref indexes[iPivot], ref indexes[iBegin]);
+						G.Swap(ref indexes[iPivot], ref indexes[iBegin]);
 				}
 
 				int i = iBegin + 1;
@@ -521,14 +521,14 @@ namespace Loyc.Collections
 					if (i != iOut) {
 						Swap(list, i, iOut);
 						if (indexes != null)
-							MathEx.Swap(ref indexes[i], ref indexes[iOut]);
+							G.Swap(ref indexes[i], ref indexes[iOut]);
 					}
 				} while (++i != iStop);
 
 				// Finally, put the pivot element in the middle (at iOut)
 				Swap(list, iBegin, iOut);
 				if (indexes != null)
-					MathEx.Swap(ref indexes[iBegin], ref indexes[iOut]);
+					G.Swap(ref indexes[iBegin], ref indexes[iOut]);
 
 				// Now we need to sort the left and right sub-partitions. Use a 
 				// recursive call only to sort the smaller partition, in order to 
@@ -615,7 +615,7 @@ namespace Loyc.Collections
 		public static void Randomize<T>(this T[] list)
 		{
 			for (int i = 0; i < list.Length; i++)
-				MathEx.Swap(ref list[i], ref list[_r.Next(list.Length)]);
+				G.Swap(ref list[i], ref list[_r.Next(list.Length)]);
 		}
 		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
 		public static T[] Randomized<T>(this IList<T> list)

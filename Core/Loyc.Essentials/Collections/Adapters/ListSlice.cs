@@ -15,14 +15,14 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(list, start, length);
 		}
-		public static ListSlice<T> Slice<T>(this IList<T> list, NumRange<int,MathI> range)
-		{
-			return new ListSlice<T>(list, range.Lo, range.Count);
-		}
-		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, NumRange<int,MathI> range)
-		{
-			return new ListSlice<T>(list, range.Lo, range.Count);
-		}
+		//public static ListSlice<T> Slice<T>(this IList<T> list, NumRange<int,MathI> range)
+		//{
+		//	return new ListSlice<T>(list, range.Lo, range.Count);
+		//}
+		//public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, NumRange<int,MathI> range)
+		//{
+		//	return new ListSlice<T>(list, range.Lo, range.Count);
+		//}
 	}
 
 	/// <summary>

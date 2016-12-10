@@ -4,37 +4,73 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc;
+using Loyc.Syntax;
 
 namespace Benchmark
 {
 	class Program
 	{
-		public static void Main()
+        public static void Main()
 		{
-			RunBenchmarks();
-		}
-		private static void RunBenchmarks()
-		{
-			new ListBenchmarks().Run(EzChartForm.StartOnNewThread(true));
-
-			Benchmarks.ConvexHull();
-
 			// Obtain the word list
 			string wordList = Benchmark.Resources.Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" },
 											StringSplitOptions.RemoveEmptyEntries);
 
-			Benchmarks.LinqVsForLoop();
-			//Benchmarks.CountOnes();
-			Benchmarks.BenchmarkSets(words);
-			Benchmarks.ThreadLocalStorage();
-			Benchmarks.EnumeratorVsIterator();
-			GoInterfaceBenchmark.DoBenchmark();
-			CPTrieBenchmark.BenchmarkStrings(words);
-			CPTrieBenchmark.BenchmarkInts();
-			Benchmarks.ByteArrayAccess();
+			RunMenu(new Pair<string, Action>[] {
+				new Pair<string,Action>("Convex Hull", Benchmarks.ConvexHull),
+				new Pair<string,Action>("Run unit tests of LeMP", Benchmarks.LinqVsForLoop),
+				new Pair<string,Action>("Hashtrees (InternalSet) vs HashSet/Dictionary", () => Benchmarks.BenchmarkSets(words)),
+				new Pair<string,Action>("Thread-local storage", Benchmarks.ThreadLocalStorage),
+				new Pair<string,Action>("IEnumerator<T> vs Iterator<T>", Benchmarks.EnumeratorVsIterator),
+				new Pair<string,Action>("GoInterface", GoInterfaceBenchmark.DoBenchmark),
+				new Pair<string,Action>("CPTrie (strings)", () => CPTrieBenchmark.BenchmarkStrings(words)),
+				new Pair<string,Action>("CPTrie (integers)", CPTrieBenchmark.BenchmarkInts),
+				new Pair<string,Action>("Byte array access", Benchmarks.ByteArrayAccess),
+				new Pair<string,Action>("List benchmarks (with chart Form)", 
+					() => new ListBenchmarks().Run(EzChartForm.StartOnNewThread(true))),
+			});
 		}
-		
+
+		private static IEnumerator<char> ConsoleChars()
+		{
+			for (ConsoleKeyInfo k; (k = Console.ReadKey(true)).Key != ConsoleKey.Escape
+				&& k.Key != ConsoleKey.Enter;)
+				yield return k.KeyChar;
+		}
+
+		public static void RunMenu(IList<Pair<string, Action>> menu, IEnumerator<char> input = null)
+		{
+			var reader = input ?? ConsoleChars();
+			for (;;) {
+				Console.WriteLine();
+				Console.WriteLine("What do you want to run? (Esc to quit)");
+				for (int i = 0; i < menu.Count; i++)
+					Console.WriteLine(PrintHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
+				Console.WriteLine("Space. Run all");
+
+				if (!reader.MoveNext())
+					break;
+
+				char c = reader.Current;
+				if (c == ' ') {
+					for (int i = 0; i < menu.Count; i++)
+						RunOne(menu, i);
+				} else {
+					int i = ParseHelpers.HexDigitValue(c);
+					if (i > 0 && i <= menu.Count)
+						RunOne(menu, i - 1);
+				}
+			}
+		}
+
+		private static void RunOne(IList<Pair<string, Action>> menu, int i)
+		{
+			Console.WriteLine();
+			ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i + 1, menu[i].Key);
+			menu[i].Value();
+		}
+
 		// By examining disassembly of this method in the debugger, I learned that 
 		// the .NET inliner (x64) is too dumb to take into account the cost of 
 		// calling a method in its inlining decision. .NET will not inline the last 

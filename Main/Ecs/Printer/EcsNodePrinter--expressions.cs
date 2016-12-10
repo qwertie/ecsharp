@@ -216,12 +216,12 @@ namespace Loyc.Ecs
 		bool CanAppearHere(ref Precedence prec, out bool extraParens, ref bool backtick, bool prefix = false)
 		{
 			var altPrec = EP.Backtick;
-			if (backtick) MathEx.Swap(ref prec, ref altPrec);
+			if (backtick) G.Swap(ref prec, ref altPrec);
 			if (CanAppearHere(prec, out extraParens, prefix && !backtick))
 				return true;
 
 			backtick = !backtick;
-			MathEx.Swap(ref prec, ref altPrec);
+			G.Swap(ref prec, ref altPrec);
 			return CanAppearHere(prec, out extraParens, prefix && !backtick);
 		}
 

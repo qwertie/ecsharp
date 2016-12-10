@@ -501,8 +501,8 @@ namespace Loyc.Collections
 				T pivot2 = _root[start + offset2];
 				if (comp(pivot0, pivot1) > 0)
 				{
-					MathEx.Swap(ref pivot0, ref pivot1);
-					MathEx.Swap(ref offset0, ref offset1);
+					G.Swap(ref pivot0, ref pivot1);
+					G.Swap(ref offset0, ref offset1);
 				}
 				if (comp(pivot1, pivot2) > 0)
 				{
@@ -594,7 +594,7 @@ namespace Loyc.Collections
 
 		private static T MedianOf3(T a, T b, T c, Comparison<T> comp)
 		{
-			MathEx.SortPair(ref a, ref b, comp);
+			G.SortPair(ref a, ref b, comp);
 			if (comp(b, c) > 0)
 			{
 				b = c;

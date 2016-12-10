@@ -153,7 +153,7 @@ namespace Loyc.Ecs
 			// - #(BaseList) can be missing (@``); the bases can be any expressions
 			// - the arguments do not have attributes
 			var type = n.Name;
-			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(n, p) && Range.IsInRange(n.ArgCount, 2, 3)) {
+			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(n, p) && n.ArgCount.IsInRange(2, 3)) {
 				name = n.Args[0];
 				bases = n.Args[1];
 				body = n.Args[2, null];
@@ -212,7 +212,7 @@ namespace Loyc.Ecs
 			var kind = n.Name;
 			if ((kind != S.Fn && kind != S.Delegate && kind != S.Constructor) || !HasSimpleHeadWPA(n, p))
 				return null;
-			if (!Range.IsInRange(n.ArgCount, 3, kind == S.Delegate ? 3 : 4))
+			if (!n.ArgCount.IsInRange(3, kind == S.Delegate ? 3 : 4))
 				return null;
 
 			retType = n.Args[0];
@@ -428,7 +428,7 @@ namespace Loyc.Ecs
 					return true;
 				return OfHasNormalArgs(n, (f & ICI.NameDefinition) != 0, p);
 			}
-			if (CallsWPAIH(n, S.Dot, p) && (f & ICI.DisallowDotted) == 0 && Range.IsInRange(n.ArgCount, 1, 2)) {
+			if (CallsWPAIH(n, S.Dot, p) && (f & ICI.DisallowDotted) == 0 && n.ArgCount.IsInRange(1, 2)) {
 				var args = n.Args;
 				LNode lhs = args[0], rhs = args.Last;
 				// right-hand argument must be simple

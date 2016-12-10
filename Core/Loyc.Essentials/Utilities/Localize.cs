@@ -134,19 +134,25 @@ namespace Loyc
 		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru);
 		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.FormatCore);
 
-		/// <summary>Localizer method (thread-local)</summary>
+		/// <summary>Localizer method (thread-local), which is a do-nothing pass-through by default</summary>
 		public static LocalizerDelegate Localizer
 		{
 			get { return _localizer.Value; }
-			set { _localizer.Value = value; }
+		}
+		public static SavedValue<LocalizerDelegate> SetLocalizer(LocalizerDelegate newValue)
+		{
+			return new SavedValue<LocalizerDelegate>(_localizer, newValue ?? Passthru);
 		}
 
 		/// <summary>Formatting delegate (thread-local), which is set to 
-		/// <see cref="StringExt.Format"/> by default.</summary>
+		/// <see cref="StringExt.FormatCore"/> by default.</summary>
 		public static FormatterDelegate Formatter
 		{
 			get { return _formatter.Value; }
-			set { _formatter.Value = value; }
+		}
+		public static SavedValue<FormatterDelegate> SetFormatter(FormatterDelegate newValue)
+		{
+			return new SavedValue<FormatterDelegate>(_formatter, newValue ?? StringExt.FormatCore);
 		}
 
 		/// <summary>

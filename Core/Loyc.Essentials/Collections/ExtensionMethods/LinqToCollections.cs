@@ -15,7 +15,7 @@ namespace Loyc.Collections
 	/// interface (e.g. Take(List&lt;int>) returns IList&lt;int>) and/or have higher
 	/// performance than the ones in System.Linq.Enumerable.
 	/// </summary><remarks>
-	/// For example, the <see cref="Enumerable.Last(IEnumerable{T})"/> extension 
+	/// For example, the <see cref="Enumerable.Last()"/> extension 
 	/// method scans the entire list before returning the last item, while 
 	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
 	/// return the last item directly.

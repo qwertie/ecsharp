@@ -199,19 +199,5 @@ namespace Loyc.Tests
 			    || expected == MathEx.NextHigher(result)
 				|| float.IsNaN(expected) && float.IsNaN(result));
 		}
-
-		[Test]
-		public void IntegerToStringTests()
-		{
-			AreEqual(ParseHelpers.IntegerToString(0, "", 10, 3, '_'), "0");
-			AreEqual(ParseHelpers.IntegerToString(123, "0d", 10, 3, '_'), "0d123");
-			AreEqual(ParseHelpers.IntegerToString(0x123, "0x", 16, 3, '_'), "0x123");
-			AreEqual(ParseHelpers.IntegerToString(126uL, "0b", 2, 4, '_'), "0b111_1110");
-			AreEqual(ParseHelpers.IntegerToString(9876, "", 10, 3, ','), "9,876");
-			AreEqual(ParseHelpers.IntegerToString(-1234567, "0d", 10, 3, '\''), "-0d1'234'567");
-			AreEqual(ParseHelpers.IntegerToString(-1234567, "0d", 10, 0, '\''), "-0d1234567");
-			AreEqual(ParseHelpers.IntegerToString(-0x1234567890ABCD, "0x", 16, 4, '_'), "-0x12_3456_7890_ABCD");
-			AreEqual(ParseHelpers.IntegerToString(0xFEEDFEEDFEEDFEEDuL, "0x", 16, 4, '_'), "0xFEED_FEED_FEED_FEED");
-		}
 	}
 }

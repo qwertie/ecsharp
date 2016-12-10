@@ -751,7 +751,7 @@ namespace Loyc.Collections.Impl
 				{
 					if (count <= 2) {
 						if (count == 2)
-							MathEx.SortPair(ref array[index], ref array[index+1], comp);
+							G.SortPair(ref array[index], ref array[index+1], comp);
 					} else {
 						InsertionSort(array, index, count, comp);
 					}
@@ -764,7 +764,7 @@ namespace Loyc.Collections.Impl
 				// Swap the pivot to the beginning of the range
 				T pivot = array[iPivot];
 				if (iBegin != iPivot)
-					MathEx.Swap(ref array[iBegin], ref array[iPivot]);
+					G.Swap(ref array[iBegin], ref array[iPivot]);
 
 				int i = iBegin + 1;
 				int iOut = iBegin;
@@ -779,12 +779,12 @@ namespace Loyc.Collections.Impl
 						++iOut;
 						++leftSize;
 						if (i != iOut)
-							MathEx.Swap(ref array[i], ref array[iOut]);
+							G.Swap(ref array[i], ref array[iOut]);
 					}
 				} while (++i != iStop);
 
 				// Finally, put the pivot element in the middle (at iOut)
-				MathEx.Swap(ref array[iBegin], ref array[iOut]);
+				G.Swap(ref array[iBegin], ref array[iOut]);
 
 				// Now we need to sort the left and right sub-partitions. Use a 
 				// recursive call only to sort the smaller partition, in order to 
@@ -812,7 +812,7 @@ namespace Loyc.Collections.Impl
 			int iPivot1 = index + (count >> 1);
 			int iPivot2 = index + count - 1;
 			if (comp(list[iPivot0], list[iPivot1]) > 0)
-				MathEx.Swap(ref iPivot0, ref iPivot1);
+				G.Swap(ref iPivot0, ref iPivot1);
 			if (comp(list[iPivot1], list[iPivot2]) > 0)
 			{
 				iPivot1 = iPivot2;
@@ -834,7 +834,7 @@ namespace Loyc.Collections.Impl
 			{
 				int j = i;
 				do
-					if (!MathEx.SortPair(ref array[j - 1], ref array[j], comp))
+					if (!G.SortPair(ref array[j - 1], ref array[j], comp))
 						break;
 				while (--j > index);
 			}

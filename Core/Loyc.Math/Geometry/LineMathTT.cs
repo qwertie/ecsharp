@@ -1,4 +1,9 @@
 ﻿
+
+
+
+
+
 // This is a generated file
 using Loyc.Math;
 using System.Diagnostics;
@@ -15,6 +20,9 @@ namespace Loyc.Geometry
 		Infinite
 	}
 }
+
+
+
 
 namespace Loyc.Geometry
 {
@@ -334,9 +342,9 @@ namespace Loyc.Geometry
 
 		static bool GetOverlapRegion(T pa, T pb, LineType pType, T qa, T qb, LineType qType, out T from, out T to)
 		{
-			bool inf_pa = MathEx.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_pa = G.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_pb = pType == LineType.Infinite || pType == LineType.Ray && !inf_pa;
-			bool inf_qa = MathEx.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_qa = G.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_qb = qType == LineType.Infinite || qType == LineType.Ray && !inf_qa;
 			if (inf_pa) pa = MathEx.Min(pa, qa);
 			if (inf_pb) pb = MathEx.Max(pb, qb);
@@ -431,6 +439,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Double;
@@ -749,9 +758,9 @@ namespace Loyc.Geometry
 
 		static bool GetOverlapRegion(T pa, T pb, LineType pType, T qa, T qb, LineType qType, out T from, out T to)
 		{
-			bool inf_pa = MathEx.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_pa = G.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_pb = pType == LineType.Infinite || pType == LineType.Ray && !inf_pa;
-			bool inf_qa = MathEx.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_qa = G.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_qb = qType == LineType.Infinite || qType == LineType.Ray && !inf_qa;
 			if (inf_pa) pa = MathEx.Min(pa, qa);
 			if (inf_pb) pb = MathEx.Max(pb, qb);
@@ -846,4 +855,5 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 

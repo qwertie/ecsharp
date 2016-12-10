@@ -7,7 +7,7 @@ not have to release any source code of any products that merely use and
 depend on Loyc code. However, changes to Loyc DLLs themselves require 
 you to provide source code of the changes to your users.
 
-- David Piepgrass (author)
+- David Piepgrass (principal author)
 
 
                   GNU LESSER GENERAL PUBLIC LICENSE

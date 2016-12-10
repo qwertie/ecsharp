@@ -26,6 +26,7 @@ namespace Loyc.Tests
 		public static readonly VList<Pair<string, Func<int>>> Menu = new VList<Pair<string, Func<int>>>()
 		{
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.Math.dll",        Loyc_Math),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Syntax.dll",      Loyc_Syntax),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
@@ -56,7 +57,7 @@ namespace Loyc.Tests
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do? (Esc to quit)");
 				for (int i = 0; i < menu.Count; i++)
-					Console.WriteLine(ParseHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
+					Console.WriteLine(PrintHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
 				Console.WriteLine("Space. Run all tests");
 
 				if (!reader.MoveNext())
@@ -88,7 +89,6 @@ namespace Loyc.Tests
 		{
 			return MiniTest.RunTests.RunMany(
 				new ListExtTests(),
-				new MathExTests(),
 				new UStringTests(),
 				new StringExtTests(),
 				new HashTagsTests(),
@@ -101,7 +101,7 @@ namespace Loyc.Tests
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }),
 				new GTests(),
-				new ParseHelpersTests());
+				new PrintHelpersTests());
 		}
 		public static int Loyc_Collections()
 		{
@@ -110,7 +110,6 @@ namespace Loyc.Tests
 			int seed = 237588399;
 
 			return MiniTest.RunTests.RunMany(
-				new CPTrieTests(),
 				new SimpleCacheTests(),
 				new InvertibleSetTests(),
 				new AListTests(false, seed, 8, 8),
@@ -137,9 +136,15 @@ namespace Loyc.Tests
 				new MSetTests(), // derived from MutableSetTests<MSet<STI>, STI>
 				new SymbolSetTests(), // derived from MutableSetTests<MSet<Symbol>, Symbol>
 				new ImmSetTests(), // tests for Set<T>
-				new MapTests(), // derived from DictionaryTests<MMap<object, object>>
-				new KeylessHashtableTests()
+				new MapTests() // derived from DictionaryTests<MMap<object, object>>
 			);
+		}
+		public static int Loyc_Math()
+		{
+			return MiniTest.RunTests.RunMany(
+				new MathExTests(),
+				new LineMathTests(),
+				new PointMathTests());
 		}
 		public static int Loyc_Syntax()
 		{
@@ -156,18 +161,19 @@ namespace Loyc.Tests
 				new Les3PrinterTests(),
 				new TokensToTreeTests(),
 				new StreamCharSourceTests(),
+				new ParseHelpersTests(),
 				new LexerSourceTests_Calculator(),
 				new ParserSourceTests_Calculator());
 		}
 		public static int Loyc_Utilities()
 		{
 			return MiniTest.RunTests.RunMany(
-				new LineMathTests(),
-				new PointMathTests(),
 				new Loyc.LLParserGenerator.IntSetTests(),
 				new TagsInWListTests(),
 				new UGTests(),
-				new GoInterfaceTests());
+				new GoInterfaceTests(),
+				new CPTrieTests(),
+				new KeylessHashtableTests());
 		}
 	}
 }

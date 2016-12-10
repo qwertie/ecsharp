@@ -218,7 +218,7 @@ namespace Loyc.Syntax.Les
 					}
 					if ((category & EscapeC.Unrecognized) != 0) {
 						// This backslash was ignored by UnescapeChar
-						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(ParseHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(PrintHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
 					} else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
 						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
 					sb.AppendCodePoint(c);

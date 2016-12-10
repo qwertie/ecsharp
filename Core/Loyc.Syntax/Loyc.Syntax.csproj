@@ -219,6 +219,7 @@
     <Compile Include="LNodes\NodeStyle.cs" />
     <Compile Include="LNodes\StdNodes.cs" />
     <Compile Include="Parsing\OperatorShape.cs" />
+    <Compile Include="Parsing\ParseHelpers.cs" />
     <Compile Include="Parsing\StandardTriviaInjector.cs" />
     <Compile Include="Parsing\AbstractTriviaInjector.cs" />
     <Compile Include="Parsing\ParserSource.cs" />

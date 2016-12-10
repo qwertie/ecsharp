@@ -351,30 +351,39 @@ namespace Loyc.Syntax
 				return false;
 			if (kind == LNodeKind.Literal)
 				return object.Equals(candidate.Value, pattern.Value);
-			else if (kind == LNodeKind.Call) {
+			else if (kind == LNodeKind.Call)
+			{
 				if (!MatchesPatternNested(candidate.Target, pattern.Target, ref captures, ref unmatchedAttrs))
 					return false;
 				var cArgs = candidate.Args;
 				var pArgs = pattern.Args;
 
-				if (pArgs.Count != cArgs.Count && !pArgs.Any(IsParamsCapture))
-					return false;
-
-				// Scan from the end of the list to the beginning (RVLists is good at this),
-				// matching args one-by-one. Use MatchThenParams() in case of $(params capture).
-				while (!pArgs.IsEmpty) {
-					LNode pArg = pArgs.Pop();
-					if (IsParamsCapture(pArg))
-						return MatchThenParams(cArgs, pArgs, pArg, ref captures, ref unmatchedAttrs);
-					if (cArgs.IsEmpty)
-						return false;
-					if (!MatchesPatternNested(cArgs.Pop(), pArg, ref captures, ref unmatchedAttrs))
-						return false;
-				}
-				return true;
-			} else // kind == Id
+				return ListMatches(cArgs, pArgs, ref captures, ref unmatchedAttrs);
+			}
+			else // kind == Id
 				return true;
 		}
+
+		private static bool ListMatches(VList<LNode> candidates, VList<LNode> patterns, ref MMap<Symbol, LNode> captures, ref VList<LNode> unmatchedAttrs)
+		{
+			if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
+				return false;
+
+			// Scan from the end of the list to the beginning (RVLists is good at this),
+			// matching args one-by-one. Use MatchThenParams() in case of $(params capture).
+			while (!patterns.IsEmpty)
+			{
+				LNode pArg = patterns.Pop();
+				if (IsParamsCapture(pArg))
+					return MatchThenParams(candidates, patterns, pArg, ref captures, ref unmatchedAttrs);
+				if (candidates.IsEmpty)
+					return false;
+				if (!MatchesPatternNested(candidates.Pop(), pArg, ref captures, ref unmatchedAttrs))
+					return false;
+			}
+			return true;
+		}
+
 		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
 			MMap<Symbol, LNode> captures2 = null;
@@ -415,9 +424,12 @@ namespace Loyc.Syntax
 
 		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
-			if (pattern.HasPAttrs())
-				throw new LogException(pattern.Attrs.Last, "TODO: attributes in patterns are not yet supported");
-			unmatchedAttrs = candidate.Attrs;
+			if (pattern.HasPAttrs()) {
+				unmatchedAttrs = LNode.List();
+				return ListMatches(candidate.Attrs, pattern.Attrs, ref captures, ref unmatchedAttrs);
+			} else {
+				unmatchedAttrs = candidate.Attrs;
+			}
 			return true;
 		}
 		static bool IsParamsCapture(LNode pattern)

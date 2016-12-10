@@ -62,7 +62,7 @@ namespace Samples
 		public static void PrintAllTheNames(string path)
 		{
 			using (ParsingService.PushCurrent(EcsLanguageService.Value))
-			using (MessageSink.PushCurrent(MessageSink.Console))
+			using (MessageSink.SetDefault(MessageSink.Console))
 				foreach (var filename in Directory.GetFiles(path, "*.cs")) {
 					Console.WriteLine(filename);
 					foreach (var stmt in EcsLanguageService.Value.ParseFile(filename))

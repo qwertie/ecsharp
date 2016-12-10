@@ -647,7 +647,7 @@ namespace Util.WinForms
 			else if (alignment == StringAlignment.Center)
 				location += (maxSize - size) * 0.5f;
 			float old = point;
-			point = Range.PutInRange(point, location, location + size);
+			point = point.PutInRange(location, location + size);
 			return point == old;
 		}
 

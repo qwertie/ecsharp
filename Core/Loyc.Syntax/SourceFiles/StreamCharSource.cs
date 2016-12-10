@@ -120,9 +120,9 @@
 
 		protected void SwapBlks()
 		{
-			MathEx.Swap(ref _blk, ref _blk2);
-			MathEx.Swap(ref _blkLen, ref _blk2Len);
-			MathEx.Swap(ref _blkStart, ref _blk2Start);
+			G.Swap(ref _blk, ref _blk2);
+			G.Swap(ref _blkLen, ref _blk2Len);
+			G.Swap(ref _blkStart, ref _blk2Start);
 		}
 
 		// Goal: get a block of characters, so that _blkStart <= charIndex < _blkStart + _blkLen

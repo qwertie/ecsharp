@@ -149,31 +149,19 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Geometry\BoundingBoxMathTT.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>BoundingBoxMathTT.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Geometry\LineMath.cs" />
-    <Compile Include="Geometry\LineMathTT.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>LineMathTT.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Geometry\PointMath.cs" />
-    <Compile Include="Geometry\PointMathTT.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PointMathTT.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Geometry\PolygonMathTT.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PolygonMathTT.tt</DependentUpon>
-    </Compile>
+    <Compile Include="Collections\CPTrie\CPBitArrayLeaf.cs" />
+    <Compile Include="Collections\CPTrie\CPBNode.cs" />
+    <Compile Include="Collections\CPTrie\CPByteTrie.cs" />
+    <Compile Include="Collections\CPTrie\CPIntTrie.cs" />
+    <Compile Include="Collections\CPTrie\CPSNode.cs" />
+    <Compile Include="Collections\CPTrie\CPStringTrie.cs" />
+    <Compile Include="Collections\CPTrie\CPTrie.cs" />
+    <Compile Include="Collections\CPTrie\CPTrieBenchmark.cs" />
+    <Compile Include="Collections\CPTrie\CPTrieMisc.cs" />
+    <Compile Include="Collections\CPTrie\CPTrieTests.cs" />
+    <Compile Include="Collections\KeylessHashtable.cs" />
     <Compile Include="GoInterface.cs" />
     <Compile Include="IntSet.cs" />
-    <Compile Include="Math\PointExt.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="Statistic.cs" />
     <Compile Include="TagsInWList.cs" />
@@ -213,22 +201,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Geometry\BoundingBoxMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>BoundingBoxMathTT.cs</LastGenOutput>
-    </None>
-    <None Include="Geometry\LineMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>LineMathTT.cs</LastGenOutput>
-    </None>
-    <None Include="Geometry\PointMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PointMathTT.cs</LastGenOutput>
-    </None>
-    <None Include="Geometry\PolygonMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PolygonMathTT.cs</LastGenOutput>
-    </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +214,14 @@
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj">
+      <Project>{7493a75d-106a-4a50-9dcf-a7a034629fff}</Project>
+      <Name>Loyc.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.Syntax</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

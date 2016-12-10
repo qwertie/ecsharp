@@ -13,5 +13,5 @@ using System.Reflection;
 // by using '.*' as shown below - but you shouldn't, because it will cause a simple 
 // "Rebuild All" command to produce an incompatible assembly, since the .NET 
 // framework apparently requires an exact match on all four AssemblyVersion numbers.
-[assembly: AssemblyVersion("2.2.0.0")]
-[assembly: AssemblyFileVersion("2.2.0.0")]
+[assembly: AssemblyVersion("2.3.0.0")]
+[assembly: AssemblyFileVersion("2.3.0.0")]

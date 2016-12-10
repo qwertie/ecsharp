@@ -989,7 +989,7 @@ namespace Loyc.Ecs
 						_out.Write(text[i], false);
 				}
 			} else {
-				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType), false);
+				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}

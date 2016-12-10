@@ -275,7 +275,7 @@ namespace Loyc.Utilities
 			List<string> args = G.SplitCommandLineArguments("\"@"+file1+"\" \"lazy dog\"");
 			var options = new DList<KeyValuePair<string, string>>();
 			var msgs = new MessageHolder();
-			using (MessageSink.PushCurrent(msgs))
+			using (MessageSink.SetDefault(msgs))
 				UG.ProcessCommandLineArguments(args, options, atFolder, null, null, 5);
 
 			ExpectList(args.AsListSource(), "@"+file1, "@"+file2, "fox--jumps", "lazy dog");

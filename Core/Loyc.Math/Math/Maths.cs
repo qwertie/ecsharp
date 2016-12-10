@@ -3,7 +3,12 @@
 // NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
 // 
 
+
+
+
+
 using System.Collections.Generic;
+
 
 
 namespace Loyc.Math
@@ -37,12 +42,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (sbyte)0; } }
 		public T One        { get { return (sbyte)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -50,11 +58,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -67,8 +80,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -77,7 +92,10 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -86,6 +104,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -98,8 +117,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -132,12 +153,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (byte)0; } }
 		public T One        { get { return (byte)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region IMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -145,11 +169,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -162,8 +191,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -172,6 +203,8 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
+
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
@@ -179,6 +212,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -191,8 +225,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -225,12 +261,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (short)0; } }
 		public T One        { get { return (short)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -238,11 +277,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -255,8 +299,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -265,7 +311,10 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -274,6 +323,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -286,8 +336,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -320,12 +372,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (ushort)0; } }
 		public T One        { get { return (ushort)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region IMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -333,11 +388,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -350,8 +410,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -360,6 +422,8 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
+
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
@@ -367,6 +431,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -379,8 +444,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -413,12 +480,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (int)0; } }
 		public T One        { get { return (int)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -426,11 +496,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return t > (uint)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return		                   (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return
+		                   (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -443,8 +518,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -453,7 +530,10 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -462,6 +542,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -474,8 +555,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -508,12 +591,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (uint)0; } }
 		public T One        { get { return (uint)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region IMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -521,11 +607,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -538,8 +629,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -548,6 +641,8 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
+
+
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
@@ -555,6 +650,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -567,8 +663,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -601,12 +699,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (long)0; } }
 		public T One        { get { return (long)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -614,11 +715,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
-		public T Clip(int t)    { return		                   (T)t; }
-		public T Clip(long t)   { return		                   (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return
+		                   (T)t; }
+		public T Clip(long t)   { return
+		                   (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -631,8 +737,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -641,7 +749,10 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -650,6 +761,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -662,8 +774,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -696,12 +810,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (ulong)0; } }
 		public T One        { get { return (ulong)1; } }
 
+
 		public T Floor(T a)               { return a; }
 		public T Ceiling(T a)             { return a; }
+
 
 		#endregion
 
 		#region IMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -709,11 +826,16 @@ namespace Loyc.Math
 		public T From(long t)   { return (T)t; }
 		public T From(double t) { return (T)t; }
 
+
 		public T Clip(uint t)   { return(T)t; }
 		public T Clip(ulong t)  { return(T)t; }
-		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(long t)   { return		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(int t)    { return
+		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(long t)   { return
+		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
+		public T Clip(double t) { return (T)t.PutInRange((double)0, (double)T.MaxValue); }
+
+
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -726,8 +848,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -736,6 +860,8 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)MathEx.MulDiv(a, mul, div); }
 
+
+
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
 
@@ -743,6 +869,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -755,8 +882,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return MathEx.Log2Floor(a); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -789,12 +918,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (float)0; } }
 		public T One        { get { return (float)1; } }
 
+
 		public T Floor(T a)               { return (T)System.Math.Floor(a); }
 		public T Ceiling(T a)             { return (T)System.Math.Ceiling(a); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -809,6 +941,8 @@ namespace Loyc.Math
 		public T Clip(long t)   { return (T)t; }
 		public T Clip(double t) { return (T)t; }
 
+
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -820,8 +954,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
 		public T NextLower(T a)             { return MathEx.NextLower(a); }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -830,8 +966,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return MathEx.ShiftLeft(a, amount); }
 		public T Shr(T a, int amount) { return MathEx.ShiftRight(a, amount); }
@@ -840,6 +980,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region ITrigonometry & IExp Members
 
@@ -862,8 +1003,10 @@ namespace Loyc.Math
 		#endif
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -896,12 +1039,15 @@ namespace Loyc.Math
 		public T Zero       { get { return (double)0; } }
 		public T One        { get { return (double)1; } }
 
+
 		public T Floor(T a)               { return (T)System.Math.Floor(a); }
 		public T Ceiling(T a)             { return (T)System.Math.Ceiling(a); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return (T)t; }
 		public T From(int t)    { return (T)t; }
@@ -916,6 +1062,8 @@ namespace Loyc.Math
 		public T Clip(long t)   { return (T)t; }
 		public T Clip(double t) { return (T)t; }
 
+
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -927,8 +1075,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { return MathEx.NextHigher(a); }
 		public T NextLower(T a)             { return MathEx.NextLower(a); }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -937,8 +1087,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)(a * mul / div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return MathEx.ShiftLeft(a, amount); }
 		public T Shr(T a, int amount) { return MathEx.ShiftRight(a, amount); }
@@ -947,6 +1101,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region ITrigonometry & IExp Members
 
@@ -969,8 +1124,10 @@ namespace Loyc.Math
 		#endif
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -1003,12 +1160,15 @@ namespace Loyc.Math
 		public T Zero       { get { return FPI8.Zero; } }
 		public T One        { get { return FPI8.One; } }
 
+
 		public T Floor(T a)               { return a.Floor(); }
 		public T Ceiling(T a)             { return a.Ceiling(); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
@@ -1022,6 +1182,7 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -1033,8 +1194,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -1043,8 +1206,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -1053,6 +1220,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -1065,8 +1233,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -1099,12 +1269,15 @@ namespace Loyc.Math
 		public T Zero       { get { return FPI16.Zero; } }
 		public T One        { get { return FPI16.One; } }
 
+
 		public T Floor(T a)               { return a.Floor(); }
 		public T Ceiling(T a)             { return a.Ceiling(); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
@@ -1118,6 +1291,7 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -1129,8 +1303,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -1139,8 +1315,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -1149,6 +1329,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -1161,8 +1342,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -1195,12 +1378,15 @@ namespace Loyc.Math
 		public T Zero       { get { return FPI23.Zero; } }
 		public T One        { get { return FPI23.One; } }
 
+
 		public T Floor(T a)               { return a.Floor(); }
 		public T Ceiling(T a)             { return a.Ceiling(); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
@@ -1214,6 +1400,7 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -1225,8 +1412,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -1235,8 +1424,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -1245,6 +1438,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -1257,8 +1451,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -1291,12 +1487,15 @@ namespace Loyc.Math
 		public T Zero       { get { return FPL16.Zero; } }
 		public T One        { get { return FPL16.One; } }
 
+
 		public T Floor(T a)               { return a.Floor(); }
 		public T Ceiling(T a)             { return a.Ceiling(); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
@@ -1310,6 +1509,7 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -1321,8 +1521,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -1331,8 +1533,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -1341,6 +1547,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -1353,8 +1560,10 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
+
 	}
 }
+
 
 namespace Loyc.Math
 {
@@ -1387,12 +1596,15 @@ namespace Loyc.Math
 		public T Zero       { get { return FPL32.Zero; } }
 		public T One        { get { return FPL32.One; } }
 
+
 		public T Floor(T a)               { return a.Floor(); }
 		public T Ceiling(T a)             { return a.Ceiling(); }
+
 
 		#endregion
 
 		#region ISignedMath
+
 
 		public T From(uint t)   { return T.FastCast(t); }
 		public T From(int t)    { return T.FastCast(t); }
@@ -1406,6 +1618,7 @@ namespace Loyc.Math
 		public T Clip(long t)   { return new T(t); }
 		public T Clip(double t) { return new T(t); }
 
+
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
 		public T Abs(T a)                   { return (T)(a >= Zero ? a : -a); }
@@ -1417,8 +1630,10 @@ namespace Loyc.Math
 
 		public T AddOne(T a)                { a++; return a; }
 		public T SubOne(T a)                { a--; return a; }
+
 		public T NextHigher(T a)            { a++; return a; }
 		public T NextLower(T a)             { a--; return a; }
+
 
 		public T Add(T a, T b)              { return (T)(a + b); }
 		public T Add(T a, T b, T c)         { return (T)(a + b + c); }
@@ -1427,8 +1642,12 @@ namespace Loyc.Math
 		public T Div(T a, T b)              { return (T)(a / b); }
 		public T MulDiv(T a, T mul, T div)  { return (T)a.MulDiv(mul, div); }
 
+
 		public T Reciprocal(T a) { return One / a; }
+
+
 		public T Negate(T a) { return (T)(-a); }
+
 
 		public T Shl(T a, int amount) { return (T)(a << amount); }
 		public T Shr(T a, int amount) { return (T)(a >> amount); }
@@ -1437,6 +1656,7 @@ namespace Loyc.Math
 		public T Square(T a) { return (T)(a * a); }
 
 		#endregion
+
 
 		#region BinaryMath
 
@@ -1449,5 +1669,7 @@ namespace Loyc.Math
 		public int Log2Floor(T a)     { return a.Log2Floor(); }
 
 		#endregion
+
 	}
 }
+

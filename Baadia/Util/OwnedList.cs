@@ -55,7 +55,7 @@ namespace Util.Collections
 			if (parent == _parent)
 				_parent = null;
 			else // don't throw because it prevents the non-parent from dissociating itself from this object
-				MessageSink.Current.Write(Severity.Error, this, "OnBeingRemoved: specified object is not the parent of this object");
+				MessageSink.Default.Write(Severity.Error, this, "OnBeingRemoved: specified object is not the parent of this object");
 		}
 	}
 

@@ -1,6 +1,6 @@
 ﻿<#@ template language="C#" #>
 <#@ output extension="cs" #>
-<#@ include file="../../Loyc.Essentials/Math/NumTraits.ttinclude" #>
+<#@ include file="../../Loyc.Math/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
 // This is a generated file
 using Loyc.Math;
@@ -340,9 +340,9 @@ namespace Loyc.Geometry
 
 		static bool GetOverlapRegion(T pa, T pb, LineType pType, T qa, T qb, LineType qType, out T from, out T to)
 		{
-			bool inf_pa = MathEx.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_pa = G.SortPair(ref pa, ref pb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_pb = pType == LineType.Infinite || pType == LineType.Ray && !inf_pa;
-			bool inf_qa = MathEx.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
+			bool inf_qa = G.SortPair(ref qa, ref qb) && pType == LineType.Ray || pType == LineType.Infinite;
 			bool inf_qb = qType == LineType.Infinite || qType == LineType.Ray && !inf_qa;
 			if (inf_pa) pa = MathEx.Min(pa, qa);
 			if (inf_pb) pb = MathEx.Max(pb, qb);

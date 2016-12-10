@@ -714,21 +714,29 @@ namespace Loyc.Syntax
 			get { return _printer.Value ?? _defaultPrinter; }
 			set { _printer.Value = value; }
 		}
+        
+        public static SavedValue<ILNodePrinter> SetPrinter(ILNodePrinter newValue)
+        {
+            return new SavedValue<ILNodePrinter>(_printer, newValue);
+        }
 
-		/// <summary>Helps you change printers temporarily. Usage in C#: 
-		/// <c>using (LNode.PushPrinter(myPrinter)) { ... }</c></summary>
-		/// <remarks>For example, to switch to the EC# printer, use
-		/// <c>using (LNode.PushPrinter(EcsNodePrinter.Printer)) { ... }</c>.
-		/// This changes the default printer. If you don't want to change the
-		/// default printer, please invoke the printer directly: 
-		/// <code>
-		///     var sb = new StringBuilder();
-		///     EcsNodePrinter.Printer(node, sb, MessageSink.Trace);
-		/// </code>
-		/// </remarks>
-		public static PushedPrinter PushPrinter(ILNodePrinter printer) { return new PushedPrinter(printer); }
-		/// <summary>Returned by <see cref="PushPrinter(ILNodePrinter)"/>.</summary>
-		public struct PushedPrinter : IDisposable
+        /// <summary>Helps you change printers temporarily. Usage in C#: 
+        /// <c>using (LNode.PushPrinter(myPrinter)) { ... }</c></summary>
+        /// <remarks>For example, to switch to the EC# printer, use
+        /// <c>using (LNode.PushPrinter(EcsNodePrinter.Printer)) { ... }</c>.
+        /// This changes the default printer. If you don't want to change the
+        /// default printer, please invoke the printer directly: 
+        /// <code>
+        ///     var sb = new StringBuilder();
+        ///     EcsNodePrinter.Printer(node, sb, MessageSink.Trace);
+        /// </code>
+        /// </remarks>
+        [Obsolete("Please use using(LNode.SetPrinter(...)) instead")]
+        public static PushedPrinter PushPrinter(ILNodePrinter printer) { return new PushedPrinter(printer); }
+        
+        /// <summary>Returned by <see cref="PushPrinter(ILNodePrinter)"/>.</summary>
+        [Obsolete]
+        public struct PushedPrinter : IDisposable
 		{
 			ILNodePrinter old;
 			public PushedPrinter(ILNodePrinter @new) { old = Printer; Printer = @new; }

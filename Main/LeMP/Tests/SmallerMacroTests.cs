@@ -189,7 +189,7 @@ namespace LeMP.Tests
 			        "if (c) { var tmp_1 = foo; tmp_1.bar = tmp_1.baz(tmp_1); }".Replace("tmp_1", "tmp_" + n));
 			
 			// Ignore note about 'declined to process... with'
-			using (MessageSink.PushCurrent(_msgHolder)) {
+			using (MessageSink.SetDefault(_msgHolder)) {
 				n = MacroProcessor.NextTempCounter;
 				TestEcs(@"
 					with (jekyll) { 

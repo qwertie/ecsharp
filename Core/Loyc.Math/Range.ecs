@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc.Math;
+using Loyc.Collections;
+
+namespace Loyc
+{
+	/// <summary>
+	/// Contains the functions used by the Enhanced C# <c>in</c>, <c>..</c> and 
+	/// <c>...</c> operators... plus the handy <c>PutInRange()</c> methods.
+	/// </summary>
+	/// <remarks>
+	/// Note: the following <c>InRange</c> extension methods have been moved to 
+	/// class <see cref="G"/> in Loyc.Essentials so that Loyc.Syntax can use them:
+	/// <ul>
+	/// <li><c>n.IsInRange(lo, hi)</c> returns true if <c>n >= lo && hi >= n</c>, 
+	///     which corresponds to <c>n in lo...hi</c> in EC#.</li>
+	/// <li><c>n.IsInRangeExcludeHi(lo, hi)</c> returns true if <c>n >= lo && hi > n</c>,
+	///     which corresponds to <c>n in lo..hi</c> in EC#.</li>
+	/// </ul>
+	/// If `in` and a range operator are not used together, something 
+	/// slightly different happens:
+	/// <ul>
+	/// <li><c>var r = lo..hi</c> becomes Range.ExcludeHi(lo, hi)</c> 
+	///     (<c>Range.Inclusive</c> for <c>...</c>).</li>
+	/// <li><c>x in r</c> becomes <c>r.Contains(x)</c>.</li>
+	/// </ul>
+	/// </remarks>
+	public static class Range
+	{
+		replace GenerateNumRangeMethods($Num, $M)
+		{
+			/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
+			public static NumRange<$Num, $M> Inclusive($Num lo, $Num hi)
+			{
+				return new NumRange<$Num, $M>(lo, hi);
+			}
+			/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
+			public static NumRange<$Num, $M> ExcludeHi($Num lo, $Num hi)
+			{
+				return new NumRange<$Num, $M>(lo, hi - 1);
+			}
+			/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
+			public static NumRange<$Num, $M> StartingAt($Num lo)
+			{
+				return new NumRange<$Num, $M>(lo, $Num.MaxValue);
+			}
+			/// <summary>Returns the same range as Incl(num, num).</summary>
+			public static NumRange<$Num, $M> Only($Num num)
+			{
+				return new NumRange<$Num, $M>(num, num);
+			}
+		}
+		replace GenerateNumRangeMethodsUnsignedUnary($Num, $M)
+		{
+			public static NumRange<$Num, $M> UntilInclusive($Num hi)
+			{
+				return new NumRange<$Num, $M>(0, hi);
+			}
+			public static NumRange<$Num, $M> UntilExclusive($Num hi)
+			{
+				return new NumRange<$Num, $M>(0, hi - 1);
+			}
+		}
+		GenerateNumRangeMethods(int, MathI);
+		GenerateNumRangeMethods(uint, MathU);
+		GenerateNumRangeMethods(long, MathL);
+		GenerateNumRangeMethods(ulong, MathUL);
+		GenerateNumRangeMethods(float, MathF);
+		GenerateNumRangeMethods(double,MathD);
+		GenerateNumRangeMethods(FPI8, MathF8);
+		GenerateNumRangeMethods(FPI16, MathF16);
+		GenerateNumRangeMethodsUnsignedUnary(uint, MathU);
+		GenerateNumRangeMethodsUnsignedUnary(ulong, MathUL);
+	}
+}

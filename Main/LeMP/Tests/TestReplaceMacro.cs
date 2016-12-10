@@ -14,7 +14,7 @@ namespace LeMP.Tests
 		public void TestReplace_basics()
 		{
 			// Simple cases
-			using (MessageSink.PushCurrent(_msgHolder)) { 
+			using (MessageSink.SetDefault(_msgHolder)) { 
 				TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
 				Assert.IsTrue(_msgHolder.List.Count > 0, "expected warning about 'no replacements'");
 			}
@@ -111,7 +111,7 @@ namespace LeMP.Tests
 			TestEcs(@"[Passive] replace operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
 					@"x = Foo.SetAt(y, z);");
 			// Test warnings about `$`
-			using (MessageSink.PushCurrent(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
+			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
 				_msgHolder.List.Clear();
 				TestEcs(@"replace Foo(w, $x, y, $z) => (x, $y);", @"");
 				Assert.AreEqual(2, _msgHolder.List.Count);

@@ -27,6 +27,8 @@ namespace LeMP
 			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			if (on_handler == null || firstArg != null)
 				return null;
+
+			node.Style &= ~NodeStyle.OneLiner; // avoid collapsing output to one line
 			return node.With(S.Try, F.Braces(rest), node.With(S.Finally, on_handler));
 		}
 

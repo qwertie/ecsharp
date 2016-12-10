@@ -18,13 +18,30 @@ namespace Loyc
 	/// <summary>Contains global functions that don't belong in any specific class.</summary>
 	/// <remarks>Note: helper methods for parsing and printing tokens and hex 
 	/// digits have been moved to <see cref="Loyc.Syntax.ParseHelpers"/>.</remarks>
-	public static class G
+	public static partial class G
 	{
 		public static void Swap<T>(ref T a, ref T b)
 		{
 			T tmp = a;
 			a = b;
 			b = tmp;
+		}
+
+		public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp)
+		{
+			if (comp(lo, hi) > 0) {
+				Swap(ref lo, ref hi);
+				return true;
+			}
+			return false;
+		}
+		public static bool SortPair<T>(ref T lo, ref T hi) where T:IComparable<T>
+		{
+			if (lo.CompareTo(hi) > 0) {
+				Swap(ref lo, ref hi);
+				return true;
+			}
+			return false;
 		}
 
 		public static bool IsOneOf<T>(this T value, T item1, T item2) where T : IEquatable<T>
@@ -129,7 +146,7 @@ namespace Loyc
 		{
 			return pred.Compare;
 		}
-		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Func{T,T,int}"/>.</summary>
+		/// <summary>Converts an <see cref="IComparer{T}"/> to a Func(T,T,int).</summary>
 		public static Func<T, T, int> ToComparisonFunc<T>(IComparer<T> pred)
 		{
 			return pred.Compare;
@@ -220,5 +237,144 @@ namespace Loyc
 			HtmlEntityTable.TryGetValue(c, out name);
 			return name;
 		}
+
+		#region Math methods don't really belong here
+		// These methods are used by Loyc.Syntax which doesn't reference Loyc.Math and 
+		// therefore can't use MathEx
+
+		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
+		public static int CountOnes(byte x)
+		{
+			int X = x;
+			X -= ((X >> 1) & 0x55);
+			X = (((X >> 2) & 0x33) + (X & 0x33));
+			return (X & 0x0F) + (X >> 4);
+		}
+
+		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
+		/// <remarks>This is a duplicate of MathEx.CountOnes() needed by Loyc.Collections,
+		/// which does not have a reference to Loyc.Math.dll which contains MathEx.
+		/// However this uses a compact SWAR implementation, whereas Loyc.Math uses
+		/// a potentially faster lookup table.</remarks>
+		public static int CountOnes(int x) { return CountOnes((uint)x); }
+		/// <inheritdoc cref="CountOnes(int)"/>
+		public static int CountOnes(uint x)
+		{
+			// 32-bit recursive reduction using SWAR... but first step 
+			// is mapping 2-bit values into sum of 2 1-bit values in 
+			// sneaky way
+			x -= ((x >> 1) & 0x55555555);
+			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+			x = (((x >> 4) + x) & 0x0f0f0f0f);
+			x += (x >> 8);
+			x += (x >> 16);
+			return (int)(x & 0x0000003f);
+		}
+
+
+		public static double Int64BitsToDouble(long bits)
+		{
+			 return BitConverter.Int64BitsToDouble(bits);
+		}
+		public static long DoubleToInt64Bits(double value)
+		{
+			 return BitConverter.DoubleToInt64Bits(value);
+		}
+
+		/// <inheritdoc cref="Log2Floor(int)"/>
+		public static int Log2Floor(uint x)
+		{
+			x |= (x >> 1);
+			x |= (x >> 2);
+			x |= (x >> 4);
+			x |= (x >> 8);
+			x |= (x >> 16);
+			return (CountOnes(x) - 1);
+		}
+		/// <summary>
+		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
+		/// </summary><remarks>
+		/// The return value is -1 for an input that is zero or negative.
+		/// <para/>
+		/// Some processors have a dedicated instruction for this operation, but
+		/// the .NET framework provides no access to it.
+		/// </remarks>
+		public static int Log2Floor(int x)
+		{
+			if (x < 0)
+				return -1;
+			return Log2Floor((uint)x);
+		}
+
+		#region ShiftLeft and ShiftRight for floating point
+
+		public static double ShiftLeft(double num, int amount)
+		{
+			ulong bits = (ulong)DoubleToInt64Bits(num);
+			uint exp = (uint)(bits >> 52) & 0x7FF;
+			if (exp == 0x7FF)
+				return num; // Number is infinite or NaN; do not change
+			if (exp == 0)
+			{
+				// The number is denormalized. I'm tempted to just hand this off to
+				// normal FP math: num * (1 << amount), but what if amount > 31?
+				if (amount <= 0)
+					if (amount == 0)
+						return num;
+					else
+						return ShiftRight(num, -amount);
+
+				ulong sign = bits & 0x8000000000000000;
+				while ((bits <<= 1) <= 0x000FFFFFFFFFFFFF)
+					if (--amount == 0)
+						return Int64BitsToDouble((long)(bits | sign));
+				bits |= sign;
+				exp = 1;
+			}
+
+			// Normal case: num is normalized
+			if ((exp += (uint)amount) < 0x7FFu)
+				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
+			
+			// negative shift is not supported for integers, but it works okay for floats
+			if (amount < 0)
+				return ShiftRight(num, -amount);
+
+			return (long)bits >= 0 ? double.PositiveInfinity : double.NegativeInfinity;
+		}
+
+		public static double ShiftRight(double num, int amount)
+		{
+			ulong bits = (ulong)DoubleToInt64Bits(num);
+			uint exp = (uint)(bits >> 52) & 0x7FF;
+			if (exp == 0x7FF)
+				return num;
+			uint newExp = exp - (uint)amount;
+			if (newExp - 1 < 0x7FF)
+				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)newExp << 52));
+
+			if (amount < 0)
+				return ShiftLeft(num, -amount);
+
+			// The result is denormalized.
+			ulong sign = bits & 0x8000000000000000;
+			bits &= 0x001FFFFFFFFFFFFF;
+			// But was num denormalized already?
+			if (exp > 1)
+			{
+				// not really, so let's get it ready for a denormalized right shift.
+				amount -= ((int)exp - 1);
+				Debug.Assert(amount >= 0);
+				bits |= 0x0010000000000000;
+			}
+			if (amount > 53)
+				return 0;
+
+			return Int64BitsToDouble((long)(sign | (bits >> amount)));
+		}
+
+		#endregion
+
+		#endregion
 	}
 }

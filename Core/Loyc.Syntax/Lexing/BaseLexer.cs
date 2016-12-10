@@ -676,7 +676,7 @@ namespace Loyc.Syntax.Lexing
 				sb.Append("EOF");
 			else if (c >= 0 && c < 0xFFFC) {
 				sb.Append('\'');
-				ParseHelpers.EscapeCStyle((char)c, sb, EscapeC.Default, '\'');
+				PrintHelpers.EscapeCStyle((char)c, sb, EscapeC.Default, '\'');
 				sb.Append('\'');
 			} else
 				sb.Append(c);

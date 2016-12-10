@@ -140,23 +140,12 @@
     <Compile Include="ALists\SparseAList.cs" />
     <Compile Include="ALists\SparseAListLeaf.cs" />
     <Compile Include="CG.cs" />
-    <Compile Include="CPTrie\CPBitArrayLeaf.cs" />
-    <Compile Include="CPTrie\CPBNode.cs" />
-    <Compile Include="CPTrie\CPByteTrie.cs" />
-    <Compile Include="CPTrie\CPIntTrie.cs" />
-    <Compile Include="CPTrie\CPSNode.cs" />
-    <Compile Include="CPTrie\CPStringTrie.cs" />
-    <Compile Include="CPTrie\CPTrie.cs" />
-    <Compile Include="CPTrie\CPTrieBenchmark.cs" />
-    <Compile Include="CPTrie\CPTrieMisc.cs" />
-    <Compile Include="CPTrie\CPTrieTests.cs" />
     <Compile Include="Other\ArrayOf4.cs" />
     <Compile Include="Other\Bijection.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Other\BloomFilterM64K2.cs" />
     <Compile Include="Other\Co.cs" />
-    <Compile Include="Other\KeylessHashtable.cs" />
     <Compile Include="Other\NestedEnumerator.cs" />
     <Compile Include="Other\SimpleCache.cs" />
     <Compile Include="Other\TestHelpers.cs" />

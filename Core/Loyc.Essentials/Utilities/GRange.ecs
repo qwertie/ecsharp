@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Loyc
+{
+	partial class G
+	{
+		// These methods were supposed to be in Loyc.Range, but Loyc.Range contains methods
+		// that return NumRange<Num,Math>, which uses Maths and therefore must be in 
+		// Loyc.Math, not Loyc.Essentials. The problem is that some of these methods are 
+		// used by Loyc.Syntax, which doesn't reference Loyc.Math and so can't use Range.
+		// Since these are extension methods, hopefully few will notice that they moved.
+
+		replace GenerateInRangeMethods($Num)
+		{
+			public static bool IsInRangeExcludeHi(this $Num num, $Num lo, $Num hi) { 
+				return num >= lo && num < hi;
+			}
+			public static bool IsInRange(this $Num num, $Num lo, $Num hi) { 
+				return num >= lo && num <= hi;
+			}
+			public static $Num PutInRange(this $Num n, $Num min, $Num max)
+			{
+				if (n < min)
+					return min;
+				if (n > max)
+					return max;
+				return n;
+			}
+		}
+		
+		GenerateInRangeMethods(int);
+		GenerateInRangeMethods(uint);
+		GenerateInRangeMethods(long);
+		GenerateInRangeMethods(ulong);
+		GenerateInRangeMethods(float);
+		GenerateInRangeMethods(double);
+
+		public static bool IsInRangeExcludeHi<T>(this T num, T lo, T hi) where T: IComparable<T>
+		{
+			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) < 0;
+		}
+		public static bool IsInRange<T>(this T num, T lo, T hi) where T: IComparable<T>
+		{ 
+			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) <= 0;
+		}
+		public static T PutInRange<T>(this T n, T min, T max) where T : IComparable<T>
+		{
+			if (n.CompareTo(min) <= 0)
+				return min;
+			if (n.CompareTo(max) >= 0)
+				return max;
+			return n;
+		}
+	}
+}

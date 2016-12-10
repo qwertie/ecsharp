@@ -121,7 +121,7 @@ namespace LeMP
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
 		{
 			ILNodePrinter printer = plainCS ? EcsLanguageService.WithPlainCSharpPrinter : EcsLanguageService.Value;
-			using (LNode.PushPrinter(printer))
+			using (LNode.SetPrinter(printer))
 			{
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;

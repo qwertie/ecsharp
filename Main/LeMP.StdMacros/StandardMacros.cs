@@ -288,7 +288,7 @@ namespace LeMP
 			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode static_if(LNode @if, IMacroContext context)
 		{
-			if (!Range.IsInRange(@if.ArgCount, 2, 3))
+			if (!@if.ArgCount.IsInRange(2, 3))
 				return null;
 			LNode cond = context.PreProcess(@if.Args[0]);
 			object @bool;
@@ -361,7 +361,7 @@ namespace LeMP
 		{
 			string filename;
 			if (node.ArgCount == 1 && (filename = context.PreProcess(node[0]).Value as string) != null) {
-				var parser = ParsingService.GetServiceForFileName(filename) ?? ParsingService.Current;
+				var parser = ParsingService.GetServiceForFileName(filename) ?? ParsingService.Default;
 				var inputFolder = context.ScopedProperties.TryGetValue((Symbol)"#inputFolder", "").ToString();
 				var path = System.IO.Path.Combine(inputFolder, filename);
 				var contents = LNode.List(parser.ParseFile(path, context.Sink));

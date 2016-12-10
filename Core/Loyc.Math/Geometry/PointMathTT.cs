@@ -1,9 +1,17 @@
 ﻿
+
+
+
+
+
 // This is a generated file
 using System.Collections.Generic;
 using System.Diagnostics;
 using Loyc.Math;
 using Loyc.Collections;
+
+
+
 
 namespace Loyc.Geometry
 {
@@ -107,6 +115,7 @@ namespace Loyc.Geometry
 		}
 
 
+
 		public static Vector MulDiv(this Vector v, T mul, T div)
 		{
 			return new Vector(MathEx.MulDiv(v.X, mul, div), MathEx.MulDiv(v.Y, mul, div));
@@ -190,6 +199,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Single;
@@ -291,15 +301,18 @@ namespace Loyc.Geometry
 			return Angle(v) * (180 / Math.PI);
 		}
 
+
 		public static Vector Normalized(this Vector v)
 		{
 			T len = Length(v);
 			if (len == (float)0)
 				return v;
 			if (len != (float)1) {
+
 				var r = 1 / len;
 				v.X *= r;
 				v.Y *= r;
+
 			}
 			return v;
 		}
@@ -309,13 +322,16 @@ namespace Loyc.Geometry
 			if (len == (float)0)
 				return v;
 			if (len != (float)1) {
+
 				var r = 1 / len;
 				v.X *= r;
 				v.Y *= r;
 				v.Z *= r;
+
 			}
 			return v;
 		}
+
 
 		public static Vector MulDiv(this Vector v, T mul, T div)
 		{
@@ -400,6 +416,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Double;
@@ -501,15 +518,18 @@ namespace Loyc.Geometry
 			return Angle(v) * (180 / Math.PI);
 		}
 
+
 		public static Vector Normalized(this Vector v)
 		{
 			T len = Length(v);
 			if (len == (double)0)
 				return v;
 			if (len != (double)1) {
+
 				var r = 1 / len;
 				v.X *= r;
 				v.Y *= r;
+
 			}
 			return v;
 		}
@@ -519,13 +539,16 @@ namespace Loyc.Geometry
 			if (len == (double)0)
 				return v;
 			if (len != (double)1) {
+
 				var r = 1 / len;
 				v.X *= r;
 				v.Y *= r;
 				v.Z *= r;
+
 			}
 			return v;
 		}
+
 
 		public static Vector MulDiv(this Vector v, T mul, T div)
 		{

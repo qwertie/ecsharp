@@ -68,8 +68,8 @@ namespace Loyc.LLParserGenerator
 			c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
-			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Current))
-			using (LNode.PushPrinter(Ecs.EcsLanguageService.Value))
+			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Default))
+			using (LNode.SetPrinter(Ecs.EcsLanguageService.Value))
 				c.Run();
 			return c.Output.ToString();
 		}

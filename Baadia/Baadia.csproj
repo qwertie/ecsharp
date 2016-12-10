@@ -205,6 +205,10 @@
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Core\Loyc.Math\Loyc.Math.csproj">
+      <Project>{7493a75d-106a-4a50-9dcf-a7a034629fff}</Project>
+      <Name>Loyc.Math</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
       <Name>Loyc.Utilities</Name>

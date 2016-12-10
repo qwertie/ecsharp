@@ -313,46 +313,13 @@ namespace Loyc.Math
 
 		#region CountOnes
 		
-		static int CountOnesSwar(byte x)
-		{
-			int X = x;
-			X -= ((X >> 1) & 0x55);
-			X = (((X >> 2) & 0x33) + (X & 0x33));
-			return (X & 0x0F) + (X >> 4);
-		}
-		/*
-		/// <inheritdoc cref="CountOnes(int)"/>
-		public static int CountOnes(ushort x)
-		{
-			int X = x;
-			X -= ((X >> 1) & 0x5555);
-			X = (((X >> 2) & 0x3333) + (X & 0x3333));
-			X = (((X >> 4) + X) & 0x0f0f);
-			X += (X >> 8);
-			return (X & 0x001f);
-		}
-		public static int CountOnes(int x) { return CountOnes((uint)x); }
-		/// <inheritdoc cref="CountOnes(int)"/>
-		public static int CountOnes(uint x)
-		{
-			// 32-bit recursive reduction using SWAR... but first step 
-			// is mapping 2-bit values into sum of 2 1-bit values in 
-			// sneaky way
-			x -= ((x >> 1) & 0x55555555);
-			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-			x = (((x >> 4) + x) & 0x0f0f0f0f);
-			x += (x >> 8);
-			x += (x >> 16);
-			return (int)(x & 0x0000003f);
-		}*/
-
 		// This is benchmarked to take 20% less time than the SWAR code on a Core 2 Duo
 		static byte[] _ones = get_ones();
 		private static byte[] get_ones()
 		{
 			var ones = new byte[256];
 			for (int i = 0; i < ones.Length; i++)
-				ones[i] = (byte)CountOnesSwar((byte)i);
+				ones[i] = (byte)G.CountOnes((byte)i);
 			return ones;
 		}
 		
@@ -698,66 +665,11 @@ namespace Loyc.Math
 
 		public static double ShiftLeft(double num, int amount)
 		{
-			ulong bits = (ulong)DoubleToInt64Bits(num);
-			uint exp = (uint)(bits >> 52) & 0x7FF;
-			if (exp == 0x7FF)
-				return num; // Number is infinite or NaN; do not change
-			if (exp == 0)
-			{
-				// The number is denormalized. I'm tempted to just hand this off to
-				// normal FP math: num * (1 << amount), but what if amount > 31?
-				if (amount <= 0)
-					if (amount == 0)
-						return num;
-					else
-						return ShiftRight(num, -amount);
-
-				ulong sign = bits & 0x8000000000000000;
-				while ((bits <<= 1) <= 0x000FFFFFFFFFFFFF)
-					if (--amount == 0)
-						return Int64BitsToDouble((long)(bits | sign));
-				bits |= sign;
-				exp = 1;
-			}
-
-			// Normal case: num is normalized
-			if ((exp += (uint)amount) < 0x7FFu)
-				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)exp << 52));
-			
-			// negative shift is not supported for integers, but it works okay for floats
-			if (amount < 0)
-				return ShiftRight(num, -amount);
-
-			return (long)bits >= 0 ? double.PositiveInfinity : double.NegativeInfinity;
+			return G.ShiftLeft(num, amount);
 		}
 		public static double ShiftRight(double num, int amount)
 		{
-			ulong bits = (ulong)DoubleToInt64Bits(num);
-			uint exp = (uint)(bits >> 52) & 0x7FF;
-			if (exp == 0x7FF)
-				return num;
-			uint newExp = exp - (uint)amount;
-			if (newExp - 1 < 0x7FF)
-				return Int64BitsToDouble((long)(bits & 0x800FFFFFFFFFFFFFu) | ((long)newExp << 52));
-
-			if (amount < 0)
-				return ShiftLeft(num, -amount);
-
-			// The result is denormalized.
-			ulong sign = bits & 0x8000000000000000;
-			bits &= 0x001FFFFFFFFFFFFF;
-			// But was num denormalized already?
-			if (exp > 1)
-			{
-				// not really, so let's get it ready for a denormalized right shift.
-				amount -= ((int)exp - 1);
-				Debug.Assert(amount >= 0);
-				bits |= 0x0010000000000000;
-			}
-			if (amount > 53)
-				return 0;
-
-			return Int64BitsToDouble((long)(sign | (bits >> amount)));
+			return G.ShiftRight(num, amount);
 		}
 		public static float ShiftLeft(float num, int amount)
 		{
@@ -769,19 +681,31 @@ namespace Loyc.Math
 		}
 		public static int ShiftLeft(int num, int amount)
 		{
-			return amount >= 0 ? num << amount : num >> -amount;
-		}
-		public static long ShiftLeft(long num, int amount)
-		{
-			return amount >= 0 ? num << amount : num >> -amount;
+			if (amount >= 0)
+				return amount > 31 ? num << 31 : num << amount;
+			else
+				return amount < -31 ? num >> 31 : num >> -amount;
 		}
 		public static int ShiftRight(int num, int amount)
 		{
-			return amount >= 0 ? num >> amount : num << -amount;
+			if (amount >= 0)
+				return amount > 31 ? num >> 31 : num >> amount;
+			else
+				return -amount > 31 ? num << 31 : num << -amount;
+		}
+		public static long ShiftLeft(long num, int amount)
+		{
+			if (amount >= 0)
+				return amount > 63 ? num << 63 : num << amount;
+			else
+				return -amount > 63 ? num >> 63 : num >> -amount;
 		}
 		public static long ShiftRight(long num, int amount)
 		{
-			return amount >= 0 ? num >> amount : num << -amount;
+			if (amount >= 0)
+				return amount > 63 ? num >> 63 : num >> amount;
+			else
+				return -amount > 63 ? num << 63 : num << -amount;
 		}
 		public static T ShiftLeft<T>(T num, int amount)
 		{
@@ -800,6 +724,7 @@ namespace Loyc.Math
 			return a.CompareTo(b) > 0 ? a : b;
 		}
 
+		[Obsolete("Moved to G.Swap()")]
 		public static void Swap<T>(ref T a, ref T b)
 		{
 			T c = a;
@@ -807,6 +732,7 @@ namespace Loyc.Math
 			b = c;
 		}
 
+		[Obsolete("Moved to G.SortPair()")]
 		public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp)
 		{
 			if (comp(lo, hi) > 0) {
@@ -815,6 +741,8 @@ namespace Loyc.Math
 			}
 			return false;
 		}
+
+		[Obsolete("Moved to G.SortPair()")]
 		public static bool SortPair<T>(ref T lo, ref T hi) where T:IComparable<T>
 		{
 			if (lo.CompareTo(hi) > 0) {

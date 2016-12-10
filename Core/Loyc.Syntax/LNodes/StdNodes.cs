@@ -245,7 +245,8 @@ namespace Loyc.Syntax
 					_targetLen = 0;
 			}
 		}
-		static ushort ClipUShort(int x) { return (ushort)Loyc.Range.PutInRange(x, 0, ushort.MaxValue); }
+
+		static ushort ClipUShort(int x) { return (ushort)(x < 0 ? 0 : x < ushort.MaxValue ? x : ushort.MaxValue); }
 
 		public override LNode Target
 		{

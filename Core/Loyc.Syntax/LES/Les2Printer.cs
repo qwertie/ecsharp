@@ -519,7 +519,7 @@ namespace Loyc.Syntax.Les
 				_out.Write(quoteType, false);
 				_out.Write(quoteType, false);
 			} else {
-				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
+				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}

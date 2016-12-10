@@ -166,6 +166,14 @@
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj">
+      <Project>{7493a75d-106a-4a50-9dcf-a7a034629fff}</Project>
+      <Name>Loyc.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj">
+      <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
+      <Name>Loyc.Syntax</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
       <Name>Loyc.Utilities</Name>

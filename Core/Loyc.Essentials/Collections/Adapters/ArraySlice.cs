@@ -12,10 +12,10 @@ namespace Loyc.Collections
 		{
 			return new ArraySlice<T>(list, start, length);
 		}
-		public static ArraySlice<T> Slice<T>(this T[] list, NumRange<int, MathI> range)
-		{
-			return new ArraySlice<T>(list, range.Lo, range.Count);
-		}
+		//public static ArraySlice<T> Slice<T>(this T[] list, NumRange<int, MathI> range)
+		//{
+		//	return new ArraySlice<T>(list, range.Lo, range.Count);
+		//}
 	}
 
 	/// <summary>Adapter: Provides access to a section of an array.</summary>

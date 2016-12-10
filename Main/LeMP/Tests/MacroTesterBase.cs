@@ -45,7 +45,7 @@ namespace LeMP.Tests
 			var lemp = NewLemp(maxExpand, inLang);
 			
 			// The current printer affects the assert macro and contract macros
-			using (LNode.PushPrinter((ILNodePrinter)outLang))
+			using (LNode.SetPrinter((ILNodePrinter)outLang))
 			{
 				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Default));
 				var results = lemp.ProcessSynchronously(inputCode);

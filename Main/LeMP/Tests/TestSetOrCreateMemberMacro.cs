@@ -61,7 +61,7 @@ namespace LeMP.Tests
 		[Test]
 		public void TestNoBodyError()
 		{
-			using (MessageSink.PushCurrent(_msgHolder)) {
+			using (MessageSink.SetDefault(_msgHolder)) {
 				TestEcs("void Set(set int X);", "void Set(set int X);"); // Body required
 				Assert.IsTrue(_msgHolder.List.Count > 0, "warning expected");
 			}
