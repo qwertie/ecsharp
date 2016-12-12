@@ -10,8 +10,8 @@ namespace Loyc.Threading
 	/// </summary>
 	public struct SavedValue<T> : IDisposable
 	{
-		T _oldValue;
-		IHasMutableValue<T> _valueHolder;
+		readonly T _oldValue;
+		readonly IHasMutableValue<T> _valueHolder;
 
 		public SavedValue(IHasMutableValue<T> oldValue, T newValue)
 		{

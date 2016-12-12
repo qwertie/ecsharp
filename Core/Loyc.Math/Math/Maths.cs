@@ -1135,9 +1135,9 @@ namespace Loyc.Math
 	using T = FPI8;
 
 	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI8.</summary>
-	public struct MathF8 : IRationalMath<T>, IBinaryMath<T>
+	public struct MathFPI8 : IRationalMath<T>, IBinaryMath<T>
 	{
-		public static readonly MathF8 Value = new MathF8();
+		public static readonly MathFPI8 Value = new MathFPI8();
 
 		#region INumTraits
 
@@ -1244,9 +1244,9 @@ namespace Loyc.Math
 	using T = FPI16;
 
 	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI16.</summary>
-	public struct MathF16 : IRationalMath<T>, IBinaryMath<T>
+	public struct MathFPI16 : IRationalMath<T>, IBinaryMath<T>
 	{
-		public static readonly MathF16 Value = new MathF16();
+		public static readonly MathFPI16 Value = new MathFPI16();
 
 		#region INumTraits
 
@@ -1353,9 +1353,9 @@ namespace Loyc.Math
 	using T = FPI23;
 
 	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI23.</summary>
-	public struct MathF23 : IRationalMath<T>, IBinaryMath<T>
+	public struct MathFPI23 : IRationalMath<T>, IBinaryMath<T>
 	{
-		public static readonly MathF23 Value = new MathF23();
+		public static readonly MathFPI23 Value = new MathFPI23();
 
 		#region INumTraits
 
@@ -1462,9 +1462,9 @@ namespace Loyc.Math
 	using T = FPL16;
 
 	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPL16.</summary>
-	public struct MathFL16 : IRationalMath<T>, IBinaryMath<T>
+	public struct MathFPL16 : IRationalMath<T>, IBinaryMath<T>
 	{
-		public static readonly MathFL16 Value = new MathFL16();
+		public static readonly MathFPL16 Value = new MathFPL16();
 
 		#region INumTraits
 
@@ -1571,9 +1571,9 @@ namespace Loyc.Math
 	using T = FPL32;
 
 	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPL32.</summary>
-	public struct MathFL32 : IRationalMath<T>, IBinaryMath<T>
+	public struct MathFPL32 : IRationalMath<T>, IBinaryMath<T>
 	{
-		public static readonly MathFL32 Value = new MathFL32();
+		public static readonly MathFPL32 Value = new MathFPL32();
 
 		#region INumTraits
 

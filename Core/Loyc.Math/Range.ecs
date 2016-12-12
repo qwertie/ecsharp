@@ -70,8 +70,8 @@ namespace Loyc
 		GenerateNumRangeMethods(ulong, MathUL);
 		GenerateNumRangeMethods(float, MathF);
 		GenerateNumRangeMethods(double,MathD);
-		GenerateNumRangeMethods(FPI8, MathF8);
-		GenerateNumRangeMethods(FPI16, MathF16);
+		GenerateNumRangeMethods(FPI8, MathFPI8);
+		GenerateNumRangeMethods(FPI16, MathFPI16);
 		GenerateNumRangeMethodsUnsignedUnary(uint, MathU);
 		GenerateNumRangeMethodsUnsignedUnary(ulong, MathUL);
 	}

@@ -50,7 +50,7 @@ namespace LeMP
 								context.Write(Severity.Error, pattern, "The braces must contain only a single statement. To search for braces literally, use `{{ ... }}`");
 						}
 						if (repl.Calls(S.Braces))
-							repl = repl.WithTarget(S.Splice);
+							repl = repl.Args.AsLNode(S.Splice);
 						
 						// Avoid StackOverflowException when pattern is $Id (sadly, it
 						// is uncatchable so it can crash LeMP.exe and even Visual Studio)
@@ -166,8 +166,9 @@ namespace LeMP
 		}
 
 		static readonly Symbol _replace = (Symbol)"replace";
+		static readonly Symbol _define = (Symbol)"define";
 
-		[LexicalMacro(@"replace Name($arg1, $arg2, ...) {...}; replace Name($arg1, $arg2, ...) => ...",
+		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...}; define Name($arg1, $arg2, ...) => ...",
 			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. " +
 			"In some cases this macro is more efficient than replace(...). " +
@@ -175,7 +176,8 @@ namespace LeMP
 			"#fn", Mode = MacroMode.Passive)]
 		public static LNode replaceFn(LNode node, IMacroContext context1)
 		{
-			if (!node.Args[0, LNode.Missing].IsIdNamed(_replace))
+			var retType = node.Args[0, LNode.Missing].Name;
+			if (retType != _replace && retType != _define)
 				return null;
 			LNode replaceKw, macroName, args, body;
 			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn || body == null)

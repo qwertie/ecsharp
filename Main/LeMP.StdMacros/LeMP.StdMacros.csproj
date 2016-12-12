@@ -50,6 +50,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Core\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="AlgebraicDataType.out.cs">
       <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -169,9 +172,9 @@
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
       <Name>Loyc.Syntax</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Ecs.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Ecs</Name>
+      <Name>Loyc.Ecs</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

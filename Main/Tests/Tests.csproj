@@ -95,6 +95,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Core\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="PlayPen.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -139,9 +142,9 @@
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
       <Name>LoycCore.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Ecs.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Ecs</Name>
+      <Name>Loyc.Ecs</Name>
     </ProjectReference>
     <ProjectReference Include="..\LeMP\LeMP.csproj">
       <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>

@@ -224,6 +224,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Core\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Compiler.cs" />
     <Compile Include="DemoWindow\FindAndReplaceForm.cs">
       <SubType>Form</SubType>
@@ -277,9 +280,9 @@
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
       <Name>LoycCore.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Ecs.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Ecs</Name>
+      <Name>Loyc.Ecs</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>

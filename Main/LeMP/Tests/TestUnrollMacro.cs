@@ -30,5 +30,11 @@ namespace LeMP.Tests
 			TestEcs("unroll (X in (int X = 41, X++, Console.WriteLine(X))) { X; }",
 			        "int X = 41; X++; Console.WriteLine(X);");
 		}
+		[Test]
+		public void TestUnrollWithBraces()
+		{
+			TestEcs("unroll (Var in { int X; float Y; string Z; }) { internal static Var; }",
+			        "internal static int X; internal static float Y; internal static string Z;");
+		}
 	}
 }

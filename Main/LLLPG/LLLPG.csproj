@@ -245,9 +245,9 @@
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
       <Name>LoycCore.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Ecs.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Ecs</Name>
+      <Name>Loyc.Ecs</Name>
     </ProjectReference>
     <ProjectReference Include="..\LeMP.StdMacros\LeMP.StdMacros.csproj">
       <Project>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</Project>

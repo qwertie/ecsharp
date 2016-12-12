@@ -35,8 +35,8 @@ namespace LeMP
 		
 		public static LNode unroll(LNode var, LNode cases, LNode body, IMessageSink sink)
 		{
-			if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces))
-				return Reject(sink, cases, "unroll: the right-hand side of 'in' should be a tuple");
+			if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice))
+				return Reject(sink, cases, "The right-hand side of 'in' should be a tuple or braced block.");
 
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -52,10 +52,10 @@ namespace LeMP
 						// Check for duplicate names
 						for (int j = 0; j < i; j++)
 							if (replacements[i].A == replacements[j].A && replacements[i].A.Name != "_")
-								sink.Write(Severity.Error, vars[i], "unroll: duplicate name in the left-hand tuple"); // non-fatal
+								sink.Write(Severity.Error, vars[i], "Duplicate name in the left-hand tuple"); // non-fatal
 					}
 				} else
-					return Reject(sink, cases, "unroll: the left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
+					return Reject(sink, cases, "The left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
 			}
 
 			UnrollCtx ctx = new UnrollCtx { Replacements = replacements };
@@ -68,7 +68,7 @@ namespace LeMP
 				int count = tuple ? replacement.ArgCount : 1;
 				if (replacements.Count != count)
 				{
-					sink.Write(Severity.Error, replacement, "unroll, iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Count, count);
+					sink.Write(Severity.Error, replacement, "iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Count, count);
 					if (count < replacements.Count)
 						continue; // too few
 				}

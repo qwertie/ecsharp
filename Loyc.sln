@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Core\Loy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniTestRunner", "Core\MiniTestRunner\MiniTestRunner.csproj", "{3C58D462-4B0D-49E3-A851-195EE3AD05B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecs", "Main\Ecs\Ecs.csproj", "{E49944DB-0330-45C6-9EC5-BDBE1102AE07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Ecs", "Main\Ecs\Loyc.Ecs.csproj", "{E49944DB-0330-45C6-9EC5-BDBE1102AE07}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Syntax", "Core\Loyc.Syntax\Loyc.Syntax.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
 EndProject

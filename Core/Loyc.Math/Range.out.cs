@@ -1,4 +1,4 @@
-// Generated from Range.ecs by LeMP custom tool. LeMP version: 2.1.0.0
+// Generated from Range.ecs by LeMP custom tool. LeMP version: 2.3.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -158,44 +158,44 @@ namespace Loyc
 			return new NumRange<double,MathD>(num, num);
 		}
 		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
-		public static NumRange<FPI8,MathF8> Inclusive(FPI8 lo, FPI8 hi)
+		public static NumRange<FPI8,MathFPI8> Inclusive(FPI8 lo, FPI8 hi)
 		{
-			return new NumRange<FPI8,MathF8>(lo, hi);
+			return new NumRange<FPI8,MathFPI8>(lo, hi);
 		}
 		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
-		public static NumRange<FPI8,MathF8> ExcludeHi(FPI8 lo, FPI8 hi)
+		public static NumRange<FPI8,MathFPI8> ExcludeHi(FPI8 lo, FPI8 hi)
 		{
-			return new NumRange<FPI8,MathF8>(lo, hi - 1);
+			return new NumRange<FPI8,MathFPI8>(lo, hi - 1);
 		}
 		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
-		public static NumRange<FPI8,MathF8> StartingAt(FPI8 lo)
+		public static NumRange<FPI8,MathFPI8> StartingAt(FPI8 lo)
 		{
-			return new NumRange<FPI8,MathF8>(lo, FPI8.MaxValue);
+			return new NumRange<FPI8,MathFPI8>(lo, FPI8.MaxValue);
 		}
 		/// <summary>Returns the same range as Incl(num, num).</summary>
-		public static NumRange<FPI8,MathF8> Only(FPI8 num)
+		public static NumRange<FPI8,MathFPI8> Only(FPI8 num)
 		{
-			return new NumRange<FPI8,MathF8>(num, num);
+			return new NumRange<FPI8,MathFPI8>(num, num);
 		}
 		/// <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
-		public static NumRange<FPI16,MathF16> Inclusive(FPI16 lo, FPI16 hi)
+		public static NumRange<FPI16,MathFPI16> Inclusive(FPI16 lo, FPI16 hi)
 		{
-			return new NumRange<FPI16,MathF16>(lo, hi);
+			return new NumRange<FPI16,MathFPI16>(lo, hi);
 		}
 		/// <summary>Returns a range from lo to hi that excludes hi by decreasing it by 1.</summary>
-		public static NumRange<FPI16,MathF16> ExcludeHi(FPI16 lo, FPI16 hi)
+		public static NumRange<FPI16,MathFPI16> ExcludeHi(FPI16 lo, FPI16 hi)
 		{
-			return new NumRange<FPI16,MathF16>(lo, hi - 1);
+			return new NumRange<FPI16,MathFPI16>(lo, hi - 1);
 		}
 		/// <summary>Returns a range from lo to the MaxValue of the number type.</summary>
-		public static NumRange<FPI16,MathF16> StartingAt(FPI16 lo)
+		public static NumRange<FPI16,MathFPI16> StartingAt(FPI16 lo)
 		{
-			return new NumRange<FPI16,MathF16>(lo, FPI16.MaxValue);
+			return new NumRange<FPI16,MathFPI16>(lo, FPI16.MaxValue);
 		}
 		/// <summary>Returns the same range as Incl(num, num).</summary>
-		public static NumRange<FPI16,MathF16> Only(FPI16 num)
+		public static NumRange<FPI16,MathFPI16> Only(FPI16 num)
 		{
-			return new NumRange<FPI16,MathF16>(num, num);
+			return new NumRange<FPI16,MathFPI16>(num, num);
 		}
 		public static NumRange<uint,MathU> UntilInclusive(uint hi)
 		{

@@ -72,10 +72,10 @@
 		new Traits("System.UInt64", "ulong",  "UL",  "ulong", "IUIntMath<ulong>",   false, true, false, 64,64),
 		new Traits("System.Single", "float",  "F",   "float", "IFloatMath<float>",  true, false, true, 24,128),
 		new Traits("System.Double", "double", "D",   "double","IFloatMath<double>", true, false, true, 53,1024),
-		new Traits("FPI8",          null,     "F8",  "FPL16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPI16",         null,     "F16", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPI23",         null,     "F23", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
-		new Traits("FPL16",         null,    "FL16", "FPL16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 47),
-		new Traits("FPL32",         null,    "FL32", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 31),
+		new Traits("FPI8",          null,     "FPI8",  "FPL16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPI16",         null,     "FPI16", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPI23",         null,     "FPI23", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 31, 23),
+		new Traits("FPL16",         null,     "FPL16", "FPL16", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 47),
+		new Traits("FPL32",         null,     "FPL32", "FPL32", "IRationalMath<T>, IBinaryMath<T>", false, false, true, 63, 31),
 	};
 #>

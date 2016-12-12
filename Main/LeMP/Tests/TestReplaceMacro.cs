@@ -104,18 +104,18 @@ namespace LeMP.Tests
 		{
 			TestEcs(@"replace NL() { Console.WriteLine(); } NL(); NL();",
 					@"Console.WriteLine(); Console.WriteLine();");
-			TestEcs(@"replace Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
+			TestEcs(@"define Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
 					@"void F(int arg) {} void G(int arg) {} void F(List<int> arg) {} void G(List<int> arg) {}");
-			TestEcs(@"replace WL($format, $(..args)) => Console.WriteLine($format, $args); WL(1, 2, 3);",
+			TestEcs(@"define WL($format, $(..args)) => Console.WriteLine($format, $args); WL(1, 2, 3);",
 					@"Console.WriteLine(1, 2, 3);");
-			TestEcs(@"[Passive] replace operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
+			TestEcs(@"[Passive] define operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
 					@"x = Foo.SetAt(y, z);");
 			// Test warnings about `$`
 			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
 				_msgHolder.List.Clear();
-				TestEcs(@"replace Foo(w, $x, y, $z) => (x, $y);", @"");
+				TestEcs(@"define Foo(w, $x, y, $z) => (x, $y);", @"");
 				Assert.AreEqual(2, _msgHolder.List.Count);
-				TestEcs(@"replace Foo(a, b) => (a, b);", @"");
+				TestEcs(@"define Foo(a, b) => (a, b);", @"");
 				Assert.AreEqual(4, _msgHolder.List.Count);
 				Assert.IsTrue(_msgHolder.List.All(msg => msg.Severity == Severity.Warning));
 				_msgHolder.WriteListTo(MessageSink.Trace);

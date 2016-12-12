@@ -163,9 +163,12 @@ namespace Loyc
 		/// using (var old = MessageSink.PushCurrent(MessageSink.Console))
 		///     MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
 		/// </code></example>
-		public static PushedCurrent SetDefault(IMessageSink sink) { return new PushedCurrent(sink); }
+		public static SavedValue<IMessageSink> SetDefault(IMessageSink sink)
+        {
+            return new SavedValue<IMessageSink>(DefaultTLV, sink);
+        }
 		[Obsolete("This method is now called SetDefault()")]
-		public static PushedCurrent PushCurrent(IMessageSink sink) { return SetDefault(sink); }
+		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
 
 		/// <summary>Returned by <see cref="PushCurrent(IMessageSink)"/>.</summary>
 		public struct PushedCurrent : IDisposable

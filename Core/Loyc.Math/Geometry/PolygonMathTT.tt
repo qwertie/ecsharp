@@ -6,7 +6,7 @@
 using Loyc.Math;
 using System.Collections.Generic;
 
-<# IList<string> types = new string[] { "F", "D", "I", "F8", "F16" }; #>
+<# IList<string> types = new string[] { "F", "D", "I", "FPI8", "FPI16" }; #>
 <# var           traits = _traits.Where(t => types.Contains(t.Abbrev)); #>
 <# foreach(Traits T in traits) { #>
 namespace Loyc.Geometry
