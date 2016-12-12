@@ -309,15 +309,26 @@ namespace Loyc.Collections
 			return new SelectList<T,TResult>(source, selector);
 		}
 	
-			// TODO:
-			// public static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source);
-			// public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector);
-			//     Projects each element of a sequence into a new form by incorporating the element's index.
-			//   source:
-			//     A sequence of values to invoke a transform function on.
-			//   selector:
-			//     A transform function to apply to each source element; the second parameter of
-			//     the function represents the index of the source element.
-			// public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, TResult> selector);
+		/// <summary>Returns a reversed view of a read-only list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
+		{
+			return new ReversedListSource<T>(c);
+		}
+	
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Returns an editable reversed view of a list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedList<T> Reverse<T>(this IList<T> list)
+		{
+			return new ReversedList<T>(list);
+		}
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Returns an editable reversed view of a list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list)
+		{
+			return new ReversedList<T>(list);
+		}
 	}
 }

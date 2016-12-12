@@ -372,8 +372,8 @@ namespace Loyc.Collections.Impl
 		public static readonly InternalSet<T> Empty = new InternalSet<T> { _root = FrozenEmptyRoot() };
 
 		/// <summary>This is <see cref="EqualityComparer{T}.Default"/>, or
-		/// null if T implements <see cref="IReferenceComparable"/>.</summary>
-		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceComparable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
+		/// null if T implements <see cref="IReferenceEquatable"/>.</summary>
+		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceEquatable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
 
 		const int BitsPerLevel = 4;
 		const int FanOut = 1 << BitsPerLevel;

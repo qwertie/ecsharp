@@ -61,7 +61,7 @@ namespace Loyc
 	/// character-by-character.
 	/// </remarks>
 	[DebuggerDisplay("{Name}")]
-	public class Symbol : IReferenceComparable, IComparable<Symbol>, IEquatable<Symbol>
+	public class Symbol : IReferenceEquatable, IComparable<Symbol>, IEquatable<Symbol>
 	{
 		#region Public instance members
 

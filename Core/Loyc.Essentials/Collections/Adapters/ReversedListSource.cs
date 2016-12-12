@@ -12,16 +12,6 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	public static partial class LCExt
-	{
-		/// <summary>Returns a reversed view of a read-only list.</summary>
-		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
-		{
-			return new ReversedListSource<T>(c);
-		}
-	}
-
 	/// <summary>Adapter: reversed view of <see cref="IListSource{T}"/> returned 
 	/// from <see cref="LCExt.Reverse{T}"/>.</summary>
 	[Serializable]
