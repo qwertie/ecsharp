@@ -559,7 +559,7 @@ namespace Loyc.Ecs
 			var name = _n.Name;
 			int argC = _n.ArgCount;
 			return _n.IsCall && SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n, p) &&
-				(argC == 1 || (argC > 1 && name == S.Import) ||
+				(argC == 1 ||
 				(argC == 0 && (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
 		}
 

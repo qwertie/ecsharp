@@ -81,6 +81,7 @@ namespace Loyc.Ecs
 	public partial class EcsNodePrinter
 	{
 		LNode _n;
+		Symbol _name;
 		Precedence _context;
 		Ambiguity _flags;
 		INodePrinterWriter _out;
@@ -185,6 +186,7 @@ namespace Loyc.Ecs
 		{
 			internal EcsNodePrinter _self;
 			LNode _old_n;
+			Symbol _old_name;
 			Precedence _old_context;
 			Ambiguity _old_flags;
 
@@ -192,19 +194,24 @@ namespace Loyc.Ecs
 			{
 				_self = self;
 				self._out.Push(_old_n = self._n);
+				_old_name = self._name;
 				_old_context = self._context;
 				_old_flags = self._flags;
-				self._n = inner;
+				if (inner == null) {
+					self.Errors.Write(Severity.Error, self._n, "EC# Printer: Encountered null LNode");
+					self._n = LNode.Id("(null)");
+					self._name = null;
+				} else {
+					self._n = inner;
+					self._name = inner.Name;
+				}
 				self._context = context;
 				self._flags = flags;
-				if (inner == null) {
-					self.Errors.Write(Severity.Error, self._n, "EcsNodePrinter: Encountered null LNode");
-					self._n = LNode.Id("(null)");
-				}
 			}
 			public void Dispose()
 			{
 				_self._out.Pop(_self._n = _old_n);
+				_self._name = _old_name;
 				_self._context = _old_context;
 				_self._flags = _old_flags;
 			}

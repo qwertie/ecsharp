@@ -44,10 +44,6 @@ namespace Loyc.Ecs
 		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
 			S.Var, S.Fn, S.Constructor, S.Delegate, S.Event, S.Property
 		});
-		// Simple statements have the syntax "keyword;" or "keyword expr;"
-		internal static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
-			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
-		});
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
 			S.DoWhile, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
@@ -120,10 +116,9 @@ namespace Loyc.Ecs
 			{
 				var style = _n.BaseStyle;
 				StatementPrinter printer;
-				var name = _n.Name;
-				if (StatementPrinters.TryGetValueSafe(name, out printer) && HasSimpleHeadWPA(_n))
+				if (StatementPrinters.TryGetValueSafe(_name, out printer) && HasSimpleHeadWPA(_n))
 				{
-					if (_o.PreferPlainCSharp || name == S.RawText || name == S.CsRawText ||
+					if (_o.PreferPlainCSharp || _name == S.RawText || _name == S.CsRawText ||
 						(style != NodeStyle.Expression && style != NodeStyle.PrefixNotation))
 					{
 						using (WithFlags(_flags | Ambiguity.NoParentheses)) {
@@ -136,7 +131,7 @@ namespace Loyc.Ecs
 					}
 				}
 
-				if (style == NodeStyle.Special && AutoPrintMacroBlockCall())
+				if (style == NodeStyle.Special && AutoPrintMacroBlockCall(false))
 					return;
 
 				var attrs = _n.Attrs;
@@ -152,53 +147,59 @@ namespace Loyc.Ecs
 			PrintTrivia(trailingTrivia: true, needSemicolon: true);
 		}
 
-		private bool AutoPrintMacroBlockCall()
+		// Handles block calls like `quote { }` and `match (_) { }`, and also `switch (_) { }`
+		private bool AutoPrintMacroBlockCall(bool insideExpr)
 		{
 			var argCount = _n.ArgCount;
+			if (argCount < 1)
+				return false;
+			var body = _n.Args.Last;
+			if (!CallsWPAIH(body, S.Braces))
+				return false;
 			if (!_n.HasSimpleHead() && !IsComplexIdentifier(_n.Target))
+				return false;
+			if (insideExpr && _context.Left == StartStmt.Left)
 				return false;
 
 			if (argCount == 1)
 			{
-				var body = _n.Args[0];
-				if (!CallsWPAIH(body, S.Braces))
-					return false;
 				if (_n.BaseStyle == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 					return false;
 
-				G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
+				if (!insideExpr)
+					G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 
-				if (_n.Name == GSymbol.Empty) {
-					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
-					PrintBracedBlock(body, NewlineOpt.BeforeExecutableBrace);
+				if (_name != GSymbol.Empty) {
+					PrintSimpleIdent(_name, 0);
+					PrintBracedBlock(body, _name.Name.Length > 7 ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.BeforeSimpleStmtBrace);
 				} else {
-					PrintSimpleIdent(_n.Name, 0);
-					PrintBracedBlock(body, _n.Name.Name.Length > 7 ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.BeforeSimpleStmtBrace);
+					PrintExpr(_n.Target, EP.Primary.LeftContext(_context));
+					PrintBracedBlock(body, NewlineOpt.BeforeExecutableBrace);
 				}
 				return true;
 			}
-			else if (argCount > 1)
+			else // argCount > 1
 			{
-				var body = _n.Args[argCount - 1];
-				// If the body calls anything other than S.Braces, don't use macro-call notation.
-				if (!CallsWPAIH(body, S.Braces))
-					return false;
-				if (_o.AvoidMacroSyntax || _n.BaseStyle == NodeStyle.PrefixNotation)
+				bool isSwitch = _name == S.Switch;
+				if (!isSwitch && (_n.BaseStyle == NodeStyle.PrefixNotation || _o.AvoidMacroSyntax))
 					return false;
 
-				G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
+				if (!insideExpr)
+					G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 
-				if (_n.Name == GSymbol.Empty)
-					PrintExpr(_n.Target, EP.Primary.LeftContext(StartExpr));
-				else
-					PrintSimpleIdent(_n.Name, 0);
+				if (_name != GSymbol.Empty) {
+					if (isSwitch)
+						_out.Write("switch", true);
+					else
+						PrintSimpleIdent(_name, 0);
+				} else
+					PrintExpr(_n.Target, EP.Primary.LeftContext(_context));
 
 				PrintArgList(_n.Args.WithoutLast(1), ParenFor.MacroCall, true, _o.OmitMissingArguments);
 
 				PrintBracedBlockOrStmt(body, NewlineOpt.BeforeExecutableBrace);
 				return true;
 			}
-			return false;
 		}
 		private bool AutoPrintForwardedProperty()
 		{
@@ -206,7 +207,7 @@ namespace Loyc.Ecs
 				return false;
 
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
-			PrintSimpleIdent(_n.Name, 0);
+			PrintSimpleIdent(_name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
 			_out.Write("==>", true);
 			PrefixSpace(EP.Forward);
@@ -230,7 +231,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintMissingStmt()
 		{
-			Debug.Assert(_n.Name == S.Missing);
+			Debug.Assert(_name == S.Missing);
 			if (!_n.IsId)
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
@@ -244,7 +245,7 @@ namespace Loyc.Ecs
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs));
 
-			bool isPP = _n.Name == S.CsPPRawText;
+			bool isPP = _name == S.CsPPRawText;
 			if (isPP && _out.LastCharWritten != '\n')
 				_out.Newline();
 			WriteRawText(GetRawText(_n));
@@ -510,7 +511,7 @@ namespace Loyc.Ecs
 			LNode retType = _n.Args[0], name = _n.Args[1];
 			LNode args = _n.Args[2];
 			LNode body = _n.Args[3, null];
-			bool isConstructor = _n.Name == S.Constructor;
+			bool isConstructor = _name == S.Constructor;
 			bool isDestructor = !isConstructor && name.Calls(S._Destruct, 1);
 			
 			LNode firstStmt = null;
@@ -590,7 +591,7 @@ namespace Loyc.Ecs
 			if (eventKeywordOpt != null)
 				_out.Write(eventKeywordOpt, true);
 
-			if (_n.Name == S.Delegate)
+			if (_name == S.Delegate)
 			{
 				_out.Write("delegate", true);
 				_out.Space();
@@ -767,30 +768,36 @@ namespace Loyc.Ecs
 			if (!EcsValidators.IsSimpleExecutableKeywordStmt(_n, Pedantics))
 				return SPResult.Fail;
 
-			var name = _n.Name;
-			LNode usingStatic = name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
-			var allowAttrs = (name == S.Import ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
+			LNode usingStatic = _name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
+			var allowAttrs = (_name == S.Import ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
 			G.Verify(0 == PrintAttrs(allowAttrs, usingStatic));
 
+			PrintReturnThrowEtc(usingStatic != null ? _using_static : _name, _n.Args[0, null]);
+
+			return SPResult.NeedSemicolon;
+		}
+
+		readonly Symbol _using_static = (Symbol)"using static";
+
+		public void PrintReturnThrowEtc(Symbol name, LNode arg)
+		{
 			if (name == S.GotoCase) {
 				_out.Write("goto case", true);
 				if (_n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
 					_out.Write("default", true);
-					return SPResult.NeedSemicolon;
+					return;
 				}
-			} else if (name == S.Import)
-				_out.Write(usingStatic != null ? "using static" : "using", true);
+			} else if (name == _using_static)
+				_out.Write("using static", true);
+			else if (name == S.Import)
+				_out.Write("using", true);
 			else
 				WriteOperatorName(name);
 
-			int i = 0;
-			foreach (var arg in _n.Args)
-			{
-				if (i++ == 0) Space(SpaceOpt.Default);
-				else WriteThenSpace(',', SpaceOpt.AfterComma);
+			if (arg != null) {
+				Space(SpaceOpt.Minimal);
 				PrintExpr(arg, StartExpr);
 			}
-			return SPResult.NeedSemicolon;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -801,7 +808,7 @@ namespace Loyc.Ecs
 			if (type == null)
 				return SPResult.Fail;
 
-			var allowAttrs = (_n.Name == S.UsingStmt ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
+			var allowAttrs = (_name == S.UsingStmt ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
 			G.Verify(0 == PrintAttrs(allowAttrs));
 
 			if (type == S.DoWhile)
@@ -825,9 +832,9 @@ namespace Loyc.Ecs
 			}
 			else
 			{
-				WriteOperatorName(_n.Name);
+				WriteOperatorName(_name);
 				Ambiguity argFlags = 0;
-				if (_n.Name == S.Fixed)
+				if (_name == S.Fixed)
 					argFlags |= Ambiguity.AllowPointer;
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0], argFlags);
 				PrintBracedBlockOrStmt(_n.Args[1]);
@@ -948,7 +955,7 @@ namespace Loyc.Ecs
 			}
 			else if (type == S.Checked) // includes S.Unchecked
 			{
-				WriteOperatorName(_n.Name);
+				WriteOperatorName(_name);
 				PrintBracedBlockOrStmt(_n.Args[0], NewlineOpt.BeforeSimpleStmtBrace);
 			}
 
@@ -965,12 +972,12 @@ namespace Loyc.Ecs
 
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowWordAttrs));
 
-			if (_n.Name == S.Label) {
+			if (_name == S.Label) {
 				if (_n.Args[0].Name == S.Default)
 					_out.Write("default", true);
 				else
 					PrintExpr(_n.Args[0], StartStmt);
-			} else if (_n.Name == S.Case) {
+			} else if (_name == S.Case) {
 				_out.Write("case", true);
 				_out.Space();
 				bool first = true;

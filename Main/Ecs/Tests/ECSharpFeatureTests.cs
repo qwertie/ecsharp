@@ -558,10 +558,67 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void NamedArgOutsideMethodCall()
+		{
+			// Note: statements like `return a: b` and `throw a: b` don't parse because  
+			// they can also be used in expressions like `c ? return x : throw y;` where 
+			// the colon needs to be parsed as part of the `?` operator.
+			Expr("Foo: x", F.Call(S.NamedArg, Foo, x));
+			Expr("(Foo: x, a: a)", F.Tuple(F.Call(S.NamedArg, Foo, x), F.Call(S.NamedArg, a, a)));
+			Stmt("using Foo: -x;", F.Call(S.Import, F.Call(S.NamedArg, Foo, F.Call(S._Negate, x))));
+			Stmt("while (Foo: 1) { }", F.Call(S.While, F.Call(S.NamedArg, Foo, one), F.Braces()));
+		}
+
+		[Test]
 		public void EcsMiscTests()
 		{
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));
 			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParserTest);
+		}
+
+		[Test]
+		public void ThrowReturnBreakContinueExpr()
+		{
+			// Note: something like "continue ? x : y" is NOT recognized as an 
+			// expression because throw/return/break/continue are considered
+			// statements when they appear at the beginning of a statement
+			// (so that they can accept contextual keywords.)
+			Stmt("#continue() ? x++ : return;", F.Call(S.QuestionMark, F.Call(S.Continue), F.Call(S.PostInc, x), F.Call(S.Return)));
+			Stmt("x = #return(x) = 1;", F.Call(S.Assign, x, F.Call(S.Assign, F.Call(S.Return, x), one)));
+			Stmt("x > 0 || throw new Exception();", F.Call(S.Or, F.Call(S.GT, x, zero), F.Call(S.Throw, F.Call(S.New, F.Call("Exception")))));
+			Stmt("Foo(throw x ?? Foo);", F.Call(Foo, F.Call(S.Throw, F.Call(S.NullCoalesce, x, Foo))));
+			Stmt("x < 0 ? return a ?? b : x;", F.Call(S.QuestionMark, F.Call(S.LT, x, zero), F.Call(S.Return, F.Call(S.NullCoalesce, a, b)), x));
+			Stmt("x < 0 ? break : continue;", F.Call(S.QuestionMark, F.Call(S.LT, x, zero), F.Call(S.Break), F.Call(S.Continue)));
+			Stmt("c ? break x : continue x;", F.Call(S.QuestionMark, c, F.Call(S.Break, x), F.Call(S.Continue, x)));
+		}
+
+		[Test]
+		public void SwitchExpr()
+		{
+			var tree =
+				F.Call(S.Assign, Foo, F.Call(S.Add,
+					F.Call(S.Switch, x, F.Braces(
+						F.Call(S.Case, a), one,
+						F.Call(S.Label, F.Id(S.Default)), zero)),
+					one));
+			Stmt("Foo = switch (x) {\ncase a:\n  1;\ndefault:\n  0;\n} + 1;", tree);
+		}
+
+		[Test]
+		public void GotoExpr()
+		{
+			var tree = F.Call(S.Assign, x, F.Call(F.Dot(
+				F.InParens(F.Call(S.NullCoalesce, x, F.Call(S.Goto, F.Id("fail")))), Foo)));
+			Stmt("x = (x ?? goto fail).Foo();", tree);
+			tree = F.Call(S.QuestionMark, F.Call(S.GT, Foo, zero), F.Call(S.GotoCase, a), F.Call(S.GotoCase, b));
+			Stmt("Foo > 0 ? goto case a : goto case b;", tree);
+		}
+
+		[Test]
+		public void Ridiculous()
+		{
+			Stmt("crazy throw return goto case break continue;", F.Attr(WordAttr("crazy"), 
+				F.Call(S.Throw, F.Call(S.Return, F.Call(S.GotoCase, F.Call(S.Break, F.Call(S.Continue)))))));
 		}
 	}
 }

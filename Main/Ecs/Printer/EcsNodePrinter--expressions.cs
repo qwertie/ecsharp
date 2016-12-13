@@ -18,6 +18,12 @@ namespace Loyc.Ecs
 	{
 		#region Sets and dictionaries of operators
 
+		// Simple statements with the syntax "keyword;" or "keyword expr;" can also be
+		// used as expressions, except for `using` (S.Import).
+		internal static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
+			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
+		});
+
 		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary( 
 			// This is a list of unary prefix operators only. Does not include the
 			// binary prefix operator "#cast" or the unary suffix operators ++ and --.
@@ -107,6 +113,7 @@ namespace Loyc.Ecs
 			var prefix = OpenDelegate<OperatorPrinter>("AutoPrintPrefixUnaryOperator");
 			var infix = OpenDelegate<OperatorPrinter>("AutoPrintInfixBinaryOperator");
 			var both = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOrInfixOperator");
+			var throwEtc = OpenDelegate<OperatorPrinter>("AutoPrintPrefixReturnThrowEtc");
 			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
 			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
 			var ident = OpenDelegate<OperatorPrinter>("AutoPrintComplexIdentOperator");
@@ -114,7 +121,7 @@ namespace Loyc.Ecs
 			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
 			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
-			
+
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
 			foreach (var p in InfixOperators)
@@ -122,9 +129,12 @@ namespace Loyc.Ecs
 					d[p.Key] = Pair.Create(p.Value, both); // both prefix and infix
 				else
 					d.Add(p.Key, Pair.Create(p.Value, infix));
+			foreach (Symbol op in SimpleStmts)
+				if (op != S.Import)
+					d[op] = Pair.Create(EcsPrecedence.Lambda, throwEtc);
 			foreach (var p in CastOperators)
 				d[p.Key] = Pair.Create(p.Value, cast);
-			foreach (var op in ListOperators)
+			foreach (Symbol op in ListOperators)
 				d[op] = Pair.Create(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators) {
 				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
@@ -187,8 +197,14 @@ namespace Loyc.Ecs
 					PrintVariableDecl(false);
 				} else {
 					inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
-					if (!AutoPrintOperator())
+					do {
+						if (AutoPrintOperator())
+							break;
+						if (style == NodeStyle.Special || _name == S.Switch)
+							if (AutoPrintMacroBlockCall(true))
+								break;
 						PrintPurePrefixNotation(skipAttrs: true);
+					} while (false);
 				}
 				WriteCloseParens(inParens);
 			}
@@ -230,7 +246,7 @@ namespace Loyc.Ecs
 			if (!_n.IsCall || !HasSimpleHeadWPA(_n))
 				return false;
 			Pair<Precedence, OperatorPrinter> info;
-			if (OperatorPrinters.TryGetValueSafe(_n.Name, out info))
+			if (OperatorPrinters.TryGetValueSafe(_name, out info))
 				return info.Item2(this, info.Item1);
 			else if (_n.BaseStyle == NodeStyle.Operator)
 			{
@@ -264,7 +280,6 @@ namespace Loyc.Ecs
 		{
 			if (!IsPrefixOperator(_n, (_flags & Ambiguity.CastRhs) != 0))
 				return false;
-			var name = _n.Name;
 			var arg = _n.Args[0];
 
 			bool needParens;
@@ -272,8 +287,8 @@ namespace Loyc.Ecs
 			{
 				// Check for the ambiguous case of (Foo)-x, (Foo)+x, (Foo) .x; (Foo)*x and (Foo)&x are OK
 				if ((_flags & Ambiguity.CastRhs) != 0 && !needParens && (
-					name == S.Dot || name == S.PreInc || name == S.PreDec || 
-					name == S._UnaryPlus || name == S._Negate) && !_n.IsParenthesizedExpr())
+					_name == S.Dot || _name == S.PreInc || _name == S.PreDec || 
+					_name == S._UnaryPlus || _name == S._Negate) && !_n.IsParenthesizedExpr())
 				{
 					if (_o.AllowChangeParentheses)
 						needParens = true; // Resolve ambiguity with extra parens
@@ -281,30 +296,40 @@ namespace Loyc.Ecs
 						return false; // Fallback to prefix notation
 				}
 				// Check for the ambiguous case of "~Foo(...);"
-				if (name == S.NotBits && _context.Lo == StartStmt.Lo && arg.IsCall)
+				if (_name == S.NotBits && _context.Lo == StartStmt.Lo && arg.IsCall)
 					return false;
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					_context = StartExpr;
-				WriteOperatorName(_n.Name);
+				WriteOperatorName(_name);
 				PrefixSpace(precedence);
-				PrintExpr(arg, precedence.RightContext(_context), name == S.Forward ? Ambiguity.TypeContext : 0);
+				PrintExpr(arg, precedence.RightContext(_context), _name == S.Forward ? Ambiguity.TypeContext : 0);
 				//if (backtick) {
 				//    Debug.Assert(precedence == EP.Backtick);
 				//    if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
 				//        _out.Space();
-				//    PrintOperatorName(_n.Name, Ambiguity.UseBacktick);
+				//    PrintOperatorName(_name, Ambiguity.UseBacktick);
 				//}
 				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
 			return false;
 		}
+		private void WriteOperatorName(Symbol name, bool useBacktick = false)
+		{
+			string opName = name.Name;
+			if (useBacktick)
+				PrintString(opName, '`', null);
+			else {
+				Debug.Assert(opName.StartsWith("'") || opName.StartsWith("#"));
+				_out.Write(opName.Substring(1), true);
+			}
+		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintInfixBinaryOperator(Precedence prec)
 		{
-			var name = _n.Name;
-			Debug.Assert(!CastOperators.ContainsKey(name)); // not called for cast operators
+			Debug.Assert(!CastOperators.ContainsKey(_name)); // not called for cast operators
 			if (_n.ArgCount != 2)
 				return false;
 			// Attributes on the children disqualify operator notation
@@ -316,7 +341,7 @@ namespace Loyc.Ecs
 			if (CanAppearHere(ref prec, out needParens, ref backtick))
 			{
 				// Check for the ambiguous case of "A * b;" and consider using `*` instead
-				if (name == S.Mul && _context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
+				if (_name == S.Mul && _context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
 					backtick = true;
 					prec = EP.Backtick;
 					if (!CanAppearHere(prec, out needParens, false))
@@ -326,33 +351,43 @@ namespace Loyc.Ecs
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					_context = StartExpr;
 				Ambiguity lFlags = 0;
-				if (name == S.Assign || name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
-				if (name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
+				if (_name == S.Assign || _name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
+				if (_name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
 				PrintExpr(left, prec.LeftContext(_context), lFlags);
-				PrintInfixWithSpace(name, _n.Target, prec, backtick);
+				PrintInfixWithSpace(_name, _n.Target, prec, backtick);
 				PrintExpr(right, prec.RightContext(_context));
 				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
 			return false;
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec)
 		{
 			if (_n.ArgCount == 2)
 				return AutoPrintInfixBinaryOperator(infixPrec);
 			else
-				return AutoPrintPrefixUnaryOperator(PrefixOperators[_n.Name]);
+				return AutoPrintPrefixUnaryOperator(PrefixOperators[_name]);
 		}
-		private void WriteOperatorName(Symbol name, bool useBacktick = false)
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintPrefixReturnThrowEtc(Precedence prec)
 		{
-			string opName = name.Name;
-			if (useBacktick)
-				PrintString(opName, '`', null);
-			else {
-				Debug.Assert(opName.StartsWith("'") || opName.StartsWith("#"));
-				_out.Write(opName.Substring(1), true);
-			}
+			if (!EcsValidators.IsSimpleExecutableKeywordStmt(_n, Pedantics))
+				return false;
+			bool needParens;
+			if (!CanAppearHere(prec, out needParens))
+				return false;
+			if (WriteOpenParen(ParenFor.Grouping, needParens))
+				_context = StartExpr;
+			else if (_context.Left == StartStmt.Left)
+				return false; // cannot print throw/return subexpression at beginning of a statement
+
+			PrintReturnThrowEtc(_name, _n.Args[0, null]);
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
+			return true;
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -376,7 +411,7 @@ namespace Loyc.Ecs
 			//
 			// There is an extra rule for (X)Y casts: X must be a complex (or 
 			// simple) identifier, since anything else won't be parsed as a cast.
-			Symbol name = _n.Name;
+			Symbol name = _name;
 			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !_o.PreferPlainCSharp;
 			LNode subject = _n.Args[0], target = _n.Args[1];
 			if (HasPAttrs(subject))
@@ -407,12 +442,12 @@ namespace Loyc.Ecs
 			if (alternate) {
 				PrintExpr(subject, precedence.LeftContext(_context));
 				WriteOpenParen(ParenFor.NewCast);
-				_out.Write(GetCastText(_n.Name), true);
+				_out.Write(GetCastText(_name), true);
 				Space(SpaceOpt.AfterCastArrow);
 				PrintType(target, StartExpr, Ambiguity.AllowPointer);
 				WriteCloseParen(ParenFor.NewCast);
 			} else {
-				if (_n.Name == S.Cast) {
+				if (_name == S.Cast) {
 					WriteOpenParen(ParenFor.Grouping);
 					PrintType(target, ContinueExpr, Ambiguity.AllowPointer);
 					WriteCloseParen(ParenFor.Grouping);
@@ -421,7 +456,7 @@ namespace Loyc.Ecs
 				} else {
 					// "x as y" or "x using y"
 					PrintExpr(subject, precedence.LeftContext(_context));
-					_out.Write(GetCastText(_n.Name), true);
+					_out.Write(GetCastText(_name), true);
 					PrintType(target, precedence.RightContext(_context));
 				}
 			}
@@ -442,7 +477,7 @@ namespace Loyc.Ecs
 		{
 			// Handles #tuple and {} braces.
 			int argCount = _n.ArgCount;
-			Symbol name = _n.Name;
+			Symbol name = _name;
 			Debug.Assert(_n.IsCall);
 			
 			bool? braceMode;
@@ -511,7 +546,7 @@ namespace Loyc.Ecs
 		{
 			// Handles #of and @`.`, including array types
 			int argCount = _n.ArgCount;
-			Symbol name = _n.Name;
+			Symbol name = _name;
 			Debug.Assert((name == S.Of || name == S.Dot) && _n.IsCall);
 			
 			var first = _n.Args[0, null];
@@ -570,7 +605,7 @@ namespace Loyc.Ecs
 					PrintExpr(_n.Args[1], precedence.RightContext(_context));
 				}
 			}
-			else if (_n.Name == S.Of)
+			else if (_name == S.Of)
 			{
 				// Check for special type names such as Foo? or Foo[]
 				Symbol stk = SpecialTypeKind(_n, _context, _flags);
@@ -614,7 +649,7 @@ namespace Loyc.Ecs
 			}
 			else 
 			{
-				Debug.Assert(_n.Name == S.Substitute);
+				Debug.Assert(_name == S.Substitute);
 				G.Verify(AutoPrintOperator());
 			}
 			return true;
@@ -624,7 +659,7 @@ namespace Loyc.Ecs
 		public bool AutoPrintNewOperator(Precedence precedence)
 		{
 			// Prints the new Xyz(...) {...} operator
-			Debug.Assert (_n.Name == S.New);
+			Debug.Assert (_name == S.New);
 			int argCount = _n.ArgCount;
 			if (argCount == 0)
 				return false;
@@ -753,7 +788,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintAnonymousFunction(Precedence precedence)
 		{
-			Symbol name = _n.Name;
+			Symbol name = _name;
 			Debug.Assert(name == S.Lambda);
 			if (_n.ArgCount != 2)
 				return false;
@@ -790,7 +825,7 @@ namespace Loyc.Ecs
 		{
 			// Handles one of:  ?  _[]  ?[]  suf++  suf--
 			int argCount = _n.ArgCount;
-			Symbol name = _n.Name;
+			Symbol name = _name;
 			if (argCount < 1)
 				return false; // no args
 			bool needParens;
@@ -872,13 +907,12 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.HasSpecialName);
 			if (_n.ArgCount != 1)
 				return false;
-			var name = _n.Name;
 			var arg = _n.Args[0];
-			bool type = (name == S.Default || name == S.Typeof || name == S.Sizeof);
+			bool type = (_name == S.Default || _name == S.Typeof || _name == S.Sizeof);
 			if (type && !IsComplexIdentifier(arg, ICI.Default | ICI.AllowAttrs))
 				return false;
 
-			WriteOperatorName(name);
+			WriteOperatorName(_name);
 			PrintWithinParens(ParenFor.MethodCall, arg, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
 			return true;
 		}
@@ -990,13 +1024,13 @@ namespace Loyc.Ecs
 			if (_n.IsLiteral)
 				PrintLiteral();
 			else
-				PrintSimpleIdent(_n.Name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
+				PrintSimpleIdent(_name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
 
 		private void PrintVariableDecl(bool printAttrs, LNode skipClause = null)
 		{
 			var flags = _flags;
-			Debug.Assert(_n.Name == S.Var);
+			Debug.Assert(_name == S.Var);
 			var a = _n.Args;
 
 			if (printAttrs) {

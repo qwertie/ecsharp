@@ -421,7 +421,7 @@ namespace Loyc.Ecs.Parser
 				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex, t.StartIndex, t.EndIndex);}
 			|	error 
 				greedy[ (~(","|";")) ]*
-				{r = Error("'{0}': Invalid expression. Expected (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
+				{r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
 				/*hack: avoid long analysis-time bug*/ (_ =>{})
 			) {return r;}
 		};
@@ -621,8 +621,19 @@ namespace Loyc.Ecs.Parser
 			/	// C# 5 await
 				&{@[Hoist] Is($LI, _await)} op:=TT.ContextualKeyword e:=PrefixExpr
 				{return SetOperatorStyle(F.Call(_await, e, op.StartIndex, e.Range.EndIndex, op.StartIndex, op.EndIndex));}
+			/	e:=KeywordStmtAsExpr
+				{return e;}
 			/	e:=PrimaryExpr
 				{return e;}
+			)
+		};
+		
+		rule KeywordStmtAsExpr::LNode @{
+			{var startIndex = LT0.StartIndex;}
+			(	result:ReturnBreakContinueThrow(startIndex)
+			|	result:GotoCaseStmt(startIndex)
+			/	result:GotoStmt(startIndex)
+			|	result:SwitchStmt(startIndex)
 			)
 		};
 
@@ -657,7 +668,7 @@ namespace Loyc.Ecs.Parser
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
-		@[private] rule Expr(context::Precedence)::LNode @{
+		@[private] rule SubExpr(context::Precedence)::LNode @{
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}
 			e:=PrefixExpr
@@ -666,7 +677,7 @@ namespace Loyc.Ecs.Parser
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.In )
-				rhs:=Expr(prec)
+				rhs:=SubExpr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// is, as, or using cast (special case: #usingCast instead of #using)
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
@@ -678,14 +689,14 @@ namespace Loyc.Ecs.Parser
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
-				(	op:="<" "<" rhs:=Expr(EP.Shift)
+				(	op:="<" "<" rhs:=SubExpr(EP.Shift)
 					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
-				|	op:=">" ">" rhs:=Expr(EP.Shift)
+				|	op:=">" ">" rhs:=SubExpr(EP.Shift)
 					{e = F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
 				)
 			|	// Conditional operator
 				&{@[Local] context.CanParse(EP.IfElse)}
-				op:="?" then:=Expr(StartExpr) ":" else:=Expr(EP.IfElse)
+				op:="?" then:=SubExpr(StartExpr) ":" else:=SubExpr(EP.IfElse)
 				{e = F.Call(S.QuestionMark, LNode.List(e, then, @else), e.Range.StartIndex, else.Range.EndIndex,  
 						op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			)*
@@ -699,15 +710,17 @@ namespace Loyc.Ecs.Parser
 			// Detect "keyword argument" expression
 			{argName::Token = default(Token);}
 			(argName=TT.Id|argName=IdNotLinqKeyword) colon:=":"
-			result:ExprStart2(allowUnassignedVarDecl)
+			result:ExprStartNNP(allowUnassignedVarDecl)
 			{result = F.Call(S.NamedArg, F.Id(argName), result, argName.StartIndex, result.Range.EndIndex, colon.StartIndex, colon.EndIndex, NodeStyle.Operator);}
-		/	result:ExprStart2(allowUnassignedVarDecl)
+		/	result:ExprStartNNP(allowUnassignedVarDecl)
 		};
-		@[public] rule ExprStart2(allowUnassignedVarDecl::bool)::LNode @{
+
+		// ExprStart with No Named Parameter allowed
+		@[public] rule ExprStartNNP(allowUnassignedVarDecl::bool)::LNode @{
 			{var attrs = VList!LNode.Empty;}
 			hasList:=NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
-			(=>{
+			(SubExpr => {
 				// Unassigned var decl is allowed when attributes are present (e.g. out)
 				if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
 
@@ -732,9 +745,10 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// Helper functions for parsing normal expressions and var-decl expressions
+		// TODO: upgrade to use newer LeMP macros that are easier to understand
 		unroll ((TentativeFunction; TentativeCode) `in` (
 			(TentativeExpr; #splice(
-				result.Result = Expr(StartExpr).PlusAttrs(attrs);
+				result.Result = SubExpr(StartExpr).PlusAttrs(attrs);
 				// A var decl like "A B" looks like an expression followed by
 				// an identifier. To cede victory to VarDeclExpr, detect that
 				// the expression didn't end properly and emit an error.
@@ -1288,20 +1302,27 @@ namespace Loyc.Ecs.Parser
 			}
 			(	r=IfStmt(startIndex)
 				{showWordAttrErrorFor = "if statement"; addAttrs = true;}
-			|	r=EventDecl(startIndex)                 
-			|	r=DelegateDecl(startIndex, attrs)       {addAttrs = false;}
-			|	r=SpaceDecl(startIndex)                 // namespace, class, struct, interface
-			|	r=EnumDecl(startIndex)                  
-			|	r=CheckedOrUncheckedStmt(startIndex)    
-			|	r=DoStmt(startIndex)                    
-			|	r=CaseStmt(startIndex)                  
-			|	r=GotoCaseStmt(startIndex)              
-			/	r=GotoStmt(startIndex)                  
-			|	r=ReturnBreakContinueThrow(startIndex)  
-			|	r=WhileStmt(startIndex)                 
+			|	r=EventDecl(startIndex)                
+			|	r=DelegateDecl(startIndex, attrs)      {addAttrs = false;}
+			|	r=SpaceDecl(startIndex)                // namespace, class, struct, interface
+			|	r=EnumDecl(startIndex)                 
+			|	r=CheckedOrUncheckedStmt(startIndex)   
+			|	r=DoStmt(startIndex)                   
+			|	r=CaseStmt(startIndex)                 
+			|	// Note: although the statements `return`, `throw`, `break`, `continue`,
+				// `goto`, `goto case` and `switch` can be parsed as expressions, 
+				// contextual keywords like `yield return` only work in a statement 
+				// context. So it was easier to leave this here and not change the code 
+				// that handles contexual keywords. (in addition, `switch` must be 
+				// handled here so we can suppress the need for a final semicolon)
+				r=ReturnBreakContinueThrow(startIndex) ";"
+			|	r=GotoCaseStmt(startIndex)             ";"
+			/	r=GotoStmt(startIndex)                 ";"
+			|	// `switch` can also be parsed as an expression. It 
+				r=SwitchStmt(startIndex)                
+			|	r=WhileStmt(startIndex)                
 			|	r=ForStmt(startIndex)                   
 			|	r=ForEachStmt(startIndex)               
-			|	r=SwitchStmt(startIndex)                
 			|	r=UsingStmt(startIndex)                 
 				{showWordAttrErrorFor = "using statement";}
 			/	r=UsingDirective(startIndex, attrs)     {addAttrs = false;}
@@ -1399,7 +1420,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		rule ExprStatement::LNode @{
-			result:Expr(StartExpr)
+			result:SubExpr(StartExpr)
 			(	(EOF | TT.Else | TT.While | TT.Catch | TT.Finally) => 
 				{var rr = result.Range;}
 				{result = F.Call(S.Result, result, rr.StartIndex, rr.EndIndex, rr.StartIndex, rr.StartIndex);}
@@ -1820,8 +1841,8 @@ namespace Loyc.Ecs.Parser
 
 		rule CaseStmt(startIndex::int)::LNode @{
 			{var cases = VList!LNode.Empty;}
-			kw:=TT.Case cases+=ExprStart2(true) 
-			        ("," cases+=ExprStart2(true))* end:=":"
+			kw:=TT.Case cases+=ExprStartNNP(true) 
+			        ("," cases+=ExprStartNNP(true))* end:=":"
 			{return F.Call(kw, cases, startIndex, end.EndIndex);}
 		};
 
@@ -1872,20 +1893,20 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule ReturnBreakContinueThrow(startIndex::int)::LNode @{
 			kw:=(TT.Break | TT.Continue | TT.Return | TT.Throw)
-			e:=ExprOrNull(false) end:=";"
+			greedy[e:ExprStartNNP(false)]?
 			{
-				if e != null (return F.Call(kw.Value -> Symbol, e, startIndex, end.EndIndex, kw.StartIndex, kw.EndIndex))
-				else         (return F.Call(kw.Value -> Symbol,    startIndex, end.EndIndex, kw.StartIndex, kw.EndIndex));
+				if e != null (return F.Call(kw.Value -> Symbol, e, startIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex))
+				else         (return F.Call(kw.Value -> Symbol,    startIndex, kw.EndIndex,      kw.StartIndex, kw.EndIndex));
 			}
 		};
 
 		// goto, goto case -----------------------------------------------------
 
 		@[private] rule GotoStmt(startIndex::int)::LNode @{
-			kw:=TT.Goto e:=ExprOrNull(false) end:=";"
+			kw:=TT.Goto e:=ExprOrNull(false)
 			{
-				if e != null (return F.Call(kw, e, startIndex, end.EndIndex))
-				else         (return F.Call(kw,    startIndex, end.EndIndex));
+				if e != null (return F.Call(kw, e, startIndex, e.Range.EndIndex))
+				else         (return F.Call(kw,    startIndex, kw.EndIndex));
 			}
 		};
 
@@ -1894,9 +1915,9 @@ namespace Loyc.Ecs.Parser
 			kw:=TT.Goto kw2:=TT.Case
 			(	def:=TT.Default
 				{e = F.Id(S.Default, def.StartIndex, def.EndIndex);}
-			/	e=ExprOpt(false) )
-			end:=";"
-			{return F.Call(S.GotoCase, e, startIndex, end.EndIndex, kw.StartIndex, kw2.EndIndex);}
+			/	e=ExprStartNNP(false))
+			{var endIndex = e != null ? e.Range.EndIndex : kw2.EndIndex;}
+			{return F.Call(S.GotoCase, e, startIndex, endIndex, kw.StartIndex, kw2.EndIndex);}
 		};
 
 		// checked & unchecked -------------------------------------------------
@@ -1977,7 +1998,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule SwitchStmt(startIndex::int)::LNode @{
-			kw:=TT.Switch p:="(" ")" block:=Stmt
+			kw:=TT.Switch p:="(" ")" block:=BracedBlock
 			{
 				var expr = SingleExprInside(p, "switch (...)");
 				return F.Call(kw, expr, block, startIndex, block.Range.EndIndex);
@@ -2044,8 +2065,7 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 
 		rule ExprOrNull(allowUnassignedVarDecl::bool = false)::LNode @{
-			(";"|","|EOF) => {$result = null;}
-		/	result:ExprStart(allowUnassignedVarDecl)
+			greedy[result:ExprStart(allowUnassignedVarDecl)]?
 		};
 		rule ExprOpt(allowUnassignedVarDecl::bool = false)::LNode @{
 			result:ExprOrNull(allowUnassignedVarDecl)
