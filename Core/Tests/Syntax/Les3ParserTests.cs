@@ -37,7 +37,7 @@ namespace Loyc.Syntax.Les
 			Exact("a b c;", Op(F.Call("'b", a, c)));
 			Exact("a is b as c;", Op(F.Call("'is", a, Op(F.Call("'as", b, c)))));
 			Exact("a + 1 s> b && c;", Op(F.Call(S.And, Op(F.Call("'s>", Op(F.Call(S.Add, a, one)), b)), c)));
-			Exact("(a) tree== [b];", Op(F.Call("'tree==", F.InParens(a), F.Call(S.Array, b))));
+			Exact("(a) code== [b];", Op(F.Call("'code==", F.InParens(a), F.Call(S.Array, b))));
 			Exact("{ a; } Foo (b);", Op(F.Call("'Foo", F.Braces(a), F.InParens(b))));
 		}
 

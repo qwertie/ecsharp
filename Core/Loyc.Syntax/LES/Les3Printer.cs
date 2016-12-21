@@ -84,6 +84,8 @@ namespace Loyc.Syntax.Les
 			return SB;
 		}
 
+		static readonly Precedence AttributeContext = new Precedence(120);
+
 		protected void Print(ILNode node, Precedence context, string suffix = null, NewlineContext nlContext = NewlineContext.AutoDetect)
 		{
 			if (nlContext == NewlineContext.AutoDetect)
@@ -575,8 +577,10 @@ namespace Loyc.Syntax.Les
 		public void VisitCall(ILNode node)
 		{
 			bool allowBlockCalls = _allowBlockCalls;
+
 			// Note: Attributes, if any, have already been printed by this point
 			bool parens = false;
+
 			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Operator:
@@ -596,7 +600,8 @@ namespace Loyc.Syntax.Les
 						if (node.ArgCount() == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName, true))
 							shape = OperatorShape.Suffix;
 
-						parens = PrintCallAsNormalOpOrPrefixNotation(shape, opName, node);
+						if (!PrintCallAsNormalOp(shape, opName, node, ref parens))
+							PrintPrefixNotation(node, true, ref parens);
 					}
 					break;
 				case NodeStyle.Special:
@@ -604,13 +609,14 @@ namespace Loyc.Syntax.Les
 						goto default;
 					break;
 				case NodeStyle.PrefixNotation:
-					parens = PrintPrefixNotation(node, allowBlockCalls: false);
+					PrintPrefixNotation(node, false, ref parens);
 					break;
 				default:
-					parens = PrintPrefixNotation(node, true);
+					PrintPrefixNotation(node, true, ref parens);
 					break;
 			}
-			if (parens) WriteToken(')', LesColorCode.Closer, Chars.Delimiter);
+			if (parens)
+				WriteToken(')', LesColorCode.Closer, Chars.Delimiter);
 			_allowBlockCalls = allowBlockCalls;
 		}
 
@@ -618,15 +624,12 @@ namespace Loyc.Syntax.Les
 
 		#region Printing calls: in prefix notation or as a block call
 
-		bool PrintPrefixNotation(ILNode node, bool allowBlockCalls)
+		void PrintPrefixNotation(ILNode node, bool allowBlockCalls, ref bool parens)
 		{
+			parens |= AddParenIf(!IsAllowedHere(LesPrecedence.Primary));
 			Debug.Assert(node.IsCall());
-			bool parens = AddParenIf(!IsAllowedHere(LesPrecedence.Primary));
-
 			Print(node.Target, LesPrecedence.Primary.LeftContext(_context));
 			PrintArgList(node, allowBlockCalls);
-
-			return parens;
 		}
 
 		internal static readonly HashSet<Symbol> ContinuatorOps = Les3Parser.ContinuatorOps;
@@ -781,7 +784,7 @@ namespace Loyc.Syntax.Les
 
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
 		// or in prefix notation if that fails. Returns true if closing ')' needed.
-		private bool PrintCallAsNormalOpOrPrefixNotation(OperatorShape shape, Symbol opName, ILNode node)
+		private bool PrintCallAsNormalOp(OperatorShape shape, Symbol opName, ILNode node, ref bool parens)
 		{
 			// Check if this operator is allowed here. For example, if operator '+ 
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
@@ -789,12 +792,11 @@ namespace Loyc.Syntax.Les
 			// are not supported.
 			Precedence prec = LesPrecedenceMap.Default.Find(shape, opName);
 			if (shape != OperatorShape.Infix && (prec == LesPrecedence.Other || !LesPrecedenceMap.IsNaturalOperator(opName.Name)))
-				return PrintPrefixNotation(node, true);
+				return false;
 			bool allowed = IsAllowedHere(prec);
-			if (!allowed && !_o.AllowExtraParenthesis && IsAllowedHere(LesPrecedence.Primary))
-				return PrintPrefixNotation(node, true);
-
-			bool parens = AddParenIf(!allowed);
+			if (!allowed && IsAllowedHere(LesPrecedence.Primary))
+				return false;
+			parens |= AddParenIf(!allowed);
 
 			switch (shape) {
 				case OperatorShape.Prefix:
@@ -819,7 +821,7 @@ namespace Loyc.Syntax.Les
 						nlContext: NewlineContext.AfterBinOp | NewlineContext.AutoDetect);
 					break;
 			}
-			return parens;
+			return true;
 		}
 		void PrintOpName(Symbol opName, ILNode target, bool isBinaryOp)
 		{
@@ -849,10 +851,14 @@ namespace Loyc.Syntax.Les
 					NewlineContext.AfterBinOp | NewlineContext.NewlineSafeAfter : NewlineContext.NewlineUnsafe);
 		}
 
-		private bool AddParenIf(bool cond)
+		private bool AddParenIf(bool cond, bool forAttribute = false)
 		{
 			if (cond) {
 				WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
+				if (!forAttribute && !_o.AllowExtraParenthesis && _context != AttributeContext) {
+					WriteToken("@@", LesColorCode.Attribute, Chars.At);
+					WriteOutsideToken(' ');
+				}
 				Space(_o.SpaceInsideGroupingParens);
 				_context = Precedence.MinValue;
 				_allowBlockCalls = true;
@@ -985,11 +991,11 @@ namespace Loyc.Syntax.Les
 					else
 					{
 						// Print as normal attribute
-						parenCount += AddParenIf(needParensForAttribute) ? 1 : 0;
+						parenCount += AddParenIf(needParensForAttribute, forAttribute: true) ? 1 : 0;
 						needParensForAttribute = false;
 						normalAttrs++;
 						WriteToken('@', LesColorCode.Attribute, Chars.Delimiter);
-						Print(attr, Precedence.MaxValue, nlContext: NewlineContext.NewlineSafeAfter);
+						Print(attr, AttributeContext, nlContext: NewlineContext.NewlineSafeAfter);
 						if (!PS.AtStartOfLine && !MaybeForceLineBreak())
 							Space();
 					}

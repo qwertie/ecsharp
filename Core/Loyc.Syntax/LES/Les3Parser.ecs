@@ -70,6 +70,13 @@ partial class Les3Parser
 		{
 			return ExprList(ref endMarker, list, true);
 		}
+		public void CheckForSpaceAtEndOfAttribute()
+		{
+			if (LT0.StartIndex == LT(-1).EndIndex) {
+				var location = new SourceRange(SourceFile, LT0.StartIndex);
+				ErrorSink.Write(Severity.Error, location, "Expected space after attribute");
+			}
+		}
 
 		// When false, Expr ignores braces so that they can be consumed by an outer keyword expr
 		protected bool _allowBlockCalls = true;
@@ -117,7 +124,9 @@ partial class Les3Parser
 		{int startIndex = LT0.StartIndex;}
 		{var attrs = new VList<LNode>();}
 		(	// @Attribute
-			"@" attrs+=Particle[isAttribute: true] greedy("\n")*
+			"@" attrs+=Particle[isAttribute: true]
+			{CheckForSpaceAtEndOfAttribute();}
+			greedy("\n")*
 		)*
 		(	e:Expr[StartStmt]
 			(
@@ -272,7 +281,8 @@ partial class Les3Parser
 			{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);}
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
-			"(" {var saveParens = !isAttribute && (TT)LA0 != TT.At;}
+			"(" {bool saveParens = !isAttribute && (TT)LA0 != TT.At;}
+			["@" "@" {CheckForSpaceAtEndOfAttribute();}]?
 			{saveAndRestore(_allowBlockCalls = true);}
 			list:=ExprList[ref endMarker]
 			")" {

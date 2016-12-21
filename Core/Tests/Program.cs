@@ -154,7 +154,7 @@ namespace Loyc.Tests
 				new IndentTokenGeneratorTests(),
 				new StandardTriviaInjectorTests(),
 				new Les2LexerTests(),
-				new LesParserTests(),
+				new Les2ParserTests(),
 				new Les2PrinterTests(),
 				new Les3LexerTests(),
 				new Les3ParserTests(),

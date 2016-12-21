@@ -11,14 +11,14 @@ namespace Loyc.Syntax
 	/// <summary>A four-byte tuple that represents the precedence and miscibility 
 	/// of an operator.</summary>
 	/// <remarks>
-	/// An operator's precedence is encoded in the two numbers, <see cref="Left"/> 
-	/// and <see cref="Right"/>. These numbers encode the knowledge that, for example, 
-	/// <c>x &amp; y == z</c> will be parsed as <c>x &amp; (y == z)</c>. For normal 
-	/// left-associative operators, Left and Right are the same. However, some 
-	/// operators have different precedence on the left than on the right, a prime
-	/// example being the => operator: <c>x = a => y = a</c> is parsed 
-	/// <c>x = (a => (y = a))</c>; it has very high precedence on the left, but
-	/// very low precedence on the right.
+	/// Precedences encode knowledge like the fact that <c>x &amp; y == z</c> will 
+	/// be parsed as <c>x &amp; (y == z)</c> in C#. An operator's precedence is 
+	/// encoded in the two numbers, <see cref="Left"/> and <see cref="Right"/>.  
+	/// For typical operators which are left-associative, Left and Right are the 
+	/// same. However, some operators have different precedence on the left than 
+	/// on the right, a prime example being the => operator: <c>x = a => y = a</c> 
+	/// is parsed <c>x = (a => (y = a))</c>; it has very high precedence on the 
+	/// left, but very low precedence on the right.
 	/// <para/>
 	/// To understand how this works, remember that a parser scans from left to 
 	/// right. Each time it encounters a new operator, it needs to figure out 
@@ -61,14 +61,14 @@ namespace Loyc.Syntax
 	/// is parsed <c>a = (b = c)</c>, because its precedence is 1 on the left and 
 	/// 0 on the right. When the parser sees the first '=' it sets the PF to 0 
 	/// because it is about to parse the right side. When it encounters the second 
-	/// '=', the left-hand precedence of that operator is 1 which is higher than 
-	/// the current PF (0) so it is included in the right-hand side of the first 
-	/// '='. This behavior is called "right associativity"; <see cref="IsRightAssociative"/> 
-	/// returns true when <c>Left > Right</c>.
+	/// '=', the precedence of the Left side of that operator is 1 which is higher 
+	/// than the current PF (0) so it is included in the right-hand side of the 
+	/// first '='. This behavior is called "right associativity"; 
+	/// <see cref="IsRightAssociative"/> returns true when <c>Left > Right</c>.
 	/// <para/>
 	/// Prefix and suffix operators only have one "side"; you can imagine that the 
 	/// unused side (e.g. the left side of prefix -) has infinite precedence, so 
-	/// that EC# can parse $-x as $(-x) even though the precedence of '-' is 
+	/// that EC# could parse $-x as $(-x) even though the precedence of '-' is 
 	/// supposedly lower than '$'.
 	/// <para/>
 	/// Some languages have a conditional operator (a?b:c) with three parts. In 
@@ -82,11 +82,19 @@ namespace Loyc.Syntax
 	/// perspective of a parser, but an actual parser may or may not use the PF 
 	/// concept and <c>Precedence</c> objects.
 	/// <para/>
+	/// In summary: <see cref="Left"/> and <see cref="Right"/> represent the 
+	/// precedence of the left and right side of a binary operator. A parser can 
+	/// keep track of a number called the "precedence floor" or PF, which has its 
+	/// minimum value when parsing starts. When a binary operator <c>Op</c> is 
+	/// encountered, the parser should "accept" the operator when <c>O.Left > PF</c>
+	/// and, if it accepts the operator, set <c>PF = O.Right</c> temporarily as it 
+	/// parses the right side of the operator.
+	/// <para/>
 	/// This struct contains two other numbers, <see cref="Lo"/> and <see cref="Hi"/>,
 	/// which are a precedence range that determines whether and how the operator 
 	/// can be mixed with other operators, as explained below.
 	/// <para/>
-	/// A printer (e.g. <see cref="LesLanguageService"/>) has a different way of analyzing
+	/// A printer (which writes a syntax tree as text) has a different way of analyzing
 	/// precedence. It starts with a known parse tree and then has to figure out 
 	/// how to output something that the parser will reconstruct into the original
 	/// tree. This is more difficult if perfect round-tripping is required: parentheses
@@ -148,7 +156,7 @@ namespace Loyc.Syntax
 	/// whether the precedence of the <i>left-hand side</i> of the "+" operator
 	/// is above the <i>right-hand side</i> of the "=" operator. The fact that
 	/// there is a "??" later on is irrelevant. In contrast, when printing the 
-	/// expression "b + c", both sides of the "+" operator and both sides of the 
+	/// expression "b + c", both sides of the subexpression and both sides of the 
 	/// context must be considered. The right-hand side is relevant because if 
 	/// the right-hand operator was "*" instead of "??", the following printout 
 	/// would be wrong:
@@ -163,8 +171,9 @@ namespace Loyc.Syntax
 	/// cref="LeftContext"/> and <see cref="RightContext"/>, while for parsing you 
 	/// only need <see cref="CanParse"/> (to raise the precedence floor, simply
 	/// replace the current <see cref="Precedence"/> value with that of the new 
-	/// operator). In a parser, the "current" precedence is represented by 
-	/// <see cref="Right"/>; the value of <see cref="Left"/> doesn't matter.
+	/// operator). If one chooses to use this type to represent the precedence 
+	/// floor in a parser, the "current" precedence is represented by <see 
+	/// cref="Right"/>; the value of <see cref="Left"/> doesn't matter.
 	/// <para/>
 	/// Both printers and parsers can use <see cref="CanMixWith"/>.
 	/// 
@@ -202,7 +211,7 @@ namespace Loyc.Syntax
 	/// 
 	/// <h3>Overall Range</h3>
 	/// 
-	/// By convention, precedence scales range from 0 to 100 (or slightly higher).
+	/// By convention, precedence scales range from about 0 to about 100.
 	/// The precedence numbers are stored in this structure as <c>sbyte</c>s, so 
 	/// <c>Left</c>, <c>Right</c>, <c>Lo</c>, and <c>Hi</c> must be between -128 
 	/// and 127.

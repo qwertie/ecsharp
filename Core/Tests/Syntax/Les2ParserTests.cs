@@ -10,7 +10,7 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 
 	[TestFixture]
-	public class LesParserTests : Les2PrinterAndParserTests
+	public class Les2ParserTests : Les2PrinterAndParserTests
 	{
 		[Test]
 		public void EmptyInput()

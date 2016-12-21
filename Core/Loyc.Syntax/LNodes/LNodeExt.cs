@@ -347,7 +347,7 @@ namespace Loyc.Syntax
 			if (kind != pattern.Kind)
 				return false;
 
-			if (candidate.Name != pattern.Name)
+			if (kind == LNodeKind.Id && candidate.Name != pattern.Name)
 				return false;
 			if (kind == LNodeKind.Literal)
 				return object.Equals(candidate.Value, pattern.Value);

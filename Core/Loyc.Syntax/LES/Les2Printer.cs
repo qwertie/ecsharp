@@ -80,18 +80,21 @@ namespace Loyc.Syntax.Les
 			try {
 				int parenCount = WriteAttrs(node, ref context);
 
-				if (node.BaseStyle() == NodeStyle.PrefixNotation)
+				if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation)
 					PrintPrefixNotation(node, context);
 				else do {
-					if (node.IsCall()) {
-						if (AutoPrintBracesOrBracks(node))
-							break;
-						int args = node.ArgCount();
-						if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
-							break;
-						if (args == 2 && AutoPrintInfixOp(node, context))
-							break;
+					if (AutoPrintBracesOrBracks(node))
+						break;
+					if (!LesPrecedence.Primary.CanAppearIn(context)) {
+						_out.Write("(@[] ", true);
+						parenCount++;
+						context = StartStmt;
 					}
+					int args = node.ArgCount();
+					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
+						break;
+					if (args == 2 && AutoPrintInfixOp(node, context))
+						break;
 					PrintPrefixNotation(node, context);
 				} while (false);
 			

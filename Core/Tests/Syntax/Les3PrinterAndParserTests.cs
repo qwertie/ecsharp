@@ -455,6 +455,13 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void PrecedenceChallenge()
+		{
+			Exact("a.(@@ -b)",    F.Dot(a, F.Call(S._Negate, b)));
+			Exact("a.(@@ -b)(x)", F.Call(F.Dot(a, F.Call(S._Negate, b)), x));
+		}
+
+		[Test]
 		public void TriviaTest_Comments()
 		{
 			LNode node;
