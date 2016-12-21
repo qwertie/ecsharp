@@ -10,8 +10,11 @@ using System.Reflection;
 //      Revision
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
-// by using '.*' as shown below - but you shouldn't, because it will cause a simple 
-// "Rebuild All" command to produce an incompatible assembly, since the .NET 
-// framework apparently requires an exact match on all four AssemblyVersion numbers.
-[assembly: AssemblyVersion("2.3.2.0")]
-[assembly: AssemblyFileVersion("2.3.2.0")]
+// by using '.*' - but you shouldn't, because it will cause a simple "Rebuild All" 
+// command to change the version number which, I guess, produces an incompatible 
+// assembly in the presence of strong names (strong naming prevents two assemblies 
+// from linking together without an exact match - and now that I'm no longer using 
+// '.*' I am still having occasional problems with 'MissingMethodException' in the 
+// Visual Studio SFG, but I don't know why, maybe it's not about version numbers..)
+[assembly: AssemblyVersion("2.3.3.0")]
+[assembly: AssemblyFileVersion("2.3.3.0")]
