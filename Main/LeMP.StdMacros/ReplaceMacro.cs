@@ -149,20 +149,25 @@ namespace LeMP
 
 			return null;
 		}
-		public static LNode ReplaceCaptures(LNode replacement, MMap<Symbol, LNode> captures)
+
+		/// <summary>Finds capture variables like <c>$x</c> and replaces them with values
+		/// from <c>captures</c> (e.g. <c>captures[(Symbol)"x"]</c> for <c>$x</c>)</summary>
+		public static LNode ReplaceCaptures(LNode outputSpec, MMap<Symbol, LNode> captures)
 		{
 			if (captures.Count != 0)
 			{
 				// TODO: EXPAND SPLICES! Generally it works anyway though because 
 				// the macro processor has built-in support for #splice.
-				return replacement.ReplaceRecursive(n => {
-					LNode sub, cap;
-					if (n.Calls(S.Substitute, 1) && (sub = n.Args.Last).IsId && captures.TryGetValue(sub.Name, out cap))
-						return cap;
+				return outputSpec.ReplaceRecursive(n => {
+					LNode id, cap;
+					if ((id = LNodeExt.GetCaptureIdentifier(n)) != null) {
+						if (captures.TryGetValue(id.Name, out cap))
+							return cap;
+					}
 					return null;
 				});
 			}
-			return replacement;
+			return outputSpec;
 		}
 
 		static readonly Symbol _replace = (Symbol)"replace";

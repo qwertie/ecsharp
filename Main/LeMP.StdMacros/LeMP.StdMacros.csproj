@@ -70,6 +70,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ContractsMacro.ecs</DependentUpon>
     </Compile>
+    <Compile Include="DeconstructMacro.cs" />
     <Compile Include="FluentMacro.cs" />
     <Compile Include="ForwardingMacro.cs" />
     <Compile Include="InRange.out.cs">
@@ -116,6 +117,7 @@
     </Compile>
     <Compile Include="SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros.cs" />
+    <Compile Include="StaticMatchCodeMacro.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
     <Compile Include="TupleMacros.cs" />
     <Compile Include="UnrollMacro.cs" />

@@ -258,10 +258,11 @@ namespace LeMP
 			return F.Call(S.Splice, F.Id("#useSymbols"), F.Id("#useSequenceExpressions"));
 		}
 
-		[LexicalMacro(@"x `tree==` y", 
-			"Returns the literal true if two or more syntax trees are equal, or false if not. The two arguments are preprocessed.", 
-			"tree==", "'tree==")]
-		public static LNode TreeEqual(LNode node, IMacroContext context)
+		[LexicalMacro(@"x `code==` y", 
+			 "Returns the literal true if two or more syntax trees are equal, or false if not. "
+			+"The two arguments are macro-preprocessed, and trivia is ignored.", 
+			"tree==", "'tree==", "code==", "'code==", "codeEquals", "'codeEquals")]
+		public static LNode treeEquals(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount < 2) return null;
 			node = context.PreProcessChildren();
@@ -274,8 +275,9 @@ namespace LeMP
 			return F.Literal(G.BoxedTrue);
 		}
 
-		[LexicalMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", 
-			Mode = MacroMode.Passive | MacroMode.Normal)]
+		[LexicalMacro(@"static if(cond) { then; } else { otherwise; }", 
+			"Equivalent to `static_if(cond, then, otherwise)` but with friendly C# syntax. See documentation of `static_if` for more information.",
+			"#if", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode StaticIf(LNode @if, IMacroContext context)
 		{
 			LNode @static;
@@ -284,13 +286,20 @@ namespace LeMP
 			return static_if(@if, context);
 		}
 		
-		[LexicalMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now",
+		[LexicalMacro(@"static_if(cond, then, otherwise);", 
+			 "The `static_if` statement is replaced with the 'then' clause or the 'otherwise' clause according "
+			+"to whether the first argument - a boolean expression - evaluates to true or false. "
+			+"The `otherwise` clause is optional; if it is omitted and the boolean expression evaluates to false, "
+			+"the entire `static_if` statement disappears from the output."
+			+"Currently, the condition supports only boolean math (e.g. `!true || false` can be evaluated but "
+			+"not `5 > 4`). `static_if` is often used in conjunction with the `staticMatches` operator.",
 			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode static_if(LNode @if, IMacroContext context)
 		{
 			if (!@if.ArgCount.IsInRange(2, 3))
 				return null;
 			LNode cond = context.PreProcess(@if.Args[0]);
+			cond = ReduceBooleanExpr(cond);
 			object @bool;
 			if ((@bool = cond.Value) is bool)
 			{
@@ -301,7 +310,44 @@ namespace LeMP
 					return output;
 			}
 			else
-				return Reject(context, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
+				return Reject(context, @if.Args[0], "Only boolean expressions can be evaluated.");
+		}
+
+		internal static LNode ReduceBooleanExpr(LNode node)
+		{
+			var n = node.Name;
+			if (node.ArgCount == 2)
+			{
+				var lhs = ReduceBooleanExpr(node[0]);
+				if (lhs.Value is bool)
+				{
+					if (n == S.And || n == S.AndBits)
+						if ((bool)lhs.Value)
+							return ReduceBooleanExpr(node[1]);
+						else
+							return F.False;
+					if (n == S.Or || n == S.OrBits)
+						if ((bool)lhs.Value)
+							return F.True;
+						else
+							return ReduceBooleanExpr(node[1]);
+					if (n == S.Eq || n == S.Neq) {
+						var rhs = ReduceBooleanExpr(node[1]);
+						if (rhs.Value is bool)
+							if ((((bool)lhs.Value) == ((bool)rhs.Value)) == (n == S.Eq))
+								return F.True;
+							else
+								return F.False;
+					}
+				}
+			}
+			else if (node.ArgCount == 1 && (n == S.Not || n == S.NotBits))
+			{
+				var arg = ReduceBooleanExpr(node[0]);
+				if (arg.Value is bool)
+					return !(bool)arg.Value ? F.True : F.False;
+			}
+			return node;
 		}
 
 		[LexicalMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "'??=")]

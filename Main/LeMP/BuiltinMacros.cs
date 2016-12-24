@@ -38,7 +38,7 @@ namespace LeMP.Prelude
 		static readonly Symbol _hash_setScopedPropertyQuote = (Symbol)"#setScopedPropertyQuote";
 
 		[LexicalMacro("#set Identifier = literal; #snippet Identifier = { statements; }; #snippet Identifier = expression;",
-			"Sets an option, or saves a snippet of code for use later. See also: #get", 
+			"Sets an option, or saves a snippet of code for use later. The children are macro-expanded before the assignment occurs. See also: #get", 
 			"#var", Mode = MacroMode.Passive)]
 		public static LNode _set(LNode node, IMacroContext context)
 		{
@@ -47,8 +47,6 @@ namespace LeMP.Prelude
 			bool isSnippet = name == _hash_snippet;
 			if ((isSnippet || name == _hash_set) && node.ArgCount == 2 && lhs.IsId)
 			{
-				node = context.PreProcessChildren();
-
 				Symbol newTarget = isSnippet ? _hash_setScopedPropertyQuote : _hash_setScopedProperty;
 				var stmts = node.Args.Slice(1).Select(key =>
 					{
@@ -56,10 +54,12 @@ namespace LeMP.Prelude
 						if (key.Calls(S.Assign, 2))
 						{
 							value = key.Args[1];
+							value = context.PreProcess(value);
 							key = key.Args[0];
 							if (isSnippet && value.Calls(S.Braces))
 								value = value.Args.AsLNode(S.Splice);
 						}
+
 						if (!key.IsId)
 							context.Write(Severity.Error, key, "Invalid key; expected an identifier.");
 						return (LNode)node.With(newTarget, LNode.Literal(key.Name, key), value);

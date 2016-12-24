@@ -55,6 +55,8 @@ namespace Loyc.Tests
 				new TestCodeQuoteMacro(),
 				new TestMacroCombinations(),
 				new TestMatchCodeMacro(),
+				new TestStaticMatchCodeMacro(),
+				new TestStaticDeconstructMacro(),
 				new TestMatchMacro(),
 				new TestOnFinallyReturnThrowMacros(),
 				new TestReplaceMacro(),

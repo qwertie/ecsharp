@@ -358,24 +358,52 @@ namespace LeMP.Tests
 		[Test]
 		public void TestTreeEqualsAndStaticIf()
 		{
-			TestEcs(@"bool b = a `tree==` 'A';",                        @"bool b = false;");
-			TestEcs(@"bool b = f(x) `tree==` f(x /*comment*/);",        @"bool b = true;");
+			TestEcs(@"bool b = a `code==` 'A';",                        @"bool b = false;");
+			TestEcs(@"bool b = f(x) `code==` f(x /*comment*/);",        @"bool b = true;");
 			TestEcs(@"a(); static if (true)  { b(); c(); } d();",       @"a(); b(); c(); d();");
 			TestEcs(@"a(); static if (false) { b(); c(); } d();",       @"a(); d();");
-			TestEcs(@"a(); static if (a `tree==` 'A') {{ b(); }} c();", @"a(); c();");
-			TestEcs(@"a(); static if (foo() `tree==` foo(2)) b(); else {{ c(); }} d();", @"a(); { c(); } d();");
-			TestEcs(@"a(); static if (foo.bar<baz> `tree==` foo.bar<baz>) b(); else c(); d();", @"a(); b(); d();");
+			TestEcs(@"a(); static if (a `code==` 'A') {{ b(); }} c();", @"a(); c();");
+			TestEcs(@"a(); static if (foo() `code==` foo(2)) b(); else {{ c(); }} d();", @"a(); { c(); } d();");
+			TestEcs(@"a(); static if (foo.bar<baz> `code==` foo.bar<baz>) b(); else c(); d();", @"a(); b(); d();");
 			TestEcs(@"c = static_if(false, see, C);", @"c = C;");
 			TestEcs(@"#set Flag; a(); static if (#get(Flag, false)) b();
 			                          static if (#get(Nada, false)) c(); d();",
 			        @"a(); b(); d();");
 			TestEcs(@"#set #inputFile = ""Foo.cs"";
-				static if (#get(#inputFile) `tree==` ""Foo.cs"")
+				static if (#get(#inputFile) `code==` ""Foo.cs"")
 					WeAreInFoo();
 				else
 					ThisIsNotFoo();
 				", "WeAreInFoo();");
 		}
+
+		[Test]
+		public void TestStaticIfBooleanExprs()
+		{
+			TestEcs(@"static if (true || false) { T; } else { f; }",    "T;");
+			TestEcs(@"static if (true || true)  { T; } else { f; }",    "T;");
+			TestEcs(@"static if (false || true) { T; } else { f; }",    "T;");
+			TestEcs(@"static if (false | false) { T; } else { f; }",    "f;");
+			TestEcs(@"static if (true && false) { T; } else { f; }",    "f;");
+			TestEcs(@"static if (true && true)  { T; } else { f; }",    "T;");
+			TestEcs(@"static if (false && true) { T; } else { f; }",    "f;");
+			TestEcs(@"static if (false & false) { T; } else { f; }",    "f;");
+			TestEcs(@"static if (!true) { T; } else { f; }",            "f;");
+			TestEcs(@"static if (~false) { T; } else { f; }",           "T;");
+			TestEcs(@"static if (!false || ~true) { T; } else { f; }",  "T;");
+			TestEcs(@"static if (!false && ~false) { T; } else { f; }", "T;");
+			TestEcs(@"static if (~false && false && !false) { T; } else { f; }", "f;");
+		}
+
+		[Test]
+		public void StaticMatches_WithStaticIf()
+		{
+			TestEcs(@"static if (xx `staticMatches` $x) {}"+
+			        @"static if (Pie(""apple"") `staticMatches` Pie($x)) { Cake($x); }", @"Cake(""apple"");");
+			TestEcs(@"static if (xx `staticMatches` $x) {}"+
+			        @"static if (!(Pie(""apple"") `staticMatches` Cake($x))) { $x; }", @"xx;");
+		}
+
 		[Test]
 		public void EcsMacro()
 		{

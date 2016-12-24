@@ -16,28 +16,36 @@ namespace LeMP
 		static readonly Symbol @in = GSymbol.Get("in");
 
 		[LexicalMacro(@"unroll ((X, Y) \in ((X, Y), (Y, X))) {...}",
-			"Produces variations of a block of code, by replacing an identifier left of `in` with each of the corresponding expressions on the right of `in`. The braces are omitted from the output. ",
+			 "Produces variations of a block of code, by replacing an identifier left of `in` "
+			+"with each of the corresponding expressions on the right of `in`. The list on the "
+			+"right side can either be a tuple or a braced list of statements.\n\n"
+			+"The braces around the final block of code are omitted from the output.\n\n"
+			+"If the right-hand side of `in` is not a list (tuple, splice or braced block), "
+			+"macros are executed on the right-hand side in the hope of creating a list.",
 			"unroll", "#unroll")]
-		public static LNode unroll(LNode node, IMessageSink sink)
+		public static LNode unroll(LNode node, IMacroContext context)
 		{
 			LNode clause;
 			// unroll (X, Y) \in ((X, Y), (Y, X)) {...}
 			// unroll ((X, Y) in ((X, Y), (Y, X))) {...}
 			if (node.ArgCount == 2 && ((clause = node.Args[0]).Calls(@in, 2) || clause.Calls(S.In, 2)))
 			{
-				var result = unroll(clause.Args[0], clause.Args[1], node.Args[1], sink);
+				LNode identifiers = clause.Args[0], cases = clause.Args[1];
+				if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice)) {
+					cases = context.PreProcess(cases);
+					if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice))
+						return Reject(context, cases, "The right-hand side of 'in' should be a tuple or braced block.");
+				}
+				var result = unroll(identifiers, cases.Args, node.Args[1], context);
 				if (result != null && node.HasPAttrs())
-					sink.Write(Severity.Warning, result.Attrs[0], "'unroll' does not support attributes.");
+					context.Write(Severity.Warning, result.Attrs[0], "'unroll' does not support attributes.");
 				return result;
 			}
 			return null;
 		}
 		
-		public static LNode unroll(LNode var, LNode cases, LNode body, IMessageSink sink)
+		public static LNode unroll(LNode var, VList<LNode> cases, LNode body, IMessageSink sink)
 		{
-			if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice))
-				return Reject(sink, cases, "The right-hand side of 'in' should be a tuple or braced block.");
-
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;
 			if (var.IsId && !var.HasPAttrs()) {
@@ -55,13 +63,13 @@ namespace LeMP
 								sink.Write(Severity.Error, vars[i], "Duplicate name in the left-hand tuple"); // non-fatal
 					}
 				} else
-					return Reject(sink, cases, "The left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
+					return Reject(sink, var, "The left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
 			}
 
 			UnrollCtx ctx = new UnrollCtx { Replacements = replacements };
 			WList<LNode> output = new WList<LNode>();
 			int iteration = 0;
-			foreach (LNode replacement in cases.Args)
+			foreach (LNode replacement in cases)
 			{
 				iteration++;
 				bool tuple = replacement.Calls(S.Tuple) || replacement.Calls(S.Braces);

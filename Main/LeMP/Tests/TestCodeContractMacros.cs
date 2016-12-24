@@ -363,7 +363,7 @@ namespace LeMP.Tests
 					return ([requires(_ > 0)] num) => num - 1;
 				}", @"
 				public static Func<int,int> Decrementor() {
-					return (num) => { 
+					return num => { 
 						Contract.Assert(num > 0, ""Precondition failed: num > 0""); 
 						return num - 1;
 					};
@@ -373,22 +373,22 @@ namespace LeMP.Tests
 					return ([ensures(_ >= 0)] delegate (int num) { return num * num; });
 				}", @"
 				public static Func<int,int> Squarer() {
-					return (delegate (int num) { 
+					return delegate (int num) { 
 						{	var return_value = num * num;
 							Contract.Assert(return_value >= 0, ""Postcondition failed: return_value >= 0""); 
 							return return_value;
 						}
-					});
+					};
 				}");
 			TestEcs(@"#set #haveContractRewriter;
 				public static Func<int,int> Squarer() {
 					return ([requires(num >= 0)] delegate (int num) { return num * num; });
 				}", @"
 				public static Func<int,int> Squarer() {
-					return (delegate (int num) { 
+					return delegate (int num) { 
 						Contract.Requires(num >= 0); 
 						return num * num;
-					});
+					};
 				}");
 		}
 	}

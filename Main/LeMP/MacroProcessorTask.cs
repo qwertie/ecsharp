@@ -151,7 +151,7 @@ namespace LeMP
 		}
 		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
-			using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Current)) {
+			using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Default)) {
 				try {
 					string dir = Path.GetDirectoryName(io.FileName);
 					if (!string.IsNullOrEmpty(dir))
@@ -160,7 +160,7 @@ namespace LeMP
 				} catch (ArgumentException) { }    // Path.* may throw
 				  catch (PathTooLongException) { } // Path.* may throw
 
-				var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink, io.ParsingMode, io.PreserveComments ?? true);
+				var input = ParsingService.Default.Parse(io.Text, io.FileName, _sink, io.ParsingMode, io.PreserveComments ?? true);
 				var inputRV = new VList<LNode>(input);
 
 				io.Output = ProcessRoot(inputRV);

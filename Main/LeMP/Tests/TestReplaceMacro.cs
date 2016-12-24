@@ -46,10 +46,10 @@ namespace LeMP.Tests
 			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
 			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
 			
-			TestLes("replace ($($format; $(..args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}""; noun)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
-			TestLes("replace ($($format; $(..args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}
@@ -106,7 +106,7 @@ namespace LeMP.Tests
 					@"Console.WriteLine(); Console.WriteLine();");
 			TestEcs(@"define Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
 					@"void F(int arg) {} void G(int arg) {} void F(List<int> arg) {} void G(List<int> arg) {}");
-			TestEcs(@"define WL($format, $(..args)) => Console.WriteLine($format, $args); WL(1, 2, 3);",
+			TestEcs(@"define WL($format, $(..args)) => Console.WriteLine($format, $(..args)); WL(1, 2, 3);",
 					@"Console.WriteLine(1, 2, 3);");
 			TestEcs(@"[Passive] define operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
 					@"x = Foo.SetAt(y, z);");

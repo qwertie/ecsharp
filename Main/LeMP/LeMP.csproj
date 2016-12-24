@@ -252,6 +252,7 @@
     </Compile>
     <Compile Include="MacroProcessor.cs" />
     <Compile Include="MacroProcessorTask.cs" />
+    <Compile Include="Tests\TestStaticDeconstructMacro.cs" />
     <Compile Include="Tests\TestMacroCombinations.cs" />
     <Compile Include="Tests\MacroProcessorTests.cs" />
     <Compile Include="BuiltinMacros.cs" />
@@ -268,6 +269,7 @@
     <Compile Include="Tests\TestCodeQuoteMacro.cs" />
     <Compile Include="Tests\TestMatchCodeMacro.cs" />
     <Compile Include="Tests\TestMatchMacro.cs" />
+    <Compile Include="Tests\TestStaticMatchCodeMacro.cs" />
     <Compile Include="Tests\TestUnrollMacro.cs" />
     <Compile Include="Tests\TestUseSymbolsMacro.cs" />
   </ItemGroup>

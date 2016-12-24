@@ -51,8 +51,8 @@ namespace Loyc.Ecs
 	/// <seealso cref="Precedence"/>
 	public static class EcsPrecedence
 	{
-		public static readonly Precedence TightAttr  = Precedence.MaxValue;
-		public static readonly Precedence Substitute = new Precedence(103, 102, 102, 103);// $x  .x
+		public static readonly Precedence Substitute = new Precedence(106, 105, 105, 106); // $x  .x
+		public static readonly Precedence Of         = new Precedence(102, 101, 101, 102); // List<T>
 		public static readonly Precedence Primary    = new Precedence(100);    // x.y x::y x=:y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
 		public static readonly Precedence NullDot    = new Precedence(99);    // ?.
 		public static readonly Precedence Prefix     = new Precedence(91, 90, 90, 91); // +  -  !  ~  ++x  --x  (T)x
@@ -73,7 +73,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence Or         = new Precedence(20);    // || ^^
 		public static readonly Precedence OrIfNull   = new Precedence(16);    // ??
 		public static readonly Precedence IfElse     = new Precedence(11, 10, 10, 11); // x ? y : z
-		public static readonly Precedence Assign     = new Precedence(35,  0,  0, 1);  // =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=
+		public static readonly Precedence Assign     = new Precedence(26,  0,  0, 1);  // =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=
 		public static readonly Precedence Lambda     = new Precedence(85, -1, -2, -1); // =>
 	}
 }

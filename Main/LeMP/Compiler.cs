@@ -376,7 +376,7 @@ namespace LeMP
 
 		bool SetPropertyHelper(string exprStr, bool quote)
 		{
-			LNode expr = (InLang ?? ParsingService.Current).ParseSingle(exprStr, Sink, ParsingMode.Expressions);
+			LNode expr = (InLang ?? ParsingService.Default).ParseSingle(exprStr, Sink, ParsingMode.Expressions);
 			if (expr.Calls(CodeSymbols.Assign, 2) && !expr[0].IsCall) {
 				object key = expr[0].IsLiteral ? expr[0].Value : expr[0].Name;
 				LNode valueN = expr[1];
@@ -453,7 +453,7 @@ namespace LeMP
 		public void CompleteInputOutputOptions(InputOutput file)
 		{
 			if (file.InputLang == null) {
-				var inLang = InLang ?? ParsingService.Current;
+				var inLang = InLang ?? ParsingService.Default;
 				if (!ForceInLang || InLang == null)
 					inLang = ParsingService.GetServiceForFileName(file.FileName) ?? inLang;
 				file.InputLang = inLang;
