@@ -141,7 +141,20 @@ namespace Loyc.LLParserGenerator
 						// also recognize [Local], which was not the default until v1.9.1
 						subexpr = subexpr.WithoutAttrNamed(_Local);
 					}
-					return new AndPred(expr, subexpr ?? subpred, not, local);
+					// Extract error message for Check(), if provided.
+					string errorString = null;
+					if (subexpr != null)
+						subexpr = subexpr.WithAttrs(n => {
+							if (n.Value is string) {
+								errorString = (string)n.Value;
+								return NoValue.Value; // drop attribute from output
+							} else if (n.IsIdNamed("NoCheck")) {
+								errorString = "";
+								return NoValue.Value;
+							}
+							return n;
+						});
+					return new AndPred(expr, subexpr ?? subpred, not, local) { CheckErrorMessage = errorString };
 				}
 				else if (expr.Calls(S.NotBits, 1))
 				{

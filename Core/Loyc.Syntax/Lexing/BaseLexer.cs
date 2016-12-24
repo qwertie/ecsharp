@@ -584,7 +584,7 @@ namespace Loyc.Syntax.Lexing
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(0, "Syntax error. A required condition was not met: '{0}'", expectedDescr);
+				Error(0, expectedDescr);
 		}
 
 		/// <summary>This method is called to handle errors that occur during lexing.</summary>

@@ -78,18 +78,21 @@ namespace Loyc.LLPG
 			return LllpgMacro(node, context, _lexer, lexerCfg =>
 			{
 				var helper = new IntStreamCodeGenHelper();
-				foreach (var option in MacroContext.GetOptions(lexerCfg.Args)) {
+				foreach (var option in MacroContext.GetOptions(lexerCfg.Args))
+				{
 					LNode value = option.Value;
 					string key = (option.Key ?? (Symbol)"??").Name;
 					switch (key.ToLowerInvariant()) {
-						case "inputsource": helper.InputSource = value; break;
-						case "inputclass": helper.InputClass = value; break;
-						case "terminaltype": helper.TerminalType = value; break;
-						case "settype": helper.SetType = value; break;
-						case "listinitializer": helper.SetListInitializer(value); break;
+						case "inputsource":      helper.InputSource = value; break;
+						case "inputclass":       helper.InputClass = value; break;
+						case "terminaltype":     helper.TerminalType = value; break;
+						case "settype":          helper.SetType = value; break;
+						case "listinitializer":  helper.SetListInitializer(value); break;
+						case "nocheckbydefault": SetOption<bool>(value.Value, b => helper.NoCheckByDefault = b, "NoCheckByDefault", context); break;
 						default:
 							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: " +
-								"inputSource: var, inputClass: type, terminalType: type, setType: type, listInitializer: var _ = new List<T>()", key);
+								"InputSource: var, InputClass: type, TerminalType: type, SetType: type, "+
+								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true", key);
 							break;
 					}
 				}
@@ -108,38 +111,40 @@ namespace Loyc.LLPG
 				var helper = new GeneralCodeGenHelper();
 				if (parserCfg == null)
 					return helper;
-				foreach (var option in MacroContext.GetOptions(parserCfg.Args)) {
+				foreach (var option in MacroContext.GetOptions(parserCfg.Args))
+				{
 					LNode value = option.Value;
 					string key = (option.Key ?? (Symbol)"??").Name;
 					switch (key.ToLowerInvariant()) {
-						case "inputsource": helper.InputSource = value; break;
-						case "inputclass":  helper.InputClass = value; break;
-						case "terminaltype":helper.TerminalType = value; break;
-						case "settype":     helper.SetType = value;   break;
+						case "inputsource":     helper.InputSource = value; break;
+						case "inputclass":      helper.InputClass = value; break;
+						case "terminaltype":    helper.TerminalType = value; break;
+						case "settype":         helper.SetType = value;   break;
 						case "listinitializer": helper.SetListInitializer(value); break;
-						case "latype":      helper.LaType = value;    break;
-						case "matchtype":   // alternate name
-						case "matchcast":   helper.MatchCast = value; break;
-						case "allowswitch":
-							if (value.Value is bool)
-								helper.AllowSwitch = (bool)value.Value;
-							else
-								context.Write(Severity.Error, value, "AllowSwitch: expected literal boolean argument.");
-							break;
-						case "castla":
-							if (value.Value is bool)
-								helper.CastLA = (bool)value.Value;
-							else
-								context.Write(Severity.Error, value, "CastLA: expected literal boolean argument.");
-							break;
+						case "nocheckbydefault":SetOption<bool>(value.Value, b => helper.NoCheckByDefault = b, "NoCheckByDefault", context); break;
+						case "allowswitch":     SetOption<bool>(value.Value, b => helper.AllowSwitch = b, "AllowSwitch", context); break;
+						case "castla":          SetOption<bool>(value.Value, b => helper.CastLA = b, "CastLA", context); break;
+						case "latype":          helper.LaType = value;    break;
+						case "matchtype":       // alternate name
+						case "matchcast":       helper.MatchCast = value; break;
 						default:
 							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
-								"inputSource: variable, inputClass: type, terminalType: type, laType: type, matchCast: type, setType: type, allowSwitch: bool, castLa: bool, listInitializer: var _ = new List<T>()", key);
+								"InputSource: variable, InputClass: type, TerminalType: type, SetType: type, "+
+								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true, AllowSwitch: bool, "+
+								"CastLA: bool, LAType: type, MatchCast: type", key);
 							break;
 					}
 				}
 				return helper;
 			}, isDefault: true);
+		}
+
+		private static void SetOption<T>(object value, Action<T> setter, string optionName, IMessageSink errorSink)
+		{
+			if (value is T)
+				setter((T)value);
+			else
+				errorSink.Write(Severity.Error, value, "AllowSwitch: expected literal boolean argument.");
 		}
 
 		/// <summary>This method helps do the stage-one transform from <c>LLLPG (config) {...}</c>
@@ -333,10 +338,10 @@ namespace Loyc.LLPG
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
 							context.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
-						else {
+						else
 							rules.Add(Pair.Create(rule, methodBody));
-							stmts[i] = null; // remove processed rules from the list
-						}
+
+						stmts[i] = null; // remove processed rules from the list
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))

@@ -903,6 +903,18 @@ namespace Loyc.LLParserGenerator
 		/// <see cref="LNode"/> or <see cref="Pred"/>.</summary>
 		public object Pred;
 
+		/// <summary>
+		/// Error string passed to Check() in the generated code if the predicate 
+		/// is not matched. <see cref="CodeGenHelperBase.GenerateAndPredCheck"/>
+		/// suppresses generation of Check() call when this is an empty string.
+		/// </summary><remarks>
+		/// Initial value: null. User code can set this property by attaching a 
+		/// string as an attribute to an and-predicate (as of Jan 2017 this can 
+		/// only be done for semantic predicates as there is no syntax for 
+		/// attaching attributes to syntactic predicates).
+		/// </remarks>
+		public string CheckErrorMessage;
+
 		public bool? Prematched;
 		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); Prematched = null; }
 

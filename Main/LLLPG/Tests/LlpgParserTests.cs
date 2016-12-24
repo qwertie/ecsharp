@@ -27,7 +27,7 @@ namespace Loyc.LLParserGenerator
 		[SetUp]
 		void SetUp()
 		{
-			ParsingService.Current = Les2LanguageService.Value;
+			ParsingService.Default = Les2LanguageService.Value;
 			MessageSink.Default = MessageSink.Console;
 		}
 
@@ -104,7 +104,7 @@ namespace Loyc.LLParserGenerator
 		}
 		void TestStage1Core(string text, LNode expected)
 		{
-			var lexer = ParsingService.Current.Tokenize(text, MessageSink.Console);
+			var lexer = ParsingService.Default.Tokenize(text, MessageSink.Console);
 			var treeified = new TokensToTree(lexer, true);
 			var tokens = treeified.Buffered();
 			var parser = new StageOneParser(tokens, lexer.SourceFile, MessageSink.Console);

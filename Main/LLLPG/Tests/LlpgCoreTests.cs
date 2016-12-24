@@ -890,10 +890,10 @@ namespace Loyc.LLParserGenerator
 						int la0;
 						la0 = LA0;
 						if (la0 == 'a') {
-							Check(a, ""a"");
+							Check(a, ""Expected a"");
 							Skip();
 						} else {
-							Check(b, ""b"");
+							Check(b, ""Expected b"");
 							Match('b');
 						}
 					}
@@ -921,7 +921,7 @@ namespace Loyc.LLParserGenerator
 								if (a)
 									goto match1;
 								else {
-									Check(b, ""b"");
+									Check(b, ""Expected b"");
 									Skip();
 								}
 							} else if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
@@ -931,7 +931,7 @@ namespace Loyc.LLParserGenerator
 							break;
 						match1:
 							{
-								Check(a, ""a"");
+								Check(a, ""Expected a"");
 								Skip();
 							}
 						} while (false);
@@ -967,14 +967,14 @@ namespace Loyc.LLParserGenerator
 							goto match2;
 					match1:
 						{
-							Check(a, ""a"");
-							Check(b, ""b"");
+							Check(a, ""Expected a"");
+							Check(b, ""Expected b"");
 							Skip();
 						}
 						break;
 					match2:
 						{
-							Check(c, ""c"");
+							Check(c, ""Expected c"");
 							Match('x', 'y');
 						}
 					} while (false);
@@ -1003,10 +1003,10 @@ namespace Loyc.LLParserGenerator
 											if (b || c) {
 													la1 = LA(1);
 													if (la1 == ':') {
-															Check(a, ""a"");
+															Check(a, ""Expected a"");
 															if (b) {
 															} else {
-																	Check(c, ""c"");
+																	Check(c, ""Expected c"");
 																	Foo;
 															}
 															Skip();
@@ -1022,7 +1022,7 @@ namespace Loyc.LLParserGenerator
 							break;
 					match2:
 							{
-									Check(a, ""a"");
+									Check(a, ""Expected a"");
 									Skip();
 									Match('?');
 							}
@@ -1255,7 +1255,7 @@ namespace Loyc.LLParserGenerator
 					public void Id()
 					{
 						int la0;
-						Check(char.IsLetter(LA0), ""char.IsLetter($LA)"");
+						Check(char.IsLetter(LA0), ""Expected char.IsLetter($LA)"");
 						MatchExcept();
 						for (;;) {
 							la0 = LA0;
@@ -1272,7 +1272,7 @@ namespace Loyc.LLParserGenerator
 					public void Twin()
 					{
 						Match('T');
-						Check(LA0 == LA(0 + 1), ""$LA == LA($LI + 1)"");
+						Check(LA0 == LA(0 + 1), ""Expected $LA == LA($LI + 1)"");
 						MatchRange('0', '9');
 						MatchRange('0', '9');
 					}
@@ -1822,7 +1822,7 @@ namespace Loyc.LLParserGenerator
 				public void Number()
 				{
 					int la0, la1;
-					Check(Try_Number_Test0(0), ""[.0-9]"");
+					Check(Try_Number_Test0(0), ""Expected [.0-9]"");
 					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
@@ -1983,7 +1983,7 @@ namespace Loyc.LLParserGenerator
 					x = 0;
 					la0 = LA0;
 					if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' ')) {
-						Check(x < max, ""x < max"");
+						Check(x < max, ""Expected x < max"");
 						Skip();
 						for (;;) {
 							la0 = LA0;
@@ -1996,7 +1996,7 @@ namespace Loyc.LLParserGenerator
 					for (;;) {
 						la0 = LA0;
 						if (la0 == ' ') {
-							Check(x < max, ""x < max"");
+							Check(x < max, ""Expected x < max"");
 							Skip();
 							for (;;) {
 								la0 = LA0;

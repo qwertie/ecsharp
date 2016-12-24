@@ -128,7 +128,7 @@ namespace Loyc.LLParserGenerator
 			// Called by base class constructor
 			Debug.Assert(eofToken.Type() == TT.EOF);
 			base.Reset(ReclassifyTokens(tokens), eofToken, file, startIndex);
-			_hostLanguage = ParsingService.Current;
+			_hostLanguage = ParsingService.Default;
 			_tokensRoot = _tokenList;
 			F = new LNodeFactory(file);
 		}

@@ -545,6 +545,7 @@ namespace Loyc.LLParserGenerator
 					var code = GetAndPredCode(andp, lookaheadAmt, laVar);
 					return CGH.GenerateAndPredCheck(andp, code, lookaheadAmt);
 				})
+				.WhereNotNull()
 				.OrderBy(node => node.ToString()); // sort the set so that unit tests are deterministic
 				return Join(andPredCode, S.And, F.@true);
 			}
@@ -562,8 +563,11 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(AndPred andp)
 			{
-				if (!(andp.Prematched ?? false))
-					_target.Add(CGH.GenerateAndPredCheck(andp, GetAndPredCode(andp, 0, CGH.LA(0)), -1));
+				if (!(andp.Prematched ?? false)) {
+					var check = CGH.GenerateAndPredCheck(andp, GetAndPredCode(andp, 0, CGH.LA(0)), -1);
+					if (check != null)
+						_target.Add(check);
+				}
 			}
 			public override void Visit(RuleRef rref)
 			{

@@ -110,7 +110,7 @@ namespace Loyc.LLParserGenerator
 						// Line 2: (&{tok__ == '$'} [$])?
 						la0 = LA0;
 						if (la0 == '$') {
-							Check(tok__ == '$', ""tok__ == '$'"");
+							Check(tok__ == '$', ""Expected tok__ == '$'"");
 							Skip();
 						}
 					}");
@@ -218,7 +218,7 @@ namespace Loyc.LLParserGenerator
 						ch_excl = Match(TT.Excl);
 						la0 = (int) LA0;
 						if (la0 == TT.Excl) {
-							Check(ch_excl.Value == '!', ""ch_excl.Value == '!'"");
+							Check(ch_excl.Value == '!', ""Expected ch_excl.Value == '!'"");
 							ch_excl = MatchAny();
 							tt = ch_excl;
 						}

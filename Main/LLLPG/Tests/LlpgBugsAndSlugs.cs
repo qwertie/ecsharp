@@ -276,9 +276,9 @@ namespace Loyc.LLParserGenerator
 				rule Foo() @{ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{@[Foo($LA)] $LI} _ };
 			}", @"void Foo()
 				{
-					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
-					Check(0() && Bar(((int)LA0)()), ""$LI() && Bar($LA())"");
-					Check($LI, ""$LI"");
+					Check(!(LA(0) == 0), ""Did not expect LA($LI) == $LI"");
+					Check(0() && Bar(((int)LA0)()), ""Expected $LI() && Bar($LA())"");
+					Check($LI, ""Expected $LI"");
 					MatchExcept();
 				}");
 		}
@@ -435,15 +435,15 @@ namespace Loyc.LLParserGenerator
 				{
 					switch (LA0) {
 					case '0': Skip(); break;
-					case '1': { Check(a, ""a""); Skip(); } break;
-					case '2': { Check(b, ""b""); Skip(); } break;
-					case '3': { Check(c, ""c""); Skip(); } break;
-					case '4': { Check(d, ""d""); Skip(); } break;
-					case '5': { Check(e, ""e""); Skip(); } break;
-					case '6': { Check(f, ""f""); Skip(); } break;
-					case '7': { Check(g, ""g""); Skip(); } break;
-					case '8': { Check(h, ""h""); Skip(); } break;
-					default:  { Check(i, ""i""); Match('9'); } break;
+					case '1': { Check(a, ""Expected a""); Skip(); } break;
+					case '2': { Check(b, ""Expected b""); Skip(); } break;
+					case '3': { Check(c, ""Expected c""); Skip(); } break;
+					case '4': { Check(d, ""Expected d""); Skip(); } break;
+					case '5': { Check(e, ""Expected e""); Skip(); } break;
+					case '6': { Check(f, ""Expected f""); Skip(); } break;
+					case '7': { Check(g, ""Expected g""); Skip(); } break;
+					case '8': { Check(h, ""Expected h""); Skip(); } break;
+					default:  { Check(i, ""Expected i""); Match('9'); } break;
 					}
 				}
 				void Start()
@@ -494,15 +494,15 @@ namespace Loyc.LLParserGenerator
 				{
 					switch (LA0) {
 					case '0': Skip(); break;
-					case '1': { Check(a, ""a""); Skip(); } break;
-					case '2': { Check(b, ""b""); Skip(); } break;
-					case '3': { Check(c, ""c""); Skip(); } break;
-					case '4': { Check(d, ""d""); Skip(); } break;
-					case '5': { Check(e, ""e""); Skip(); } break;
-					case '6': { Check(f, ""f""); Skip(); } break;
-					case '7': { Check(g, ""g""); Skip(); } break;
-					case '8': { Check(h, ""h""); Skip(); } break;
-					default:  { Check(i, ""i""); Match('9'); } break;
+					case '1': { Check(a, ""Expected a""); Skip(); } break;
+					case '2': { Check(b, ""Expected b""); Skip(); } break;
+					case '3': { Check(c, ""Expected c""); Skip(); } break;
+					case '4': { Check(d, ""Expected d""); Skip(); } break;
+					case '5': { Check(e, ""Expected e""); Skip(); } break;
+					case '6': { Check(f, ""Expected f""); Skip(); } break;
+					case '7': { Check(g, ""Expected g""); Skip(); } break;
+					case '8': { Check(h, ""Expected h""); Skip(); } break;
+					default:  { Check(i, ""Expected i""); Match('9'); } break;
 					}
 				}
 				void Start()

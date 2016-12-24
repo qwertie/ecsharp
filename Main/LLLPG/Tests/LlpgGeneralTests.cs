@@ -278,7 +278,7 @@ namespace Loyc.LLParserGenerator
 				public void Id()
 				{
 					int la0;
-					Check(char.IsLetter(LA0), ""@char.IsLetter($LA)"");
+					Check(char.IsLetter(LA0), ""Expected @char.IsLetter($LA)"");
 					MatchExcept();
 					for (;;) {
 						la0 = LA0;
@@ -295,7 +295,7 @@ namespace Loyc.LLParserGenerator
 				public void Twin()
 				{
 					Match('T');
-					Check(LA0 == LA(0 + 1), ""$LA == LA($LI + 1)"");
+					Check(LA0 == LA(0 + 1), ""Expected $LA == LA($LI + 1)"");
 					MatchRange('0', '9');
 					MatchRange('0', '9');
 				}
@@ -321,6 +321,49 @@ namespace Loyc.LLParserGenerator
 						Id();
 				}
 			");
+		}
+
+		[Test]
+		public void SemPredCustomCheckMessageOrNoCheck()
+		{
+			Test(@"LLLPG lexer {
+				@[pub] rule Int()  @{ &{@[Hoist, NoCheck] NumbersAllowed} '0'..'9'+ };
+				@[pub] rule Twin() @{ &{@[Hoist, ""Must be saturday""] IsSaturday} '0'..'9' '0'..'9' };
+				@[pub] token Token() @{ Twin / Int };
+			}", @"
+				public void Int()
+				{
+					int la0;
+					MatchRange('0', '9');
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
+							break;
+					}
+				}
+				public void Twin()
+				{
+					Check(IsSaturday, ""Must be saturday"");
+					MatchRange('0', '9');
+					MatchRange('0', '9');
+				}
+				public void Token()
+				{
+					int la1;
+					if (IsSaturday) {
+						if (NumbersAllowed) {
+							la1 = LA(1);
+							if (la1 >= '0' && la1 <= '9')
+								Twin();
+							else
+								Int();
+						} else
+							Twin();
+					} else
+						Int();
+				}");
 		}
 
 		[Test]
@@ -464,7 +507,7 @@ namespace Loyc.LLParserGenerator
 					var x = 0;
 					la0 = LA0;
 					if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == ' ')) {
-						Check(x < max, ""x < max"");
+						Check(x < max, ""Expected x < max"");
 						Skip();
 						for (;;) {
 							la0 = LA0;
@@ -478,7 +521,7 @@ namespace Loyc.LLParserGenerator
 					for (;;) {
 						la0 = LA0;
 						if (la0 == ' ') {
-							Check(x < max, ""x < max"");
+							Check(x < max, ""Expected x < max"");
 							Skip();
 							for (;;) {
 								la0 = LA0;
@@ -555,12 +598,12 @@ namespace Loyc.LLParserGenerator
 				}
 				void NonDigit()
 				{
-					Check(!Try_Scan_Digit(0, 7), ""!(Digit)"");
+					Check(!Try_Scan_Digit(0, 7), ""Did not expect Digit"");
 					MatchExcept();
 				}
 				void EvenDigit()
 				{
-					Check(!Try_IsOddDigit(0), ""!(OddDigit)"");
+					Check(!Try_IsOddDigit(0), ""Did not expect OddDigit"");
 					MatchExcept();
 				}");
 		}
@@ -578,7 +621,7 @@ namespace Loyc.LLParserGenerator
 				void Number()
 				{
 					int la0, la1;
-					Check(Try_Number_Test0(0), ""[.0-9]"");
+					Check(Try_Number_Test0(0), ""Expected [.0-9]"");
 					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '9')
@@ -830,7 +873,7 @@ namespace Loyc.LLParserGenerator
 				la0 = LA0;
 				if (la0 == '.') {
 					Skip();
-					Check(Try_HexNumber_Test0(0), ""([0-9] / HexDigits [Pp] [+\\-0-9])"");
+					Check(Try_HexNumber_Test0(0), ""Expected ([0-9] / HexDigits [Pp] [+\\-0-9])"");
 					HexDigits();
 				}
 			}
@@ -1144,7 +1187,7 @@ namespace Loyc.LLParserGenerator
 					Foo2();
 					la0 = LA0;
 					if (la0 != (int) EOF) {
-						Check(Try_Scan_Foo2(0), ""Foo2"");
+						Check(Try_Scan_Foo2(0), ""Expected Foo2"");
 						Skip();
 					}
 				}");
@@ -1374,7 +1417,7 @@ namespace Loyc.LLParserGenerator
 				}
 				void BC()
 				{
-					Check(LA0 + 1 == LA(0 + 1), ""$LA + 1 == LA($LI + 1)"");
+					Check(LA0 + 1 == LA(0 + 1), ""Expected $LA + 1 == LA($LI + 1)"");
 					MatchRange('a', 'y');
 					MatchRange('b', 'z');
 				}");
@@ -1587,7 +1630,7 @@ namespace Loyc.LLParserGenerator
 							Skip();
 						else {
 							_x = MatchRange(128, 65534);
-							Check(_x > 128 && char.IsLetter(_x), ""_x > 128 && @char.IsLetter(_x)"");
+							Check(_x > 128 && char.IsLetter(_x), ""Expected _x > 128 && @char.IsLetter(_x)"");
 						}
 					}
 					static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', 'a', 'z', 128, 65534);
@@ -1605,7 +1648,7 @@ namespace Loyc.LLParserGenerator
 								Skip();
 							else {
 								_x = MatchRange(128, 65534);
-								Check(_x > 128 && char.IsLetter(_x), ""_x > 128 && @char.IsLetter(_x)"");
+								Check(_x > 128 && char.IsLetter(_x), ""Expected _x > 128 && @char.IsLetter(_x)"");
 							}
 						} else
 							Match('_');

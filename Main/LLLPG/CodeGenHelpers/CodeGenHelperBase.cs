@@ -74,14 +74,18 @@ namespace Loyc.LLParserGenerator
 		/// expression <c>expr</c> sets <c>ListInitializer = expr</c>.</summary>
 		public void SetListInitializer(LNode varDecl)
 		{
-			if (varDecl.Calls(S.Var, 2)) {
-				ListType = varDecl.Args[0];
-				if (varDecl.Args[1].Calls(S.Assign, 2))
-					ListInitializer = varDecl.Args[1].Args[1];
+			LNode type, name, initialValue;
+			if (Ecs.EcsValidators.IsVariableDeclExpr(varDecl, out type, out name, out initialValue)) {
+				ListType = type;
+				if (initialValue != null)
+					ListInitializer = initialValue;
 			} else {
 				ListInitializer = varDecl;
 			}
 		}
+
+		/// <summary>If true, calls to <c>Check()</c> are suppressed when <see cref="AndPred.CheckErrorMessage"/> is null.</summary>
+		public bool NoCheckByDefault { get; set; }
 
 		public CodeGenHelperBase()
 		{
@@ -213,7 +217,8 @@ namespace Loyc.LLParserGenerator
 		/// <param name="code">The expression to be checked</param>
 		/// <param name="li">Current lookahead amount. -1 means "prediction is 
 		/// complete, generate a Check() statement".</param>
-		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+		/// <remarks>LLLPG substitutes $LI and $LA before it calls this method.
+		/// This method can return null to suppress the Check statement.</remarks>
 		public virtual LNode GenerateAndPredCheck(AndPred andPred, LNode code, int li)
 		{
 			if (_currentRule.IsRecognizer && li <= -1)
@@ -227,14 +232,22 @@ namespace Loyc.LLParserGenerator
 				code = F.Call(S.Not, code);
 			if (li > -1)
 				return code;
-			else
-			{
-				string asString = (andPred.Pred is LNode
-					? ((LNode)andPred.Pred).Print(ParsingMode.Expressions)
-					: andPred.Pred.ToString());
-				if (andPred.Not)
-					asString = "!(" + asString + ")";
-				return ApiCall(_Check, code, F.Literal(asString));
+			else {
+				var errorString = andPred.CheckErrorMessage;
+				if (errorString == "") {
+					return null;
+				} else if (errorString == null) {
+					if (NoCheckByDefault)
+						return null;
+					errorString = (andPred.Pred is LNode
+						? ((LNode)andPred.Pred).Print(ParsingMode.Expressions)
+						: andPred.Pred.ToString());
+					if (andPred.Not)
+						errorString = "Did not expect " + errorString;
+					else
+						errorString = "Expected " + errorString;
+				}
+				return ApiCall(_Check, code, F.Literal(errorString));
 			}
 		}
 

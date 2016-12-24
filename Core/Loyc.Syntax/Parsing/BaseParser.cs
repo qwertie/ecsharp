@@ -403,7 +403,7 @@ namespace Loyc.Syntax
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(0, Localize.Localized("Syntax error. A required condition was not met: '{0}'", expectedDescr));
+				Error(0, expectedDescr);
 		}
 	}
 	/// <summary>
