@@ -891,7 +891,7 @@ namespace Loyc.Syntax.Les
 					? ArgListStyle.Semicolons : ArgListStyle.Normal, _o.SpaceInsideArgLists, leftBracket: node.Target);
 			} else if (opName == CodeSymbols.Of) {
 				var args = node.Args();
-				Print(args[0], LesPrecedence.Primary.LeftContext(_context));
+				Print(args[0], LesPrecedence.Of.LeftContext(_context));
 				PrintOpName(S.Not, node.Target, true);
 				if (args.Count == 2 && args[1].IsId() && args[1].AttrCount() == 0)
 					VisitId(args[1]);

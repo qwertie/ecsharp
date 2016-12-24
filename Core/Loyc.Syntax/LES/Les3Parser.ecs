@@ -217,6 +217,14 @@ partial class Les3Parser
 			|	// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
+			|	// ! operator (generic #of)
+				&{[Local] context.CanParse(P.Of)}
+				"!"
+				{var args = new VList<LNode> { e }; int endIndex;}
+				(	"(" args=ExprList[args] c:=")"  {endIndex = c.EndIndex;}
+				/	T:=Expr[P.Of]                   {args.Add(T); endIndex = T.Range.EndIndex;}
+				)
+				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 			)*
 		)	{return e;};
 
@@ -224,13 +232,6 @@ partial class Les3Parser
 	private FinishPrimaryExpr[LNode e] returns [LNode result]
 		:	// call(function)
 			result:CallArgs[e]
-		|	// ! operator (generic #of)
-			"!"
-			{var args = new VList<LNode> { e }; int endIndex;}
-			(	"(" args=ExprList[args] c:=")"      {endIndex = c.EndIndex;}
-			/	T:=Expr[P.Primary]                  {args.Add(T); endIndex = T.Range.EndIndex;}
-			)
-			{return F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 		|	// Indexer / square brackets
 			{var args = new VList<LNode> { e };}
 			lb:="[" args=ExprList[args] rb:="]"

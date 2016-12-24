@@ -237,13 +237,13 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
 	{
-		public static readonly Precedence Substitute = new Precedence(106, 105);        // special prefix ops $ . :
-		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x-- List!T
+		public static readonly Precedence Substitute  = new Precedence(106, 105);       // prefix $
+		public static readonly Precedence Of          = new Precedence(102, 101);       // List!T
+		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x--
 		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
 		public static readonly Precedence DoubleBang  = new Precedence(91, 90);         // !!
 		public static readonly Precedence Prefix      = new Precedence(85);             // most prefix operators, e.g. - ~ *
 		public static readonly Precedence Power       = new Precedence(80);             // **
-		public static readonly Precedence Juxtaposition = new Precedence(76, 75);       // x y
 		public static readonly Precedence Multiply    = new Precedence(70);             // * /
 		public static readonly Precedence Add         = new Precedence(60);             // + -
 		public static readonly Precedence Shift       = new Precedence(65, 65, 60, 70); // >> <<
@@ -257,8 +257,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50); // | ^
 		public static readonly Precedence And         = new Precedence(20);             // &&
 		public static readonly Precedence Or          = new Precedence(15);             // ||
-		public static readonly Precedence IfElse      = new Precedence(10, 0, 0, 0);    // a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
-		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);    // label : (b = (c ? (d : e)))
+		public static readonly Precedence IfElse      = new Precedence(10, 2, 2, 2);    // ? :    a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
+		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);    // =      label : (b = (c ? (d : e)))
 		public static readonly Precedence LowerKeyword = new Precedence(1, 0, 0, 0);    // (a = b) 'implies (a 'knows ('b = 'c)); a = (b ? (c 'else d))
 		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5); // =>
 		public static readonly Precedence PrefixOr    = new Precedence(-10);            // prefix |

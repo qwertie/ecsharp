@@ -87,7 +87,7 @@ namespace Loyc.Syntax.Les
 			new MMap<object, Precedence>() {
 				{ S.Dot,         P.Primary    }, // .
 				{ S.QuickBind,   P.Primary    }, // =:
-				{ S.Not,         P.Primary    }, // !
+				{ S.Not,         P.Of         }, // !
 				{ S.NullDot,     P.NullDot    }, // ?.
 				{ S.ColonColon,  P.NullDot    }, // ::
 				{ S.DoubleBang,  P.DoubleBang }, // !!

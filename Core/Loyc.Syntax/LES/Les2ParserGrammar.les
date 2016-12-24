@@ -135,9 +135,17 @@ namespace Loyc.Syntax.Les {
 				t:(TT.NormalOp|TT.BQOperator|TT.Dot|TT.Assignment)
 				rhs:=Expr(prec)
 				{e = F.Call(t, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, NodeStyle.Operator);}
-			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
+			|	// Method_calls(with arguments) and indexers[with indexes]
 				&{@[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
+			|	// Generic!arguments
+				&{@[Local] context.CanParse(P.Of)}
+				"!"
+				{var args = (new VList!LNode { e }); endIndex::int;}
+				(	"(" args=ExprList(args) c:=")" {endIndex = c.EndIndex;}
+				/	T:=Expr(P.Of)                  {args.Add(T); endIndex = T.Range.EndIndex;}
+				)
+				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 			|	// Suffix operator
 				&{@[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
@@ -155,13 +163,6 @@ namespace Loyc.Syntax.Les {
 					e = MarkCall(F.Call(e, list, e.Range.StartIndex, c.EndIndex));
 					if (endMarker == TT.Semicolon) { e.Style = NodeStyle.Statement | NodeStyle.Alternate; };
 				}
-			|	// ! operator (generic #of)
-				"!"
-				{var args = (new VList!LNode { e }); endIndex::int;}
-				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
-				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
-				)
-				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 			|	// Indexer / square brackets
 				{var args = (new VList!LNode { e });}
 				"[" args=ExprList(args) c:="]"

@@ -315,16 +315,18 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Generics()
 		{
-			Expr("a!b", F.Of(a, b));
-			Expr("a!(b)", F.Of(a, b));
-			Expr("a!(b, c)", F.Of(a, b, c));
-			Expr("a!()", F.Of(a));
-			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
-			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
-			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));
-			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
-			// This last one is meaningless in most programming languages, but LES does not judge
-			Stmt("Foo = a.b!c!x", F.Call(S.Assign, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
+			Exact("a!b", F.Of(a, b));
+			Expr ("a!(b)", F.Of(a, b));
+			Exact("a!(b, c)", F.Of(a, b, c));
+			Exact("a!()", F.Of(a));
+			Exact("a.b!((x))", F.Dot(a, F.Of(b, F.InParens(x))));
+			Exact("(@@ a.b)!Foo", F.Of(F.Dot(a, b), Foo));
+			Exact("a.b!Foo",      F.Dot(a, F.Of(b, Foo)));
+			Exact("a.b!Foo(x)", F.Call(F.Dot(a, F.Of(b, Foo)), x));
+			Exact("a.b!(Foo.Foo)(x)", F.Call(F.Dot(a, F.Of(b, F.Dot(Foo, Foo))), x));
+			Exact("a.b!(Foo(x))", F.Dot(a, F.Of(b, F.Call(Foo, x))));
+			Expr ("Foo = a.b!c!x", F.Call(S.Assign, Foo, F.Dot(a, F.Of(b, F.Of(c, x)))));
+			Exact("Foo = a.b!(c!x)", F.Call(S.Assign, Foo, F.Dot(a, F.Of(b, F.Of(c, x)))));
 		}
 		
 		[Test]

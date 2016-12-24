@@ -190,12 +190,13 @@ namespace Loyc.Syntax.Les
 			Expr("a!(b)", F.Of(a, b));
 			Expr("a!(b, c)", F.Of(a, b, c));
 			Expr("a!()", F.Of(a));
-			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
-			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
-			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));
-			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
-			// This last one is meaningless in most programming languages, but LES does not judge
-			Stmt("Foo = a.b!c!x;", F.Call(S.Assign, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
+			Expr("a.b!((x))", F.Dot(a, F.Of(b, F.InParens(x))));
+			Expr("(@[] a.b)!Foo", F.Of(F.Dot(a, b), Foo));
+			Expr("a.b!Foo",       F.Dot(a, F.Of(b, Foo)));
+			Expr("a.b!Foo(x)", F.Call(F.Dot(a, F.Of(b, Foo)), x));
+			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Dot(a, F.Of(b, F.Dot(Foo, Foo))), x));
+			Expr("a.b!(Foo(x))", F.Dot(a, F.Of(b, F.Call(Foo, x))));
+			Stmt("Foo = a.b!c!x", F.Call(S.Assign, Foo, F.Dot(a, F.Of(b, F.Of(c, x)))));
 		}
 
 		[Test]
