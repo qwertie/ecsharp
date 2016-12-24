@@ -186,14 +186,13 @@ namespace Loyc.Ecs.Tests
 			Stmt("(#var(Foo, a, b, c));", F.InParens(F.Vars(Foo, a, b, c)));
 			Stmt("(Foo a) = x;",          F.Assign(F.InParens(F.Vars(Foo, a)), x));
 			Stmt("(Foo a) => a;",         F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
-			Stmt("([] Foo a) + x;",       F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
+			Stmt("([] Foo a) + x;",       F.Call(S.Add, F.Vars(Foo, a), x));
 			var x_1 = F.Tuple(x, one);
 			Stmt("(a, b) = (x, 1);",      F.Assign(F.Tuple(a, b), x_1));
 			Stmt("(a,) = (x,);",          F.Assign(F.Tuple(a), F.Tuple(x)));
 			Stmt("(a, Foo b) = (x, 1);",  F.Assign(F.Tuple(a, F.Vars(Foo, b)), x_1));
 			Stmt("(Foo a, b) = (x, 1);",  F.Assign(F.Tuple(F.Vars(Foo, a), b), x_1));
-			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.InParens(F.Vars(Foo, a)), one), b), x_1), Mode.ParserTest);
-			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1), Mode.PrinterTest);
+			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
 			Stmt("(Foo a,) = (x,);",      F.Assign(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
 			
 			// TODO: drop support for this syntax in the printer.
@@ -574,6 +573,10 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));
 			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParserTest);
+
+			Stmt("[Foo] default:",      Attr(Foo, F.Call(S.Label, F.Id(S.Default))));
+			Stmt("[Foo] case x:",       Attr(Foo, F.Call(S.Case, x)));
+			Stmt("partial case x:",     Attr(partialWA, F.Call(S.Case, x)));
 		}
 
 		[Test]

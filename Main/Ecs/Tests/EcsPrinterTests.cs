@@ -8,8 +8,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {
-	////////////////////////////////////////////////////////////////////////////
-	/// <summary>EC# node printer tests</summary>
+	/// <summary>EC# node printer tests. Most of the tests are inherited.</summary>
 	[TestFixture]
 	public class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{

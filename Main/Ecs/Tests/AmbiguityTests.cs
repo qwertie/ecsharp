@@ -22,7 +22,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("(Foo) + x;", F.Call(S.Add, F.InParens(Foo), x));
 			Stmt("(Foo) * x;", F.Call(S.Mul, F.InParens(Foo), x));
 			Stmt("(Foo) & x;", F.Call(S.AndBits, F.InParens(Foo), x));
-			Stmt("([] Foo) ~ x;", F.Call(S.NotBits, F.InParens(Foo), x));
+			Stmt("([] Foo) ~ x;", F.Call(S.NotBits, Foo, x), Mode.ParserTest);
 			Stmt("(Foo) ~x;", F.Call(S.Cast, F.Call(S.NotBits, x), Foo));
 			Stmt("(Foo) x(a);", F.Call(S.Cast, F.Call(x, a).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) `x` a;", F.Call(x, F.InParens(Foo), a).SetStyle(NodeStyle.Operator));

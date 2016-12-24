@@ -37,8 +37,8 @@ namespace Loyc.Ecs.Tests
 			LNode stmt;
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
 			Stmt("@`'+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
-			// was "partial #var(Foo, a);" which would be parsed as a method declaration
-			Stmt("([] partial Foo a);", F.InParens(Attr(@partialWA, F.Vars(Foo, a))));
+			// once printed as "partial #var(Foo, a);" which would be parsed as a method declaration
+			Stmt("partial Foo a;", Attr(@partialWA, F.Vars(Foo, a)));
 			Stmt("public partial alt class BinaryTree<T> { }", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
 			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
@@ -75,10 +75,13 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrecedenceChallenges()
 		{
-			Expr(@"@`'.`(a, -b)",     F.Dot(a, F.Call(S._Negate, b)));
-			Expr(@"@`'.`(a, -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
-			Expr(@"@`'.`(a, -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
-			Expr(@"a.(-b)(c)",       F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
+			Expr(@"a.([] -b)",        F.Dot(a, F.Call(S._Negate, b)));
+			Expr(@"a.([] -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
+			Expr(@"a.([] -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
+			Expr(@"a::([] -b)",    F.Call(S.ColonColon, a, F.Call(S._Negate, b)));
+			Expr(@"a.b->c",           F.Call(S.PtrArrow, F.Dot(a, b), c));
+			Expr(@"a->([] b.c)",   F.Call(S.PtrArrow, a, F.Dot(b, c)));
+			Expr(@"a.(-b)(c)",        F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
 			// The printer should revert to prefix notation in certain cases in 
 			// order to faithfully represent the original tree.
 			Expr(@"a * b + c",       F.Call(S.Add, F.Call(S.Mul, a, b), c));
@@ -143,14 +146,10 @@ namespace Loyc.Ecs.Tests
 			// round-trip so we need separate printer and parser tests. Perhaps 
 			// ideally the parser would ignore parens when there's an attr list,
 			// but then the printer might have to print extra parens in some cases.
-			Expr("([] Foo x = a) + 1",   F.Call(S.Add, F.InParens(F.Var(Foo, x.Name, a)), one), Mode.ParserTest);
-			Expr("([] Foo x = a) + 1",   F.Call(S.Add, F.Var(Foo, x.Name, a), one), Mode.PrinterTest);
-			Expr("([] Foo a) = x",       F.Assign(F.InParens(F.Vars(Foo, a)), x), Mode.ParserTest);
-			Expr("([] Foo a) = x",       F.Assign(F.Vars(Foo, a), x), Mode.PrinterTest);
-			Expr("([] Foo a) + x",       F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x), Mode.ParserTest);
-			Expr("([] Foo a) + x",       F.Call(S.Add, F.Vars(Foo, a), x), Mode.PrinterTest);
-			Expr("x + ([] Foo a)",       F.Call(S.Add, x, F.InParens(F.Vars(Foo, a))), Mode.ParserTest);
-			Expr("x + ([] Foo a)",       F.Call(S.Add, x, F.Vars(Foo, a)), Mode.PrinterTest);
+			Expr("([] Foo x = a) + 1",   F.Call(S.Add, F.Var(Foo, x.Name, a), one));
+			Expr("([] Foo a) = x",       F.Assign(F.Vars(Foo, a), x));
+			Expr("([] Foo a) + x",       F.Call(S.Add, F.Vars(Foo, a), x));
+			Expr("x + ([] Foo a)",       F.Call(S.Add, x, F.Vars(Foo, a)));
 			Expr("#label(Foo)",          F.Call(S.Label, Foo));
 			Stmt("Foo:",                 F.Call(S.Label, Foo));
 			LNode Foo_a = F.Call(S.NamedArg, Foo, a);

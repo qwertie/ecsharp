@@ -300,6 +300,12 @@ namespace Loyc.Ecs
 				return argCount == 2;
 		}
 
+		/// <summary>Verifies that a declaration of a single variable is valid and gets its parts.</summary>
+		/// <param name="expr">Potential variable or field declaration</param>
+		/// <param name="type">Variable type (empty identifier if `var`)</param>
+		/// <param name="name">Variable name (identifier or $substutution expr)</param>
+		/// <param name="initialValue">Initial value that is assigned in <c>expr</c>, or null if unassigned.</param>
+		/// <returns>True if <c>expr</c> is declaration of a single variable.</returns>
 		public static bool IsVariableDeclExpr(LNode expr, out LNode type, out LNode name, out LNode initialValue)
 		{
 			type = name = initialValue = null;

@@ -113,10 +113,10 @@ namespace Loyc.Ecs.Tests
 			Expr("(Foo) @`'+`(a)",    F.Call(S.Cast, F.Call(S._UnaryPlus, a), Foo));
 			var Foo_a = F.Of(Foo, a); 
 			Expr("(Foo<a>) (-a)",     F.Call(S.Cast, F.InParens(neg_a), Foo_a));
-			Expr("([] Foo)(-a)",     F.Call(F.InParens(Foo), neg_a));
+			Expr("(([] Foo))(-a)",    F.Call(F.InParens(Foo), neg_a));
 			// [] certifies "this is not a cast!"; extra parentheses also work
 			Option(Mode.PrintBothParseFirst,
-				"([] Foo<a>)(-a);", "((Foo<a>))(-a);",
+				"(([] Foo<a>))(-a);", "((Foo<a>))(-a);",
 				F.Call(F.InParens(Foo_a), neg_a), p => p.AllowChangeParentheses = true);
 			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
 			Expr("(a.b!(c > 1)) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
