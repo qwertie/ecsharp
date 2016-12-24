@@ -265,8 +265,6 @@ namespace Loyc.Ecs
 			if (kind == null)
 				return SPResult.Fail;
 
-			var ifClause = GetIfClause();
-
 			int ai;
 			var old_n = _n;
 			if (kind == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
@@ -275,7 +273,7 @@ namespace Loyc.Ecs
 				kind = S.UsingStmt;
 			}
 
-			G.Verify(0 == PrintAttrs(AttrStyle.IsDefinition, ifClause));
+			G.Verify(0 == PrintAttrs(AttrStyle.IsDefinition));
 
 			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 			WriteOperatorName(kind);
@@ -300,8 +298,6 @@ namespace Loyc.Ecs
 			if (name2.Calls(S.Of) || (alias && (name2 = name.Args[0]).Calls(S.Of)))
 				PrintWhereClauses(name2);
 
-			AutoPrintIfClause(ifClause);
-			
 			if (body == null)
 				return SPResult.NeedSemicolon;
 
@@ -318,24 +314,6 @@ namespace Loyc.Ecs
 		public static Symbol KeyNameComponentOf(LNode name)
 		{
 			return EcsValidators.KeyNameComponentOf(name);
-		}
-
-		void AutoPrintIfClause(LNode ifClause)
-		{
-			if (ifClause != null) {
-				NewlineOrSpace(NewlineOpt.BeforeIfClause);
-				_out.Write("if", true);
-				Space(SpaceOpt.BeforeKeywordStmtArgs);
-				PrintExpr(ifClause.Args[0], StartExpr, Ambiguity.NoBracedBlock);
-			}
-		}
-
-		private LNode GetIfClause()
-		{
-			var ifClause = _n.AttrNamed(S.If);
-			if (ifClause != null && !HasPAttrs(ifClause) && HasSimpleHeadWPA(ifClause) && ifClause.ArgCount == 1)
-				return ifClause;
-			return null;
 		}
 
 		private void PrintWhereClauses(LNode name)
@@ -541,7 +519,7 @@ namespace Loyc.Ecs
 			// can be printed in a special format: operator Foo(...);
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
-			var ifClause = PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
+			PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
 			PrintTrivia(args, trailingTrivia: false);
@@ -563,7 +541,7 @@ namespace Loyc.Ecs
 				}
 			}
 
-			return AutoPrintBodyOfMethodOrProperty(body, ifClause, firstStmt != null);
+			return AutoPrintBodyOfMethodOrProperty(body, firstStmt != null);
 		}
 
 		private bool IsDefaultNewlineSuppressed(LNode node)
@@ -573,16 +551,15 @@ namespace Loyc.Ecs
 
 		// e.g. given the method void f() {...}, prints "void f"
 		//      for a cast operator #fn(Foo, #cast, #(...)) it prints "operator Foo" if requested
-		private LNode PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
+		private void PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
 		{
 			LNode retType = _n.Args[0], name = _n.Args[1];
-			var ifClause = GetIfClause();
 
 			if (retType.HasPAttrs())
 				using (With(retType, StartStmt))
 					G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs, null, "return"));
 
-			G.Verify(0 == PrintAttrs(attrStyle, /*0,*/ ifClause));
+			G.Verify(0 == PrintAttrs(attrStyle));
 
 			var target = _n.Target; // #fn or #prop
 			PrintTrivia(target, trailingTrivia: false);
@@ -600,21 +577,20 @@ namespace Loyc.Ecs
 			{
 				_out.Write("operator", true);
 				_out.Space();
-				PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
+				PrintType(retType, ContinueExpr, Ambiguity.AllowPointer);
 			}
 			else
 			{
 				if (!isConstructor) {
-					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.DropAttributes);
+					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.NoParentheses);
 					if (_out.LastCharWritten != '\n')
 						_out.Space();
 				}
 				if (isConstructor && name.IsIdNamed(S.This))
 					_out.Write("this", true);
 				else
-					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
+					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName | Ambiguity.NoParentheses);
 			}
-			return ifClause;
 		}
 		private void PrintArgList(VList<LNode> args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
@@ -645,11 +621,9 @@ namespace Loyc.Ecs
 					PrintExpr(arg, StartExpr, flags);
 			}
 		}
-		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, LNode ifClause, bool skipFirstStmt = false)
+		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, bool skipFirstStmt = false)
 		{
 			using (WithSpace(S.Fn)) {
-				AutoPrintIfClause(ifClause);
-
 				if (body == null)
 					return SPResult.NeedSemicolon;
 				if (body.Name == S.Forward)
@@ -693,7 +667,7 @@ namespace Loyc.Ecs
 			if (!EcsValidators.IsPropertyDefinition(_n, Pedantics))
 				return SPResult.Fail;
 
-			var ifClause = PrintTypeAndName(false);
+			PrintTypeAndName(false);
 
 			// Detect if property has argument list (T this[...] {...})
 			if (_n.Args[2].Calls(S.AltList))
@@ -709,7 +683,7 @@ namespace Loyc.Ecs
 
 			PrintWhereClauses(_n.Args[1]);
 
-			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null], ifClause);
+			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null]);
 			if (_n.Args.Count >= 5) {
 				var initializer = _n.Args[4];
 				if (!initializer.IsIdNamed(S.Missing)) {
@@ -727,10 +701,8 @@ namespace Loyc.Ecs
 			if (!IsVariableDecl(true, true))
 				return SPResult.Fail;
 
-			var ifClause = GetIfClause();
 			_flags |= Ambiguity.AllowUnassignedVarDecl;
-			PrintVariableDecl(true, ifClause);
-			AutoPrintIfClause(ifClause);
+			PrintVariableDecl(true);
 			return SPResult.NeedSemicolon;
 		}
 		
@@ -758,7 +730,7 @@ namespace Loyc.Ecs
 			} else
 				PrintExpr(name, ContinueExpr);
 
-			return AutoPrintBodyOfMethodOrProperty(body, null);
+			return AutoPrintBodyOfMethodOrProperty(body);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

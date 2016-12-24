@@ -387,13 +387,12 @@ namespace Loyc.Ecs
 			/// <summary>The current statement is the last one in the enclosing 
 			/// block, so #result can be represented by omitting a semicolon.</summary>
 			FinalStmt = 0x0010,
-			/// <summary>An expression is being printed in a context where a type
-			/// is expected (its syntax has been verified in advance.)</summary>
+			/// <summary>An expression is being printed in a context where a type is expected.</summary>
 			TypeContext = 0x0020,
 			/// <summary>The expression being printed is a complex identifier that
 			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
 			InDefinitionName = 0x0040,
-			/// <summary>Inside angle brackets or (of ...).</summary>
+			/// <summary>Printing a type inside angle brackets or !(...).</summary>
 			InOf = 0x0080,
 			/// <summary>Allow pointer notation (when combined with TypeContext). 
 			/// Also, a pointer is always allowed at the beginning of a statement,
@@ -402,16 +401,13 @@ namespace Loyc.Ecs
 			/// <summary>Used to communicate to the operator printers that a binary 
 			/// call should be expressed with the backtick operator.</summary>
 			UseBacktick = 0x0400,
-			/// <summary>Drop attributes only on the immediate expression being 
-			/// printed. Used when printing the return type on a method, whose 
-			/// attributes were already described by <c>[return: ...]</c>.</summary>
-			DropAttributes = 0x0800,
 			/// <summary>Forces a variable declaration to be allowed as the 
 			/// initializer of a foreach loop.</summary>
 			ForEachInitializer = 0x1000,
 			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
 			ElseClause = 0x2000,
-			/// <summary>A statement is being printed, so it can't be surrounded by parens.</summary>
+			/// <summary>A statement is being printed, or the return value or name
+			/// of a method, so parentheses cannot be emitted here.</summary>
 			NoParentheses = 0x4000,
 			/// <summary>Print #this(...) as this(...) inside a method</summary>
 			AllowThisAsCallTarget = 0x8000,
@@ -602,6 +598,7 @@ namespace Loyc.Ecs
 
 		#region Parts of expressions: attributes, identifiers, literals, trivia
 
+		// Used with PrintAttrs()
 		enum AttrStyle {
 			NoKeywordAttrs,    // Put all attributes in square brackets
 			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
@@ -609,17 +606,19 @@ namespace Loyc.Ecs
 			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.); also allows [#this]
 			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
+
 		// Returns the number of opening "("s printed that require a corresponding ")".
 		private int PrintAttrs(AttrStyle style, LNode skipClause = null, string label = null)
 		{
 			var attrs = _n.Attrs;
-			if ((_flags & Ambiguity.NewlineBeforeChildStmt) != 0) {
+			if (Flagged(Ambiguity.NewlineBeforeChildStmt))
+			{
 				if (attrs.Count == 0 || !attrs.Any(a => a.Name.IsOneOf(S.TriviaNewline, S.TriviaAppendStatement)))
 					NewlineOrSpace(NewlineOpt.BeforeSingleSubstmt, false, SpaceOpt.Minimal);
 				else if (attrs.NodeNamed(S.TriviaAppendStatement) != null)
 					Space(SpaceOpt.Default);
 			}
-			if (attrs.Count == 0 && (this._flags & Ambiguity.ForceAttributeList) == 0)
+			if (attrs.Count == 0 && !Flagged(Ambiguity.ForceAttributeList))
 				return 0; // optimize common case
 
 			// To identify "word attributes", scan attributes in reverse until 
@@ -629,7 +628,7 @@ namespace Loyc.Ecs
 			// - `out`, `ref`, `yield`, and `in` are not dropped by DropNonDeclarationAttributes
 			// - #where(...) inside a type parameter definition is ignored (printed elsewhere)
 			bool isTypeParamDefinition = (_flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
-			                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
+			                                    == (Ambiguity.InDefinitionName | Ambiguity.InOf);
 			if (isTypeParamDefinition)
 				attrs = attrs.SmartWhere(n => !n.Calls(S.Where));
 			int attrCount = attrs.Count;
@@ -653,8 +652,8 @@ namespace Loyc.Ecs
 				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
 				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
 					dropMostAttrs = true;
-			} else if ((_flags & Ambiguity.DropAttributes) != 0)
-				dropMostAttrs = true;
+			} else if (mayNeedParens && Flagged(Ambiguity.NoParentheses))
+				dropMostAttrs = true; // e.g. this happens for a method's return type
 
 			int parenCount = 0;
 			//if (mayNeedParens && (flags & Ambiguity.ForceAttributeList) != 0)
@@ -705,15 +704,15 @@ namespace Loyc.Ecs
 
 				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
 				// (x)(y) where x is in parenthesis, must not be printed like that 
-				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
-				// instead.
+				// because it would be parsed as a cast. Use ((x))(y) instead, or 
+				// (([] x))(y) to tell the EC# parser to ignore the extra parens.
 				if (parenCount == 1 && (_flags & Ambiguity.IsCallTarget) != 0
 					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
+					parenCount++;
 					if (_o.AllowChangeParentheses) {
-						parenCount++;
 						_out.Write('(', true);
 					} else {
-						_out.Write("[]", true);
+						_out.Write("([]", true);
 						Space(SpaceOpt.AfterAttribute);
 					}
 				}

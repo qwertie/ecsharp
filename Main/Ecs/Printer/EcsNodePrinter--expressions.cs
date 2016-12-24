@@ -13,7 +13,7 @@ using EP = Loyc.Ecs.EcsPrecedence;
 
 namespace Loyc.Ecs
 {
-	// This file: code for printing expressions
+	// This file: code for printing expressions and types
 	public partial class EcsNodePrinter
 	{
 		#region Sets and dictionaries of operators
@@ -43,7 +43,8 @@ namespace Loyc.Ecs
 			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
 			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
-			P(S.DotDot,     EP.Prefix), P(S.DotDotDot,    EP.Prefix), P(S.Substitute, EP.Substitute)
+			P(S.DotDot,     EP.Prefix), P(S.DotDotDot,    EP.Prefix), 
+			P(S.Dot,    EP.Substitute), P(S.Substitute, EP.Substitute)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
@@ -53,23 +54,25 @@ namespace Loyc.Ecs
 			// '=>' is not included because it has a special 'delegate() {}' form.
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
-			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
-			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
-			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
-			P(S.Assign, EP.Assign),     P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
-			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),
-			P(S.DotDot, EP.Range),      P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
-			P(S.DotDotDot, EP.Range),   P(S.GT, EP.Compare),    P(S.Shr, EP.Shift),     
-			P(S.Div, EP.Multiply),      P(S.MulAssign, EP.Assign),     P(S.DivAssign, EP.Assign),
+			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
+			P(S.PtrArrow, EP.Primary), P(S.NullDot, EP.NullDot),
+			P(S.Exp, EP.Power),        P(S.Mul, EP.Multiply),
+			P(S.Div, EP.Multiply),     P(S.Mod, EP.Multiply),
+			P(S.Add, EP.Add),          P(S.Sub, EP.Add),        P(S.NotBits, EP.Add),
+			P(S.Shl, EP.Shift),        P(S.Shr, EP.Shift),
+			P(S.DotDot, EP.Range),     P(S.DotDotDot, EP.Range),
+			P(S.LE, EP.Compare),       P(S.GE, EP.Compare),
+			P(S.LT, EP.Compare),       P(S.GT, EP.Compare),
+			P(S.Is, EP.IsAsUsing),     P(S.As, EP.IsAsUsing),   P(S.UsingCast, EP.IsAsUsing),
+			P(S.Eq, EP.Equals),        P(S.Neq, EP.Equals),     P(S.In, EP.Equals),
+			P(S.AndBits, EP.AndBits),  P(S.XorBits, EP.XorBits),  P(S.OrBits, EP.OrBits), 
+			P(S.And, EP.And),          P(S.Or, EP.Or),            P(S.Xor, EP.Or),
+			P(S.Assign, EP.Assign),    P(S.MulAssign, EP.Assign),      P(S.DivAssign, EP.Assign),
 			P(S.ModAssign, EP.Assign),      P(S.SubAssign, EP.Assign), P(S.AddAssign, EP.Assign), 
 			P(S.ConcatAssign, EP.Assign),   P(S.ShlAssign, EP.Assign), P(S.ShrAssign, EP.Assign), 
 			P(S.ExpAssign, EP.Assign),      P(S.XorBitsAssign, EP.Assign),
-			P(S.AndBitsAssign, EP.Assign),  P(S.OrBitsAssign, EP.Assign), P(S.NullDot, EP.NullDot), 
-			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceAssign, EP.Assign),
-			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
-			P(S.Is, EP.IsAsUsing),      P(S.As, EP.IsAsUsing),  P(S.UsingCast, EP.IsAsUsing),
-			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary),
-			P(S.NotBits, EP.Add)
+			P(S.AndBitsAssign, EP.Assign),  P(S.OrBitsAssign, EP.Assign), 
+			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceAssign, EP.Assign)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -90,8 +93,6 @@ namespace Loyc.Ecs
 			P(S.NullIndexBracks, EP.Primary), // a?[] (C# 6 feature)
 			P(S.PostInc,     EP.Primary), // x++
 			P(S.PostDec,     EP.Primary), // x--
-			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
-			P(S.Dot,         EP.Primary), // a.b.c
 			P(S.IsLegal,     EP.Compare)  // x is legal
 			//P(S.New,         EP.Primary),
 			//P(S.Lambda,      EP.Substitute) // delegate(int x) { return x+1; }
@@ -116,11 +117,11 @@ namespace Loyc.Ecs
 			var throwEtc = OpenDelegate<OperatorPrinter>("AutoPrintPrefixReturnThrowEtc");
 			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
 			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
-			var ident = OpenDelegate<OperatorPrinter>("AutoPrintComplexIdentOperator");
 			var @new = OpenDelegate<OperatorPrinter>("AutoPrintNewOperator");
 			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
 			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
+			d.Add(S.Of, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>("AutoPrintOfOperator")));
 
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
@@ -136,10 +137,9 @@ namespace Loyc.Ecs
 				d[p.Key] = Pair.Create(p.Value, cast);
 			foreach (Symbol op in ListOperators)
 				d[op] = Pair.Create(Precedence.MaxValue, list);
-			foreach (var p in SpecialCaseOperators) {
-				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
-				d.Add(p.Key, Pair.Create(p.Value, handler));
-			}
+			foreach (var p in SpecialCaseOperators)
+				d.Add(p.Key, Pair.Create(p.Value, other));
+
 			// Other special cases
 			d.Add(S.New, Pair.Create(EP.Primary, @new));
 			d.Add(S.Lambda, Pair.Create(EP.Lambda, anonfn));
@@ -164,49 +164,64 @@ namespace Loyc.Ecs
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
 		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
+		void PrintExpr(LNode n)
+		{
+			PrintExpr(n, _context);
+		}
+		void PrintExpr(LNode n, Precedence context)
+		{
+			PrintExpr(n, context, _flags & Ambiguity.OneLiner);
+		}
+		void PrintExpr(LNode n, Precedence context, Ambiguity flags)
+		{
+			using (With(n, context, CheckOneLiner(flags, n)))
+				PrintCurrentExpr();
+		}
+
 		protected internal void PrintCurrentExpr()
 		{
-			if (!EP.Primary.CanAppearIn(_context) && !_n.IsParenthesizedExpr())
+			if (!_n.IsCall)
 			{
-				Debug.Assert((_flags & Ambiguity.AllowUnassignedVarDecl) == 0);
-				// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
-				// notation or most other operators so we're very limited in what
-				// we can print.
-				if (!HasPAttrs(_n))
-				{
-					if (!_n.IsCall) {
-						PrintSimpleIdentOrLiteral();
-						return;
-					}
-				}
-				PrintWithinParens(ParenFor.Grouping, _n);
-				return;
-			}
-
-			NodeStyle style = _n.BaseStyle;
-			if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 				PrintPurePrefixNotation(skipAttrs: false);
-			else {
-				int inParens;
-				if (IsVariableDecl(false, true)) {
-					if (!Flagged(Ambiguity.AllowUnassignedVarDecl) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
+			}
+			else
+			{
+				if (!EP.Primary.CanAppearIn(_context) && !_n.IsParenthesizedExpr())
+				{
+					// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
+					// notation or most other operators without parens.
+					if (_o.AllowChangeParentheses || _context.Left > EP.Primary.Left) {
+						PrintWithinParens(ParenFor.Grouping, _n);
+						return;
+					} else
 						_flags |= Ambiguity.ForceAttributeList;
-					else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
-						_flags |= Ambiguity.ForceAttributeList;
-					inParens = PrintAttrs(AttrStyle.IsDefinition);
-					PrintVariableDecl(false);
-				} else {
-					inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
-					do {
-						if (AutoPrintOperator())
-							break;
-						if (style == NodeStyle.Special || _name == S.Switch)
-							if (AutoPrintMacroBlockCall(true))
-								break;
-						PrintPurePrefixNotation(skipAttrs: true);
-					} while (false);
 				}
-				WriteCloseParens(inParens);
+
+				NodeStyle style = _n.BaseStyle;
+				if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
+					PrintPurePrefixNotation(skipAttrs: false);
+				else {
+					int inParens;
+					if (IsVariableDecl(false, true)) {
+						if (!Flagged(Ambiguity.AllowUnassignedVarDecl) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
+							_flags |= Ambiguity.ForceAttributeList;
+						else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
+							_flags |= Ambiguity.ForceAttributeList;
+						inParens = PrintAttrs(AttrStyle.IsDefinition);
+						PrintVariableDecl(false);
+					} else {
+						inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
+						do {
+							if (AutoPrintOperator())
+								break;
+							if (style == NodeStyle.Special || _name == S.Switch)
+								if (AutoPrintMacroBlockCall(true))
+									break;
+							PrintPurePrefixNotation(skipAttrs: true);
+						} while (false);
+					}
+					WriteCloseParens(inParens);
+				}
 			}
 			if (_context.Lo != StartStmt.Lo)
 				PrintTrivia(trailingTrivia: true);
@@ -303,7 +318,7 @@ namespace Loyc.Ecs
 					_context = StartExpr;
 				WriteOperatorName(_name);
 				PrefixSpace(precedence);
-				PrintExpr(arg, precedence.RightContext(_context), _name == S.Forward ? Ambiguity.TypeContext : 0);
+				PrintExpr(arg, precedence.RightContext(_context), 0);
 				//if (backtick) {
 				//    Debug.Assert(precedence == EP.Backtick);
 				//    if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
@@ -332,10 +347,12 @@ namespace Loyc.Ecs
 			Debug.Assert(!CastOperators.ContainsKey(_name)); // not called for cast operators
 			if (_n.ArgCount != 2)
 				return false;
-			// Attributes on the children disqualify operator notation
 			LNode left = _n.Args[0], right = _n.Args[1];
-			if (HasPAttrs(left) || HasPAttrs(right))
-				return false;
+			if (!_o.AllowChangeParentheses) {
+				// Attributes on the children normally disqualify operator notation
+				if (HasPAttrs(left) || HasPAttrs(right))
+					return false;
+			}
 
 			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0 || (_flags & Ambiguity.UseBacktick) != 0;
 			if (CanAppearHere(ref prec, out needParens, ref backtick))
@@ -526,132 +543,30 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		static Symbol SpecialTypeKind(LNode n, Precedence context, Ambiguity flags)
-		{
-			// detects when notation for special types applies: Foo[], Foo*, Foo?
-			// assumes IsComplexIdentifier() is already known to be true
-			LNode first;
-			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsId && (flags & Ambiguity.TypeContext)!=0) {
-				var kind = first.Name;
-				if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
-					return kind;
-				if (kind == S._Pointer && ((flags & Ambiguity.AllowPointer) != 0 || context.Left == StartStmt.Left))
-					return kind;
-			}
-			return null;
-		}
-
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintComplexIdentOperator(Precedence precedence)
+		public bool AutoPrintOfOperator(Precedence precedence)
 		{
-			// Handles #of and @`.`, including array types
-			int argCount = _n.ArgCount;
-			Symbol name = _name;
-			Debug.Assert((name == S.Of || name == S.Dot) && _n.IsCall);
-			
-			var first = _n.Args[0, null];
-			if (first == null)
-				return false; // no args
-
-			bool needParens, needSpecialOfNotation = false;
-			if (!CanAppearHere(precedence, out needParens) || needParens)
-				return false; // this only happens inside $ operator, e.g. $(a.b)
-
-			if (name == S.Dot) {
-				// The trouble with the dot is its high precedence; because of 
-				// this, arguments after a dot cannot use prefix notation as a 
-				// fallback. For example "@.(a, b(c))" cannot be printed "a.b(c)"
-				// since that means @.(a, b)(c)". The first argument to non-
-				// unary "." can use prefix notation safely though, e.g. 
-				// "@.(b(c), a)" can (and must) be printed "b(c).a".
-				if (argCount > 2)
+			bool needSpecialOfNotation = false;
+			var ici = ICI.Default | ICI.AllowAttrs;
+			if ((_flags & Ambiguity.InDefinitionName) != 0)
+				ici |= ICI.NameDefinition;
+			if (!IsComplexIdentifier(_n, ici)) {
+				if (IsComplexIdentifier(_n, ici | ICI.AllowAnyExprInOf))
+					needSpecialOfNotation = true;
+				else
 					return false;
-				if (HasPAttrs(first))
-					return false;
-				LNode afterDot = _n.Args.Last;
-				// Unary dot is no problem: .(a) is parsed the same as .a, i.e. 
-				// the parenthesis are ignored, so we can print an expr like 
-				// @`.`(a+b) as .(a+b), but the parser counts parens on binary 
-				// dot, so in that case the argument after the dot must not be any 
-				// kind of call (except substitution) and must not have attributes,
-				// unless it is in parens.
-				if (argCount == 2 && !afterDot.IsParenthesizedExpr()) {
-					if (HasPAttrs(afterDot))
-						return false;
-					if (afterDot.IsCall && afterDot.Name != S.Substitute)
-						return false;
-				} else if ((_flags & Ambiguity.CastRhs) != 0)
-					return false; // cannot print (Foo) @`.`(x) as (Foo) .x
-			} else if (name == S.Of) {
-				var ici = ICI.Default | ICI.AllowAttrs;
-				if ((_flags & Ambiguity.InDefinitionName) != 0)
-					ici |= ICI.NameDefinition;
-				if (!IsComplexIdentifier(_n, ici)) {
-					if (IsComplexIdentifier(_n, ici | ICI.AllowAnyExprInOf))
-						needSpecialOfNotation = true;
-					else
-						return false;
-				}
 			}
+			Debug.Assert(_n.ArgCount >= 1);
 
-			if (name == S.Dot)
-			{
-				if (argCount == 1) {
-					_out.Write('.', true);
-					PrintExpr(first, EP.Substitute);
-				} else {
-					PrintExpr(first, precedence.LeftContext(_context), _flags & Ambiguity.TypeContext);
-					_out.Write('.', true);
-					PrintExpr(_n.Args[1], precedence.RightContext(_context));
-				}
+			PrintExpr(_n.Args[0], precedence.LeftContext(_context), _flags & Ambiguity.InDefinitionName);
+
+			_out.Write(needSpecialOfNotation ? "!(" : "<", true);
+			for (int i = 1, argC = _n.ArgCount; i < argC; i++) {
+				if (i > 1)
+					WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
+				PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
 			}
-			else if (_name == S.Of)
-			{
-				// Check for special type names such as Foo? or Foo[]
-				Symbol stk = SpecialTypeKind(_n, _context, _flags);
-				if (stk != null)
-				{
-					if (S.IsArrayKeyword(stk)) {
-						// We do something very strange in case of arrays of arrays:
-						// the order of the square brackets must be reversed when 
-						// arrays are nested. For example, an array of two-dimensional 
-						// arrays of int is written int[][,], rather than int[,][] 
-						// which would be much easier to handle.
-						var stack = InternalList<Symbol>.Empty;
-						var innerType = _n;
-						do {
-							stack.Add(stk);
-							innerType = innerType.Args[1];
-						} while (S.IsArrayKeyword(stk = SpecialTypeKind(innerType, _context, _flags) ?? GSymbol.Empty));
-
-						PrintType(innerType, EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
-
-						for (int i = 0; i < stack.Count; i++) {
-							Debug.Assert(stack[i].Name.StartsWith("#"));
-							_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
-						}
-					} else {
-						PrintType(_n.Args[1], EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
-						_out.Write(stk == S._Pointer ? '*' : '?', true);
-					}
-					return true;
-				}
-
-				PrintExpr(first, precedence.LeftContext(_context), _flags & Ambiguity.InDefinitionName);
-
-				_out.Write(needSpecialOfNotation ? "!(" : "<", true);
-				for (int i = 1; i < argCount; i++) {
-					if (i > 1)
-						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
-					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
-				}
-				_out.Write(needSpecialOfNotation ? ')' : '>', true);
-			}
-			else 
-			{
-				Debug.Assert(_name == S.Substitute);
-				G.Verify(AutoPrintOperator());
-			}
+			_out.Write(needSpecialOfNotation ? ')' : '>', true);
 			return true;
 		}
 
@@ -913,7 +828,12 @@ namespace Loyc.Ecs
 				return false;
 
 			WriteOperatorName(_name);
-			PrintWithinParens(ParenFor.MethodCall, arg, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
+			if (type) {
+				WriteOpenParen(ParenFor.MethodCall);
+				PrintType(arg, StartExpr, Ambiguity.AllowPointer);
+				WriteCloseParen(ParenFor.MethodCall);
+			} else
+				PrintWithinParens(ParenFor.MethodCall, arg, 0);
 			return true;
 		}
 
@@ -948,27 +868,8 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		void PrintExpr(LNode n)
-		{
-			PrintExpr(n, _context);
-		}
-		void PrintExpr(LNode n, Precedence context)
-		{
-			PrintExpr(n, context, _flags & Ambiguity.OneLiner);
-		}
-		void PrintExpr(LNode n, Precedence context, Ambiguity flags)
-		{
-			using (With(n, context, CheckOneLiner(flags, n)))
-				PrintCurrentExpr();
-		}
-		void PrintType(LNode n, Precedence context, Ambiguity flags = 0)
-		{
-			PrintExpr(n, context, flags | Ambiguity.TypeContext);
-		}
-
 		internal void PrintPurePrefixNotation(bool skipAttrs = false)
 		{
-			Debug.Assert(EP.Primary.CanAppearIn(_context) || _n.IsParenthesizedExpr());
 			int inParens = 0;
 			if (!skipAttrs)
 				inParens = PrintAttrs(AttrStyle.NoKeywordAttrs);
@@ -976,6 +877,7 @@ namespace Loyc.Ecs
 			if (!_n.IsCall)
 				PrintSimpleIdentOrLiteral();
 			else {
+	 			Debug.Assert(EP.Primary.CanAppearIn(_context));
 				if (!_o.AllowConstructorAmbiguity && _n.Calls(_spaceName) && _context == StartStmt && inParens == 0)
 				{
 					inParens++;
@@ -1057,5 +959,82 @@ namespace Loyc.Ecs
 				PrintExpr(@var, EP.Assign.RightContext(_context), Ambiguity.InDefinitionName);
 			}
 		}
+
+
+
+		#region PrintType()
+
+		protected void PrintType(LNode n, Precedence context, Ambiguity flags = 0)
+		{
+			using (With(n, context, CheckOneLiner(flags | Ambiguity.TypeContext, n)))
+				PrintCurrentType();
+		}
+		void PrintCurrentType()
+		{
+			// TODO: add test case of array type with #trivia_inParens attr
+			// TODO: add test case of array type with other trivia in default(), typeof(), ret val, field type
+			// TODO: add test case of array type with nontrivia attributes
+			// TODO: add test case of method name with #trivia_inParens attr
+			// TODO: add test case of method name with nontrivia attributes
+
+			bool allowPointer = (_flags & Ambiguity.AllowPointer) != 0;
+			bool inDefinitionName = (_flags & Ambiguity.InDefinitionName) != 0;
+			bool inOf = (_flags & Ambiguity.InOf) != 0;
+			
+			// Check for special type names such as Foo? or Foo[]
+			Symbol stk = SpecialTypeKind(_n);
+			if (stk != null)
+			{
+				G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
+
+				if (S.IsArrayKeyword(stk)) {
+					// We do something very strange in case of arrays of arrays:
+					// the order of the square brackets must be reversed when 
+					// arrays are nested. For example, an array of two-dimensional 
+					// arrays of int is written int[][,], rather than int[,][] 
+					// which would be much easier to handle.
+					var stack = InternalList<Symbol>.Empty;
+					var innerType = _n;
+					do {
+						stack.Add(stk);
+						innerType = innerType.Args[1];
+					} while ((stk = SpecialTypeKind(innerType)) != null && S.IsArrayKeyword(stk));
+
+					PrintType(innerType, EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
+
+					for (int i = 0; i < stack.Count; i++) {
+						Debug.Assert(stack[i].Name.StartsWith("#"));
+						_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
+					}
+				} else {
+					PrintType(_n.Args[1], EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
+					_out.Write(stk == S._Pointer ? '*' : '?', true);
+				}
+
+				PrintTrivia(trailingTrivia: true);
+			}
+			else
+			{
+				// All other types are structurally the same as normal expressions.
+				PrintExpr(_n, _context, _flags);
+			}
+		}
+
+		Symbol SpecialTypeKind(LNode n)
+		{
+			// detects when notation for special types applies: Foo[], Foo*, Foo?
+			// assumes IsComplexIdentifier() is already known to be true
+			LNode first;
+			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsId) {
+				var kind = first.Name;
+				if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
+					return kind;
+				if (kind == S._Pointer && ((_flags & Ambiguity.AllowPointer) != 0 || _context.Left == StartStmt.Left))
+					return kind;
+			}
+			return null;
+		}
+
+		#endregion
 	}
 }
