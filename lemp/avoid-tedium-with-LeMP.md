@@ -166,7 +166,7 @@ There is an alternate syntax for `replace`, which looks like you're defining a m
 <div class='sbs' markdown='1'>
 ~~~csharp
 replace MakeSquare($T) { 
-    $T Square($T x) { return x*x; }
+    static $T Square($T x) { return x*x; }
 }
 MakeSquare(int);
 MakeSquare(double);
@@ -249,7 +249,7 @@ void DoPizza(IEnumerable<Topping> toppings)
 
 Here I've used both styles of `replace`, nested inside each other. One of these `replace` commands changes `TMP` to `concatId(old, $var)`. Later in the code, where it says `SaveAndRestore(_curTask = "Make pizza")`, the syntax variable `$var` becomes `_curTask`, so `concatId(old, $var)` turns into `concatId(old, _curTask)` before the replacement actually occurs. So in effect, this example creates a variable called `old_curTask` to hold the old value of `_curTask`. Then, `on_finally` is used to restore the old value of `_curTask` at the end of the method.
 
-`SaveAndRestore` requires that its single argument is some kind of assignment statement. If it's not - for example, if you write
+`SaveAndRestore` requires that its single argument is some kind of assignment expression. If it's not - for example, if you write
 
     SaveAndRestore(a + b);
 
@@ -381,10 +381,7 @@ includeFile("ImplementNPC.ecs");
 
 public class DemoCustomer : INotifyPropertyChanged
 {
-    public DemoCustomer(string n)
-    {
-        CustomerName = n;
-    }
+    public DemoCustomer(set string CustomerName) {}
 
     ImplementNotifyPropertyChanged
     {
@@ -396,7 +393,9 @@ public class DemoCustomer : INotifyPropertyChanged
 }
 ~~~
 
-Nice. **Note:** The `[$(..attrs)]` part of this example requires LeMP version 2.3.0 or higher.
+The constructor here uses another LeMP feature: the [contextual keyword `set`](http://ecsharp.net/lemp/ref-other.html#set-or-create-member) on the constructor parameter `CustomerName` causes that parameter to be assigned to the `CustomerName` property.
+
+**Note:** The `[$(..attrs)]` part of this example requires LeMP version 2.3.0 or higher.
 
 unroll & notnull
 ----------------
@@ -610,24 +609,13 @@ Enhanced C# is built on the concept of a "universal syntax tree" that I call the
 
 If you've ever programmed in LISP, you know that there is no separate concept of "statements" and "expressions": _everything_ is an expression. Arguably the most interesting thing about Enhanced C# is that it's also an expression-based language. Of course, the parser must make a clear distinction between statements and expressions: `X * Y;` is a pointer variable declaration, whereas `N = (X * Y);` is a multiplication. Statements end in semicolons, while expressions, er, don't.
 
-But EC# tries hard to transform C# into an expression-based language, and once parsing is complete, the distinction between statements and expressions disappears.
-
-For example, although no translation is implemented from this to plain C#, I hope this will work someday soon:
-
-    int digit = '0' + { 
-        switch(str)
-        {
-            case "one":   1
-            case "two":   2
-            case "three": 3
-        }
-    }; // for now, outer braces are required
-
-There being no distinction between statements and expressions, it's no big surprise that this works:
+The following code, for example, relies on the lack of a distinction (in the syntax tree) between statements and expressions:
 
     /// Input
     string nums = string.Concat(
-        unroll(N in (1,2,3,4,5,6,7)) { stringify(N); }, " [the end]"
+        unroll(N in (1,2,3,4,5,6,7)) { 
+          stringify(N); 
+        }, " [the end]"
     );
     /// Output
     string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");

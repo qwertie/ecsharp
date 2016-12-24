@@ -191,6 +191,25 @@ int Z {
 
 Creates a backing field for a property. In addition, if the body of the property is empty, a getter is added.
 
+### code== operator ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+x `code==` y;
+(x + 1) `code==` (x + "1");
+(x + 777) `code==` (x+777);
+~~~
+
+~~~csharp
+// Output of LeMP
+false;
+false;
+true;
+~~~
+</div>
+
+Returns the literal true if two or more syntax trees are equal, or false if not. This macro is largely superceded by the `` `staticMatches` `` operator.
+
 ### concatId ###
 
 <div class='sbs' markdown='1'>
@@ -462,6 +481,32 @@ dynamic Eval(LNode code) {
 ~~~
 </div>
 
+### static matchCode ###
+
+    static matchCode (expr) { case ...: ... }
+
+Compares an expression or statement to a list of cases at compile-time and selects a block of code at compile-time to insert into the output.
+
+~~~exec
+#snippet input = apples > oranges; 
+static matchCode(#get(expression)) {
+  case $x > $y, $x < $y:
+    Compare($x, $y);
+  case $call($(..args)): 
+    void $call(unroll(arg in $args) { int arg; }) 
+      { base.$call($args); }
+  default:
+    DefaultAction($#);
+~~~
+
+For example, `case $a + $b:` expects a tree that calls `+` with two parameters, placed in compile-time variables called $a and $b.
+
+If `expr` is a single statement inside braces, the braces are stripped. Next, macros are executed on `expr` to produce a new syntax tree to be matched. `matchCode` then scans the cases to find one that matches. Finally, the entire `static matchCode` construct is replaced with the handler associated with the matching `case`.
+
+If none of the cases match and there is no `default:` case, the entire `static matchCode` construct and all its cases are eliminated from the output.
+
+Use `case pattern1, pattern2:` to handle multiple cases with the same handler. Unlike C# `switch`, this statement does not expect `break` at the end of each case. If `break` is present at the end of the matching case, it is emitted literally into the output.
+
 ### nameof ###
 
 	nameof(id_or_expr)
@@ -711,7 +756,7 @@ replace ({
   List<$T> $L2 = new List<$T>();
   foreach (var $w in $L1) {
     if ($wc) {
-      static if ($w `tree==` $s) {} else
+      static if ($w `code==` $s) {} else
       	var $s = $w;
       $L2.Add($sc);
     }
@@ -897,6 +942,41 @@ var tupl = Tuple.Create(1234, "bad password");
 
 Reverts to using `Tuple` and `Tuple.Create` for all arities of tuple.
 
+### static deconstruct a.k.a. #deconstruct ###
+
+~~~exec
+  #snippet tree = 8.5 / 11;
+  #deconstruct($x * $y | $x / $y = #get(tree));
+  var firstNumber = $x;
+  var secondNumber = $y;
+~~~
+
+Syntax:
+
+    #deconstruct(pattern1 | pattern2 = tree);
+
+Deconstructs the syntax tree `tree` into constituent parts which are assigned to
+compile-time syntax variables marked with `$` that can be used later in the
+same braced block. For example, `#deconstruct($a + $b = x + y + 123)` creates
+a syntax variable called `$a` which expands to `x + y`, and another variable `$b`
+that expands to `123`. These variables behave like macros in their own right that
+can be used later in the same braced block (although technically `$` is a macro in the `LeMP` namespace).
+
+The left-hand side of `=` can specify multiple patterns separated by `|`. If you 
+want `=` or `|` themselves (or other low-precedence operators, such as `&&`) to be part of the pattern on the left-hand side, you should enclose the pattern in braces (note: expressions in braces must end with `;` in EC#). If the pattern itself is intended to match a braced block, use double braces (e.g. 
+`{{ $stuff; }}`).
+
+Macros are expanded in the right-hand side (`tree`) before deconstruction occurs.
+
+If multiple arguments are provided, e.g. `#deconstruct(e1 => p1, e2 => p2)`,
+it has the same effect as simply writing multiple `#deconstruct` commands.
+
+An error is printed when a deconstruction operation fails.
+
+### static tryDeconstruct a.k.a. #tryDeconstruct ###
+
+Same as `static deconstruct`, except that an error message is not printed when deconstruction fails.
+
 ### static if ###
 
 <div class='sbs' markdown='1'>
@@ -904,7 +984,7 @@ Reverts to using `Tuple` and `Tuple.Create` for all arities of tuple.
 // Normally this variable is predefined
 #set #inputFile = "Foo.cs"; 
 
-static if (#get(#inputFile) `tree==` "Foo.cs")
+static if (#get(#inputFile) `code==` "Foo.cs")
 	WeAreInFoo();
 else
 	ThisIsNotFoo();
@@ -919,7 +999,31 @@ var t = T();
 ~~~
 </div>
 
-A very basic "compile-time if" facility. It can't do very much yet.
+A basic "compile-time if" facility. 
+
+The `static if (cond) { then; } else { otherwise; }` statement or `static_if(cond, then, otherwise)` expression is replaced with the `then` clause or the `otherwise` clause according to whether the first argument - a boolean expression - evaluates to true or false.
+
+The `otherwise` clause is optional; if it is omitted and the boolean expression evaluates to false, the entire `static_if` statement disappears from the output.
+
+Currently, the condition supports only boolean math (e.g. `!true || false` can be evaluated but not `5 > 4`). `static_if` is often used in conjunction with the `` `staticMatches` `` operator.
+
+### staticMatches operator ###
+
+~~~exec
+bool b1 = (x * y + z) `staticMatches` ($a * $b);
+bool b2 = (x * y + z) `staticMatches` ($a + $b);
+
+static if (Pie(""apple"") `staticMatches` Pie($x))
+{
+  ConfectionMode = $x;
+}
+~~~
+
+``syntaxTree `staticMatches` pattern`` returns the literal `true` if the form of the syntax tree on the left matches the pattern on the right.
+
+The pattern can use `$variables` to match any subtree. `$(..lists)` (multiple statements or arguments) can be matched too. In addition, if the result is true then a syntax variable is created for each binding in the pattern other than `$_`. For example, ``Foo(123) `codeMatches` Foo($arg)`` sets `$arg` to `123`; you can use `$arg` later in your code.
+
+The syntax tree on the left is macro-preprocessed, but the argument on the right is not. If either side is a single statement in braces (before preprocessing), the braces are ignored.
 
 ### stringify ###
 
@@ -937,25 +1041,6 @@ Console.WriteLine("luv = u + me");
 </div>
 
 Converts an expression to a string (note: original formatting is not preserved.)
-
-### tree== ###
-
-<div class='sbs' markdown='1'>
-~~~csharp
-x `tree==` y;
-(x + 1) `tree==` (x + "1");
-(x + 777) `tree==` (x+777);
-~~~
-
-~~~csharp
-// Output of LeMP
-false;
-false;
-true;
-~~~
-</div>
-
-Returns the literal true if two or more syntax trees are equal, or false if not.
 
 ### Tuple macro ###
 
@@ -1031,7 +1116,11 @@ DoSomethingMore(Y, X);
 ~~~
 </div>
 
-Produces variations of a block of code, by replacing an identifier left of `in` with each of the corresponding expressions on the right of `in`. The braces are omitted from the output. 
+Produces variations of a block of code, by replacing an identifier left of `in` with each of the corresponding expressions on the right of `in`.
+
+The left hand side of `unroll` must be either a simple identifier or a tuple. The braces are not included in the output.
+
+The right-hand side of `in` can be a tuple in parentheses, or a list of statements in braces, or a call to the `#splice(...)` pseudo-operator. If the right-hand side of `in` is none of these things, `unroll()` runs macros on the right-hand side of `in` in the hope that doing so will produce a list. However, note that this behavior can cause macros to be executed twice in some cases: once on the right-hand side of `in`, and then again on the final output of `unroll`. For example, the `noMacros` macro doesn't work if macros run twice.
 
 ### \#useSymbols ###
 

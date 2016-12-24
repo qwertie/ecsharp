@@ -158,7 +158,7 @@ Learn more
 
 Learn more about LeMP in these published articles:
 
-- [Avoid tedious coding with LeMP, part 1](avoid-tedium-with-LeMP.html)
+- [Avoid tedious coding with LeMP](avoid-tedium-with-LeMP.html)
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
 - [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](pattern-matching.html)
 
