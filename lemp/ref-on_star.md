@@ -136,6 +136,7 @@ return Parse(str);
 // Output of LeMP
 try {
   var str = File.ReadAllText(filename);
+
   try {
     return Parse(str);
   } catch {
@@ -205,7 +206,9 @@ public static int CountOnes(uint x)
 
 ~~~csharp
 // Output of LeMP
-public static int CountOnes(uint x) {
+// Counts the number of "1" bits in an integer
+public static int CountOnes(uint x)
+{
   x -= ((x >> 1) & 1431655765);
   x = (((x >> 2) & 858993459) + (x & 858993459));
   x = (((x >> 4) + x) & 252645135);
@@ -241,6 +244,7 @@ foreach (var item in list) {
   if (!IsValid(item)) {
     var __result__ = false;
     Trace.WriteLine("FAIL");
+  
     return __result__;
   }
   ProcessValidItem(item);
@@ -262,7 +266,8 @@ public static void Main()
 
 ~~~csharp
 // Output of LeMP
-public static void Main() {
+public static void Main()
+{
   WriteLine("The Beginning.");
   WriteLine("The End.");
 }

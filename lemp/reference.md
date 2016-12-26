@@ -7,11 +7,20 @@ date: 20 Mar 2016
 Look up by category
 -------------------
 
-- Bulk code generation
-    - [`unroll`](ref-other.html#unroll) ([see article](avoid-tedium-with-LeMP.html#unroll))
-    - [`replace`](ref-other.html#replace) ([see article](avoid-tedium-with-LeMP.html#replace))
-    - [Algebraic Data Types](ref-other.html#alt-class-algebraic-data-type) ([see article](pattern-matching.html#algebraic-data-types))
-- Pattern matching
+- Code generation & macro replacement
+    - [`define`](ref-codegen.html#define)
+    - [`replace`](ref-codegen.html#replace) ([see article](avoid-tedium-with-LeMP.html#replace))
+    - [`unroll`](ref-codegen.html#unroll) ([see article](avoid-tedium-with-LeMP.html#unroll))
+    - [Algebraic Data Types](ref-codegen.html#alt-class-algebraic-data-type) ([see article](pattern-matching.html#algebraic-data-types))
+- Compile-time decision-making
+    - [`static matchCode`](ref-codegen.html#static-matchcode)
+    - [`static if` and `static_if`](ref-codegen.html#static-if)
+    - [`` `staticMatches` `` operator](ref-codegen.html#staticmatches-operator)
+    - [`static deconstruct`](ref-codegen.html#static-deconstruct-aka-deconstruct) and `static tryDeconstruct`
+- Syntax tree generation (at runtime)
+    - [`quote`](ref-other.html#quote) ([see article](lemp-code-gen-and-analysis.html#introducing-lemp))
+    - [`rawQuote`](ref-other.html#rawquote)
+- Pattern matching (at runtime)
     - [`matchCode`](ref-other.html#matchcode): Syntax tree matching ([see article](lemp-code-gen-and-analysis.html#pattern-matching-using-matchcode))
     - [`match`](ref-other.html#match): Object pattern matching ([see
  article](pattern-matching.html#pattern-matching))
@@ -21,9 +30,6 @@ Look up by category
     - [[ensures] & [ensuresAssert]](ref-code-contracts.html#ensures--ensuresassert)
     - [[ensuresOnThrow]](ref-code-contracts.html#ensuresonthrow)
     - [[ensuresFinally]](ref-code-contracts.html#ensuresfinally)
-- Syntax tree generation
-    - [`quote`](ref-other.html#quote) ([see article](lemp-code-gen-and-analysis.html#introducing-lemp))
-    - [`rawQuote`](ref-other.html#rawquote)
 - [Fine-grained features](ref-other.html)
     - `assert`
     - Backing fields
@@ -36,7 +42,6 @@ Look up by category
     - `includeFile`
     - `namespace` without braces
     - `??=`
-    - `static if` and `static_if`
     - `stringify`
     - `@@symbols`
     - multi-using

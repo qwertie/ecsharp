@@ -22,7 +22,7 @@ namespace LeMPExampleRunner
 {
 	class Program
 	{
-		static MacroProcessor MP = new LeMP.MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Console);
+		static MacroProcessor MP = new LeMP.MacroProcessor(MessageSink.Console, typeof(LeMP.Prelude.BuiltinMacros));
 
 		[STAThread]
 		static void Main(string[] args)
@@ -186,8 +186,10 @@ namespace LeMPExampleRunner
 			}
 			if (msgs.List.Any(m => m.Severity >= Severity.Error))
 				return null;
-			else
-				return EcsLanguageService.Value.Print(output, null, null, "  ", "\n");
+			else {
+				var opt = new LNodePrinterOptions { IndentString = "  " };
+				return EcsLanguageService.Value.Print(output, null, ParsingMode.File, opt);
+      }
 		}
 	}
 }
