@@ -180,10 +180,10 @@ namespace LeMP
 				matchCode (stmt) {
 					case { { $(..._); } }: // braced block
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
-					case { if ($_) $(..._); },
-					     { using ($_) $_;   }, 
-					     { lock ($_) $_;    },
-					     { switch ($_) $_;  }:
+					case { if ($_) $(..._);        },
+					     { using ($_) $_;          }, 
+					     { lock ($_) $_;           },
+					     { switch ($_) { $(.._); } }:
 						return ProcessBlockCallStmt(stmt, 1);
 					case { [$(...attrs)] fixed ($init) $block;   }:
 						init = EliminateSequenceExpressionsInExecStmt(init);

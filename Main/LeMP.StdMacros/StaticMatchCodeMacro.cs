@@ -66,8 +66,8 @@ namespace LeMP
 
 		[LexicalMacro(@"syntaxTree `staticMatches` pattern", 
 			 "Returns the literal true if the form of the syntax tree on the left matches the pattern on the right. "
-			+"The pattern can use `$variables` to match any subtree. $(..lists) can be matched too. "
-			+"In addition, if the result is true then a syntax variable is created for each binding in other than `$_`; "
+			+"The pattern can use `$variables` to match any subtree. `$(..lists)` can be matched too. "
+			+"In addition, if the result is true then a syntax variable is created for each binding in the pattern other than `$_`; "
 			+"for example, ``Foo(123) `codeMatches` Foo($arg)`` sets `$arg` to `123`; you can use `$arg` later in your code.\n\n"
 			+"The syntax tree on the left is macro-preprocessed, but the argument on the right is not. "
 			+"If either side is a single statement in braces (before preprocessing), the braces are ignored. ",

@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -96,14 +96,15 @@ namespace LeMP
 							foreach (var where in parentWheres)
 								wheres.Add(where);
 							if (wheres.Count > oldCount) {
-								arg = arg.WithAttrs(arg.Attrs.SmartWhere(a => !a.Calls(S.Where)).Add(LNode.Call(S.Where, LNode.List(wheres))));
+								arg = arg.WithAttrs(arg.Attrs.SmartWhere(a => !a.Calls(S.Where))
+								.Add(LNode.Call(S.Where, LNode.List(wheres))));
 								_genericArgs[i] = arg;
 								changed = true;
 							}
 						}
 					}
 					if (changed)
-						TypeName = LNode.Call(CodeSymbols.Of, LNode.List().Add(_typeNameStem).AddRange(_genericArgs));
+						TypeName = LNode.Call(CodeSymbols.Of, LNode.List().Add(_typeNameStem).AddRange(_genericArgs)).SetStyle(NodeStyle.Operator);
 				}
 				TypeNameWithoutAttrs = TypeName.Select(n => n.WithoutAttrs());
 			}
@@ -137,7 +138,7 @@ namespace LeMP
 						if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 3) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true || (attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 4) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true && stmt.Args[3].Calls(CodeSymbols.Braces) && (childBody = stmt.Args[3].Args).IsEmpty | true) {
 							LNode genericAltName = altName;
 							if (altName.CallsMin(CodeSymbols.Of, 1)) { } else if (_genericArgs.Count > 0)
-								genericAltName = LNode.Call(CodeSymbols.Of, LNode.List().Add(altName).AddRange(_genericArgs.ToVList()));
+								genericAltName = LNode.Call(CodeSymbols.Of, LNode.List().Add(altName).AddRange(_genericArgs.ToVList())).SetStyle(NodeStyle.Operator);
 							var child = new AltType(attrs, genericAltName, LNode.List(), this);
 							child.AddParts(parts);
 							child.ScanClassBody(childBody);
@@ -178,13 +179,15 @@ namespace LeMP
 				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));
 				outBody.AddRange(baseParts.Select(p => GetWithFn(p, isAbstract, S.Override, allParts)));
 				outBody.AddRange(Parts.Select(p => GetWithFn(p, isAbstract, _children.Count > 0 ? S.Virtual : null, allParts)));
-				outBody.AddRange(Parts.WithIndexes().Where(kvp => kvp.Value.NameId.Name.Name != "Item" + (baseParts.Count + kvp.Key + 1)).Select(kvp => kvp.Value.GetItemDecl(baseParts.Count + kvp.Key + 1)));
+				outBody.AddRange(Parts.WithIndexes()
+				.Where(kvp => kvp.Value.NameId.Name.Name != "Item" + (baseParts.Count + kvp.Key + 1))
+				.Select(kvp => kvp.Value.GetItemDecl(baseParts.Count + kvp.Key + 1)));
 				outBody.AddRange(_classBody);
 			
-				list.Add(LNode.Call(LNode.List(_classAttrs), CodeSymbols.Class, LNode.List(TypeName.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList, LNode.List(BaseTypes)), LNode.Call(CodeSymbols.Braces, LNode.List(outBody)).SetStyle(NodeStyle.Statement))));
+				list.Add(LNode.Call(LNode.List(_classAttrs), CodeSymbols.Class, LNode.List(TypeName, LNode.Call(CodeSymbols.AltList, LNode.List(BaseTypes)), LNode.Call(CodeSymbols.Braces, LNode.List(outBody)).SetStyle(NodeStyle.Statement))));
 				if (_genericArgs.Count > 0 && Parts.Count > 0) {
 					var argNames = allParts.Select(p => p.NameId);
-					list.Add(LNode.Call(LNode.List().AddRange(_classAttrs).Add(LNode.Id(CodeSymbols.Static)).Add(LNode.Id(CodeSymbols.Partial)), CodeSymbols.Class, LNode.List(_typeNameStem.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(LNode.List(LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(TypeNameWithoutAttrs.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Of, LNode.List().Add(LNode.Id((Symbol) "New")).AddRange(_genericArgs)).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList, LNode.List(args)), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(TypeNameWithoutAttrs.SetStyle(NodeStyle.Operator), LNode.List(argNames)))))))).SetStyle(NodeStyle.Statement))))).SetStyle(NodeStyle.Statement))));
+					list.Add(LNode.Call(LNode.List().AddRange(_classAttrs).Add(LNode.Id(CodeSymbols.Static)).Add(LNode.Id(CodeSymbols.Partial)), CodeSymbols.Class, LNode.List(_typeNameStem, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(LNode.List(LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(TypeNameWithoutAttrs, LNode.Call(CodeSymbols.Of, LNode.List().Add(LNode.Id((Symbol) "New")).AddRange(_genericArgs)).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList, LNode.List(args)), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(TypeNameWithoutAttrs, LNode.List(argNames)))))))).SetStyle(NodeStyle.Statement))))).SetStyle(NodeStyle.Statement))));
 				}
 				foreach (var child in _children)
 					child.GenerateOutput(ref list);
@@ -212,9 +215,9 @@ namespace LeMP
 				LNode type = part.Type;
 				LNode retType = part.ContainingType.TypeNameWithoutAttrs;
 				if (isAbstract) {
-					method = LNode.Call(LNode.List(attrs), CodeSymbols.Fn, LNode.List(retType.SetStyle(NodeStyle.Operator), withField.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(LNode.List(part.OriginalDecl.Attrs), CodeSymbols.Var, LNode.List(type.SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "newValue")))))));
+					method = LNode.Call(LNode.List(attrs), CodeSymbols.Fn, LNode.List(retType, withField, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(LNode.List(part.OriginalDecl.Attrs), CodeSymbols.Var, LNode.List(type, LNode.Id((Symbol) "newValue")))))));
 				} else {
-					method = LNode.Call(LNode.List(attrs), CodeSymbols.Fn, LNode.List(retType.SetStyle(NodeStyle.Operator), withField.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(LNode.List(part.OriginalDecl.Attrs), CodeSymbols.Var, LNode.List(type.SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "newValue"))))), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(TypeNameWithoutAttrs.SetStyle(NodeStyle.Operator), LNode.List(args)))))))).SetStyle(NodeStyle.Statement)));
+					method = LNode.Call(LNode.List(attrs), CodeSymbols.Fn, LNode.List(retType, withField, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(LNode.List(part.OriginalDecl.Attrs), CodeSymbols.Var, LNode.List(type, LNode.Id((Symbol) "newValue"))))), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(TypeNameWithoutAttrs, LNode.List(args)))))))).SetStyle(NodeStyle.Statement)));
 				}
 				return method;
 			}
@@ -243,12 +246,12 @@ namespace LeMP
 			public readonly LNode NameId;
 		
 			public LNode GetFieldDecl() {
-				return LNode.Call(LNode.List(LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type.SetStyle(NodeStyle.Operator), NameId.SetStyle(NodeStyle.Operator), LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Id(CodeSymbols.get), LNode.Id(LNode.List(LNode.Id(CodeSymbols.Private)), CodeSymbols.set))).SetStyle(NodeStyle.Statement)));
+				return LNode.Call(LNode.List(LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type, NameId, LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Id(CodeSymbols.get), LNode.Id(LNode.List(LNode.Id(CodeSymbols.Private)), CodeSymbols.set))).SetStyle(NodeStyle.Statement)));
 			}
 			public LNode GetItemDecl(int itemNum) {
 				LNode ItemN = F.Id("Item" + itemNum);
 				// ItemN properties are used by the code generated for pattern matching
-				return LNode.Call(LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsable"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsableState"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Never"))).SetStyle(NodeStyle.Operator))), LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type.SetStyle(NodeStyle.Operator), ItemN.SetStyle(NodeStyle.Operator), LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.get, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(NameId)))).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special))).SetStyle(NodeStyle.Statement)));
+				return LNode.Call(LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsable"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsableState"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Never"))).SetStyle(NodeStyle.Operator))), LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type, ItemN, LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.get, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(NameId)))).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special))).SetStyle(NodeStyle.Statement)));
 			}
 		}
 	}

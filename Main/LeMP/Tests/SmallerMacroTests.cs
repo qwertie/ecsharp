@@ -125,11 +125,12 @@ namespace LeMP.Tests
 		[Test]
 		public void TestNullDot()
 		{
-			TestBoth(@"#importMacros(LeMP.CSharp6); a = b.c?.d;", 
-			         @"#importMacros(LeMP.CSharp6); a = b.c?.d;",
-			          "a = b.c != null ? b.c.d : null;");
-			TestEcs(@"#importMacros(LeMP.CSharp6); a = b.c?.d.e;",
-			         "a = b.c != null ? b.c.d.e : null;");
+			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c.d;", 
+			         @"#importMacros(LeMP.CSharp6); a = b?.c.d;",
+			          "a = b != null ? b.c.d : null;");
+			int n = MacroProcessor.NextTempCounter;
+			TestEcs(@"#importMacros(LeMP.CSharp6); a = B?.c.d;", 
+			         "a = ([] var B_"+n+" = B) != null ? B_"+n+".c.d : null;");
 			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c[d];", 
 			         @"#importMacros(LeMP.CSharp6); a = b?.c[d];",
 			          "a = b != null ? b.c[d] : null;");
@@ -138,6 +139,18 @@ namespace LeMP.Tests
 			TestBoth(@"#importMacros(LeMP.CSharp6); return a.b?.c().d!x;", 
 			         @"#importMacros(LeMP.CSharp6); return a.b?.c().d<x>;",
 			          "return a.b != null ? a.b.c().d<x> : null;");
+		}
+
+		[Test]
+		public void TestNullDotWithVarDeclFactoredOut()
+		{
+			// Combine ?. with #ecs macro (#useSequenceExpressions)
+			int n = MacroProcessor.NextTempCounter;
+			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = B?.c.d; }",
+			          "void F() { var B_"+n+" = B; a = ([#trivia_isTmpVar] B_"+n+") != null ? B_"+n+".c.d : null; }");
+			n = MacroProcessor.NextTempCounter;
+			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = A.B?.c.d; }",
+			         "void F() { var tmp_"+n+" = A.B; a = ([#trivia_isTmpVar] tmp_"+n+") != null ? tmp_"+n+".c.d : null; }");
 		}
 
 		[Test]
@@ -340,12 +353,19 @@ namespace LeMP.Tests
 
 
 		[Test]
-		public void TestNameOfAndStringify()
+		public void TestStringify()
 		{
-			TestBoth(@"s = nameof(hello);",    @"s = nameof(hello);",     @"s = ""hello"";");
 			TestBoth(@"s = stringify(hello);", @"s = stringify(hello);",  @"s = ""hello"";");
-			TestBoth(@"s = nameof(A.B!C(D));", @"s = nameof(A.B<C>(D));", @"s = ""B"";");
 			TestEcs (@"s = stringify(A.B<C>(D));",                        @"s = ""A.B<C>(D)"";");
+		}
+
+		[Test]
+		public void TestNameOf()
+		{
+			TestBoth(@"#importMacros(LeMP.CSharp6); s = nameof(hello);",    
+			         @"#importMacros(LeMP.CSharp6); s = nameof(hello);",     @"s = ""hello"";");
+			TestBoth(@"#importMacros(LeMP.CSharp6); s = nameof(A.B!C(D));",
+			         @"#importMacros(LeMP.CSharp6); s = nameof(A.B<C>(D));", @"s = ""B"";");
 		}
 
 		[Test]

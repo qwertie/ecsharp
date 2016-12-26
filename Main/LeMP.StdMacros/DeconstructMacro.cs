@@ -11,22 +11,23 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("#deconstruct(pattern1 ?? pattern2 = tree);",
+		[LexicalMacro("#deconstruct(pattern1 | pattern2 = tree);",
 			 "Deconstructs the syntax tree `tree` into constituent parts which are assigned to "
 			+"compile-time syntax variables marked with `$` that can be used later in the "
 			+"same braced block. For example, `#deconstruct($a + $b = x + y + 123)` creates "
 			+"a syntax variable called `$a` which expands to `x + y`, and another variable `$b` "
 			+"that expands to `123`. These variables behave like macros in their own right that "
-			+"can be used later in the same braced block.\n"
+			+"can be used later in the same braced block (although technically `$` is a macro in "
+			+"the `LeMP` namespace).\n"
 			+"\n"
-			+"The left-hand side of `=` can specify multiple patterns separated by `??`. If you "
-			+"want `=` or `??` to be part of the pattern itself on the left-hand side, you should "
-			+"enclose the pattern in braces (note: expressions in braces must end with `;` in EC#)."
-			+"If the pattern itself is intended to match a braced block, use double braces (e.g. "
-			+"`{{ $stuff; }}`).\n"
+			+"The left-hand side of `=` can specify multiple patterns separated by `|`. If you "
+			+"want `=` or `|` themselves (or other low-precedence operators, such as `&&`) to be part "
+			+"of the pattern itself on the left-hand side, you should enclose the pattern in braces "
+			+"(note: expressions in braces must end with `;` in EC#). If the pattern itself is "
+			+"intended to match a braced block, use double braces (e.g. `{{ $stuff; }}`).\n"
 			+"\n"
 			+"Macros are expanded in the right-hand side (`tree`) before deconstruction occurs.\n\n"
-			+"If multiple arguments are provided, e.g. `#deconstruct(e1 => p1, e2 => p2)`, "
+			+"If multiple arguments are provided, e.g. `#deconstruct(e1 => p1, e2 => p2)`, it has "
 			+"the same effect as simply writing multiple `#deconstruct` commands.\n\n"
 			+"An error is printed when a deconstruction operation fails.",
 			"deconstruct", "#deconstruct")]

@@ -60,7 +60,7 @@ namespace Loyc.Tests
 				new TestMatchMacro(),
 				new TestOnFinallyReturnThrowMacros(),
 				new TestReplaceMacro(),
-				new TestSequenceExpressionMacro(),
+				new TestUseSequenceExpressionsMacro(),
 				new TestSetOrCreateMemberMacro(),
 				new TestUnrollMacro(),
 				new TestUseSymbolsMacro());

@@ -1,4 +1,4 @@
-// Generated from LinqToCollections.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from LinqToCollections.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -179,7 +179,7 @@ namespace Loyc.Collections
 		/// the list immediately.</summary>
 		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
-		public static ListSlice<T> TakeNowWhile<T>(this IList<T> list, Func<T,bool> predicate)
+		public static ListSlice<T> TakeNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = 0;; i++) {
@@ -194,7 +194,7 @@ namespace Loyc.Collections
 		/// method scans the list immediately.</summary>
 		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
-		public static ListSlice<T> SkipNowWhile<T>(this IList<T> list, Func<T,bool> predicate)
+		public static ListSlice<T> SkipNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = 0;; i++) {
@@ -210,7 +210,7 @@ namespace Loyc.Collections
 		/// the list immediately.</summary>
 		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
-		public static Slice_<T> TakeNowWhile<T>(this IListSource<T> list, Func<T,bool> predicate)
+		public static Slice_<T> TakeNowWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = 0;; i++) {
@@ -225,7 +225,7 @@ namespace Loyc.Collections
 		/// method scans the list immediately.</summary>
 		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
-		public static Slice_<T> SkipNowWhile<T>(this IListSource<T> list, Func<T,bool> predicate)
+		public static Slice_<T> SkipNowWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = 0;; i++) {
@@ -241,7 +241,7 @@ namespace Loyc.Collections
 		/// the list immediately.</summary>
 		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
-		public static NegListSlice<T> TakeNowWhile<T>(this INegListSource<T> list, Func<T,bool> predicate)
+		public static NegListSlice<T> TakeNowWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = list.Min;; i++) {
@@ -256,7 +256,7 @@ namespace Loyc.Collections
 		/// method scans the list immediately.</summary>
 		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
-		public static NegListSlice<T> SkipNowWhile<T>(this INegListSource<T> list, Func<T,bool> predicate)
+		public static NegListSlice<T> SkipNowWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
 		{
 			Maybe<T> value;
 			for (int i = list.Min;; i++) {
@@ -267,11 +267,11 @@ namespace Loyc.Collections
 			}
 		}
 		// *** Reminder: do not edit the generated output! ***
-		public static ListSlice<T> TakeNowWhile<T>(this IListAndListSource<T> list, Func<T,bool> predicate)
+		public static ListSlice<T> TakeNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
 			return TakeNowWhile((IList<T>) list, predicate);
 		}
-		public static ListSlice<T> SkipNowWhile<T>(this IListAndListSource<T> list, Func<T,bool> predicate)
+		public static ListSlice<T> SkipNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
 			return SkipNowWhile((IList<T>) list, predicate);
 		}
@@ -296,17 +296,17 @@ namespace Loyc.Collections
 		}
 	
 		// *** Reminder: do not edit the generated output! ***
-		public static SelectListSource<T,TResult> Select<T,TResult>(this IListSource<T> source, Func<T,TResult> selector)
+		public static SelectListSource<T, TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
 		{
-			return new SelectListSource<T,TResult>(source, selector);
+			return new SelectListSource<T, TResult>(source, selector);
 		}
-		public static SelectListSource<T,TResult> Select<T,TResult>(this IListAndListSource<T> source, Func<T,TResult> selector)
+		public static SelectListSource<T, TResult> Select<T, TResult>(this IListAndListSource<T> source, Func<T, TResult> selector)
 		{
-			return new SelectListSource<T,TResult>(source, selector);
+			return new SelectListSource<T, TResult>(source, selector);
 		}
-		public static SelectList<T,TResult> Select<T,TResult>(this IList<T> source, Func<T,TResult> selector)
+		public static SelectList<T, TResult> Select<T, TResult>(this IList<T> source, Func<T, TResult> selector)
 		{
-			return new SelectList<T,TResult>(source, selector);
+			return new SelectList<T, TResult>(source, selector);
 		}
 	
 		/// <summary>Returns a reversed view of a read-only list.</summary>

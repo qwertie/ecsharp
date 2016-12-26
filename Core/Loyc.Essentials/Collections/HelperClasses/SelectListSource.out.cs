@@ -1,4 +1,4 @@
-// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 1.9.6.0
+// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -20,11 +20,11 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	public class SelectList<T,TResult> : ListSourceBase<TResult> {
+	public class SelectList<T, TResult> : ListSourceBase<TResult> {
 		protected IList<T> _list;
-		protected Func<T,TResult> _selector;
+		protected Func<T, TResult> _selector;
 	
-		public SelectList(IList<T> list, Func<T,TResult> selector)
+		public SelectList(IList<T> list, Func<T, TResult> selector)
 		{ _list = list; _selector = selector; }
 	
 		public IList<T> OriginalList { get {
@@ -57,11 +57,11 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	public class SelectListSource<T,TResult> : ListSourceBase<TResult> {
+	public class SelectListSource<T, TResult> : ListSourceBase<TResult> {
 		protected IListSource<T> _list;
-		protected Func<T,TResult> _selector;
+		protected Func<T, TResult> _selector;
 	
-		public SelectListSource(IListSource<T> list, Func<T,TResult> selector)
+		public SelectListSource(IListSource<T> list, Func<T, TResult> selector)
 		{ _list = list; _selector = selector; }
 	
 		public IListSource<T> OriginalList { get {

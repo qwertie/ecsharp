@@ -9,7 +9,7 @@ using Loyc;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class TestSequenceExpressionMacro : MacroTesterBase
+	public class TestUseSequenceExpressionsMacro : MacroTesterBase
 	{
 		[Test]
 		public void TestBasics()

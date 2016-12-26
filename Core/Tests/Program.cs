@@ -65,6 +65,7 @@ namespace Loyc.Tests
 
 				char c = reader.Current;
 				if (c == ' ') {
+					errorCount = 0;
 					for (int i = 0; i < menu.Count; i++) {
 						Console.WriteLine();
 						ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i+1, menu[i].Key);

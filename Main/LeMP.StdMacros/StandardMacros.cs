@@ -22,19 +22,21 @@ namespace LeMP
 		{
 			return GSymbol.Get(prefix + ctx.IncrementTempCounter());
 		}
-		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpId, string prefix)
-		{
-			tmpId = LNode.Id(NextTempName(ctx, prefix), value);
-			return F.Var(F.Missing, tmpId, value);
-		}
-		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpId)
+		public static Symbol NextTempName(IMacroContext ctx, LNode value)
 		{
 			string prefix = value.Name.Name;
-			if (!EcsValidators.IsPlainCsIdentifier(prefix))
-				prefix = "tmp_";
-			else
-				prefix += "_";
-			return TempVarDecl(ctx, value, out tmpId, prefix);
+			prefix = EcsValidators.IsPlainCsIdentifier(prefix) ? prefix + "_" : "tmp_";
+			return NextTempName(ctx, prefix);
+		}
+		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpVarName)
+		{
+			tmpVarName = LNode.Id(NextTempName(ctx, value), value);
+			return F.Var(F.Missing, tmpVarName, value);
+		}
+		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpVarName, string prefix)
+		{
+			tmpVarName = LNode.Id(NextTempName(ctx, prefix), value);
+			return F.Var(F.Missing, tmpVarName, value);
 		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
@@ -63,7 +65,7 @@ namespace LeMP
 		// non-uppercase identifiers like "x" or "_Foo", for literals like 42,
 		// and for dotted expressions in which all components are non-uppercase 
 		// identifiers, e.g. foo.bar.baz. Returns false for everything else.
-		protected static bool LooksLikeSimpleValue(LNode value)
+		internal protected static bool LooksLikeSimpleValue(LNode value)
 		{
 			if (value.IsCall) {
 				if (value.Calls(S.Dot)) {
@@ -217,15 +219,6 @@ namespace LeMP
 			else
 				result = LNode.Id(combined, node);
 			return result.WithAttrs(attrs);
-		}
-
-		[LexicalMacro(@"nameof(id_or_expr)", @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
-		public static LNode @nameof(LNode nameof, IMacroContext context)
-		{
-			if (nameof.ArgCount != 1)
-				return null;
-			Symbol expr = KeyNameComponentOf(nameof.Args[0]);
-			return F.Literal(expr.Name);
 		}
 
 		/// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>

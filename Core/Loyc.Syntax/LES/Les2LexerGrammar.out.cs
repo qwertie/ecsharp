@@ -1,4 +1,4 @@
-// Generated from Les2LexerGrammar.les by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from Les2LexerGrammar.les by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -676,7 +676,7 @@ namespace Loyc.Syntax.Les
 		// FIXME: 0x80..0xFFFC makes LLLPG make a HashSet<int> of unreasonable size.
 		void IdExtLetter()
 		{
-			Check(char.IsLetter((char) LA0), "@char.IsLetter($LA->@char)");
+			Check(char.IsLetter((char) LA0), "Expected @char.IsLetter($LA->@char)");
 			MatchRange(128, 65532);
 		}
 		static readonly HashSet<int> NormalId_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z');
@@ -1278,7 +1278,7 @@ namespace Loyc.Syntax.Les
 			match4:
 				{
 					Skip();
-					Check(!Try_MLCommentLine_Test0(0), "!([/])");
+					Check(!Try_MLCommentLine_Test0(0), "Did not expect [/]");
 				}
 			}
 			// Line 214: (Newline | [*] [/])

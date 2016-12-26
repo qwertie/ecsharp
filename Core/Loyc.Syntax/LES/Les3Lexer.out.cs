@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -403,7 +403,7 @@ namespace Loyc.Syntax.Les
 					// Line 70: ([0-9] =>  / &(HexDigits [Pp] [+\-0-9]))
 					la0 = LA0;
 					if (la0 >= '0' && la0 <= '9') { } else
-						Check(Try_HexNumber_Test0(0), "HexDigits [Pp] [+\\-0-9]");
+						Check(Try_HexNumber_Test0(0), "Expected HexDigits [Pp] [+\\-0-9]");
 					// line 71
 					_isFloat = true;
 					HexDigits();
@@ -801,7 +801,7 @@ namespace Loyc.Syntax.Les
 		object Shebang()
 		{
 			int la0;
-			Check(InputPosition == 0, "InputPosition == 0");
+			Check(InputPosition == 0, "Expected InputPosition == 0");
 			Skip();
 			Skip();
 			// Line 163: ([^\$\n\r])*
@@ -1302,7 +1302,7 @@ namespace Loyc.Syntax.Les
 			match4:
 				{
 					Skip();
-					Check(!Try_MLCommentLine_Test0(0), "!([/])");
+					Check(!Try_MLCommentLine_Test0(0), "Did not expect [/]");
 				}
 			}
 			// Line 225: (Newline | [*] [/])

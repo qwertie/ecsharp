@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -49,7 +49,8 @@ namespace LeMP
 					if (args.Count == 1 && args[0].Calls(S.Braces))
 						args = args[0].Args;
 				
-					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg)).Select(subNS => MergeIdentifiers(outerNamespace, subNS));
+					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg))
+					.Select(subNS => MergeIdentifiers(outerNamespace, subNS));
 				}
 			}
 			return null;

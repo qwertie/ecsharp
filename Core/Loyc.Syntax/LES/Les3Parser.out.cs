@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -441,7 +441,7 @@ namespace Loyc.Syntax.Les
 			_allowBlockCalls = false;
 			try {
 				litx2E = MatchAny();
-				Check(LT0.StartIndex == litx2E.EndIndex, "LT0.StartIndex == litx2E.EndIndex");
+				Check(LT0.StartIndex == litx2E.EndIndex, "Expected LT0.StartIndex == litx2E.EndIndex");
 				id = Match((int) TT.Id);
 				got_Expr = Expr(StartStmt);
 				var keyword = GSymbol.Get("." + id.Value.ToString());
@@ -543,7 +543,7 @@ namespace Loyc.Syntax.Les
 		Token ContinuatorKeyword()
 		{
 			Token result = default(Token);
-			Check(Continuators.ContainsKey(LT(0).Value), "Continuators.ContainsKey(LT($LI).Value)");
+			Check(Continuators.ContainsKey(LT(0).Value), "Expected Continuators.ContainsKey(LT($LI).Value)");
 			result = MatchAny();
 			return result;
 		}
@@ -576,8 +576,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if ((TT) LA(0 + 1) != TT.Newline) {
-								if (CanParse(context, 0, out prec))
+							if (CanParse(context, 0, out prec)) {
+								if ((TT) LA(0 + 1) != TT.Newline)
 									goto matchExpr;
 								else
 									goto stop;
@@ -694,7 +694,7 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Colon:
 							{
-								Check((TT) LA(0 + 1) != TT.Newline, "(TT) LA($LI + 1) != TT.Newline");
+								Check((TT) LA(0 + 1) != TT.Newline, "Expected (TT) LA($LI + 1) != TT.Newline");
 								op = MatchAny();
 								// line 201
 								opName = (Symbol) op.Value;
@@ -789,7 +789,7 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			} else {
-				Check(_allowBlockCalls, "_allowBlockCalls");
+				Check(_allowBlockCalls, "Expected _allowBlockCalls");
 				endIndex = BracesWithContinuators(ref args);
 				// line 247
 				hasBraces = true;

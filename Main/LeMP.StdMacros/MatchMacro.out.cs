@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -118,13 +118,13 @@ namespace LeMP
 			}
 			internal LNode GenCodeForPattern(LNode pattern)
 			{
-				_output = new List<Pair<Mode,LNode>>();
+				_output = new List<Pair<Mode, LNode>>();
 				GenCodeForPattern(_input, pattern);
 				return GetOutputAsLNode();
 			}
 		
 			enum Mode { Statement, Condition }
-			List<Pair<Mode,LNode>> _output;
+			List<Pair<Mode, LNode>> _output;
 			void PutStmt(LNode stmt) { _output.Add(Pair.Create(Mode.Statement, stmt)); }
 			void PutCond(LNode cond) { _output.Add(Pair.Create(Mode.Condition, cond)); }
 		
@@ -153,7 +153,7 @@ namespace LeMP
 							PutStmt(TempVarDecl(_context, input, out input));
 					}
 				
-					PutCond(LNode.Call(CodeSymbols.Is, LNode.List(input, isType.SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator));
+					PutCond(LNode.Call(CodeSymbols.Is, LNode.List(input, isType)).SetStyle(NodeStyle.Operator));
 				
 					if (varBinding == null && ((cmpExpr ?? inRange) != null || subPatterns.Count > 0))
 						// we'll need another temp variable to hold the same value, casted.
@@ -163,14 +163,14 @@ namespace LeMP
 				if (varBinding != null) {
 					if (isType != null) {
 						if (refExistingVar)
-							PutStmt(LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType.SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator));
+							PutStmt(LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator));
 						else
-							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(isType.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Assign, LNode.List(varBinding.SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Cast, LNode.List(input, isType.SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator))))));
+							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(isType, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType)).SetStyle(NodeStyle.Operator))))));
 					} else {
 						if (refExistingVar)
 							PutStmt(LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, input)).SetStyle(NodeStyle.Operator));
 						else
-							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding.SetStyle(NodeStyle.Operator), input)))));
+							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, input)))));
 					}
 					input = varBinding;
 				}

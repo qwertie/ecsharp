@@ -6,20 +6,30 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Ecs;
 
 namespace LeMP.CSharp6
 {
 	[ContainsMacros]
-	public class NullDotMacro
+	public class CSharp6Macros
 	{
+		[LexicalMacro(@"nameof(id_or_expr)", @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
+		public static LNode @nameof(LNode nameof, IMacroContext context)
+		{
+			if (nameof.ArgCount != 1)
+				return null;
+			Symbol expr = EcsValidators.KeyNameComponentOf(nameof.Args[0]);
+			return F.Literal(expr.Name);
+		}
+
 		[LexicalMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "'?.", "'??.")]
-		public static LNode NullDot(LNode node, IMacroContext sink)
+		public static LNode NullDot(LNode node, IMacroContext context)
 		{
 			if (!node.Calls(S.NullDot, 2))
 				return null;
 
 			var a = node.Args;
-			LNode prefix = a[0], suffix = a[1];
+			LNode leftSide = a[0], rightSide = a[1];
 			// So our input will be something like a.b?.c().d<x>, which is parsed
 			//     (a.b) ?. (c().d<x>)
 			// in EC# we would transform this to 
@@ -27,8 +37,18 @@ namespace LeMP.CSharp6
 			// but there's no EC# compiler yet, so instead use code that plain C#
 			// can support:
 			//     a.b != null ? (a.b).c().d<x> : null
-			return F.Call(S.QuestionMark, F.Call(S.Neq, prefix, F.@null), 
-				ConvertToNormalDot(prefix, suffix), F.Null);
+			if (StandardMacros.LooksLikeSimpleValue(leftSide))
+			{
+				return F.Call(S.QuestionMark, F.Call(S.Neq, leftSide, F.@null), 
+					ConvertToNormalDot(leftSide, rightSide), F.Null);
+			}
+			else
+			{
+				LNode tempVar = F.Id(StandardMacros.NextTempName(context, leftSide));
+				LNode condition = F.Call(S.Neq, F.Var(F.Missing, tempVar, leftSide), F.@null);
+				LNode thenExpr = ConvertToNormalDot(tempVar, rightSide);
+				return F.Call(S.QuestionMark, condition, thenExpr, F.Null);
+			}
 		}
 
 		static readonly HashSet<Symbol> PrefixOps = new HashSet<Symbol>(new[] 
