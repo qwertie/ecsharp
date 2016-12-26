@@ -37,18 +37,19 @@ namespace LeMP.CSharp6
 			// but there's no EC# compiler yet, so instead use code that plain C#
 			// can support:
 			//     a.b != null ? (a.b).c().d<x> : null
+			LNode condition, thenExpr;
 			if (StandardMacros.LooksLikeSimpleValue(leftSide))
 			{
-				return F.Call(S.QuestionMark, F.Call(S.Neq, leftSide, F.@null), 
-					ConvertToNormalDot(leftSide, rightSide), F.Null);
+				condition = F.Call(S.Neq, leftSide, F.@null);
+				thenExpr = ConvertToNormalDot(leftSide, rightSide);
 			}
 			else
 			{
 				LNode tempVar = F.Id(StandardMacros.NextTempName(context, leftSide));
-				LNode condition = F.Call(S.Neq, F.Var(F.Missing, tempVar, leftSide), F.@null);
-				LNode thenExpr = ConvertToNormalDot(tempVar, rightSide);
-				return F.Call(S.QuestionMark, condition, thenExpr, F.Null);
+				condition = F.Call(S.Neq, F.Var(F.Missing, tempVar, leftSide), F.@null);
+				thenExpr = ConvertToNormalDot(tempVar, rightSide);
 			}
+			return F.InParens(F.Call(S.QuestionMark, condition, thenExpr, F.Null));
 		}
 
 		static readonly HashSet<Symbol> PrefixOps = new HashSet<Symbol>(new[] 

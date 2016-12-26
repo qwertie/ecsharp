@@ -67,6 +67,8 @@ namespace LeMP
 				firstArg = LNode.Missing;
 			else if (firstArg.IsId)
 				firstArg = firstArg.With(S.Var, F.Id(_Exception), firstArg);
+
+			node.Style &= ~NodeStyle.OneLiner; // avoid collapsing output to one line
 			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F.Missing, on_handler));
 		}
 
