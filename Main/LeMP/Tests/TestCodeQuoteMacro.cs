@@ -33,7 +33,7 @@ namespace LeMP.Tests
 			TestEcs("quote { (x); }",
 				   @"LNode.Id(LNode.List(LNode.InParensTrivia), (Symbol) ""x"");");
 			TestEcs("rawQuote { Func($Foo); }",
-					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
+					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo""))).SetStyle(NodeStyle.Operator)));");
 			TestEcs("quote(Foo($first, $(...rest)));",
 				   @"LNode.Call((Symbol) ""Foo"", LNode.List().Add(first).AddRange(rest));");
 			TestEcs("quote(Foo($(...args)));",
@@ -51,10 +51,10 @@ namespace LeMP.Tests
 		[Test]
 		public void TestCodeQuoteWithTrivia()
 		{
-			TestEcs("quoteWithTrivia(/* cool! */ $foo)", 
-			       @"foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")))");
-			TestEcs("rawQuoteWithTrivia(/* cool! */ $foo)",
-			       @"LNode.Call(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")), CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""foo"")))");
+			TestEcs("quoteWithTrivia(/* cool! */ $foo);", 
+			       @"foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")));");
+			TestEcs("rawQuoteWithTrivia(/* cool! */ $foo);",
+			       @"LNode.Call(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")), CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""foo""))).SetStyle(NodeStyle.Operator);");
 		}
 	}
 }

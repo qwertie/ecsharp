@@ -35,7 +35,7 @@ namespace Loyc.Ecs.Tests
 		public void BugFixes()
 		{
 			LNode stmt;
-			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
+			Expr("(a + b).b<c>()", F.Call(F.Dot(F.InParens(F.Call(S.Add, a, b)), F.Of(b, c))));
 			Stmt("@`'+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// once printed as "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("partial Foo a;", Attr(@partialWA, F.Vars(Foo, a)));
@@ -44,11 +44,11 @@ namespace Loyc.Ecs.Tests
 			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone() {\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
-			Stmt("Foo<a> IDictionary<a,b>.Keys { }",
+			Stmt("Foo<a> IDictionary<a, b>.Keys { }",
 				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
-			Stmt("T IDictionary<Symbol,T>.this[Symbol x] { get; set; }",
+			Stmt("T IDictionary<Symbol, T>.this[Symbol x] { get; set; }",
 				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
-			Stmt("Func<T,T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
+			Stmt("Func<T, T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
 			Stmt("public static rule EmailAddress Parse(T x) { }",
 				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.List(F.Var(T, x)), F.Braces())));
@@ -69,27 +69,27 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Attr(a, F.Call(S.NamedArg, F.Id("property"), b), F.Private, F.Property(F.String, Foo, F.Braces(get, set)));
 			Stmt("[a, property: b] private string Foo { get; set; }", stmt);
 			Stmt("[a] [property: b] public string Foo { get; set; }", stmt.WithAttrChanged(2, @public), Mode.ParserTest);
-			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
+			Stmt("a = (var b = x);", F.Call(S.Assign, a, F.InParens(F.Var(F.Missing, b, x))));
 		}
 
 		[Test]
 		public void PrecedenceChallenges()
 		{
-			Expr(@"a.([] -b)",        F.Dot(a, F.Call(S._Negate, b)));
-			Expr(@"a.([] -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
-			Expr(@"a.([] -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
-			Expr(@"a::([] -b)",    F.Call(S.ColonColon, a, F.Call(S._Negate, b)));
-			Expr(@"a.b->c",           F.Call(S.PtrArrow, F.Dot(a, b), c));
-			Expr(@"a->([] b.c)",   F.Call(S.PtrArrow, a, F.Dot(b, c)));
-			Expr(@"a.(-b)(c)",        F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
+			Expr(@"a.([] -b)",       F.Dot(a, F.Call(S._Negate, b)));
+			Expr(@"a.([] -b).c",     F.Dot(a, F.Call(S._Negate, b), c));
+			Expr(@"a.([] -b.c)",     F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
+			Expr(@"a::([] -b)",      F.Call(S.ColonColon, a, F.Call(S._Negate, b)));
+			Expr(@"a.b->c",          F.Call(S.PtrArrow, F.Dot(a, b), c));
+			Expr(@"a->([] b.c)",     F.Call(S.PtrArrow, a, F.Dot(b, c)));
+			Expr(@"a.(-b)(c)",       F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
 			// The printer should revert to prefix notation in certain cases in 
 			// order to faithfully represent the original tree.
 			Expr(@"a * b + c",       F.Call(S.Add, F.Call(S.Mul, a, b), c));
 			Expr(@"(a + b) * c",     F.Call(S.Mul, F.InParens(F.Call(S.Add, a, b)), c));
-			Expr(@"@`'+`(a, b) * c",  F.Call(S.Mul, F.Call(S.Add, a, b), c));
+			Expr(@"@`'+`(a, b) * c", F.Call(S.Mul, F.Call(S.Add, a, b), c));
 			Expr(@"--a++",           F.Call(S.PreDec, F.Call(S.PostInc, a)));
 			Expr(@"(--a)++",         F.Call(S.PostInc, F.InParens(F.Call(S.PreDec, a))));
-			Expr(@"@`'--`(a)++",      F.Call(S.PostInc, F.Call(S.PreDec, a)));
+			Expr(@"@`'--`(a)++",     F.Call(S.PostInc, F.Call(S.PreDec, a)));
 			LNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
 			Expr(@"a.b?.c.x",        F.Call(S.NullDot, a_b, F.Dot(c, x)));
 			Expr(@"(a.b?.c).x",      F.Dot(F.InParens(a_b__c), x));
@@ -104,7 +104,7 @@ namespace Loyc.Ecs.Tests
 			// Note: It was decided not to bother supporting `$++x`, or even
 			// `$...x` which would be more convenient than writing `$(...x)`
 			Expr(@"$(++x)", F.Call(S.Substitute, F.Call(S.PreInc, x)));
-			Expr(@".(~x)",           F.Call(S.Dot, F.Call(S.NotBits, x)));
+			Expr(@".(~x)",          F.Call(S.Dot, F.Call(S.NotBits, x)));
 			Expr(@"x++.Foo",        F.Dot(F.Call(S.PostInc, x), Foo));
 			Expr(@"x++.Foo()",      F.Call(F.Dot(F.Call(S.PostInc, x), Foo)));
 			Expr(@"x++--.Foo",      F.Dot(F.Call(S.PostDec, F.Call(S.PostInc, x)), Foo));
@@ -113,8 +113,9 @@ namespace Loyc.Ecs.Tests
 			Expr(@"$x",             F.Call(S.Substitute, x));
 			Expr(@"$(x++)",         F.Call(S.Substitute, F.Call(S.PostInc, x)));
 			Expr(@"$(Foo(x))",      F.Call(S.Substitute, F.Call(Foo, x)));
+			Expr(@"$(a<b>)",        F.Call(S.Substitute, F.Of(a, b)));
 			Expr(@"$(a.b)",         F.Call(S.Substitute, F.Dot(a, b)));
-			Expr(@"$(a.b<c>)",      F.Call(S.Substitute, F.Of(F.Dot(a, b), c)));
+			Expr(@"$(a.b<c>)",      F.Call(S.Substitute, F.Dot(a, F.Of(b, c))));
 			Expr(@"$((Foo) x)",     F.Call(S.Substitute, F.Call(S.Cast, x, Foo)));
 			Expr(@"$(x(->Foo))",    F.Call(S.Substitute, Alternate(F.Call(S.Cast, x, Foo))));
 		}

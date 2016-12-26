@@ -117,11 +117,11 @@ namespace Loyc.Ecs.Tests
 			Expr("a.b.c",    F.Dot(a, b, c));
 			Expr("a.b(c)",   F.Call(F.Dot(a, b), c));
 			Expr("a<b>.c",   F.Dot(F.Of(a, b), c));
-			Expr("a.b<c>",   F.Of(F.Dot(a, b), c));
+			Expr("a.b<c>",   F.Dot(a, F.Of(b, c)));
 			Expr("a<b.c>",   F.Of(a, F.Dot(b, c)));
-			Expr("a<b,c>",   F.Of(a, b, c));
+			Expr("a<b, c>",  F.Of(a, b, c));
 			Expr("a<b>(c)",  F.Call(F.Of(a, b), c));
-			Expr("a().b<c>", F.Of(F.Dot(F.Call(a), b), c));
+			Expr("a().b<c>", F.Dot(F.Call(a), F.Of(b, c)));
 		}
 
 		[Test]
@@ -221,7 +221,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("decimal[,,,] x;",      F.Vars(F.Of(S.GetArrayKeyword(4), S.Decimal), x));
 			Stmt("double? x;",           F.Vars(F.Of(S.QuestionMark, S.Double), x));
 			Stmt("Foo<a.b.c>? x;",       F.Vars(F.Of(_(S.QuestionMark), F.Of(Foo, F.Dot(a, b, c))), x));
-			Stmt("Foo<a?,b.c[,]>[] x;",  F.Vars(F.Of(_(S.Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
+			Stmt("Foo<a?, b.c[,]>[] x;", F.Vars(F.Of(_(S.Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
 		}
 
 		[Test]
@@ -423,7 +423,7 @@ namespace Loyc.Ecs.Tests
 			var b_where = Attr(F.Call(S.Where, a), b);
 			var c_where = Attr(F.Call(S.Where, F.Call(S.New)), c);
 			var stmt = F.Call(S.Class, F.Of(Foo, a_where, b_where), F.List(IFoo), F.Braces());
-			Stmt("class Foo<a,b> : IFoo where a: class where b: a { }", stmt);
+			Stmt("class Foo<a, b> : IFoo where a: class where b: a { }", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), a_where)), F.List(), F.Braces());
 			Stmt("class Foo<out a> where a: class { }", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), c_where)), F.List(IFoo), F.Braces());
@@ -490,6 +490,20 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Fn(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator() { }", stmt);
 			Expr("#fn(IEnumerator, IEnumerable.GetEnumerator, #(), { })", stmt);
+			stmt = F.Fn(F.Dot(a, b), F.Dot(IFoo, Foo), F.List(), F.Braces());
+			Stmt("a.b IFoo.Foo() { }", stmt);
+			stmt = F.Fn(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, Foo), F.List(), F.Braces());
+			Stmt("a.b<x> IFoo.Foo() { }", stmt);
+			stmt = F.Fn(F.Dot(a, b), F.Dot(IFoo, F.Of(Foo, x)), F.List(), F.Braces());
+			Stmt("a.b IFoo.Foo<x>() { }", stmt);
+			stmt = F.Fn(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, F.Of(Foo, x)), F.List(), F.Braces());
+			Stmt("a.b<x> IFoo.Foo<x>() { }", stmt);
+			stmt = F.Fn(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, x)), F.List(), F.Braces());
+			Stmt("a<b, c> IFoo.Foo<x>() { }", stmt);
+			stmt = F.Fn(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, a, b)), F.List(), F.Braces());
+			Stmt("a<b, c> IFoo.Foo<a, b>() { }", stmt);
+			stmt = F.Fn(F.Of(a, F.Dot(b, c)), F.Dot(IFoo, F.Of(Foo, a, b)), F.List(), F.Braces());
+			Stmt("a<b.c> IFoo.Foo<a, b>() { }", stmt);
 		}
 
 		[Test]
@@ -544,6 +558,21 @@ namespace Loyc.Ecs.Tests
 
 			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Braces(get, set));
 			Stmt("Foo this[long x] { get; set; }", stmt);
+
+			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, Foo), F.Braces(get));
+			Stmt("a.b IFoo.Foo { get; }", stmt);
+			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, Foo), F.Braces(get));
+			Stmt("a.b<x> IFoo.Foo { get; }", stmt);
+			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			Stmt("a.b IFoo.Foo<x> { get; }", stmt);
+			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			Stmt("a.b<x> IFoo.Foo<x> { get; }", stmt);
+			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			Stmt("a<b, c> IFoo.Foo<x> { get; }", stmt);
+			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, a, b)), F.Braces(get));
+			Stmt("a<b, c> IFoo.Foo<a, b> { get; }", stmt);
+			stmt = F.Property(F.Of(a, F.Dot(b, c)), F.Dot(IFoo, F.Of(Foo, a, b)), F.Braces(get));
+			Stmt("a<b.c> IFoo.Foo<a, b> { get; }", stmt);
 		}
 
 		[Test]

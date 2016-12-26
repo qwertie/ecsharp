@@ -1097,20 +1097,15 @@ namespace Loyc.Ecs
 		AllowAttrs = 2, // outer level only. e.g. this flag is used on return types, where
 			// #fn([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
 		// For internal use
-		DisallowOf = 8,
-		DisallowDotted = 16,
-		InOf = 32,
+		DisallowDotted = 8, // inside right-hand side of dot
+		InOf = 32,          // inside <...>
 		// hmm
 		AllowAnyExprInOf = 64,
-		// Allows in out $, e.g. Foo<in A, out B, $c>, but requires type params 
+		// Allows in out, e.g. Foo<in A, out B, c>, but requires type params 
 		// to be simple (e.g. Foo<A.B, C<D>> is illegal)
 		NameDefinition = 128,
 		// allows parentheses around the outside of the complex identifier.
 		AllowParensAround = 256,
-		// allows expressions like x().y and (x + y).Foo<z>, in which the left side 
-		// is an expression but the right side uses the #of or . operator. This 
-		// flag also permits any expr in parens (as if AllowParensAround specified)
-		ExprMode = 512,
 	}
 
 	/// <summary>Controls the locations where spaces appear as <see cref="EcsNodePrinter"/> 
@@ -1122,7 +1117,7 @@ namespace Loyc.Ecs
 	/// </remarks>
 	[Flags] public enum SpaceOpt
 	{
-		Default = Minimal | AfterComma | AfterCast | AfterAttribute | AfterColon 
+		Default = Minimal | AfterComma | AfterCommaInOf | AfterCast | AfterAttribute | AfterColon 
 			| BeforeKeywordStmtArgs | BeforePossibleMacroArgs | BeforeNewInitBrace 
 			| InsideNewInitializer | BeforeBaseListColon | BeforeForwardArrow 
 			| BeforeConstructorColon | BeforeCommentOnSameLine | SuppressAroundDotDot,

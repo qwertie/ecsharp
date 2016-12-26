@@ -119,7 +119,9 @@ namespace LeMP
 					result = F.Call(LNode_Id, creationArgs);
 					break;
 				default: // NodeKind.Call => F.Dot(...), F.Of(...), F.Call(...), F.Braces(...)
+					bool preserveStyle = true;
 					if (_doSubstitutions && node.Calls(S.Substitute, 1)) {
+						preserveStyle = false;
 						result = node.Args[0];
 						if (attrList != null) {
 							if (result.IsCall)
@@ -127,7 +129,7 @@ namespace LeMP
 							result = F.Call(F.Dot(result, Id_PlusAttrs), attrList);
 						}
 					} else if (!_ignoreTrivia && node.ArgCount == 1 && node.TriviaValue != NoValue.Value && node.Target.IsId) {
-						// LNode.Literal(Symbol, object)
+						// LNode.Trivia(Symbol, object)
 						result = F.Call(LNode_Trivia, QuoteSymbol(node.Name), F.Literal(node.TriviaValue));
 					}
 					/*else if (node.Calls(S.Braces)) // F.Braces(...)
@@ -151,7 +153,7 @@ namespace LeMP
 					// Note: don't preserve prefix notation because if $op is +, 
 					// we want $op(x, y) to generate code for x + y (there is no 
 					// way to express this with infix notation.)
-					if (node.BaseStyle != NodeStyle.Default && node.BaseStyle != NodeStyle.PrefixNotation)
+					if (preserveStyle && node.BaseStyle != NodeStyle.Default && node.BaseStyle != NodeStyle.PrefixNotation)
 						result = F.Call(F.Dot(result, F.Id("SetStyle")), F.Dot(F.Id("NodeStyle"), F.Id(node.BaseStyle.ToString())));
 					break;
 				}

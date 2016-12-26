@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -412,7 +412,7 @@ namespace LeMP
 						if (haveCCRewriter)
 							underscoreError = "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.";
 					} else {	// @@ensures or @@ensuresAssert or @@ensuresFinally
-						contractResult = haveCCRewriter ? LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "Result"))).SetStyle(NodeStyle.Operator), ReturnType.SetStyle(NodeStyle.Operator)))) : Id_return_value;
+						contractResult = haveCCRewriter ? LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "Result"), ReturnType)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator)) : Id_return_value;
 						if (mode == sy_ensuresFinally)
 							underscoreError = "The macro for `{0}` does not support `_` because the return value is not available in `finally`";
 						else if (haveCCRewriter && ReturnType.IsIdNamed(S.Missing))
@@ -425,7 +425,7 @@ namespace LeMP
 					if (haveCCRewriter) {
 						if (mode == sy_ensuresOnThrow)
 							checks.Add(exceptionType != null 
-							? LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "EnsuresOnThrow"))).SetStyle(NodeStyle.Operator), exceptionType.SetStyle(NodeStyle.Operator))), LNode.List(condition)) : LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "EnsuresOnThrow"))).SetStyle(NodeStyle.Operator), LNode.List(condition)));
+							? LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "EnsuresOnThrow"), exceptionType)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator), LNode.List(condition)) : LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "EnsuresOnThrow"))).SetStyle(NodeStyle.Operator), LNode.List(condition)));
 						else
 							checks.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "Ensures"))).SetStyle(NodeStyle.Operator), LNode.List(condition)));
 					} else {
@@ -437,7 +437,7 @@ namespace LeMP
 					
 						if (mode == sy_ensuresOnThrow) {
 							var excType = GetExceptionTypeForEnsuresOnThrow();
-							checks.Add(LNode.Call(CodeSymbols.If, LNode.List(LNode.Call(CodeSymbols.Not, LNode.List(condition)).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Throw, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(excType.SetStyle(NodeStyle.Operator), LNode.List(conditionStr, Id__exception__)))))))));
+							checks.Add(LNode.Call(CodeSymbols.If, LNode.List(LNode.Call(CodeSymbols.Not, LNode.List(condition)).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Throw, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(excType, LNode.List(conditionStr, Id__exception__)))))))));
 						} else {
 							LNode assertMethod;
 							if (mode == sy_ensuresAssert)
@@ -457,7 +457,7 @@ namespace LeMP
 					if (_haveCCRewriter) {
 						PrependStmts.AddRange(checks);
 					} else if (mode == sy_ensuresOnThrow) {
-						LNode excSpec = exceptionType == null ? Id__exception__ : LNode.Call(CodeSymbols.Var, LNode.List(exceptionType.SetStyle(NodeStyle.Operator), Id__exception__.SetStyle(NodeStyle.Operator)));
+						LNode excSpec = exceptionType == null ? Id__exception__ : LNode.Call(CodeSymbols.Var, LNode.List(exceptionType, Id__exception__));
 						PrependStmts.Add(LNode.Call((Symbol) "on_throw", LNode.List(excSpec, LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special));
 					} else if (mode == sy_ensuresFinally) {
 						PrependStmts.Add(LNode.Call((Symbol) "on_finally", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special));

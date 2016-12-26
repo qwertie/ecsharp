@@ -150,21 +150,26 @@ namespace Loyc.Ecs.Parser
 			result:ComplexId()
 			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
 		};
-		// Complex identifier, e.g. Foo.Bar or Foo<x, y>
+		
+		// Complex identifier in non-declaration context, e.g. Foo.Bar or Foo<x, y>
 		@[FullLLk] // http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
-		token ComplexId::LNode @{ // Part of DataType
-			e:=IdAtom 
-			// There can be only a single "externAlias::" prefix in a complex Id.
-			(	op:="::" e2:=IdAtom 
-				{e = F.Call(S.ColonColon, e, e2, e.Range.StartIndex, e2.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-			)?
-			TParams(false, ref e)?
-			(	op:="." rhs:=IdAtom {e=F.Dot(e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-				TParams(false, ref e)?
-			)*
-			{return e;}
+		token ComplexId(declContext::bool = false)::LNode @{ // Part of DataType
+			result:IdWithOptionalTypeParams(declContext)
+			[	// There can be only a single "externAlias::" prefix in a complex Id, with no type params.
+				{if (result.Calls(S.Of)) {Error("Type parameters cannot appear before '::' in a declaration or type name");};}
+				op:="::" rhs:=IdWithOptionalTypeParams(declContext)
+				{result = F.Call(S.ColonColon, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			]?
+			[	op:="." rhs:=IdWithOptionalTypeParams(declContext)
+				{result = F.Dot(result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			]*
 		};
 		
+		@[FullLLk]
+		token IdWithOptionalTypeParams(declarationContext::bool)::LNode @{
+			result:IdAtom [TParams(declarationContext, ref result)]?
+		};
+
 		// identifier, $identifier, $(expr), or primitive type (int, string)
 		rule IdAtom::LNode @{
 			{r::LNode;}
@@ -188,33 +193,57 @@ namespace Loyc.Ecs.Parser
 			return node;
 		};
 
+		// List of type parameters. `declContext` specifies that type parameters can 
+		// have [normal attributes] and in/out variance attrbutes.
 		@[recognizer(fn Scan_TParams(declContext::bool))]
 		rule TParams(declContext::bool, ref r::LNode)
 		@{
 			{list::VList!LNode = (new VList!LNode(r));}
-			{end::Token;}
+			{endIndex::int;}
 			( op:"<" [list+=TParamDeclOrDataType(declContext)
-			     ("," list+=TParamDeclOrDataType(declContext))*]? end=">"
-			| op:"." t:="[" end="]" {list = AppendExprsInside(t, list);}
-			| op:"!" t:="(" end=")" {list = AppendExprsInside(t, list);}
-			| op:"!" end=TT.Id      {list.Add(F.Id(end));}
+			     ("," list+=TParamDeclOrDataType(declContext))*]? end:=">"   {endIndex = end.EndIndex;}
+			| op:"." t:="[" end:="]"      {list = AppendExprsInside(t, list); endIndex = end.EndIndex;} // Nemerle style
+			| op:"!" t:="(" end:=")"      {list = AppendExprsInside(t, list); endIndex = end.EndIndex;} // D & LES style
+			| op:"!" list+=IdWithOptionalTypeParams(declContext) {endIndex = list.Last.Range.EndIndex;}
 			)
 			{
 				start::int = r.Range.StartIndex;
-				r = F.Call(S.Of, list, start, end.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);
+				r = F.Call(S.Of, list, start, endIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);
 			}
 		};
 
 		@[recognizer(fn Scan_TParamDeclOrDataType(declarationContext::bool))]
 		rule TParamDeclOrDataType(declarationContext::bool)::LNode @{
 			{attrs::VList!LNode = default(VList!LNode); startIndex::int = GetTextPosition(InputPosition);}
-			(	result:DataType(!declarationContext)
+			(	result:DataType(false)
 			/	&{declarationContext}
 				NormalAttributes(ref attrs)
 				TParamAttributeKeywords(ref attrs)
 				result:IdAtom
 			)
 			{$result = $result.WithAttrs(attrs);}
+		};
+
+		// This is the same as ComplexId except that it is used in declaration locations
+		// such as the name of a method. The difference is that the type parameters can 
+		// have [normal attributes] and in/out variance attrbutes. In addition, 'this' is 
+		// also allowed as a name if the current name is a property name.
+		@[FullLLk, recognizer(fn Scan_ComplexNameDecl(thisAllowed::bool = false))]
+		token ComplexNameDecl(thisAllowed::bool, out hasThis::bool)::LNode @{
+			result:ComplexThisDecl(thisAllowed) {hasThis = true;}
+		|	result:ComplexId(declContext: true) {hasThis = false;}
+			[	op:="." ComplexThisDecl(thisAllowed) {hasThis = true;}
+				{result = F.Dot(result, $ComplexThisDecl, result.Range.StartIndex, $ComplexThisDecl.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			]?
+		};
+
+		fn ComplexNameDecl()::LNode { _::bool; return ComplexNameDecl(false, out _); };
+
+		// `this` with optional <type arguments>
+		token ComplexThisDecl(allowed::bool)::LNode @{
+			{if (!allowed) {Error("'this' is not allowed in this location.");};}
+			t:=TT.This    {$result = F.Id(t);}
+			TParams(true, ref result)?
 		};
 
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
@@ -281,36 +310,6 @@ namespace Loyc.Ecs.Parser
 			{return result;}
 		};
 
-		fn ComplexNameDecl()::LNode { _::bool; return ComplexNameDecl(false, out _); };
-		
-		// This is the same as ComplexId except that it is used in declaration locations.
-		// The difference is that the type parameters can have [normal attributes] and 
-		// in/out variance attrbutes. 'this' can only be used as a name of a property.
-		@[FullLLk, recognizer(fn Scan_ComplexNameDecl(thisAllowed::bool = false))]
-		token ComplexNameDecl(thisAllowed::bool, out hasThis::bool)::LNode @{
-			(	e:ComplexThisDecl(thisAllowed) {hasThis = true;}
-			|	e:IdAtom                      {hasThis = false;}
-				// There can be only a single "externAlias::" prefix in a complex Id.
-				(	op:="::" e2:=IdAtom 
-					{e=F.Call(S.ColonColon, e, e2, e.Range.StartIndex, e2.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-				)?
-				TParams(true, ref e)?
-				[	op:="." rhs:=IdAtom
-					{e=F.Dot(e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator)}
-					TParams(true, ref e)?
-				]*
-				[	op:="." ComplexThisDecl(thisAllowed) {hasThis = true;}
-					{e=F.Dot(e, $ComplexThisDecl, e.Range.StartIndex, $ComplexThisDecl.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-				]?
-			) {return e;}
-		};
-		// `this` with optional <type arguments>
-		token ComplexThisDecl(allowed::bool)::LNode @{
-			{if (!allowed) {Error("'this' is not allowed in this location.");};}
-			t:=TT.This    {$result = F.Id(t);}
-			TParams(true, ref result)?
-		};
-			
 		// ---------------------------------------------------------------------
 		// -- Expressions ------------------------------------------------------
 		// ---------------------------------------------------------------------
@@ -522,8 +521,14 @@ namespace Loyc.Ecs.Parser
 			{return F.Literal($L.Children, $at.StartIndex, $R.EndIndex);}
 		};
 
+		@[FullLLk, private]
+		rule AtomOrTypeParamExpr()::LNode @{
+			&( IdWithOptionalTypeParams(false) (~(TT.Id|TT.ContextualKeyword)|EOF) ) result:IdWithOptionalTypeParams(false)
+		/	result:Atom
+		};
+
 		@[private] rule PrimaryExpr()::LNode @{
-			e:=Atom
+			e:=AtomOrTypeParamExpr
 			FinishPrimaryExpr(ref e)
 			(
 				op:="?." rhs:=PrimaryExpr {e = F.Call(op, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, NodeStyle.Operator);}
@@ -534,7 +539,7 @@ namespace Loyc.Ecs.Parser
 		@[private] rule FinishPrimaryExpr(ref e::LNode) @{
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
-				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				rhs:=AtomOrTypeParamExpr {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			/	// x(-> Foo), x(as Foo), x(using Foo)
 				e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
@@ -591,6 +596,7 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
+		// Prefix expressions, atoms, and high-precedence expressions like f(x) and List<T>
 		@[k(3), private] // to distinguish (cast) expr from (parens)
 		rule PrefixExpr::LNode @{
 			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr

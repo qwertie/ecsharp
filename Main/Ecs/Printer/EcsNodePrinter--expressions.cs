@@ -121,7 +121,7 @@ namespace Loyc.Ecs
 			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
 			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
-			d.Add(S.Of, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>("AutoPrintOfOperator")));
+			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>("AutoPrintOfOperator")));
 
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
@@ -190,6 +190,15 @@ namespace Loyc.Ecs
 				{
 					// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
 					// notation or most other operators without parens.
+					// #of and '$ are notable exceptions, and we must not wrap them 
+					// in parentheses in case they appear in a type context:
+					if (_n.CallsMin(S.Of, 1))
+						if (AutoPrintOfOperator(EcsPrecedence.Of))
+							return;
+					if (_n.Calls(S.Substitute, 1))
+						if (AutoPrintPrefixUnaryOperator(EcsPrecedence.Substitute))
+							return;
+
 					if (_o.AllowChangeParentheses || _context.Left > EP.Primary.Left) {
 						PrintWithinParens(ParenFor.Grouping, _n);
 						return;
@@ -367,7 +376,7 @@ namespace Loyc.Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					_context = StartExpr;
-				Ambiguity lFlags = 0;
+				Ambiguity lFlags = _flags & Ambiguity.TypeContext;
 				if (_name == S.Assign || _name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
 				if (_name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
 				PrintExpr(left, prec.LeftContext(_context), lFlags);
@@ -556,9 +565,12 @@ namespace Loyc.Ecs
 				else
 					return false;
 			}
-			Debug.Assert(_n.ArgCount >= 1);
+			bool parens;
+			if (!CanAppearHere(precedence, out parens) || parens)
+				return false;
 
-			PrintExpr(_n.Args[0], precedence.LeftContext(_context), _flags & Ambiguity.InDefinitionName);
+			Debug.Assert(_n.ArgCount >= 1);
+			PrintExpr(_n.Args[0], precedence.LeftContext(_context), _flags & (Ambiguity.InDefinitionName | Ambiguity.TypeContext));
 
 			_out.Write(needSpecialOfNotation ? "!(" : "<", true);
 			for (int i = 1, argC = _n.ArgCount; i < argC; i++) {

@@ -95,7 +95,7 @@ namespace Loyc.Ecs.Tests
 		void CheckIsComplexIdentifier(bool? result, LNode expr)
 		{
 			_testNum++;
-			var isCI = EcsValidators.IsComplexIdentifier(expr);
+			var isCI = EcsValidators.IsComplexIdentifier(expr, ICI.Default, EcsValidators.Pedantics.Strict);
 			if (result == null && !isCI)
 				return;
 			else if (result == isCI)
@@ -112,19 +112,35 @@ namespace Loyc.Ecs.Tests
 			_testNum = 0;
 			CheckIsComplexIdentifier(true, a);                             // a
 			CheckIsComplexIdentifier(true, F.Dot(a, b));                   // a.b
-			CheckIsComplexIdentifier(null, F.Call(a, b, c));               // #.(a, b, c)                      ==> true for target
-			CheckIsComplexIdentifier(true, F.Dot(F.Dot(a, b), c));         // a.b.c       == #.(#.(a, b), c)   ==> true
-			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == #.(#.(a, b), c)   ==> true
-			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // #.(a, b.c)
+			CheckIsComplexIdentifier(null, F.Call(a, b, c));               // @`'.`(a, b, c)                       ==> true for target
+			CheckIsComplexIdentifier(true, F.Dot(F.Dot(a, b), c));         // a.b.c       == @`'.`(@`'.`(a, b), c) ==> true
+			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == @`'.`(@`'.`(a, b), c) ==> true
+			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // @`'.`(a, b.c)
 			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
 			CheckIsComplexIdentifier(true, F.Of(_(S.Array), a));           // a[]         == #of(@`[]`,a)      ==> true
-			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(@.(a,b),@.(c,x)) ==> true
+			CheckIsComplexIdentifier(true, F.Dot(a, F.Of(b, F.Dot(c,x)))); // a.b<c.x>    == #of(@.(a,b),@.(c,x)) ==> true
+			CheckIsComplexIdentifier(false, F.Of(F.Dot(a,b),F.Dot(c,x)));  // #of(@`'.`(a,b), @`'.`(c,x))      ==> false
 			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == @.(a,b)(x)        ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(@.(a,b),c)(x) ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,F.Of(b,c)), c)); // a.b<c>(x)   == #of(@.(a,b),c)(x) ==> true for target
+			CheckIsComplexIdentifier(false, F.Call(F.Of(F.Dot(a,b),c), c)); // #of(a.b, c)(c)                  ==> false
 			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (@`'.`(a,b))(x)   ==> false
 			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
+		}
+
+		[Test]
+		public void IsComplexIdentifierTestsWithAttributes()
+		{
+			_testNum = 0;
+			CheckIsComplexIdentifier(true, F.Dot(OnNewLine(a), OnNewLine(b))); // a.b with trivia
+			CheckIsComplexIdentifier(false, F.Dot(a, Attr(b, b)));         // a.([b] b)
+			CheckIsComplexIdentifier(false, F.Dot(Attr(a, a), b));         // ([a] a).b
+			CheckIsComplexIdentifier(true, F.Of(OnNewLine(a), OnNewLine(b))); // a<b> with trivia
+			CheckIsComplexIdentifier(false, F.Of(Attr(a, a), b));          // a<b> with attribute on a
+			CheckIsComplexIdentifier(false, F.Of(a, Attr(b, b)));          // a<b> with attribute on b
+			CheckIsComplexIdentifier(true, F.Dot(a, F.Of(b, F.Dot(OnNewLine(c),OnNewLine(x))))); // a.b<c.x> with trivia
+			CheckIsComplexIdentifier(false, F.Dot(a, F.Of(b, F.Dot(Attr(c, c),Attr(x, x))))); // a.b<c.x> with attributes in there
 		}
 
 		[Test]

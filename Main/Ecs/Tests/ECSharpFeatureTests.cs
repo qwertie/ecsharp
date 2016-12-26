@@ -81,8 +81,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("a.b.c;",    F.Dot(a, b, c));
 			Stmt("a.b(c);",   F.Call(F.Dot(a, b), c));
 			Stmt("a<b>.c;",   F.Dot(F.Of(a, b), c));
-			Stmt("a.b<c>;",   F.Of(F.Dot(a, b), c));
-			Stmt("a<b,c>;",   F.Of(a, b, c));
+			Stmt("a.b<c>;",   F.Dot(a, F.Of(b, c)));
+			Stmt("a<b, c>;",   F.Of(a, b, c));
 			Stmt("a<b>(c);",  F.Call(F.Of(a, b), c));
 			Stmt("a?.b(c);",   F.Call(S.NullDot, a, F.Call(b, c)));
 			Stmt("a + b + c;",           F.Call(S.Add, F.Call(S.Add, a, b), c));
@@ -97,8 +97,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("a => a + 1;",          F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
 			Stmt("1 + a => 2 + b => c;", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
 			Stmt("a is Foo ? a as Foo : b;", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
-			Stmt("(a + b).b<c>;", F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c));
-			Stmt("x::a.b;",      F.Dot(F.Call(S.ColonColon, x, a), b));
+			Stmt("(a + b).b<c>;", F.Dot(F.InParens(F.Call(S.Add, a, b)), F.Of(b, c)));
+			Stmt("x::a.b;",       F.Dot(F.Call(S.ColonColon, x, a), b));
 		}
 
 		[Test]
@@ -125,11 +125,11 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("[Foo] a;",             Attr(Foo, a));
 			Stmt("[Foo] a.b.c;",         Attr(Foo, F.Dot(a, b, c)));
-			Stmt("[Foo] a<b,c>;",        Attr(Foo, F.Of(a, b, c)));
+			Stmt("[Foo] a<b, c>;",       Attr(Foo, F.Of(a, b, c)));
 			Stmt("[Foo] a = b;",         Attr(Foo, F.Assign(a, b)));
 			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
-			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
-			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
+			Stmt("a!(b, [Foo] c);",       F.Of(a, b, Attr(Foo, c)));
+			Stmt("a!(b, Foo + c);",       F.Of(a, b, F.Call(S.Add, Foo, c)));
 			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
 			Stmt("public a;",             F.Attr(@public, a));
 			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
@@ -255,8 +255,8 @@ namespace Loyc.Ecs.Tests
 
 			Stmt("alias(a = b);", F.Call(GSymbol.Get("alias"), F.Assign(a, b)));
 			LNode stmt = F.Call(S.Alias, F.Assign(F.Of(_("Map"), a, b), F.Of(_("Dictionary"), a, b)), F.List());
-			Stmt("alias Map<a,b> = Dictionary<a,b>;", stmt);
-			Expr("#alias(Map<a,b> = Dictionary<a,b>, #())", stmt);
+			Stmt("alias Map<a, b> = Dictionary<a, b>;", stmt);
+			Expr("#alias(Map<a, b> = Dictionary<a, b>, #())", stmt);
 			stmt = F.Call(S.Alias, F.Assign(Foo, fooKW), F.List(IFoo), F.Braces(public_x));
 			Stmt("alias Foo = #foo : IFoo {\n  public int x;\n}", stmt);
 			Expr("#alias(Foo = #foo, #(IFoo), {\n  public int x;\n})", stmt);

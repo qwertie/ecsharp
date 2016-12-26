@@ -118,9 +118,9 @@ namespace Loyc.Ecs.Tests
 			Option(Mode.PrintBothParseFirst,
 				"(([] Foo<a>))(-a);", "((Foo<a>))(-a);",
 				F.Call(F.InParens(Foo_a), neg_a), p => p.AllowChangeParentheses = true);
-			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
-			Expr("(a.b!(c > 1)) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
-			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Of(F.Dot(a, b), c))));
+			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Dot(a, F.Of(b, c))));
+			Expr("x(->a.b!(c > 1))",  F.Call(S.Cast, x, F.Dot(a, F.Of(b, F.Call(S.GT, c, one)))));
+			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Dot(a, F.Of(b, c)))));
 			// TODO
 			//Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
 			Stmt("Foo* a;",           F.Vars(F.Of(_(S._Pointer), Foo), a));

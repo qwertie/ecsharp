@@ -31,6 +31,7 @@ namespace Loyc.Ecs
 
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {
+			Strict = 0,
 			IgnoreWeirdAttributes = 1, IgnoreIllegalParentheses = 2,
 			Lax = IgnoreWeirdAttributes | IgnoreIllegalParentheses
 		};
@@ -389,15 +390,14 @@ namespace Loyc.Ecs
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
+			// 3. An #of expr a<b,...>, where 'a' is (1) or (2) and each arg 'b' is a 
+			//    complex identifier (if printing in C# style)
 			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
-			//    is (1) or (2); structures like #.(a, b, c) and #.(a, b<c>) do 
-			//    not count as complex identifiers. Note that a.b<c> is 
-			//    structured #of(#.(a, b), c), not #.(a, #of(b, c)). A dotted
+			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
+			//    do not count as complex identifiers. Note that a.b<c> is 
+			//    structured @`'.`(a, #of(b, c)), not #of(@`'.`(a, b), c). A dotted
 			//    expression that starts with a dot, such as .a.b, is structured
-			//    (.a).b rather than .(a.b); unary . has high precedence.
-			// 4. An #of expr a<b,...>, where 
-			//    - 'a' is a complex identifier and not itself an #of expr
-			//    - each arg 'b' is a complex identifier (if printing in C# style)
+			//    (.a).b rather than .(a.b), as unary . has precedence as high as $.
 			// 
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
@@ -406,14 +406,13 @@ namespace Loyc.Ecs
 			// Foo[]     <=> #of(@`[]`, Foo)
 			// Foo[,]    <=> #of(#`[,]`, Foo)
 			// Foo?      <=> #of(@?, Foo)
-			// typeof<X> <=> #of(#typeof, X)
 			//
 			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
-			// doesn't work if System is not imported. It's reasonable to allow #? 
-			// as a synonym for global::System.Nullable, since we have special 
-			// symbols for types like #int32 anyway.
+			// doesn't work if System is not imported. It's reasonable to allow '? 
+			// instead of global::System.Nullable, since we have special symbols 
+			// for types like #int32 anyway.
 			// 
-			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
+			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, #of(b, c)), #of(d, e)), f).
 			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n, p) : HasPAttrsOrParens(n, p)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
@@ -426,41 +425,31 @@ namespace Loyc.Ecs
 			if (CallsWPAIH(n, S.Substitute, 1, p))
 				return true;
 
-			if (CallsMinWPAIH(n, S.Of, 1, p) && (f & ICI.DisallowOf) == 0) {
-				var baseName = n.Args[0];
-				if (!IsComplexIdentifier(baseName, (f & (ICI.DisallowDotted)) | ICI.DisallowOf, p))
+			var args = n.Args;
+			if (CallsMinWPAIH(n, S.Of, 1, p)) {
+				var baseName = args[0];
+				if (!IsSimpleIdentifier(baseName, p))
 					return false;
 				if ((f & ICI.AllowAnyExprInOf) != 0)
 					return true;
-				return OfHasNormalArgs(n, (f & ICI.NameDefinition) != 0, p);
+
+				ICI childFlags = ICI.InOf;
+				if ((f & ICI.NameDefinition) != 0)
+					childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted);
+				for (int i = 1; i < n.ArgCount; i++)
+					if (!IsComplexIdentifier(n.Args[i], childFlags, p))
+						return false;
+				return true;
 			}
-			if (CallsWPAIH(n, S.Dot, p) && (f & ICI.DisallowDotted) == 0 && n.ArgCount.IsInRange(1, 2)) {
-				var args = n.Args;
+			if (CallsWPAIH(n, S.Dot, p) && n.ArgCount == 2 && (f & ICI.DisallowDotted) == 0) {
 				LNode lhs = args[0], rhs = args.Last;
 				// right-hand argument must be simple
-				var rhsFlags = (f & ICI.ExprMode) | ICI.DisallowOf | ICI.DisallowDotted;
-				if ((f & ICI.ExprMode) != 0)
-					rhsFlags |= ICI.AllowParensAround;
+				var rhsFlags = ICI.DisallowDotted;
 				if (!IsComplexIdentifier(args.Last, rhsFlags, p))
 					return false;
-				if ((f & ICI.ExprMode) != 0 && lhs.IsParenthesizedExpr() || (lhs.IsCall && !lhs.Calls(S.Dot) && !lhs.Calls(S.Of)))
-					return true;
-				return IsComplexIdentifier(args[0], (f & ICI.ExprMode), p);
+				return IsComplexIdentifier(args[0], ICI.Default, p);
 			}
 			return false;
-		}
-		internal static bool OfHasNormalArgs(LNode n, bool nameDefinition, Pedantics p)
-		{
-			if (!CallsMinWPAIH(n, S.Of, 1, p))
-				return false;
-
-			ICI childFlags = ICI.InOf;
-			if (nameDefinition)
-				childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted | ICI.DisallowOf);
-			for (int i = 1; i < n.ArgCount; i++)
-				if (!IsComplexIdentifier(n.Args[i], childFlags, p))
-					return false;
-			return true;
 		}
 
 		/// <summary>Checks if 'n' is a legal type parameter definition.</summary>
@@ -605,13 +594,12 @@ namespace Loyc.Ecs
 		{
 			if (name == null)
 				return null;
-			// global::Foo<int>.Bar<T> is structured (((global::Foo)<int>).Bar)<T>
-			// So if #of, get first arg (which cannot itself be #of), then if #dot, 
-			// get second arg.
+			// global::Foo<int>.Bar<T> is structured (global::(Foo<int>)).(Bar<T>)
+			// so if `'.` or `'::` get second arg, then if #of, get first arg.
+			if (name.CallsMin(S.Dot, 1) || name.Calls(S.ColonColon, 2))
+				name = name.Args.Last;
 			if (name.CallsMin(S.Of, 1))
 				name = name.Args[0];
-			if (name.CallsMin(S.Dot, 1))
-				name = name.Args.Last;
 			if (name.IsCall)
 				return KeyNameComponentOf(name.Target);
 			return name.Name;

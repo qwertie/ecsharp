@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.3.1.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -67,7 +67,7 @@ namespace Loyc.Ecs.Parser
 		void DotIndent()
 		{
 			int la0, la1;
-			Check(_startPosition == _lineStartAt, "_startPosition == _lineStartAt");
+			Check(_startPosition == _lineStartAt, "Expected _startPosition == _lineStartAt");
 			#line 30 "EcsLexerGrammar.les"
 			int startPosition = InputPosition;
 			#line default
@@ -809,7 +809,7 @@ namespace Loyc.Ecs.Parser
 			// Line 150: ( &{@char.IsLetter(LA0->@char)} (128..65532) | [\\] [u] HexDigit HexDigit HexDigit HexDigit | [\\] [U] HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit )
 			la0 = LA0;
 			if (la0 >= 128 && la0 <= 65532) {
-				Check(char.IsLetter((char) LA0), "@char.IsLetter(LA0->@char)");
+				Check(char.IsLetter((char) LA0), "Expected @char.IsLetter(LA0->@char)");
 				Skip();
 			} else {
 				la1 = LA(1);
