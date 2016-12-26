@@ -57,23 +57,32 @@ class Class {
 ~~~csharp
 // Output of LeMP
 int _x;
-int X { get {
+int X {
+  get {
     return _x;
-  } set {
+  }
+  set {
     _x = value;
-  } }
+  }
+}
 int _y;
-int Y { get {
+int Y {
+  get {
     return _y;
-  } set {
+  }
+  set {
     _y = value;
-  } }
+  }
+}
 Int32 _z;
-int Z { get {
+int Z {
+  get {
     return _z;
-  } set {
+  }
+  set {
     _z = value;
-  } }
+  }
+}
 ~~~
 </div>
 
@@ -122,17 +131,16 @@ Concatenates identifiers and/or literals to produce an identifier. For example, 
 <div class='sbs' markdown='1'>
 ~~~csharp
 class Foo { 
-	public this(int x) : base(x) 
-	{
-	}
+	public this(int x)
+    : base(x) { }
 }
 ~~~
 
 ~~~csharp
 // Output of LeMP
 class Foo {
-  public Foo(int x) : base(x)
-  { }
+  public Foo(int x)
+     : base(x) { }
 }
 ~~~
 </div>
@@ -437,6 +445,8 @@ void Example() {
   if (a.b?.c.d ?? false) {
     ItsTrue();
   }
+  // Note: the #trivia currently shown in the output 
+  // is automatically erased when printing in C# mode
   if ((F(x)?.c.d ?? 0) > 0) {
     Positive();
   }
@@ -451,6 +461,8 @@ void Example() {
   }
   {
     var F_12 = F(x);
+    // Note: the #trivia currently shown in the output 
+    // is automatically erased when printing in C# mode
     if (((([#trivia_isTmpVar] F_12) != null ? F_12.c.d : null) ?? 0) > 0) {
       Positive();
     }
@@ -460,9 +472,7 @@ void Example() {
 </div>
 </div>
 
-`a.b?.c.d` means `(a.b != null ? a.b.c.d : null)`.
-
-**TODO**: remove this, since it was added to C# 6. **Note**: you can use `noMacro(e)` to disable macros in an expression `e`.
+Eliminates the C# 6 `?.` operator from the output by replacing it with equivalent code. Lowercase identifiers like `a.b` are assumed to be local variables or fields, so a temporary variable is not created to hold their value. Consequently, such variables will be evaluated twice.
 
 ### on_finally, on_throw, etc. ###
 
