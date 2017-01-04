@@ -6,7 +6,7 @@
 <package >
   <metadata>
     <id>ECSharp</id>
-    <version>$version</version>
+    <version>$Version</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://ecsharp.net</projectUrl>
@@ -21,7 +21,7 @@
     <copyright>Copyright 2016</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp</tags>
     <dependencies>
-      <dependency id="LoycCore" version="$version"/>
+      <dependency id="LoycCore" version="$Version"/>
     </dependencies>
   </metadata>
   <files>
