@@ -20,7 +20,15 @@ build_script:
 after_build:
     # Package the LoycCore libraries
     - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
-    # Package ends up in LoycCore.$SEMVER.nupkg
+    # Package ends up in LoycCore.$PKG_VERSION.nupkg
+
+    # Package the ECSharp library
+    - nuget pack -Version %PKG_VERSION% Main\ECSharp.nuspec
+    # Package ends up in ECSharp.$PKG_VERSION.nupkg
+
+    # Package the LeMP binary
+    - nuget pack -Version %PKG_VERSION% Main\LeMP.nuspec
+    # Package ends up in ECSharp.$PKG_VERSION.nupkg
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
