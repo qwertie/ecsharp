@@ -6,7 +6,7 @@
 <package >
   <metadata>
     <id>LoycCore</id>
-    <version>$Version</version>
+    <version>$version$</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.loyc.net</projectUrl>

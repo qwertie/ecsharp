@@ -6,7 +6,7 @@
 <package >
   <metadata>
     <id>LeMP</id>
-    <version>$Version</version>
+    <version>$version$</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://ecsharp.net/lemp/</projectUrl>
@@ -21,8 +21,8 @@
     <copyright>Copyright 2016</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp Lexical Macro Processor LeMP</tags>
     <dependencies>
-      <dependency id="LoycCore" version="$Version"/>
-      <dependency id="ECSharp" version="$Version"/>
+      <dependency id="LoycCore" version="$version$"/>
+      <dependency id="ECSharp" version="$version$"/>
     </dependencies>
   </metadata>
   <files>
