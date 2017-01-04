@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!-- NuGet package specification.
+     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg
+     Publishing: see https://docs.nuget.org/ndocs/create-packages/publish-a-package
+-->
+<package >
+  <metadata>
+    <id>ECSharp</id>
+    <version>$version</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <projectUrl>http://ecsharp.net</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Enhanced C#</summary>
+    <description>Enhanced C# (or EC#) is a liberalization and regularization of the C# language.
+
+    This package contains the Loyc.Ecs.dll core library, which allows you to parse and print EC# code.
+    To expand EC# macros, you need to use the LeMP package as well as this one.</description>
+    <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Loyc Enhanced C# EC# ECSharp</tags>
+    <dependencies>
+      <dependency id="LoycCore" version="$version"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="readme.md" target="readme.txt" />
+    <file src="Bin\Release.NET3\Loyc.Ecs.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET4\Loyc.Ecs.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET45\Loyc.Ecs.*" target="lib\net45\" />
+  </files>
+</package>
