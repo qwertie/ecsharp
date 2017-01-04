@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- NuGet package specification.
-     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg 
+     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg
      Publishing: see https://docs.nuget.org/ndocs/create-packages/publish-a-package
 -->
 <package >
@@ -25,15 +25,24 @@
   </metadata>
   <files>
     <file src="readme.md" target="readme.txt" />
+
     <file src="Lib\DotNet35\Theraot.Core.dll" target="lib\net35-client\" />
-    <file src="Bin\Release.NET3\Loyc.*.dll" target="lib\net35-client\" />
-    <file src="Bin\Release.NET3\Loyc.*.xml" target="lib\net35-client\" />
-    <file src="Bin\Release.NET3\Loyc.*.pdb" target="lib\net35-client\" />
-    <file src="Bin\Release.NET4\Loyc.*.dll" target="lib\net40-client\" />
-    <file src="Bin\Release.NET4\Loyc.*.xml" target="lib\net40-client\" />
-    <file src="Bin\Release.NET4\Loyc.*.pdb" target="lib\net40-client\" />
-    <file src="Bin\Release.NET45\Loyc.*.dll" target="lib\net45\" />
-    <file src="Bin\Release.NET45\Loyc.*.pdb" target="lib\net45\" />
-    <file src="Bin\Release.NET45\Loyc.*.xml" target="lib\net45\" />
+    <file src="Bin\Release.NET3\Loyc.Collections.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET3\Loyc.Essentials.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET3\Loyc.Math.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET3\Loyc.Syntax.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET3\Loyc.Utilities.*" target="lib\net35-client\" />
+
+    <file src="Bin\Release.NET4\Loyc.Collections.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET4\Loyc.Essentials.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET4\Loyc.Math.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET4\Loyc.Syntax.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET4\Loyc.Utilities.*" target="lib\net40-client\" />
+
+    <file src="Bin\Release.NET45\Loyc.Collections.*" target="lib\net45\" />
+    <file src="Bin\Release.NET45\Loyc.Essentials.*" target="lib\net45\" />
+    <file src="Bin\Release.NET45\Loyc.Math.*" target="lib\net45\" />
+    <file src="Bin\Release.NET45\Loyc.Syntax.*" target="lib\net45\" />
+    <file src="Bin\Release.NET45\Loyc.Utilities.*" target="lib\net45\" />
   </files>
 </package>
