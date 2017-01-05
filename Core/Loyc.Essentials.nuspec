@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Loyc.Essentials</id>
+    <version>$version$</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <projectUrl>http://core.loyc.net</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>"Fills in the gaps" in the .NET Base Class Library</summary>
+    <description>Loyc.Essentials is a library that "fills in the gaps" in the core of the .NET Base Class Library. It is especially focused on collections: classes, interfaces, adapters, and extension methods.
+
+    Contributors are welcome: more unit tests, code reviews, and new features are desired, anything relatively small (under about 3000 lines of code) that fits the theme "things that should have been built into the .NET framework, but aren't".</description>
+    <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
+    <dependencies>
+      <!--<dependency id="SampleDependency" version="1.0"/>-->
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="readme.md" target="readme.txt" />
+
+    <file src="Lib\DotNet35\Theraot.Core.dll" target="lib\net35-client\" />
+
+    <file src="Bin\Release.NET3\Loyc.Essentials.*" target="lib\net35-client\" />
+    <file src="Bin\Release.NET4\Loyc.Essentials.*" target="lib\net40-client\" />
+    <file src="Bin\Release.NET45\Loyc.Essentials.*" target="lib\net45\" />
+  </files>
+</package>
