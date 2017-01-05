@@ -28,7 +28,7 @@ after_build:
 
     # Package the LeMP binary
     - nuget pack -Version %PKG_VERSION% LeMP.nuspec
-    # Package ends up in ECSharp.$PKG_VERSION.nupkg
+    # Package ends up in LeMP.$PKG_VERSION.nupkg
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
