@@ -11,7 +11,7 @@
     <summary>Defines numeric and geometric data types.</summary>
     <description>Loyc.Math is a library that supplies you with specialized numeric and geometric data types.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2017</copyright>
     <tags>Loyc Core Math Geometry</tags>
     <dependencies>
       <dependency id="Loyc.Essentials" version="$version$" />

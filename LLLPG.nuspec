@@ -12,7 +12,7 @@
     <description>LLLPG is a recursive-decent parser generator for C#, with Visual Studio integration and a feature set better than ANTLR version 2.
     This package contains the core LLLPG executable, which can be run from the command-line.</description>
     <releaseNotes>See http://ecsharp.net/lllpg/version-history.html</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2017</copyright>
     <tags>Loyc Parser Generator LLLPG</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />

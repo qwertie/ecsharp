@@ -14,7 +14,7 @@
     This package contains the Loyc.Ecs.dll core library, which allows you to parse and print EC# code.
     To expand EC# macros, you need to use the LeMP package as well as this one.</description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2017</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />

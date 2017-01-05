@@ -14,7 +14,7 @@
     provides a framework in which you can run sophisticated algorithms at
     compile-time.</description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2017</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp Lexical Macro Processor LeMP</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />

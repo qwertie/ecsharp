@@ -11,7 +11,7 @@
     <summary>Additional functionality to extend the Loyc core libraries.</summary>
     <description>Loyc.Utilities contains additional functionality that is either (A) not important enough to be placed in Loyc.Essentials or (B) takes Loyc.Collections as a dependency.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2017</copyright>
     <tags>Loyc Core Utilities Adapters Interfaces</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />
