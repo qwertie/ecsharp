@@ -17,7 +17,10 @@
     <copyright>Copyright 2016</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp Lexical Macro Processor LeMP</tags>
     <dependencies>
-      <dependency id="LoycCore" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$" />
+      <dependency id="Loyc.Essentials" version="$version$" />
+      <dependency id="Loyc.Syntax" version="$version$" />
+      <dependency id="Loyc.Utilities" version="$version$" />
       <dependency id="ECSharp" version="$version$"/>
     </dependencies>
   </metadata>
