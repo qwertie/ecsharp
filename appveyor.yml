@@ -50,6 +50,10 @@ after_build:
     - nuget pack -Version %PKG_VERSION% LeMP.nuspec
     # Package ends up in LeMP.$PKG_VERSION.nupkg
 
+    # Package the LLLPG binary
+    - nuget pack -Version %PKG_VERSION% LLLPG.nuspec
+    # Package ends up in LLLPG.$PKG_VERSION.nupkg
+
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
     # - Bin\Release.NET45\Tests.exe 12345
