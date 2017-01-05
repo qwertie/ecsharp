@@ -17,7 +17,9 @@
     <copyright>Copyright 2016</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp</tags>
     <dependencies>
-      <dependency id="LoycCore" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$" />
+      <dependency id="Loyc.Essentials" version="$version$" />
+      <dependency id="Loyc.Syntax" version="$version$" />
     </dependencies>
   </metadata>
   <files>
