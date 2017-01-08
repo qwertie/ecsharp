@@ -6,7 +6,7 @@
 <package >
   <metadata>
     <id>LoycCore</id>
-    <version>2.1.2</version>
+    <version>2.4.2.0</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.loyc.net</projectUrl>
@@ -28,10 +28,8 @@
     <file src="Lib\DotNet35\Theraot.Core.dll" target="lib\net35-client\" />
     <file src="Bin\Release.NET3\Loyc.*.dll" target="lib\net35-client\" />
     <file src="Bin\Release.NET3\Loyc.*.xml" target="lib\net35-client\" />
-    <file src="Bin\Release.NET3\Loyc.*.pdb" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.*.dll" target="lib\net40-client\" />
     <file src="Bin\Release.NET4\Loyc.*.xml" target="lib\net40-client\" />
-    <file src="Bin\Release.NET4\Loyc.*.pdb" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.*.dll" target="lib\net45\" />
     <file src="Bin\Release.NET45\Loyc.*.pdb" target="lib\net45\" />
     <file src="Bin\Release.NET45\Loyc.*.xml" target="lib\net45\" />
