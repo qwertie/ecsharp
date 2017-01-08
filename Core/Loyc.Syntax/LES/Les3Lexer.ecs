@@ -13,7 +13,7 @@ using S = CodeSymbols;
 
 public partial class Les3Lexer
 {
-	[FullLLk, AddCsLineDirectives(false)]
+	[FullLLk, PrematchByDefault]
 	LLLPG (lexer) @{
 	// `@{` invokes LLLPG in ANTLR-style syntax mode, but there are several 
 	// differences; see http://ecsharp.net/lllpg/lllpg-in-antlr-style.html
@@ -29,16 +29,16 @@ public partial class Les3Lexer
 		// Tokens with WhitespaceTag are filtered out by WhitepaceFilter.
 		// We want to filter out newlines inside parentheses and square brackets.
 		{return _brackStack.Last == TokenType.LBrace ? null : WhitespaceTag.Value;};
-	private token SLComment returns [object result] :
+	token SLComment returns [object result] :
 		"//" nongreedy(_)* (@"\\" | ('\r'|'\n'|EOF) =>)
 		{return WhitespaceTag.Value;};
-	[LL(3)] private token MLComment returns [object result] :
+	[LL(3)] token MLComment returns [object result] :
 		"/*" nongreedy(MLComment / Newline(true) / _)* "*/"
 		{return WhitespaceTag.Value;};
 		
 	// Numbers ---------------------------------------------------------------
 	
-	private token Number returns [object result] :
+	token Number returns [object result] :
 		('-' {_isNegative = true;} / {_isNegative = false;})
 		(HexNumber / BinNumber / DecNumber)
 		{UString numberText = Text();}
@@ -52,18 +52,18 @@ public partial class Les3Lexer
 			return ParseLiteral2(suffix, numberText, true);
 		};
 
-	private DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* greedy('_')? ;
+	DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* greedy('_')? ;
 	[inline] HexDigit  : '0'..'9' | 'a'..'f' | 'A'..'F' ;
-	private HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* greedy('_')? ;
+	HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* greedy('_')? ;
 	
 	// _isFloat, _numberBase are no longer used
-	private DecNumber :
+	DecNumber :
 		{_numberBase=10;}
 		(DecDigits | '.' DecDigits =>)
 		( {_isFloat=true;} '.' DecDigits )?
 		greedy( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
 		;
-	private HexNumber() :
+	HexNumber :
 		'0' ('x'|'X') {_numberBase=16;}
 		(HexDigits | '.' HexDigits =>)
 		// Avoid ambiguity with 0x5.Equals(): a dot is not enough
@@ -71,7 +71,7 @@ public partial class Les3Lexer
 			{_isFloat=true;} HexDigits )?
 		greedy( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		;
-	private BinNumber :
+	BinNumber :
 		'0' ('b'|'B') {_numberBase=2;}
 		(DecDigits | '.' DecDigits =>)
 		( {_isFloat=true;} '.' DecDigits )?
@@ -83,18 +83,18 @@ public partial class Les3Lexer
 
 	// Strings ---------------------------------------------------------------
 		
-	private token SQString returns [object result] :
+	token SQString returns [object result] :
 		{_parseNeeded = false;}
 		'\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')) '\'' 
 		{return ParseSQStringValue();};
 	
-	private token DQString returns [object result] :
+	token DQString returns [object result] :
 		{_parseNeeded = false;}
 		(	'"' [ '\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
 			('"' / {_parseNeeded = true;}) )
 		{return ParseStringValue(isTripleQuoted: false);};
 	
-	[LL(4)] private token TQString returns [object result] :
+	[LL(4)] token TQString returns [object result] :
 		{_parseNeeded = true;}
 		{_style = NodeStyle.TDQStringLiteral;}
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
@@ -102,7 +102,7 @@ public partial class Les3Lexer
 			"'''"       nongreedy(Newline(true) / _)* "'''" )
 		{return ParseStringValue(isTripleQuoted: true, les3TQIndents: true);};
 
-	private BQString :
+	BQString :
 		{_parseNeeded = false;}
 		'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`';
 
@@ -110,11 +110,11 @@ public partial class Les3Lexer
 		
 	[inline] extern token OpChar :
 		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.';
-	private token Operator returns [object result] : 
+	token Operator returns [object result] : 
 		('$'|OpChar) OpChar* 
 		{$result = ParseNormalOp();}
 		{if ($result == @@`':`) _type = TT.Colon;};
-	private token SQOperator returns [object result] : 
+	token SQOperator returns [object result] : 
 		"'" LettersOrPunc* 
 		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
 		("'" {
@@ -125,7 +125,7 @@ public partial class Les3Lexer
 
 	// Identifiers, keywords and named literals --------------------------------
 
-	private token Keyword returns [object result] :
+	token Keyword returns [object result] :
 		'.'
 		// Check that the character before '.' is not an identifier character;
 		// LLLPG makes faster code in NextToken if we delay the check until after '.'
@@ -133,7 +133,7 @@ public partial class Les3Lexer
 		IdStartChar+
 		{return (Symbol) Text();};
 
-	private token Id returns [object result] :
+	token Id returns [object result] :
 		{object boolOrNull = NoValue.Value;}
 		idtext:IdCore[ref boolOrNull]
 		(	{saveAndRestore(_startPosition); _startPosition = InputPosition;}
@@ -151,9 +151,9 @@ public partial class Les3Lexer
 	[recognizer { bool ScanIdContChar(); }]
 	token IdContChar : IdStartChar | '0'..'9' | '\'' &!("''");
 
-	private NormalId : IdStartChar greedy(IdContChar)*;
+	NormalId : IdStartChar greedy(IdContChar)*;
 
-	private token IdCore[ref object boolOrNull] returns [UString result] :
+	token IdCore[ref object boolOrNull] returns [UString result] :
 		( BQString {$result = ParseStringCore(false);}
 		| NormalId {
 			$result = Text();
@@ -163,15 +163,15 @@ public partial class Les3Lexer
 		  }
 		);
 
-	private token LettersOrPunc : '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'
+	token LettersOrPunc : '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'
 		|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ;
 
-	private token SpecialLiteral returns [object result] :
+	token SpecialLiteral returns [object result] :
 		"@@" LettersOrPunc+ {return ParseAtAtLiteral(Text());};
 
 	// Shebang (optional feature) --------------------------------------------
 
-	private token Shebang returns [object result] : 
+	token Shebang returns [object result] : 
 		&{InputPosition == 0} "#!" ~('\r'|'\n')* Newline? 
 		{return WhitespaceTag.Value;};
 

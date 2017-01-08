@@ -1,4 +1,4 @@
-﻿#ecs;
+﻿#ecs;private
 #importMacros(Loyc.LLPG);
 using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
 using Loyc;               // optional (for IMessageSink, Symbol, etc.)
@@ -19,7 +19,7 @@ partial class Les3Parser
 	protected new const TT EOF = TT.EOF;
 
 	// Note: verbose messages are only printed when custom tool is given --verbose flag
-	[FullLLk, LL(2), AddCsLineDirectives(false), Verbosity(1)]
+	[FullLLk, LL(2), Verbosity(1), PrematchByDefault]
 	LLLPG (parser(laType: TT, matchType: int, terminalType: Token, allowSwitch: true)) @{
 
 	alias("@" = TT.At);
@@ -79,7 +79,7 @@ partial class Les3Parser
 		}
 	}
 
-	private NewlinesOpt : greedy("\n")*;
+	NewlinesOpt : greedy("\n")*;
 
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
@@ -183,7 +183,7 @@ partial class Les3Parser
 			)*
 		)	{return e;};
 
-	private InfixOperatorName[out Token op] returns [Symbol result]
+	InfixOperatorName[out Token op] returns [Symbol result]
 		:	op=(TT.NormalOp|TT.Assignment|".") "\n"*      {$result = (Symbol) op.Value;}
 		|	&{[Hoist] (TT)LA($LI+1) != TT.Newline} op=":" {$result = (Symbol) op.Value;}
 		|	&!{[Hoist] Continuators.ContainsKey(LT($LI).Value)}
@@ -208,7 +208,7 @@ partial class Les3Parser
 		;
 
 	// Helper rule that parses one of the syntactically special primary expressions
-	private FinishPrimaryExpr[LNode e] returns [LNode result]
+	FinishPrimaryExpr[LNode e] returns [LNode result]
 		:	// call(function)
 			result:CallArgs[e]
 		|	// Indexer / square brackets
@@ -217,7 +217,7 @@ partial class Les3Parser
 			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, rb.EndIndex, lb.StartIndex, rb.EndIndex, NodeStyle.Operator);}
 		;
 
-	private CallArgs[LNode target] returns [LNode result] : 
+	CallArgs[LNode target] returns [LNode result] : 
 		{var endMarker = default(TokenType);}
 		"(" args:ExprList[ref endMarker] ")" 
 		{
@@ -225,7 +225,7 @@ partial class Les3Parser
 			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; };
 		};
 
-	private PrefixExpr[Precedence context] returns [LNode result] 
+	PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
 			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 			e:Expr[PrefixPrecedenceOf(op)]
@@ -241,7 +241,7 @@ partial class Les3Parser
 	// - a prefix operator followed by an Expr
 	// - a { block } in braces
 	// - a [ list  ] in square brackets
-	private Particle[bool isAttribute = false] returns [LNode result]
+	Particle[bool isAttribute = false] returns [LNode result]
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=(TT.Literal|TT.NegativeLiteral) // literal
@@ -275,16 +275,16 @@ partial class Les3Parser
 		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
 
 	// Token lists (TODO: add unit tests)
-	[LL(1)]
-	private TokenList   returns [VList<LNode> result] @init {$result = LNode.List();} :
+	[LL(1), #new]
+	TokenList   returns [VList<LNode> result] @init {$result = LNode.List();} :
 		greedy( result+=TokenListParticle )*;
 	[LL(1)]
-	private TokenListEx returns [VList<LNode> result] :
+	TokenListEx returns [VList<LNode> result] :
 		( t:(","|";") {$result.Add(F.Id(t));} 
 		| result+=TokenListParticle
 		)*;
 	[LL(1)]
-	private TokenListParticle returns [LNode result]
+	TokenListParticle returns [LNode result]
 		:	"(" TokenListEx ")"
 			{ return F.Call(@@`'()`, $TokenListEx, $"(".StartIndex, $")".EndIndex); }
 		/	SquareBracketList                { return $SquareBracketList; }
@@ -309,7 +309,7 @@ partial class Les3Parser
 		}
 		(=>); // Simplify output by not considering what comes afterward
 
-	private Continuator returns [LNode result] :
+	Continuator returns [LNode result] :
 		"\n"?
 		kw:ContinuatorKeyword  {var opName = Continuators[kw.Value];}
 		(=>) // simplify output by preventing an unneeded check in KeywordExpression
@@ -321,12 +321,12 @@ partial class Les3Parser
 			/	               {$result = F.Call(opName, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);})
 		);
 	
-	private BracedBlock returns [LNode result] : 
+	BracedBlock returns [LNode result] : 
 		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
 		"{" stmts:=StmtList "}" 
 		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.Statement);};
 
-	private ContinuatorKeyword returns [Token result] :
+	ContinuatorKeyword returns [Token result] :
 		&{[Hoist] Continuators.ContainsKey(LT($LI).Value)} result:TT.Id;
 
 	}; // end LLLPG parser

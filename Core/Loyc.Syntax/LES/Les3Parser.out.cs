@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.4.0.1
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.4.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -596,7 +596,7 @@ namespace Loyc.Syntax.Les
 			Token lit_lsqb = default(Token);
 			Token lit_rsqb = default(Token);
 			LNode result = default(LNode);
-			lit_lsqb = Match((int) TT.LBrack);
+			lit_lsqb = MatchAny();
 			var list = ExprList();
 			lit_rsqb = Match((int) TT.RBrack);
 			result = F.Call(S.Array, list, lit_lsqb.StartIndex, lit_rsqb.EndIndex, lit_lsqb.StartIndex, lit_lsqb.EndIndex).SetStyle(NodeStyle.Expression);
@@ -604,7 +604,7 @@ namespace Loyc.Syntax.Les
 		}
 		static readonly HashSet<int> TokenList_set0 = NewSet((int) EOF, (int) TT.Comma, (int) TT.Newline, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon);
 	
-		VList<LNode> TokenList()
+		new VList<LNode> TokenList()
 		{
 			TT la0;
 			VList<LNode> result = default(VList<LNode>);
@@ -681,7 +681,7 @@ namespace Loyc.Syntax.Les
 			Token kw = default(Token);
 			LNode result = default(LNode);
 			var args = new VList<LNode>();
-			kw = Match((int) TT.Keyword);
+			kw = MatchAny();
 			// line 300
 			var keyword = kw.Value as Symbol;
 			// Line 302: ((EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen|TT.Semicolon) =>  / Expr)
