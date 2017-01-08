@@ -1,4 +1,4 @@
-// Generated from LinqToCollections.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.4.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,7 +21,7 @@ namespace Loyc.Collections
 	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
 	/// return the last item directly.
 	/// </remarks>
-	public static class LinqToCollections
+	public static partial class LinqToLists
 	{
 		// *** Reminder: do not edit the generated output! ***
 		public static int Count<T>(this IList<T> list)
@@ -72,7 +72,7 @@ namespace Loyc.Collections
 				throw new EmptySequenceException();
 			return list[last];
 		}
-		/// <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
+		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
 		public static T LastOrDefault<T>(this IList<T> list, T defaultValue = default(T))
 		{
 			int last = list.Count - 1;
@@ -88,7 +88,7 @@ namespace Loyc.Collections
 				throw new EmptySequenceException();
 			return list[last];
 		}
-		/// <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
+		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
 		public static T LastOrDefault<T>(this IReadOnlyList<T> list, T defaultValue = default(T))
 		{
 			int last = list.Count - 1;
@@ -276,7 +276,8 @@ namespace Loyc.Collections
 			return SkipNowWhile((IList<T>) list, predicate);
 		}
 	
-		/// <summary>Copies the contents of an IListSource or IReadOnlyList to an array.</summary>
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Copies the contents of a list to an array.</summary>
 		public static T[] ToArray<T>(this IReadOnlyList<T> c)
 		{
 			var array = new T[c.Count];
@@ -284,6 +285,17 @@ namespace Loyc.Collections
 				array[i] = c[i];
 			return array;
 		}
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Copies the contents of a list to an array.</summary>
+		public static T[] ToArray<T>(this IList<T> c)
+		{
+			var array = new T[c.Count];
+			for (int i = 0; i < array.Length; i++)
+				array[i] = c[i];
+			return array;
+		}
+	
+		public static T[] ToArray<T>(this IListAndListSource<T> c) { return ToArray((IReadOnlyList<T>) c); }
 	
 		/// <summary>Copies the contents of an <see cref="INegListSource{T}"/> to an array.</summary>
 		public static T[] ToArray<T>(this INegListSource<T> c)

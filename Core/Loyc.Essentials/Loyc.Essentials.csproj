@@ -160,10 +160,10 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Collections\ExtensionMethods\LinqToCollections.out.cs">
+    <Compile Include="Collections\ExtensionMethods\LinqToLists.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>LinqToCollections.ecs</DependentUpon>
+      <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
     <Compile Include="Collections\HelperClasses\SelectListSource.out.cs">
       <AutoGen>True</AutoGen>
@@ -263,6 +263,7 @@
     </Compile>
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
+    <Compile Include="Utilities\IoC.cs" />
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
@@ -283,9 +284,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Collections\ExtensionMethods\LinqToCollections.ecs">
+    <None Include="Collections\ExtensionMethods\LinqToLists.ecs">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>LinqToCollections.out.cs</LastGenOutput>
+      <LastGenOutput>LinqToLists.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>

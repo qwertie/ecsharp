@@ -70,7 +70,7 @@ namespace Loyc.MiniTest
 							Console.WriteLine("{0} while running {1}.{2}:",
 								exc.GetType().Name, o.GetType().Name, method.Name);
 							Console.WriteLine(exc.Message);
-							Console.Write(exc.DataList());
+							Console.Write(exc.DataList("  ", " = ", "\n"));
 							Console.ForegroundColor = old;
 						}
 					}

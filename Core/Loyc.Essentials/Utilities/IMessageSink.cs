@@ -128,11 +128,12 @@ namespace Loyc
 		Verbose = 10,     // log4net: Verbose = Finest = 10000
 		_Finer = 20,      // log4net: Finer = 20000
 		Debug = 30,       // log4net: Debug = Fine = 30000
-		_Info = 40,       // log4net: Info = 40000
+		Common = 40,      // log4net: Info = 40000
 		Note = 50,        // log4net: Notice = 50000
 		Warning = 60,     // log4net: Warning = 60000
+		Uncommon = 65,    // Uncommon event: No log4net equivalent
 		Error = 70,       // log4net: Error = 70000
-		_Severe = 80,     // log4net: Severe = 80000
+		Rare = 80,        // log4net: Severe = 80000
 		Critical = 90,    // log4net: Critical = 90000
 		_Alert = 100,     // log4net: Alert = 100000
 		Fatal = 110,      // log4net: Fatal = 110000

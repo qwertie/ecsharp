@@ -8,7 +8,7 @@ using Loyc.Collections.Impl;
 namespace Loyc.Collections
 {
 	// Not in EnumerableExt because LCExt is for adapters and BufferedSequence<T> implements IListSource<T>
-	public static partial class LCExt
+	public static partial class LinqToLists
 	{
 		public static BufferedSequence<T> Buffered<T>(this IEnumerator<T> source)
 		{

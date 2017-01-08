@@ -14,7 +14,7 @@ namespace Loyc.Collections
 	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
 	/// return the last item directly.
 	/// </remarks>
-	public static class LinqToCollections
+	public static partial class LinqToLists
 	{
 		// *** Visual Studio lets me edit the generated output, so I'm sprinkling notes to myself not to do that.
 		unroll (IList in (IList<T>, IReadOnlyCollection<T>, INegListSource<T>))
@@ -50,7 +50,7 @@ namespace Loyc.Collections
 			return FirstOrDefault((IListSource<T>)list, defaultValue);
 		}
 
-		replace LastMethods($IList<T>)
+		define LastMethods($IList<T>)
 		{
 			// *** Reminder: do not edit the generated output! ***
 			/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
@@ -62,7 +62,7 @@ namespace Loyc.Collections
 					throw new EmptySequenceException();
 				return list[last];
 			}
-			/// <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
+			/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
 			public static T LastOrDefault<T>(this $IList<T> list, T defaultValue = default(T))
 			{
 				int last = list.Count - 1;
@@ -94,7 +94,7 @@ namespace Loyc.Collections
 			return last < list.Min ? defaultValue : list[last];
 		}
 
-		replace SkipAndTake($IListSource<T>, $Slice<T>)
+		define SkipAndTake($IListSource<T>, $Slice<T>)
 		{
 			// *** Reminder: do not edit the generated output! ***
 			/// <summary>Skips the specified number of elements immediately and 
@@ -176,15 +176,23 @@ namespace Loyc.Collections
 			return SkipNowWhile((IList<T>)list, predicate);
 		}
 
-		/// <summary>Copies the contents of an IListSource or IReadOnlyList to an array.</summary>
-		public static T[] ToArray<T>(this IReadOnlyList<T> c)
+		define DefineToArray($IList<T>)
 		{
-			var array = new T[c.Count];
-			for (int i = 0; i < array.Length; i++)
-				array[i] = c[i];
-			return array;
+			// *** Reminder: do not edit the generated output! ***
+			/// <summary>Copies the contents of a list to an array.</summary>
+			public static T[] ToArray<T>(this $IList<T> c)
+			{
+				var array = new T[c.Count];
+				for (int i = 0; i < array.Length; i++)
+					array[i] = c[i];
+				return array;
+			}
 		}
+		DefineToArray(IReadOnlyList<T>);
+		DefineToArray(IList<T>);
 		
+		public static T[] ToArray<T>(this IListAndListSource<T> c) { return ToArray((IReadOnlyList<T>)c); }
+
 		/// <summary>Copies the contents of an <see cref="INegListSource{T}"/> to an array.</summary>
 		public static T[] ToArray<T>(this INegListSource<T> c)
 		{
