@@ -3,7 +3,18 @@ title: LLLPG Version History
 layout: article
 ---
 
-_Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
+_Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which change more frequently.
+
+### LLLPG v2.4.2: January 8, 2017 ###
+
+- Added `PrematchByDefault` option, to perform cross-rule prematch analysis on rules that are not marked `public`, `protected` or `internal`. This optimization, which replaces `Match()` calls with `Skip()` calls, previously required a rule to be explicitly marked `private`.
+- `AddCsLineDirectives` option is now `false` by default.
+- `private` is no longer removed in output of rules.
+
+### LLLPG v2.4.0.1: December 26, 2016 ###
+
+- One can now add a string attribute to `&{semantic predicates}` to control the error message produced by `Check()`, or use `[NoCheck]` to avoid emitting `Check()`. One can also use the global `NoCheckByDefault` code-gen option to eliminate all `Check()` calls. 
+- A hard coded error message was eliminated from `BaseParser`/`BaseLexer` in Loyc.Syntax.dll.
 
 ### LLLPG v2.3.1: December 11, 2016 ###
 
