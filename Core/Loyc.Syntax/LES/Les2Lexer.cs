@@ -761,9 +761,9 @@ namespace Loyc.Syntax.Les
 			int length = op.Length;
 			char first = op[0], last = op[length - 1];
 			if (first == '\'') {
-				Debug.Assert(length > 1);
+				Debug.Assert(length > 1 || this is Les3Lexer);
 				length--;
-				first = op[1];
+				first = op.TryGet(1, '\0');
 				name = (Symbol)op;
 			} else {
 				name = (Symbol)("'" + op);

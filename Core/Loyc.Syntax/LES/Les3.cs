@@ -273,17 +273,15 @@ namespace Loyc.Syntax.Les
 			return prec;
 		}
 
+		// Note: continuators cannot be used as binary operator names
 		internal static readonly HashSet<Symbol> ContinuatorOps = new HashSet<Symbol> {
-			(Symbol)"'else",  (Symbol)"'elseif", (Symbol)"'elsif",
+			(Symbol)"'else",  (Symbol)"'elsif",
 			(Symbol)"'catch", (Symbol)"'except", (Symbol)"'finally",
-			(Symbol)"'where", (Symbol)"'with",   (Symbol)"'without",
-			(Symbol)"'until", (Symbol)"'then",   (Symbol)"'over",
-			(Symbol)"'into",  (Symbol)"'onto",   (Symbol)"'upon",
-			(Symbol)"'or", (Symbol)"'and", (Symbol)"'but",
-			(Symbol)"'in", (Symbol)"'out", (Symbol)"'to", (Symbol)"'from",
-			(Symbol)"'on", (Symbol)"'off", (Symbol)"'by", (Symbol)"'via",
-			(Symbol)"'so", (Symbol)"'at",  (Symbol)"'of",
+			(Symbol)"'while", (Symbol)"'until",
+			(Symbol)"'plus",  (Symbol)"'minus",
+			(Symbol)"'or", (Symbol)"'and", (Symbol)"'but", (Symbol)"'so",
 		};
+
 		internal static readonly Dictionary<object, Symbol> Continuators =
 			ContinuatorOps.ToDictionary(kw => (object)(Symbol)kw.Name.Substring(1), kw => kw);
 

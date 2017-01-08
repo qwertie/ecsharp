@@ -21,8 +21,14 @@ namespace Loyc.Syntax.Les
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 
-		protected LNode Op(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
-
+		protected LNode Op(LNode node)
+		{
+			return node.SetBaseStyle(NodeStyle.Operator);
+		}
+		protected LNode KeywordExpr(LNode node)
+		{
+			return node.SetBaseStyle(NodeStyle.Special);
+		}
 		protected LNode OnNewLine(LNode node)
 		{
 			return node.PlusAttrBefore(F.TriviaNewline);
@@ -189,21 +195,75 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void SingleQuotedBinaryOps()
+		public void WordOperators()
 		{
-			Stmt ("x '* 2 '+ 1", F.Call(S.Add, F.Call(S.Mul, x, two), one));
-			Stmt ("a '>= 0 '&& b '> 1", F.Call(S.And, F.Call(S.GE, a, zero), F.Call(S.GT, b, one)));
-			Exact("a '*s b '>u c", F.Call("'>u", F.Call("'*s", a, b), c));
+			Exact("a b c", Op(F.Call("'b", a, c)));
+			Exact("a is b as c", Op(F.Call("'is", a, Op(F.Call("'as", b, c)))));
+			Exact("{\n  a\n} foo_bar (b)", Op(F.Call("'foo_bar", F.Braces(a), F.InParens(b))));
+			
+			// Uppercase and digits are not supported in operator names
+			Exact("`'f00`(a, b)", Op(F.Call("'f00", a, b)));
+			Exact("`'FOO`(a, b)", Op(F.Call("'FOO", a, b)));
 		}
 
 		[Test]
-		public void SingleQuotedNamedOps()
+		public void InvalidOperators()
 		{
-			Exact(@"a 'x b 'y c",           Op(F.Call(_("'x"), a, Op(F.Call(_("'y"), b, c)))));
-			Exact(@"a 'X b 'Y c",           Op(F.Call(_("'Y"), Op(F.Call(_("'X"), a, b)), c)));
-			Exact(@"a 'implies b 'Likes c", Op(F.Call(_("'implies"), a, Op(F.Call(_("'Likes"), b, c)))));
-			Exact(@"a 'implies b == c",     Op(F.Call(_("'implies"), a, Op(F.Call(S.Eq, b, c)))));
-			Exact(@"a 'Likes b && b 'Likes c", Op(F.Call(S.And, Op(F.Call(_("'Likes"), a, b)), Op(F.Call(_("'Likes"), b, c)))));
+			// Not usable as prefix operators: ? = > <
+			Exact("Foo(`'?`(x), `'>`(a), `'<`(b), `'=`(c))",
+				F.Call(Foo, Op(F.Call("'?", x)), Op(F.Call("'>", a)),
+				            Op(F.Call("'<", b)), Op(F.Call("'=", c))));
+			Test(Mode.Expr, 1, "?Foo", Op(F.Call("'?", Foo)));
+			Test(Mode.Expr, 1, ">Foo", Op(F.Call("'>", Foo)));
+			Test(Mode.Expr, 1, "<Foo", Op(F.Call("'<", Foo)));
+			Test(Mode.Expr, 1, "=Foo", Op(F.Call("'=", Foo)));
+			
+			// Derived operators of ? = > < can't be prefix operators either
+			Exact("Foo(`'??`(x), `'>=`(a), `'<=`(b), `'==`(c))",
+				F.Call(Foo, Op(F.Call("'??", x)), Op(F.Call("'>=", a)),
+				            Op(F.Call("'<=", b)), Op(F.Call("'==", c))));
+			Test(Mode.Expr, 1, "??Foo", Op(F.Call("'??", Foo)));
+
+			// Try to provoke printer into making invalid output
+			// "Prefix word operator"
+			Exact("`'hello`(x)", Op(F.Call("'hello", x)));
+			// "Suffix word operator"
+			Exact("`'sufsuf`(x)", Op(F.Call("'sufsuf", x)));
+			// "Prefix combo operator"
+			Exact("`'ref==`(x)", Op(F.Call("'ref==", x)));
+			// "Suffix combo operator"
+			Exact("`'suf+suf`(x)", Op(F.Call("'suf+suf", x)));
+			// "Binary suffix operator"
+			Exact("`'++suf`(a, b)", Op(F.Call("'++suf", a, b)));
+			// Invalid combo operator
+			Exact(@"`'>s`(a, b)",  Op(F.Call(_("'>s"), a, b)));
+
+			// Single-quoted binary operators no longer exist
+			Test(Mode.Expr, 1, "a 'x b", a);
+
+			// Comments as operators
+			Exact(@"`'/*`(a, b)",  Op(F.Call(_("'/*"), a, b)));
+			Exact(@"`'+/*`(a, b)", Op(F.Call(_("'+/*"), a, b)));
+			Exact(@"`'//`(a, b)",  Op(F.Call(_("'//"), a, b)));
+
+			// \ and # are not valid punctuation in operators
+			Stmt (@"`'/\\`(b)", Op(F.Call(_(@"'/\"), b)));
+			Stmt (@"`'#`(x)", Op(F.Call(_(@"'#"), x)));
+		}
+
+		[Test]
+		public void ComboOperators()
+		{
+			// Precedence is determined by the punctuation portion of the operator
+			Exact("x s> 1", F.Call("'s>", x, one));
+			Exact("(a) code== [b]", Op(F.Call("'code==", F.InParens(a), F.Call(S.Array, b))));
+			Exact("$x code== a + b", F.Call("'code==", F.Call(S.Substitute, x), F.Call(S.Add, a, b)));
+			Exact("a + 1 s> b && c", Op(F.Call(S.And, Op(F.Call("'s>", Op(F.Call(S.Add, a, one)), b)), c)));
+			Exact("c && $x code== a + b", F.Call(S.And, c, F.Call("'code==", F.Call(S.Substitute, x), F.Call(S.Add, a, b))));
+			// A space is required after a combo operator. Whitespace doesn't count, but a newline does
+			Expr ("x s>1", F.Call("'s>", x, one), 1);
+			Expr ("x s>\n1", F.Call("'s>", x, OnNewLine(one)));
+			Exact("x s> \n1", F.Call("'s>", x, OnNewLine(one)));
 		}
 
 		[Test]
@@ -237,19 +297,6 @@ namespace Loyc.Syntax.Les
 		{
 			Expr("a-b", F.Call(S.Sub, a, b));
 			Expr("x-2", F.Call(S.Sub, x, F.Literal(2)));
-		}
-
-		[Test]
-		public void TrickyPrinterCases()
-		{
-			// Gotta be careful how we print operators that appear to start comments,
-			// and suffix operators used as prefix/infix.
-			Exact(@"a '+/* b", Op(F.Call(_("'+/*"), a, b)));
-			Exact(@"a '>s b",  Op(F.Call(_("'>s"), a, b)));
-			Exact(@"a '/* b",  Op(F.Call(_("'/*"), a, b)));
-			Exact(@"a '// b",  Op(F.Call(_("'//"), a, b)));
-			Exact(@"a '++suf b", Op(F.Call(_("'++suf"), a, b)));
-			Stmt (@"`'/\\`(b)", Op(F.Call(_(@"'/\"), b)));
 		}
 
 		[Test]
@@ -376,63 +423,101 @@ namespace Loyc.Syntax.Les
 		#region Block expressions, juxtaposition, and keyword statements
 
 		[Test]
-		public void BlockCallExpressions()
-		{
-			Exact("a (b) {\n  c\n}", F.Call(a, b, F.Braces(c)));
-			Exact("a (b, c) { }", F.Call(a, b, c, F.Braces()));
-			Exact("Foo = a (b) {\n  c\n}", F.Call(S.Assign, Foo, F.Call(a, b, F.Braces(c))));
-			Exact("Foo = a (b) {\n  c\n} + x", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(a, b, F.Braces(c)), x)));
-			Exact("Foo = if (c) {\n  a\n} else {\n  b\n}", F.Call(S.Assign, Foo, F.Call(_("if"), c, F.Braces(a), F.Call(_("'else"), F.Braces(b)))));
-			Exact("Foo = quote {\n  a\n}", F.Call(S.Assign, Foo, F.Call(_("quote"), F.Braces(a))));
-			Exact("Foo = do {\n  a\n} where(b)", F.Call(S.Assign, Foo, F.Call(_("do"), F.Braces(a), F.Call(_("'where"), b))));
-		}
-
-		[Test]
-		public void BlockExpressionsWithoutOptionalSemicolon()
-		{
-			Test(Mode.Stmt, 0, "a (b) { c; }\n a { c; }\n a()", F.Call(a, b, F.Braces(c)), 
-			                                                     F.Call(a, F.Braces(c)), F.Call(a));
-		}
-
-		[Test]
 		public void KeywordStatements()
 		{
-			Exact(".return (x + 1)",  F.Call(".return", F.InParens(F.Call(S.Add, x, one))).SetBaseStyle(NodeStyle.Special));
-			Exact(".return x + 1",     F.Call(".return", F.Call(S.Add, x, one)).SetBaseStyle(NodeStyle.Special));
-			Exact(".if Foo {\n  a\n}", F.Call(".if", Foo, F.Braces(a)).SetBaseStyle(NodeStyle.Special));
-			Exact(".if Foo {\n  a\n} else {\n  b\n}", F.Call(".if", Foo, F.Braces(a), 
-				F.Call("'else", F.Braces(b))).SetBaseStyle(NodeStyle.Special));
-			Stmt (".class Foo!T where T : IFoo {\n  a\n}", F.Call(".class", 
-				F.Call("'where", F.Of(Foo, T), F.Call(S.Colon, T, F.Id("IFoo"))), 
-				F.Braces(a)).SetBaseStyle(NodeStyle.Special));
+			LNode code;
+			Exact(".on_catch Foo()",   KeywordExpr(F.Call(".on_catch", F.Call(Foo))));
+			Test(Mode.Exact, 0, ".return\nFoo()", KeywordExpr(F.Call(".return")), F.Call(Foo));
+			Exact(".return (x + 1)",   KeywordExpr(F.Call(".return", F.InParens(F.Call(S.Add, x, one)))));
+			Exact(".return x + 1",     KeywordExpr(F.Call(".return", F.Call(S.Add, x, one))));
+			// Keyword names can only contain letters and underscores
+			Exact("`.r3turn`(x - 1)",  KeywordExpr(F.Call(".r3turn", F.Call(S.Sub, x, one))));
+			Exact(".if Foo {\n  a\n}", KeywordExpr(F.Call(".if", Foo, F.Braces(a))));
+			Exact(".if Foo {\n  a\n} else {\n  b\n}", KeywordExpr(F.Call(".if", Foo, F.Braces(a), 
+				F.Call("'else", F.Braces(b)))));
+			code = KeywordExpr(F.Call(".class",
+				F.Call("'where", F.Of(Foo, T), F.Call(S.Colon, T, F.Id("IFoo"))),
+				F.Braces(a)));
+			Stmt (".class Foo!T where T : IFoo {\n  a\n}", code);
+			code = F.Braces(
+				KeywordExpr(F.Call(".while", c, F.Braces(F.Id("body")))),
+				F.Call("andSoOn"));
+			Stmt("{\n"+
+			     "  .while c {\n    body\n  }\n"+
+			     "  andSoOn()\n"+
+				 "}", code);
+			if (this is Les3ParserTests) { // TODO: make printer support newlines in kw exprs
+				code = F.Braces(
+					KeywordExpr(F.Call(".while", c, OnNewLine(F.Braces(F.Id("body"))))),
+					F.Call("andSoOn"));
+				Stmt("{\n"+
+					 "  .while c\n  {\n    body\n  }\n"+
+					 "  andSoOn()\n"+
+					 "}", code);
+			}
+			code = F.Braces(
+				KeywordExpr(F.Call(".if", c, 
+				  F.Braces(F.Id("then")),
+				  F.Call("'else",
+				    F.Braces(F.Id("else"))))),
+				F.Call("andSoOn"));
+			Stmt("{\n"+
+			     "  .if c {\n    then\n  } else {\n  else;\n}\n"+
+			     "  andSoOn()\n"+
+				 "}", code);
+			if (this is Les3ParserTests) { // TODO: make printer support newlines in kw exprs
+				code = F.Braces(
+					KeywordExpr(F.Call(".if", c, 
+					  OnNewLine(F.Braces(F.Id("then"))),
+					  OnNewLine(F.Call("'else",
+						OnNewLine(F.Braces(F.Id("else"))))))),
+					F.Call("andSoOn"));
+				Stmt("{\n"+
+					 "  .if c\n  {\n    then\n  }\n"+
+					 "  else\n  {\n  else;\n}\n"+
+					 "  andSoOn()\n"+
+					 "}", code);
+			}
 		}
 
 		[Test]
-		public void KeywordStatementsWithNestedBlockCalls()
+		public void KeywordStmtWithMissingExpr()
 		{
-			// Check that block-calls ARE allowed inside parens and bracks, even 
-			// though they are not allowed at the top level.
-			Exact(".return (Foo { }) { }", F.Call(".return", 
-				F.InParens(F.Call(Foo, F.Braces())), F.Braces()).SetBaseStyle(NodeStyle.Special));
-			Exact(".return a(Foo { }) { }", F.Call(".return", 
-				F.Call(a, F.Call(Foo, F.Braces())), F.Braces()).SetBaseStyle(NodeStyle.Special));
-			Exact(".return [Foo { }] + x[Foo { }] { }", F.Call(".return", F.Call(S.Add, 
-				F.Call(S.Array, F.Call(Foo, F.Braces())), F.Call(S.IndexBracks, x, F.Call(Foo, F.Braces()))),
-				F.Braces()).SetBaseStyle(NodeStyle.Special));
-			// A block can also appear as a particle
-			Exact(".return a + {\n  b\n} { }", F.Call(".return", F.Call(S.Add, a, F.Braces(b)), F.Braces()).SetBaseStyle(NodeStyle.Special));
-			Exact(".return {\n  b\n} { }",     F.Call(".return",                  F.Braces(b), F.Braces()).SetBaseStyle(NodeStyle.Special));
+			// Here, the braced block counts as the initial expression
+			var stmt = KeywordExpr(F.Call(".try",
+						   F.Braces(F.Call(Foo)),
+						   F.Call("'catch", F.Id("Exception"), F.Braces())));
+			Exact(".try {\n  Foo()\n} catch Exception { }", stmt);
+			if (this is Les3ParserTests) { // TODO: make printer support this
+				// But the newline here means that the initial expression is missing
+				stmt = KeywordExpr(F.Call(".try",
+						   OnNewLine(F.Braces(F.Call(Foo))),
+						   F.Call("'catch", F.Id("Exception"), F.Braces())));
+				Exact(".try\n{\n  Foo()\n} catch Exception { }", stmt);
+			}
+			// TODO: try to trick printer into printing newlines that make a keyword statement invalid
+			// TODO: try to trick printer into printing something with invalid continuators
 		}
 
 		[Test]
-		public void KeywordStatementPrinterCheck()
+		public void AvoidKeywordStatementAmbiguity()
 		{
-			// Make sure the printer doesn't allow a block call directly inside a keyword statement
-			Exact(".return Foo({ }) { }", F.Call(".return", 
-				F.Call(Foo, F.Braces()), F.Braces()).SetBaseStyle(NodeStyle.Special));
-			Exact(".return (Foo { };) + x({ }) { }", F.Call(".return", F.Call(S.Add,
-				F.Tuple(F.Call(Foo, F.Braces())), F.Call(x, F.Braces())),
-				F.Braces()).SetBaseStyle(NodeStyle.Special));
+			if (this is Les3ParserTests) // TODO: make printer support this
+				Test(Mode.Exact, 0, ".return\n{ }", KeywordExpr(F.Call(".return", OnNewLine(F.Braces()))));
+			Test(Mode.Exact, 0, ".return;\n{ }", KeywordExpr(F.Call(".return")), F.Braces());
+			if (this is Les3ParserTests) // Printer prefers semicolons
+				Test(Mode.Stmt , 0, ".return\n@@ { }", KeywordExpr(F.Call(".return")), F.Braces());
+			Test(Mode.Exact, 0, ".if true;\n{ }", KeywordExpr(F.Call(".if", F.True)), F.Braces());
+			Test(Mode.Exact, 0, "{\n  .return;\n  { }\n}", F.Braces(KeywordExpr(F.Call(".return")), F.Braces()));
+		}
+
+		[Test]
+		public void DotIdentifierIsKeyword()
+		{
+			Exact("abc.foo", F.Dot(F.Id("abc"), F.Id("foo")));
+			Test(Mode.Stmt, 1, "123 .foo", F.Literal(123)); // error
+			// Printer should add a space both before and after the dot
+			Exact("123 . foo", F.Dot(F.Literal(123), F.Id("foo")));
 		}
 
 		#endregion
@@ -449,11 +534,21 @@ namespace Loyc.Syntax.Les
 			Exact("-x** +x", F.Call(S.Exp, F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)));
 			// Challenges involving `.`
 			Exact("x.x", F.Dot(x, x));
-			Exact("2 .x", F.Dot(two, x));
 			Exact("x. 2", F.Dot(x, two));
+			Exact("2 . x", F.Dot(two, x));
 			Exact("1 . 2", F.Dot(one, two));
-			Exact("1 'x. 2", F.Call("'x.", one, two));
-			Exact("@@inf.d .Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+			Exact("1 x. 2", F.Call("'x.", one, two));
+			Exact("@@inf.d . Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+		}
+
+		[Test]
+		public void TrickPrinterWithParens()
+		{
+			// Parens attributes on operator targets
+			Exact("(`'-`)(x)",      Op(F.Call(F.InParens(F.Id(S.Sub)), x)));
+			Exact("(`'++suf`)(x)",  Op(F.Call(F.InParens(F.Id(S.PostInc)), x)));
+			Exact("(`'+`)(a, b)",   Op(F.Call(F.InParens(F.Id(S.Add)), a, b)));
+			Exact("(`.foo`)(a, b)", Op(F.Call(F.InParens(F.Id(".foo")), a, b)));
 		}
 
 		[Test]
@@ -478,7 +573,7 @@ namespace Loyc.Syntax.Les
 			node = F.Call(F.Id(S.Eq).PlusAttr(                 F.Trivia(S.TriviaMLComment, "[")).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "]")), 
 			                 Foo, x.PlusAttrs(F.TriviaNewline, F.Trivia(S.TriviaMLComment, "x"))
 			                                 ).PlusAttr(F.Trivia(S.TriviaMLComment, " before ")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " after "));
-			Exact("/* before */Foo /*[*/==\t//]\n /*x*/x /* after */", node);
+			Exact("/* before */Foo /*[*/==\t//]\n/*x*/x /* after */", node);
 
 			node = F.Call(Foo).PlusAttrs(a, F.Trivia(S.TriviaSLComment, "Comment after a"),
 				b, F.Trivia(S.TriviaMLComment, "Comment before c"), c);

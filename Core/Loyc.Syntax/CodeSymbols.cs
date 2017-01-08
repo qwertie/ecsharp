@@ -312,7 +312,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");   //!< "#trivia_forwardedProperty" e.g. get ==> _x; <=> [#trivia_forwardedProperty] get(@`==>`(_x));
 		/// `[#trivia_rawText("eat my shorts!")] x;` is printed as "eat my shorts!x;".
 		public static readonly Symbol TriviaRawText = GSymbol.Get("#trivia_rawText");                 //!< "#trivia_rawText"
-		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< "#trivia_C#RawText" for C# only
+		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< #trivia_C#RawText("stuff") for C# only
+		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("#trivia_C#PPRawText");         //!< #trivia_C#PPRawText("#stuff") for C# only
 		[Obsolete]
 		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");     //!< "#trivia_rawTextBefore"
 		[Obsolete]

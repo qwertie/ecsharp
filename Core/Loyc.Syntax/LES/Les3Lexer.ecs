@@ -115,11 +115,23 @@ public partial class Les3Lexer
 		{$result = ParseNormalOp();}
 		{if ($result == @@`':`) _type = TT.Colon;};
 	private token SQOperator returns [object result] : 
-		"'" LettersOrPunc+ // at least one letter/punc required so that 
-		                   // sequences like '(...) are reserved for future use
-		{return ParseNormalOp();};
+		"'" LettersOrPunc* 
+		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
+		("'" {
+			_type = TT.Unknown;
+			ErrorSink.Write(Severity.Error, IndexToPositionObject(InputPosition-1), "Expected exactly one character inside quotes");
+		})?
+		{var t = _type; ParseNormalOp(); _type = t; return _value;};
 
-	// Identifiers and named literals ------------------------------------------
+	// Identifiers, keywords and named literals --------------------------------
+
+	private token Keyword returns [object result] :
+		'.'
+		// Check that the character before '.' is not an identifier character;
+		// LLLPG makes faster code in NextToken if we delay the check until after '.'
+		&{[Hoist] InputPosition < 2-$LI || !Try_ScanIdContChar($LI-2)}
+		IdStartChar+
+		{return (Symbol) Text();};
 
 	private token Id returns [object result] :
 		{object boolOrNull = NoValue.Value;}
@@ -135,11 +147,11 @@ public partial class Les3Lexer
 		{return boolOrNull != NoValue.Value ? boolOrNull : IdToSymbol(idtext);};
 
 	// LES3 might not officially treat # as an identifier character, but it's handy for now
-	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#' ;
+	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#';
+	[recognizer { bool ScanIdContChar(); }]
+	token IdContChar : IdStartChar | '0'..'9' | '\'' &!("''");
 
-	private NormalId : 
-		IdStartChar 
-		greedy(IdStartChar | '0'..'9' | '\'' &!("''"))*;
+	private NormalId : IdStartChar greedy(IdContChar)*;
 
 	private token IdCore[ref object boolOrNull] returns [UString result] :
 		( BQString {$result = ParseStringCore(false);}
@@ -185,19 +197,17 @@ public partial class Les3Lexer
 		/ {_type = TT.Literal;}    value:TQString
 		/ {_type = TT.Literal;}    value:DQString
 		/ {_type = TT.Literal;}    value:SQString
-		/ {_type = TT.NormalOp;}   value:SQOperator
-		/ {_type = TT.Unknown;}    "''" // avoid invoking TQString when there are only two ticks
-		/ {_type = TT.Comma;}      ',' { value = GSymbol.Empty; }
-		/ {_type = TT.Semicolon;}  ';' { value = GSymbol.Empty; }
+		/ {_type = TT.SingleQuoteOp;} value:SQOperator
+		/ {_type = TT.Comma;}      ',' { value = @@`',`; }
+		/ {_type = TT.Semicolon;}  ';' { value = @@`';`; }
 		/ {_type = TT.LParen;}     '(' {_brackStack.Add(_type);}
 		/ {_type = TT.RParen;}     ')' {if (_brackStack.Count > 1) _brackStack.Pop();}
 		/ {_type = TT.LBrack;}     '[' {_brackStack.Add(_type);}
 		/ {_type = TT.RBrack;}     ']' {if (_brackStack.Count > 1) _brackStack.Pop();}
 		/ {_type = TT.LBrace;}     '{' {_brackStack.Add(_type);}
 		/ {_type = TT.RBrace;}     '}' {if (_brackStack.Count > 1) _brackStack.Pop();}
-		/ {_type = TT.LTokenLiteral;} "'{"  // possibility #1: less consistent: normally ' is for operators
-		/ {_type = TT.LTokenLiteral;} "@@{" // possibility #2: heavy, but more consistent (@@ is for literals)
-		/ {_type = TT.At;}         '@' { value = GSymbol.Empty; }
+		/ {_type = TT.At;}         '@' { value = @@`'@`; }
+		/ {_type = TT.Keyword;}    value:Keyword
 		/                          value:Operator
 		/ error _ {_type = TT.Unknown;}
 		)

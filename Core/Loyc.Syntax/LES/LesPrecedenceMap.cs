@@ -37,10 +37,10 @@ namespace Loyc.Syntax.Les
 		/// part of the name in <c>op</c> (see <see cref="IsSuffixOperatorName"/>)</param>
 		/// <param name="op">Parsed form of the operator. op must be a Symbol, but 
 		/// the parameter has type object to avoid casting Token.Value in the parser.</param>
-		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true)
+		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true, bool les3InfixOp = false)
 		{
 			var pair = this[shape];
-			return FindPrecedence(pair.A, op, pair.B, cacheWordOp);
+			return FindPrecedence(pair.A, op, pair.B, cacheWordOp, les3InfixOp);
 		}
 
 		// Maps from Symbol to Precedence, paired with a default precedece for \word operators
@@ -123,7 +123,7 @@ namespace Loyc.Syntax.Les
 				{ S.NotBits,     P.Other      }, // ~
 			}.AsImmutable();
 		
-		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp)
+		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp, bool les3InfixOp = false)
 		{
 			// You can see the official rules in the LesPrecedence documentation.
 			
@@ -142,6 +142,27 @@ namespace Loyc.Syntax.Les
 			// Note: all one-character operators should have been found in the table
 			char first = sym[1], last = sym[sym.Length - 1];
 			bool isInfix = table == this[OperatorShape.Infix].A;
+
+			if (les3InfixOp)
+			{
+				// Check for lowercase word prefix
+				int i = 1;
+				while (first >= 'a' && first <= 'z' || first == '_') {
+					if (++i == sym.Length) {
+						if (cacheWordOp)
+							table[symbol] = P.LowerKeyword;
+						return P.LowerKeyword;
+					}
+					first = sym[i];
+				}
+				
+				if (i + 1 == sym.Length) {
+					// After the word is a one-character op. See if it is in the table
+					var oneCharOp_ = GSymbol.Get("'" + first);
+					if (table.TryGetValue(oneCharOp_, out prec))
+						return prec;
+				}
+			}
 
 			if (isInfix && last == '=') {
 				if (first == '=' || first == '!')
@@ -202,7 +223,7 @@ namespace Loyc.Syntax.Les
 		}
 		
 		/// <summary>Returns true if the given Symbol can be printed as an operator 
-		/// without escaping it (LESv2) or adding an apostrophe on the front (LESv3).</summary>
+		/// without escaping it in LESv2.</summary>
 		/// <remarks>The parser should read something like <c>+/*</c> as an operator
 		/// with three characters, rather than "+" and a comment, but the printer 
 		/// is more conservative, so this function returns false in such a case.</remarks>

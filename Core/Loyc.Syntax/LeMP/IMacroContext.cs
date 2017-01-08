@@ -193,25 +193,25 @@ namespace LeMP
 
 		/// <summary>Transforms an option list in the format <c>option1(v1), option2(v2)</c> 
 		/// or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
-		/// If the format of a given node is invalid, this function yields <c>(null, node)</c>.</summary>
+		/// If the format of a given node is invalid, this function yields <c>(node, null)</c>.</summary>
 		/// <remarks>
 		/// <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
-		/// #namedArg(option2, v2)</c> in EC# or <c>@:(option1, v1), @:(option2, v2)</c> in LES.
+		/// #namedArg(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
 		/// This function recognizes both forms.
 		/// </remarks>
-		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(VList<LNode> optionList)
+		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(VList<LNode> optionList)
 		{
 			foreach (var option in optionList) {
 				if ((option.Calls(CodeSymbols.NamedArg, 2) || option.Calls(CodeSymbols.Colon, 2)) && option.Args[0].IsId)
 				{
-					Symbol key = option.Args[0].Name;
+					LNode key = option.Args[0];
 					LNode value = option.Args.Last;
-					yield return new KeyValuePair<Symbol, LNode>(key, value);
+					yield return new KeyValuePair<LNode, LNode>(key, value);
 				}
 				else if (option.Args.Count == 1 && option.Target.IsId)
-					yield return new KeyValuePair<Symbol, LNode>(option.Target.Name, option.Args[0]);
+					yield return new KeyValuePair<LNode, LNode>(option.Target, option.Args[0]);
 				else
-					yield return new KeyValuePair<Symbol, LNode>(null, option);
+					yield return new KeyValuePair<LNode, LNode>(option, null);
 			}
 		}
 	}

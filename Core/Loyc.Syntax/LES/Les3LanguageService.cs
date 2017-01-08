@@ -94,7 +94,7 @@ namespace Loyc.Syntax.Les
 					parser.Reset(input.AsList(), file);
 				}
 				if (inputType == ParsingMode.Expressions)
-					return parser.ExprList();
+					return parser.Start(new Holder<TokenType>(default(TokenType))).Buffered();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {

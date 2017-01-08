@@ -18,7 +18,7 @@ namespace Loyc.Syntax.Les
 		MLComment  = TokenKind.Comment + 1,
 		Shebang    = TokenKind.Comment + 2,
 		Id         = TokenKind.Id,
-		BQId         = TokenKind.Id + 1, // LESv3 only
+		BQId       = TokenKind.Id + 1, // LESv3 only
 		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
 		NegativeLiteral = TokenKind.Literal + 1, // -12345
 		Dot        = TokenKind.Dot,
@@ -30,15 +30,16 @@ namespace Loyc.Syntax.Les
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
 		BQOperator = TokenKind.Operator + 7, // No longer used in LESv3; `foo` is redefined as an identifier
 		Colon      = TokenKind.Operator + 8, // LESv3 only, where : is a special line suffix
+		SingleQuoteOp = TokenKind.Operator + 9, // LESv3 only
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
+		Keyword    = TokenKind.OtherKeyword,
 		LParen     = TokenKind.LParen,
 		SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,
 		LBrack     = TokenKind.LBrack,
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
-		LTokenLiteral = TokenKind.LBrace + 1, // '{
 		RBrace     = TokenKind.RBrace,
 		Unknown    = TokenKind.Other,
 	}

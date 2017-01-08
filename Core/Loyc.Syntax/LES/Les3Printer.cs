@@ -56,8 +56,6 @@ namespace Loyc.Syntax.Les
 		protected ILNode _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected NewlineContext _nlContext = NewlineContext.NewlineUnsafe;
-		protected Chars _curSet = 0;
-		protected bool _allowBlockCalls = true;
 		protected bool _inParensOrBracks = false;
 		/// <summary>Indicates whether the <see cref="NodeStyle.OneLiner"/> 
 		/// flag is present on the current node or any of its parents. It 
@@ -90,6 +88,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (nlContext == NewlineContext.AutoDetect)
 			{
+				// Detect beginning or end of expression
 				if (context.Left == Precedence.MinValue.Left)  nlContext |= NewlineContext.NewlineSafeBefore;
 				if (context.Right == Precedence.MinValue.Right) nlContext |= NewlineContext.NewlineSafeAfter;
 			}
@@ -108,7 +107,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		protected void PrintCore(ILNode node, string suffix)
+		protected void PrintCore(ILNode node, string suffix, bool avoidKwExprBraceAmbiguity = false)
 		{
 			_n = node;
 			int parenCount = PrintAttrsAndLeadingTrivia(node, _nlContext);
@@ -116,7 +115,12 @@ namespace Loyc.Syntax.Les
 			{
 				case LNodeKind.Id: VisitId(node); break;
 				case LNodeKind.Literal: VisitLiteral(node); break;
-				case LNodeKind.Call: VisitCall(node); break;
+				case LNodeKind.Call:
+					VisitCall(node);
+					if (_endIndexOfKeywordExpr == SB.Length && avoidKwExprBraceAmbiguity) {
+
+					}
+					break;
 			}
 			PrintTrailingTrivia(node, parenCount, suffix, _nlContext);
 			_n = null;
@@ -129,7 +133,31 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Helper functions
+		#region Special stuff to deal with tricky facts about LESv3
+		// Challenges of LESv3 (only some of which are dealt with in this section):
+		// - Spaces are required between certain tokens that would be merged without
+		//   the space character. For example, an @@at-at-literal requires a space
+		//   afterward if it is followed by a binary operator, and a number followed
+		//   by a dot operator should conservatively have a space before the dot. 
+		//   The need for a space is detected using flags in the Chars enum.
+		// - If a space appears before a dot operator, a space may also be required 
+		//   after the dot so that the parser doesn't see a keyword token.
+		// - If one statement ends with a keyword expression and the next begins
+		//   with braces, a semicolon is required between the statements to avoid
+		//   the possibility that the braces will be parsed as part of the keyword
+		//   expression (alternative: @@).
+		// - #trivia_newline must be ignored in some cases because a newline in 
+		//   certain places will inadvertantly end the current statement early.
+		//   Also, single-line comments sometimes cannot end with a newline and
+		//   must use two backslashes to end the comment instead: \\
+		// - If a keyword expression has a braced block (second argument) or 
+		//   continuators (possibly with their own braced blocks), only a single 
+		//   newline is allowed before each continuator or braced block.
+		// - And more: e.g. must deal with precedence; must print operators in
+		//   prefix notation if the target has attributes; a space is required 
+		//   after any word operator or combo operator...
+
+		protected Chars _curSet = 0;
 
 		/// <summary>
 		/// Based on these flags, StartToken() and WriteToken() ensure that two 
@@ -166,10 +194,45 @@ namespace Loyc.Syntax.Les
 			NewlineUnsafe = 0,
 			NewlineSafeAfter = 1,
 			NewlineSafeBefore = 2,
-			AfterBinOp = 4,
 			StatementLevel = NewlineSafeBefore | NewlineSafeAfter,
 			AutoDetect = 8,
 		}
+
+		// Conservatively returns true if `first` and `second` may need a semicolon 
+		// between them to avoid the ambiguity where the parser could consider braces 
+		// in `second` to be a continuation of a keyword expression in `first`.
+		private bool NeedSemicolonBetween(ILNode first, ILNode second)
+		{
+			if (StartsWithBraces(second)) {
+				Func<ILNode, bool> hasKeywordExpr = null;
+				return first.Any(hasKeywordExpr = n => {
+					return n.IsId() && n.Name.Name.StartsWith(".") || n.Any(hasKeywordExpr);
+				});
+			}
+			return false;
+		}
+		
+		// Conservatively returns true if `node` may begin with a '{' token
+		private bool StartsWithBraces(ILNode node)
+		{
+			if (node == null || !node.IsCall())
+				return false;
+			return node.Name == S.Braces || StartsWithBraces(node.Target) || StartsWithBraces(node.TryGet(0, null));
+		}
+
+		protected void StartToken(LesColorCode kind, Chars charSet) { StartToken(kind, charSet, charSet); }
+		protected void StartToken(LesColorCode kind, Chars startSet, Chars endSet)
+		{
+			if (_curSet == Chars.SLComment)
+				SB.Append(@"\\");
+			Space((startSet & _curSet) != 0);
+			_curSet = endSet;
+			StartToken(kind);
+		}
+
+		#endregion
+
+		#region Helper functions
 
 		protected void WriteToken(char firstChar, LesColorCode kind, Chars tokenSet)
 		{
@@ -185,15 +248,6 @@ namespace Loyc.Syntax.Les
 		{
 			StartToken(kind, startSet, endSet);
 			SB.Append(text);
-		}
-		protected void StartToken(LesColorCode kind, Chars charSet) { StartToken(kind, charSet, charSet); }
-		protected void StartToken(LesColorCode kind, Chars startSet, Chars endSet)
-		{
-			if (_curSet == Chars.SLComment)
-				SB.Append(@"\\");
-			Space((startSet & _curSet) != 0);
-			_curSet = endSet;
-			StartToken(kind);
 		}
 
 		protected virtual void StartToken(LesColorCode kind)
@@ -241,7 +295,7 @@ namespace Loyc.Syntax.Les
 				return false;
 			return !HasPAttrs(t);
 		}
-		
+
 		#endregion
 
 		#region Printing of identifiers
@@ -576,8 +630,6 @@ namespace Loyc.Syntax.Les
 
 		public void VisitCall(ILNode node)
 		{
-			bool allowBlockCalls = _allowBlockCalls;
-
 			// Note: Attributes, if any, have already been printed by this point
 			bool parens = false;
 
@@ -594,14 +646,14 @@ namespace Loyc.Syntax.Les
 					Symbol opName = node.Name;
 					if (!TryToPrintCallAsSpecialOperator(opName, node))
 					{
-						if (!node.ArgCount().IsInRange(1, 2) || !LesPrecedenceMap.IsExtendedOperator(opName.Name))
+						if (!node.ArgCount().IsInRange(1, 2))
 							goto default;
 						var shape = (OperatorShape)node.ArgCount();
 						if (node.ArgCount() == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName, true))
 							shape = OperatorShape.Suffix;
 
 						if (!PrintCallAsNormalOp(shape, opName, node, ref parens))
-							PrintPrefixNotation(node, true, ref parens);
+							PrintPrefixNotation(node, ref parens);
 					}
 					break;
 				case NodeStyle.Special:
@@ -609,93 +661,46 @@ namespace Loyc.Syntax.Les
 						goto default;
 					break;
 				case NodeStyle.PrefixNotation:
-					PrintPrefixNotation(node, false, ref parens);
+					PrintPrefixNotation(node, ref parens);
 					break;
 				default:
-					PrintPrefixNotation(node, true, ref parens);
+					PrintPrefixNotation(node, ref parens);
 					break;
 			}
 			if (parens)
 				WriteToken(')', LesColorCode.Closer, Chars.Delimiter);
-			_allowBlockCalls = allowBlockCalls;
 		}
 
 		#endregion
 
-		#region Printing calls: in prefix notation or as a block call
+		#region Printing calls: in prefix notation (i.e. foo(...))
 
-		void PrintPrefixNotation(ILNode node, bool allowBlockCalls, ref bool parens)
+		void PrintPrefixNotation(ILNode node, ref bool parens)
 		{
 			parens |= AddParenIf(!IsAllowedHere(LesPrecedence.Primary));
 			Debug.Assert(node.IsCall());
 			Print(node.Target, LesPrecedence.Primary.LeftContext(_context));
-			PrintArgList(node, allowBlockCalls);
+			PrintArgList(node);
 		}
 
 		internal static readonly HashSet<Symbol> ContinuatorOps = Les3Parser.ContinuatorOps;
 		internal static readonly Dictionary<object, Symbol> Continuators = Les3Parser.Continuators;
 
-		bool IsContinuator(ILNode lastArg)
+		bool IsContinuator(ILNode candidate)
 		{
-			if (lastArg.ArgCount() > 0 && HasTargetIdWithoutPAttrs(lastArg) && ContinuatorOps.Contains(lastArg.Name))
+			int argc = candidate.ArgCount();
+			if ((argc == 1 || argc == 2) && ContinuatorOps.Contains(candidate.Name) && HasTargetIdWithoutPAttrs(candidate)) {
+				if (argc == 2)
+					return candidate[1].Calls(S.Braces) && HasTargetIdWithoutPAttrs(candidate[1]);
 				return true;
+			}
 			return false;
 		}
 
-		void PrintArgList(ILNode node, bool allowBlockCalls, bool ignoreContinuators = false)
+		void PrintArgList(ILNode node)
 		{
 			var args = node.Args();
-			int numContinuators = 0;
-			ILNode braces = null;
-
-			if (allowBlockCalls && _allowBlockCalls && args.Count > 0) {
-				// Detect a block call, which should have something in 
-				// braces, followed by continuators.
-				if (!ignoreContinuators)
-					while (args.Count > 1 && IsContinuator(args.Last)) {
-						numContinuators++;
-						args = args.Slice(0, args.Count - 1);
-					}
-
-				do {
-					if (args.Count > 0) {
-						braces = args.Last;
-						args = args.Slice(0, args.Count - 1);
-						if (braces.Calls(CodeSymbols.Braces) && HasTargetIdWithoutPAttrs(braces))
-							break;
-					}
-					braces = null;
-					numContinuators = 0; // braces are required prior to continuators
-					args = node.Args();
-				} while (false);
-			}
-
-			if (!(braces != null && args.Count == 0)) {
-				if (braces != null) {
-					// In accordance with LES tradition, prefer to print
-					// `if (x > y) {...}` instead of `if(x > y) {...}`
-					Space(true);
-				}
-				var style = (node.Style & NodeStyle.Alternate) != 0 ? ArgListStyle.BracedBlock : ArgListStyle.Normal;
-				PrintArgListCore(args, '(', ')', style, _o.SpaceInsideArgLists);
-			}
-
-			if (braces != null) {
-				Space();
-				PrintBracedBlock(braces);
-				args = node.Args();
-				for (int i = args.Count - numContinuators; i < args.Count; i++) {
-					Space();
-					PrintContinuator(args[i]);
-				}
-			}
-		}
-
-		private void PrintContinuator(ILNode continuator)
-		{
-			Debug.Assert(continuator.Name.Name.StartsWith("'"));
-			WriteToken(continuator.Name.Name.Substring(1), LesColorCode.Keyword, Chars.Id);
-			PrintArgList(continuator, allowBlockCalls: true, ignoreContinuators: true);
+			PrintArgListCore(args, '(', ')', ArgListStyle.Normal, _o.SpaceInsideArgLists);
 		}
 
 		enum ArgListStyle
@@ -706,9 +711,7 @@ namespace Loyc.Syntax.Les
 		}
 		void PrintArgListCore(NegListSlice<ILNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside = false, ILNode leftBracket = null)
 		{
-			var outerAllowBlockCalls = _allowBlockCalls;
 			var outerInParensOrBracks = _inParensOrBracks;
-			_allowBlockCalls = true;
 			_inParensOrBracks = style == ArgListStyle.BracedBlock;
 
 			if (leftBracket != null) {
@@ -742,7 +745,6 @@ namespace Loyc.Syntax.Les
 			Space(spacesInside);
 			WriteToken(rightDelim, LesColorCode.Closer, Chars.Delimiter);
 
-			_allowBlockCalls = outerAllowBlockCalls;
 			_inParensOrBracks = outerInParensOrBracks;
 		}
 
@@ -772,7 +774,8 @@ namespace Loyc.Syntax.Les
 					var stmt = next;
 					next = args[i + 1, null];
 					append = next != null ? ShouldAppendStmt(next) : false;
-					Print(stmt, Precedence.MinValue, suffix: append || _o.UseRedundantSemicolons ? ";" : null);
+					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
+					Print(stmt, Precedence.MinValue, suffix: semicolon ? ";" : null);
 				}
 			}
 			return anyNewlines;
@@ -782,6 +785,45 @@ namespace Loyc.Syntax.Les
 
 		#region Printing normal operators: Prefix, suffix, infix
 
+		/// <summary>Returns true if the given name can be printed as a binary operator in LESv3.</summary>
+		private static bool CanBeBinaryOperator(string name)
+		{
+			if (name.Length <= 1 || name[0] != '\'')
+				return false; // optimized path
+
+			int i = 1;
+			for (; (uint)i < (uint)name.Length; i++)
+			{
+				char c = name[i];
+				if (!(name[i] >= 'a' && name[i] <= 'z' || name[i] == '_'))
+					break;
+			}
+
+			return EndsAsNaturalOperator(name, i);
+		}
+
+		/// <summary>Returns true if the given name can be printed as a prefix operator in LESv3.</summary>
+		private static bool CanBePrefixOperator(string name)
+		{
+			if (name.Length <= 1 || name[0] != '\'')
+				return false; // optimized path
+
+			int i = name[1] == '$' ? 2 : 1;
+			return EndsAsNaturalOperator(name, i);
+		}
+
+		private static bool EndsAsNaturalOperator(string name, int i)
+		{
+			for (; (uint)i < (uint)name.Length; i++)
+			{
+				if (name[i] == '/' && name.TryGet(i + 1, '\0').IsOneOf('/', '*'))
+  					return false; // "//" or "/*" - note: parse accepts an operator like "*/*" but we avoid printing it
+				if (!LesPrecedenceMap.IsOpChar(name[i]))
+					return false;
+			}
+			return true;
+		}
+
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
 		// or in prefix notation if that fails. Returns true if closing ')' needed.
 		private bool PrintCallAsNormalOp(OperatorShape shape, Symbol opName, ILNode node, ref bool parens)
@@ -790,9 +832,14 @@ namespace Loyc.Syntax.Les
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
 			// allowed without parentheses. Also, unary extended ops (e.g. 'foo) 
 			// are not supported.
-			Precedence prec = LesPrecedenceMap.Default.Find(shape, opName);
-			if (shape != OperatorShape.Infix && (prec == LesPrecedence.Other || !LesPrecedenceMap.IsNaturalOperator(opName.Name)))
-				return false;
+			Precedence prec = LesPrecedenceMap.Default.Find(shape, opName, cacheWordOp: true, les3InfixOp: shape == OperatorShape.Infix);
+			if (shape == OperatorShape.Infix) {
+				if (!CanBeBinaryOperator(opName.Name))
+					return false;
+			} else {
+				if (prec == LesPrecedence.Other || !CanBePrefixOperator(opName.Name))
+					return false;
+			}
 			bool allowed = IsAllowedHere(prec);
 			if (!allowed && IsAllowedHere(LesPrecedence.Primary))
 				return false;
@@ -815,40 +862,56 @@ namespace Loyc.Syntax.Les
 					Debug.Assert(node.ArgCount() == 2);
 					Print(node[0], prec.LeftContext(_context));
 					Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
-					PrintOpName(opName, node.Target, isBinaryOp: true);
-					Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
-					Print(node[1], prec.RightContext(_context), 
-						nlContext: NewlineContext.AfterBinOp | NewlineContext.AutoDetect);
+					bool newlineSafe = PrintOpName(opName, node.Target, isBinaryOp: true);
+					if (SB.Last() != '\n')
+						Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
+					var nlContext = NewlineContext.AutoDetect;
+					if (newlineSafe)
+						nlContext |= NewlineContext.NewlineSafeBefore;
+					Print(node[1], prec.RightContext(_context), nlContext: nlContext);
 					break;
 			}
 			return true;
 		}
-		void PrintOpName(Symbol opName, ILNode target, bool isBinaryOp)
+		bool PrintOpName(Symbol opName, ILNode target, bool isBinaryOp)
 		{
 			if (target != null && target.AttrCount() == 0)
 				target = null; // optimize usual case
 			if (target != null)
 				PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe); // must all be trivia
 
-			bool newlineSafeAfter = false;
 			Debug.Assert(opName.Name.StartsWith("'"));
-			if (LesPrecedenceMap.IsNaturalOperator(opName.Name)) {
-				char first = opName.Name[1], last = opName.Name[opName.Name.Length - 1];
-				StartToken(LesColorCode.Operator,
-					Chars.Punc | (first == '-' ? Chars.Minus : 
-					              first == '.' ? Chars.Dot : 0),
-					Chars.Punc | (last == '-' ? Chars.Minus : 
-					              last == '.' ? Chars.Dot : 0));
-				SB.Append(opName.Name, 1, opName.Name.Length - 1);
-				newlineSafeAfter = isBinaryOp;
-			} else {
-				Debug.Assert(LesPrecedenceMap.IsExtendedOperator(opName.Name));
-				WriteToken(opName.Name, LesColorCode.Operator, Chars.IdAndPunc);
+
+			// Determine Chars values which control sace characters before and after
+			char first = opName.Name[1], last = opName.Name[opName.Name.Length - 1];
+			Chars startSet;
+			if (LesPrecedenceMap.IsOpChar(first) || first == '$')
+				startSet = Chars.Punc | (first == '-' ? Chars.Minus :
+										 first == '.' ? Chars.Dot : 0);
+			else {
+				Debug.Assert(Les2Lexer.IsIdStartChar(first));
+				startSet = Chars.IdStart;
+			}
+			StartToken(LesColorCode.Operator, startSet,
+				Chars.Punc | (last == '-' ? Chars.Minus : 
+				              last == '.' ? Chars.Dot : 0));
+
+			if (opName == S.Dot && SB.LastOrDefault(' ').IsOneOf(' ', '\t', '\n')) {
+				// If there is a space before the dot and there is an identifier 
+				// after the dot, we will need another space so it doesn't get 
+				// reparsed as a keyword.
+				_curSet |= Chars.Id;
 			}
 
-			if (target != null)
-				PrintTrailingTrivia(target, 0, null, newlineSafeAfter ? 
-					NewlineContext.AfterBinOp | NewlineContext.NewlineSafeAfter : NewlineContext.NewlineUnsafe);
+			SB.Append(opName.Name, 1, opName.Name.Length - 1);
+
+			bool newlineSafe = isBinaryOp && opName.Name.Any(c => LesPrecedenceMap.IsOpChar(c));
+			if (target != null) {
+				var nlContext = newlineSafe ? NewlineContext.NewlineSafeAfter : NewlineContext.NewlineUnsafe;
+				PrintTrailingTrivia(target, 0, null, nlContext);
+			}
+
+			return newlineSafe;
 		}
 
 		private bool AddParenIf(bool cond, bool forAttribute = false)
@@ -861,7 +924,6 @@ namespace Loyc.Syntax.Les
 				}
 				Space(_o.SpaceInsideGroupingParens);
 				_context = Precedence.MinValue;
-				_allowBlockCalls = true;
 			}
 			return cond;
 		}
@@ -912,46 +974,90 @@ namespace Loyc.Syntax.Les
 
 		#region Printing .keyword expressions
 
+		// Index where we just finished printing a keyword expression.
+		// This is used to avoid ambiguity by adding a semicolon if the 
+		// statement afterward begins with braces.
+		int _endIndexOfKeywordExpr;
+
 		private bool TryToPrintCallAsKeywordExpression(ILNode node)
 		{
 			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
 				return false;
 
 			var args = node.Args();
+			var target = node.Target;
+			int parens = PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe);
 			WriteToken(node.Name.Name, LesColorCode.Keyword, Chars.IdAndPunc);
+			PrintTrailingTrivia(target, 0, null, NewlineContext.NewlineUnsafe);
 			if (args.Count == 0)
 				return true;
 
 			Space();
-			try {
-				_allowBlockCalls = false;
-				Print(args[0], LesPrecedence.SuperExpr);
-			} finally {
-				_allowBlockCalls = true;
-			}
-			if (args.Count <= 1)
-				return true;
+			Print(args[0], LesPrecedence.SuperExpr);
 
+			if (args.Count > 1)
+			{
+				int i = 1;
+				var part = args[i];
+				if (part.Calls(CodeSymbols.Braces)) {
+					Space();
+					PrintBracedBlock(part);
+					i++;
+				}
+				for (; i < args.Count; i++) {
+					Space();
+					PrintContinuator(part = args[i]);
+				}
+			}
+
+			_endIndexOfKeywordExpr = SB.Length;
+			return true;
+		}
+
+		private void PrintContinuator(ILNode continuator)
+		{
+			Debug.Assert(IsContinuator(continuator));
+			var target = continuator.Target;
+			Debug.Assert(!target.HasPAttrs());
+			PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe);
+			WriteToken(continuator.Name.Name.Substring(1), LesColorCode.Keyword, Chars.Id);
+			PrintTrailingTrivia(target, 0, null, NewlineContext.NewlineUnsafe);
+
+			int argc = continuator.ArgCount();
+			var expr = continuator[0];
 			Space();
-			PrintBracedBlock(args[1]);
-			for (int i = 2; i < args.Count; i++) {
+			Print(continuator[0], Precedence.MinValue, nlContext: NewlineContext.NewlineUnsafe);
+			if (argc >= 2) {
 				Space();
-				PrintContinuator(args[i]);
+				PrintBracedBlock(continuator[1]);
+			}
+		}
+
+		static bool IsAcceptableKeyword(string name)
+		{
+			if (string.IsNullOrEmpty(name) || name[0] != '.')
+				return false;
+			for (int i = 1; i < name.Length; i++)
+			{
+				char c = name[i];
+				if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_'))
+					return false;
 			}
 			return true;
 		}
 
 		private bool IsKeywordExpression(ILNode node)
 		{
-			if (!HasTargetIdWithoutPAttrs(node) || !LesPrecedenceMap.IsExtendedOperator(node.Name.Name, "."))
+			if (!HasTargetIdWithoutPAttrs(node) || !IsAcceptableKeyword(node.Name.Name))
 				return false;
 			var args = node.Args();
 			if (args.Count <= 1)
 				return true;
 			var block = args[1];
-			if (!block.Calls(S.Braces) || !HasTargetIdWithoutPAttrs(block))
+			if (!HasTargetIdWithoutPAttrs(block))
 				return false;
-			for (int i = 2; i < args.Count; i++)
+			int i = block.Calls(S.Braces) ? 2 : 1;
+			for (; i < args.Count; i++)
 				if (!IsContinuator(args[i]))
 					return false;
 
@@ -986,7 +1092,6 @@ namespace Loyc.Syntax.Les
 						WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
 						parenCount++;
 						Space(_o.SpaceInsideGroupingParens);
-						_allowBlockCalls = true;
 					}
 					else
 					{
@@ -1163,14 +1268,6 @@ namespace Loyc.Syntax.Les
 					continue;
 			}
 		}
-
-		/*static bool IsKnownTrivia(Symbol name)
-		{
-			return name == S.TriviaRawTextBefore || name == S.TriviaRawTextAfter ||
-				   name == S.TriviaSLCommentBefore || name == S.TriviaSLCommentAfter ||
-				   name == S.TriviaMLCommentBefore || name == S.TriviaMLCommentAfter ||
-				   name == S.TriviaSpaceBefore || name == S.TriviaSpaceAfter;
-		}*/
 		
 		static string GetRawText(ILNode rawTextNode)
 		{
