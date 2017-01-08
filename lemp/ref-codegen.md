@@ -262,7 +262,7 @@ void LaterThatDay()
 ~~~
 </div>
 
-The braces are otherwise ignored; for example, `{ 123; }` really just means `123`. If you actually want to match braces literally, use double braces: `{{ statement list; }}`
+The braces are otherwise ignored; for example, `{ 123; }` really just means `123`. If you actually want to match braces literally, use double braces: `{ { statement list; } }`
 
 You can match a sequence of zero or more expressions using syntax like `$(..x)` on the search side (left side of `=>`). For example,
 
