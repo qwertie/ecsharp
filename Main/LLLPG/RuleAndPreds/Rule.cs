@@ -38,7 +38,8 @@ namespace Loyc.LLParserGenerator
 
 		public Pred Pred;
 		public bool IsToken, IsStartingRule;
-		public bool IsPrivate, IsExternal, IsInline;
+		public bool IsExternal, IsInline;
+		public bool? IsPrivate;
 		public bool? FullLLk;
 		public int K; // max lookahead; <= 0 to use default
 
@@ -114,7 +115,7 @@ namespace Loyc.LLParserGenerator
 				return Basis.WithArgs(parts).SetStyle(Basis.Style & ~NodeStyle.OneLiner);
 			} else {
 				var method = F.Fn(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
-				if (IsPrivate)
+				if (IsPrivate == true)
 					method = F.Attr(F.Id(S.Private), method);
 				else if (IsStartingRule | IsToken)
 					method = F.Attr(F.Id(S.Public), method);

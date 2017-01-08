@@ -458,7 +458,7 @@ namespace Loyc.LLParserGenerator
 				// For rules that are not marked "private", we must apply "empty" 
 				// prematch information in case the rule is called directly or from 
 				// outside the known ruleset, to force use of Match() at rule start.
-				if (!rule.IsPrivate)
+				if (!(rule.IsPrivate ?? LLPG.PrematchByDefault))
 					_apply.ApplyPrematchData(rule.Pred, Empty);
 			}
 
@@ -616,7 +616,7 @@ namespace Loyc.LLParserGenerator
 				public override void Visit(RuleRef rref)
 				{
 					var rule = rref.Rule;
-					if (rule.IsPrivate) {
+					if (rule.IsPrivate ?? LLPG.PrematchByDefault) {
 						if (++_ruleDepth < 10) {
 							rule.Pred.Call(this);
 							--_ruleDepth;

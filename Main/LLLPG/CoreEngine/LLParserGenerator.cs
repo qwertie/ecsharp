@@ -121,7 +121,13 @@ namespace Loyc.LLParserGenerator
 		public bool AddComments = true;
 
 		/// <summary>Whether to add #line directives for C# before and after user actions.</summary>
-		public bool AddCsLineDirectives = true;
+		/// <remarks>Superceded. It is preferred to use the <c>#lines</c> macro instead.</remarks>
+		public bool AddCsLineDirectives = false;
+
+		/// <summary>If true, rules that are not marked private, public, or internal are 
+		/// assumed not to be called from outside the grammar so the prematch 
+		/// optimization can be used.</summary>
+		public bool PrematchByDefault = false;
 
 		/// <summary>Called when an error or warning occurs while parsing a grammar
 		/// or while generating code for a parser. Also called to print "verbose" 
@@ -786,7 +792,7 @@ namespace Loyc.LLParserGenerator
 		{
 			int tokens = 0, privates = 0;
 			foreach (var rule in rules) {
-				if (rule.IsPrivate)
+				if (rule.IsPrivate ?? this.PrematchByDefault)
 					privates++;
 				if (rule.IsToken)
 					tokens++;

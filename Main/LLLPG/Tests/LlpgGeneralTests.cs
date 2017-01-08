@@ -264,6 +264,71 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void SimplePrematchAnalysisTest()
+		{
+			DualLanguageTest(@"
+			@[PrematchByDefault] LLLPG lexer {
+				@[protected] rule a @{ 'A'|'a' };
+				@[internal] rule b  @{ 'B'|'b' };
+				@[public] rule c    @{ 'C'|'c' };
+				rule d              @{ 'd' };
+				private rule D      @{ 'D' };
+				@[public] rule Foo  @{ a / b / c / d / D / _ };
+			}", @"
+			[PrematchByDefault] LLLPG(lexer) {
+				protected rule a @{ 'A'|'a' };
+				internal rule b  @{ 'B'|'b' };
+				public rule c    @{ 'C'|'c' };
+				rule d           @{ 'd' };
+				private rule D   @{ 'D' };
+				public rule Foo() @{ a / b / c / d / D / _ };
+			}", @"
+				protected void a()
+				{
+					Match('A', 'a');
+				}
+				internal void b()
+				{
+					Match('B', 'b');
+				}
+				public void c()
+				{
+					Match('C', 'c');
+				}
+				void d()
+				{
+					Skip();
+				}
+				private void D()
+				{
+					Skip();
+				}
+				public void Foo()
+				{
+					switch (LA0) {
+					case 'A': case 'a':
+						a();
+						break;
+					case 'B': case 'b':
+						b();
+						break;
+					case 'C': case 'c':
+						c();
+						break;
+					case 'd':
+						d();
+						break;
+					case 'D':
+						D();
+						break;
+					default:
+						MatchExcept();
+						break;
+					}
+				}");
+		}
+
+		[Test]
 		public void SemPredUsingLI()
 		{
 			// You can write a semantic predicate using the replacement "$LI" which
@@ -825,17 +890,17 @@ namespace Loyc.LLParserGenerator
 				};
 			}",
 			@"static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
-			void HexDigit()
+			private void HexDigit()
 			{
 				Match(HexDigit_set0);
 			}
-			bool Scan_HexDigit()
+			private bool Scan_HexDigit()
 			{
 				if (!TryMatch(HexDigit_set0))
 					return false;
 				return true;
 			}
-			void HexDigits()
+			private void HexDigits()
 			{
 				int la0;
 				HexDigit();
@@ -847,7 +912,7 @@ namespace Loyc.LLParserGenerator
 						break;
 				}
 			}
-			bool Scan_HexDigits()
+			private bool Scan_HexDigits()
 			{
 				int la0;
 				if (!Scan_HexDigit())
@@ -862,7 +927,7 @@ namespace Loyc.LLParserGenerator
 				}
 				return true;
 			}
-			void HexNumber()
+			private void HexNumber()
 			{
 				int la0;
 				Match('0');
@@ -1511,7 +1576,7 @@ namespace Loyc.LLParserGenerator
 						)*
 					};
 				}",
-				@"void PrimaryExpr()
+				@"private void PrimaryExpr()
 				{
 					string la0;
 					Skip();
@@ -1526,12 +1591,12 @@ namespace Loyc.LLParserGenerator
 							break;
 					}
 				}
-				void PrefixExpr()
+				private void PrefixExpr()
 				{
 					PrimaryExpr();
 				}
 				static readonly HashSet<string> Expr_set0 = NewSet(""-"", ""*"", ""/"", ""+"", ""<"", ""<=,>="", ""==,!="", "">"");
-				void Expr()
+				private void Expr()
 				{
 					string la0, la1;
 					var e = PrefixExpr();
@@ -2144,7 +2209,7 @@ namespace Loyc.LLParserGenerator
 							}
 							switch ((TT) LA0) {
 							case Comma: case EOF: case RParen: case Semicolon:
-								{e = null;}
+								e = null;
 								break;
 							default:
 								e = Expr();

@@ -80,17 +80,17 @@ namespace Loyc.LLPG
 				var helper = new IntStreamCodeGenHelper();
 				foreach (var option in MacroContext.GetOptions(lexerCfg.Args))
 				{
-					LNode value = option.Value;
-					string key = (option.Key ?? (Symbol)"??").Name;
+					LNode value = option.Value ?? LNode.Missing;
+					string key = option.Key.Name.Name;
 					switch (key.ToLowerInvariant()) {
 						case "inputsource":      helper.InputSource = value; break;
 						case "inputclass":       helper.InputClass = value; break;
 						case "terminaltype":     helper.TerminalType = value; break;
 						case "settype":          helper.SetType = value; break;
 						case "listinitializer":  helper.SetListInitializer(value); break;
-						case "nocheckbydefault": SetOption<bool>(value.Value, b => helper.NoCheckByDefault = b, "NoCheckByDefault", context); break;
+						case "nocheckbydefault": SetOption<bool>(context, option.Key, value.Value, b => helper.NoCheckByDefault = b); break;
 						default:
-							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: " +
+							context.Write(Severity.Error, option.Key, "Unrecognized option '{0}'. Available options: " +
 								"InputSource: var, InputClass: type, TerminalType: type, SetType: type, "+
 								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true", key);
 							break;
@@ -113,22 +113,22 @@ namespace Loyc.LLPG
 					return helper;
 				foreach (var option in MacroContext.GetOptions(parserCfg.Args))
 				{
-					LNode value = option.Value;
-					string key = (option.Key ?? (Symbol)"??").Name;
+					LNode value = option.Value ?? LNode.Missing;
+					string key = option.Key.Name.Name;
 					switch (key.ToLowerInvariant()) {
 						case "inputsource":     helper.InputSource = value; break;
 						case "inputclass":      helper.InputClass = value; break;
 						case "terminaltype":    helper.TerminalType = value; break;
 						case "settype":         helper.SetType = value;   break;
 						case "listinitializer": helper.SetListInitializer(value); break;
-						case "nocheckbydefault":SetOption<bool>(value.Value, b => helper.NoCheckByDefault = b, "NoCheckByDefault", context); break;
-						case "allowswitch":     SetOption<bool>(value.Value, b => helper.AllowSwitch = b, "AllowSwitch", context); break;
-						case "castla":          SetOption<bool>(value.Value, b => helper.CastLA = b, "CastLA", context); break;
+						case "nocheckbydefault":SetOption<bool>(context, option.Key, value.Value, b => helper.NoCheckByDefault = b); break;
+						case "allowswitch":     SetOption<bool>(context, option.Key, value.Value, b => helper.AllowSwitch = b); break;
+						case "castla":          SetOption<bool>(context, option.Key, value.Value, b => helper.CastLA = b); break;
 						case "latype":          helper.LaType = value;    break;
 						case "matchtype":       // alternate name
 						case "matchcast":       helper.MatchCast = value; break;
 						default:
-							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
+							context.Write(Severity.Error, option.Key, "Unrecognized option '{0}'. Available options: "+
 								"InputSource: variable, InputClass: type, TerminalType: type, SetType: type, "+
 								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true, AllowSwitch: bool, "+
 								"CastLA: bool, LAType: type, MatchCast: type", key);
@@ -137,14 +137,6 @@ namespace Loyc.LLPG
 				}
 				return helper;
 			}, isDefault: true);
-		}
-
-		private static void SetOption<T>(object value, Action<T> setter, string optionName, IMessageSink errorSink)
-		{
-			if (value is T)
-				setter((T)value);
-			else
-				errorSink.Write(Severity.Error, value, "AllowSwitch: expected literal boolean argument.");
 		}
 
 		/// <summary>This method helps do the stage-one transform from <c>LLLPG (config) {...}</c>
@@ -359,7 +351,7 @@ namespace Loyc.LLPG
 			
 			// Process the grammar & generate code
 			var lllpg = new LLParserGenerator(helper, context);
-			ApplyOptions(node, lllpg, context); // Read attributes such as [DefaultK(3)]
+			ApplyOptions(node, lllpg, context, rules.Select(p => p.Key)); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);
 			
@@ -369,120 +361,125 @@ namespace Loyc.LLPG
 			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
 		}
 
-		private static Rule MakeRuleObject(bool isToken, ref LNode basis, IMessageSink sink)
+		private static Rule MakeRuleObject(bool isToken, ref LNode basis, IMacroContext context)
 		{
 			var name = basis.Args[1];
 			if (name.CallsMin(S.Of, 1))
 				name = name.Args[0];
 			if (!name.IsId || name.Name.Name.IsOneOf("EOF", "any", "error", "default", "default_error", "greedy", "nongreedy")) {
-				sink.Write(Severity.Error, name, "'{0}' is not allowed as a rule name", name);
+				context.Write(Severity.Error, name, "'{0}' is not allowed as a rule name", name);
 				return null;
 			} else {
 				var rule = new Rule(basis, name.Name, null, true);
 				rule.IsToken = isToken;
-				ApplyRuleOptions(ref rule.Basis, rule, sink);
+				ApplyRuleOptions(ref rule.Basis, rule, context);
 
 				return rule;
 			}
 		}
 
-		private static void ApplyOptions(LNode node, LLParserGenerator lllpg, IMessageSink sink)
+		private static void ApplyOptions(LNode node, LLParserGenerator lllpg, IMacroContext sink, IEnumerable<Rule> rules)
 		{
-			for (int i = 0; i < node.Attrs.Count; i++) {
-				var attr = node.Attrs[i];
-				switch (attr.Name.Name) {
+			foreach (var pair in MacroContext.GetOptions(node.Attrs))
+			{
+				LNode key = pair.Key;
+				object value = pair.Value != null ? pair.Value.Value : null;
+				switch (key.Name.Name) {
 					case "FullLLk":
-						ReadOption<bool>(sink, attr, v => lllpg.FullLLk = v, true);
+						SetOption<bool>(sink, key, value ?? G.BoxedTrue, v => lllpg.FullLLk = v);
 						break;
 					case "Verbosity":
-						ReadOption<int>(sink, attr, v => lllpg.Verbosity = v, null);
+						SetOption<int>(sink, key, value, v => lllpg.Verbosity = v);
 						break;
 					case "NoDefaultArm":
-						ReadOption<bool>(sink, attr, v => lllpg.NoDefaultArm = v, true);
+						SetOption<bool>(sink, key, value ?? G.BoxedTrue, v => lllpg.NoDefaultArm = v);
 						break;
-					case "DefaultK": case "k": case "K": case "LL":
-						ReadOption<int>(sink, attr, v => lllpg.DefaultK = v, null);
+					case "LL": case "DefaultK": case "k": case "K": // [LL(k)] is preferred
+						SetOption<int>(sink, key, value, v => lllpg.DefaultK = v);
 						break;
 					case "AddComments":
-						ReadOption<bool>(sink, attr, v => lllpg.AddComments = v, true);
+						SetOption<bool>(sink, key, value ?? G.BoxedTrue, v => lllpg.AddComments = v);
 						break;
 					case "AddCsLineDirectives":
-						ReadOption<bool>(sink, attr, v => lllpg.AddCsLineDirectives = v, true);
+						SetOption<bool>(sink, key, value ?? G.BoxedTrue, v => lllpg.AddCsLineDirectives = v);
+						break;
+					case "PrematchByDefault":
+						SetOption<bool>(sink, key, value ?? G.BoxedTrue, v => lllpg.PrematchByDefault = v);
 						break;
 					default:
-						if (!attr.IsTrivia)
-							sink.Write(Severity.Error, attr,
+						if (!key.IsTrivia)
+							sink.Write(Severity.Error, key,
 								"Unrecognized attribute. LLLPG supports the following options: " +
-								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), and AddCsLineDirectives(bool)");
+								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), AddCsLineDirectives(bool), and PrivateByDefault(bool)");
 						break;
 				}
 			}
 		}
 
-		private static void ApplyRuleOptions(ref LNode node, Rule rule, IMessageSink sink)
+		private static void ApplyRuleOptions(ref LNode node, Rule rule, IMacroContext context)
 		{
-			node = node.WithAttrs(node.Attrs.Select(attr => {
-				switch (attr.Name.Name) {
+			node = node.WithAttrs(node.Attrs.WhereSelect(attr => {
+				if (attr.ArgCount > 1)
+					return attr;
+				LNode key = attr.Target ?? attr;
+				object value = null;
+				if (attr.ArgCount == 1)
+					value = attr.Args[0].Value;
+				switch (key.Name.Name) {
 					case "fullLLk": case "FullLLk":
-						ReadOption<bool>(sink, attr, v => rule.FullLLk = v, true);
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.FullLLk = v);
 						break;
-					case "#private": case "private": case "priv": case "Private":
-						ReadOption<bool>(sink, attr, v => rule.IsPrivate = v, true);
-						break;
+					case "#private": case "private":
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.IsPrivate = v);
+						return attr; // keep attribute
+					case "#public": case "#internal": case "#protected":
+					case "public": case "internal": case "protected": // this is before macros run, and non-special names are used in LES
+						rule.IsPrivate = false;
+						return attr; // keep attribute
 					case "token": case "Token":
-						ReadOption<bool>(sink, attr, v => rule.IsToken = v, true);
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.IsToken = v);
 						break;
 					case "start": case "Start":
-						ReadOption<bool>(sink, attr, v => rule.IsStartingRule = v, true);
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.IsStartingRule = v);
 						break;
 					case "#extern": case "extern": case "Extern":
-						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.IsExternal = v);
 						break;
 					case "#inline": case "inline": case "Inline":
 					case "#fragment": case "fragment":
-						ReadOption<bool>(sink, attr, v => rule.IsInline = v, true);
+						SetOption<bool>(context, key, value ?? G.BoxedTrue, v => rule.IsInline = v);
 						break;
 					case "k": case "K": case "LL":
-						ReadOption<int>(sink, attr, k => rule.K = k, null);
+						SetOption<int>(context, key, value, k => rule.K = k);
 						break;
 					case "recognizer": case "Recognizer":
-						LNode sig = null;
-						if (attr.ArgCount == 1) {
-							sig = attr.Args[0];
+						LNode sig = attr.Args[0, null];
+						if (sig != null) {
 							if (sig.Calls(S.Braces, 1))
 								sig = sig.Args[0];
-							// TODO: we need a way to invoke all applicable macros at a particular location
-							//       e.g. "public fn Foo()::bool;" is not supported by def() alone.
-							sig = LeMP.Prelude.Les.Macros.fn(sig, sink) ?? sig;
+
+							// Invoke macros here so that LES code like "public fn Foo()::bool"
+							// is transformed into a method signature.
+							sig = context.PreProcess(sig);
 						}
 						if (sig != null && sig.CallsMin(S.Fn, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
 						else
-							sink.Write(Severity.Error, sig, "'recognizer' expects one parameter, a method signature.");
+							context.Write(Severity.Error, sig, "'recognizer' expects one parameter, a method signature.");
 						break;
 					default:
 						return attr;
 				}
-				return null;
-			}).WhereNotNull().ToArray());
+				return NoValue.Value;
+			}).ToArray());
 		}
 
-		private static void ReadOption<T>(IMessageSink sink, LNode attr, Action<T> setter, T? defaultValue) where T:struct
+		private static void SetOption<T>(IMessageSink errorSink, LNode optionName, object value, Action<T> setter)
 		{
-			if (attr.ArgCount > 1 || (attr.ArgCount == 0 && defaultValue == null))
-				sink.Write(Severity.Error, attr, Localize.Localized("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
-			else if (attr.ArgCount == 1) {
-				if (attr.Args[0].Value is T)
-					setter((T)attr.Args[0].Value);
-				else
-					sink.Write(Severity.Error, attr, Localize.Localized("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
-			} else
-				setter(defaultValue.Value);
-		}
-		private static string Signature(LNode attr, Type type, object defaultValue)
-		{
-			return string.Format(defaultValue == null ? "{0}({1})" : "{0}({1} = {2})",
-				attr.Name, type.Name, defaultValue);
+			if (value is T)
+				setter((T)value);
+			else
+				errorSink.Write(Severity.Error, optionName, "{0}: expected literal of type «{1}».", optionName.Name, typeof(T));
 		}
 	}
 }

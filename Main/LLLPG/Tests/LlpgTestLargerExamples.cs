@@ -184,7 +184,7 @@ namespace Loyc.LLParserGenerator
 
 					LLLPG lexer
 					{
-						@[pub] token NextToken()::Token {
+						@[public] token NextToken()::Token {
 							_start = InputPosition;
 							_value = null;
 							@{ { _type = num; } Num
@@ -200,12 +200,12 @@ namespace Loyc.LLParserGenerator
 							   { _type = EOF; } (_ { _type = unknown; })? };
 							return (new Token() { Type = _type; Value = _value; StartIndex = _start; });
 						};
-						@[priv] token Id() @{
+						@[private] token Id() @{
 							('a'..'z'|'A'..'Z'|'_')
 							('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
 							{ _value = CharSource.Substring(_startIndex, InputPosition - _startIndex); }
 						};
-						@[priv] token Num() @{
+						@[private] token Num() @{
 							{dot::bool = @false;}
 							('.' {dot = @true;})?
 							'0'..'9'+
@@ -272,16 +272,9 @@ namespace Loyc.LLParserGenerator
 										goto error;
 								}
 								break;
-							case '0':
-							case '1':
-							case '2':
-							case '3':
-							case '4':
-							case '5':
-							case '6':
-							case '7':
-							case '8':
-							case '9':
+							case '0': case '1': case '2': case '3':
+							case '4': case '5': case '6': case '7':
+							case '8': case '9':
 								goto matchNum;
 							case '*':
 								{
@@ -344,7 +337,7 @@ namespace Loyc.LLParserGenerator
 						};
 					}
 					static readonly HashSet<int> Id_set0 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
-					void Id()
+					private void Id()
 					{
 						int la0;
 						Skip();
@@ -357,7 +350,7 @@ namespace Loyc.LLParserGenerator
 						}
 						_value = CharSource.Substring(_startIndex, InputPosition - _startIndex);
 					}
-					void Num()
+					private void Num()
 					{
 						int la0, la1;
 						bool dot = false;

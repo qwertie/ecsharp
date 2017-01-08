@@ -65,15 +65,15 @@ namespace Loyc.LLParserGenerator
 				@[LL(1)]
 				rule Choice @{ XCode / Word };",
 			@"
-				void Letter() {
+				private void Letter() {
 					MatchRange('a', 'z');
 				}
-				bool Scan_Letter() {
+				private bool Scan_Letter() {
 					if (!TryMatchRange('a', 'z'))
 						return false;
 					return true;
 				}
-				void Word() {
+				private void Word() {
 					int la0;
 					Letter();
 					for (;;) {
@@ -84,7 +84,7 @@ namespace Loyc.LLParserGenerator
 							break;
 					}
 				}
-				void XCode() {
+				private void XCode() {
 					int la0;
 					Letter();
 					for (;;) {
@@ -382,7 +382,7 @@ namespace Loyc.LLParserGenerator
 					)*
 				};
 			}", // Output changed 2013-12-21; doesn't matter because grammar is invalid.
-			@"	void Atom()
+			@"	private void Atom()
 				{
 					TT la0;
 					Skip();
