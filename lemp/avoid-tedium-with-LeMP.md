@@ -80,13 +80,13 @@ C and C++ famously have lexical macros defined with the `#define` directive. The
 
     In contrast, LeMP parses the entire source file, _then_ manipulates the syntax tree. Converting the tree back to C# code is the very last step, and this step will do things like automatically inserting parentheses to prevent this kind of problem.
 
-2. **Spooky action at a distance**: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `replace` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently (well, except the Visual Studio plugin can't).
+2. **Spooky action at a distance**: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `define` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently (well, except the Visual Studio plugin can't).
 
 3. **Limited ability**: there just aren't that many things you can accomplish with C/C++ macros. With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article).
 
 4. **Weird language**: the C/C++ preprocessor has a different syntax from normal C/C++. In contrast, LeMP code simply looks like some kind of enhanced C#.
 
-So let's talk about `replace`, the LeMP equivalent of `#define`.
+So let's talk about `replace` and `define`, the LeMP equivalents of `#define`.
 
 ### Replace ###
 
@@ -159,13 +159,13 @@ foreach (var n in numbers) {
 }
 ~~~
 
-### Replace: method-style ###
+### define ###
 
-There is an alternate syntax for `replace`, which looks like you're defining a method (or an operator). Here is a simple example:
+`define` is similar to `replace` but it looks like you're defining a method (or an operator). Here is a simple example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-replace MakeSquare($T) { 
+define MakeSquare($T) { 
     static $T Square($T x) { return x*x; }
 }
 MakeSquare(int);
@@ -187,9 +187,9 @@ float Square(float x) {
 ~~~
 </div>
 
-`replace` is a great way to construct a series of very similar methods, as this example shows. First I define `MakeSquare`, a macro that takes a single argument. Technically, `$T` can capture any syntax tree, but for this example to work properly, it must be a type name. `MakeSquare` uses that argument to generate a method called `Square`.
+`define` is a great way to construct a series of very similar methods, as this example shows. First I define `MakeSquare`, a macro that takes a single argument. Technically, `$T` can capture any syntax tree, but for this example to work properly, it must be a type name. `MakeSquare` uses that argument to generate a method called `Square`.
 
-You might run into a small problem when you're doing this: the parser is unaware of what macros exist so it has no idea that `MakeSquare` is expecting a type name as its argument (`replace` itself is also unaware of this fact, but that's another story). Because of this, certain types cannot be passed to `MakeSquare`. Most notably, a nullable type like `MakeSquare(int?)` will cause a syntax error. Use `MakeSquare(Nullable<int>)` instead.
+You might run into a small problem when you're doing this: the parser is unaware of what macros exist so it has no idea that `MakeSquare` is expecting a type name as its argument (`define` itself is also unaware of this fact, but that's another story). Because of this, certain types cannot be passed to `MakeSquare`. Most notably, a nullable type like `MakeSquare(int?)` will cause a syntax error. Use `MakeSquare(Nullable<int>)` instead.
 
 Before I give you the second example I'd like to introduce a special macro called `concatId`:
 
@@ -208,7 +208,7 @@ Console.WriteLine("Huh?");
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-replace SaveAndRestore($var = $newValue) {
+define SaveAndRestore($var = $newValue) {
   replace (TMP => concatId(old, $var));
   var TMP = $var;
   $var = $newValue;
@@ -247,7 +247,7 @@ void DoPizza(IEnumerable<Topping> toppings)
 ~~~
 </div>
 
-Here I've used both styles of `replace`, nested inside each other. One of these `replace` commands changes `TMP` to `concatId(old, $var)`. Later in the code, where it says `SaveAndRestore(_curTask = "Make pizza")`, the syntax variable `$var` becomes `_curTask`, so `concatId(old, $var)` turns into `concatId(old, _curTask)` before the replacement actually occurs. So in effect, this example creates a variable called `old_curTask` to hold the old value of `_curTask`. Then, `on_finally` is used to restore the old value of `_curTask` at the end of the method.
+Here I've used both `replace` and `define`, nested inside each other. The `replace` command changes `TMP` to `concatId(old, $var)`. Later in the code, where it says `SaveAndRestore(_curTask = "Make pizza")`, the syntax variable `$var` becomes `_curTask`, so `concatId(old, $var)` turns into `concatId(old, _curTask)` before the replacement actually occurs. So in effect, this example creates a variable called `old_curTask` to hold the old value of `_curTask`. Then, `on_finally` is used to restore the old value of `_curTask` at the end of the method.
 
 `SaveAndRestore` requires that its single argument is some kind of assignment expression. If it's not - for example, if you write
 
@@ -255,7 +255,7 @@ Here I've used both styles of `replace`, nested inside each other. One of these 
 
 you'll get a warning message that "1 macro(s) saw the input and declined to process it", and `SaveAndRestore(a + b);` will appear unchanged in the output.
 
-Method-style `replace` can also match operators. For example
+The `define` macro can also match operators. For example
 
 <div class='sbs' markdown='1'>
 ~~~csharp
@@ -274,7 +274,7 @@ x = Foo.SetAt(y, z);
 
 This example has a couple of interesting elements. First, notice that the first parameter of this "operator" is `Foo[$index]`. This means that the macro has no effect unless the left-hand side of `=` matches `Foo[$index]`. For example, `Bar[index]` would not match this pattern, but `Foo[x + y]` would. Another intersting thing is the `[Passive]` attribute. This tells the macro processor not to print a warning when an `=` operator is found that does not match the pattern. In the code afterward there are two usages of the `=` operator (the outer one, `x = (Foo[y] = z)`, and the inner one, `Foo[y] = z`). Only the inner one matches and is replaced.
 
-Technically, the method-style `replace` macro is more than stylistically different from the original `replace` macro described above. The first `replace` _directly_ performs a search-and-replace of the code that follows it. On the other hand, method-style `replace` actually _creates a new macro by the specified name_, which allows any replacements it performs to happen later on, interleaved with other macro evaluations. However, this fact doesn't make a difference in most cases.
+Technically, the `define` macro is more than stylistically different from the `replace` macro described above. `replace` _directly_ performs a search-and-replace of the code that follows it. On the other hand, `define` actually _creates a new macro by the specified name_, which allows any replacements it performs to happen later on, interleaved with other macro evaluations. However, this fact doesn't make a difference in most cases.
 
 ### Real-world use case: INotifyPropertyChanged ###
 
