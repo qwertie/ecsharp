@@ -245,12 +245,7 @@ namespace Loyc.Ecs
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs));
 
-			bool isPP = _name == S.CsPPRawText;
-			if (isPP && _out.LastCharWritten != '\n')
-				_out.Newline();
-			WriteRawText(GetRawText(_n));
-			if (isPP)
-				_out.Newline(pending: true);
+			WriteRawText(GetRawText(_n), _name == S.CsPPRawText);
 
 			return SPResult.NeedSuffixTrivia;
 		}

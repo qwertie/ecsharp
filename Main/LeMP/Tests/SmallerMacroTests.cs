@@ -127,18 +127,18 @@ namespace LeMP.Tests
 		{
 			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c.d;", 
 			         @"#importMacros(LeMP.CSharp6); a = b?.c.d;",
-			          "a = b != null ? b.c.d : null;");
+			          "a = (b != null ? b.c.d : null);");
 			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#importMacros(LeMP.CSharp6); a = B?.c.d;", 
-			         "a = ([] var B_"+n+" = B) != null ? B_"+n+".c.d : null;");
+			         "a = (([] var B_"+n+" = B) != null ? B_"+n+".c.d : null);");
 			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c[d];", 
 			         @"#importMacros(LeMP.CSharp6); a = b?.c[d];",
-			          "a = b != null ? b.c[d] : null;");
+			          "a = (b != null ? b.c[d] : null);");
 			TestEcs(@"#importMacros(LeMP.CSharp6); a = b?.c?.d();",
-			         "a = b != null ? b.c != null ? b.c.d() : null : null;");
+			         "a = (b != null ? (b.c != null ? b.c.d() : null) : null);");
 			TestBoth(@"#importMacros(LeMP.CSharp6); return a.b?.c().d!x;", 
 			         @"#importMacros(LeMP.CSharp6); return a.b?.c().d<x>;",
-			          "return a.b != null ? a.b.c().d<x> : null;");
+			          "return (a.b != null ? a.b.c().d<x> : null);");
 		}
 
 		[Test]
@@ -147,10 +147,10 @@ namespace LeMP.Tests
 			// Combine ?. with #ecs macro (#useSequenceExpressions)
 			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = B?.c.d; }",
-			          "void F() { var B_"+n+" = B; a = ([#trivia_isTmpVar] B_"+n+") != null ? B_"+n+".c.d : null; }");
+			          "void F() { var B_"+n+" = B; a = (([#trivia_isTmpVar] B_"+n+") != null ? B_"+n+".c.d : null); }");
 			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = A.B?.c.d; }",
-			         "void F() { var tmp_"+n+" = A.B; a = ([#trivia_isTmpVar] tmp_"+n+") != null ? tmp_"+n+".c.d : null; }");
+			         "void F() { var tmp_"+n+" = A.B; a = (([#trivia_isTmpVar] tmp_"+n+") != null ? tmp_"+n+".c.d : null); }");
 		}
 
 		[Test]

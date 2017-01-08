@@ -53,6 +53,7 @@
     <Compile Include="..\..\Core\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="AddLineDirectivesMacro.cs" />
     <Compile Include="AlgebraicDataType.out.cs">
       <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
       <AutoGen>True</AutoGen>

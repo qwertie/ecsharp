@@ -502,7 +502,7 @@ namespace Loyc.Ecs
 			S.TriviaInParens, S.TriviaTrailing,
 			S.TriviaNewline, S.TriviaAppendStatement, S.TriviaSpaces,
 			S.TriviaSLComment, S.TriviaMLComment, 
-			S.TriviaRawText, S.TriviaCsRawText,
+			S.TriviaRawText, S.TriviaCsRawText, S.TriviaCsPPRawText,
 			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
 		};
 
@@ -761,20 +761,19 @@ namespace Loyc.Ecs
 			}
 		}
 
-		// Checks if the specified attribute is trivia and, if so, prints it if we're
-		// at the matching location (e.g. suffixMode=true means we're after the node 
-		// right now and want to print only suffix trivia). Returns true if the 
-		// attribute is trivia and should NOT printed as a normal attribute.
+		// Checks if the specified attribute is trivia and, if so, prints it. 
+		// Returns true if the attribute is trivia and should NOT printed as 
+		// a normal attribute.
 		bool DetectAndMaybePrintTrivia(LNode attr, bool trailingMode, ref int parenCount)
 		{
 			var name = attr.Name;
 			if (!KnownTrivia.Contains(name))
 				return _o.OmitUnknownTrivia && S.IsTriviaSymbol(name);
 
-			if (name == S.TriviaRawText || name == S.TriviaCsRawText) {
+			if (name == S.TriviaRawText || name == S.TriviaCsRawText || name == S.TriviaCsPPRawText) {
 				if (!_o.ObeyRawText)
 					return _o.OmitUnknownTrivia;
-				_out.Write(GetRawText(attr), true);
+				WriteRawText(GetRawText(attr), name == S.TriviaCsPPRawText);
 			} else if (name == S.TriviaInParens) {
 				if (!trailingMode && !Flagged(Ambiguity.InDefinitionName | Ambiguity.NoParentheses)) {
 					if (!_context.CanParse(LesPrecedence.Substitute)) {
@@ -827,14 +826,19 @@ namespace Loyc.Ecs
 			}
 		}
 
-		private void WriteRawText(string text)
+		private void WriteRawText(string text, bool isPreprocessorText)
 		{
+			if (isPreprocessorText && _out.LastCharWritten != '\n')
+				_out.Newline();
 			if (text.EndsWith("\n")) {
 				// use our own newline logic so indentation works
 				_out.Write(text.Substring(0, text.Length - 1), true);
 				_out.Newline(pending: true);
-			} else
+			} else {
 				_out.Write(text, true);
+				if (isPreprocessorText)
+					_out.Newline(pending: true);
+			}
 		}
 
 		private void PrintSpaces(string spaces)
@@ -1034,7 +1038,19 @@ namespace Loyc.Ecs
 				np._out.Write("@{", true);
 				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString), true);
 				np._out.Write(" }", true);
-			}));
+			}),
+			P<IEnumerable<byte>> (np => { // Unnatural. Not produced by parser.
+				var data = (IEnumerable<byte>)np._n.Value;
+				if (np._n.BaseStyle == NodeStyle.HexLiteral)
+					np.WriteArrayLiteral("byte", data, (num, _out) => {
+						_out.Write("0x", false);
+						_out.Write(num.ToString("X", null), false);
+					});
+				else
+					np.WriteArrayLiteral("byte", data, (num, _out) => 
+						_out.Write(num.ToString(), false));
+			})
+		);
 		
 		void PrintValueToString(string suffix)
 		{
@@ -1062,13 +1078,36 @@ namespace Loyc.Ecs
 			_out.Write(string.Format(format, _n.Value), true);
 		}
 
+		void WriteArrayLiteral<T>(string elementType, IEnumerable<T> data, Action<T, INodePrinterWriter> writeElement)
+		{
+			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
+			_out.Write("new ", true);
+			_out.Write(elementType, true);
+			_out.Write("[] {", true);
+			NewlineOrSpace(NewlineOpt.AfterOpenBraceInNewExpr);
+			int count = 0;
+			foreach (T datum in data)
+			{
+				if (count++ != 0) {
+					_out.Write(',', true);
+					if ((count & 0xF) == 0)
+						NewlineOrSpace(NewlineOpt.Minimal);
+				}
+				writeElement(datum, _out);
+			}
+			NewlineOrSpace(NewlineOpt.BeforeCloseBraceInExpr);
+			_out.Write("}", true);
+			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
+		}
+
 		private void PrintLiteral()
 		{
 			Debug.Assert(_n.IsLiteral);
 			Action<EcsNodePrinter> p;
 			if (_n.Value == null)
 				_out.Write("null", true);
-			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
+			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p)
+				|| (p = LiteralPrinters.FirstOrDefault(pair => Type.GetTypeFromHandle(pair.Key).IsAssignableFrom(_n.Value.GetType())).Value) != null)
 				p(this);
 			else {
 				Errors.Write(Severity.Error, _n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);

@@ -73,6 +73,11 @@ namespace Loyc.Ecs.Tests
 			Stmt("if (a)\n  x(); // end if", stmt);
 			Stmt("if (a)\n  x();", stmt, p => { p.ObeyRawText = false; p.OmitUnknownTrivia = true; });
 
+			stmt = F.Call(S.Assign, x, F.Call(Foo))
+				.PlusAttr(F.Trivia(S.TriviaCsPPRawText, "#if DoTheFoo"))
+				.PlusTrailingTrivia(F.Trivia(S.TriviaCsPPRawText, "#endif"));
+			Stmt("#if DoTheFoo\nx = Foo();\n#endif", stmt);
+
 			var raw = F.Trivia(S.RawText, "hello!");
 			Stmt("x(hello!);", F.Call(x, raw));
 			Stmt("hello!();", F.Call(raw));
@@ -89,6 +94,15 @@ namespace Loyc.Ecs.Tests
 			Stmt("{\n  a;\n  b;\n}", F.Braces(a.PlusTrailingTrivia(F.TriviaNewline), b.PlusAttr(F.Id(S.TriviaAppendStatement))));
 			Stmt("{\n  #line 1\n  Foo;\n  #line 2\n}", F.Braces(F.Trivia(S.CsPPRawText, "#line 1"), Foo, F.Trivia(S.CsPPRawText, "#line 2")));
 			Stmt("{\n  #line 1\n  #line 2\n}",         F.Braces(F.Trivia(S.CsPPRawText, "#line 1"),      F.Trivia(S.CsPPRawText, "#line 2")));
+		}
+
+		[Test]
+		public void ByteArrayTest()
+		{
+			// Printer supports byte arrays for the sake of the `binaryFile("...")` macro
+			var bytes = new byte[] { 33,66,132,200 };
+			Expr("new byte[] { 33,66,132,200\n}", F.Literal(bytes));
+			Expr("new byte[] { 0x21,0x42,0x84,0xC8\n}", F.Literal(bytes).SetBaseStyle(NodeStyle.HexLiteral));
 		}
 
 		int _testNum;

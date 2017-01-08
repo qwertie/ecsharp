@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using System.IO;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Ecs;
-using System.Diagnostics;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
@@ -394,7 +395,8 @@ namespace LeMP
 		[LexicalMacro(@"includeFile(""Filename"")", 
 			"Reads source code from the specified file, and inserts the syntax tree in place of the macro call. "
 			+"The input language is determined automatically according to the file extension. "
-			+"For nostalgic purposes (to resemble C/C++), `#include` is a synonym of `includeFile`.", 
+			+"For nostalgic purposes (to resemble C/C++), `#include` is a synonym of `includeFile`. " 
+			+"The single argument is macro-preprocessed.",
 			"includeFile", "#include")]
 		public static LNode includeFile(LNode node, IMacroContext context)
 		{
@@ -405,6 +407,40 @@ namespace LeMP
 				var path = System.IO.Path.Combine(inputFolder, filename);
 				var contents = LNode.List(parser.ParseFile(path, context.Sink));
 				return LNode.Call(S.Splice, contents, node);
+			}
+			return null;
+		}
+
+		[LexicalMacro(@"includeFileBinary(""Filename"")", 
+			 "Reads bytes from a binary file, and returns them as a byte array literal. "
+			+"The single argument is macro-preprocessed.")]
+		public static LNode includeFileBinary(LNode node, IMacroContext context)
+		{
+			string filename;
+			if (node.ArgCount == 1 && (filename = context.PreProcess(node[0]).Value as string) != null) {
+				var inputFolder = context.ScopedProperties.TryGetValue((Symbol)"#inputFolder", "").ToString();
+				var path = System.IO.Path.Combine(inputFolder, filename);
+				var bytes = File.ReadAllBytes(path);
+				var literal = F.Literal(bytes);
+				// hex is typically more readable but decimal takes up fewer characters
+				if (bytes.Length <= 1024)
+					literal.SetBaseStyle(NodeStyle.HexLiteral);
+				return literal;
+			}
+			return null;
+		}
+
+		[LexicalMacro(@"includeFileText(""Filename"")", 
+			 "Reads a UTF-8 text file into a string literal. Newlines become '\n'."
+			+"The single argument is macro-preprocessed.")]
+		public static LNode includeFileText(LNode node, IMacroContext context)
+		{
+			string filename;
+			if (node.ArgCount == 1 && (filename = context.PreProcess(node[0]).Value as string) != null) {
+				var inputFolder = context.ScopedProperties.TryGetValue((Symbol)"#inputFolder", "").ToString();
+				var path = System.IO.Path.Combine(inputFolder, filename);
+				var text = File.ReadAllText(path, Encoding.UTF8);
+				return F.Literal(text).SetBaseStyle(NodeStyle.TDQStringLiteral);
 			}
 			return null;
 		}

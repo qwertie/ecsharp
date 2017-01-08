@@ -35,11 +35,11 @@ namespace LeMP
 			var inherited = new HashSet<Symbol>();
 			foreach (var pair in MacroContext.GetOptions(options))
 			{
-				if (pair.Key.Name == "prefix" && pair.Value.IsId)
+				if (pair.Key.Name.Name == "prefix" && pair.Value.IsId)
 					prefix = pair.Value.Name.Name;
-				else if (pair.Key.Name == "inherit" && pair.Value.Value is Symbol)
+				else if (pair.Key.Name.Name == "inherit" && pair.Value.Value is Symbol)
 					inherited.Add((Symbol)pair.Value.Value);
-				else if (pair.Key.Name == "inherit" && (pair.Value.Calls(S.Braces) || pair.Value.Calls(S.Tuple)) && pair.Value.Args.All(n => n.Value is Symbol))
+				else if (pair.Key.Name.Name == "inherit" && (pair.Value.Calls(S.Braces) || pair.Value.Calls(S.Tuple)) && pair.Value.Args.All(n => n.Value is Symbol))
 					foreach (var arg in pair.Value.Args)
 						inherited.Add((Symbol)arg.Value);
 				else
