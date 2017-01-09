@@ -18,41 +18,27 @@ build_script:
     - msbuild /p:Configuration=Release.NET35 Loyc-Slim.sln
 
 after_build:
-    # Package the Loyc.Essentials library
+    # Package the Core libraries:
+    #  - Loyc.Essentials.dll  (Loyc.Essentials.$PKG_VERSION.nupkg)
+    #  - Loyc.Collections.dll (Loyc.Collections.$PKG_VERSION.nupkg)
+    #  - Loyc.Math.dll        (Loyc.Math.$PKG_VERSION.nupkg)
+    #  - Loyc.Syntax.dll      (Loyc.Syntax.$PKG_VERSION.nupkg)
+    #  - Loyc.Utilities.dll   (Loyc.Utilities.$PKG_VERSION.nupkg)
+    #  - All 5 together       (LoycCore.$PKG_VERSION.nupkg)
     - nuget pack -Version %PKG_VERSION% Core\Loyc.Essentials.nuspec
-    # Package ends up in Loyc.Essentials.$PKG_VERSION.nupkg
-
-    # Package the Loyc.Collections library
     - nuget pack -Version %PKG_VERSION% Core\Loyc.Collections.nuspec
-    # Package ends up in Loyc.Collections.$PKG_VERSION.nupkg
-
-    # Package the Loyc.Math library
     - nuget pack -Version %PKG_VERSION% Core\Loyc.Math.nuspec
-    # Package ends up in Loyc.Math.$PKG_VERSION.nupkg
-
-    # Package the Loyc.Syntax library
     - nuget pack -Version %PKG_VERSION% Core\Loyc.Syntax.nuspec
-    # Package ends up in Loyc.Syntax.$PKG_VERSION.nupkg
-
-    # Package the Loyc.Utilities library
     - nuget pack -Version %PKG_VERSION% Core\Loyc.Utilities.nuspec
-    # Package ends up in Loyc.Utilities.$PKG_VERSION.nupkg
-
-    # Package the LoycCore libraries
     - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
-    # Package ends up in LoycCore.$PKG_VERSION.nupkg
 
-    # Package the ECSharp library
-    - nuget pack -Version %PKG_VERSION% ECSharp.nuspec
-    # Package ends up in ECSharp.$PKG_VERSION.nupkg
-
-    # Package the LeMP binary
-    - nuget pack -Version %PKG_VERSION% LeMP.nuspec
-    # Package ends up in LeMP.$PKG_VERSION.nupkg
-
-    # Package the LLLPG binary
-    - nuget pack -Version %PKG_VERSION% LLLPG.nuspec
-    # Package ends up in LLLPG.$PKG_VERSION.nupkg
+    # Package the Main libraries:
+    # - Loyc.Ecs.dll (Loyc.Ecs.$PKG_VERSION.nupkg)
+    # - LeMP.exe     (LeMP.$PKG_VERSION.nupkg)
+    # - LLLPG.exe    (LLLPG.$PKG_VERSION.nupkg)
+    - nuget pack -Version %PKG_VERSION% Main\Loyc.Ecs.nuspec
+    - nuget pack -Version %PKG_VERSION% Main\LeMP.nuspec
+    - nuget pack -Version %PKG_VERSION% Main\LLLPG.nuspec
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
@@ -72,13 +58,13 @@ artifacts:
 
 # Uncomment the section below to push the NuGet
 # package whenever a git tag is pushed.
-#deploy:
-#    - provider: NuGet
-#      server:
-#      api_key:
-#          secure: Encrypted key goes here. Use https://ci.appveyor.com/tools/encrypt to encrypt your NuGet API key.
-#      skip_symbols: true
-#      artifact: /.*\.nupkg/
-#      on:
-#          branch: master # Release from master branch only.
-#          appveyor_repo_tag: true # Deploy on tag push only.
+deploy:
+    - provider: NuGet
+      server:
+      api_key:
+          secure: DHTp3wMjKqyca2PWftol2wq7DxE9KdL8AizHVIS14T4DSSMXgc0bIiCGvvA8SkTH
+      skip_symbols: true
+      artifact: /.*\.nupkg/
+      on:
+          branch: master # Release from master branch only.
+          appveyor_repo_tag: true # Deploy on tag push only.
