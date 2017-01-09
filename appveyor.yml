@@ -18,9 +18,41 @@ build_script:
     - msbuild /p:Configuration=Release.NET35 Loyc-Slim.sln
 
 after_build:
+    # Package the Loyc.Essentials library
+    - nuget pack -Version %PKG_VERSION% Core\Loyc.Essentials.nuspec
+    # Package ends up in Loyc.Essentials.$PKG_VERSION.nupkg
+
+    # Package the Loyc.Collections library
+    - nuget pack -Version %PKG_VERSION% Core\Loyc.Collections.nuspec
+    # Package ends up in Loyc.Collections.$PKG_VERSION.nupkg
+
+    # Package the Loyc.Math library
+    - nuget pack -Version %PKG_VERSION% Core\Loyc.Math.nuspec
+    # Package ends up in Loyc.Math.$PKG_VERSION.nupkg
+
+    # Package the Loyc.Syntax library
+    - nuget pack -Version %PKG_VERSION% Core\Loyc.Syntax.nuspec
+    # Package ends up in Loyc.Syntax.$PKG_VERSION.nupkg
+
+    # Package the Loyc.Utilities library
+    - nuget pack -Version %PKG_VERSION% Core\Loyc.Utilities.nuspec
+    # Package ends up in Loyc.Utilities.$PKG_VERSION.nupkg
+
     # Package the LoycCore libraries
     - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
-    # Package ends up in LoycCore.$SEMVER.nupkg
+    # Package ends up in LoycCore.$PKG_VERSION.nupkg
+
+    # Package the ECSharp library
+    - nuget pack -Version %PKG_VERSION% ECSharp.nuspec
+    # Package ends up in ECSharp.$PKG_VERSION.nupkg
+
+    # Package the LeMP binary
+    - nuget pack -Version %PKG_VERSION% LeMP.nuspec
+    # Package ends up in LeMP.$PKG_VERSION.nupkg
+
+    # Package the LLLPG binary
+    - nuget pack -Version %PKG_VERSION% LLLPG.nuspec
+    # Package ends up in LLLPG.$PKG_VERSION.nupkg
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.

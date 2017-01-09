@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>LLLPG</id>
+    <version>$version$</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <projectUrl>http://ecsharp.net/lllpg/</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A recursive-decent parser generator for C#.</summary>
+    <description>LLLPG is a recursive-decent parser generator for C#, with 
+      Visual Studio integration and a feature set better than ANTLR version 2.
+      This package contains the core LLLPG executable, which can be run from the 
+      command-line. To integrate LLLPG into Visual Studio, please download a 
+      release from https://github.com/qwertie/ecsharp/releases</description>
+    <releaseNotes>See http://ecsharp.net/lllpg/version-history.html</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Loyc LL Parser Generator LLLPG</tags>
+    <dependencies>
+      <dependency id="Loyc.Collections" version="$version$" />
+      <dependency id="Loyc.Essentials" version="$version$" />
+      <dependency id="Loyc.Syntax" version="$version$" />
+      <dependency id="Loyc.Utilities" version="$version$" />
+      <dependency id="LeMP" version="$version$" />
+      <dependency id="Loyc.Ecs" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\readme.md" target="readme.txt" />
+    <file src="..\Bin\Release.NET3\LLLPG.*" target="lib\net35-client\" />
+    <file src="..\Bin\Release.NET4\LLLPG.*" target="lib\net40-client\" />
+    <file src="..\Bin\Release.NET45\LLLPG.*" target="lib\net45\" />
+  </files>
+</package>

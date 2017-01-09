@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Loyc.Ecs</id>
+    <version>$version$</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <projectUrl>http://ecsharp.net</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Enhanced C# parser and printer</summary>
+    <description>Enhanced C# (or EC#) is a liberalization and regularization of the C# language.
+
+    This package contains the Loyc.Ecs.dll core library, which allows you to parse C# or EC# code 
+    and to print out C# or EC# syntax trees as code. If you want to expand EC# macros, you also 
+    need the LeMP package. To generate code at compile-time within your project, use LeMP:
+      http://ecsharp.net/lemp</description>
+    <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Loyc CodeGen CodeGeneration Enhanced C# EC# ECSharp Parser</tags>
+    <dependencies>
+      <dependency id="Loyc.Collections" version="$version$" />
+      <dependency id="Loyc.Essentials" version="$version$" />
+      <dependency id="Loyc.Syntax" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\readme.md" target="readme.txt" />
+    <file src="..\Bin\Release.NET3\Loyc.Ecs.*" target="lib\net35-client\" />
+    <file src="..\Bin\Release.NET4\Loyc.Ecs.*" target="lib\net40-client\" />
+    <file src="..\Bin\Release.NET45\Loyc.Ecs.*" target="lib\net45\" />
+  </files>
+</package>
