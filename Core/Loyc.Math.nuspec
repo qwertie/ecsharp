@@ -9,10 +9,10 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Defines numeric and geometric data types.</summary>
-    <description>Loyc.Math is a library that supplies you with specialized numeric and geometric data types.</description>
+    <description>Additional functionality beyond `System.Math` in `MathEx`; basic geometrical interfaces and structures (points, lines, rectangles); numeric interfaces and "trait" types for doing arithmetic in generic code; fixed-point structures; 128-bit integer arithmetic.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2017</copyright>
-    <tags>Loyc Core Math Geometry</tags>
+    <tags>Loyc Core Math Geometry FixedPoint</tags>
     <dependencies>
       <dependency id="Loyc.Essentials" version="$version$" />
     </dependencies>
