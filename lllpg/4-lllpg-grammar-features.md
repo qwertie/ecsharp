@@ -42,8 +42,8 @@ But now you'll have a problem, because this matches an empty input, or it matche
 You can actually prevent it from matching an empty input as follows:
 
 ~~~csharp
-token Number @[ &('0'..'9'|'.')
-                '0'..'9'* ('.' '0'..'9'+)? ];
+token Number @{ &('0'..'9'|'.')
+                '0'..'9'* ('.' '0'..'9'+)? };
 ~~~
 
 Here I have introduced the _zero-width assertion_ or ZWA, also called an _and-predicate_ because it uses the "and" sign (&). There are two kinds of and-predicates, which are called the "syntactic predicate" and the "semantic predicate". This one is a _syntactic predicate_, which means that it tests for syntax, which means it tests a grammar fragment starting at the current position. And since it's a zero-width assertion, it does not consume any input (more precisely, it consumes input and then backtracks to the starting position, regardless of success or failure). and-predicates have two forms, the positive form `&` which checks that a condition is true, and the negative form `&!` which checks that a condition is false.
@@ -112,10 +112,10 @@ void Number()
 Moving on now, another approach is:
 
 ~~~csharp
-token Number @[ {bool dot=false;}
+token Number @{ {bool dot=false;}
                 ('.' {dot=true;})?
                 '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-              ];
+              };
 ~~~
 
 Here I use the other kind of ZWA, the _semantic predicate_, to test whether dot is false (`&{!dot}`, which can be written equivalently as `&!{dot}`). `&{expr}` simply specifies a condition that must be true in order to proceed; it is normally used to resolve ambiguity between two possible paths through the grammar. Semantic predicates are a distinctly simpler feature than syntactic predicates and were implemented first in LLLPG. They simply test the user-defined expression during prediction.
@@ -165,18 +165,20 @@ void Number()
 The expression inside `&{...}` can include the "substitution variables" `$LI` and `$LA`, which refer to the current lookahead index and the current lookahead value; these are useful if you want to run a test on the input character. For example, when if you want to detect _letters_, you might write:
 
 ~~~csharp
-rule Letter @[ 'a'..'z' | 'A'..'Z' ];
-token Word @[ Letter+ ];
+rule Letter @{ 'a'..'z' | 'A'..'Z' };
+token Word @{ Letter+ };
 ~~~
 
 but this doesn't detect _all_ possible letters; there are áĉçèntéd letters to worry about, grΣεk letters, Russiaи letters and so on. I've been supporting these other letters with a semantic and-predicate:
 
 ~~~csharp
-rule Letter @[ 'a'..'z' | 'A'..'Z'| &{char.IsLetter((char) $LA)} 0x80..0xFFFC ];
-[FullLLk] token Word @[ Letter+ ];
+rule Letter @{ 'a'..'z' | 'A'..'Z'| &{[Hoist] char.IsLetter((char) $LA)} 0x80..0xFFFC };
+[FullLLk] token Word @{ Letter+ };
 ~~~
 
-`0x80..0xFFFC` denotes all the non-ASCII characters supported by a .NET char. `$LA` will be replaced with the appropriate lookahead token, which is most often `LA0`, but not always. Now, when you look at the generated code, you'll notice that the and-predicate has been copied into the `Word` rule:
+`0x80..0xFFFC` denotes all the non-ASCII characters supported by a .NET char. `$LA` will be replaced with the appropriate lookahead token, which is most often `LA0`, but not always. 
+
+The `[Hoist]` marker allows this check to be copied (in other words, "hoisted") into other rules, specifically the `Word` rule:
 
 ~~~csharp
 void Word()
@@ -199,20 +201,22 @@ void Word()
 }
 ~~~
 
-Copying and-predicates across rules is normal behavior that occurs whenever one rule needs to use the and-predicate to decide whether to call another rule. ANTLR calls this "hoisting", so that's what I call it too: the predicate was _hoisted_ from `Letter` to `Word`. (In this particular case I had to add `FullLLk` to make it work this way; more about that in a future article.)
+This can occur when one rule needs to use the and-predicate to decide whether to call another rule. ANTLR calls this "hoisting", so that's what I call it too: the predicate was _hoisted_ from `Letter` to `Word`. (In this particular case I had to add `FullLLk` to make it work this way; more about that in a future article.)
 
-While writing the EC# parser, I noticed that hoisting is very bad when local variables are involved, since a function obviously can't refer to a local variable of another method. For example, the predicate in the earlier `Number` example should not be hoisted. To ensure that it is not copied between rules, you can add the `[Local]` attribute _inside_ the braces:
+Originally, copying and-predicates across rules was the default behavior for both kinds of predicates (syntactic and semantic). However, semantic predicates may refer to local variables, so hoisting by default can produce invalid output. Therefore, the default has been changed to hoist syntactic predicates but not semantic predicates. You can add the attribute `[Local]` or `[Hoist]` (right after `&{`) to choose whether a semantic predicate should be hoisted.
+
+**Note**: Currently the `[Local]` and `[Hoist]` flags are implemented only for `&{semantic}` predicates, not `&(syntactic)` predicates, because there is no syntax defined for attaching options to the latter.
+
+Here's another example, in which hoisting cannot happen:
 
 ~~~csharp
-token Number  @[ {bool dot=false;}
+token Number  @{ {bool dot=false;}
                  ('.' {dot=true;})?
-                 '0'..'9'+ (&{[Local] !dot} '.' '0'..'9'+)?
-               ];
+                 '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+               };
 ~~~
 
-**Note**: in the future I may make `[Local]` the default behavior for semantic predicates, so I have introduced `[Hoist]` as the opposite of `[Local]`. In order to ensure that the meaning of your grammar does not change in the future, **you should mark _all_ your semantic predicates with either `[Local]` or `[Hoist]`**.
-
-**Note**: Currently the `[Local]` flag is implemented only for `&{semantic}` predicates, not `&(syntactic)` predicates.
+While LLLPG is analyzing other rules, it acts as if `&{!dot}` doesn't appear in `Number`.
 
 ### Gates
 
@@ -235,7 +239,7 @@ Gates are a way of lying to the prediction system. You are telling it to expect 
     
 is nullable, so it can match a non-numeric input simply by doing nothing. The gate ensures that `Token` doesn't call the rule on a non-numeric input, basically by _lying_ and saying "this rule starts with `'.'? '0'..'9'`, so don't call it if the input is anything else".
 
-Here's the code generated for Number, but note that `'0'..'9'* ('.' '0'..'9'+)?` (without the gate) would produce exactly the same code.
+Here's the code generated for `Number`, but note that `'0'..'9'* ('.' '0'..'9'+)?` (without the gate) would produce exactly the same code.
 
 ~~~csharp
 void Number()
@@ -286,7 +290,7 @@ One more thing, hardly worth mentioning. There are actually two gate operators: 
 1. the left-hand side and right-hand side always have the same length,
 2. both sides are short, so that the follow set of the gate expression `P => M` can affect prediction decisions.
 
-So far, I have always used `=>` and never needed `<=>`.
+You almost always what the normal gate. As of January 2017, I have used `=>` dozens of times and `<=>` just once.
 
 ### More about and-predicates
 
@@ -320,10 +324,10 @@ This example will give the following warning: "It's poor style to put a code blo
 In a different sense, though, and-predicates might run after you might expect. Let's look again at the code for this `Number` rule from earlier:
 
 ~~~csharp
-token Number  @[ {dot::bool=false;}
+token Number  @{ {dot::bool=false;}
                  ('.' {dot=true;})?
                  '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-               ];
+               };
 ~~~
 
 The generated code for this rule is:
@@ -355,7 +359,7 @@ void Number()
 Here I would draw your attention to the way that `(&{!dot} '.' '0'..'9'+)?` is handled: first LLLPG checks `if (la0 == '.')`, then `if (!dot)` afterward, even though `&{!dot}` is written first in the grammar. Another example shows more specifically how LLLPG behaves:
 
 ~~~csharp
-token Foo @[ (&{a()} 'A' &{b()} 'B')? ];
+token Foo @{ (&{a()} 'A' &{b()} 'B')? };
 
 void Foo()
 {
@@ -378,8 +382,8 @@ void Foo()
 First LLLPG tests for `'A'`, then it checks `&{a()}`, then it tests for `'B'`, and finally it checks `&{b()}`; it is as if the and-predicates are being "bumped" one position to the right. Actually, I decided that all zero-width  assertions should work this way for the sake of performance. To understand this, consider the `Letter` and `Word` rules from earlier:
 
 ~~~csharp
-rule Letter @[ 'a'..'z' | 'A'..'Z'| &{char.IsLetter($LA -> char)} 0x80..0xFFFC ];
-[FullLLk] token Word @[ Letter+ ];
+rule Letter @{ 'a'..'z' | 'A'..'Z'| &{char.IsLetter($LA -> char)} 0x80..0xFFFC };
+[FullLLk] token Word @{ Letter+ };
 ~~~
 
 In the code for `Word` you can see that `char.IsLetter` is called after the tests on LA0:
@@ -584,13 +588,13 @@ public class Parser : BaseLexer {
   
   LLLPG (lexer(terminalType: int));
   
-  public token int ParseInt() @[
+  public token int ParseInt() @{
     ' '*
     (neg:'-')?
     ( digit:='0'..'9' {$result = 10*$result + (digit - '0');} )+ 
     EOF
     {if (neg != 0) $result = -$result;}
-  ];
+  };
 }
 ~~~
 
@@ -618,13 +622,13 @@ public int ParseInt()
 You don't even have to explicitly apply labels. The above rule could be written like this instead: 
 
 ~~~csharp
-public token int ParseInt() @[
+public token int ParseInt() @{
     ' '*
     ('-')?
     ( '0'..'9' {$result = 10*$result + ($('0'..'9') - '0');} )+ 
     EOF
     {if ($'-' != 0) $result = -$result;}
-];
+};
 ~~~
 
 In this version I removed the labels `neg` and `digit`, instead referring to `$'-'` and `$('0'..'9')` in my grammar actions. This makes LLLPG create two variables to represent the value of `'-'` and `'0'..'9'`:
@@ -650,11 +654,11 @@ public class Parser : BaseLexer {
   
   LLLPG (lexer(terminalType: int));
   
-  public rule int ParseInt() @[
+  public rule int ParseInt() @{
     ' '* (digits+:'0'..'9')+
     // Use LINQ to convert the list of digits to an integer
     {return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));}
-  ];
+  };
 }
 
 /// Generated output for ParseInt()
@@ -698,16 +702,16 @@ You can only use these operators on "primitive" grammar elements: terminal sets 
 In a rare victory for feature creep, LLLPG 1.3 lets you mark a rule with an extra "word" attribute, which can be basically any word, and then refer to that word with the "any" directive. For example:
 
 ~~~csharp
-rule Words @[ (any fruit ' ')* ];
-fruit rule Apple @[ "apple" ];
-fruit rule Grape @[ "grape" ];
-fruit rule Lemon @[ "lemon" ];
+rule Words @{ (any fruit ' ')* };
+fruit rule Apple @{ "apple" };
+fruit rule Grape @{ "grape" };
+fruit rule Lemon @{ "lemon" };
 ~~~
 
 Here, the `Words` rule uses `any fruit`, which is equivalent to
 
 ~~~csharp
-rule Words @[ ((Apple / Grape / Lemon) ' ')* ];
+rule Words @{ ((Apple / Grape / Lemon) ' ')* };
 ~~~
 
 The word `fruit` is stripped from the output. You could also write `[fruit]` as a normal attribute with square brackets around it, but in that case the attribute _remains_ in the output.
@@ -750,17 +754,17 @@ You can add parameters and a return value to any rule, and use parameters when c
 // Define a rule that takes an argument and returns a value.
 // Matches a pattern like TT.Num TT.Comma TT.Num TT.Comma TT.Num...
 // with a length that depends on the 'times' argument.
-token double Mul(int times) @[
+token double Mul(int times) @{
     x:=TT.Num 
     nongreedy(
        &{times>0} {times--;}
         TT.Comma y:=Num
         {x *= y;})*
     {return x;}
-];
+};
 // To call a rule with a parameter, add a parameter list after 
 // the rule name.
-rule double Mul3 @[ x:=Mul(3) {return x;} ];
+rule double Mul3 @{ x:=Mul(3) {return x;} };
 ~~~
 
 Here's the code generated for this parser:
@@ -866,22 +870,22 @@ The problem was hard to track down because it only seemed to happen in large, co
 
     [DefaultK(2)] [FullLLk(false)]
     LLLPG lexer {
-        rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-        rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3'
+        rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
+        rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3'
                  | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-                 | &{h} '8' | &{i} '9' ];
-        rule Start @[ (WeirdDigit / PositiveDigit)* ];
+                 | &{h} '8' | &{i} '9' };
+        rule Start @{ (WeirdDigit / PositiveDigit)* };
     }
 
 Originally LLLPG took about 15 seconds to process this, but I was able to fix it; now LLLPG can process this grammar with no perceptible delay. However, I realized that there was a similar grammar that the fix wouldn't fix at all:
 
     [DefaultK(2)] [FullLLk(false)]
     LLLPG lexer {
-        rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-        rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3'
+        rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
+        rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3'
                  | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-                 | &{h} '8' | &{i} '9' ];
-        rule Start @[ WeirdDigit+ / PositiveDigit+ ];
+                 | &{h} '8' | &{i} '9' };
+        rule Start @{ WeirdDigit+ / PositiveDigit+ };
     }
 
 Again, this takes about 15 seconds at LL(2) and virtually unlimited time at LL(3), and it looks like major design changes will be needed to overcome the problem.

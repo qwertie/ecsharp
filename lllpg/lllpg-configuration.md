@@ -81,6 +81,7 @@ The following options are available for both `lexer` and `parser`:
 - `terminalType: T`: data type of terminals. This is used by the colon operator, e.g. `x:Terminal`, which becomes `x = Match(Terminal)` in the output, declares a variable `x` of this type to store the terminal.
 - `setType: T`: data type for large sets. When you write a set with more than four elements, such as `'a'|'e'|'i'|'o'|'u'|'y'`, LLLPG generates a set object and uses `set.Contains(la0)` for prediction and `Match(set)` for matching, e.g. instead of `Match('a', 'e', 'i', 'o', 'u', 'y')` it generates a set with a statement like `static HashSet<int> RuleName_set0 = NewSet('a', 'e', 'i', 'o', 'u', 'y');` and then calls `Match(RuleName_set0)`. The default is `HashSet<int>`.
 - `listInitializer: e`: Sets the data type of lists declared automatically when you use the `+:` operator. An initializer like `Type x = expr` causes `Type` to be used as the list type and `expr` as the initialization expression. The `Type` can have a type parameter `T` that is replaced with the appropriate item type. The default is `listInitializer: List<T> = new List<T>()`.
+- `noCheckByDefault: bool`: If this option is true, calls to `Check()` are eliminated when using semantic or syntactic predicates.
 
 The following options are available only for `parser`:
 
@@ -104,7 +105,8 @@ In addition to the `lexer` and `parser` options above, you can add one or more o
 - `[NoDefaultArm(true)]`: adds a call to `Error(...)` at all branching points for which you did not provide a `default` or `error` arm (see §"Error handling mechanisms" below).
 - `[LL(int)]` (synonyms: `[k(int)]` and `[DefaultK(int)]`): specifies the default maximum number of lookahead characters or tokens in this grammar.
 - `[AddComments(false)]`: by default, a comment line is printed in the output file in front of the code generated for every Alts (branching point: `| / * ?`). `[AddComments(false)]` removes these comments.
-- `[AddCsLineDirectives(false)]`: by default, `#line` directives are added to the output, in an effort to let errors in actions in the C# file point back to the EC# file. This feature doesn't work that well since only line numbers are translated (not column numbers), and it only works inside rules (not inside other code in your .ecs or .les file). This option turns off `#line` directives, replacing them with comments (e.g. `// line 26`).
+- `[AddCsLineDirectives(true)]`: adds `#line` directives to the output, in an effort to let errors in actions in the C# file point back to the EC# file. This feature doesn't work so well, since only line numbers are translated (not column numbers), and it only works inside rules (not inside other code in your .ecs or .les file). This option is largely superceded by the `#lines;` macro, which can be added to the top of any .ecs file to add `#line` directives throughout it.
+- `[PrematchByDefault]`: if a rule is only called by other rules (not called from the outside) then "prematch analysis" can sometimes replace `Match()` calls with `Skip()` calls to improve performance. By default, this is only done for rules that are marked `private`, but `PrematchByDefault` extends this optimization to rules that have no access modifier (not `public`, nor `private`, nor `protected` nor `internal`.)
 
 Setting lookahead
 -----------------

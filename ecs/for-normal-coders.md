@@ -10,9 +10,9 @@ commentIssueId: 28
 Introduction
 ------------
 
-Enhanced C# (EC#) is a new programming language intended to supercharge C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my [EC# for PL Nerds](for-programming-language-pundits.html) series.
+Enhanced C# (EC#) is a new programming language intended to improve C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my [EC# for PL Nerds](for-programming-language-pundits.html) series.
 
-EC# tries to be about 99.9% backward compatible with C#, and in fact compiles itself down to plain C#; eventually it would be nice to have a proper .NET compiler that produces CIL/MSIL, but some may find it's _more_ useful without one, because compiling to C# means perfect interoperability with existing code. Take any existing C# project and you can add Enhanced C# to it, without even breaking the builds of other team members. And if you decide you don't want to use it anymore, you can just throw away the Enhanced C# code and keep the generated C# code.
+EC# tries to be about 99.9% backward compatible with C#, and in fact compiles itself down to plain C#; eventually it would be nice to have a proper .NET compiler that produces CIL/MSIL, but some may find it's _more_ useful without one, because compiling to C# means perfect interoperability with existing code. Take any existing C# project and you can add Enhanced C# to it, without even breaking the builds of other team members. And if you decide you don't want to use it anymore, you can just throw away the Enhanced C# code and keep the generated C# code. Comments are even preserved in the output code!
 
 Through EC#, I planned to enhance C# with the following categories of features:
 
@@ -261,7 +261,7 @@ long MethodB(A objectA, B objectB) ==> _obj.#;
 
 I think that writing wrappers is common enough to justify a little bit of syntactic sugar, so Enhanced C# defines a forwarding operator `==>` (I could have written the forwarding macro without changing the EC# parser, it would have just had to rely on a less elegant syntax).
 
-After `==>` you specify the name of the target method or property. The hash mark `#` refers to the name of the _current_ method or property, in this case `MethodB`. So the output code is:
+After `==>` you specify the name of the target method or property. The hash mark `#` represents the name of the _current_ method or property, in this case `MethodB`. So the output code is:
 
 ~~~csharp
 long MethodB(A objectA, B objectB)
@@ -469,12 +469,12 @@ You can learn more about code contracts in the [LeMP manual](http://ecsharp.net/
 Symbols
 -------
 
-I was first introduced to the concept of a symbol in Ruby, where is commonly used (instead of enumerations) to indicate options when calling a method. A symbol is like a string, except that it is "interned" by default. This means that the it is guaranteed that only one instance of a symbol string exists. Because of that, comparing two symbols for equality means comparing two references, which is faster than comparing two strings, and the the same speed as comparing two integer variables or enums.
+I was first introduced to the concept of a symbol in Ruby, where is commonly used (instead of enumerations) to indicate options when calling a method. A symbol is like a string, except that it is "interned" by default. This means that the it is guaranteed that only one instance of a symbol string exists. Because of that, comparing two symbols for equality means comparing two references, which is faster than comparing two strings, and the the same speed as comparing two integer variables or enums. Also, the hashcode of a Symbol is cached.
 
-The same concept exists in other languages too, such as LISP. Symbols are more convenient than enums for two reasons:
+The same concept exists in other languages too, such as LISP. Symbols are sometimes more convenient than enums because
 
-1. When calling a method, you don't have to write the name of the enum type.
-2. When defining a method, you don't have to _define_ an enum type.
+- When calling a method, you don't have to write the name of the enum type.
+- When defining a method, you don't have to _define_ an enum type.
 
 The second point is more important. A lot of times people use one or more boolean flags or integers rather than a descriptive enum because it is inconvenient to define one. Usually you don't want to define the enum right beside the method that needs it, because the caller would have to qualify the name excessively:
 
@@ -493,7 +493,7 @@ var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImme
 
 Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But it is inconvenient to maintain and document an `enum` located _outside_ the class. So to avoid the hassle, you replace `MaintainConnection option` with `bool maintainConnection` and you're done.
 
-Symbols make this easier. They are written with `@@DoubleAtSigns`. The above code would be written like this in EC#:
+Symbols make this easier. They are written with `@@DoubleAtSigns`. The above code could be written like this in EC#:
 
 ~~~csharp
 class DatabaseManager {
@@ -510,7 +510,12 @@ void Open() {
 
 The `[requires]` attribute is one of the code contracts mentioned in the previous section; the hash mark `#` is a shortcut that refers to "the current parameter", i.e. `option`.
 
-There's one more wrinkle. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. Specifically, you need to write `#ecs;` at the top of the source file (or use the old method, which is to write `#useSymbols;` near the beginning of any class that uses symbols.) For example:
+Personally though, I still use traditional enums in EC# except in cases where the enum needs to be extensible (when a derived class or other code can define new values). Often, I use Symbols to represent names of keys defined at run-time, such as unique identifiers of field names in a file. Such names can be represented by strings, but Symbols have a couple of advantages:
+
+- Higher performance - better for Dictionary keys
+- They have a different data type than `string` so you can't mix them up with string _values_
+
+I have to add something more. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. Specifically, you need to write `#ecs;` at the top of the source file (or use the old method, which is to write `#useSymbols;` near the beginning of any class that uses symbols.) For example:
 
 ~~~csharp
 #ecs;
@@ -537,11 +542,11 @@ class DatabaseManager
 }
 ~~~
 
-The `Symbol` type can be found in Loyc.Essentials.dll (part of LoycCore on NuGet) in the `Loyc` namespace.
+The `Symbol` type itself is defined in Loyc.Essentials.dll (available on NuGet) in the `Loyc` namespace.
 
 Since the `Symbol` class has a explicit cast from `string`, in plain C# you can write `(Symbol)"SymbolName"` to convert a string to a Symbol at runtime, in order to call methods that expect Symbols.
 
-Currently, symbols are not treated as constants, so you cannot use them as arguments to attributes, or as switch cases, or as default values to methods.
+In EC#, symbols are not currently treated as constants, so you cannot use them as arguments to attributes, or as switch cases, or as default values to methods.
 
 `on_finally`
 ------------
@@ -563,7 +568,7 @@ void Method()
 }
 ~~~
 
-This is the kind of thing where `on_finally` is useful. The above code can be rewritten like so:
+This is where `on_finally` is useful. The above code can be rewritten like so:
 
 ~~~csharp
 void Method()
@@ -619,47 +624,68 @@ public static IEnumerable<Tuple<T, int>> WithIndexes(this IEnumerable<T> list)
 
 If you prefer [Pairs](http://ecsharp.net/doc/code/structLoyc_1_1Pair_3_01T1_00_01T2_01_4.html) over tuples of two, you can use [`#setTupleType(2, Pair);`](http://ecsharp.net/lemp/ref-other.html#settupletype) to accomplish that.
 
+**Note:** Tuples are coming to C# 7, but they work differently than in Enhanced C# - for starters, C# 7 tuples have a new data type, `ValueTuple`. EC# will be changed soon to match C# 7.
+
 The real power of tuples is that you can easily "unpack" them in EC#. If a function returns a pair of things (even if that function was written in "plain" C#), you can write:
 
 ~~~csharp
 (var firstThing, var secondThing) = FunctionThatReturnsAPair();
 ~~~
 
-There are few shortcuts for _lists_ of tuples; for example you can't currently write code as elegant as
-
-~~~csharp
-list.WithIndexes().ForEach(((var item, int i)) => Console.WriteLine($"list[$i] = $item"));
-~~~
-
-However, this is valid EC# _syntax_, which means someone could implement this feature as a macro if they so desired.
-
-Here, two variables "item" and "i" are created to hold the two subvalues of each tuple.
-
 Replace and unroll
 ------------------
 
-If, for some reason, you are forced to write several methods that are identical except for one data type, or several classes that are identical except for one thing, then `replace`, `unroll` and code snippets might be for you.
+If, for some reason, you are forced to write several methods that are identical except for one data type, or several classes that are identical except for one thing, then `define` and `replace` might be for you.
 
 I'll just explain this briefly with an example. Let's suppose your class has a bunch of properties and that for some reason you are required to write a separate method that does some task for each property. Why would you need so many separate methods? I don't know. It's a code smell. But sometimes in the real world, you get yourself in situations where you need to do repetitive tasks or write repetitive code. So let's just say you've landed in one of these situations, you're writing repetitive code, and there's no alternative. 
 
-That's where `unroll` and `replace` come in. Let's say the task has something to do with, I don't now, serialization:
+That's where `define` and `replace` come in.
+
+Let's start simple. Suppose we need to insert exactly the same code block in multiple classes, such as a `Dispose` method:
 
 ~~~csharp
-unroll ((PropX, DefValueX) in 
-        ((PropA, DefValueA), 
-         (PropB, DefValueB),
-         (PropC, DefValueC),
-         (PropD, DefValueD)))
-{
-   replace(SavePropX => concatId(Save, PropX));
-   void SavePropX(SerialBox serializer)
-   {
-      if (PropX != DefValueX) {
-         serializer.Write(nameof(PropX));
-         serializer.Write(PropX);
-      }
+define generateDispose() {
+    // See https://msdn.microsoft.com/en-us/library/b1yfkh5e%28v=vs.110%29.aspx
+    public void Dispose() {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    partial void Dispose(bool disposing);
+};
+
+// later
+class Foo : IDisposable {
+    generateDispose();
+    
+    partial void Dispose(bool disposing) {
+        if (disposing && _handle != null)
+            _handle.Dispose();
+        ...
+    }
+}
+~~~
+
+Macros you create with `define` only exist within the current scope (braced block), but there is also an `includeFile("filename.ecs")` macro, so you can store one or more macros in an external file and import them into any scope.
+
+For a more complicated example, let's say you're doing, I don't know, some kind of serialization task and you need to generate a series of similar methods:
+
+~~~csharp
+define generateSave($PropX, $DefValueX) {
+   replace(SavePropX => concatId(Save, $PropX)) {
+     void SavePropX(SerialBox serializer)
+     {
+        if ($PropX != $DefValueX) {
+           serializer.Write(stringify($PropX));
+           serializer.Write($PropX);
+        }
+     }
    }
 }
+
+generateSave(PropA, DefValueA);
+generateSave(PropB, DefValueB);
+generateSave(PropC, DefValueC);
+generateSave(PropD, DefValueD);
 ~~~
 
 This generates four methods, called `SavePropA`, `SavePropB`, `SavePropC`, and `SavePropD`:
@@ -684,39 +710,15 @@ void SavePropB(SerialBox serializer)
 
 How does it work?
 
-- `unroll` creates several copies of a piece of code, replacing some identifiers in each one
-- `replace` replaces one "pattern" with another; in this case `SavePropX` becomes `concatId(Save,PropX)`. `replace` is used here because you can't use `concatId(Save, PropX)` directly as a method name (the parser cannot parse it).
-- `concatId` is used to combine two or more identifiers, e.g. `concatId(Comb, ined)` becomes `Combined`.
+- `define` creates a macro that, when called, generates some code
+- `concatId` is used to combine two or more identifiers, e.g. `concatId(Comb, ined)` means `Combined`.
+- `replace` performs a find-and-replace operation, replacing one "pattern" with another inside a block of code. In this case `SavePropX` is replaced with `concatId(Save,$PropX)`. `replace` is needed here because you can't use a complicated expression like `concatId(Save, $PropX)` _directly_ as a method name (the parser cannot understand that).
 
-In general, outer macros run before inner macros (this is the opposite of the evaluation order of normal methods). So `unroll` runs before `replace`, and `concatId` runs last. Since `unroll` runs before `concatId`, one of the things it does is to change the second argument of `concatId(Save, PropX)` into `PropA`, `PropB`, or whatever, so that the final output is `SavePropA`, `SavePropB`, etc.
+In general, outer macros run before inner macros (this is the opposite of the evaluation order of normal methods). So `define` runs before `replace`, and `concatId` runs last. Since `define` runs before `concatId`, one of the things it does is to change the second argument of `concatId(Save, $PropX)` into `PropA`, `PropB`, or whatever, so that the final output is `SavePropA`, `SavePropB`, etc.
 
-`replace` and `unroll` are also useful for implementing `INotifyPropertyChanged`. See [here](http://ecsharp.net/lemp/avoid-tedium-with-LeMP.html#unroll) for an example.
+`define` and `replace` are also useful for implementing `INotifyPropertyChanged`. See [here](http://ecsharp.net/lemp/avoid-tedium-with-LeMP.html#real-world-use-case-inotifypropertychanged) for an example.
 
-If you need to insert _identical_ code in several classes or several functions, you might find the `#snippet` statement useful for this purpose. `#snippet` saves a code snippet in the current lexical scope, and then you can explicitly insert that snippet with `#get`. This works a bit differently than `replace`: `replace` is an active find-and-replace operation, whereas `#snippet` just associates a key with a value. For example:
-
-~~~csharp
-#snippet #disposeMethod = {
-    // See https://msdn.microsoft.com/en-us/library/b1yfkh5e%28v=vs.110%29.aspx
-    public void Dispose() {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-    partial void Dispose(bool disposing);
-};
-
-// later
-class Foo : IDisposable {
-    #get(#disposeMethod);
-    
-    partial void Dispose(bool disposing) {
-        if (disposing && _handle != null)
-            _handle.Dispose();
-        ...
-    }
-}
-~~~
-
-Currently, no "parameters" are supported to customize instances of the code, so use `replace` for that. By the way, there's an `includeFile("filename.ecs")` macro, so an advantage of snippets is that you can save them in a separate file and load them into multiple source files.
+Finally, `define` can be combined with [`static if`](http://ecsharp.net/lemp/ref-codegen.html#static-if) to make decisions based on the parameters passed to `define`.
 
 "With" statement
 ----------------
@@ -753,7 +755,7 @@ public record Point(int X, int Y);
 
 If there's demand, I could write an article about that. This could be considered an example of a [DSL](https://en.wikipedia.org/wiki/Domain-specific_language), and since DSLs are all the rage these days, I could write an article about "how to write a DSL in Enhanced C#" - if there's demand for such an article. Dear reader, what DSL would you like to see built on top of C#, that you _can't_ write due to limitations of C# language as it is today?
 
-LeMP comes with a more flexible mechanism for building types quickly, but it uses three lines of code instead of one. It's called the alt class:
+LeMP comes with a more flexible mechanism for building read-only types quickly, but it uses three lines of code instead of one. It's called the alt class:
 
 ~~~csharp
 public alt class Point {
@@ -770,7 +772,7 @@ Enhanced C# also has a pattern matching construct called `match`, which is just 
 
 If you'd like to analyze or generate source code, LeMP is really good for that; please read [this article](http://ecsharp.net/lemp/lemp-code-gen-and-analysis.html) to learn more.
 
-However, since there's no complete compiler and no one has implemented Roslyn integration, you can only use it to analyze source code, not the semantics of that code.
+However, since there's no complete compiler and no one has implemented Roslyn integration, you can only use it to analyze source code, not the _semantics_ of that code.
 
 `matchCode` is also super useful if you're using [LES for configuration files or DSLs or a prototype programming language](http://loyc.net/les/), because the syntax trees produced by LES are the same ones produced by EC# - they're both [Loyc trees](http://loyc.net/loyc-trees). Perhaps I should write an article about that someday.
 
@@ -916,7 +918,7 @@ Specifically, EC# supports some "alternate" syntax elements from other languages
 2. `!` operator (from D): alternate mechanism for specifying generic arguments, e.g. `List!int` means `List<int>`, and `Dictionary!(string,object)` means `Dictionary<string,object>`.
 3. "scope(exit)" (from D): this is really a macro.
 
-It is possible for users to support other kinds of imported syntax in EC# by writing macros that interpret @{...} blocks, but that's a bit advanced, and there is no way to change the token parser.
+It is possible for users to support other kinds of imported syntax in EC# by writing macros that interpret @{...} blocks, but that's really advanced.
 
 I am open to suggestions about other "syntax easter eggs" that would be helpful for people doing manual code conversion, but requests will be rejected if they create ambiguities. It is also possible to write automatic code conversion libraries, but that's a topic for another article.
 

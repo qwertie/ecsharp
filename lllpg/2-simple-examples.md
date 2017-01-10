@@ -211,49 +211,46 @@ By the way, this example uses the [ANTLR-style syntax mode](lllpg-in-antlr-style
 
 ### Think twice: Do you really need a parser generator?
 
-One of the most common introductory examples for any parser generator is an expression parser or calculator, maybe something like this (written in LES):
+One of the most common introductory examples for any parser generator is an expression parser or calculator, maybe something along these lines:
 
 ~~~csharp
-LLLPG parser(laType(int)) {
-    rule Atom()::double @[
-        { result::double; }
-        ( t:=id           { result = Vars[t.Value -> string]; }
-        | t:=num          { result = t.Value -> double; }
-        | '-' result=Atom { result = -result; }
+const int id = 0, num = 1; // other token types: '(', ')', '-', '+', etc.
+
+LLLPG (parser(TerminalType: Token))
+@{
+   Atom returns [double result]
+        : id              { $result = Vars[(string) $id.Value]; }
+        | num             { $result = (double) $num.Value; }
+        | '-' result=Atom { $result = -$result; }
         | '(' result=Expr ')'
-        | error           { result = 0;
-          Error(InputPosition, "Expected identifer, number, or (stuff)"); }
-        )
+        | error           { $result = 0;
+          Error(0, "Expected identifer, number, or (stuff)"); }
+        ;
+    MulExpr returns [double result] :
+        result:Atom
+        (op:=('*'|'/') rhs:=Atom { $result = Do(result, op, rhs); })*
+        ;
+    AddExpr returns [double result] :
+        result:MulExpr
+        (op:=('+'|'-') rhs:=MulExpr { $result = Do(result, op, rhs); })*
         { return result; }
-    ];
-    rule MulExpr()::double @[
-        result:=Atom
-        (op:=(mul|div) rhs:=Atom { result = Do(result, op, rhs); })*
-        { return result; }
-    ];
-    rule AddExpr()::double @[
-        result:=MulExpr
-        (op:=(add|sub) rhs:=MulExpr { result = Do(result, op, rhs); })*
-        { return result; }
-    ];
-    rule Expr()::double @[
-        { result::double; }
-        ( t:=id set result=Expr { Vars[t.Value.ToString()] = result; }
-        | result=AddExpr )
-        { return result; }
-    ];
+        ;
+    Expr returns [double result]
+        : t:=id '=' result:Expr { Vars[t.Value.ToString()] = $result; }
+        | result:AddExpr
+        ;
 };
 
-def Do(left::double, op::Token, right::double)::double
+double Do(double left, Token op, double right)
 {
-    switch op.Type {
-        case add; return left + right;
-        case sub; return left - right;
-        case mul; return left * right;
-        case div; return left / right;
-    };
+    switch (op.Type) {
+        case '+': return left + right;
+        case '-': return left - right;
+        case '*': return left * right;
+        case '/': return left / right;
+    }
     return double.NaN;
-};
+}
 ~~~
 
 But if expression parsing is all you need, you really don't need a parser generator. For example, you can use the LES parser in [LoycCore](http://core.loyc.net), which is great for parsing simple expressions. Or you could use a [Pratt Parser like this one](http://higherlogics.blogspot.ca/2009/11/extensible-statically-typed-pratt.html). If you only need to parse simple text fields like phone numbers, you can use [regular expressions](http://www.regular-expressions.info/). And even if you need an entire programming language, you don't necessarily need to create your own; again, in many cases the [LES](http://loyc.net/les) parser is perfectly sufficient.
