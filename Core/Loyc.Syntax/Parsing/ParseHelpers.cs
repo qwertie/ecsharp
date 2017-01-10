@@ -82,7 +82,7 @@ namespace Loyc.Syntax
 		/// sequences were encountered, and which categories.</param>
 		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
 		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-		/// <remarks>See <see cref="UnescapeChar(string, ref int, ref EscapeC)"/> for details.</remarks>
+		/// <remarks>See <see cref="UnescapeChar(ref UString, ref EscapeC)"/> for details.</remarks>
 		public static StringBuilder UnescapeCStyle(UString s, out EscapeC encountered, bool removeUnnecessaryBackslashes = false)
 		{
 			encountered = 0;
@@ -409,7 +409,7 @@ namespace Loyc.Syntax
 		/// with <c>exponentBaseR=3</c>.</param>
 		/// <param name="numDigits">Set to the number of digits in the number, not 
 		/// including the exponent part.</param>
-		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseNumberFlag"/>.</param>
 		/// <remarks>
 		/// The syntax required is
 		/// <code>
@@ -515,7 +515,7 @@ namespace Loyc.Syntax
 		/// <param name="exponentBase2">Base-2 exponent to apply.</param>
 		/// <param name="exponentBase10">Base-10 exponent to apply.</param>
 		/// <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
-		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseNumberFlag"/>.</param>
 		/// <remarks>
 		/// This method is a wrapper around the other overload that combines 
 		/// the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
@@ -552,7 +552,7 @@ namespace Loyc.Syntax
 		/// failure or an infinity value on overflow.</summary>
 		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
 		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseNumberFlag"/>.</param>
 		public static double TryParseDouble(ref UString source, int radix, ParseNumberFlag flags = 0)
 		{
 			ulong mantissa;
@@ -574,7 +574,7 @@ namespace Loyc.Syntax
 		/// failure or an infinity value on overflow.</summary>
 		/// <param name="radix">Base of the number to parse; must be 2 (binary), 
 		/// 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-		/// <param name="flags">Alters parsing behavior, see <see cref="ParseFlags"/>.</param>
+		/// <param name="flags">Alters parsing behavior, see <see cref="ParseNumberFlag"/>.</param>
 		public static float TryParseFloat(ref UString source, int radix, ParseNumberFlag flags = 0)
 		{
 			ulong mantissa;

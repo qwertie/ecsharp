@@ -103,7 +103,7 @@ namespace Loyc.Syntax
 	public static class ParsingService
 	{
 		static ThreadLocalVariable<IParsingService> _default = new ThreadLocalVariable<IParsingService>();
-		/// <summary>Gets or sets the active language service on this thread. If 
+		/// <summary>Gets or sets the default language service on this thread. If 
 		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
 		public static IParsingService Default
 		{

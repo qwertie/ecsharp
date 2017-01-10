@@ -583,18 +583,37 @@ namespace Loyc
 			else {
 				sb.EnsureCapacity(sb.Length + s.Length);
 				for (int i = s._start; i < s._start + s._count; i++)
-					sb.Append(s[i]);
+					sb.Append(s._str[i]);
 				return sb;
 			}
 		}
 
+		public static UString operator+(string a, UString b)
+		{
+			if (b.Length == 0)
+				return a;
+			if (a.Length == 0)
+				return b;
+			var sb = new StringBuilder(a, a.Length + b.Length);
+			return Append(sb, b).ToString();
+		}
+		public static UString operator+(UString a, string b)
+		{
+			if (b.Length == 0)
+				return a;
+			if (a.Length == 0)
+				return b;
+			var sb = new StringBuilder(a._str, a._start, a._count, a.Length + b.Length);
+			return sb.Append(b).ToString();
+		}
 		public static UString operator+(UString a, UString b)
 		{
-			if (b.Count == 0)
+			if (b.Length == 0)
 				return a;
-			if (a.Count == 0)
+			if (a.Length == 0)
 				return b;
-			return Append(Append(new StringBuilder(a.Count + b.Count), a), b).ToString();
+			var sb = new StringBuilder(a._str, a._start, a._count, a.Length + b.Length);
+			return Append(sb, b).ToString();
 		}
 	}
 }

@@ -73,7 +73,7 @@ namespace Loyc
 	/// <seealso cref="MessageHolder"/>
 	/// <seealso cref="MessageSplitter"/>
 	/// <seealso cref="IHasLocation"/>
-	public interface IMessageSink<in TSeverity, in TContext>
+	public interface IMessageSink<in TContext>
 	{
 		/// <summary>Writes a message to the target that this object represents.</summary>
 		/// <param name="type">Severity or importance of the message; widely-used
@@ -86,23 +86,17 @@ namespace Loyc
 		/// See also <see cref="MessageSink.LocationString"/>().</param>
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
-		void Write(TSeverity type, TContext context, string format);
-		void Write(TSeverity type, TContext context, string format, object arg0, object arg1 = null);
-		void Write(TSeverity type, TContext context, string format, params object[] args);
+		void Write(Severity type, TContext context, string format);
+		void Write(Severity type, TContext context, string format, object arg0, object arg1 = null);
+		void Write(Severity type, TContext context, string format, params object[] args);
 		
 		/// <summary>Returns true if messages of the specified type will actually be 
 		/// printed, or false if Write(type, ...) has no effect.</summary>
-		bool IsEnabled(TSeverity type);
-	}
-
-	/// <summary>Alias for IMessageSink&lt;Severity, TContext>.</summary>
-	/// <seealso cref="IMessageSink{TSeverity,TContext}"/>
-	public interface IMessageSink<TContext> : IMessageSink<Severity, TContext>
-	{
+		bool IsEnabled(Severity type);
 	}
 	
-	/// <summary>Alias for IMessageSink&lt;Severity, object>.</summary>
-	/// <seealso cref="IMessageSink{TSeverity,TContext}"/>
+	/// <summary>Alias for IMessageSink&lt;object>.</summary>
+	/// <seealso cref="IMessageSink{TContext}"/>
 	public interface IMessageSink : IMessageSink<object>
 	{
 	}
@@ -131,7 +125,7 @@ namespace Loyc
 		Common = 40,      // log4net: Info = 40000
 		Note = 50,        // log4net: Notice = 50000
 		Warning = 60,     // log4net: Warning = 60000
-		Uncommon = 65,    // Uncommon event: No log4net equivalent
+		Uncommon = 66,    // Uncommon event: No log4net equivalent
 		Error = 70,       // log4net: Error = 70000
 		Rare = 80,        // log4net: Severe = 80000
 		Critical = 90,    // log4net: Critical = 90000
