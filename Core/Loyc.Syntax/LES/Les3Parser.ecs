@@ -66,7 +66,7 @@ partial class Les3Parser
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, list, allowBlockCalls);
 		}
-		public override VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
+		public VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
 		{
 			return ExprList(ref endMarker, list, true);
 		}
@@ -106,7 +106,7 @@ partial class Les3Parser
 
 	// Lazy version of ExprList is used for parsing the top-level code in a streaming way
 	[LL(1)]
-	public override ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
+	public ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
 		NewlinesOpt
 		(e:TopExpr)?
 		[	end:(","|"\n"|";")
@@ -127,7 +127,7 @@ partial class Les3Parser
 			greedy(~("{"|"\n") => {CheckForSpaceAtEndOfAttribute();})?
 			NewlinesOpt
 		)*
-		(	e:Expr[StartStmt]
+		(	e:Expr[Precedence.MinValue]
 			greedy(
 				":" (("\n"|")"|"]"|"}"|EOF) =>)
 				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
@@ -166,9 +166,9 @@ partial class Les3Parser
 				rhs:=TT.NegativeLiteral
 				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex, rhs.StartIndex, rhs.StartIndex + 1, NodeStyle.Operator);}
 			|	// Suffix operator
-				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
+				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:TT.PreOrSufOp
-				{e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+				{e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
 			|	// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
@@ -221,8 +221,8 @@ partial class Les3Parser
 		{var endMarker = default(TokenType);}
 		"(" args:ExprList[ref endMarker] ")" 
 		{
-			$result = F.Call(target, args, target.Range.StartIndex, $")".EndIndex).SetBaseStyle(NodeStyle.PrefixNotation);
-			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; };
+			$result = MarkCall(F.Call(target, args, target.Range.StartIndex, $")".EndIndex).SetBaseStyle(NodeStyle.PrefixNotation));
+			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; }
 		};
 
 	PrefixExpr[Precedence context] returns [LNode result] 
@@ -300,7 +300,7 @@ partial class Les3Parser
 		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 
-		/	args+=Expr[StartStmt] )
+		/	args+=Expr[Precedence.MinValue] )
 		greedy( "\n"? args+=BracedBlock )?
 		greedy( args+=Continuator )*
 		{

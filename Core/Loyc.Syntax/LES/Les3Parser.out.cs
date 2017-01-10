@@ -46,7 +46,7 @@ namespace Loyc.Syntax.Les
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, list, allowBlockCalls);
 		}
-		public override VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>)) {
+		public VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>)) {
 			return ExprList(ref endMarker, list, true);
 		}
 		public void CheckForSpaceAtEndOfAttribute() {
@@ -132,7 +132,7 @@ namespace Loyc.Syntax.Les
 				Error(0, "Expected end of expression (',', ';', etc.)");
 		}
 	
-		public override IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
+		public IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
 		{
 			TT la0;
 			LNode e = default(LNode);
@@ -213,7 +213,7 @@ namespace Loyc.Syntax.Les
 			case TT.LParen: case TT.NegativeLiteral: case TT.NormalOp: case TT.Not:
 			case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
 				{
-					e = Expr(StartStmt);
+					e = Expr(Precedence.MinValue);
 					// Line 132: greedy(TT.Colon (EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen) => )?
 					la0 = (TT) LA0;
 					if (la0 == TT.Colon) {
@@ -265,7 +265,7 @@ namespace Loyc.Syntax.Les
 			LNode e = default(LNode);
 			Token lit_excl = default(Token);
 			Token t = default(Token);
-			// Line 156: (KeywordExpression | PrefixExpr greedy( &{CanParse(context, $LI, out prec)} InfixOperatorName Expr | &{context.CanParse(P.Add)} TT.NegativeLiteral | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(P.Of)} TT.Not (TT.LParen ExprList TT.RParen / Expr) )*)
+			// Line 156: (KeywordExpression | PrefixExpr greedy( &{CanParse(context, $LI, out prec)} InfixOperatorName Expr | &{context.CanParse(P.Add)} TT.NegativeLiteral | &{context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))} TT.PreOrSufOp | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(P.Of)} TT.Not (TT.LParen ExprList TT.RParen / Expr) )*)
 			la0 = (TT) LA0;
 			if (la0 == TT.Keyword)
 				e = KeywordExpression();
@@ -273,7 +273,7 @@ namespace Loyc.Syntax.Les
 				// line 157
 				Precedence prec;
 				e = PrefixExpr(context);
-				// Line 161: greedy( &{CanParse(context, $LI, out prec)} InfixOperatorName Expr | &{context.CanParse(P.Add)} TT.NegativeLiteral | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(P.Of)} TT.Not (TT.LParen ExprList TT.RParen / Expr) )*
+				// Line 161: greedy( &{CanParse(context, $LI, out prec)} InfixOperatorName Expr | &{context.CanParse(P.Add)} TT.NegativeLiteral | &{context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))} TT.PreOrSufOp | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(P.Of)} TT.Not (TT.LParen ExprList TT.RParen / Expr) )*
 				for (;;) {
 					switch ((TT) LA0) {
 					case TT.Assignment: case TT.Dot: case TT.NormalOp:
@@ -285,8 +285,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if ((TT) LA(0 + 1) != TT.Newline) {
-								if (CanParse(context, 0, out prec))
+							if (CanParse(context, 0, out prec)) {
+								if ((TT) LA(0 + 1) != TT.Newline)
 									goto match1;
 								else
 									goto stop;
@@ -295,8 +295,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Id:
 						{
-							if (!Continuators.ContainsKey(LT(0).Value)) {
-								if (CanParse(context, 0, out prec))
+							if (CanParse(context, 0, out prec)) {
+								if (!Continuators.ContainsKey(LT(0).Value))
 									goto match1;
 								else
 									goto stop;
@@ -315,10 +315,10 @@ namespace Loyc.Syntax.Les
 						break;
 					case TT.PreOrSufOp:
 						{
-							if (context.CanParse(SuffixPrecedenceOf(LT(0)))) {
+							if (context.CanParse(_prec.Find(OperatorShape.Suffix, LT(0).Value))) {
 								t = MatchAny();
 								// line 171
-								e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);
+								e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);
 							} else
 								goto stop;
 						}
@@ -495,11 +495,10 @@ namespace Loyc.Syntax.Les
 			args = ExprList(ref endMarker);
 			lit_rpar = Match((int) TT.RParen);
 			// line 224
-			result = F.Call(target, args, target.Range.StartIndex, lit_rpar.EndIndex).SetBaseStyle(NodeStyle.PrefixNotation);
+			result = MarkCall(F.Call(target, args, target.Range.StartIndex, lit_rpar.EndIndex).SetBaseStyle(NodeStyle.PrefixNotation));
 			if (endMarker == TT.Semicolon) {
 				result.Style |= NodeStyle.Alternate;
 			}
-			;
 			return result;
 		}
 	
@@ -691,7 +690,7 @@ namespace Loyc.Syntax.Les
 				{ }
 				break;
 			default:
-				args.Add(Expr(StartStmt));
+				args.Add(Expr(Precedence.MinValue));
 				break;
 			}
 			// Line 304: greedy((TT.Newline)? BracedBlock)?

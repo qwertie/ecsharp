@@ -5,27 +5,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Diagnostics;
+using System.Numerics;
+using System.ComponentModel;
 using Loyc;               // optional (for IMessageSink, Symbol, etc.)
 using Loyc.Collections;   // optional (many handy interfaces & classes)
 using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
-using System.Diagnostics;
-using System.Numerics;
 using Loyc.Collections.Impl;
-using System.ComponentModel;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Les
 {
 	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
-	public partial class Les3Lexer : Les2Lexer
+	public partial class Les3Lexer : BaseILexer<ICharSource, Token>, ILexer<Token>
 	{
 		// When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
 		// data from an `ICharSource`, which the string wrapper `UString` implements.
 		public Les3Lexer(string text, string fileName = "")
 			: this((UString)text, fileName, BaseLexer.LogExceptionErrorSink) { }
 		public Les3Lexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0)
-			: base(text, fileName, sink, startPosition) { }
+			: base(text, fileName, startPosition) { ErrorSink = sink; }
 
 		/// <summary>If this flag is true, all literals except plain strings and
 		/// true/false/null are stored as CustomLiteral, bypassing number parsing 
@@ -33,9 +33,30 @@ namespace Loyc.Syntax.Les
 		/// back to text.</summary>
 		public bool PreferCustomLiterals { get; set; }
 
+		/// <summary>Used for syntax highlighting, which doesn't care about token values.
+		/// This option causes the Token.Value to be set to a default, like '\0' for 
+		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
+		bool SkipValueParsing { get; set; }
+
+		protected TokenType _type; // predicted type of the current token
+		protected NodeStyle _style; // indicates triple-quoted string, hex or binary literal
+		protected int _startPosition;
+
 		// Helps filter out newlines that are not directly inside braces or at the top level.
 		InternalList<TokenType> _brackStack = new InternalList<TokenType>(
 			new TokenType[8] { TokenType.LBrace, 0,0,0,0,0,0,0 }, 1);
+
+		// Gets the text of the current token that has been parsed so far
+		protected UString Text()
+		{
+			return CharSource.Slice(_startPosition, InputPosition - _startPosition);
+		}
+
+		protected sealed override void AfterNewline() // sealed to avoid virtual call
+		{
+			base.AfterNewline();
+		}
+		protected override bool SupportDotIndents() { return true; }
 
 		object ParseLiteral2(UString typeMarker, UString parsedText, bool isNumericLiteral)
 		{
@@ -71,6 +92,42 @@ namespace Loyc.Syntax.Les
 				}
 			}
 			return ParseNonStringLiteral(typeMarker, parsedText, out syntaxError);
+		}
+
+		protected string ParseStringValue(bool parseNeeded, bool isTripleQuoted)
+		{
+			if (SkipValueParsing)
+				return null;
+			string value;
+			if (parseNeeded) {
+				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
+				value = Les2Lexer.UnescapeQuotedString(ref original, Error, IndentString, true);
+				Debug.Assert(original.IsEmpty);
+			} else {
+				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
+				if (isTripleQuoted)
+					value = CharSource.Slice(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
+				else
+					value = CharSource.Slice(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
+			}
+			return value;
+		}
+
+		protected object ParseSQStringValue(bool parseNeeded)
+		{
+			if (SkipValueParsing)
+				return null;
+			else {
+				var text = Text();
+				if (!parseNeeded && text.Length == 3)
+					return text[1];
+				else {
+					var value = Les2Lexer.ParseSQStringValue(text, Error);
+					if (value is string)
+						return new CustomLiteral(value, (Symbol)"char");
+					return value;
+				}
+			}
 		}
 
 		protected static Dictionary<UString, Func<UString, object>> LiteralParsers = InitLiteralParsers();
@@ -227,6 +284,22 @@ namespace Loyc.Syntax.Les
 
 		protected static readonly Symbol _AtAt = GSymbol.Get("@@");
 
+		#region Singleton literals (e.g. @@-inf.f)
+
+		internal static Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+		{
+			{ "true", G.BoxedTrue },
+			{ "false", G.BoxedFalse },
+			{ "null", null },
+			{ "void", @void.Value },
+			{ "nan.f", float.NaN },
+			{ "nan.d", double.NaN },
+			{ "inf.f", float.PositiveInfinity },
+			{ "inf.d", double.PositiveInfinity },
+			{ "-inf.f", float.NegativeInfinity },
+			{ "-inf.d", double.NegativeInfinity }
+		};
+
 		private object ParseAtAtLiteral(UString text)
 		{
 			Debug.Assert(text.StartsWith("@@"));
@@ -243,6 +316,59 @@ namespace Loyc.Syntax.Les
 			return new CustomLiteral(CG.Cache(text.ToString()), _AtAt);
 		}
 
+		#endregion
+
+		#region Operator parsing
+
+		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
+
+		protected Symbol ParseOp(out TokenType type)
+		{
+			UString opText = Text();
+
+			Pair<Symbol, TokenType> symAndType;
+			if (!_opCache.TryGetValue(opText, out symAndType))
+				_opCache[opText] = symAndType = GetOpNameAndType(opText);
+			type = symAndType.B;
+			return symAndType.A;
+		}
+
+		private Pair<Symbol, TokenType> GetOpNameAndType(UString op)
+		{
+			Debug.Assert(op.Length > 0);
+			TokenType tt;
+			Symbol name;
+
+			if (op == "!")
+				return Pair.Create(CodeSymbols.Not, TokenType.Not);
+			if (op == ":")
+				return Pair.Create(CodeSymbols.Colon, TokenType.Colon);
+
+			// Get first and last of the operator's initial punctuation
+			int length = op.Length;
+			char first = op[0], last = op[length - 1];
+
+			Debug.Assert(first != '\'');
+			name = (Symbol)("'" + op);
+			if (name == CodeSymbols.Dot)
+				return Pair.Create(name, TokenType.Dot);
+			
+			if (length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
+				tt = TokenType.PreOrSufOp;
+			else if (first == '$')
+				tt = TokenType.PrefixOp;
+			else if (first == '.' && (length == 1 || last != '.'))
+				tt = TokenType.Dot;
+			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
+				tt = TokenType.Assignment;
+			else
+				tt = TokenType.NormalOp;
+
+			return Pair.Create(name, tt);
+		}
+
+		#endregion
+
 		void PrintErrorIfTypeMarkerIsKeywordLiteral(object boolOrNull)
 		{
 			if (boolOrNull != NoValue.Value)
@@ -251,22 +377,68 @@ namespace Loyc.Syntax.Les
 	}
 
 	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
-	public partial class Les3Parser : Les2Parser
+	public partial class Les3Parser : BaseParserForList<Token, int>
 	{
-		//LNodeFactory F;
+		LNodeFactory F;
 
 		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, int startIndex = 0)
-			: base(list, file, sink, startIndex) { }//{ F = new LNodeFactory(file); }
+			: base(list, default(Token), file, startIndex) { ErrorSink = sink; }
 
-		// Used for error reporting
-		protected override string ToString(int tokenType)
+		public void Reset(IList<Token> list, ISourceFile file, int startIndex = 0)
 		{
-			return ((TokenType)tokenType).ToString();
+			Reset(list, default(Token), file, startIndex);
 		}
+		protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+		{
+			CheckParam.IsNotNull("file", file);
+			base.Reset(list, eofToken, file, startIndex);
+			F = new LNodeFactory(file);
+		}
+
+		/// <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
+		/// <param name="separator">If there are multiple expressions, the Value of 
+		/// this Holder is set to the separator between them: Comma or Semicolon.</param>
+		public IEnumerable<LNode> Start(Holder<TokenType> separator)
+		{
+			foreach (var stmt in ExprListLazy(separator))
+				yield return stmt;
+			Match((int) EOF, (int) separator.Value);
+		}
+
+		// Method required by base class for error messages
+		protected override string ToString(int type)
+		{
+			switch ((TokenType)type) {
+				case TokenType.LParen: return "'('";
+				case TokenType.RParen: return "')'";
+				case TokenType.LBrack: return "'['";
+				case TokenType.RBrack: return "']'";
+				case TokenType.LBrace: return "'{'";
+				case TokenType.RBrace: return "'}'";
+				case TokenType.Comma:  return "','";
+				case TokenType.Semicolon: return "';'";
+			}
+			return ((TokenType)type).ToString();
+		}
+
+		// This is virtual so that a syntax highlighter can easily override and colorize it
+		protected virtual LNode MarkSpecial(LNode n)
+		{
+			return n.SetBaseStyle(NodeStyle.Special);
+		}
+		// This is virtual so that a syntax highlighter can easily override and colorize it
+		protected virtual LNode MarkCall(LNode n)
+		{
+			return n.SetBaseStyle(NodeStyle.PrefixNotation);
+		}
+
+		protected LNode MissingExpr(Token tok) { return F.Id(S.Missing, tok.StartIndex, tok.EndIndex); }
+
+		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
 
 		protected new Precedence PrefixPrecedenceOf(Token t)
 		{
-			var prec = base.PrefixPrecedenceOf(t);
+			var prec = _prec.Find(OperatorShape.Prefix, t.Value);
 			if (prec == LesPrecedence.Other)
 				ErrorSink.Write(Severity.Error, F.Id(t),
 					"Operator `{0}` cannot be used as a prefix operator", t.Value);

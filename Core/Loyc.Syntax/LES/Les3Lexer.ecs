@@ -39,7 +39,7 @@ public partial class Les3Lexer
 	// Numbers ---------------------------------------------------------------
 	
 	token Number returns [object result] :
-		('-' {_isNegative = true;} / {_isNegative = false;})
+		('-' {_type = TT.NegativeLiteral;})?
 		(HexNumber / BinNumber / DecNumber)
 		{UString numberText = Text();}
 		(	{_startPosition = InputPosition;} // as expected by IdCore
@@ -47,64 +47,57 @@ public partial class Les3Lexer
 			suffix:IdCore[ref boolOrNull]
 			{PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);}
 		)?
-		{
-			_type = _isNegative ? TT.NegativeLiteral : TT.Literal;
-			return ParseLiteral2(suffix, numberText, true);
-		};
+		{return ParseLiteral2(suffix, numberText, true);};
 
 	DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* greedy('_')? ;
 	[inline] HexDigit  : '0'..'9' | 'a'..'f' | 'A'..'F' ;
 	HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* greedy('_')? ;
 	
-	// _isFloat, _numberBase are no longer used
 	DecNumber :
-		{_numberBase=10;}
 		(DecDigits | '.' DecDigits =>)
-		( {_isFloat=true;} '.' DecDigits )?
-		greedy( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
+		( '.' DecDigits )?
+		greedy( ('e'|'E') ('+'|'-')? DecDigits )?
 		;
 	HexNumber :
-		'0' ('x'|'X') {_numberBase=16;}
+		'0' ('x'|'X')
 		(HexDigits | '.' HexDigits =>)
 		// Avoid ambiguity with 0x5.Equals(): a dot is not enough
-		(	'.' ('0'..'9' => () / &( HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ))
-			{_isFloat=true;} HexDigits )?
-		greedy( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		(	'.' ( '0'..'9' => () / &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) )
+			HexDigits )?
+		greedy( ('p'|'P') ('+'|'-')? DecDigits )?
 		;
 	BinNumber :
-		'0' ('b'|'B') {_numberBase=2;}
+		'0' ('b'|'B')
 		(DecDigits | '.' DecDigits =>)
-		( {_isFloat=true;} '.' DecDigits )?
-		greedy( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		( '.' DecDigits )?
+		greedy( ('p'|'P') ('+'|'-')? DecDigits )?
 		;
 	
-	// Used by NumberSuffix to detect end-of-suffix
-	[inline] extern token EndId : (~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF) =>;
-
 	// Strings ---------------------------------------------------------------
 		
 	token SQString returns [object result] :
-		{_parseNeeded = false;}
-		'\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')) '\'' 
-		{return ParseSQStringValue();};
+		{bool parseNeeded = false;}
+		'\'' ('\\' _ {parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')) '\'' 
+		{return ParseSQStringValue(parseNeeded);};
 	
 	token DQString returns [object result] :
-		{_parseNeeded = false;}
-		(	'"' [ '\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
-			('"' / {_parseNeeded = true;}) )
-		{return ParseStringValue(isTripleQuoted: false);};
+		{bool parseNeeded = false;}
+		(	'"' [ '\\' _ {parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
+			('"' / {parseNeeded = true;}) )
+		{return ParseStringValue(parseNeeded, isTripleQuoted: false);};
 	
 	[LL(4)] token TQString returns [object result] :
-		{_parseNeeded = true;}
+		{bool parseNeeded = true;}
 		{_style = NodeStyle.TDQStringLiteral;}
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
 		| {_style = NodeStyle.TQStringLiteral;}
 			"'''"       nongreedy(Newline(true) / _)* "'''" )
-		{return ParseStringValue(isTripleQuoted: true, les3TQIndents: true);};
+		{return ParseStringValue(parseNeeded, isTripleQuoted: true);};
 
-	BQString :
-		{_parseNeeded = false;}
-		'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`';
+	BQString [out bool parseNeeded]:
+		{parseNeeded = false;}
+		'`' ('\\' _ {parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))*
+		('`' | error {parseNeeded = true; Error(0, "Expected closing backquote");});
 
 	// Nontrivial punctuation & operators -----------------------------------
 		
@@ -112,16 +105,12 @@ public partial class Les3Lexer
 		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.';
 	token Operator returns [object result] : 
 		('$'|OpChar) OpChar* 
-		{$result = ParseNormalOp();}
-		{if ($result == @@`':`) _type = TT.Colon;};
+		{$result = ParseOp(out _type);};
 	token SQOperator returns [object result] : 
 		"'" LettersOrPunc* 
 		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
-		("'" {
-			_type = TT.Unknown;
-			ErrorSink.Write(Severity.Error, IndexToPositionObject(InputPosition-1), "Expected exactly one character inside quotes");
-		})?
-		{var t = _type; ParseNormalOp(); _type = t; return _value;};
+		("'" { _type = TT.Literal; return ParseSQStringValue(true); })?
+		{return (Symbol)Text();};
 
 	// Identifiers, keywords and named literals --------------------------------
 
@@ -141,10 +130,10 @@ public partial class Les3Lexer
 			{
 				_type = TT.Literal;
 				PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
-				return _value = ParseLiteral2(idtext, value.ToString(), false);
+				return ParseLiteral2(idtext, value.ToString(), false);
 			}
 		)?
-		{return boolOrNull != NoValue.Value ? boolOrNull : IdToSymbol(idtext);};
+		{return boolOrNull != NoValue.Value ? boolOrNull : (Symbol) idtext;};
 
 	// LES3 might not officially treat # as an identifier character, but it's handy for now
 	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#';
@@ -154,7 +143,7 @@ public partial class Les3Lexer
 	NormalId : IdStartChar greedy(IdContChar)*;
 
 	token IdCore[ref object boolOrNull] returns [UString result] :
-		( BQString {$result = ParseStringCore(false);}
+		( BQString[out bool parseNeeded] {$result = ParseStringValue(parseNeeded, false);}
 		| NormalId {
 			$result = Text();
 			if ($result == "true")  { _type = TT.Literal; boolOrNull = G.BoxedTrue; }
@@ -220,12 +209,12 @@ public partial class Les3Lexer
 	// of these rules to proces that token until it ends or the line ends.
 		
 	[LL(3)]
-	[#new] public token TDQStringLine returns [bool result] :
+	public token TDQStringLine returns [bool result] :
 		nongreedy(_)* (Newline(true) {return false;} | '"' '"' '"' {return true;});
 	[LL(3)]
-	[#new] public token TSQStringLine returns [bool result] :
+	public token TSQStringLine returns [bool result] :
 		nongreedy(_)* (Newline(true) {return false;} | "'''" {return true;});
-	[#new] public token MLCommentLine[ref int nested] returns [bool result] :
+	public token MLCommentLine[ref int nested] returns [bool result] :
 		(greedy
 			( &{nested>0} "*/" {nested--;}
 			/ "/*" {nested++;}

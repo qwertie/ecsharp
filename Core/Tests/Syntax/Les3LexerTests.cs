@@ -434,13 +434,13 @@ namespace Loyc.Syntax.Les
 			Case("x=\"Hello\n", A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("'="), new Error("Hello"), null);
 			Case("'\n'o'\"pq\n?", A(TT.SingleQuoteOp, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
 			                      _("'"), null, 'o', new Error("pq"), null, _("'?"));
-			Case("'' ''", A(TT.Unknown, TT.Unknown), new Error(_("''")), new Error(_("''")));
 			Case("0x!0b", A(TT.Literal, TT.Not, TT.Literal), new Error(CL("0x", "number")), _("'!"), new Error(CL("0b", "number")));
 			Case("(`weird\nnewline", A(TT.LParen, TT.BQId, TT.Newline, TT.Id), null, new Error(_("weird")), WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Literal), new Error(CL("0xFF_0000_0000", "U")));
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), new Error(CL("0xFFFF_FFFF_0000_0000", "L")));
 			Case(@"\()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
-			Case("'abc'", A(TT.Unknown), new Error(_("'abc'")));
+			Case("'abc'", A(TT.Literal), new Error(CL("abc", "char")));
+			Case("'' ''", A(TT.Literal, TT.Literal), new Error(CL("", "char")), new Error(CL("", "char")));
 			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), CL("null?", "null"));
 			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), new Error(CL("nonbool", "true")), new Error(CL("nonnull", "null")));
 			Case(".kw'", A(TT.Keyword, TT.SingleQuoteOp), _(".kw"), _("'"));
