@@ -94,8 +94,10 @@ namespace TextEditor
 		public void ShowOutput(string text)
 		{
 			InvokeIfRequired(txt => {
-				_outEditor.Text = txt;
-				_outEditor.Refresh(); // bug fix: area below EOF doesn't clear by itself
+				if (!IsDisposed) {
+					_outEditor.Text = txt;
+					_outEditor.Refresh(); // bug fix: area below EOF doesn't clear by itself
+				}
 			}, text);
 		}
 		public void InvokeIfRequired<T>(Action<T> action, T value)
