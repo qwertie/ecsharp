@@ -20,12 +20,14 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="readme.md" target="readme.txt" />
+    <file src="readme.md" />
 
     <file src="Lib\DotNet35\Theraot.Core.dll" target="lib\net35-client\" />
 
     <file src="Bin\Release.NET3\Loyc.Essentials.*" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.Essentials.*" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.Essentials.*" target="lib\net45\" />
+    <file src="Loyc.Essentials\**\*.cs" target="src" />
+    <file src="Loyc.Essentials\**\*.ecs" target="src" />
   </files>
 </package>

@@ -18,10 +18,12 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="readme.md" target="readme.txt" />
-
+    <file src="readme.md" />
+    
     <file src="Bin\Release.NET3\Loyc.Collections.*" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.Collections.*" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.Collections.*" target="lib\net45\" />
+    <file src="Loyc.Collections\**\*.cs" target="src" />
+    <file src="Loyc.Collections\**\*.ecs" target="src" />
   </files>
 </package>

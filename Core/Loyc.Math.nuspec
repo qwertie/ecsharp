@@ -18,10 +18,13 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="readme.md" target="readme.txt" />
+    <file src="readme.md" />
 
     <file src="Bin\Release.NET3\Loyc.Math.*" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.Math.*" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.Math.*" target="lib\net45\" />
+    <file src="Loyc.Math\**\*.cs" target="src" />
+    <file src="Loyc.Math\**\*.ecs" target="src" />
+    <file src="Loyc.Math\**\*.tt" target="src" />
   </files>
 </package>

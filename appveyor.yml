@@ -25,20 +25,20 @@ after_build:
     #  - Loyc.Syntax.dll      (Loyc.Syntax.$PKG_VERSION.nupkg)
     #  - Loyc.Utilities.dll   (Loyc.Utilities.$PKG_VERSION.nupkg)
     #  - All 5 together       (LoycCore.$PKG_VERSION.nupkg)
-    - nuget pack -Version %PKG_VERSION% Core\Loyc.Essentials.nuspec
-    - nuget pack -Version %PKG_VERSION% Core\Loyc.Collections.nuspec
-    - nuget pack -Version %PKG_VERSION% Core\Loyc.Math.nuspec
-    - nuget pack -Version %PKG_VERSION% Core\Loyc.Syntax.nuspec
-    - nuget pack -Version %PKG_VERSION% Core\Loyc.Utilities.nuspec
-    - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Essentials.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Collections.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Math.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Syntax.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Utilities.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Core\LoycCore.nuspec
 
     # Package the Main libraries:
     # - Loyc.Ecs.dll (Loyc.Ecs.$PKG_VERSION.nupkg)
     # - LeMP.exe     (LeMP.$PKG_VERSION.nupkg)
     # - LLLPG.exe    (LLLPG.$PKG_VERSION.nupkg)
-    - nuget pack -Version %PKG_VERSION% Main\Loyc.Ecs.nuspec
-    - nuget pack -Version %PKG_VERSION% Main\LeMP.nuspec
-    - nuget pack -Version %PKG_VERSION% Main\LLLPG.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Main\Loyc.Ecs.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Main\LeMP.nuspec
+    - nuget pack -Version %PKG_VERSION% -symbols Main\LLLPG.nuspec
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
@@ -63,8 +63,8 @@ deploy:
       server:
       api_key:
           secure: DHTp3wMjKqyca2PWftol2wq7DxE9KdL8AizHVIS14T4DSSMXgc0bIiCGvvA8SkTH
-      skip_symbols: true
+      skip_symbols: false         # Whether to not publish symbol pkgs (src/pdb)
       artifact: /.*\.nupkg/
       on:
-          branch: master # Release from master branch only.
+          branch: master          # Release from master branch only.
           appveyor_repo_tag: true # Deploy on tag push only.

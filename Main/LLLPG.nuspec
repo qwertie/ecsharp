@@ -31,5 +31,7 @@
     <file src="..\Bin\Release.NET3\LLLPG.*" target="lib\net35-client\" />
     <file src="..\Bin\Release.NET4\LLLPG.*" target="lib\net40-client\" />
     <file src="..\Bin\Release.NET45\LLLPG.*" target="lib\net45\" />
+    <file src="LLLPG\**\*.cs" target="src" />
+    <file src="LLLPG\**\*.ecs" target="src" />
   </files>
 </package>

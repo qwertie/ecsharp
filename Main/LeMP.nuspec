@@ -26,9 +26,17 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\readme.md" target="readme.txt" />
+    <file src="..\readme.md" />
+
+    <file src="..\Lib\ICSharpCode.TextEditor.dll" target="lib\net40-client\" />
+    <file src="..\Lib\ICSharpCode.TextEditor.dll" target="lib\net45\" />
+    
     <file src="..\Bin\Release.NET3\LeMP.*" target="lib\net35-client\" />
     <file src="..\Bin\Release.NET4\LeMP.*" target="lib\net40-client\" />
     <file src="..\Bin\Release.NET45\LeMP.*" target="lib\net45\" />
+    <file src="LeMP\**\*.cs" target="src\LeMP" />
+    <file src="LeMP\**\*.ecs" target="src\LeMP" />
+    <file src="LeMP.StdMacros\**\*.cs" target="src\LeMP.StdMacros" />
+    <file src="LeMP.StdMacros\**\*.ecs" target="src\LeMP.StdMacros" />
   </files>
 </package>
