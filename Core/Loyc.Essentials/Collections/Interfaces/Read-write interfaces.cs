@@ -18,13 +18,13 @@ namespace Loyc.Collections
 	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 	/// </code>
 	/// </remarks>
-	public interface IArray<T> : IListSource<T>, ISinkArray<T>
+	public interface IArray<T> : IListSource<T>, IArraySink<T>
 	{
 		/// <summary>Gets or sets an element of the array-like collection.</summary>
 		/// <returns>The value of the array at the specified index.</returns>
 		/// <remarks>
 		/// This redundant indexer is required by C# because the compiler imagines
-		/// that the setter in <see cref="ISinkArray{T}"/> conflicts with the getter
+		/// that the setter in <see cref="IArraySink{T}"/> conflicts with the getter
 		/// in <see cref="IListSource{T}"/>.
 		/// </remarks>
 		new T this[int index] { get; set; }
@@ -95,7 +95,7 @@ namespace Loyc.Collections
 	/// interface. ICollectionEx the following methods that ICollection(T) does not:
 	/// AddRange() and RemoveAll().
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollectionAndReadOnly<T>, ISinkCollection<T>, IAddRange<T>, IIsEmpty
+	public interface ICollectionEx<T> : ICollectionAndReadOnly<T>, ICollectionSink<T>, IAddRange<T>, IIsEmpty
 	{
 		/// <summary>Removes the all the elements that match the conditions defined 
 		/// by the specified predicate.</summary>
@@ -127,7 +127,7 @@ namespace Loyc.Collections
 	/// In Enhanced C# I plan to add some kind of prioritization feature that will 
 	/// eliminate the need for interfaces like this one.
 	/// <para/>
-	/// Does not include <see cref="ISinkList{T}"/> because this interface may be 
+	/// Does not include <see cref="IListSink{T}"/> because this interface may be 
 	/// implemented by list classes that are read-only.
 	/// </remarks>
 	public interface IListAndListSource<T> : IList<T>, IListSource<T>, ICollectionAndReadOnly<T> { }
@@ -139,7 +139,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <remarks>
 	/// <see cref="IArray{T}"/> (a version of <see cref="IListSource{T}"/> that adds the writability of an
-	/// array) and <see cref="ISinkList{T}"/> are largely subsets of the IList(T) interface. 
+	/// array) and <see cref="IListSink{T}"/> are largely subsets of the IList(T) interface. 
 	/// IListSource has two methods that IList(T) does not (TryGet() and Slice()), while
 	/// <see cref="ICollectionEx{T}"/> adds RemoveAll and AddRange.
 	/// <para/>

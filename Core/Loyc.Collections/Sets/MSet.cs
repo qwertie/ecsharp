@@ -44,7 +44,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollectionAndReadOnly<T>, ICloneable<MSet<T>>, ISinkCollection<T>, IEquatable<MSet<T>>, ISet<T>
+	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollectionAndReadOnly<T>, ICloneable<MSet<T>>, ICollectionSink<T>, IEquatable<MSet<T>>, ISet<T>
 	{
 		internal InternalSet<T> _set;
 		internal IEqualityComparer<T> _comparer;

@@ -261,10 +261,10 @@ namespace Loyc.Math
 	/// Divison: Divide(a,b)==Multiply(a,Inverse(b)) for all a in T
 	/// Neutral element: Multiply(One,a)==a for all a in T
 	/// <br/><br/>
-	/// ShiftLeft and ShiftRight operations are commonly thought of as binary 
+	/// Shl and Shr (shift left/right) operations are commonly thought of as binary 
 	/// operations, but some algorithms need to multiply numbers by powers of two 
 	/// and want to do so efficiently, while still supporting floating-point types. 
-	/// Therefore it makes sense to offer ShiftLeft ("multiply by a power of two")
+	/// Therefore it makes sense to offer Shl ("multiply by a power of two")
 	/// and ShiftRight ("divide by a power of two") operators as part of the 
 	/// multiple/divide interface, not just <see cref="IBinaryMath{T}"/>. Even 
 	/// floating-point types can support these two operations efficiently by 
@@ -319,8 +319,8 @@ namespace Loyc.Math
 	/// List of operations and properties: From, CompareTo, Equals, IsLess, 
 	/// IsLessOrEqual, Abs, Min, Max, MinValue, MaxValue, Epsilon, PositiveInfinity,
 	/// NegativeInfinity, IsSigned, Increment, Decrement, NextHigher, NextLower, 
-	/// Add, Subtract, Zero, One, Multiply, Divide, ShiftLeft, ShiftRight, Sqrt, 
-	/// Square.
+	/// Add, Subtract, Zero, One, Multiply, Divide, Shl (Shift left), Shr (shift right), 
+	/// Sqrt, Square.
 	/// <para/>
 	/// Also available as extension methods: IsGreater, IsGreaterOrEqual
 	/// <para/>

@@ -13,9 +13,9 @@ namespace Loyc.Collections
 	/// <summary>Represents a write-only collection: you can modify it, but you
 	/// cannot learn what it contains.</summary>
 	#if CSharp4
-	public interface ISinkCollection<in T> : IAdd<T>
+	public interface ICollectionSink<in T> : IAdd<T>
 	#else
-	public interface ISinkCollection<T> : IAdd<T>
+	public interface ICollectionSink<T> : IAdd<T>
 	#endif
 	{
 		//inherited void Add(T item);
@@ -25,9 +25,9 @@ namespace Loyc.Collections
 
 	/// <summary>Represents a write-only array.</summary>
 	#if CSharp4
-	public interface ISinkArray<in T>
+	public interface IArraySink<in T>
 	#else
-	public interface ISinkArray<T>
+	public interface IArraySink<T>
 	#endif
 	{
 		T this[int index] { set; }
@@ -35,9 +35,9 @@ namespace Loyc.Collections
 
 	/// <summary>Represents a write-only indexable list class.</summary>
 	#if CSharp4
-	public interface ISinkList<in T> : ISinkCollection<T>, ISinkArray<T>
+	public interface IListSink<in T> : ICollectionSink<T>, IArraySink<T>
 	#else
-	public interface ISinkList<T> : ISinkCollection<T>, ISinkArray<T>
+	public interface IListSink<T> : ICollectionSink<T>, IArraySink<T>
 	#endif
 	{
 	}

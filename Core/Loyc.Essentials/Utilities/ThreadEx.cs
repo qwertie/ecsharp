@@ -467,12 +467,11 @@ namespace Loyc.Threading
 	/// </remarks>
 	public class ThreadLocalVariable<T> : ThreadLocalVariableBase, IHasMutableValue<T>
 	{
-		public delegate TResult Func<TArg0, TResult>(TArg0 arg0);
-
 		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
 		protected TinyReaderWriterLock _lock = TinyReaderWriterLock.New;
 		protected Func<T,T> _propagator = delegate(T v) { return v; };
 		protected T _fallbackValue;
+		protected bool _autoFallback;
 
 		public ThreadLocalVariable()
 		{
@@ -483,8 +482,9 @@ namespace Loyc.Threading
 		/// <param name="initialValue">Initial value on the current thread;
 		/// also used as the FallbackValue in threads that are not created
 		/// via ThreadEx and in other threads that are already running.</param>
-		public ThreadLocalVariable(T initialValue)
-			: this(initialValue, initialValue, null) {}
+		/// <param name="autoFallback">Sets the <see cref="AutoFallbackMode"/> property</param>
+		public ThreadLocalVariable(T initialValue, bool autoFallback = false)
+			: this(initialValue, initialValue, null) { _autoFallback = autoFallback; }
 
 		/// <summary>Constructs a ThreadLocalVariable.</summary>
 		/// <param name="initialValue">Initial value on the current thread. 
@@ -566,6 +566,8 @@ namespace Loyc.Threading
 				_lock.EnterWriteLock(threadID);
 				try {
 					_tls[threadID] = value;
+					if (_autoFallback)
+						_fallbackValue = value;
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -601,7 +603,17 @@ namespace Loyc.Threading
 				}
 			}
 		}
+		
+		/// <summary>Returns true if this variable was created in "auto-fallback" 
+		/// mode, which means that setting the <see cref="Value"/> property will 
+		/// simultaneously set the <see cref="FallbackValue"/> to the same value 
+		/// at the same time.</summary>
+		public bool AutoFallbackMode
+		{
+			get { return _autoFallback; }
+		}
 	}
+
 
 	/// <summary>Holds a single Value that is associated with the thread that
 	/// assigned it.</summary>
