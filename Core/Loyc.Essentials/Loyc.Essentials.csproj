@@ -267,6 +267,15 @@
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
+    <None Include="Utilities\MessageSink.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>MessageSink.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Utilities\MessageSink.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageSink.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\MiscInterfaces.cs" />

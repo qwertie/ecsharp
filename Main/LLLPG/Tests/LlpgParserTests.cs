@@ -28,7 +28,7 @@ namespace Loyc.LLParserGenerator
 		void SetUp()
 		{
 			ParsingService.Default = Les2LanguageService.Value;
-			MessageSink.Default = MessageSink.Console;
+			MessageSink.SetDefault(MessageSink.Console);
 		}
 
 		[Test]

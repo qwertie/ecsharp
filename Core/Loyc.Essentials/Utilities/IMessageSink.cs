@@ -36,8 +36,9 @@ namespace Loyc
 	/// "hard" error. Fatal, in contrast, represents an error that causes the
 	/// compiler to halt immediately.
 	/// <para/>
-	/// The message sink itself should perform localization, which can be done
-	/// with <see cref="Localize.Localized"/>.
+	/// If the message sink may produce messages that users will see, the message 
+	/// sink itself should perform localization using <see 
+	/// cref="Localize.Localized(string, object[])"/>.
 	/// <para/>
 	/// Only a single Write() method is truly needed (<see cref="Write(Severity, object, string, object[])"/>),
 	/// but for efficiency reasons the interface contains two other writers. It 
@@ -86,13 +87,13 @@ namespace Loyc
 		/// See also <see cref="MessageSink.LocationString"/>().</param>
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
-		void Write(Severity type, TContext context, string format);
-		void Write(Severity type, TContext context, string format, object arg0, object arg1 = null);
-		void Write(Severity type, TContext context, string format, params object[] args);
+		void Write(Severity level, TContext context, [Localizable] string format);
+		void Write(Severity level, TContext context, [Localizable] string format, object arg0, object arg1 = null);
+		void Write(Severity level, TContext context, [Localizable] string format, params object[] args);
 		
 		/// <summary>Returns true if messages of the specified type will actually be 
 		/// printed, or false if Write(type, ...) has no effect.</summary>
-		bool IsEnabled(Severity type);
+		bool IsEnabled(Severity level);
 	}
 	
 	/// <summary>Alias for IMessageSink&lt;object>.</summary>
@@ -122,7 +123,8 @@ namespace Loyc
 		Verbose = 10,     // log4net: Verbose = Finest = 10000
 		_Finer = 20,      // log4net: Finer = 20000
 		Debug = 30,       // log4net: Debug = Fine = 30000
-		Common = 40,      // log4net: Info = 40000
+		Common = 36,      // Common event: No log4net equivalent
+		Info = 40,        // log4net: Info = 40000
 		Note = 50,        // log4net: Notice = 50000
 		Warning = 60,     // log4net: Warning = 60000
 		Uncommon = 66,    // Uncommon event: No log4net equivalent
@@ -132,108 +134,6 @@ namespace Loyc
 		_Alert = 100,     // log4net: Alert = 100000
 		Fatal = 110,      // log4net: Fatal = 110000
 		_Emergency = 120, // log4net: Emergency = 120000
-	}
-
-	/// <summary>Holds the default message sink for this thread (<see cref="Default"/>),
-	/// <see cref="Symbol"/>s for the common message types, such as Warning and 
-	/// Error, and default instances of <see cref="ConsoleMessageSink"/>,
-	/// <see cref="TraceMessageSink"/> and <see cref="NullMessageSink"/>.</summary>
-	/// <seealso cref="IMessageSink"/>
-	public static class MessageSink
-	{
-		static ThreadLocalVariable<IMessageSink> DefaultTLV = new ThreadLocalVariable<IMessageSink>();
-		public static IMessageSink Default
-		{
-			get { return DefaultTLV.Value ?? Null; }
-			set { DefaultTLV.Value = value ?? Null; }
-		}
-		[Obsolete("This property is now called Default")]
-		public static IMessageSink Current
-		{
-			get { return Default; }
-			set { Default = value; }
-		}
-		/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
-		/// <example><code>
-		/// using (var old = MessageSink.PushCurrent(MessageSink.Console))
-		///     MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
-		/// </code></example>
-		public static SavedValue<IMessageSink> SetDefault(IMessageSink sink)
-        {
-            return new SavedValue<IMessageSink>(DefaultTLV, sink);
-        }
-		[Obsolete("This method is now called SetDefault()")]
-		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
-
-		/// <summary>Returned by <see cref="PushCurrent(IMessageSink)"/>.</summary>
-		public struct PushedCurrent : IDisposable
-		{
-			public readonly IMessageSink OldValue;
-			public PushedCurrent(IMessageSink @new) { OldValue = Default; Default = @new; }
-			public void Dispose() { Default = OldValue; }
-		}
-
-		/// <summary>Gets the location information from the specified object, or
-		/// converts the object to a string.</summary>
-		/// <param name="context">A value whose string representation you want to get.</param>
-		/// <returns>
-		/// If <c>context</c> implements <see cref="IHasLocation"/>,
-		/// this function returns <see cref="IHasLocation.Location"/>; 
-		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
-		/// it returns <c>context.ToString()</c>.
-		/// </returns>
-		/// <remarks>Message sinks are commonly used to display error and warning 
-		/// messages, and when you write a message with <c>IMessageSink.Write()</c>, 
-		/// the second parameter is a "context" argument which specifies the object
-		/// to which the message is related (for example, when writing compiler 
-		/// output, the context might be a node in a syntax tree). Most message 
-		/// sinks display the message in text form (in a log file or terminal), and 
-		/// in that case the best option is to display the location information 
-		/// associated with the context object (e.g. Foo.cpp:45), rather than a 
-		/// string representation of the object itself.
-		/// <para/>
-		/// Therefore, message sinks that display a message in text form will call
-		/// this method to convert the context object to a string, and if available,
-		/// this method calls the <see cref="IHasLocation.Location"/>
-		/// property of the context object.
-		/// </remarks>
-		public static string LocationString(object context)
-		{
-			if (context == null) return null;
-			var ils = context as IHasLocation;
-			return (ils != null ? ils.Location ?? context : context).ToString();
-		}
-		/// <summary>Returns context.Location if context implements 
-		/// <see cref="IHasLocation"/>; otherwise, returns context itself.</summary>
-		public static object LocationOf(object context)
-		{
-			var loc = context as IHasLocation;
-			if (loc == null) return context;
-			return loc.Location;
-		}
-
-		public static string FormatMessage(Severity type, object context, string format, params object[] args)
-		{
-			string loc = LocationString(context);
-			string formatted = Localize.Localized(format, args);
-			if (string.IsNullOrEmpty(loc))
-				return type.ToString().Localized() + ": " + formatted;
-			else
-				return loc + ": " + 
-				       type.ToString().Localized() + ": " + formatted;
-		}
-
-		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
-		public static readonly TraceMessageSink Trace = new TraceMessageSink();
-		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine(string)"/>.</summary>
-		public static readonly ConsoleMessageSink Console = new ConsoleMessageSink();
-		/// <summary>Discards all messages.</summary>
-		public static readonly NullMessageSink Null = new NullMessageSink();
-		/// <summary>Sends all messages to a user-defined method.</summary>
-		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
-		{
-			return new MessageSinkFromDelegate(writer, isEnabled);
-		}
 	}
 
 	/// <summary>This interface allows an object to declare its "location".</summary>

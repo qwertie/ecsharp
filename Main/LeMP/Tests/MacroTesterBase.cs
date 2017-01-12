@@ -18,7 +18,7 @@ namespace LeMP.Tests
 		[SetUp]
 		public void SetUp() {
 			// Block verbose messages
-			MessageSink.Default = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+			MessageSink.SetDefault(new SeverityMessageFilter(MessageSink.Console, Severity.Debug));
 			_msgHolder = new MessageHolder();
 		}
 

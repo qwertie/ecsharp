@@ -21,6 +21,8 @@ namespace Loyc
 	/// with hard-coded colors for Error, Warning, Note, Verbose, and Detail.</summary>
 	public class ConsoleMessageSink : IMessageSink
 	{
+		public static readonly ConsoleMessageSink Value = new ConsoleMessageSink();
+
 		protected static ConsoleColor _lastColor;
 
 		public ConsoleMessageSink() { PrintSeverityAt = Severity.Warning; }
@@ -114,6 +116,8 @@ namespace Loyc
 	/// increases by one with each message received, as well as an ErrorCount.</summary>
 	public sealed class NullMessageSink : IMessageSink, ICount
 	{
+		public static readonly NullMessageSink Value = new NullMessageSink();
+
 		int _count, _errorCount;
 		public int Count { get { return _errorCount; } }
 		public int ErrorCount { get { return _count; } }
@@ -144,6 +148,8 @@ namespace Loyc
 	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 	public class TraceMessageSink : IMessageSink
 	{
+		public static readonly TraceMessageSink Value = new TraceMessageSink();
+
 		public void Write(Severity type, object context, string format)
 		{
 			WriteCore(type, context, Localize.Localized(format));
@@ -272,12 +278,12 @@ namespace Loyc
 		public Func<Severity, bool> TypeFilter { get; set; }
 		public IMessageSink Target { get; set; }
 
-		public MessageFilter(Func<Severity, object, string, bool> filter, IMessageSink target) 
+		public MessageFilter(IMessageSink target, Func<Severity, object, string, bool> filter) 
 		{
 			Filter = filter;
 			Target = target;
 		}
-		public MessageFilter(Func<Severity, bool> filter, IMessageSink target) 
+		public MessageFilter(IMessageSink target, Func<Severity, bool> filter) 
 		{
 			TypeFilter = filter;
 			Target = target;
@@ -312,28 +318,28 @@ namespace Loyc
 	/// <summary>A decorator (wrapper) for <see cref="IMessageSink"/> that filters
 	/// out some messages if their <see cref="Severity"/> is too low, according
 	/// to the value of the <see cref="MinSeverity"/> property.</summary>
-	public class SeverityMessageFilter : IMessageSink
+	public class SeverityMessageFilter<TContext> : IMessageSink<TContext>
 	{
-		public SeverityMessageFilter(IMessageSink target, Severity minSeverity) 
+		public SeverityMessageFilter(IMessageSink<TContext> target, Severity minSeverity) 
 			{ Target = target; _minSeverity = minSeverity; }
 		Severity _minSeverity;
 		bool _printedPrev; // whether the last-written message passed
 
-		public IMessageSink Target { get; set; }
+		public IMessageSink<TContext> Target { get; set; }
 		public Severity MinSeverity { 
 			get { return _minSeverity; }
 			set { _minSeverity = value; }
 		}
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity type, TContext context, string format)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format);
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, TContext context, string format, object arg0, object arg1 = null)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format, arg0, arg1);
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity type, TContext context, string format, params object[] args)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format, args);
 		}
@@ -346,40 +352,141 @@ namespace Loyc
 			return type >= _minSeverity || (type == Severity.Detail && _printedPrev);
 		}
 	}
-	
-	/// <summary>A message sink that sends its messages to a list of other sinks.</summary>
-	public class MessageSplitter : IMessageSink
-	{
-		List<IMessageSink> _list = new List<IMessageSink>();
-		public IList<IMessageSink> List { get { return _list; } }
 
-		public MessageSplitter(IEnumerable<IMessageSink> targets) { _list = new List<IMessageSink>(targets); }
-		public MessageSplitter(params IMessageSink[] targets) { _list = new List<IMessageSink>(targets); }
-		public MessageSplitter() { _list = new List<IMessageSink>(); }
+	/// <summary>Alias for SeverityMessageFilter&lt;object>.</summary>
+	public class SeverityMessageFilter : SeverityMessageFilter<object>, IMessageSink
+	{
+		public SeverityMessageFilter(IMessageSink<object> target, Severity minSeverity) : base(target, minSeverity) { }
+	}
+		
+	/// <summary>A message sink that sends its messages to a list of other sinks.</summary>
+	/// <remarks>Null elements are allowed in the <see cref="List"/> and are ignored.</remarks>
+	public class MessageSplitter<TContext> : IMessageSink<TContext>
+	{
+		List<IMessageSink<TContext>> _list = new List<IMessageSink<TContext>>();
+		public IList<IMessageSink<TContext>> List { get { return _list; } }
+
+		public MessageSplitter(IEnumerable<IMessageSink<TContext>> targets) { _list = new List<IMessageSink<TContext>>(targets); }
+		public MessageSplitter(params IMessageSink<TContext>[] targets) { _list = new List<IMessageSink<TContext>>(targets); }
+		public MessageSplitter() { _list = new List<IMessageSink<TContext>>(); }
 	
-		public void  Write(Severity type, object context, string format)
+		public void  Write(Severity type, TContext context, string format)
 		{
  			foreach(var sink in _list)
-				sink.Write(type, context, format);
+				if (sink != null)
+					sink.Write(type, context, format);
 		}
-		public void  Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void  Write(Severity type, TContext context, string format, object arg0, object arg1 = null)
 		{
  			foreach(var sink in _list)
-				sink.Write(type, context, format, arg0, arg1);
+				if (sink != null)
+					sink.Write(type, context, format, arg0, arg1);
 		}
-		public void  Write(Severity type, object context, string format, params object[] args)
+		public void  Write(Severity type, TContext context, string format, params object[] args)
 		{
 			foreach (var sink in _list)
-				sink.Write(type, context, format, args);
+				if (sink != null)
+					sink.Write(type, context, format, args);
 		}
 		/// <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
 		public bool IsEnabled(Severity type)
 		{
 			foreach (var sink in _list)
-				if (sink.IsEnabled(type))
+				if (sink != null && sink.IsEnabled(type))
 					return true;
 			return false;
 		}
+	}
+
+	/// <summary>Alias for MessageSplitter&lt;object>.</summary>
+	public class MessageSplitter : MessageSplitter<object>, IMessageSink
+	{
+		public MessageSplitter(IEnumerable<IMessageSink<object>> targets) : base(targets) { }
+		public MessageSplitter(params IMessageSink<object>[] targets) : base(targets) { }
+		public MessageSplitter() : base() { }
+	}
+
+	/// <summary>A message sink wrapper that has a default value for the context 
+	/// parameter, which is used when the context provided is null, and an optional 
+	/// message prefix which is inserted at the beginning of the format string.</summary>
+	public class MessageSinkWithContext<TContext> : IMessageSink<TContext> where TContext: class
+	{
+		IMessageSink<TContext> _target { get; set; }
+		public IMessageSink<TContext> Target
+		{
+			get { return _target ?? MessageSink.Default; }
+			set { _target = value; }
+		}
+		public TContext DefaultContext { get; set; }
+		public string MessagePrefix { get; set; }
+
+		/// <summary>Initializes the wrapper.</summary>
+		/// <param name="target">Message sink to which all messages are forwarded. If this parameter 
+		/// is null, then messages are written to <see cref="MessageSink.Default"/>
+		/// <i>at the time a message is written</i>.</param>
+		/// <param name="defaultContext">Default context object, used if Write is called with a context of null.</param>
+		/// <param name="messagePrefix">A prefix to prepend at the beginning of all messages written.</param>
+		/// <param name="scrubPrefix">Whether to replace "{" with ""{{" and "}" with "}}" in 
+		/// <c>messagePrefix</c> to avoid accidental misbehavior when the string is formatted.</param>
+		public MessageSinkWithContext(IMessageSink<TContext> target, TContext defaultContext, string messagePrefix = null, bool scrubPrefix = true)
+		{
+			Target = target;
+			DefaultContext = defaultContext;
+			if (scrubPrefix && messagePrefix != null)
+				messagePrefix = messagePrefix.Replace("{", "{{").Replace("}", "}}");
+			MessagePrefix = messagePrefix;
+		}
+
+		string Prefixed(Severity level, string message)
+		{
+			if (!string.IsNullOrEmpty(MessagePrefix))
+				if (IsEnabled(level))
+				return MessagePrefix + message;
+			return message;
+		}
+
+		public bool IsEnabled(Severity type)
+		{
+			return Target.IsEnabled(type);
+		}
+
+		public void Write(Severity level, TContext context, string format)
+		{
+			if (MessagePrefix != null)
+			{
+				if (!IsEnabled(level))
+					return;
+				format = MessagePrefix + format;
+			}
+			Target.Write(level, context ?? DefaultContext, format);
+		}
+		public void Write(Severity level, TContext context, string format, params object[] args)
+		{
+			if (MessagePrefix != null)
+			{
+				if (!IsEnabled(level))
+					return;
+				format = MessagePrefix + format;
+			}
+			Target.Write(level, context ?? DefaultContext, format, args);
+		}
+		public void Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
+		{
+			if (MessagePrefix != null)
+			{
+				if (!IsEnabled(level))
+					return;
+				format = MessagePrefix + format;
+			}
+			Target.Write(level, context ?? DefaultContext, format, arg0, arg1);
+		}
+	}
+
+	/// <summary>Alias for MessageSinkWithContext&lt;object>.</summary>
+	public class MessageSinkWithContext : MessageSinkWithContext<object>, IMessageSink
+	{
+		public MessageSinkWithContext(IMessageSink target, object defaultContext, string messagePrefix = null, bool scrubPrefix = true)
+			: base(target, defaultContext, messagePrefix, scrubPrefix) { }
 	}
 
 	/// <summary>This helper class lets you implement <see cref="IMessageSink"/> 
