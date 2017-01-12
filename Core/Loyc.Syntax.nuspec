@@ -9,7 +9,7 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>A parser library.</summary>
-    <description>Loyc.Syntax contains a parser and printer for Loyc Expression Syntax (LES), and various interfaces and base classes for Loyc Languages and for users of LLLPG.</description>
+    <description>Loyc.Syntax implements various interfaces and helper classes for Loyc Languages and for users of LLLPG. It also implements Loyc trees for .NET (LNode), and parsers and printers for Loyc Expression Syntax (LES) versions 2 and 3.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>Loyc Core Parser LES LLLPG</tags>

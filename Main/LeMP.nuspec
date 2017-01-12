@@ -9,11 +9,9 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>LeMP, the Lexical Macro Processor</summary>
-    <description>LeMP is a new open-source Lisp-inspired macro processor for C#.
-    It helps you avoid writing boilerplate and repetitive code, and it provides
-    a framework in which you can run code-generation algorithms at compile-time.
-    This is just the core engine! To integrate LeMP into Visual Studio, please 
-    download a release from https://github.com/qwertie/ecsharp/releases</description>
+    <description>LeMP is a new open-source Lisp-inspired macro processor for C#. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time.
+    
+    This is just the core engine! To integrate LeMP into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp LeMP Lisp Macro Processor</tags>

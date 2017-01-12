@@ -9,9 +9,9 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>"Fills in the gaps" in the .NET Base Class Library</summary>
-    <description>Loyc.Essentials is a library that "fills in the gaps" in the core of the .NET Base Class Library. It is especially focused on collections: classes, interfaces, adapters, and extension methods.
-
-    Contributors are welcome: more unit tests, code reviews, and new features are desired, anything relatively small (under about 3000 lines of code) that fits the theme "things that should have been built into the .NET framework, but aren't".</description>
+    <description>A library of interfaces, extension methods, and small bits of functionality that are useful in almost any software project, according to the theme "things that should be built into the .NET framework, but aren’t".
+    
+    At least half of Loyc.Essentials is devoted to collections: collection interfaces, collection adapters, collection extension methods (e.g. LinqToLists) and even a couple of collection implementations. The other half includes a variety of things including Symbols, a localization helper, "message sinks", a miniature NUnit clone and more.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
