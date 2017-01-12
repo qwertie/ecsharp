@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -87,7 +87,7 @@ namespace LeMP
 							// by the same name, which is illegal unless we add braces.
 							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.Statement));
 							if (next_i < contents.Count)
-								context.Write(Severity.Error, contents[next_i], "The default branch must be the final branch in a 'match' statement.");
+								context.Sink.Error(contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
 					}
 					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToVList().AsLNode(S.Braces), LNode.Literal(false)));
@@ -253,14 +253,14 @@ namespace LeMP
 						if (pattern.Calls(CodeSymbols.In, 2) && (patternL = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (patternL = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null) {
 							pattern = patternL;
 							if (inRange2 != null)
-								_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
+								_context.Sink.Error(inRange2, "match-case does not support multiple 'in' operators");
 						} else if (pattern.Calls(CodeSymbols.Is, 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null || pattern.Calls((Symbol) "is", 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null) {
 							pattern = cmpExprOrBinding;
 							if (isType2 != null)
-								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+								_context.Sink.Error(isType2, "match-case does not support multiple 'is' operators");
 						} else if (pattern.Calls(CodeSymbols.Is, 1) && (isType = pattern.Args[0]) != null || pattern.Calls((Symbol) "is", 1) && (isType = pattern.Args[0]) != null) {
 							if (isType2 != null)
-								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+								_context.Sink.Error(isType2, "match-case does not support multiple 'is' operators");
 							goto doneAnalysis;
 						} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
 							inRange = pattern;
@@ -306,7 +306,7 @@ namespace LeMP
 							varBinding = varBinding.WithoutAttrs();
 						}
 						if (!varBinding.IsId) {
-							_context.Write(Severity.Error, varBinding, "Invalid variable name in match-case: {0}", varBinding);
+							_context.Sink.Error(varBinding, "Invalid variable name in match-case: {0}", varBinding);
 							varBinding = null;
 						}
 					}
@@ -317,7 +317,7 @@ namespace LeMP
 				if (refExistingVar && varBinding == null) {
 					refExistingVar = false;
 					var got = cmpExprOrBinding ?? pattern;
-					_context.Write(Severity.Warning, got, "'ref' expected a variable name (got `{0}`)", got);
+					_context.Sink.Warning(got, "'ref' expected a variable name (got `{0}`)", got);
 				}
 			}
 		

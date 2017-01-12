@@ -1,4 +1,4 @@
-// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -56,7 +56,7 @@ namespace LeMP
 				{
 					LNode tmp_10;
 					if (varDecl.Calls(CodeSymbols.Var, 2) && (tmp_10 = varDecl.Args[1]) != null && tmp_10.Calls(CodeSymbols.Assign, 2) && (varName = tmp_10.Args[0]) != null)
-						context.Write(Severity.Error, varName, "The return value cannot be assigned here. The value of this variable must be placed on the return statement(s).");
+						context.Sink.Error(varName, "The return value cannot be assigned here. The value of this variable must be placed on the return statement(s).");
 					else if (varDecl.Calls(CodeSymbols.Var, 2) && (varName = varDecl.Args[1]) != null) { } else if ((varName = varDecl).IsId)
 						varDecl = varName.With(S.Var, F.Missing, varName);
 					else
@@ -86,7 +86,7 @@ namespace LeMP
 			if (DetectMissingVoidReturn(context, rest[rest.Count - 1, LNode.Missing]))
 				rest.Add(bracedHandler.Args.AsLNode(S.Braces));
 			else if (!foundReturn)
-				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
+				context.Sink.Warning(node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
 		
 			// Block reprocessing of `rest` because we already preprocessed it
 			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(rest));

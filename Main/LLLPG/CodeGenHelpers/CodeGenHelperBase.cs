@@ -113,9 +113,9 @@ namespace Loyc.LLParserGenerator
 				LNode alias = aliasSet.Args[0], replacement = aliasSet.Args[1], old;
 				if (_definedAliases.TryGetValue(alias, out old)) {
 					if (stmt.AttrNamed(S.Partial) == null || !old.Equals(replacement))
-						sink.Write(Severity.Warning, alias, "Redefinition of alias '{0}'", alias);
+						sink.Warning(alias, "Redefinition of alias '{0}'", alias);
 				} else if ((q = _definedAliases.Where(pair => replacement.Equals(pair.Value))).Any())
-					sink.Write(Severity.Warning, replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
+					sink.Warning(replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
 				_definedAliases[alias] = replacement;
 				return LNode.Call(S.Splice, VList<LNode>.Empty); // erase alias from output
 			}

@@ -78,7 +78,7 @@ namespace Loyc.Ecs.Parser
 
 			var pos = new SourceRange(SourceFile, InputPosition + lookaheadIndex);
 			if (ErrorSink != null)
-				ErrorSink.Write(Severity.Error, pos, message);
+				ErrorSink.Error(pos, message);
 			else
 				throw new FormatException(pos + ": " + message);
 		}

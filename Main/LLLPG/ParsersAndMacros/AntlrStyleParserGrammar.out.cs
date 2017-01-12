@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.6.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,14 +13,17 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
+
 namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 	using TT = TokenType;
+
 	internal class AntlrStyleParser : StageOneParser
 	{
-		[ThreadStatic]
-		static AntlrStyleParser _parser;
+
+		[ThreadStatic] static AntlrStyleParser _parser;
+	
 		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{
 			return Parse(tokens, tokens.File, sink);
@@ -35,9 +38,10 @@ namespace Loyc.LLParserGenerator
 			}
 			return _parser.RulesAndStuff();
 		}
-		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink) : base(tokens, file, messageSink)
-		{
-		}
+	
+		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink)
+			 : base(tokens, file, messageSink) { }
+	
 		LNode ParseHostReturnType(Token paren)
 		{
 			var list = ParseHostCode(paren, ParsingMode.FormalArguments);
@@ -50,11 +54,12 @@ namespace Loyc.LLParserGenerator
 				result = LNode.Missing;
 			if (result.Calls(S.Var, 2)) {
 				if (!result[1].IsIdNamed("result"))
-					ErrorSink.Write(Severity.Error, result[1], "LLLPG requires that the result of a rule be called 'result'");
+					ErrorSink.Error(result[1], "LLLPG requires that the result of a rule be called 'result'");
 				return result[0];
 			} else
 				return result;
 		}
+	
 		static readonly Symbol _init = (Symbol) "init";
 		static readonly Symbol _members = (Symbol) "members";
 		static readonly Symbol _token = (Symbol) "token";
@@ -64,6 +69,9 @@ namespace Loyc.LLParserGenerator
 			var lt = LT(li);
 			return lt.Value == value;
 		}
+	
+	
+		// The output is essentially #rule($returnType, $name, $args, $grammarExpr)
 		LNode Rule()
 		{
 			TT la0, la1;
@@ -157,17 +165,13 @@ namespace Loyc.LLParserGenerator
 				case TT.Id:
 					{
 						switch ((TT) LA(1)) {
-						case TT.At:
-						case TT.Colon:
-						case TT.Id:
-						case TT.LBrace:
+						case TT.At: case TT.Colon: case TT.Id: case TT.LBrace:
 						case TT.StartColon:
 							goto match1;
 						}
 					}
 					break;
-				case TT.Colon:
-				case TT.StartColon:
+				case TT.Colon: case TT.StartColon:
 					{
 						la1 = (TT) LA(1);
 						if (la1 != (TT) EOF)
@@ -264,6 +268,9 @@ namespace Loyc.LLParserGenerator
 			var rule = isToken ? F.Id("#token") : F.Id("#rule");
 			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(LNode.Call(LNode.List(attrs), rule, LNode.List(retType ?? F.Void, F.Id(ruleName), LNode.Call(CodeSymbols.AltList, LNode.List(args)), gExpr))));
 		}
+	
+	
+		// Supports alias("..." = Token) statements
 		LNode HostCall()
 		{
 			TT la0;
@@ -280,6 +287,9 @@ namespace Loyc.LLParserGenerator
 			var args = ParseHostCode(lit_lpar, ParsingMode.Expressions);
 			return F.Call(F.Id(target), args);
 		}
+	
+	
+		// Inserts code into output. In ANTLR you write @members {...}
 		LNode HostBlock()
 		{
 			TT la0;
@@ -287,7 +297,7 @@ namespace Loyc.LLParserGenerator
 			// Line 164: (&{Is($LI, _members)} TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
-				Check(Is(0, _members), "Is($LI, _members)");
+				Check(Is(0, _members), "Expected Is($LI, _members)");
 				Skip();
 			}
 			lit_lcub = Match((int) TT.LBrace);
@@ -300,123 +310,41 @@ namespace Loyc.LLParserGenerator
 			var args = ParseHostCode(lit_lcub, ParsingMode.Declarations);
 			return args.AsLNode(S.Splice);
 		}
+	
+	
 		public VList<LNode> RulesAndStuff()
 		{
-			TT la1;
 			VList<LNode> result = default(VList<LNode>);
 			// Line 174: ( Rule | HostCall | HostBlock )
 			switch ((TT) LA0) {
-			case TT.At:
-			case TT.AttrKeyword:
-			case TT.LBrack:
+			case TT.At: case TT.AttrKeyword: case TT.LBrack:
 				result.Add(Rule());
 				break;
 			case TT.Id:
 				{
-					if (Is(0, _members)) {
-						if (Is(0, _token) || Is(0, _rule)) {
-							switch ((TT) LA(1)) {
-							case TT.Id:
-							case TT.LBrack:
-								result.Add(Rule());
-								break;
-							case TT.LParen:
-								{
-									switch ((TT) LA(3)) {
-									case TT.At:
-									case TT.Colon:
-									case TT.Id:
-									case TT.Returns:
-									case TT.StartColon:
-										result.Add(Rule());
-										break;
-									default:
-										result.Add(HostCall());
-										break;
-									}
-								}
-								break;
-							case TT.At:
-							case TT.Colon:
-							case TT.Returns:
+					switch ((TT) LA(1)) {
+					case TT.Id: case TT.LBrack:
+						result.Add(Rule());
+						break;
+					case TT.LParen:
+						{
+							switch ((TT) LA(3)) {
+							case TT.At: case TT.Colon: case TT.Id: case TT.Returns:
 							case TT.StartColon:
 								result.Add(Rule());
 								break;
 							default:
-								result.Add(HostBlock());
-								break;
-							}
-						} else {
-							switch ((TT) LA(1)) {
-							case TT.LBrack:
-								result.Add(Rule());
-								break;
-							case TT.LParen:
-								{
-									switch ((TT) LA(3)) {
-									case TT.At:
-									case TT.Colon:
-									case TT.Id:
-									case TT.Returns:
-									case TT.StartColon:
-										result.Add(Rule());
-										break;
-									default:
-										result.Add(HostCall());
-										break;
-									}
-								}
-								break;
-							case TT.At:
-							case TT.Colon:
-							case TT.Id:
-							case TT.Returns:
-							case TT.StartColon:
-								result.Add(Rule());
-								break;
-							default:
-								result.Add(HostBlock());
+								result.Add(HostCall());
 								break;
 							}
 						}
-					} else if (Is(0, _token) || Is(0, _rule)) {
-						la1 = (TT) LA(1);
-						if (la1 == TT.Id || la1 == TT.LBrack)
-							result.Add(Rule());
-						else if (la1 == TT.LParen) {
-							switch ((TT) LA(3)) {
-							case TT.At:
-							case TT.Colon:
-							case TT.Id:
-							case TT.Returns:
-							case TT.StartColon:
-								result.Add(Rule());
-								break;
-							default:
-								result.Add(HostCall());
-								break;
-							}
-						} else
-							result.Add(Rule());
-					} else {
-						la1 = (TT) LA(1);
-						if (la1 == TT.LBrack)
-							result.Add(Rule());
-						else if (la1 == TT.LParen) {
-							switch ((TT) LA(3)) {
-							case TT.At:
-							case TT.Colon:
-							case TT.Id:
-							case TT.Returns:
-							case TT.StartColon:
-								result.Add(Rule());
-								break;
-							default:
-								result.Add(HostCall());
-								break;
-							}
-						} else
-							result.Add(Rule());
+						break;
+					case TT.At: case TT.Colon: case TT.Returns: case TT.StartColon:
+						result.Add(Rule());
+						break;
+					default:
+						result.Add(HostBlock());
+						break;
 					}
 				}
 				break;
@@ -430,117 +358,34 @@ namespace Loyc.LLParserGenerator
 			// Line 174: ( Rule | HostCall | HostBlock )*
 			for (;;) {
 				switch ((TT) LA0) {
-				case TT.At:
-				case TT.AttrKeyword:
-				case TT.LBrack:
+				case TT.At: case TT.AttrKeyword: case TT.LBrack:
 					result.Add(Rule());
 					break;
 				case TT.Id:
 					{
-						if (Is(0, _members)) {
-							if (Is(0, _token) || Is(0, _rule)) {
-								switch ((TT) LA(1)) {
-								case TT.Id:
-								case TT.LBrack:
-									result.Add(Rule());
-									break;
-								case TT.LParen:
-									{
-										switch ((TT) LA(3)) {
-										case TT.At:
-										case TT.Colon:
-										case TT.Id:
-										case TT.Returns:
-										case TT.StartColon:
-											result.Add(Rule());
-											break;
-										default:
-											result.Add(HostCall());
-											break;
-										}
-									}
-									break;
-								case TT.At:
-								case TT.Colon:
-								case TT.Returns:
+						switch ((TT) LA(1)) {
+						case TT.Id: case TT.LBrack:
+							result.Add(Rule());
+							break;
+						case TT.LParen:
+							{
+								switch ((TT) LA(3)) {
+								case TT.At: case TT.Colon: case TT.Id: case TT.Returns:
 								case TT.StartColon:
 									result.Add(Rule());
 									break;
 								default:
-									result.Add(HostBlock());
-									break;
-								}
-							} else {
-								switch ((TT) LA(1)) {
-								case TT.LBrack:
-									result.Add(Rule());
-									break;
-								case TT.LParen:
-									{
-										switch ((TT) LA(3)) {
-										case TT.At:
-										case TT.Colon:
-										case TT.Id:
-										case TT.Returns:
-										case TT.StartColon:
-											result.Add(Rule());
-											break;
-										default:
-											result.Add(HostCall());
-											break;
-										}
-									}
-									break;
-								case TT.At:
-								case TT.Colon:
-								case TT.Id:
-								case TT.Returns:
-								case TT.StartColon:
-									result.Add(Rule());
-									break;
-								default:
-									result.Add(HostBlock());
+									result.Add(HostCall());
 									break;
 								}
 							}
-						} else if (Is(0, _token) || Is(0, _rule)) {
-							la1 = (TT) LA(1);
-							if (la1 == TT.Id || la1 == TT.LBrack)
-								result.Add(Rule());
-							else if (la1 == TT.LParen) {
-								switch ((TT) LA(3)) {
-								case TT.At:
-								case TT.Colon:
-								case TT.Id:
-								case TT.Returns:
-								case TT.StartColon:
-									result.Add(Rule());
-									break;
-								default:
-									result.Add(HostCall());
-									break;
-								}
-							} else
-								result.Add(Rule());
-						} else {
-							la1 = (TT) LA(1);
-							if (la1 == TT.LBrack)
-								result.Add(Rule());
-							else if (la1 == TT.LParen) {
-								switch ((TT) LA(3)) {
-								case TT.At:
-								case TT.Colon:
-								case TT.Id:
-								case TT.Returns:
-								case TT.StartColon:
-									result.Add(Rule());
-									break;
-								default:
-									result.Add(HostCall());
-									break;
-								}
-							} else
-								result.Add(Rule());
+							break;
+						case TT.At: case TT.Colon: case TT.Returns: case TT.StartColon:
+							result.Add(Rule());
+							break;
+						default:
+							result.Add(HostBlock());
+							break;
 						}
 					}
 					break;
@@ -558,5 +403,6 @@ namespace Loyc.LLParserGenerator
 			Match((int) EOF);
 			return result;
 		}
+	
 	}
 }

@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -82,7 +82,7 @@ namespace LeMP
 					if (ifStmt == null)
 						ifStmt = ifClauses[i].Item2;
 					else
-						context.Sink.Write(Severity.Error, node, "The default case must appear last, and there can be only one.");
+						context.Sink.Error(node, "The default case must appear last, and there can be only one.");
 				} else {
 					if (ifStmt == null)
 						ifStmt = F.Call(S.If, ifClauses[i].Item1, ifClauses[i].Item2);
@@ -182,7 +182,7 @@ namespace LeMP
 				LNode varArgCond;
 				MakeTestExpr(pattern, candidate, out varArgSym, out varArgCond);
 				if (varArgSym != null)
-					Context.Sink.Write(Severity.Error, pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
+					Context.Sink.Error(pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
 			}
 			private void MakeTestExpr(LNode pattern, LNode candidate, out Symbol varArgSym, out LNode varArgCond)
 			{
@@ -277,7 +277,7 @@ namespace LeMP
 			private void AddVar(Symbol varName, bool isList, LNode errAt)
 			{
 				if (!DuplicateDetector.Add(varName))
-					Context.Sink.Write(Severity.Error, errAt, "'{0}': Each matched $variable must have a unique name.", varName);
+					Context.Sink.Error(errAt, "'{0}': Each matched $variable must have a unique name.", varName);
 				var vars = isList ? ListVars : NodeVars;
 				if (!vars.ContainsKey(varName))
 					vars[varName] = false;
@@ -299,7 +299,7 @@ namespace LeMP
 							Tests.Add(condition);
 					}
 				} else if (pAttrs.Count != 0)
-					Context.Sink.Write(Severity.Error, pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
+					Context.Sink.Error(pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
 		
 			private int GetFixedArgCount(VList<LNode> patternArgs, out int? varArgAt)
@@ -336,7 +336,7 @@ namespace LeMP
 					LNode varArgCond2 = null;
 					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), F.Literal(left))).SetStyle(NodeStyle.Operator))), out varArgSym2, out varArgCond2);
 					if (varArgSym2 != null) {
-						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
+						Context.Sink.Error(patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
 						break;
 					}
 					left--;

@@ -91,7 +91,7 @@ namespace Loyc.Ecs
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
-		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
+		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		EcsPrinterOptions _o;
 		public EcsPrinterOptions Options { get { return _o; } }
@@ -140,7 +140,7 @@ namespace Loyc.Ecs
 		internal void Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode)
 		{
 			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
-			Errors = sink;
+			ErrorSink = sink;
 			Print(node, mode);
 		}
 
@@ -149,7 +149,7 @@ namespace Loyc.Ecs
 		internal void Print(LNode node, TextWriter target, IMessageSink sink, ParsingMode mode)
 		{
 			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
-			Errors = sink;
+			ErrorSink = sink;
 			Print(node, mode);
 		}
 
@@ -198,7 +198,7 @@ namespace Loyc.Ecs
 				_old_context = self._context;
 				_old_flags = self._flags;
 				if (inner == null) {
-					self.Errors.Write(Severity.Error, self._n, "EC# Printer: Encountered null LNode");
+					self.ErrorSink.Error(self._n, "EC# Printer: Encountered null LNode");
 					self._n = LNode.Id("(null)");
 					self._name = null;
 				} else {
@@ -1110,7 +1110,7 @@ namespace Loyc.Ecs
 				|| (p = LiteralPrinters.FirstOrDefault(pair => Type.GetTypeFromHandle(pair.Key).IsAssignableFrom(_n.Value.GetType())).Value) != null)
 				p(this);
 			else {
-				Errors.Write(Severity.Error, _n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
+				ErrorSink.Error(_n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
 				bool quote = _o.QuoteUnprintableLiterals;
 				string unprintable;
 				try {

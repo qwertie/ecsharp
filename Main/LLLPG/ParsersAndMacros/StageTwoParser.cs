@@ -74,7 +74,7 @@ namespace Loyc.LLParserGenerator
 			try {
 				return NodeToPredCore(expr, ctx);
 			} catch (Exception ex) {
-				_sink.Write(Severity.Error, expr, ex.ExceptionMessageAndType());
+				_sink.Error(expr, ex.ExceptionMessageAndType());
 				return new TerminalPred(expr, _helper.EmptySet);
 			}
 		}
@@ -122,7 +122,7 @@ namespace Loyc.LLParserGenerator
 				else if (expr.Calls(_Gate, 2) || expr.Calls(_EqGate, 2))
 				{
 					if (ctx == Context.GateLeft)
-						_sink.Write(Severity.Error, expr, "Cannot use a gate in the left-hand side of another gate");
+						_sink.Error(expr, "Cannot use a gate in the left-hand side of another gate");
 
 					return new Gate(expr, NodeToPred(expr.Args[0], Context.GateLeft),
 					                      NodeToPred(expr.Args[1], Context.GateRight)) 
@@ -164,7 +164,7 @@ namespace Loyc.LLParserGenerator
 						term.Set = term.Set.Inverted().WithoutEOF();
 						return term;
 					} else {
-						_sink.Write(Severity.Error, expr, 
+						_sink.Error(expr, 
 							"The set-inversion operator ~ can only be applied to a single terminal, not a '{0}'", subpred.GetType().Name);
 						return subpred;
 					}
@@ -194,9 +194,9 @@ namespace Loyc.LLParserGenerator
 			if (terminal == null) {
 				errorMsg = errorMsg ?? "LLLPG: unrecognized expression";
 				terminal = new TerminalPred(expr, _helper.EmptySet);
-				_sink.Write(Severity.Error, expr, errorMsg);
+				_sink.Error(expr, errorMsg);
 			} else if (errorMsg != null)
-				_sink.Write(Severity.Warning, expr, errorMsg);
+				_sink.Warning(expr, errorMsg);
 			return terminal;
 		}
 
@@ -214,7 +214,7 @@ namespace Loyc.LLParserGenerator
 			Pred subpred = BranchToPred(expr, out branchMode, ctx);
 
 			if (branchMode == BranchMode.ErrorContinue || branchMode == BranchMode.ErrorExit)
-				_sink.Write(Severity.Error, expr, "'error' only applies when there are multiple arms (a|b, a/b)");
+				_sink.Error(expr, "'error' only applies when there are multiple arms (a|b, a/b)");
 
 			Pred clone = type == _Plus ? subpred.Clone() : null;
 			Alts alts = new Alts(expr, type == _Opt ? LoopMode.Opt : LoopMode.Star, clone ?? subpred, greedy);
@@ -235,12 +235,12 @@ namespace Loyc.LLParserGenerator
 			var label = expr.Args[0];
 			var labelName = label.Name;
 			if (!label.IsId) {
-				_sink.Write(Severity.Error, label, "A label must be an identifier");
+				_sink.Error(label, "A label must be an identifier");
 			} else if (labelName == _Inline2 || labelName == _Inline || labelName == _NoInline) {
 				if (pred is RuleRef)
 					((RuleRef)pred).IsInline = labelName != _NoInline;
 				else
-					_sink.Write(Severity.Error, label, "'{0}:' can only be attached to a rule reference, which '{1}' is not", labelName, pred.ToString());
+					_sink.Error(label, "'{0}:' can only be attached to a rule reference, which '{1}' is not", labelName, pred.ToString());
 			} else {
 				var oper = expr.Name;
 				pred.VarLabel = labelName;
@@ -276,7 +276,7 @@ namespace Loyc.LLParserGenerator
 						return null;
 					});
 					if (!found) {
-						_sink.Write(Severity.Error, subExpr,
+						_sink.Error(subExpr,
 							"'any': expected '{0}' somewhere in the expression following 'in'", id);
 						break;
 					}
@@ -287,7 +287,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			if (newExpr == null) {
-				_sink.Write(Severity.Warning, expr,
+				_sink.Warning(expr,
 					"'any': there are no rules marked with the attribute '{0}', so this item has no effect", id);
 				newExpr = F.Tuple();
 			}
@@ -345,7 +345,7 @@ namespace Loyc.LLParserGenerator
 					var code = (LNode)objs[i];
 					if ((ctx == Context.And || ctx == Context.GateLeft) && !error) {
 						error = true;
-						_sink.Write(Severity.Error, objs[i], ctx == Context.And ?
+						_sink.Error(objs[i], ctx == Context.And ?
 							"Cannot use an action block inside an '&' or '!' predicate; these predicates are for prediction only." :
 							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
 					}

@@ -512,7 +512,7 @@ namespace LeMP
 				var namespaceSym = NamespaceToSymbol(arg);
 				_curScope.OpenNamespaces.Add(namespaceSym);
 				if (expectMacros && !_macroNamespaces.Contains(namespaceSym))
-					context.Write(Severity.Warning, node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
+					context.Sink.Warning(node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
 			}
 			return null;
 		}
@@ -527,7 +527,7 @@ namespace LeMP
 				AutoInitScope().RegisterMacro(macroInfo);
 				return F.Call(S.Splice);
 			}
-			context.Write(Severity.Error, node, "Expected a single literal argument of type MacroInfo");
+			context.Sink.Error(node, "Expected a single literal argument of type MacroInfo");
 			return null;
 		}
 
@@ -564,7 +564,7 @@ namespace LeMP
 				context.ScopedProperties[key.Value] = node[1].Value;
 				return F.Call(S.Splice);
             }
-			context.Write(Severity.Error, node, "Expected two literals as parameters (key, value).");
+			context.Sink.Error(node, "Expected two literals as parameters (key, value).");
 			return null;
 		}
 
@@ -578,7 +578,7 @@ namespace LeMP
 				context.ScopedProperties[key.Value] = node[1];
 				return F.Call(S.Splice);
             }
-			context.Write(Severity.Error, node, "Expected two parameters (key, value), of which the first is a literal.");
+			context.Sink.Error(node, "Expected two parameters (key, value), of which the first is a literal.");
 			return null;
 		}
 
@@ -600,13 +600,13 @@ namespace LeMP
 				var @default = node.Args[1, node];
 				var result = context.ScopedProperties.TryGetValue(keyValue, @default);
 				if (result == node)
-					context.Write(Severity.Error, key, "The specified property does not exist.");
+					context.Sink.Error(key, "The specified property does not exist.");
 				if (result is LNode)
 					return (LNode)result;
 				else
 					return LNode.Literal(result, node);
 			}
-			context.Write(Severity.Error, node, "Expected one argument, a key literal, with the default code as an optional second argument.");
+			context.Sink.Error(node, "Expected one argument, a key literal, with the default code as an optional second argument.");
 			return null;
 		}
 
@@ -790,7 +790,7 @@ namespace LeMP
 					output = macro.Macro(macroInput, scope);
 					if (output != null) { accepted++; acceptedIndex = i; }
 				} catch (ThreadAbortException e) {
-					_sink.Write(Severity.Error, input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
+					_sink.Error(input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
 					_sink.Write(Severity.Detail, input, e.StackTrace);
 					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 					PrintMessages(s.Results, input, accepted, Severity.Error);
@@ -798,7 +798,7 @@ namespace LeMP
 				} catch (LogException e) {
 					e.Msg.WriteTo(s.MessageHolder);
 				} catch (Exception e) {
-					s.MessageHolder.Write(Severity.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
+					s.MessageHolder.Error(input, "{0}: {1}", e.GetType().Name, e.Message);
 					s.MessageHolder.Write(Severity.Detail, input, e.StackTrace);
 				}
 				s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
@@ -950,9 +950,9 @@ namespace LeMP
 				{
 					string list = results.Where(r => r.NewNode != null).Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", ");
 					if (equal)
-						_sink.Write(Severity.Warning, input, "Ambiguous macro call. {0} macros accepted the input and produced identical results: {1}", accepted, list);
+						_sink.Warning(input, "Ambiguous macro call. {0} macros accepted the input and produced equal results: {1}", accepted, list);
 					else
-						_sink.Write(Severity.Error, input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted, list);
+						_sink.Error(input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted, list);
 				}
 			}
 

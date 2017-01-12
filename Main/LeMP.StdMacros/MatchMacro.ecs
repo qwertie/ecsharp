@@ -77,7 +77,7 @@ namespace LeMP
 						// by the same name, which is illegal unless we add braces.
 						outputs.Add(quote {{ $(..handler); }});
 						if (next_i < contents.Count)
-							context.Write(Severity.Error, @contents[next_i], "The default branch must be the final branch in a 'match' statement.");
+							context.Sink.Error(@contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 					}
 				}
 				return quote {
@@ -243,16 +243,16 @@ namespace LeMP
 							 $patternL `in` $(ref inRange): // LES
 							pattern = patternL;
 							if (inRange2 != null)
-								_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
+								_context.Sink.Error(inRange2, "match-case does not support multiple 'in' operators");
 						case $(ref cmpExprOrBinding) is $(ref isType),   // EC#
 							 $(ref cmpExprOrBinding) `is` $(ref isType): // LES
 							pattern = cmpExprOrBinding;
 							if (isType2 != null)
-								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+								_context.Sink.Error(isType2, "match-case does not support multiple 'is' operators");
 						case is $(ref isType),  // EC#
 							@is($(ref isType)): // LES
 							if (isType2 != null)
-								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+								_context.Sink.Error(isType2, "match-case does not support multiple 'is' operators");
 							goto doneAnalysis;
 						case $_...$_, $_..$_, ...$_, ..$_:
 							inRange = pattern;
@@ -299,7 +299,7 @@ namespace LeMP
 							varBinding = varBinding.WithoutAttrs();
 						}
 						if (!varBinding.IsId) {
-							_context.Write(Severity.Error, varBinding, "Invalid variable name in match-case: {0}", varBinding);
+							_context.Sink.Error(varBinding, "Invalid variable name in match-case: {0}", varBinding);
 							varBinding = null;
 						}
 					}
@@ -310,7 +310,7 @@ namespace LeMP
 				if (refExistingVar && varBinding == null) {
 					refExistingVar = false;
 					var got = cmpExprOrBinding ?? pattern;
-					_context.Write(Severity.Warning, got, "'ref' expected a variable name (got `{0}`)", got);
+					_context.Sink.Warning(got, "'ref' expected a variable name (got `{0}`)", got);
 				}
 			}
 

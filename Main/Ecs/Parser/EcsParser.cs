@@ -180,7 +180,7 @@ namespace Loyc.Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourceRange pos = new SourceRange(_sourceFile, iPos);
-			CurrentSink(true).Write(Severity.Error, pos, message, args);
+			CurrentSink(true).Error(pos, message, args);
 		}
 		protected LNode Error(string message, params object[] args)
 		{
@@ -195,11 +195,11 @@ namespace Loyc.Ecs.Parser
 		}
 		protected void Error(LNode node, string message, params object[] args)
 		{
-			CurrentSink(true).Write(Severity.Error, node, message, args);
+			CurrentSink(true).Error(node, message, args);
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			CurrentSink(true).Write(Severity.Error, new SourceRange(_sourceFile, token), message, args);
+			CurrentSink(true).Error(new SourceRange(_sourceFile, token), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

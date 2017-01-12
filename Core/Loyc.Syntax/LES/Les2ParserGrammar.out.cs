@@ -1,4 +1,4 @@
-// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -459,7 +459,7 @@ namespace Loyc.Syntax.Les {
 							if ((o.Type() == TT.SpaceLParen)) {
 								msg += " If a function call was intended, remove the space(s) before '('.";
 							}
-							ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
+							ErrorSink.Error(list[0].Range.End, msg);
 						}
 					} else {
 						result = hasAttrList ? list[0] : F.InParens(list[0], o.StartIndex, c.EndIndex);

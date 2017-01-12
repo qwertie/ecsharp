@@ -1,4 +1,5 @@
-﻿using System;
+﻿#ecs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,8 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		use_symbols;
-
+		// Finds the method/property/constructor/event in which a macro was called,
+		// and also the class/struct/interface/alias or, if not found, namespace.
 		static Symbol GetFnAndClassName(IMacroContext context, out LNode @class, out LNode fn)
 		{
 			@class = fn = null;

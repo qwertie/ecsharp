@@ -45,7 +45,7 @@ namespace LeMP
 			} else {
 				matchCode(varDecl) {
 					case { $_ $(ref varName) = $_; }: 
-						context.Write(Severity.Error, varName, "The return value cannot be assigned here. The value of this variable must be placed on the return statement(s).");
+						context.Sink.Error(varName, "The return value cannot be assigned here. The value of this variable must be placed on the return statement(s).");
 					case { $_ $(ref varName); }:
 						// OK
 					default:
@@ -77,7 +77,7 @@ namespace LeMP
 			if (DetectMissingVoidReturn(context, rest[rest.Count-1, LNode.Missing]))
 				rest.Add(bracedHandler.Args.AsLNode(S.Braces));
 			else if (!foundReturn)
-				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
+				context.Sink.Warning(node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
 			
 			// Block reprocessing of `rest` because we already preprocessed it
 			return quote(#noLexicalMacros($(...rest)));

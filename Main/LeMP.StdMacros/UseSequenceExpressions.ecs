@@ -47,7 +47,7 @@ namespace LeMP
 		{
 			(var args, var body) = context.GetArgsAndBody(true);
 			if (args.Count > 0)
-				context.Write(Severity.Error, node[1], "#useSequenceExpressions does not support arguments.");
+				context.Sink.Error(node[1], "#useSequenceExpressions does not support arguments.");
 
 			{
 				context.ScopedProperties[_useSequenceExpressionsIsRunning] = G.BoxedTrue;
@@ -167,7 +167,7 @@ namespace LeMP
 					stmt = stmt.WithTarget(S.Braces);
 					if (!retType.IsIdNamed(S.Void)) {
 						if (retType.IsIdNamed(S.Missing) && stmt.Args.Last.IsCall)
-							Context.Write(Severity.Warning, expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
+							Context.Sink.Warning(expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
 						stmt = stmt.WithArgChanged(stmt.Args.Count-1, 
 							quote { return $(stmt.Args.Last); });
 					}
@@ -417,14 +417,14 @@ namespace LeMP
 				if (!stmtContext) {
 				 	matchCode (expr) {
 					case { { $(..._); } }: // braced block
-						Context.Write(Severity.Warning, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+						Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 						result = expr;
 
 					// A variable declaration with no initializer and an `out` attribute attached
 					case { [$(...(attrs [#.NodeNamed(S.Out) != null]))]
 							$varType $(varName [#.IsId]); }:
 						if (varType.IsIdNamed(S.Missing))
-							Context.Write(Severity.Error, expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
+							Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
 						result = quote( [$_trivia_pure] 
 							#runSequence($(expr.WithoutAttrNamed(S.Out)), out $varName) );
 
@@ -506,7 +506,7 @@ namespace LeMP
 					if (lastRunSeq > 0 && 
 						(  args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or))
 						|| args.Count == 3 && target.IsIdNamed(S.QuestionMark))) {
-						Context.Write(Severity.Error, target, 
+						Context.Sink.Error(target, 
 							"#useSequenceExpressions is not designed to support sequences or variable declarations on the right-hand side of the `&&`, `||` or `?` operators. The generated code will be incorrect.");
 					}
 

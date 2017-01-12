@@ -159,7 +159,7 @@ namespace LeMP
 				}
 			}
 			if (!any && writeToSink)
-				Sink.Write(Severity.Warning, assembly, "No macros found");
+				Sink.Warning(assembly, "No macros found");
 			return any;
 		}
 

@@ -35,7 +35,7 @@ namespace Loyc.LLParserGenerator
 					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console,
 						KnownOptions.With("nologo", Pair.Create("","")));
 					if (c.Files.Count == 0)
-						MessageSink.Console.Write(Severity.Warning, null, "No files specified, stopping.");
+						MessageSink.Console.Warning(null, "No files specified, stopping.");
 					else {
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));

@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -351,7 +351,7 @@ namespace LeMP
 				// #notnull is equivalent to either requires(_ != null) or ensures(_ != null)
 				if (mode == sy_notnull) {
 					if (attr.Args.Count != 0)
-						Context.Write(Severity.Warning, attr, "'#notnull' does not expect arguments.");
+						Context.Sink.Warning(attr, "'#notnull' does not expect arguments.");
 					if (variableName != null	// argument
 					)
 						mode = sy_requires;
@@ -360,14 +360,14 @@ namespace LeMP
 						mode = sy_ensures;
 					conditions.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Id((Symbol) "_"), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 				} else if (!attr.IsCall) {
-					Context.Write(Severity.Warning, attr, "'{0}' expects a list of conditions.", attr.Name);
+					Context.Sink.Warning(attr, "'{0}' expects a list of conditions.", attr.Name);
 				}
 			
 				if (mode == sy_requires || mode == sy_assert)
 					ProcessRequiresAttribute(conditions, mode, variableName);
 				else {	// mode == @@ensures || mode == @@ensuresFinally || mode == @@ensuresOnThrow
 					if (variableName != null && !isPropSetter)
-						Context.Write(Severity.Error, attr, "The '{0}' attribute does not apply to method arguments.", mode);
+						Context.Sink.Error(attr, "The '{0}' attribute does not apply to method arguments.", mode);
 					else
 						ProcessEnsuresAttribute(conditions, mode, exceptionType, variableName);
 				}
@@ -383,7 +383,7 @@ namespace LeMP
 				
 					if (ReplaceContractUnderscore(ref condition, variableName))
 						if (variableName == null)
-							Context.Write(Severity.Error, condition, "`{0}`: underscore has no meaning in this location.", mode);
+							Context.Sink.Error(condition, "`{0}`: underscore has no meaning in this location.", mode);
 					if (mode == sy_assert) {
 						PrependStmts.Add(LNode.Call((Symbol) "assert", LNode.List(condition)));	// relies on assert() macro
 					} else if (_haveCCRewriter) {
@@ -420,7 +420,7 @@ namespace LeMP
 						bool changed = ReplaceContractUnderscore(ref condition, contractResult);
 					}
 					if (ReplaceContractUnderscore(ref condition, contractResult) && underscoreError != null)
-						Context.Write(Severity.Error, condition, underscoreError, mode);
+						Context.Sink.Error(condition, underscoreError, mode);
 				
 					if (haveCCRewriter) {
 						if (mode == sy_ensuresOnThrow)
@@ -505,7 +505,7 @@ namespace LeMP
 			{
 				if (!PrependStmts.IsEmpty) {
 					if (getter.ArgCount == 0) {
-						Context.Write(Severity.Error, getter, "`{0}`: contracts cannot be applied to autoproperties. " + 
+						Context.Sink.Error(getter, "`{0}`: contracts cannot be applied to autoproperties. " + 
 						"A body is required, but you can use [field] on the property to add a body to `get` and `set` automatically.", getter);
 						return;
 					} else if (getter.ArgCount == 1) {

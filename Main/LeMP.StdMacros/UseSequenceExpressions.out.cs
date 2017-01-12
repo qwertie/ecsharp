@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.4.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -56,7 +56,7 @@ namespace LeMP
 			var args = tmp_10.Item1;
 			var body = tmp_10.Item2;
 			if (args.Count > 0)
-				context.Write(Severity.Error, node[1], "#useSequenceExpressions does not support arguments.");
+				context.Sink.Error(node[1], "#useSequenceExpressions does not support arguments.");
 		
 			{
 				context.ScopedProperties[_useSequenceExpressionsIsRunning] = G.BoxedTrue;
@@ -183,7 +183,7 @@ namespace LeMP
 					stmt = stmt.WithTarget(S.Braces);
 					if (!retType.IsIdNamed(S.Void)) {
 						if (retType.IsIdNamed(S.Missing) && stmt.Args.Last.IsCall)
-							Context.Write(Severity.Warning, expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
+							Context.Sink.Warning(expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
 						stmt = stmt.WithArgChanged(stmt.Args.Count - 1, LNode.Call(CodeSymbols.Return, LNode.List(stmt.Args.Last)));
 					}
 				}
@@ -398,12 +398,12 @@ namespace LeMP
 						LNode tmp_14, value, varName, varType;
 						VList<LNode> attrs;
 						if (expr.Calls(CodeSymbols.Braces)) {
-							Context.Write(Severity.Warning, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+							Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
 						
 						} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 							if (varType.IsIdNamed(S.Missing))
-								Context.Write(Severity.Error, expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
+								Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
 							result = LNode.Call(LNode.List(_trivia_pure), (Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName.PlusAttrs(LNode.List(LNode.Id(CodeSymbols.Out)))));
 						
 						} else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_14 = expr.Args[1]) != null && tmp_14.Calls(CodeSymbols.Assign, 2) && (varName = tmp_14.Args[0]) != null && (value = tmp_14.Args[1]) != null)
@@ -485,7 +485,7 @@ namespace LeMP
 					if (lastRunSeq > 0 && 
 					(args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or)) || args.Count == 3 && target.IsIdNamed(S.QuestionMark)))
 					{
-						Context.Write(Severity.Error, target, 
+						Context.Sink.Error(target, 
 						"#useSequenceExpressions is not designed to support sequences or variable declarations on the right-hand side of the `&&`, `||` or `?` operators. The generated code will be incorrect.");
 					}
 				

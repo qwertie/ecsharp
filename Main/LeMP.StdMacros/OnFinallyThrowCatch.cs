@@ -85,7 +85,7 @@ namespace LeMP
 			if (!(on_handler = a.Last).Calls(S.Braces))
 				return null;
 			if (context.RemainingNodes.Count == 0)
-				context.Write(Severity.Warning, node, "{0} should not be the final statement of a block.", node.Name);
+				context.Sink.Warning(node, "{0} should not be the final statement of a block.", node.Name);
 			restOfStmts = new VList<LNode>(context.RemainingNodes);
 			context.DropRemainingNodes = true;
 			return on_handler;

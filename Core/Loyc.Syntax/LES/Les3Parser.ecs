@@ -1,4 +1,4 @@
-﻿#ecs;private
+﻿#ecs;
 #importMacros(Loyc.LLPG);
 using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
 using Loyc;               // optional (for IMessageSink, Symbol, etc.)

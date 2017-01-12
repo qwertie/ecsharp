@@ -115,7 +115,7 @@ namespace Loyc.Ecs.Parser
 							else
 								DefinedSymbols.Add((Symbol)_rest[0].Value);
 						} else
-							ErrorSink.Write(Severity.Error, t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
+							ErrorSink.Error(t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
 						continue;
 					case TokenType.PPif:
 						var tree = ReadRestAsTokenTree();
@@ -130,7 +130,7 @@ namespace Loyc.Ecs.Parser
 						var tree_ = ReadRestAsTokenTree();
 
 						if (_ifRegions.Count == 0) {
-							ErrorSink.Write(Severity.Error, t.ToSourceRange(SourceFile), 
+							ErrorSink.Error(t.ToSourceRange(SourceFile), 
 								"Missing #if clause before '{0}'", t);
 							_ifRegions.Push(Pair.Create(t, false));
 						}
@@ -165,7 +165,7 @@ namespace Loyc.Ecs.Parser
 						continue;
 					case TokenType.PPwarning:
 						_triviaList.Add(t);
-						ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), t.Value.ToString());
+						ErrorSink.Warning(t.ToSourceRange(SourceFile), t.Value.ToString());
 						continue;
 					case TokenType.PPregion:
 						_triviaList.Add(t);
@@ -174,7 +174,7 @@ namespace Loyc.Ecs.Parser
 					case TokenType.PPendregion:
 						_triviaList.Add(t);
 						if (_regions.Count == 0)
-							ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), "#endregion without matching #region");
+							ErrorSink.Warning(t.ToSourceRange(SourceFile), "#endregion without matching #region");
 						else
 							_regions.Pop();
 						continue;
@@ -196,15 +196,15 @@ namespace Loyc.Ecs.Parser
 			} while (true);
 			// end of stream
 			if (_ifRegions.Count > 0)
-				ErrorSink.Write(Severity.Error, _ifRegions.Peek().A.ToSourceRange(SourceFile), "#if without matching #endif");
+				ErrorSink.Error(_ifRegions.Peek().A.ToSourceRange(SourceFile), "#if without matching #endif");
 			if (_regions.Count > 0)
-				ErrorSink.Write(Severity.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
+				ErrorSink.Warning(_regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
 			return Maybe<Token>.NoValue;
 		}
 
 		private void Error(Token pptoken, string message)
 		{
-			ErrorSink.Write(Severity.Error, pptoken.ToSourceRange(SourceFile), message);
+			ErrorSink.Error(pptoken.ToSourceRange(SourceFile), message);
 		}
 
 		private Maybe<Token> SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
@@ -263,7 +263,7 @@ namespace Loyc.Ecs.Parser
 			else if (expr.Calls(S.Neq, 2))
 				return Evaluate(expr.Args[0]) != Evaluate(expr.Args[1]);
 			else {
-				ErrorSink.Write(Severity.Error, expr.Range, "Only simple boolean expressions with &&, ||, !, ==, !=, are supported in #if and #elif");
+				ErrorSink.Error(expr.Range, "Only simple boolean expressions with &&, ||, !, ==, !=, are supported in #if and #elif");
 				return null;
 			}
 		}

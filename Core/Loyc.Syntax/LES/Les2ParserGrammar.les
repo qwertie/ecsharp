@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Les {
 
 	@[public, partial] class Les2Parser
 	{
-		@[FullLLk, LL(2), AddCsLineDirectives(@false)]
+		@[FullLLk, LL(2), AddCsLineDirectives(@false), PrematchByDefault]
 		LLLPG (parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));
 		
 		alias("@" = TT.At);
@@ -155,7 +155,7 @@ namespace Loyc.Syntax.Les {
 		};
 
 		// Helper rule that parses one of the syntactically special primary expressions
-		@[private] rule FinishPrimaryExpr(e::LNode)::LNode @{
+		rule FinishPrimaryExpr(e::LNode)::LNode @{
 			(	// call(function)
 				{var endMarker = default(TokenType);}
 				"(" list:ExprList(ref endMarker) c:=")"
@@ -171,7 +171,7 @@ namespace Loyc.Syntax.Les {
 			{return e;}
 		};
 
-		@[private] rule PrefixExpr(context::Precedence)::LNode @
+		rule PrefixExpr(context::Precedence)::LNode @
 			{	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQOperator|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
@@ -187,7 +187,7 @@ namespace Loyc.Syntax.Les {
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
 		// - a [ list  ] in square brackets
-		@[private] rule Particle()::LNode @{
+		rule Particle()::LNode @{
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=TT.Literal // literal
@@ -214,7 +214,7 @@ namespace Loyc.Syntax.Les {
 							if (o.Type() == TT.SpaceLParen) {
 								msg += " If a function call was intended, remove the space(s) before '('.";
 							};
-							ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
+							ErrorSink.Error(list[0].Range.End, msg);
 						};
 					} else {
 						$result = hasAttrList ? list[0] : F.InParens(list[0], o.StartIndex, c.EndIndex);

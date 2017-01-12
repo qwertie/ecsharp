@@ -138,7 +138,7 @@ namespace Loyc.LLParserGenerator
 				return;
 			if (primType == null) {
 				primType = F.Object;
-				_sink.Write(Severity.Error, pred, Localize.Localized("The type of this expression is unknown (did you set LLLPG's 'terminalType'  option?)"));
+				_sink.Error(pred, Localize.Localized("The type of this expression is unknown (did you set LLLPG's 'terminalType'  option?)"));
 			}
 			LNode type = primType, oldType;
 			if (pred.VarIsList)
@@ -146,7 +146,7 @@ namespace Loyc.LLParserGenerator
 			if (!_newVarInitializers.ContainsKey(varName))
 				_newVarInitializers[varName] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(primType, pred.VarIsList, varName));
 			else if (!(oldType = _newVarInitializers[varName].A).Equals(type))
-				_sink.Write(Severity.Error, pred, Localize.Localized(
+				_sink.Error(pred, Localize.Localized(
 					"Type mismatch: Variable '{0}' was generated earlier with type {1}, but this predicate expects {2}.",
 					varName, oldType, type));
 			pred.ResultSaver = Pred.GetStandardResultSaver(F.Id(varName),

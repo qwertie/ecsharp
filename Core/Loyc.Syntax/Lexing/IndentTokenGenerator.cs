@@ -131,7 +131,7 @@ namespace Loyc.Syntax.Lexing
 			var pos = IndexToMsgContext(tokenAfterNewline.Or(default(Token)));
 			if (deltaIndent > 0) {
 				if (_errorBias >= 0)
-					ErrorSink.Write(Severity.Error, pos, "Unexpected indent");
+					ErrorSink.Error(pos, "Unexpected indent");
 				_errorBias++;
 			} else {
 				if (_errorBias <= 0) {

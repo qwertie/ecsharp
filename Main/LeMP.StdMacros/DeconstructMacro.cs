@@ -61,7 +61,7 @@ namespace LeMP
 				if (arg.Calls(S.Lambda, 2))
 					G.Swap(ref patternSpec, ref input);
 				else {
-					context.Write(Severity.Error, arg, "expected an assignment (`patterns = input`)");
+					context.Sink.Error(arg, "expected an assignment (`patterns = input`)");
 					return;
 				}
 			}
@@ -92,7 +92,7 @@ namespace LeMP
 			}
 
 			if (printErrorOnFailure)
-				context.Write(Severity.Error, arg, "Deconstruction failed.");
+				context.Sink.Error(arg, "Deconstruction failed.");
 		}
 
 		private static void SetSyntaxVariables(IDictionary<Symbol, LNode> captures, IMacroContext context)
@@ -114,10 +114,10 @@ namespace LeMP
 					if (value is LNode)
 						return ((LNode)value).WithRange(id.Range);
 					else
-						context.Write(Severity.Warning, id, "The specified scoped property is not a syntax tree. "+
+						context.Sink.Warning(id, "The specified scoped property is not a syntax tree. "+
 							"Use `#getScopedProperty({0})` to insert it as a literal.", EcsNodePrinter.PrintId(id.Name));
 				} else {
-					context.Write(Severity.Error, id, "There is no macro property in scope named `{0}`", id.Name);
+					context.Sink.Error(id, "There is no macro property in scope named `{0}`", id.Name);
 				}
 			}
 			return null;

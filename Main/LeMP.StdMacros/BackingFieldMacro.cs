@@ -72,7 +72,7 @@ namespace LeMP
 					// e.g. [field List<T> L] T this[int x] { get; set; } 
 					//  ==> List<T> L; T this[int x] { get { return L[x]; } set { L[x] = value; } }
 					var argList = GetArgNamesFromFormalArgList(propArgs, formalArg =>
-						sink.Write(Severity.Error, formalArg, "'field' macro expected a variable declaration here"));
+						sink.Error(formalArg, "'field' macro expected a variable declaration here"));
 					fieldAccessExpr = F.Call(S.IndexBracks, argList.Insert(0, fieldName));
 				}
 				var attrs = stmt.Attrs;
@@ -87,7 +87,7 @@ namespace LeMP
 				return stmt;
 			}));
 			if (newBody == body)
-				sink.Write(Severity.Warning, fieldAttr, "The body of the property does not contain a 'get;' or 'set;' statement without a body, so no code was generated to get or set the backing field.");
+				sink.Warning(fieldAttr, "The body of the property does not contain a 'get;' or 'set;' statement without a body, so no code was generated to get or set the backing field.");
 
 			prop = prop.WithAttrs(prop.Attrs.RemoveAt(i)).WithArgChanged(3, newBody);
 			prop.Style &= ~NodeStyle.OneLiner; // avoid collapsing output to one line

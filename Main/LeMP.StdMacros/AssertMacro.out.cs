@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.4.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -16,10 +16,10 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
-	partial class StandardMacros
-	{
+	partial class StandardMacros {
 		static readonly Symbol sy__numassertMethod = (Symbol) "#assertMethod";
-	
+		// Finds the method/property/constructor/event in which a macro was called,
+		// and also the class/struct/interface/alias or, if not found, namespace.
 		static Symbol GetFnAndClassName(IMacroContext context, out LNode @class, out LNode fn)
 		{
 			@class = fn = null;

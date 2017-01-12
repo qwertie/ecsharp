@@ -36,9 +36,9 @@ namespace LeMP
 					if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice))
 						return Reject(context, cases, "The right-hand side of 'in' should be a tuple or braced block.");
 				}
-				var result = unroll(identifiers, cases.Args, node.Args[1], context);
+				var result = unroll(identifiers, cases.Args, node.Args[1], context.Sink);
 				if (result != null && node.HasPAttrs())
-					context.Write(Severity.Warning, result.Attrs[0], "'unroll' does not support attributes.");
+					context.Sink.Warning(result.Attrs[0], "'unroll' does not support attributes.");
 				return result;
 			}
 			return null;
@@ -60,7 +60,7 @@ namespace LeMP
 						// Check for duplicate names
 						for (int j = 0; j < i; j++)
 							if (replacements[i].A == replacements[j].A && replacements[i].A.Name != "_")
-								sink.Write(Severity.Error, vars[i], "Duplicate name in the left-hand tuple"); // non-fatal
+								sink.Error(vars[i], "Duplicate name in the left-hand tuple"); // non-fatal
 					}
 				} else
 					return Reject(sink, var, "The left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
@@ -76,7 +76,7 @@ namespace LeMP
 				int count = tuple ? replacement.ArgCount : 1;
 				if (replacements.Count != count)
 				{
-					sink.Write(Severity.Error, replacement, "iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Count, count);
+					sink.Error(replacement, "iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Count, count);
 					if (count < replacements.Count)
 						continue; // too few
 				}

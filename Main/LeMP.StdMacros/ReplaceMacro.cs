@@ -69,7 +69,7 @@ namespace LeMP
 				int replacementCount;
 				var output = Replace(body, patterns, out replacementCount);
 				if (replacementCount == 0)
-					context.Write(Severity.Warning, node, "No patterns recognized; no replacements were made.");
+					context.Sink.Warning(node, "No patterns recognized; no replacements were made.");
 				return output.AsLNode(S.Splice);
 			}
 			return null;
@@ -238,12 +238,12 @@ namespace LeMP
 				if (pair.Value.IsId) // id without `$` in pattern list
 				{
 					if (rVar != null && (allIds || !rVar.IsId))
-						context.Write(Severity.Warning, pair.Value, "`{0}` is written without `$`, so it may not match as intended.", pair.Value.Name);
+						context.Sink.Warning(pair.Value, "`{0}` is written without `$`, so it may not match as intended.", pair.Value.Name);
 				}
 				else // $id in pattern list
 				{
 					if (rVar != null && rVar.IsId)
-						context.Write(Severity.Warning, rVar, "`{0}` appears in the output without `$` so replacement will not occur.", pair.Key);
+						context.Sink.Warning(rVar, "`{0}` appears in the output without `$` so replacement will not occur.", pair.Key);
 				}
 			}
 		}

@@ -22,18 +22,18 @@ namespace Loyc.LLParserGenerator
 		{
 			return Parse(tokens, tokens.File, sink);
 		}
-		public new static VList<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public new static VList<LNode> Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
 				_parser = new AntlrStyleParser(tokenTree, file, messages);
 			else {
-				_parser.Reset(tokenTree, file);
+				_parser.Reset(tokenTree, default(Token), file);
 				_parser.ErrorSink = messages;
 			}
 			return _parser.RulesAndStuff();
 		}
 
-		private AntlrStyleParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) 
+		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) 
 			: base(tokens, file, messageSink, hostLanguage) {}
 
 		LNode ParseHostReturnType(Token paren)
@@ -48,7 +48,7 @@ namespace Loyc.LLParserGenerator
 				result = LNode.Missing;
 			if (result.Calls(S.Var, 2)) {
 				if (!result[1].IsIdNamed("result"))
-					ErrorSink.Write(Severity.Error, result[1], "LLLPG requires that the result of a rule be called 'result'");
+					ErrorSink.Error(result[1], "LLLPG requires that the result of a rule be called 'result'");
 				return result[0];
 			} else
 				return result;

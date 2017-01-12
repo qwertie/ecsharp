@@ -91,7 +91,7 @@ namespace LeMP
 			var argList = args.ToList();
 			var options = c.ProcessArguments(argList, false, true);
 			if (argList.Count == 0) {
-				filter.Write(Severity.Error, null, "No input files provided, stopping.");
+				filter.Error(null, "No input files provided, stopping.");
 				return;
 			}
 			if (!MaybeShowHelp(options, KnownOptions))
@@ -111,7 +111,7 @@ namespace LeMP
 		{
 			foreach (var opt in options.Keys) {
 				if (!knownOptions.ContainsKey(opt))
-					sink.Write(Severity.Warning, "Command line", "Unrecognized option '--{0}'", opt);
+					sink.Warning("Command line", "Unrecognized option '--{0}'", opt);
 			}
 		}
 
@@ -288,7 +288,7 @@ namespace LeMP
 			if ((flag = ParseBoolOption(options, "forcelang", sink)) != null)
 				c.ForceInLang = flag.Value;
 			if (!options.ContainsKey("outlang") && c.OutExt != null && ParsingService.GetServiceForFileName(c.OutExt) == null)
-				sink.Write(Severity.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
+				sink.Error("--outext", "No language was found for extension «{0}»", c.OutExt);
 			if ((num = ParseNumericOption(options, "timeout", sink)) != null)
 				c.AbortTimeout = TimeSpan.FromSeconds(num.Value);
 
@@ -341,9 +341,9 @@ namespace LeMP
 			}
 			if (sink != null) {
 				if (min != null && max != null)
-					sink.Write(Severity.Error, "--" + key, "Expected numeric value between {0} and {1}", min.Value, max.Value);
+					sink.Error("--" + key, "Expected numeric value between {0} and {1}", min.Value, max.Value);
 				else
-					sink.Write(Severity.Error, "--" + key, "Expected numeric value");
+					sink.Error("--" + key, "Expected numeric value");
 			}
 			return null;
 		}
@@ -360,7 +360,7 @@ namespace LeMP
 			if (value.Equals("false", StringComparison.InvariantCultureIgnoreCase) || value == "0")
 				return false;
 			if (sink != null)
-				sink.Write(Severity.Error, "--" + key, "Expected boolean `true` or `false`");
+				sink.Error("--" + key, "Expected boolean `true` or `false`");
 			return null;
 		}
 
@@ -389,21 +389,21 @@ namespace LeMP
 				}
 			}
 			if (quote)
-				Sink.Write(Severity.Error, "Command line", "--snippet: syntax error. Expected `key=code` where `key` is a literal or identifier with which to associate a code snippet.");
+				Sink.Error("Command line", "--snippet: syntax error. Expected `key=code` where `key` is a literal or identifier with which to associate a code snippet.");
 			else
-				Sink.Write(Severity.Error, "Command line", "--set: syntax error. Expected `key=value` where `key` is a literal or identifier with which to associate a value.");
+				Sink.Error("Command line", "--set: syntax error. Expected `key=value` where `key` is a literal or identifier with which to associate a value.");
 			return false;
 		}
 
 		static void ApplyLanguageOption(IMessageSink sink, string option, string value, ref IParsingService lang)
 		{
 			if (string.IsNullOrEmpty(value))
-				sink.Write(Severity.Error, option, "Missing value");
+				sink.Error(option, "Missing value");
 			else {
 				if (!value.StartsWith("."))
 					value = "." + value;
 				if ((lang = ParsingService.GetServiceForFileName(value)) == null)
-					sink.Write(Severity.Error, option, "No language was found for extension «{0}»", value);
+					sink.Error(option, "No language was found for extension «{0}»", value);
 			}
 		}
 		
@@ -413,7 +413,7 @@ namespace LeMP
 				action();
 				return true;
 			} catch (Exception ex) {
-				sink.Write(Severity.Error, context, "{0} ({1})", ex.Message, ex.GetType().Name);
+				sink.Error(context, "{0} ({1})", ex.Message, ex.GetType().Name);
 				return false;
 			}
 		}
@@ -510,7 +510,7 @@ namespace LeMP
 					var io = new InputOutput(new StreamCharSource(stream), filename);
 					openFiles.Add(io);
 				} catch (Exception ex) {
-					sink.Write(Severity.Error, filename, ex.GetType().Name + ": " + ex.Message);
+					sink.Error(filename, ex.GetType().Name + ": " + ex.Message);
 				}
 			}
 			return openFiles;

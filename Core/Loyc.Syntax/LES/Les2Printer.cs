@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 		IMessageSink _errors;
 
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
-		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
+		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		Les2PrinterOptions _o;
 		public Les2PrinterOptions Options { get { return _o; } }
@@ -40,8 +40,8 @@ namespace Loyc.Syntax.Les
 			var p = _printer = _printer ?? new Les2Printer(TextWriter.Null, null);
 			var oldOptions = p._o;
 			var oldWriter = p.Writer;
-			var oldSink = p.Errors;
-			p.Errors = sink;
+			var oldSink = p.ErrorSink;
+			p.ErrorSink = sink;
 			p.SetOptions(options);
 			p.Writer = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n");
 
@@ -52,7 +52,7 @@ namespace Loyc.Syntax.Les
 
 			p.Writer = oldWriter;
 			p._o = oldOptions;
-			p.Errors = oldSink;
+			p.ErrorSink = oldSink;
 		}
 
 		internal Les2Printer(TextWriter target, ILNodePrinterOptions options = null)
@@ -570,7 +570,7 @@ namespace Loyc.Syntax.Les
 
 		private void PrintShortInteger(object value, NodeStyle style, string type)
 		{
-			Errors.Write(Severity.Warning, null, "LesNodePrinter: Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
+			ErrorSink.Write(Severity.Warning, null, "LesNodePrinter: Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
 			PrintIntegerToString(value, style, "");
 		}
 		void PrintValueToString(object value, string suffix)
@@ -638,7 +638,7 @@ namespace Loyc.Syntax.Les
 			object value = node.Value;
 			if (!PrintLiteralCore(value, node.Style))
 			{
-				Errors.Write(Severity.Error, node, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
+				ErrorSink.Error(node, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
 
 				bool quote = _o.QuoteUnprintableLiterals;
 				string unprintable;

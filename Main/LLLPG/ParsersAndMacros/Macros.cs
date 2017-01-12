@@ -90,7 +90,7 @@ namespace Loyc.LLPG
 						case "listinitializer":  helper.SetListInitializer(value); break;
 						case "nocheckbydefault": SetOption<bool>(context, option.Key, value.Value, b => helper.NoCheckByDefault = b); break;
 						default:
-							context.Write(Severity.Error, option.Key, "Unrecognized option '{0}'. Available options: " +
+							context.Sink.Error(option.Key, "Unrecognized option '{0}'. Available options: " +
 								"InputSource: var, InputClass: type, TerminalType: type, SetType: type, "+
 								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true", key);
 							break;
@@ -128,7 +128,7 @@ namespace Loyc.LLPG
 						case "matchtype":       // alternate name
 						case "matchcast":       helper.MatchCast = value; break;
 						default:
-							context.Write(Severity.Error, option.Key, "Unrecognized option '{0}'. Available options: "+
+							context.Sink.Error(option.Key, "Unrecognized option '{0}'. Available options: "+
 								"InputSource: variable, InputClass: type, TerminalType: type, SetType: type, "+
 								"ListInitializer: var _ = new List<T>(), NoCheckByDefault: true, AllowSwitch: bool, "+
 								"CastLA: bool, LAType: type, MatchCast: type", key);
@@ -329,7 +329,7 @@ namespace Loyc.LLPG
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
-							context.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
+							context.Sink.Error(rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
 						else
 							rules.Add(Pair.Create(rule, methodBody));
 
@@ -337,12 +337,12 @@ namespace Loyc.LLPG
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))
-						context.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @{...})");
+						context.Sink.Error(stmt, "A rule should have the form rule(Name(Args)::ReturnType, @{...})");
 				}
 			}
 
 			if (rules.Count == 0)
-				context.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
+				context.Sink.Warning(node, "No grammar rules were found in LLLPG block");
 
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
@@ -367,7 +367,7 @@ namespace Loyc.LLPG
 			if (name.CallsMin(S.Of, 1))
 				name = name.Args[0];
 			if (!name.IsId || name.Name.Name.IsOneOf("EOF", "any", "error", "default", "default_error", "greedy", "nongreedy")) {
-				context.Write(Severity.Error, name, "'{0}' is not allowed as a rule name", name);
+				context.Sink.Error(name, "'{0}' is not allowed as a rule name", name);
 				return null;
 			} else {
 				var rule = new Rule(basis, name.Name, null, true);
@@ -408,7 +408,7 @@ namespace Loyc.LLPG
 						break;
 					default:
 						if (!key.IsTrivia)
-							sink.Write(Severity.Error, key,
+							sink.Error(key,
 								"Unrecognized attribute. LLLPG supports the following options: " +
 								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), AddCsLineDirectives(bool), and PrivateByDefault(bool)");
 						break;
@@ -465,7 +465,7 @@ namespace Loyc.LLPG
 						if (sig != null && sig.CallsMin(S.Fn, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
 						else
-							context.Write(Severity.Error, sig, "'recognizer' expects one parameter, a method signature.");
+							context.Sink.Error(sig, "'recognizer' expects one parameter, a method signature.");
 						break;
 					default:
 						return attr;
@@ -479,7 +479,7 @@ namespace Loyc.LLPG
 			if (value is T)
 				setter((T)value);
 			else
-				errorSink.Write(Severity.Error, optionName, "{0}: expected literal of type «{1}».", optionName.Name, typeof(T));
+				errorSink.Error(optionName, "{0}: expected literal of type «{1}».", optionName.Name, typeof(T));
 		}
 	}
 }

@@ -74,15 +74,15 @@ namespace LeMP.Prelude.Les
 			return TranslateSpaceDefinition(node, sink, S.Alias);
 		}
 		[LexicalMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
-		public static LNode @using1(LNode node, IMacroContext sink)
+		public static LNode @using1(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 1) {
 				if (IsComplexId(node.Args[0])) {
 					// Looks like an import statement
-					sink.Write(Severity.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP for LES.");
+					context.Sink.Warning(node.Target, "The 'import' statement replaces the 'using' statement in LeMP for LES.");
 					return node.WithTarget(S.Import);
 				}
-				var result = TranslateSpaceDefinition(node, sink, S.Alias);
+				var result = TranslateSpaceDefinition(node, context, S.Alias);
 				if (result != null)
 					return result.PlusAttr(F.Id(S.FilePrivate));
 			}
@@ -561,18 +561,18 @@ namespace LeMP.Prelude.Les
 				var p = parts[i];
 				if (p.IsIdNamed(_finally)) {
 					if (clauses.Count != 0 || finallyCode != null)
-						sink.Write(Severity.Error, p, "The «finally» clause must come last, there can only be one of them.");
+						sink.Error(p, "The «finally» clause must come last, there can only be one of them.");
 					finallyCode = parts[i+1];
 				} else if (p.Name == _catch) {
 					if (p.ArgCount > 0) {
 						if (p.ArgCount > 1)
-							sink.Write(Severity.Error, p, "Expected catch() to take one argument.");
+							sink.Error(p, "Expected catch() to take one argument.");
 						// This is a normal catch clause
 						clauses.Insert(0, F.Call(S.Catch, p.Args[0], F.Missing, parts[i + 1]));
 					} else {
 						// This is a catch-all clause (the type argument is missing)
 						if (clauses.Count != 0)
-							sink.Write(Severity.Error, p, "The catch-all clause must be the last «catch» clause.");
+							sink.Error(p, "The catch-all clause must be the last «catch» clause.");
 						clauses.Add(F.Call(S.Catch, F.Missing, F.Missing, parts[i + 1]));
 					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {

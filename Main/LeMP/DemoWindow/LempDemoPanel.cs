@@ -125,7 +125,7 @@ namespace TextEditor
 			var c = new Compiler(sink, sourceFile);
 			var options = c.ProcessArguments(args, true, false);
 			if (args.Count != 0)
-				sink.Write(Severity.Error, "Command line", "'{0}': Opening other source files is not supported", args[0]);
+				sink.Error("Command line", "'{0}': Opening other source files is not supported", args[0]);
 			string _;
 			if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
 				var ms = new MemoryStream();

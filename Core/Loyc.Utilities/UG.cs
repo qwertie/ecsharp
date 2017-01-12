@@ -198,7 +198,7 @@ namespace Loyc.Utilities
 					if (File.Exists(fullpath))
 						fileContents = File.OpenText(fullpath).ReadToEnd();
 				} catch (Exception e) {
-					MessageSink.Default.Write(Severity.Error, s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
+					MessageSink.Default.Error(s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
 				}
 				if (fileContents != null) {
 					List<string> list = G.SplitCommandLineArguments(fileContents);
@@ -206,7 +206,7 @@ namespace Loyc.Utilities
 					int maxMore = System.Math.Max(0, argLimit - args.Count);
 					if (list.Count > maxMore) {
 						// oops, command limit exceeded
-						MessageSink.Default.Write(Severity.Warning, s, "Limit of {0} commands exceeded", argLimit);
+						MessageSink.Default.Warning(s, "Limit of {0} commands exceeded", argLimit);
 						list.RemoveRange(maxMore, list.Count - maxMore);
 					}
 
@@ -231,7 +231,7 @@ namespace Loyc.Utilities
 			try {
 				options.Add(new KeyValuePair<string, string>(name.ToLower(), value));
 			} catch {
-				MessageSink.Default.Write(Severity.Warning, option,
+				MessageSink.Default.Warning(option,
 					"Option --{0} was specified more than once. Only the first instance is used.", name);
 			}
 		}

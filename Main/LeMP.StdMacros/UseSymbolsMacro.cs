@@ -43,7 +43,7 @@ namespace LeMP
 					foreach (var arg in pair.Value.Args)
 						inherited.Add((Symbol)arg.Value);
 				else
-					context.Sink.Write(Severity.Warning, pair.Value, "Unrecognized parameter. Expected prefix:id or inherit:{@@A; @@B; ...})");
+					context.Sink.Warning(pair.Value, "Unrecognized parameter. Expected prefix:id or inherit:{@@A; @@B; ...})");
 			}
 
 			// Replace all symbols while collecting a list of them

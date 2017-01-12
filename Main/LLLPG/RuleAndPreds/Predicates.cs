@@ -417,7 +417,7 @@ namespace Loyc.LLParserGenerator
 		{
 			if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue) {
 				if (ErrorBranch != null)
-					warnings.Write(Severity.Error, b, "There is already an error branch.");
+					warnings.Error(b, "There is already an error branch.");
 				else {
 					ErrorBranch = b;
 					ExitOnError = bMode == BranchMode.ErrorExit;
@@ -431,7 +431,7 @@ namespace Loyc.LLParserGenerator
 				if (bMode == BranchMode.Default) {
 					if (DefaultArm != null) {
 						int a = DefaultArm.Value;
-						warnings.Write(Severity.Error, b, "There is already a default branch");
+						warnings.Error(b, "There is already a default branch");
 					} else
 						DefaultArm = atIndex;
 				}
@@ -441,7 +441,7 @@ namespace Loyc.LLParserGenerator
 
 		private static void Warning_ErrorBranchNotLast(Pred b, IMessageSink warnings)
 		{
-			warnings.Write(Severity.Warning, b, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
+			warnings.Warning(b, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
 		}
 
 		private bool SupportsMerge()

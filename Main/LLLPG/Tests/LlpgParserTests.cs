@@ -178,7 +178,7 @@ namespace Loyc.LLParserGenerator
 				var ruleAsString = rule.Pred.ToString();
 				var expected = ruleTuples[i].Item3;
 				if (expected == null)
-					MessageSink.Console.Write(Severity.Warning, ruleTuples[i].Item1, ruleAsString);
+					MessageSink.Console.Warning(ruleTuples[i].Item1, ruleAsString);
 				else
 					AreEqual(expected, ruleAsString);
 			}
