@@ -30,7 +30,7 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		protected IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+		protected IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.DebugDetail);
 
 		// This method can be used when the LES and EC# versions of a grammar 
 		// produce identical output: two inputs, one output.

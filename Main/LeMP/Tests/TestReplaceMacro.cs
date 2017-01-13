@@ -111,7 +111,7 @@ namespace LeMP.Tests
 			TestEcs(@"[Passive] define operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
 					@"x = Foo.SetAt(y, z);");
 			// Test warnings about `$`
-			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.Debug))) {
+			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.DebugDetail))) {
 				_msgHolder.List.Clear();
 				TestEcs(@"define Foo(w, $x, y, $z) => (x, $y);", @"");
 				Assert.AreEqual(2, _msgHolder.List.Count);

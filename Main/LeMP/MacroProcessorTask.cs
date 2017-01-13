@@ -790,16 +790,16 @@ namespace LeMP
 					output = macro.Macro(macroInput, scope);
 					if (output != null) { accepted++; acceptedIndex = i; }
 				} catch (ThreadAbortException e) {
-					_sink.Error(input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
-					_sink.Write(Severity.Detail, input, e.StackTrace);
+					_sink.Write(Severity.Error, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
+					_sink.Write(Severity.ErrorDetail, input, e.StackTrace);
 					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 					PrintMessages(s.Results, input, accepted, Severity.Error);
 					throw;
 				} catch (LogException e) {
 					e.Msg.WriteTo(s.MessageHolder);
 				} catch (Exception e) {
-					s.MessageHolder.Error(input, "{0}: {1}", e.GetType().Name, e.Message);
-					s.MessageHolder.Write(Severity.Detail, input, e.StackTrace);
+					s.MessageHolder.Write(Severity.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
+					s.MessageHolder.Write(Severity.ErrorDetail, input, e.StackTrace);
 				}
 				s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 			}
@@ -970,22 +970,18 @@ namespace LeMP
 			
 			foreach (var result in results)
 			{
-				bool printedLast = true;
 				foreach(var msg in result.Msgs) {
 					// Print all messages from macros that accepted the input. 
 					// For rejecting macros, print warning/error messages, and 
 					// other messages when macroStyleCall.
 					if (_sink.IsEnabled(msg.Severity) && (result.NewNode != null
-						|| (msg.Severity == Severity.Detail && printedLast)
-						|| msg.Severity >= Severity.Warning
+						|| msg.Severity >= Severity.WarningDetail
 						|| macroStyleCall))
 					{
 						var msg2 = new LogMessage(msg.Severity, msg.Context,
 							QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
 						msg2.WriteTo(_sink);
-						printedLast = true;
-					} else
-						printedLast = false;
+					}
 				}
 			}
 		}

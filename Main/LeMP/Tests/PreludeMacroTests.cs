@@ -10,7 +10,7 @@ namespace LeMP.Tests
 	[TestFixture]
 	public class PreludeMacroTests
 	{
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.DebugDetail);
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{

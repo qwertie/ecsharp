@@ -410,7 +410,7 @@ namespace Loyc.LLPG
 						if (!key.IsTrivia)
 							sink.Error(key,
 								"Unrecognized attribute. LLLPG supports the following options: " +
-								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), AddCsLineDirectives(bool), and PrivateByDefault(bool)");
+								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), AddCsLineDirectives(bool), and PrematchByDefault(bool)");
 						break;
 				}
 			}

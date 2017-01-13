@@ -22,11 +22,11 @@ namespace Loyc.LLParserGenerator
 		{
 			MMap<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 			if (args.Length != 0) {
-				Severity minSeverity = Severity.Note;
+				Severity minSeverity = Severity.NoteDetail;
 				#if DEBUG
-				minSeverity = Severity.Debug;
+				minSeverity = Severity.DebugDetail;
 				#endif
-				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
+				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity - 1);
 
 				LeMP.Compiler c = new LeMP.Compiler(filter, typeof(LeMP.Prelude.BuiltinMacros));
 				var argList = args.ToList();

@@ -80,9 +80,9 @@ namespace LeMP
 
 			KnownOptions["editor"] = Pair.Create("", "Show built-in text editor");
 
-			Severity minSeverity = Severity.Note;
+			Severity minSeverity = Severity.NoteDetail;
 			#if DEBUG
-			minSeverity = Severity.Debug;
+			minSeverity = Severity.DebugDetail;
 			#endif
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
@@ -227,7 +227,7 @@ namespace LeMP
 			string value;
 			bool? flag;
 			double? num;
-			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.Note);
+			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.NoteDetail);
 
 			if (warnAboutUnknownOptions)
 				WarnAboutUnknownOptions(options, Sink, KnownOptions);

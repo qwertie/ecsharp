@@ -111,14 +111,14 @@ namespace Loyc.LLParserGenerator
 			}
 			// line 95
 			bool isToken = false;
-			// Line 96: (&{Is($LI, _token)} TT.Id | &{Is($LI, _rule)} TT.Id)?
+			// Line 97: greedy(&{Is($LI, _token)} TT.Id | &{Is($LI, _rule)} TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				if (Is(0, _token)) {
 					la1 = (TT) LA(1);
 					if (la1 == TT.Id) {
 						Skip();
-						// line 96
+						// line 97
 						isToken = true;
 					}
 				} else if (Is(0, _rule)) {
@@ -128,81 +128,40 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			var ruleName = Match((int) TT.Id);
-			// Line 101: (TT.LBrack TT.RBrack | TT.LParen TT.RParen)?
+			// Line 102: (TT.LBrack TT.RBrack | TT.LParen TT.RParen)?
 			la0 = (TT) LA0;
 			if (la0 == TT.LBrack) {
 				lit_lsqb = MatchAny();
 				Match((int) TT.RBrack);
-				// line 101
+				// line 102
 				args = ParseHostCode(lit_lsqb, ParsingMode.FormalArguments);
 			} else if (la0 == TT.LParen) {
 				lit_lpar = MatchAny();
 				Match((int) TT.RParen);
-				// line 102
+				// line 103
 				args = ParseHostCode(lit_lpar, ParsingMode.FormalArguments);
 			}
-			// Line 104: ((TT.Returns TT.LBrack TT.RBrack)? | (TT.Returns TT.LParen TT.RParen)?)?
-			do {
-				switch ((TT) LA0) {
-				case TT.Returns:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.LBrack)
-							goto match1;
-						else {
-							// Line 105: (TT.Returns TT.LParen TT.RParen)?
-							la0 = (TT) LA0;
-							if (la0 == TT.Returns) {
-								Skip();
-								lit_lpar = Match((int) TT.LParen);
-								Match((int) TT.RParen);
-								// line 105
-								retType = ParseHostReturnType(lit_lpar);
-							}
-						}
-					}
-					break;
-				case TT.Id:
-					{
-						switch ((TT) LA(1)) {
-						case TT.At: case TT.Colon: case TT.Id: case TT.LBrace:
-						case TT.StartColon:
-							goto match1;
-						}
-					}
-					break;
-				case TT.Colon: case TT.StartColon:
-					{
-						la1 = (TT) LA(1);
-						if (la1 != (TT) EOF)
-							goto match1;
-					}
-					break;
-				case TT.At:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.LBrace)
-							goto match1;
-					}
-					break;
+			// Line 105: (TT.Returns TT.LBrack TT.RBrack | TT.Returns TT.LParen TT.RParen)?
+			la0 = (TT) LA0;
+			if (la0 == TT.Returns) {
+				la1 = (TT) LA(1);
+				if (la1 == TT.LBrack) {
+					Skip();
+					lit_lsqb = MatchAny();
+					Match((int) TT.RBrack);
+					// line 105
+					retType = ParseHostReturnType(lit_lsqb);
+				} else {
+					Skip();
+					lit_lpar = Match((int) TT.LParen);
+					Match((int) TT.RParen);
+					// line 106
+					retType = ParseHostReturnType(lit_lpar);
 				}
-				break;
-			match1:
-				{
-					// Line 104: (TT.Returns TT.LBrack TT.RBrack)?
-					la0 = (TT) LA0;
-					if (la0 == TT.Returns) {
-						Skip();
-						lit_lsqb = Match((int) TT.LBrack);
-						Match((int) TT.RBrack);
-						// line 104
-						retType = ParseHostReturnType(lit_lsqb);
-					}
-				}
-			} while (false);
-			// line 108
+			}
+			// line 109
 			Token? initBrace = null;
-			// Line 109: (&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
+			// Line 111: greedy(&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				if (Is(0, _init)) {
@@ -214,15 +173,15 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			}
-			// Line 112: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
+			// Line 114: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				var id = MatchAny();
-				// line 114
+				// line 116
 				string id2 = id.Value.ToString();
 				bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "after");
 				Error(-1, isAntlrThing ? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)." : "Syntax error (expected ':' to begin the rule)");
-				// Line 120: (TT.LBrace TT.RBrace | TT.Id)?
+				// Line 122: (TT.LBrace TT.RBrace | TT.Id)?
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrace) {
 					Skip();
@@ -230,17 +189,17 @@ namespace Loyc.LLParserGenerator
 				} else if (la0 == TT.Id)
 					Skip();
 			}
-			// Line 124: (((TT.Colon|TT.StartColon)) GrammarExpr TT.Semicolon | TT.At TT.LBrace GrammarExpr TT.RBrace (TT.Semicolon)?)
+			// Line 126: (((TT.Colon|TT.StartColon)) GrammarExpr TT.Semicolon | TT.At TT.LBrace GrammarExpr TT.RBrace (TT.Semicolon)?)
 			la0 = (TT) LA0;
 			if (la0 == TT.Colon || la0 == TT.StartColon) {
-				// Line 124: ((TT.Colon|TT.StartColon))
+				// Line 126: ((TT.Colon|TT.StartColon))
 				la0 = (TT) LA0;
 				if (la0 == TT.Colon || la0 == TT.StartColon)
 					Skip();
 				else {
-					// line 124
+					// line 126
 					Error(0, "Expected ':' or '::=' to begin the rule");
-					// Line 124: greedy(TT.Assignment)?
+					// Line 126: greedy(TT.Assignment)?
 					la0 = (TT) LA0;
 					if (la0 == TT.Assignment) {
 						la1 = (TT) LA(1);
@@ -255,12 +214,12 @@ namespace Loyc.LLParserGenerator
 				Match((int) TT.LBrace);
 				gExpr = GrammarExpr();
 				Match((int) TT.RBrace);
-				// Line 130: (TT.Semicolon)?
+				// Line 132: (TT.Semicolon)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Semicolon)
 					Skip();
 			}
-			// line 133
+			// line 135
 			if (initBrace != null) {
 				var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Statements);
 				gExpr = LNode.Call(CodeSymbols.Tuple, LNode.List(initAction, gExpr));
@@ -276,14 +235,14 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			Token lit_lpar = default(Token);
 			Token target = default(Token);
-			// Line 155: (TT.Id)?
+			// Line 157: (TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id)
 				target = MatchAny();
 			lit_lpar = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			Match((int) TT.Semicolon);
-			// line 157
+			// line 159
 			var args = ParseHostCode(lit_lpar, ParsingMode.Expressions);
 			return F.Call(F.Id(target), args);
 		}
@@ -294,7 +253,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			Token lit_lcub = default(Token);
-			// Line 164: (&{Is($LI, _members)} TT.Id)?
+			// Line 166: (&{Is($LI, _members)} TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				Check(Is(0, _members), "Expected Is($LI, _members)");
@@ -302,11 +261,11 @@ namespace Loyc.LLParserGenerator
 			}
 			lit_lcub = Match((int) TT.LBrace);
 			Match((int) TT.RBrace);
-			// Line 165: (TT.Semicolon)?
+			// Line 167: (TT.Semicolon)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Semicolon)
 				Skip();
-			// line 167
+			// line 169
 			var args = ParseHostCode(lit_lcub, ParsingMode.Declarations);
 			return args.AsLNode(S.Splice);
 		}
@@ -315,7 +274,7 @@ namespace Loyc.LLParserGenerator
 		public VList<LNode> RulesAndStuff()
 		{
 			VList<LNode> result = default(VList<LNode>);
-			// Line 174: ( Rule | HostCall | HostBlock )
+			// Line 176: ( Rule | HostCall | HostBlock )
 			switch ((TT) LA0) {
 			case TT.At: case TT.AttrKeyword: case TT.LBrack:
 				result.Add(Rule());
@@ -355,7 +314,7 @@ namespace Loyc.LLParserGenerator
 				result.Add(HostBlock());
 				break;
 			}
-			// Line 174: ( Rule | HostCall | HostBlock )*
+			// Line 176: ( Rule | HostCall | HostBlock )*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.At: case TT.AttrKeyword: case TT.LBrack:

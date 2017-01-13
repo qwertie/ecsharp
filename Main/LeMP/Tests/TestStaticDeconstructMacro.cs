@@ -21,7 +21,7 @@ namespace LeMP.Tests
 			TestEcs("#deconstruct($WL = Console.WriteLine); $WL();", 
 			        "Console.WriteLine();");
 
-			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.Error))) {
+			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.ErrorDetail))) {
 				TestEcs("$X = $Y;", "$X = $Y;");
 				Assert.AreEqual(2, _msgHolder.List.Count, "expected errors because $X and $Y don't exist");
 			}

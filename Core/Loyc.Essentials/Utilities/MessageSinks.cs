@@ -33,42 +33,28 @@ namespace Loyc
 		/// <remarks>Initial value: Severity.Warning</remarks>
 		public Severity PrintSeverityAt { get; set; }
 
-		protected virtual ConsoleColor PickColor(Severity msgType, out string msgTypeText)
+		protected virtual ConsoleColor PickColor(Severity level, out string levelText)
 		{
-			bool implicitText = msgType < PrintSeverityAt;
+			bool isDetail = ((int)level & 1) != 0;
+			bool implicitLevel = level < PrintSeverityAt || isDetail;
 			ConsoleColor color;
 
-			if (msgType >= Severity.Critical)
-				color = ConsoleColor.Magenta;
-			else if (msgType >= Severity.Error)
-				color = ConsoleColor.Red;
-			else if (msgType >= Severity.Warning)
-				color = ConsoleColor.Yellow;
-			else if (msgType >= Severity.Note)
-				color = ConsoleColor.White;
-			else if (msgType >= Severity.Debug)
-				color = ConsoleColor.Cyan;
-			else if (msgType >= Severity.Verbose || msgType == Severity._Finer)
-				color = ConsoleColor.DarkCyan;
-			else if (msgType == Severity.Detail)
-			{
-				switch (_lastColor)
-				{
-					case ConsoleColor.Red: color = ConsoleColor.DarkRed; break;
-					case ConsoleColor.Yellow: color = ConsoleColor.DarkYellow; break;
-					case ConsoleColor.White: color = ConsoleColor.Gray; break;
-					case ConsoleColor.Green: color = ConsoleColor.DarkGreen; break;
-					case ConsoleColor.Blue: color = ConsoleColor.DarkBlue; break;
-					case ConsoleColor.Magenta: color = ConsoleColor.DarkMagenta; break;
-					case ConsoleColor.Cyan: color = ConsoleColor.DarkCyan; break;
-					default: color = ConsoleColor.DarkGray; break;
-				}
-				msgTypeText = null;
-				return color;
-			} else
+			if (level >= Severity.CriticalDetail)
+				color = isDetail ? ConsoleColor.DarkMagenta : ConsoleColor.Magenta;
+			else if (level >= Severity.ErrorDetail)
+				color = isDetail ? ConsoleColor.DarkRed : ConsoleColor.Red;
+			else if (level >= Severity.WarningDetail)
+				color = isDetail ? ConsoleColor.DarkYellow : ConsoleColor.Yellow;
+			else if (level >= Severity.NoteDetail)
+				color = isDetail ? ConsoleColor.Gray : ConsoleColor.White;
+			else if (level >= Severity.DebugDetail)
+				color = isDetail ? ConsoleColor.DarkCyan : ConsoleColor.Cyan;
+			else if (level >= Severity.VerboseDetail)
+				color = isDetail ? ConsoleColor.DarkCyan : ConsoleColor.DarkCyan;
+			else
 				color = Console.ForegroundColor;
 
-			msgTypeText = implicitText ? null : msgType.ToString().Localized();
+			levelText = implicitLevel ? null : level.ToString().Localized();
 			_lastColor = color;
 			return color;
 		}
@@ -320,13 +306,33 @@ namespace Loyc
 	/// to the value of the <see cref="MinSeverity"/> property.</summary>
 	public class SeverityMessageFilter<TContext> : IMessageSink<TContext>
 	{
-		public SeverityMessageFilter(IMessageSink<TContext> target, Severity minSeverity) 
-			{ Target = target; _minSeverity = minSeverity; }
+		/// <summary>Initializes the filter with a minimum severity.</summary>
+		/// <param name="target">Another sink to which all messages will be written that pass this filter.</param>
+		/// <param name="minSeverity">Minimum severity for which <see cref="IsEnabled"/> returns true,
+		/// possibly modified by <c>includeDetails</c>.</param>
+		/// <param name="includeDetails">Causes <c>minSeverity</c> to be reduced
+		/// by one if <c>minSeverity</c> is an even number. Often when one uses
+		/// a severity like <see cref="Severity.Warning"/>, one actually intends 
+		/// to also include any associated <see cref="Severity.WarningDetail"/> 
+		/// messages. This parameter ensures that you do not exclude details 
+		/// accidentally by changing <c>minSeverity</c> for you. To disable 
+		/// this behavior, set this parameter to false.</param>
+		public SeverityMessageFilter(IMessageSink<TContext> target, Severity minSeverity, bool includeDetails = true)
+		{
+			Target = target;
+			_minSeverity = (Severity)((int)(minSeverity - 1) & ~(includeDetails ? 1 : 0) + 1);
+		}
 		Severity _minSeverity;
 		bool _printedPrev; // whether the last-written message passed
 
 		public IMessageSink<TContext> Target { get; set; }
-		public Severity MinSeverity { 
+
+		/// <summary>Gets or sets the minimum severity that passes the filter. Note:
+		/// usually this property should be set to a detail level such as 
+		/// <see cref="Severity.InfoDetail"/> rather than a "normal" level such 
+		/// as <see cref="Severity.Info"/>, which is one higher.</summary>
+		public Severity MinSeverity
+		{
 			get { return _minSeverity; }
 			set { _minSeverity = value; }
 		}
@@ -349,14 +355,16 @@ namespace Loyc
 		}
 		bool Passes(Severity type)
 		{
-			return type >= _minSeverity || (type == Severity.Detail && _printedPrev);
+			return type >= _minSeverity;
 		}
 	}
 
 	/// <summary>Alias for SeverityMessageFilter&lt;object>.</summary>
 	public class SeverityMessageFilter : SeverityMessageFilter<object>, IMessageSink
 	{
-		public SeverityMessageFilter(IMessageSink<object> target, Severity minSeverity) : base(target, minSeverity) { }
+		/// <inheritdoc cref="SeverityMessageFilter{TContext}(IMessageSink{TContext}, Severity, bool)"/>
+		public SeverityMessageFilter(IMessageSink<object> target, Severity minSeverity, bool includeDetails = true)
+			: base(target, minSeverity, includeDetails) { }
 	}
 		
 	/// <summary>A message sink that sends its messages to a list of other sinks.</summary>

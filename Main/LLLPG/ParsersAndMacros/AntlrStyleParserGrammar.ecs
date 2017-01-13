@@ -33,8 +33,8 @@ namespace Loyc.LLParserGenerator
 			return _parser.RulesAndStuff();
 		}
 
-		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) 
-			: base(tokens, file, messageSink, hostLanguage) {}
+		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink) 
+			: base(tokens, file, messageSink) {}
 
 		LNode ParseHostReturnType(Token paren)
 		{
@@ -93,6 +93,7 @@ namespace Loyc.LLParserGenerator
 			[ TT.AttrKeyword {attrs.Add(F.Id($(TT.AttrKeyword)));} ]*
 			
 			{bool isToken  = false;}
+			greedy
 			[	&{Is($LI,_token)} TT.Id {isToken = true;}
 			|	&{Is($LI,_rule)}  TT.Id
 			]?
@@ -101,11 +102,12 @@ namespace Loyc.LLParserGenerator
 			[	"[" "]" { args = ParseHostCode($"[", ParsingMode.FormalArguments); }
 			|	"(" ")" { args = ParseHostCode($"(", ParsingMode.FormalArguments); }
 			]?
-			[	[ TT.Returns "[" "]" { retType = ParseHostReturnType($"["); } ]?
-			|	[ TT.Returns "(" ")" { retType = ParseHostReturnType($"("); } ]?
+			[	TT.Returns "[" "]" { retType = ParseHostReturnType($"["); }
+			|	TT.Returns "(" ")" { retType = ParseHostReturnType($"("); }
 			]?
 
 			{Token? initBrace = null;}
+			greedy
 			[	&{Is($LI,_init)} TT.Id initBrace="{" initRB:"}"	]?
 
 			// Ignore ANTLR stuff

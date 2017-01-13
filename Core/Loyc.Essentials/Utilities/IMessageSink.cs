@@ -113,25 +113,35 @@ namespace Loyc
 	/// Some of the enumeration values begin with an underscore. These are
 	/// values defined by Log4net that are deprecated in LoycCore.
 	/// <para/>
-	/// Messages of type Detail are meant to contain extra information associated 
-	/// with the most recent non-Detail message, e.g. stack traces or extra 
-	/// diagnostic information for Errors.
+	/// The "Detail" severity levels are meant to contain extra information 
+	/// associated with the most recent non-Detail message, e.g. stack traces 
+	/// or extra diagnostic information for Errors.
 	/// </remarks>
 	public enum Severity
 	{
-		Detail = 0,       // no log4net equivalent
+		VerboseDetail = 9,
 		Verbose = 10,     // log4net: Verbose = Finest = 10000
 		_Finer = 20,      // log4net: Finer = 20000
+		DebugDetail = 29,
 		Debug = 30,       // log4net: Debug = Fine = 30000
+		CommonDetail = 35,      
 		Common = 36,      // Common event: No log4net equivalent
+		InfoDetail = 39,
 		Info = 40,        // log4net: Info = 40000
+		NoteDetail = 49,
 		Note = 50,        // log4net: Notice = 50000
+		WarningDetail = 59,
 		Warning = 60,     // log4net: Warning = 60000
+		UncommonDetail = 65,
 		Uncommon = 66,    // Uncommon event: No log4net equivalent
+		ErrorDetail = 69,
 		Error = 70,       // log4net: Error = 70000
+		RareDetail = 79,
 		Rare = 80,        // log4net: Severe = 80000
+		CriticalDetail = 89,
 		Critical = 90,    // log4net: Critical = 90000
 		_Alert = 100,     // log4net: Alert = 100000
+		FatalDetail = 109,
 		Fatal = 110,      // log4net: Fatal = 110000
 		_Emergency = 120, // log4net: Emergency = 120000
 	}
