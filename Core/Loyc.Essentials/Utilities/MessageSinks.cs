@@ -5,7 +5,7 @@
 //     TraceMessageSink,
 //     MessageHolder,
 //     MessageFilter,
-//     MulticastMessageSink
+//     MessageSplitter
 //
 using System;
 using System.Collections.Generic;
@@ -59,29 +59,29 @@ namespace Loyc
 			return color;
 		}
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity level, object context, string format)
 		{
-			WriteCore(type, context, format.Localized());
+			WriteCore(level, context, format.Localized());
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
 		{
-			WriteCore(type, context, format.Localized(arg0, arg1));
+			WriteCore(level, context, format.Localized(arg0, arg1));
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity level, object context, string format, params object[] args)
 		{
-			WriteCore(type, context, format.Localized(args));
+			WriteCore(level, context, format.Localized(args));
 		}
-		void WriteCore(Severity type, object context, string text)
+		void WriteCore(Severity level, object context, string text)
 		{
 			string typeText;
-			var color = PickColor(type, out typeText);
+			var color = PickColor(level, out typeText);
 			if (typeText != null)
 				text = typeText + ": " + text;
 			WriteColoredMessage(color, context, text);
 		}
 		public static void WriteColoredMessage(ConsoleColor color, object context, string text)
 		{
-			string loc = MessageSink.LocationString(context);
+			string loc = MessageSink.ContextToString(context);
 			if (!string.IsNullOrEmpty(loc))
 				Console.Write(loc + ": ");
 
@@ -92,7 +92,7 @@ namespace Loyc
 		}
 
 		/// <summary>Always returns true.</summary>
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
 			return true;
 		}
@@ -105,27 +105,29 @@ namespace Loyc
 		public static readonly NullMessageSink Value = new NullMessageSink();
 
 		int _count, _errorCount;
+		/// <summary>Total number of messages that have been discarded.</summary>
 		public int Count { get { return _errorCount; } }
+		/// <summary>Number of errors sent to this object so far, not including detail messages.</summary>
 		public int ErrorCount { get { return _count; } }
 		public bool IsEmpty { get { return _count == 0; } }
 		public void ResetCountersToZero() { _count = _errorCount = 0; }
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity level, object context, string format)
 		{
 			_count++;
-			if (type >= Severity.Error)
+			if (level >= Severity.Error && ((int)level & 1) == 0)
 				_errorCount++;
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
 		{
-			Write(type, context, format);
+			Write(level, context, format);
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity level, object context, string format, params object[] args)
 		{
-			Write(type, context, format);
+			Write(level, context, format);
 		}
 		/// <summary>Always returns false.</summary>
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
 			return false;
 		}
@@ -225,20 +227,20 @@ namespace Loyc
 				msg.WriteTo(sink);
 		}
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity level, object context, string format)
 		{
-			List.Add(new LogMessage(type, context, format));
+			List.Add(new LogMessage(level, context, format));
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
 		{
-			List.Add(new LogMessage(type, context, format, arg0, arg1));
+			List.Add(new LogMessage(level, context, format, arg0, arg1));
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity level, object context, string format, params object[] args)
 		{
-			List.Add(new LogMessage(type, context, format, args));
+			List.Add(new LogMessage(level, context, format, args));
 		}
 		/// <summary>Always returns true.</summary>
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
 			return true;
 		}
@@ -274,30 +276,30 @@ namespace Loyc
 			TypeFilter = filter;
 			Target = target;
 		}
-		bool Passes(Severity type, object context, string format)
+		bool Passes(Severity level, object context, string format)
 		{
-			return Filter != null && Filter(type, context, format)
-				|| TypeFilter != null && TypeFilter(type);
+			return Filter != null && Filter(level, context, format)
+				|| TypeFilter != null && TypeFilter(level);
 		}
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity level, object context, string format)
 		{
-			if (Passes(type, context, format))
-				Target.Write(type, context, format);
+			if (Passes(level, context, format))
+				Target.Write(level, context, format);
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
 		{
-			if (Passes(type, context, format))
-				Target.Write(type, context, format, arg0, arg1);
+			if (Passes(level, context, format))
+				Target.Write(level, context, format, arg0, arg1);
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity level, object context, string format, params object[] args)
 		{
-			if (Passes(type, context, format))
-				Target.Write(type, context, format, args);
+			if (Passes(level, context, format))
+				Target.Write(level, context, format, args);
 		}
 		/// <summary>Returns true if <c>Filter(type, null)</c> and <c>target.IsEnabled(type)</c> are both true.</summary>
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
-			return Passes(type, null, null) && Target.IsEnabled(type);
+			return Passes(level, null, null) && Target.IsEnabled(level);
 		}
 	}
 
@@ -323,7 +325,6 @@ namespace Loyc
 			_minSeverity = (Severity)((int)(minSeverity - 1) & ~(includeDetails ? 1 : 0) + 1);
 		}
 		Severity _minSeverity;
-		bool _printedPrev; // whether the last-written message passed
 
 		public IMessageSink<TContext> Target { get; set; }
 
@@ -337,25 +338,25 @@ namespace Loyc
 			set { _minSeverity = value; }
 		}
 
-		public void Write(Severity type, TContext context, string format)
+		public void Write(Severity level, TContext context, string format)
 		{
- 			if (_printedPrev = Passes(type)) Target.Write(type, context, format);
+ 			if (Passes(level)) Target.Write(level, context, format);
 		}
-		public void Write(Severity type, TContext context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
 		{
- 			if (_printedPrev = Passes(type)) Target.Write(type, context, format, arg0, arg1);
+ 			if (Passes(level)) Target.Write(level, context, format, arg0, arg1);
 		}
-		public void Write(Severity type, TContext context, string format, params object[] args)
+		public void Write(Severity level, TContext context, string format, params object[] args)
 		{
- 			if (_printedPrev = Passes(type)) Target.Write(type, context, format, args);
+ 			if (Passes(level)) Target.Write(level, context, format, args);
 		}
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
-			return Passes(type) && Target.IsEnabled(type);
+			return Passes(level) && Target.IsEnabled(level);
 		}
-		bool Passes(Severity type)
+		bool Passes(Severity level)
 		{
-			return type >= _minSeverity;
+			return level >= _minSeverity;
 		}
 	}
 
@@ -369,45 +370,45 @@ namespace Loyc
 		
 	/// <summary>A message sink that sends its messages to a list of other sinks.</summary>
 	/// <remarks>Null elements are allowed in the <see cref="List"/> and are ignored.</remarks>
-	public class MessageSplitter<TContext> : IMessageSink<TContext>
+	public class MessageMulticaster<TContext> : IMessageSink<TContext>
 	{
 		List<IMessageSink<TContext>> _list = new List<IMessageSink<TContext>>();
 		public IList<IMessageSink<TContext>> List { get { return _list; } }
 
-		public MessageSplitter(IEnumerable<IMessageSink<TContext>> targets) { _list = new List<IMessageSink<TContext>>(targets); }
-		public MessageSplitter(params IMessageSink<TContext>[] targets) { _list = new List<IMessageSink<TContext>>(targets); }
-		public MessageSplitter() { _list = new List<IMessageSink<TContext>>(); }
+		public MessageMulticaster(IEnumerable<IMessageSink<TContext>> targets) { _list = new List<IMessageSink<TContext>>(targets); }
+		public MessageMulticaster(params IMessageSink<TContext>[] targets) { _list = new List<IMessageSink<TContext>>(targets); }
+		public MessageMulticaster() { _list = new List<IMessageSink<TContext>>(); }
 	
-		public void  Write(Severity type, TContext context, string format)
+		public void  Write(Severity level, TContext context, string format)
 		{
  			foreach(var sink in _list)
 				if (sink != null)
-					sink.Write(type, context, format);
+					sink.Write(level, context, format);
 		}
-		public void  Write(Severity type, TContext context, string format, object arg0, object arg1 = null)
+		public void  Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
 		{
  			foreach(var sink in _list)
 				if (sink != null)
-					sink.Write(type, context, format, arg0, arg1);
+					sink.Write(level, context, format, arg0, arg1);
 		}
-		public void  Write(Severity type, TContext context, string format, params object[] args)
+		public void  Write(Severity level, TContext context, string format, params object[] args)
 		{
 			foreach (var sink in _list)
 				if (sink != null)
-					sink.Write(type, context, format, args);
+					sink.Write(level, context, format, args);
 		}
 		/// <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
 			foreach (var sink in _list)
-				if (sink != null && sink.IsEnabled(type))
+				if (sink != null && sink.IsEnabled(level))
 					return true;
 			return false;
 		}
 	}
 
 	/// <summary>Alias for MessageSplitter&lt;object>.</summary>
-	public class MessageSplitter : MessageSplitter<object>, IMessageSink
+	public class MessageSplitter : MessageMulticaster<object>, IMessageSink
 	{
 		public MessageSplitter(IEnumerable<IMessageSink<object>> targets) : base(targets) { }
 		public MessageSplitter(params IMessageSink<object>[] targets) : base(targets) { }
@@ -453,9 +454,9 @@ namespace Loyc
 			return message;
 		}
 
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
-			return Target.IsEnabled(type);
+			return Target.IsEnabled(level);
 		}
 
 		public void Write(Severity level, TContext context, string format)
@@ -517,25 +518,25 @@ namespace Loyc
 			_isEnabled = isEnabled;
 		}
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity level, object context, string format)
 		{
-			if (IsEnabled(type))
-				_writer(type, context, format, EmptyArray<object>.Value);
+			if (IsEnabled(level))
+				_writer(level, context, format, EmptyArray<object>.Value);
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
 		{
-			if (IsEnabled(type))
-				_writer(type, context, format, new[] { arg0, arg1 });
+			if (IsEnabled(level))
+				_writer(level, context, format, new[] { arg0, arg1 });
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity level, object context, string format, params object[] args)
 		{
-			if (IsEnabled(type))
-				_writer(type, context, format, args);
+			if (IsEnabled(level))
+				_writer(level, context, format, args);
 		}
 
-		public bool IsEnabled(Severity type)
+		public bool IsEnabled(Severity level)
 		{
-			return _isEnabled != null ? _isEnabled(type) : true;
+			return _isEnabled != null ? _isEnabled(level) : true;
 		}
 	}
 }
