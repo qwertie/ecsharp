@@ -37,7 +37,7 @@ partial class Les3Parser
 	alias("'{" = TT.LTokenLiteral);
 	alias("\n" = TT.Newline);
 
-	[#new] public StmtList returns [VList<LNode> result] :
+	public StmtList returns [VList<LNode> result] :
 		{endMarker := default(TT);}
 		result:ExprList(ref endMarker);
 
@@ -119,7 +119,7 @@ partial class Les3Parser
 		{if ($e != null || end.Type() == TT.Comma) {yield return e ?? MissingExpr(end);}};
 
 	[LL(1)] // Simplify the output
-	[#new] protected TopExpr returns [LNode result] :
+	protected TopExpr returns [LNode result] :
 		{int startIndex = LT0.StartIndex;}
 		{var attrs = new VList<LNode>();}
 		(	// @Attribute

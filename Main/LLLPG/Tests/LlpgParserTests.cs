@@ -28,7 +28,7 @@ namespace Loyc.LLParserGenerator
 		void SetUp()
 		{
 			ParsingService.Default = Les2LanguageService.Value;
-			MessageSink.SetDefault(MessageSink.Console);
+			MessageSink.SetDefault(ConsoleMessageSink.Value);
 		}
 
 		[Test]
@@ -104,10 +104,10 @@ namespace Loyc.LLParserGenerator
 		}
 		void TestStage1Core(string text, LNode expected)
 		{
-			var lexer = ParsingService.Default.Tokenize(text, MessageSink.Console);
+			var lexer = ParsingService.Default.Tokenize(text, ConsoleMessageSink.Value);
 			var treeified = new TokensToTree(lexer, true);
 			var tokens = treeified.Buffered();
-			var parser = new StageOneParser(tokens, lexer.SourceFile, MessageSink.Console);
+			var parser = new StageOneParser(tokens, lexer.SourceFile, ConsoleMessageSink.Value);
 			LNode result = parser.Parse();
 			AreEqual(expected, result);
 		}
@@ -166,19 +166,19 @@ namespace Loyc.LLParserGenerator
 			foreach (var tuple in ruleTuples)
 			{
 				string ruleName = tuple.Item1, inputExpr = tuple.Item2;
-				var node = LesLanguageService.Value.ParseSingle(inputExpr, MessageSink.Console, ParsingMode.Expressions);
+				var node = LesLanguageService.Value.ParseSingle(inputExpr, ConsoleMessageSink.Value, ParsingMode.Expressions);
 				var rule = new Rule(node, GSymbol.Get(ruleName), null);
 				rules.Add(Pair.Create(rule, node));
 			}
 			
-			var parser = new StageTwoParser(helper, MessageSink.Console);
+			var parser = new StageTwoParser(helper, ConsoleMessageSink.Value);
 			parser.Parse(rules);
 			for (int i = 0; i < rules.Count; i++) {
 				var rule = rules[i].A;
 				var ruleAsString = rule.Pred.ToString();
 				var expected = ruleTuples[i].Item3;
 				if (expected == null)
-					MessageSink.Console.Warning(ruleTuples[i].Item1, ruleAsString);
+					ConsoleMessageSink.Value.Warning(ruleTuples[i].Item1, ruleAsString);
 				else
 					AreEqual(expected, ruleAsString);
 			}

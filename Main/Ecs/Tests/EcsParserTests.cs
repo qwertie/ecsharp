@@ -31,11 +31,11 @@ namespace Loyc.Ecs.Tests
 			bool exprMode = (mode & Mode.Expression) != 0;
 			if ((mode & Mode.ParserTest) == 0)
 				return;
-			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)MessageSink.Console;
+			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)ConsoleMessageSink.Value;
 			// This is the easy way: 
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, sink, exprMode ? ParsingMode.Expressions : ParsingMode.Statements, preserveComments: true);
 			// But to make debugging easier, I'll do it the long way:
-			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", MessageSink.Console);
+			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", ConsoleMessageSink.Value);
 			var preprocessed = new EcsPreprocessor(lexer, true);
 			var treeified = new TokensToTree(preprocessed, false);
 			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);

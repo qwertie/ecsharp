@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.4.2.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.5.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 	
-		new public VList<LNode> StmtList()
+		public VList<LNode> StmtList()
 		{
 			VList<LNode> result = default(VList<LNode>);
 			var endMarker = default(TT);
@@ -178,7 +178,7 @@ namespace Loyc.Syntax.Les
 		}
 		static readonly HashSet<int> TopExpr_set0 = NewSet((int) EOF, (int) TT.Assignment, (int) TT.At, (int) TT.BQId, (int) TT.BQOperator, (int) TT.Comma, (int) TT.Id, (int) TT.Keyword, (int) TT.LBrace, (int) TT.LBrack, (int) TT.Literal, (int) TT.LParen, (int) TT.NegativeLiteral, (int) TT.Newline, (int) TT.NormalOp, (int) TT.Not, (int) TT.PrefixOp, (int) TT.PreOrSufOp, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.SingleQuoteOp);
 	
-		new protected LNode TopExpr()
+		protected LNode TopExpr()
 		{
 			TT la0;
 			LNode e = default(LNode);
@@ -285,8 +285,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if (CanParse(context, 0, out prec)) {
-								if ((TT) LA(0 + 1) != TT.Newline)
+							if ((TT) LA(0 + 1) != TT.Newline) {
+								if (CanParse(context, 0, out prec))
 									goto match1;
 								else
 									goto stop;

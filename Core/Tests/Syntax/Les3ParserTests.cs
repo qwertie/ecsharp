@@ -32,7 +32,7 @@ namespace Loyc.Syntax.Les
 			var results = Les3LanguageService.Value.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
-				messages.WriteListTo(MessageSink.Console);
+				messages.WriteListTo(ConsoleMessageSink.Value);
 				AreEqual(errorsExpected, messages.List.Count, 
 					"Error count was {0} for «{1}»", messages.List.Count, text); // fail
 			}

@@ -143,7 +143,7 @@ namespace Loyc.LLParserGenerator
 			set {
 				_sink = value ?? MessageSink.Null;
 				#if DEBUG
-				_sink = new MessageSplitter(_sink, MessageSink.Trace);
+				_sink = new MessageMulticaster(_sink, TraceMessageSink.Value);
 				#endif
 			}
 		}

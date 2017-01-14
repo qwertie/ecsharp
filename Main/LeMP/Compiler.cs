@@ -84,7 +84,7 @@ namespace LeMP
 			#if DEBUG
 			minSeverity = Severity.DebugDetail;
 			#endif
-			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
+			var filter = new SeverityMessageFilter(ConsoleMessageSink.Value, minSeverity);
 
 			Compiler c = new Compiler(filter, typeof(BuiltinMacros));
 

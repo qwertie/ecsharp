@@ -91,7 +91,7 @@ namespace Loyc.Syntax.Les
 			var results = Les2LanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
-				messages.WriteListTo(MessageSink.Console);
+				messages.WriteListTo(ConsoleMessageSink.Value);
 				AreEqual(errorsExpected, messages.List.Count); // fail
 			}
 			for (int i = 0; i < expected.Length; i++)

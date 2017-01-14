@@ -477,7 +477,7 @@ namespace Loyc.Syntax.Les
 			
 			bool error = false;
 			var lexer = new Les3Lexer(input, "", new MessageSinkFromDelegate((type, ctx, msg, args) => {
-				MessageSink.Trace.Write(type, ctx, msg, args); error = true;
+				TraceMessageSink.Value.Write(type, ctx, msg, args); error = true;
 			}));
 
 			int index = 0;

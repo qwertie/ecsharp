@@ -408,7 +408,7 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			",
-			MessageSink.Trace); // Suppress warnings caused by this test
+			TraceMessageSink.Value); // Suppress warnings caused by this test
 		}
 
 		[Test] public void SlugTest1()

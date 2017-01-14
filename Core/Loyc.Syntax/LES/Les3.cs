@@ -436,7 +436,7 @@ namespace Loyc.Syntax.Les
 
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
 
-		protected new Precedence PrefixPrecedenceOf(Token t)
+		protected Precedence PrefixPrecedenceOf(Token t)
 		{
 			var prec = _prec.Find(OperatorShape.Prefix, t.Value);
 			if (prec == LesPrecedence.Other)

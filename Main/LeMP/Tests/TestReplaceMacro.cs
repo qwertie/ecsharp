@@ -118,7 +118,7 @@ namespace LeMP.Tests
 				TestEcs(@"define Foo(a, b) => (a, b);", @"");
 				Assert.AreEqual(4, _msgHolder.List.Count);
 				Assert.IsTrue(_msgHolder.List.All(msg => msg.Severity == Severity.Warning));
-				_msgHolder.WriteListTo(MessageSink.Trace);
+				_msgHolder.WriteListTo(TraceMessageSink.Value);
 			}
 		}
 	}

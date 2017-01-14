@@ -272,7 +272,7 @@ namespace LeMP
 			Test("import_macros LeMP.Tests; bob; tom;",     "bob; tommy;");
 		}
 
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.DebugDetail);
+		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{

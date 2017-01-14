@@ -398,7 +398,7 @@ namespace LeMP.Tests
 					}");
 				Assert.AreEqual(1, _msgHolder.List.Count);
 				Assert.AreEqual(Severity.Warning, _msgHolder.List[0].Severity);
-				_msgHolder.WriteListTo(MessageSink.Trace);
+				_msgHolder.WriteListTo(TraceMessageSink.Value);
 			}
 		}
 

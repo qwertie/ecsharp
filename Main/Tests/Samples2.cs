@@ -47,7 +47,7 @@ namespace Samples
 					  stop:
 					}
 					sum // return value
-				  }", msgs: MessageSink.Console);
+				  }", msgs: ConsoleMessageSink.Value);
 			var pp = new Les3PrettyPrinter(null, new Les3PrinterOptions { IndentString = "  " });
 			pp.PrintToConsole(code.Cast<ILNode>());
 		}
@@ -62,7 +62,7 @@ namespace Samples
 		public static void PrintAllTheNames(string path)
 		{
 			using (ParsingService.PushCurrent(EcsLanguageService.Value))
-			using (MessageSink.SetDefault(MessageSink.Console))
+			using (MessageSink.SetDefault(ConsoleMessageSink.Value))
 				foreach (var filename in Directory.GetFiles(path, "*.cs")) {
 					Console.WriteLine(filename);
 					foreach (var stmt in EcsLanguageService.Value.ParseFile(filename))

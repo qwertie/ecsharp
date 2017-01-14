@@ -134,7 +134,7 @@ namespace Loyc.Syntax.Lexing
 
 		List<Token> Lex(string input, bool skipWS = true)
 		{
-			var lexer = new Les2Lexer(input, MessageSink.Trace);
+			var lexer = new Les2Lexer(input, TraceMessageSink.Value);
 			var lexer2 = new TokensToTree(lexer, skipWS);
 			var list = new List<Token>();
 			Maybe<Token> token;

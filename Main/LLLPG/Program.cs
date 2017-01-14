@@ -26,16 +26,16 @@ namespace Loyc.LLParserGenerator
 				#if DEBUG
 				minSeverity = Severity.DebugDetail;
 				#endif
-				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity - 1);
+				var filter = new SeverityMessageFilter(ConsoleMessageSink.Value, minSeverity - 1);
 
 				LeMP.Compiler c = new LeMP.Compiler(filter, typeof(LeMP.Prelude.BuiltinMacros));
 				var argList = args.ToList();
 				var options = c.ProcessArguments(argList, false, true);
 				if (!LeMP.Compiler.MaybeShowHelp(options, KnownOptions)) {
-					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console,
+					LeMP.Compiler.WarnAboutUnknownOptions(options, ConsoleMessageSink.Value,
 						KnownOptions.With("nologo", Pair.Create("","")));
 					if (c.Files.Count == 0)
-						MessageSink.Console.Warning(null, "No files specified, stopping.");
+						ConsoleMessageSink.Value.Warning(null, "No files specified, stopping.");
 					else {
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
@@ -59,7 +59,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static string QuickRun(IParsingService inputLang, int maxExpand, string input, params Assembly[] macroAssemblies)
 		{
-			var c = new LeMP.TestCompiler(MessageSink.Trace, new UString(input));
+			var c = new LeMP.TestCompiler(TraceMessageSink.Value, new UString(input));
 			c.Parallel = false;
 			c.MaxExpansions = maxExpand;
 			c.AddMacros(Assembly.GetExecutingAssembly());
