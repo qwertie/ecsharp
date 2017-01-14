@@ -180,7 +180,7 @@ namespace TextEditor
 			
 			var pos = GetSourcePos(ctx);
 			if (pos == null)
-				msg = MessageSink.LocationString(ctx) + ": " + msg;
+				msg = MessageSink.ContextToString(ctx) + ": " + msg;
 
 			var lvi = new ListViewItem(new string[] {
 				pos != null ? pos.Line.ToString() : "",

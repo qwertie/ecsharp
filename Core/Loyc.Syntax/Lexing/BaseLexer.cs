@@ -133,7 +133,7 @@ namespace Loyc.Syntax.Lexing
 		public static readonly IMessageSink FormatExceptionErrorSink = MessageSink.FromDelegate(
 			(sev, location, fmt, args) => { 
 				if (sev >= Severity.Error)
-					throw new FormatException(MessageSink.LocationString(location) + ": " + Localize.Localized(fmt, args));
+					throw new FormatException(MessageSink.ContextToString(location) + ": " + Localize.Localized(fmt, args));
 				else
 					MessageSink.Default.Write(sev, location, fmt, args);
 			});

@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.5.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -270,20 +270,20 @@ namespace Loyc
 		{
 			sink.Write(Severity.Debug, null, format, arg0, arg1);
 		}
-		/// <summary>Converts a quadruplet (level, context, format, args) to a single 
+		/// <summary>Converts a quadruplet (type, context, format, args) to a single 
 		/// string containing all that information. The format string and the Severity
 		/// are localized with <see cref="Localize.Localized(string, object[])"/>.</summary>
 		/// <remarks>For example, <c>FormatMessage(Severity.Error, "context", "Something happened!")</c>
 		/// comes out as "Error: context: Something happened!".</remarks>
-		public static string FormatMessage(this Severity level, object context, string format, params object[] args)
+		public static string FormatMessage(Severity type, object context, string format, params object[] args)
 		{
 			string loc = ContextToString(context);
 			string formatted = Localize.Localized(format, args);
 			if (string.IsNullOrEmpty(loc))
-				return level.ToString().Localized() + ": " + formatted;
+				return type.ToString().Localized() + ": " + formatted;
 			else
 				return loc + ": " + 
-				level.ToString().Localized() + ": " + formatted;
+				type.ToString().Localized() + ": " + formatted;
 		}
 	
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
