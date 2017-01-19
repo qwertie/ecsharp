@@ -442,5 +442,24 @@ namespace LeMP.Tests
 					}
 				}");
 		}
+
+		[Test]
+		public void MacroScope()
+		{
+			TestEcs("macro_scope { define Foo() { Fool(); } Foo(); } Foo();",
+			        "Fool(); Foo();");
+		}
+
+		[Test]
+		public void ResetMacros()
+		{
+			TestEcs(@"define Foo() { Food(); } reset_macros { define Foo() { Fool(); } Foo(); } Foo();",
+			        @"Fool(); Food();");
+			TestEcs(@"#set Foo; "+
+			        @"static if (#get(Foo)) Defined(); "+
+			        @"reset_macros { static if (#get(Foo)) Error(); }",
+			        @"static if (#get(Foo)) StillDefined(); "+
+			        @"Defined(); StillDefined();");
+		}
 	}
 }

@@ -470,5 +470,41 @@ namespace LeMP
 		{
 			return LeMP.Prelude.Les.Macros.IfUnless(node, true, sink);
 		}
+
+		[LexicalMacro(@"macro_scope { code; }", 
+			 "Creates a scope for local macros and local $variables to be defined. "
+			+"The call itself (`macro_scope` and braces) disappear from the output.")]
+		public static LNode macro_scope(LNode node, IMacroContext context)
+		{
+			var args = node.Args;
+			VList<LNode> results;
+			if (args.Count == 1 && args[0].Calls(S.Braces)) {
+				node = context.PreProcessChildren();
+				results = node.Args;
+				if (results.Count == 1 && results[0].Calls(S.Braces))
+					results = results[0].Args;
+			} else {
+				// Fabricate braces to ensure that a scope is created
+				node = context.PreProcess(F.Braces(node.Args));
+				results = node.Args;
+			}
+			return results.AsLNode(S.Splice);
+		}
+
+		[LexicalMacro(@"reset_macros { code; }", 
+			 "While processing the arguments of reset_macros,\n\n"
+			+"- locally-created macros defined outside of `reset_macros` are forgotten\n"
+			+"- scoped properties are reset to predefined values\n"
+			+"- the list of open namespaces is reset to defaults\n")]
+		public static LNode reset_macros(LNode node, IMacroContext context)
+		{
+			var args = node.Args;
+			if (args.Count == 1 && args[0].Calls(S.Braces))
+				node = args[0];
+
+			var results = context.PreProcess(node.Args, asRoot: false, resetOpenNamespaces: true, resetProperties: true);
+
+			return results.AsLNode(S.Splice);
+		}
 	}
 }

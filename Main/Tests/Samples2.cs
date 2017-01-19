@@ -75,5 +75,42 @@ namespace Samples
 						});
 				}
 		}
+
+		#if !DotNet3 // .NET 3 can't enumerate files recursively
+		/*[Test]*/
+		public void ScanForCsStrings()
+		{
+			var folder = AppDomain.CurrentDomain.BaseDirectory;
+			int i = folder.IndexOf(@"bin\", StringComparison.OrdinalIgnoreCase);
+			if (i == -1)
+				i = folder.IndexOf(@"bin\", StringComparison.OrdinalIgnoreCase);
+			if (i != -1)
+				folder = folder.Substring(0, i);
+			ScanForCsStrings(folder, ConsoleMessageSink.Value);
+		}
+
+		// Scan source code for strings and print them out!
+		void ScanForCsStrings(string path, IMessageSink msgOut)
+		{
+			var files = Directory.EnumerateFiles(path, "*.cs", SearchOption.AllDirectories);
+			using (MessageSink.SetContextToString(ctx => {
+				// Show line and column instead of character range
+				if (ctx is SourceRange) return ((SourceRange)ctx).Start.ToString();
+				return MessageSink.GetLocationString(ctx);
+			})) {
+				foreach (string file in files) {
+					// Important: ignore comments because their values are strings
+					// and we are only interested in actual strings.
+					var code = Loyc.Ecs.EcsLanguageService.Value.ParseFile(file, msgOut, ParsingMode.File, preserveComments: false);
+					var strings = from statement in code
+								  from node in statement.Descendants()
+								  where node.Value is string && ((string)node.Value).Any(c => char.IsLetter(c))
+								  select node;
+					foreach (var strNode in strings)
+						msgOut.Write(Severity.Note, strNode.Range, strNode.Value as string);
+				}
+			}
+		}
+		#endif
 	}
 }

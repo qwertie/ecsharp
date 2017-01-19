@@ -71,7 +71,7 @@ namespace LeMP
 			+"for example, ``Foo(123) `codeMatches` Foo($arg)`` sets `$arg` to `123`; you can use `$arg` later in your code.\n\n"
 			+"The syntax tree on the left is macro-preprocessed, but the argument on the right is not. "
 			+"If either side is a single statement in braces (before preprocessing), the braces are ignored. ",
-			"staticMatches", "'staticMatches", "staticMatchesCode", "'staticMatchesCode")]
+			"staticMatches", "'staticMatches", "staticMatchesCode", "'staticMatchesCode", "'#matchesCode", "'#matchesCode")]
 		public static LNode staticMatches(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount != 2)

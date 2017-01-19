@@ -89,6 +89,7 @@ namespace LeMP
 			foreach (var mi in MacroProcessor.GetMacros(this.GetType(), null, _sink, this))
 				MacroProcessor.AddMacro(_macros, mi);
 			_macroNamespaces = new MSet<Symbol>(_macros.SelectMany(ms => ms.Value).Select(mi => mi.Namespace).Where(ns => ns != null));
+			_rootMacros = _macros.Clone();
 			_rootScopedProperties = parent.DefaultScopedProperties.Clone();
 		}
 
@@ -100,6 +101,8 @@ namespace LeMP
 		MMap<Symbol, VList<MacroInfo>> _macros;
 		MSet<Symbol> _macroNamespaces; // A list of namespaces that contain macros
 		MMap<object, object> _rootScopedProperties;
+		// macros defined from the beginning (not including e.g. macros added with `define`)
+		MMap<Symbol, VList<MacroInfo>> _rootMacros;
 		
 		// Statistics
 		public int MacrosInvoked { get; set; }
@@ -173,13 +176,13 @@ namespace LeMP
 		/// <summary>Top-level macro applicator.</summary>
 		public VList<LNode> ProcessRoot(VList<LNode> stmts)
 		{
-			PreProcess(ref stmts, null, true, true, false);
+			PreProcess(ref stmts, null, true, true, true, false);
 			return stmts;
 		}
 
 		// This is called either at the root node, or by a macro that wants to 
 		// preprocess its children (see IMacroContext.PreProcess()).
-		LNode PreProcess(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool areAttributesOrIsTarget)
+		LNode PreProcess(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool resetProperties, bool areAttributesOrIsTarget)
 		{
 			if (single == null && list.Count == 0)
 				return null; // no-op requested
@@ -199,11 +202,12 @@ namespace LeMP
 				if (asRoot)
 					_ancestorStack = new DList<LNode>();
 				_s = new CurNodeState();
-				if (asRoot || resetOpenNamespaces) {
-					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces.Clone() : _curScope.OpenNamespaces.Clone();
-					var properties = asRoot ? _rootScopedProperties.Clone() : _curScope.ScopedProperties;
+				if (asRoot || resetOpenNamespaces || resetProperties) {
+					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces : _curScope.OpenNamespaces;
+					var properties = resetProperties ? _rootScopedProperties : _curScope.ScopedProperties;
+					var macros = resetOpenNamespaces ? _rootMacros : _macros;
 					newScope = true;
-					_curScope = new Scope(namespaces, properties, _macros, this, true);
+					_curScope = new Scope(namespaces, properties, macros, this);
 					_scopes.Add(_curScope);
 				}
 				if (single != null) {
@@ -238,8 +242,8 @@ namespace LeMP
 
 		class Scope : ICloneable<Scope>, IMacroContext
 		{
-			public Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, VList<MacroInfo>> macros, MacroProcessorTask task, bool isRoot = false)
-				{ OpenNamespaces = openNamespaces; _scopedProperties = scopedProperties; _macros = macros; _task = task; _modified = isRoot; }
+			public Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, VList<MacroInfo>> macros, MacroProcessorTask task)
+				{ OpenNamespaces = openNamespaces; _scopedProperties = scopedProperties; _macros = macros; _task = task; _modified = false; }
 			public MSet<Symbol> OpenNamespaces;
 			MacroProcessorTask _task;
 			MMap<object, object> _scopedProperties;
@@ -280,15 +284,15 @@ namespace LeMP
 				get { var st = _task._ancestorStack; return st[st.Count - 2, null]; }
 			}
 
-			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false)
+			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
 			{
-				_task.PreProcess(ref input, null, asRoot, resetOpenNamespaces, areAttributes);
+				_task.PreProcess(ref input, null, asRoot, resetOpenNamespaces, resetProperties, areAttributes);
 				return input;
 			}
-			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false)
+			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false)
 			{
 				VList<LNode> empty = new VList<LNode>();
-				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, isTarget);
+				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, resetProperties, isTarget);
 			}
 			
 			public LNode PreProcessChildren()
