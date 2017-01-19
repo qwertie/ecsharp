@@ -7,6 +7,7 @@ using System.Text;
 using Loyc.Threading;
 using System.Resources;
 using System.Globalization;
+using Loyc;
 
 namespace Loyc
 {
@@ -310,14 +311,14 @@ namespace Loyc
 		
 		/// <summary>Finds and formats a localization of the given message. If none is 
 		/// found, the original string is formatted.</summary>
-        /// <param name="message">The message to translate, which may include argument 
-        /// placeholders (e.g. "{0}"). The default formatter also accepts named 
+		/// <param name="message">The message to translate, which may include argument 
+		/// placeholders (e.g. "{0}"). The default formatter also accepts named 
 		/// parameters like "{firstName}"; see <see cref="StringExt.FormatCore"/> for 
 		/// details.</param>
-        /// <param name="args">Arguments given to <see cref="Formatter"/> to fill in 
+		/// <param name="args">Arguments given to <see cref="Formatter"/> to fill in 
 		/// placeholders after the Localizer is called. If args is null or empty then 
 		/// Formatter is not called.</param>
-        /// <returns>The translated and formatted string.</returns>
+		/// <returns>The translated and formatted string.</returns>
 		public static string Localized([Localizable] this string message, params object[] args)
 			{ return Symbol((Symbol)null, message, args); }
 
@@ -382,3 +383,4 @@ namespace Loyc
 	public delegate string FormatterDelegate(string format, params object[] args);
 	public delegate string LocalizerDelegate(Symbol resourceId, string defaultMessage);
 }
+

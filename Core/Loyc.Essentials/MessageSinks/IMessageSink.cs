@@ -127,16 +127,14 @@ namespace Loyc
 		_Finer = 20,      // log4net: Finer = 20000
 		DebugDetail = 29,
 		Debug = 30,       // log4net: Debug = Fine = 30000
-		CommonDetail = 35,      
-		Common = 36,      // Common event: No log4net equivalent
 		InfoDetail = 39,
 		Info = 40,        // log4net: Info = 40000
 		NoteDetail = 49,
 		Note = 50,        // log4net: Notice = 50000
 		WarningDetail = 59,
 		Warning = 60,     // log4net: Warning = 60000
-		UncommonDetail = 65,
-		Uncommon = 66,    // Uncommon event: No log4net equivalent
+		SpecialDetail = 65,
+		Special = 66,     // Special event: No log4net equivalent
 		ErrorDetail = 69,
 		Error = 70,       // log4net: Error = 70000
 		RareDetail = 79,

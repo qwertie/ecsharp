@@ -44,10 +44,12 @@ namespace Loyc
 				color = isDetail ? ConsoleColor.DarkYellow : ConsoleColor.Yellow;
 			else if (level >= Severity.NoteDetail)
 				color = isDetail ? ConsoleColor.Gray : ConsoleColor.White;
+			else if (level >= Severity.InfoDetail)
+				color = isDetail ? ConsoleColor.DarkGreen : ConsoleColor.Green;
 			else if (level >= Severity.DebugDetail)
 				color = isDetail ? ConsoleColor.DarkCyan : ConsoleColor.Cyan;
 			else if (level >= Severity.VerboseDetail)
-				color = isDetail ? ConsoleColor.DarkCyan : ConsoleColor.DarkCyan;
+				color = isDetail ? ConsoleColor.DarkBlue : ConsoleColor.DarkCyan;
 			else
 				color = Console.ForegroundColor;
 
