@@ -257,11 +257,20 @@ namespace Loyc.Syntax
 		{
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
-		/// <summary>Opens the specified file and parses it.</summary>
+		/// <summary>Opens the specified file, parses the entire file, and closes the file.</summary>
 		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
 		{
-			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, inputType ?? ParsingMode.File, msgs, preserveComments);
+			using (var stream = new FileStream(fileName, FileMode.Open)) {
+				var results = Parse(parser, stream, fileName, inputType ?? ParsingMode.File, msgs, preserveComments);
+				// TODO: think about whether we should explicitly document or spec this out...
+				// If we're not careful, the caller gets a "Cannot access a closed file"
+				// exception. The problem is that IParsingService.Parse() may parse the 
+				// file lazily, so we can't close the file (as `using` does for us) until
+				// we make sure it is fully parsed. Luckily this is easy: just invoke the
+				// Count property, which can only be computed by parsing the whole file.
+				var _ = results.Count;
+				return results;
+			}
 		}
 		/// <summary>Opens the specified file and tokenizes it.</summary>
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
