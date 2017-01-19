@@ -748,17 +748,16 @@ namespace Loyc.Ecs
 
 		public void PrintReturnThrowEtc(Symbol name, LNode arg)
 		{
-			if (name == S.GotoCase) {
+			if (name == S.GotoCase)
 				_out.Write("goto case", true);
-				if (_n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
-					_out.Write("default", true);
-					return;
-				}
-			} else if (name == _using_static)
+			else if (name == _using_static)
 				_out.Write("using static", true);
 			else if (name == S.Import)
 				_out.Write("using", true);
-			else
+			else if (name == S.Goto && _n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
+				_out.Write("goto default", true);
+				return;
+			} else
 				WriteOperatorName(name);
 
 			if (arg != null) {

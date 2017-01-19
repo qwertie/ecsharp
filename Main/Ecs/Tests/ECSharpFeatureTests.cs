@@ -470,7 +470,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsOperatorDefinitions()
 		{
-			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
+			LNode cast = _(S.Cast), operator_cast = Attr(trivia_operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
 			LNode stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a) { }", stmt);
@@ -480,7 +480,7 @@ namespace Loyc.Ecs.Tests
 			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
 			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
 			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #([] Bar<T> b))", stmt);
-			stmt = F.Fn(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
+			stmt = F.Fn(F.Bool, Attr(trivia_operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
 			Stmt("bool operator`when`(Foo a, Foo b) { }", stmt);
 			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), { })", stmt);
 		}

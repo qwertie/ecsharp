@@ -29,13 +29,13 @@ namespace Loyc.Ecs.Tests
 		protected override void Stmt(string text, LNode expected, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
 		{
 			bool exprMode = (mode & Mode.Expression) != 0;
-			if ((mode & Mode.ParserTest) == 0)
+			if ((mode & (Mode.ParserTest | Mode.ExpectAndDropParserError)) == 0)
 				return;
 			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)ConsoleMessageSink.Value;
 			// This is the easy way: 
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, sink, exprMode ? ParsingMode.Expressions : ParsingMode.Statements, preserveComments: true);
 			// But to make debugging easier, I'll do it the long way:
-			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", ConsoleMessageSink.Value);
+			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", sink);
 			var preprocessed = new EcsPreprocessor(lexer, true);
 			var treeified = new TokensToTree(preprocessed, false);
 			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
@@ -51,9 +51,14 @@ namespace Loyc.Ecs.Tests
 
 			if ((mode & Mode.IgnoreTrivia) != 0)
 				result = result.ReplaceRecursive(n => n.IsTrivia ? Maybe<LNode>.NoValue : n, LNode.ReplaceOpt.ProcessAttrs).Value;
+			if (sink is MessageHolder) {
+				((MessageHolder)sink).WriteListTo(TraceMessageSink.Value);
+				GreaterOrEqual(((MessageHolder)sink).List.Count(m => m.Severity >= Severity.Error), 1, 
+					"Expected an error but got none for "+text);
+				if (expected == null)
+					return;
+			}
 			AreEqual(expected, result);
-			if (sink is MessageHolder)
-				GreaterOrEqual(((MessageHolder)sink).List.Count, 1, "Expected an error but got none for "+text);
 		}
 
 		[Test]
@@ -136,6 +141,13 @@ namespace Loyc.Ecs.Tests
 				// The newlines seem important too.
 				int b;", 
 				tree, Mode.ParserTest);
+		}
+
+		[Test]
+		public void SyntaxErrors()
+		{
+			Stmt(@"Foo(x, \x in (\*x,), { }", null, Mode.ExpectAndDropParserError);
+			Stmt(@"Foo(x, \x in (\*x,), { });", null, Mode.ExpectAndDropParserError);
 		}
 	}
 }

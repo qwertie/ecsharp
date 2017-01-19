@@ -147,7 +147,7 @@ namespace Loyc.Ecs.Parser
 		@[private] rule IdStartChar @{ '_'|'a'..'z'|'A'..'Z' };
 		@[k(9), private]
 		rule IdUniLetter @
-		{	&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC
+		{	&{char.IsLetter(LA0 -> char)} 0x80..0xFEFE
 		|	"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		};
@@ -416,8 +416,6 @@ namespace Loyc.Ecs.Parser
 		@[k(3), private]
 		token Token @{
 			( {_type = TT.Newline;}    Newline
-			// | {_type = TT.Spaces;}     Spaces // Spaces are now skipped in NextToken()
-			// / {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
 			/ {_type = TT.Literal;}    Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /

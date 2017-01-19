@@ -242,7 +242,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("continue outer;",    F.Call(S.Continue, _("outer")));
 			Stmt("goto end;",          F.Call(S.Goto, _("end")));
 			Stmt("goto case 1;",       F.Call(S.GotoCase, one));
-			Stmt("goto case default;", F.Call(S.GotoCase, _(S.Default)));
+			Stmt("goto default;",      F.Call(S.Goto, _(S.Default)));
 			Stmt("return;",            F.Call(S.Return));
 			Stmt("return 1;",          F.Call(S.Return, one));
 			Stmt("throw;",             F.Call(S.Throw));
@@ -509,9 +509,9 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CsOperatorDefinitions()
 		{
-			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
+			LNode cast = _(S.Cast), operator_cast = Attr(trivia_operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
-			LNode stmt = Attr(@static, F.Fn(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
+			LNode stmt = Attr(@static, F.Fn(F.Bool, Attr(trivia_operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b) { }", stmt);
 			Expr("static #fn(bool, operator==, #([] T a, [] T b), { })", stmt);
 			stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
@@ -520,7 +520,7 @@ namespace Loyc.Ecs.Tests
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Fn(Attr(Foo, F.Bool),
-			             Attr(@operator, _(S.Neq)),
+			             Attr(trivia_operator, _(S.Neq)),
 			             F.List(F.Vars(T, a), F.Vars(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
 			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b) {\n  a.x != b.x\n}", stmt);

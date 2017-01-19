@@ -413,14 +413,18 @@ namespace Loyc.Ecs.Parser
 			) {return r;}
 		};
 
-		token AnyOperator::Token @{ // operators allowed after the "operator" keyword
-			op:=
+		token AnyOperator::Token // operators allowed after the "operator" keyword
+		@{
+			// Create synthetic token for >> or <<
+			&{LT($LI).EndIndex == LT($LI+1).StartIndex}
+			(	op:="<" "<" {$result = (new Token(TT.Operator -> int, op.StartIndex, op.Length+1, S.Shl));}
+			|	op:=">" ">" {$result = (new Token(TT.Operator -> int, op.StartIndex, op.Length+1, S.Shr));} )
+		/	result:
 			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"     
 			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--" 
 			|	"&&" | "||,^^" | "!"     | "&"   | "^"  | "|"   | "~"  | "==,!=" 
 			|	"<"  | ">"     | "<=,>=" | ".."  | "?"  | "??"  | "=:" | ":="
 			|	"$"  | "=>"    | "==>" )
-			{return op;}
 		};
 
 		token NewExpr::LNode @{
@@ -1904,11 +1908,16 @@ namespace Loyc.Ecs.Parser
 		// goto, goto case -----------------------------------------------------
 
 		@[private] rule GotoStmt(startIndex::int)::LNode @{
-			kw:=TT.Goto e:=ExprOrNull(false)
-			{
-				if e != null (return F.Call(kw, e, startIndex, e.Range.EndIndex))
-				else         (return F.Call(kw,    startIndex, kw.EndIndex));
-			}
+			kw:=TT.Goto 
+			(	def:=TT.Default
+				{return F.Call(kw, F.Id(def), startIndex, kw.EndIndex);}
+			/
+				e:=ExprOrNull(false)
+				{
+					if e != null (return F.Call(kw, e, startIndex, e.Range.EndIndex))
+					else         (return F.Call(kw,    startIndex, kw.EndIndex));
+				}
+			)
 		};
 
 		@[private] rule GotoCaseStmt(startIndex::int)::LNode @{
@@ -2082,7 +2091,9 @@ namespace Loyc.Ecs.Parser
 				list+=ExprOpt(allowUnassignedVarDecl)
 				( "," &{@[Local] allowTrailingComma} EOF
 				/ "," list+=ExprOpt(allowUnassignedVarDecl)
-				| error {Error("'{0}': Syntax error in expression list", CurrentTokenText());} ~","*)*
+				| error {Error("'{0}': Syntax error in expression list", CurrentTokenText());} 
+				        ~","+
+				)*
 			)?
 			// semicolon may terminate in a for-loop; EOF represents ')' in other cases
 			((EOF|";") =>)

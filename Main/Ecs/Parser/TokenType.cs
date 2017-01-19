@@ -13,7 +13,7 @@ namespace Loyc.Ecs.Parser
 	public enum TokenType
 	{
 		EOF       = 0,
-		Spaces    = TokenKind.Spaces + 1,
+		Spaces    = TokenKind.Spaces + 1, // No longer used except to represent Byte Order Mark
 		Newline   = TokenKind.Spaces + 2,
 		SLComment = TokenKind.Comment,
 		MLComment = TokenKind.Comment + 1,

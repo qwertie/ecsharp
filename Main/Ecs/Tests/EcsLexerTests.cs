@@ -100,6 +100,12 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void TestBOM()
+		{
+			Case("\uFEFFx", A(TT.Spaces, TT.Id), WS, _("x"));
+		}
+		
+		[Test]
 		public void TestIntegers()
 		{
 			Case("9", A(TT.Literal), 9);

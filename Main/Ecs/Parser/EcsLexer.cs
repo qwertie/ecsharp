@@ -109,9 +109,9 @@ namespace Loyc.Ecs.Parser
 				if (s.Length == 1)
 					_value = CG.Cache(s[0]);
 				else if (s.Length == 0)
-					Error(_startPosition, "Empty character literal".Localized());
+					Error(_startPosition - InputPosition, "Empty character literal".Localized());
 				else
-					Error(_startPosition, "Character literal has {0} characters (there should be exactly one)".Localized(s.Length));
+					Error(_startPosition - InputPosition, "Character literal has {0} characters (there should be exactly one)".Localized(s.Length));
 			}
 		}
 
@@ -314,7 +314,7 @@ namespace Loyc.Ecs.Parser
 				_type = TT.Sub;
 			}
 			if (error != null)
-				Error(_startPosition, error);
+				Error(_startPosition - InputPosition, error);
 		}
 
 		#endregion

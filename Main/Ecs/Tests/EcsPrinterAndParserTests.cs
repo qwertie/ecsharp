@@ -38,6 +38,7 @@ namespace Loyc.Ecs.Tests
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), _await = F.Id("await");
 		protected LNode trivia_appendStatement = F.Id(S.TriviaAppendStatement);
+		protected LNode trivia_operator = F.Id(S.TriviaUseOperatorKeyword);
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 		protected LNode WordAttr(string name)

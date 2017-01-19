@@ -70,6 +70,15 @@ namespace Loyc.Ecs.Tests
 			Stmt("[a, property: b] private string Foo { get; set; }", stmt);
 			Stmt("[a] [property: b] public string Foo { get; set; }", stmt.WithAttrChanged(2, @public), Mode.ParserTest);
 			Stmt("a = (var b = x);", F.Call(S.Assign, a, F.InParens(F.Var(F.Missing, b, x))));
+
+			// 2017-01 bug: operator>> and operator<< wouldn't parse 
+			// (because there is no dedicated token for >> or <<)
+			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shl)), F.List(F.Var(Foo, x), F.Var(F.Int32, a)), 
+			                            F.Braces(F.Call(S.Return, F.Call(S.Shl, x, a)))));
+			Stmt("static int operator<<(Foo x, int a) {\n  return x << a;\n}", stmt);
+			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shr)), F.List(F.Var(Foo, x), F.Var(F.Int32, a)), 
+			                            F.Braces(F.Call(S.Return, F.Call(S.Shr, x, a)))));
+			Stmt("static int operator>>(Foo x, int a) {\n  return x >> a;\n}", stmt);
 		}
 
 		[Test]
