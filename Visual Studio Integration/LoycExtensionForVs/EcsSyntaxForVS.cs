@@ -54,7 +54,7 @@ namespace Loyc.VisualStudio
 		protected override ILexer<Token> PrepareLexer(ILexer<Token> lexer, ICharSource file, int position)
 		{
 			if (lexer == null)
-				return new EcsLexer(file, "?", MessageSink.Trace, position);
+				return new EcsLexer(file, "?", TraceMessageSink.Value, position);
 			((EcsLexer)lexer).Reset(file, "?", position);
 			return lexer;
 		}

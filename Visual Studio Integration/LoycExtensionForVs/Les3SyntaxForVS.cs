@@ -198,7 +198,7 @@ namespace Loyc.VisualStudio
 			var sourceFile = new TextSnapshotAsSourceFile(snapshot);
 			var tokens = ToNormalTokens(eTokens);
 			var results = new DList<ITagSpan<ClassificationTag>>();
-			var parser = new MyLesParser(tokens, sourceFile, MessageSink.Trace, results);
+			var parser = new MyLesParser(tokens, sourceFile, TraceMessageSink.Value, results);
 			var _ = parser.StmtList();
 			results.Sort((t1, t2) => t1.Span.Start.Position.CompareTo(t2.Span.Start.Position));
 			return results;

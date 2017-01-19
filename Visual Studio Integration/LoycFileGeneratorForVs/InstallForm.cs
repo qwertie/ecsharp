@@ -85,7 +85,7 @@ namespace SingleFileGenerator
 
 		void MessageBoxWriter(Severity type, object context, string msg, object[] args)
 		{
-			MessageBox.Show(string.Format(msg, args), MessageSink.LocationString(context),
+			MessageBox.Show(string.Format(msg, args), MessageSink.ContextToString(context),
 				MessageBoxButtons.OK, type == Severity.Error ? MessageBoxIcon.Error : MessageBoxIcon.None);
 		}
 

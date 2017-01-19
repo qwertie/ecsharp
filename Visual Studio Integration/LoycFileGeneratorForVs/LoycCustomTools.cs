@@ -253,7 +253,7 @@ namespace Loyc.VisualStudio
 				line = ((Pred)context).Basis.Range.Start.Line;
 				col = ((Pred)context).Basis.Range.Start.PosInLine;
 			} else
-				message2 = MessageSink.LocationString(context) + ": " + message2;
+				message2 = MessageSink.ContextToString(context) + ": " + message2;
 
 			bool subwarning = severity < Severity.Warning;
 			int n = subwarning ? 2 : severity == Severity.Warning ? 1 : 0;
