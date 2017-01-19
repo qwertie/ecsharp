@@ -313,14 +313,14 @@ namespace Loyc.Syntax.Lexing
 			if (la == a)
 				InputPosition++;
 			else
-				Error(false, a, a);
+				MatchError(false, a, a);
 			return la;
 		}
 		protected int Match(int a, int b)
 		{
 			int la = LA0;
             if (la != a && la != b)
-				Error(false, a, a, b, b);
+				MatchError(false, a, a, b, b);
 			else
 				InputPosition++;
 			return la;
@@ -329,7 +329,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la != a && la != b && la != c)
-				Error(false, a, a, b, b, c, c);
+				MatchError(false, a, a, b, b, c, c);
 			else
 				InputPosition++;
 			return la;
@@ -338,7 +338,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la != a && la != b && la != c && la != d)
-				Error(false, a, a, b, b, c, c, d, d);
+				MatchError(false, a, a, b, b, c, c, d, d);
 			else
 				InputPosition++;
 			return la;
@@ -347,7 +347,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if ((la < aLo || la > aHi))
-				Error(false, aLo, aHi);
+				MatchError(false, aLo, aHi);
 			else
 				InputPosition++;
 			return la;
@@ -356,7 +356,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if ((la < aLo || la > aHi) && (la < bLo || la > bHi))
-				Error(false, aLo, aHi, bLo, bHi);
+				MatchError(false, aLo, aHi, bLo, bHi);
 			else
 				InputPosition++;
 			return la;
@@ -365,7 +365,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1)
-				Error(true, -1, -1);
+				MatchError(true, -1, -1);
 			else
 				InputPosition++;
 			return la;
@@ -383,7 +383,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a)
-				Error(true, a, a);
+				MatchError(true, a, a);
 			else
 				InputPosition++;
 			return la;
@@ -392,7 +392,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a || la == b)
-				Error(true, a, a, b, b);
+				MatchError(true, a, a, b, b);
 			else
 				InputPosition++;
 			return la;
@@ -401,7 +401,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a || la == b || la == c)
-				Error(true, a, a, b, b, c, c);
+				MatchError(true, a, a, b, b, c, c);
 			else
 				InputPosition++;
 			return la;
@@ -410,7 +410,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || la == a || la == b || la == c || la == d)
-				Error(true, a, a, b, b, c, c, d, d);
+				MatchError(true, a, a, b, b, c, c, d, d);
 			else
 				InputPosition++;
 			return la;
@@ -419,7 +419,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi))
-				Error(true, aLo, aHi);
+				MatchError(true, aLo, aHi);
 			else
 				InputPosition++;
 			return la;
@@ -428,7 +428,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int la = LA0;
 			if (la == -1 || (la >= aLo && la <= aHi) || (la >= bLo && la <= bHi))
-				Error(true, aLo, aHi, bLo, bHi);
+				MatchError(true, aLo, aHi, bLo, bHi);
 			else
 				InputPosition++;
 			return la;
@@ -619,19 +619,32 @@ namespace Loyc.Syntax.Lexing
 				return IndexToLine(charIndex);
 		}
 
-		protected virtual void Error(bool inverted, int range0lo, int range0hi) { Error(inverted, new int[] { range0lo, range0hi }); }
-		protected virtual void Error(bool inverted, params int[] ranges) { Error(inverted, (IList<int>)ranges); }
-		protected virtual void Error(bool inverted, IList<int> ranges)
+		// Index of most recent Match/MatchExcept error 
+		int _lastErrorPosition = -1;
+
+		protected virtual void MatchError(bool inverted, params int[] ranges)
 		{
-			string rangesDescr = RangesToString(ranges);
-			var input = new StringBuilder();
-			PrintChar(LA0, input);
-			if (inverted)
-				Error(0, "{0}: expected a character other than {1}", input, rangesDescr);
-			else if (ranges.Count > 2)
-				Error(0, "{0}: expected one of {1}", input, rangesDescr);
-			else
-				Error(0, "{0}: expected {1}", input, rangesDescr);
+			MatchError(inverted, (IList<int>)ranges);
+		}
+		/// <summary>Handles an error that occurs during Match(), MatchExcept(), MatchRange() or MatchExceptRange()</summary>
+		/// <param name="inverted">Set inversion flag. If true, then <c>expected</c> is actually a list of things that were NOT expected.</param>
+		/// <param name="expected">List of items that were expected (or unexpected, if <c>inverted</c>)</param>
+		protected virtual void MatchError(bool inverted, IList<int> ranges)
+		{
+			if (InputPosition == _lastErrorPosition)
+				InputPosition++; // avoid entering an infinite loop writing errors at same place
+			else {
+				string rangesDescr = RangesToString(ranges);
+				var input = new StringBuilder();
+				PrintChar(LA0, input);
+				if (inverted)
+					Error(0, "{0}: expected a character other than {1}", input, rangesDescr);
+				else if (ranges.Count > 2)
+					Error(0, "{0}: expected one of {1}", input, rangesDescr);
+				else
+					Error(0, "{0}: expected {1}", input, rangesDescr);
+			}
+			_lastErrorPosition = InputPosition;
 		}
 		protected virtual void Error(bool inverted, HashSet<int> set)
 		{
@@ -645,7 +658,7 @@ namespace Loyc.Syntax.Lexing
 				list.Add(array[i]);
 				list.Add(array[j - 1]);
 			}
-			Error(inverted, list);
+			MatchError(inverted, list);
 		}
 
 		/// <summary>Converts a list of character ranges to a string, e.g. for input

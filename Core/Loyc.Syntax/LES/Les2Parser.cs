@@ -114,14 +114,14 @@ namespace Loyc.Syntax.Les
 			Match((int) EOF, (int) separator.Value);
 		}
 
-		protected override void Error(bool inverted, IEnumerable<int> expected_)
+		protected override void MatchError(bool inverted, IEnumerable<int> expected_)
 		{
 			TT expected = (TT)expected_.FirstOrDefault();
 			bool expEnder = expected == TT.Semicolon || expected == TT.Comma || expected == TT.EOF;
 			if (expEnder && LA0 == (int)TT.SpaceLParen)
 				Error(0, "Syntax error. If a function call was intended, remove the space(s) before '('.");
 			else
-				base.Error(inverted, expected_);
+				base.MatchError(inverted, expected_);
 			
 			// If an ender or closer was expected...
 			if (expEnder || Token.IsCloser((TokenKind)expected)) {
