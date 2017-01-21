@@ -457,8 +457,8 @@ namespace LeMP.Tests
 			        @"Fool(); Food();");
 			TestEcs(@"#set Foo; "+
 			        @"static if (#get(Foo)) Defined(); "+
-			        @"reset_macros { static if (#get(Foo)) Error(); }",
-			        @"static if (#get(Foo)) StillDefined(); "+
+			        @"reset_macros { static if (#get(Foo, false)) Error(); }"+
+			        @"static if (#get(Foo)) StillDefined(); ",
 			        @"Defined(); StillDefined();");
 		}
 	}
