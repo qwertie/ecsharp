@@ -567,8 +567,6 @@ namespace Loyc.Ecs.Parser
 				{e = F.Call(S.NullIndexBracks, e, F.List(ExprListInside(lb)), e.Range.StartIndex, rb.EndIndex, t.StartIndex, lb.EndIndex);}
 			|	// Post-inc or post-dec
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex);}
-			|	// <Type parameters>
-				&(TParams(false) (~(TT.Id|TT.ContextualKeyword)|EOF)) ("<"|"!"|"." "[") => TParams(false, ref e)
 			|	bb:=BracedBlockOrTokenLiteral
 				{	if (!e.IsCall || e.BaseStyle == NodeStyle.Operator) {
 						e = F.Call(e, bb, e.Range.StartIndex, bb.Range.EndIndex)
