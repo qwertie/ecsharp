@@ -13,7 +13,7 @@ namespace Loyc.Ecs.Tests
 {
 	/// <summary>EC# parser tests. Most of the tests are inherited.</summary>
 	[TestFixture]
-	public class EcsParserTests : EcsPrinterAndParserTests
+	public partial class EcsParserTests : EcsPrinterAndParserTests
 	{
 		Func<Token, string> _oldTSS;
 		[SetUp] public void SetUp()

@@ -21,9 +21,13 @@ namespace Loyc.Ecs.Parser
 		Id        = TokenKind.Id,
 		// var, dynamic, trait, alias, where, assembly, module.
 		// Does not include partial, because any Id can be a word attribute.
+		// Does not include where, which is LinqKeyword although used outside LINQ, too
 		ContextualKeyword = TokenKind.Id + 1,
-		Base      = TokenKind.Id + 2,
-		This      = TokenKind.Id + 3,
+		// The 13 LINQ keywords:
+		// where, from, select, let, join, on, equals, into, orderby, ascending, descending, group, by
+		LinqKeyword = TokenKind.Id + 2,
+		Base      = TokenKind.Id + 3,
+		This      = TokenKind.Id + 4,
 		Literal   = TokenKind.Literal,
 		Comma     = TokenKind.Separator,
 		Semicolon = TokenKind.Separator + 1,

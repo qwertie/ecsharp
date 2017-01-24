@@ -227,6 +227,19 @@ namespace Loyc.Syntax
 		public static readonly Symbol Warning = GSymbol.Get("#warning");     // e.g. #warning("Possibly mistaken empty statement")
 		public static readonly Symbol Note = GSymbol.Get("#note");           // e.g. #note("I love bunnies")
 
+		// C# LINQ clauses
+		public static readonly Symbol Linq = GSymbol.Get("#linq");           // e.g. #linq(#from(x in list), #where(x > 0), #select(x))
+		public static readonly Symbol From = GSymbol.Get("#from");           // e.g. #from(x in list)
+		public static readonly Symbol Let = GSymbol.Get("#let");             // e.g. #let(x = y.Foo)
+		public static readonly Symbol Join = GSymbol.Get("#join");           // e.g. #join(p in products, #equals(c.ID, p.CID), #into(pGroup))
+		public static readonly Symbol OrderBy = GSymbol.Get("#orderby");     // e.g. #orderby(#ascending(p.Name), #descending(p.Date))
+		public static readonly Symbol Ascending = GSymbol.Get("#ascending");
+		public static readonly Symbol Descending = GSymbol.Get("#descending");
+		public static readonly Symbol Select = GSymbol.Get("#select");       // e.g. #select(p.Name)
+		public static readonly Symbol GroupBy = GSymbol.Get("#groupBy");     // e.g. #groupBy(p.Name, p.Year) - similar to #select, but creates groups
+		public static readonly Symbol Into = GSymbol.Get("#into");           // e.g. #linq(..., #into(id, ...)) - use output of outer query as input to inner query
+		//Where is defined elsewhere in this class                           // e.g. #where(x > 0)
+
 		// Preprocessor directives
 		public static readonly Symbol PPIf = GSymbol.Get("##if");           //!< "##if"      represents the #if preprocessor token (does not reach the parser)
 		public static readonly Symbol PPElse = GSymbol.Get("##else");       //!< "##else"    represents the #else preprocessor token (does not reach the parser) 

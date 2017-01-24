@@ -239,6 +239,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\EcsPrinterTests.cs" />
     <Compile Include="Tests\EcsValidatorTests.cs" />
+    <Compile Include="Tests\LinqTests.cs" />
     <Compile Include="Tests\PlainCSharpTests.cs" />
     <Compile Include="Tests\AmbiguityTests.cs" />
     <Compile Include="Tests\PrinterFocusedTests.cs" />
