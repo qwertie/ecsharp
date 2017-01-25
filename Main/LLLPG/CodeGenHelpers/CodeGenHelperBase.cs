@@ -364,7 +364,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			if (defaultBranch != null)
+			if (!defaultBranch.IsIdNamed(GSymbol.Empty))
 			{
 				stmts.Add(F.Call(S.Label, F.Id(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);

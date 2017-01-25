@@ -483,7 +483,7 @@ namespace Loyc.LLParserGenerator
 
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
-					code = CGH.GenerateSwitch(branchSets, branchCode, switchCases, code, laVar);
+					code = CGH.GenerateSwitch(branchSets, branchCode, switchCases, code ?? F.Missing, laVar);
 				}
 
 				block.Add(code);
