@@ -169,6 +169,7 @@ Macro reference manual
     - [Built-in macros](ref-builtin-macros.html)
     - [Code Contracts](ref-code-contracts.html)
     - [on_return, on_throw, on_throw_catch, on_finally](ref-on_star.html)
+    - [Code generation & compile-time decision-making](ref-codegen.html)
     - [Other macros](ref-other.html)
 
 More links

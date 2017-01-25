@@ -259,6 +259,22 @@ Reads source code from the specified file, and inserts the syntax tree in place 
 
 For nostalgic purposes (to resemble C/C++), `#include` is a synonym of `includeFile`.
 
+### macro_scope ###
+
+~~~exec
+macro_scope { 
+  define Foo() { ReplacedByAMacro(); }
+  Foo(); // replaced
+}
+Foo();
+~~~
+
+Creates a scope for local macros and local $variables to be defined. The call itself (`macro_scope` and braces) disappear from the output.
+
+**Note**: macros defined in an inner scope **do not** shadow macros in an outer scope. If two macros can apply to a given node, LeMP calls both of them, and reports an ambiguity error if both of them modify that node.
+
+See also: `reset_macros`
+
 ### match ###
 
 ~~~csharp
@@ -601,6 +617,24 @@ Range.UntilExclusive(hi);
 Range.StartingAt(lo);
 ~~~
 </div>
+
+### reset_macros ###
+
+~~~exec
+define Foo() { Food(); }
+Foo();
+reset_macros { 
+  define Foo() { Football(); }
+  Foo(); // replaced
+}
+Foo();
+~~~
+
+While processing the arguments of `reset_macros`,
+
+- locally-created macros defined outside of `reset_macros` are forgotten
+- scoped properties are reset to predefined values
+- the list of open namespaces is reset to defaults
 
 ### scope(...) ###
 
