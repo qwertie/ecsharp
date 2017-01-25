@@ -802,8 +802,7 @@ namespace Loyc.LLParserGenerator
 						if (la0 == '_') {
 							la1 = LA(1);
 							if (HexDigit_set0.Contains(la1)) {
-								if (!TryMatch('_'))
-									return false;
+								Skip();
 								if (!Scan_HexDigit())
 									return false;
 								for (;;) {
@@ -953,8 +952,7 @@ namespace Loyc.LLParserGenerator
 				int la0;
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
-					{if (!TryMatchRange('0', '9'))
-						return false;}
+					Skip();
 				else {
 					if (!Scan_HexDigits())
 						return false;
