@@ -187,10 +187,10 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Generates a switch statement with the specified branches where
 		/// branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
 		/// <param name="casesToInclude">The set chosen by <see cref="ShouldGenerateSwitch"/>.</param>
-		/// <param name="defaultBranch">Code to be placed in the default: case (if none, the blank stmt <c>@``;</c>)</param>
+		/// <param name="defaultBranch">Code to be placed in the default: case, or null if none</param>
 		/// <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
 		/// <returns>The generated switch block.</returns>
-		LNode GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, LNode[] branchCode, LNode defaultBranch, LNode laVar);
+		LNode GenerateSwitch(IPGTerminalSet[] branchSets, LNode[] branchCode, MSet<int> casesToInclude, LNode defaultBranch, LNode laVar);
 
 		/// <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
 		LNode GenerateTest(IPGTerminalSet set, LNode laVar);

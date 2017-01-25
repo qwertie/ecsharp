@@ -9,6 +9,195 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+		[Test(Fails = "TODO: figure out how to implement this properly")]
+		public void Bug_2017_01_CannotSharePrematchData()
+		{
+			// This test checks that the recognizer version of a rule doesn't
+			// use the same prematch information as the main rule (if it does,
+			// Scan_XAbc() will incorrectly begin with Skip()).
+			Test(@"
+				LLLPG parser(LAType: char, AllowSwitch: @true, SetType: HashSet!int)
+				{
+					rule Start @{ XAbc / 'x' &XAbc ('a'|'x')* / 'y' };
+					@[private] rule XAbc  @{ 'x' ('a'|'b'|'c')* };
+				};", 
+			@"
+				void Start()
+				{
+					char la0;
+					la0 = (char) LA0;
+					if (la0 == 'x') {
+						switch ((char) LA(1)) {
+						case 'a': case 'b': case 'c': case EOF:
+							XAbc();
+							break;
+						default:
+							{
+								Skip();
+								Check(Try_Scan_XAbc(0), ""Expected XAbc"");
+								for (;;) {
+									la0 = (char) LA0;
+									if (la0 == 'a' || la0 == 'x')
+										Skip();
+									else
+										break;
+								}
+							}
+							break;
+						}
+					} else
+						Match('y');
+				}
+
+				private void XAbc()
+				{
+					char la0;
+					Skip();
+					for (;;) {
+						la0 = (char) LA0;
+						if (la0 == 'a' || la0 == 'b' || la0 == 'c')
+							Skip();
+						else
+							break;
+					}
+				}
+
+				private bool Try_Scan_XAbc(int lookaheadAmt) {
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_XAbc();
+				}
+				private bool Scan_XAbc()
+				{
+					char la0;
+					if (!TryMatch('x'))
+						return false;
+					for (;;) {
+						la0 = (char) LA0;
+						if (la0 == 'a' || la0 == 'b' || la0 == 'c')
+							Skip();
+						else
+							break;
+					}
+					return true;
+				}");
+		}
+
+		[Test]
+		public void Bug_2017_01_ErrorBranchCausesIncorrectRecognizer()
+		{
+			Test(@"
+				LLLPG lexer {
+					rule Digit(x::int) @{ &OddDigit '0'..'9' };
+					rule OddDigit(x::int) @{ '1'|'3'|'5'|'7'|'9' | '-' '1'| error {Error();} };
+				};",
+			@"
+				void Digit(int x)
+				{
+					Check(Try_Scan_OddDigit(0), ""Expected OddDigit"");
+					MatchRange('0', '9');
+				}
+
+				void OddDigit(int x)
+				{
+					switch (LA0) {
+					case '1': case '3': case '5': case '7':
+					case '9':
+						Skip();
+						break;
+					case '-':
+						{Skip();
+						Match('1');}
+						break;
+					default:
+						{Error();}
+						break;
+					}
+				}
+
+				bool Try_Scan_OddDigit(int lookaheadAmt, int x) {
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_OddDigit(x);
+				}
+				bool Scan_OddDigit(int x)
+				{
+					switch (LA0) {
+					case '1': case '3': case '5': case '7':
+					case '9':
+						Skip();
+						break;
+					case '-':
+						{
+							Skip();
+							if (!TryMatch('1'))
+								return false;
+						}
+						break;
+					default:
+						return false;
+					}
+					return true;
+				}");
+
+			Test(@"
+				LLLPG lexer {
+					rule Digit(x::int) @{ &OddDigit '0'..'9' };
+					rule OddDigit(x::int) @{ '1'|'3'|'5'|'7'|'9'|error {Error();} };
+				};",
+			@"
+				void Digit(int x)
+				{
+					Check(Try_Scan_OddDigit(0), ""Expected OddDigit"");
+					MatchRange('0', '9');
+				}
+
+				void OddDigit(int x)
+				{
+					switch (LA0) {
+					case '1': case '3': case '5': case '7':
+					case '9':
+						Skip();
+						break;
+					default:
+						{Error();}
+						break;
+					}
+				}
+
+				bool Try_Scan_OddDigit(int lookaheadAmt, int x) {
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_OddDigit(x);
+				}
+				bool Scan_OddDigit(int x)
+				{
+					switch (LA0) {
+					case '1': case '3': case '5': case '7':
+					case '9':
+						Skip();
+						break;
+					default:
+						return false;
+					}
+					return true;
+				}");
+			// NOTE: This is the Scan_OddDigit that we would prefer to get from the 
+			// previous test - this would be the result of eliminating the error branch 
+			// when generating the recognizer. But that's not how LLLPG is implemented.
+			/*
+				static readonly HashSet<int> Scan_OddDigit_set0 = NewSet('1', '3', '5', '7', '9');
+
+				bool Try_Scan_OddDigit(int lookaheadAmt, int x) {
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_OddDigit(x);
+				}
+				bool Scan_OddDigit(int x)
+				{
+					if (!TryMatch(Scan_OddDigit_set0))
+						return false;
+					return true;
+				}
+			*/
+		}
+
 		[Test(Fails = "TODO: investigate this bug")]
 		public void Bug_2016_11()
 		{
@@ -18,7 +207,7 @@ namespace Loyc.LLParserGenerator
 					private token SLComment returns[object result] :
 						'/' '/' nongreedy(_)* ('\\' '\\' | ('\r'|'\n') =>);
 				};", @"
-					object SLComment()
+					private object SLComment()
 					{
 						int la0, la1;
 						Match('/');
@@ -50,7 +239,7 @@ namespace Loyc.LLParserGenerator
 					}", null, Ecs.EcsLanguageService.Value);
 		}
 
-	[Test]
+		[Test]
 		public void Regression_2016_10()
 		{
 			// Regression: while turning off hoisting by default for semantic &{...} 

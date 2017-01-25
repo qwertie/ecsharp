@@ -340,12 +340,13 @@ namespace Loyc.LLParserGenerator
 			return should;
 		}
 
-		public virtual LNode GenerateSwitch(IPGTerminalSet[] branchSets, MSet<int> casesToInclude, LNode[] branchCode, LNode defaultBranch, LNode laVar)
+		public virtual LNode GenerateSwitch(IPGTerminalSet[] branchSets, LNode[] branchCode, MSet<int> casesToInclude, LNode defaultBranch, LNode laVar)
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
+			Debug.Assert(casesToInclude.Count <= branchCode.Length);
 
 			WList<LNode> stmts = new WList<LNode>();
-			for (int i = 0; i < branchSets.Length; i++)
+			for (int i = 0; i < branchCode.Length; i++)
 			{
 				if (casesToInclude.Contains(i))
 				{
@@ -363,7 +364,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			if (!defaultBranch.IsIdNamed(S.Missing))
+			if (defaultBranch != null)
 			{
 				stmts.Add(F.Call(S.Label, F.Id(S.Default)));
 				AddSwitchHandler(defaultBranch, stmts);

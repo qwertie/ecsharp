@@ -1920,10 +1920,9 @@ namespace Loyc.LLParserGenerator
 						return false;
 					for (;;) {
 						la0 = LA0;
-						if (la0 >= '0' && la0 <= '9') {
-							if (!TryMatchRange('0', '9'))
-								return false;
-						} else
+						if (la0 >= '0' && la0 <= '9')
+							Skip();
+						else
 							break;
 					}
 					return true;

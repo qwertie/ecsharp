@@ -188,7 +188,7 @@ namespace Loyc.LLParserGenerator
 				bool needError = LLPG.NeedsErrorBranch(tree, alts);
 				if (!needError && alts.ErrorBranch != null)
 					LLPG.Output(Warning, alts, "The error branch will not be used because the other alternatives are exhaustive (cover all cases)");
-				bool userDefinedError = needError && alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value;
+				bool userDefinedError = needError && !_recognizerMode && alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value;
 
 				// Generate matching code for each arm. the "string" in each pair 
 				// becomes non-null if the matching code for that branch needs to be
@@ -426,7 +426,7 @@ namespace Loyc.LLParserGenerator
 				//
 				// This class makes if-else chains directly (using IPGTerminalSet.
 				// GenerateTest() to generate the test expressions), but the code 
-				// snippet generator (CSG) is used to generate switch statements 
+				// generation helper (CGH) is used to generate switch statements 
 				// because the required code may be more complex.
 				//
 				// We may or may not be generating code inside a for(;;) loop. If we 
@@ -464,7 +464,9 @@ namespace Loyc.LLParserGenerator
 				LNode[] branchCode = new LNode[tree.Children.Count];
 				for (int i = 0; i < tree.Children.Count; i++)
 					if (tree.Children[i].IsErrorBranch) {
-						if (alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value) {
+						if (_recognizerMode)
+							branchCode[i] = F.Call(S.Return, F.False);
+						else if (alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value) {
 							Debug.Assert(matchingCode.Length == alts.Arms.Count + 1);
 							branchCode[i] = matchingCode[alts.Arms.Count].A;
 						} else
@@ -481,7 +483,7 @@ namespace Loyc.LLParserGenerator
 
 				if (should) {
 					Debug.Assert(switchCases.Count != 0);
-					code = CGH.GenerateSwitch(branchSets, switchCases, branchCode, code, laVar);
+					code = CGH.GenerateSwitch(branchSets, branchCode, switchCases, code, laVar);
 				}
 
 				block.Add(code);
@@ -575,12 +577,14 @@ namespace Loyc.LLParserGenerator
 			}
 			public override void Visit(TerminalPred term)
 			{
-				if (_recognizerMode)
-					_target.Add(CGH.GenerateMatch(term.Set, false, _recognizerMode));
-				else if (term.Set.ContainsEverything || (term.Prematched ?? false))
-					_target.Add(term.AutoSaveResult(CGH.GenerateSkip(term.ResultSaver != null)));
+				LNode matchExpr;
+				bool savingResult = term.ResultSaver != null && !_recognizerMode;
+				if (term.Set.ContainsEverything || (term.Prematched ?? false))
+					matchExpr = CGH.GenerateSkip(savingResult);
 				else
-					_target.Add(term.AutoSaveResult(CGH.GenerateMatch(term.Set, term.ResultSaver != null, false)));
+					matchExpr = CGH.GenerateMatch(term.Set, savingResult, _recognizerMode);
+
+				_target.Add(_recognizerMode ? matchExpr : term.AutoSaveResult(matchExpr));
 			}
 
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)
