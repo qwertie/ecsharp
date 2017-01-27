@@ -44,15 +44,19 @@ namespace Loyc.LLParserGenerator
 				rule.Pred.Call(this);
 			}
 
-			bool _codeBeforeAndWarning = false;
 			public override void Visit(AndPred pred)
 			{
-				if (pred.PreAction != null && !_codeBeforeAndWarning) {
-					LLPG.Output(Warning, pred, 
-						"It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first.");
+				VisitChildrenOf(pred);
+			}
+
+			bool _codeBeforeAndWarning = false;
+			public override void Visit(ActionPred pred)
+			{
+				if (pred.Next is AndPred && !_codeBeforeAndWarning) {
+					LLPG.Output(Severity.Warning, pred, 
+						"It's poor style to put a code block {..} before an and-predicate &{..} because the and-predicate normally runs first.");
 					_codeBeforeAndWarning = true;
 				}
-				VisitChildrenOf(pred);
 			}
 
 			public override void Visit(Gate pred)

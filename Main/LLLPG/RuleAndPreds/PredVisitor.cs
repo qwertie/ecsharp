@@ -15,6 +15,7 @@ namespace Loyc.LLParserGenerator
 		public virtual void Visit(Seq seq)          { VisitOther(seq); }
 		public virtual void Visit(Alts alts)        { VisitOther(alts); }
 		public virtual void Visit(AndPred and)      { VisitOther(and); }
+		public virtual void Visit(ActionPred pred)  { VisitOther(pred); }
 		public virtual void Visit(Gate gate)        { VisitOther(gate); }
 		public virtual void Visit(EndOfRule end)    { VisitOther(end); }
 		public virtual void VisitOther(Pred pred) { }
@@ -93,5 +94,46 @@ namespace Loyc.LLParserGenerator
 			}
 			return false;
 		}
+	}
+
+	partial class Pred
+	{
+		public abstract void Call(PredVisitor visitor); // visitor pattern
+	}
+	partial class RuleRef
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class Seq
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class Alts
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class Gate
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class AndPred
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class ActionPred
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class TerminalPred
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class EndOfRule
+	{
+		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+	}
+	partial class DefaultErrorBranch
+	{
+		public override void Call(PredVisitor visitor) { throw new NotImplementedException(); }
 	}
 }

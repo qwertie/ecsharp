@@ -17,19 +17,27 @@ namespace Loyc.LLParserGenerator
 {
 	partial class LLParserGenerator
 	{
-		/// <summary>Represents the possible interpretations of a single input 
-		/// character, in terms of transitions in the grammar.</summary>
+		/// <summary>Holds information about the first set or kth set of a single
+		/// arm of an <see cref="Alts"/>.</summary>
 		/// <remarks>
+		/// The main information this class holds is
+		/// (1) a list of <see cref="Transition"/>s (e.g. for the first set, LA = 0, 
+		///     each Transition represents moving from the beginning of the Alts to 
+		///     another location in the grammar based on a single input terminal),
+		///     and
+		/// (2) the <see cref="Set"/> of all terminals used in any of the 
+		///     transitions.
+		/// <para/>
 		/// For example, suppose the grammar is as follows (where "strings" are
 		/// actually aliases for tokens):
 		/// <code>
-		///     rule For   @{ "for" ($id "in" $collection | $id '=' range) };
-		///     rule Range @{ start ".." stop };
+		///     rule For   @{ "for" (ident "in" ident | ident '=' Range) };
+		///     rule Range @{ literal ".." literal };
 		/// </code>
 		/// If the starting position is right after "for", then <see cref="ComputeNextSet"/>
-		/// will generate two <see cref="Cases"/>, one at <c>$id."in" $collection</c> 
-		/// and another at <c>\id.'=' stop</c>. In both cases, the Set is $id, 
-		/// so <see cref="KthSet.Set"/> will also be $id.
+		/// will generate two <see cref="Cases"/>, one at <c>ident."in" ident</c> 
+		/// and another at <c>ident.'=' Range</c>. In both cases, the Set is ident, 
+		/// so <see cref="KthSet.Set"/> will also be ident.
 		/// </remarks>
 		protected class KthSet
 		{
@@ -53,7 +61,7 @@ namespace Loyc.LLParserGenerator
 			public Set<AndPred> AndReq;   // Intersection of AndPreds in all cases
 			public KthSet Prev;           // Previous lookahead level
 			public bool HasAnyAndPreds { get { return Cases.Any(t => !t.AndPreds.IsEmpty); } }
-			public int Alt;               // -1 (ExitAlt) for exit, 0 for first alternative
+			public int Alt;               // Index of an arm in Alts for which this object was created; -1 (ExitAlt) for exit, 0 for first alternative
 			public bool IsNongreedyExit;  // indicates a nongreedy exit branch (which takes priority in case of ambiguity)
 			
 			public void UpdateSet(bool addEOF)

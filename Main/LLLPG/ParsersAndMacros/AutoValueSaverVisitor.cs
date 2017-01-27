@@ -48,7 +48,7 @@ namespace Loyc.LLParserGenerator
 			public DataGatheringVisitor(IDictionary<Symbol, Rule> rules, Rule rule)
 				{ _rules = rules; Visit(rule.Pred); }
 			// List of predicates that are using {...$substitution...}
-			public HashSet<Pred> PredsUsingSubstitution = new HashSet<Pred>();
+			public HashSet<ZeroWidthPred> PredsUsingSubstitution = new HashSet<ZeroWidthPred>();
 			// Rules referenced by code blocks
 			public HashSet<Rule> RulesReferenced = new HashSet<Rule>();
 			// Labels, token sets, and unidentified things referenced by code blocks
@@ -65,14 +65,14 @@ namespace Loyc.LLParserGenerator
 				base.Visit(pred);
 				VisitCode(pred, pred.Pred as LNode);
 			}
-			public override void VisitOther(Pred pred)
+			public override void Visit(ActionPred pred)
 			{
-				VisitCode(pred, pred.PreAction);
-				VisitCode(pred, pred.PostAction);
-				if (pred.VarLabel != null)
-					ProperLabels[pred.VarLabel] = ProperLabels.TryGetValue(pred.VarLabel, false) | pred.ResultSaver == null;
+				VisitOther(pred);
+				foreach (var stmt in pred.Statements)
+					VisitCode(pred, stmt);
 			}
-			void VisitCode(Pred pred, LNode code)
+
+			void VisitCode(ZeroWidthPred pred, LNode code)
 			{
 				if (code == null) return;
 				code.ReplaceRecursive(node => {
@@ -86,6 +86,12 @@ namespace Loyc.LLParserGenerator
 					}
 					return null; // search only, no replace
 				});
+			}
+
+			public override void VisitOther(Pred pred)
+			{
+				if (pred.VarLabel != null)
+					ProperLabels[pred.VarLabel] = ProperLabels.TryGetValue(pred.VarLabel, false) | pred.ResultSaver == null;
 			}
 
 			#endregion
@@ -203,10 +209,10 @@ namespace Loyc.LLParserGenerator
 			if (_newVarInitializers.Count != 0)
 			{
 				var decls = _newVarInitializers.OrderBy(p => p.Key.Name).Select(p => p.Value.B);
-				LNode decls2 = F.Call(S.Splice, decls);
-				rule.Pred.PreAction = Pred.MergeActions(decls2, rule.Pred.PreAction);
+				var seq = new Seq(new ActionPred(rule.Basis, LNode.List(decls)), rule.Pred);
 				if (usingResult)
-					rule.Pred.PostAction = Pred.MergeActions(rule.Pred.PostAction, F.Call(S.Return, _resultId));
+					seq = new Seq(seq, new ActionPred(rule.Basis, LNode.List(F.Call(S.Return, _resultId))));
+				rule.Pred = seq;
 			}
 		}
 
@@ -214,10 +220,12 @@ namespace Loyc.LLParserGenerator
 
 		internal void ReplaceSubstitutionsInCodeBlocks()
 		{
+			// ActionPred TODO
 			foreach (var pred in _data.PredsUsingSubstitution)
 			{
-				pred.PreAction = ReplaceSubstitutionsIn(pred.PreAction);
-				pred.PostAction = ReplaceSubstitutionsIn(pred.PostAction);
+				var actions = pred as ActionPred;
+				if (actions != null)
+					actions.Statements = actions.Statements.SmartSelect(ReplaceSubstitutionsIn);
 				var and = pred as AndPred;
 				if (and != null && and.Pred is LNode)
 					and.Pred = ReplaceSubstitutionsIn((LNode)and.Pred);

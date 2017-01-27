@@ -34,18 +34,16 @@ namespace Loyc.LLParserGenerator
 	/// sensitive state such as the <see cref="Next"/> field, which are used during grammar 
 	/// analysis. A Pred must be Clone()d if one wants to use it multiple times.
 	/// </remarks>
-	public abstract class Pred : ICloneable<Pred>, IHasLocation
+	public abstract partial class Pred : ICloneable<Pred>, IHasLocation
 	{
-		public abstract void Call(PredVisitor visitor); // visitor pattern
-
 		public Pred(LNode basis) { Basis = basis ?? LNode.Missing; }
 
 		public LNode Basis { get; protected set; }
-		public LNode PreAction;
-		public LNode PostAction;
 
 		protected internal Pred Prev; // For debugging only
 		protected internal Pred Next; // The predicate that follows this one or EndOfRule
+
+		#region Saving results (operators :, =, :=, +=, +:)
 
 		// A variable name assigned to the pred with the : operator (letter:'a'..'z')
 		public Symbol VarLabel;
@@ -77,11 +75,14 @@ namespace Loyc.LLParserGenerator
 				return result => F.Call(@operator, lhs, result);
 		}
 
+		#endregion
+
 		/// <summary>Returns true if this predicate can match an empty input.</summary>
 		public abstract bool IsNullable { get; }
 
-		// Helper methods for creating a grammar without a source file (this is
-		// used for testing and for bootstrapping the parser generator).
+		#region Helper methods for creating a grammar without a source file
+		// this is used for testing, and was used for bootstrapping the parser generator.
+
 		public static Seq  operator + (char a, Pred b) { return Char(a) + b; }
 		public static Seq  operator + (Pred a, char b) { return a + Char(b); }
 		public static Seq  operator + (Pred a, Pred b) { return new Seq(a, b); }
@@ -94,8 +95,8 @@ namespace Loyc.LLParserGenerator
 		public static Pred Or(Pred a, Pred b, bool slashJoined, LNode basis, BranchMode aMode = BranchMode.None, BranchMode bMode = BranchMode.None, IMessageSink sink = null)
 		{
 			TerminalPred a_ = a as TerminalPred, b_ = b as TerminalPred;
-			if (a_ != null && b_ != null && a_.CanMerge(b_) && aMode == BranchMode.None && bMode == BranchMode.None) {
-				return a_.Merge(b_);
+			if (a_ != null && b_ != null && aMode == BranchMode.None && bMode == BranchMode.None) {
+				return new TerminalPred(a_.Basis, a_.Set.Union(b_.Set), true);
 			} else {
 				return Alts.Merge(basis, a, b, slashJoined, aMode, bMode, sink);
 			}
@@ -124,16 +125,11 @@ namespace Loyc.LLParserGenerator
 		}
 		public static Pred operator + (LNode pre, Pred p)
 		{
-			if (p.PreAction == null)
-				p.PreAction = pre;
-			else
-				p.PreAction = MergeActions(pre, p.PreAction);
-			return p;
+			return new Seq(new ActionPred(pre), p);
 		}
 		public static Pred operator + (Pred p, LNode post)
 		{
-			p.PostAction = MergeActions(p.PostAction, post);
-			return p;
+			return new Seq(p, new ActionPred(post));
 		}
 		public static LNode MergeActions(LNode action, LNode action2)
 		{
@@ -171,6 +167,8 @@ namespace Loyc.LLParserGenerator
 			};
 			return pred;
 		}
+
+		#endregion
 
 		/// <summary>Deep-clones a predicate tree. Terminal sets and Nodes 
 		/// referenced by the tree are not cloned; the clone's value of
@@ -211,13 +209,13 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
-	public class RuleRef : Pred
+	public partial class RuleRef : Pred
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
 		public VList<LNode> Params = VList<LNode>.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
+
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
@@ -233,35 +231,24 @@ namespace Loyc.LLParserGenerator
 	}
 	
 	/// <summary>Represents a sequence of predicates (<see cref="Pred"/>s).</summary>
-	public class Seq : Pred
+	public partial class Seq : Pred
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Seq(LNode basis) : base(basis) {}
 		public Seq(Pred one, Pred two, LNode basis = null) : base(basis)
 		{
-			if (one is Seq) {
-				PreAction = one.PreAction;
-				List.AddRange((one as Seq).List);
-				if (List.Count > 0) {
-					var last = List[List.Count - 1];
-					last.PostAction = Pred.MergeActions(last.PostAction, one.PostAction);
-				} else
-					PreAction = Pred.MergeActions(PreAction, one.PostAction);
-			} else
-				List.Add(one);
-
-			if (two is Seq) {
-				if (List.Count > 0) {
-					var last = List[List.Count - 1];
-					last.PostAction = Pred.MergeActions(last.PostAction, two.PreAction);
-				} else
-					PreAction = Pred.MergeActions(PreAction, two.PreAction);
-				List.AddRange((two as Seq).List);
-				PostAction = Pred.MergeActions(PostAction, two.PostAction);
-			} else
-				List.Add(two);
+			Append(one);
+			Append(two);
 		}
+
 		public List<Pred> List = new List<Pred>();
+
+		private void Append(Pred pred)
+		{
+			if (pred is Seq)
+				List.AddRange((pred as Seq).List);
+			else
+				List.Add(pred);
+		}
 
 		public override bool IsNullable
 		{
@@ -275,7 +262,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public override string ToString()
 		{
-			return StringExt.Join(" ", List);
+			return StringExt.Join(" ", List.Where(child => !(child is ActionPred)));
 		}
 		public override string ChooseGotoLabel()
 		{
@@ -319,10 +306,8 @@ namespace Loyc.LLParserGenerator
 	/// particularly the way I handled slashes and merging Alts. I'm just not sure 
 	/// what simpler techniques I should have used instead.
 	/// </remarks>
-	public class Alts : Pred
+	public partial class Alts : Pred
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-
 		public Alts(LNode basis, LoopMode mode, bool? greedy = null) : base(basis)
 		{
 			Mode = mode;
@@ -333,7 +318,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(mode == LoopMode.Star || mode == LoopMode.Opt);
 			var contents2 = contents as Alts;
-			if (contents2 != null && contents2.PreAction == null && contents2.PostAction == null) {
+			if (contents2 != null) {
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
 					throw new ArgumentException(Localize.Localized("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;
@@ -388,11 +373,11 @@ namespace Loyc.LLParserGenerator
 		}
 		Alts Insert(LNode newBasis, bool slashJoined, bool append, Pred b, BranchMode bMode, IMessageSink warnings)
 		{
-			if (SupportsMerge()) {
+			if (Mode == LoopMode.None) {
 				this.Basis = newBasis ?? this.Basis;
 				Alts bAlts = b as Alts;
 				int insertAt = append ? this.Arms.Count : 0, boundary = insertAt;
-				if (bAlts != null && bMode == BranchMode.None && bAlts.SupportsMerge()) {
+				if (bAlts != null && bMode == BranchMode.None && bAlts.Mode == LoopMode.None) {
 					for (int i = 0; i < bAlts.Arms.Count; i++)
 						this.InsertSingle(ref insertAt, bAlts.Arms[i], bAlts.DefaultArm == i ? BranchMode.Default : BranchMode.None, warnings);
 					if (bAlts.ErrorBranch != null)
@@ -444,11 +429,6 @@ namespace Loyc.LLParserGenerator
 			warnings.Warning(b, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
 		}
 
-		private bool SupportsMerge()
-		{
-			return Mode == LoopMode.None && PreAction == null && PostAction == null;
-		}
-	
 		#endregion
 
 		public LoopMode Mode = LoopMode.None;
@@ -588,14 +568,14 @@ namespace Loyc.LLParserGenerator
 
 		#region Slash region tracking
 
-		// _slashDivs keeps track of how '/' operators were used to construct the 
+		// _divisions keeps track of how '/' operators were used to construct the 
 		// list of alternatives, which determines how ambiguity messages can be
 		// suppressed. a|b expressions are of only transient importance: they 
 		// do not suppress ambiguity messages but the left boundary of the next 
 		// operator that comes along, if any, depends on the previous operator,
 		// and ToString() pays attention to them too.
 		//
-		// This is a graphical representation of how the _slashDivs list is built
+		// This is a graphical representation of how the _divisions list is built
 		// and what it will contain when derived from a complex tree of alts:
 		//
 		//     (a0 / a1 / a2) / (a3 | (a4 | a5) / a6) | a7 / ((a8 | a9) / (a10 | a11 / a12))
@@ -641,7 +621,7 @@ namespace Loyc.LLParserGenerator
 		// N<=()          Left bound moved left when left side is in (parens) on line above
 		//
 		// [N]            ignoring dotted boxes, this represents the index in the final
-		//                _slashDivs list of the Division on this line.
+		//                _divisions list of the Division on this line.
 		InternalList<Division> _divisions = InternalList<Division>.Empty;
 		[DebuggerDisplay(@"{Left},{Mid}{Slash?""/"":""|""},{Right}")]
 		struct Division
@@ -773,9 +753,8 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>Gates are explained futher in this article:
 	/// http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
 	/// </remarks>
-	public class Gate : Pred
+	public partial class Gate : Pred
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
 			Contract.Assert(!(predictor is Gate) && !(match is Gate), "A gate '=>' cannot contain another gate");
 			Predictor = predictor;
@@ -862,12 +841,18 @@ namespace Loyc.LLParserGenerator
 		}
 	}
 
+	public abstract class ZeroWidthPred : Pred
+	{
+		public ZeroWidthPred(LNode basis) : base(basis) { }
+
+		public override bool IsNullable { get { return true; } }
+	}
+
 	/// <summary>Represents a zero-width assertion: either user-defined code to
 	/// check a condition, or a predicate that scans ahead in the input and then
 	/// backtracks to the starting point.</summary>
-	public class AndPred : Pred, IEquatable<AndPred>
+	public partial class AndPred : ZeroWidthPred, IEquatable<AndPred>
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public AndPred(LNode basis, object pred, bool not, bool local)
 			: base(basis) { Pred = pred; Not = not; Local = local; }
 
@@ -951,12 +936,20 @@ namespace Loyc.LLParserGenerator
 		}
 	}
 
+	public partial class ActionPred : ZeroWidthPred
+	{
+		public ActionPred(LNode action) : base(action) { Statements = LNode.List(action); }
+		public ActionPred(LNode basis, VList<LNode> action) : base(basis) { Statements = action; }
+
+		public VList<LNode> Statements;
+
+		public override string ToString() { return "{..}"; }
+	}
+
 	/// <summary>Represents a terminal (which is a token or a character) or a set 
 	/// of possible terminals (e.g. 'A'..'Z').</summary>
-	public class TerminalPred : Pred
+	public partial class TerminalPred : Pred
 	{
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		
 		new public IPGTerminalSet Set;
 		
 		public bool? Prematched;
@@ -972,18 +965,6 @@ namespace Loyc.LLParserGenerator
 			Set = allowEOF ? set : set.WithoutEOF();
 		}
 
-		// For combining with | operator; cannot merge if PreAction/PostAction differs between arms
-		public virtual bool CanMerge(TerminalPred r)
-		{
-			return r.PreAction == PreAction && r.PostAction == PostAction;
-		}
-		public TerminalPred Merge(TerminalPred r, bool ignoreActions = false)
-		{
-			if (!ignoreActions && (PreAction != r.PreAction || PostAction != r.PostAction))
-				throw new InvalidOperationException("Internal error: cannot merge TerminalPreds that have actions");
-			return new TerminalPred(Basis, Set.Union(r.Set), true) { PreAction = PreAction, PostAction = PostAction };
-		}
-
 		public override bool IsNullable
 		{
 			get { return false; }
@@ -995,12 +976,13 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>A container for the follow set of a <see cref="Rule"/>.</summary>
-	public class EndOfRule : Pred
+	public partial class EndOfRule : Pred
 	{
 		public EndOfRule(Rule containingRule) : base(null) { ContainingRule = containingRule; }
-		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
+
 		public HashSet<Pred> FollowSet = new HashSet<Pred>();
 		public Rule ContainingRule; // to aid debugging
+
 		public override string ToString()
 		{
 			return string.Format("End of rule '{0}'", ContainingRule.Name);
@@ -1012,15 +994,11 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>A singleton to be used as the value of <see cref="Alts.ErrorBranch"/>, representing the <c>default_error</c> branch.</summary>
-	public class DefaultErrorBranch : Pred
+	public partial class DefaultErrorBranch : Pred
 	{
 		public static readonly DefaultErrorBranch Value = new DefaultErrorBranch();
 		DefaultErrorBranch() : base(null) { }
 
-		public override void Call(PredVisitor visitor)
-		{
-			throw new NotImplementedException();
-		}
 		public override bool IsNullable
 		{
 			get { throw new NotImplementedException(); }

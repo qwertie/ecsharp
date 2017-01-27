@@ -9,6 +9,7 @@ using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
+	using Ecs;
 	using S = CodeSymbols;
 
 	/// <summary>
@@ -89,14 +90,17 @@ namespace Loyc.LLParserGenerator
 					// sequence: (a, b, c)
 					if (expr.Calls(S.Tuple, 1))
 						return NodeToPred(expr.Args[0], ctx);
-					return ArgsToSeq(expr, ctx);
+					return TranslateToSeq(expr, ctx);
 				}
 				else if (name == S.Braces)
 				{
-					// Just code: use an empty sequence
-					var seq = new Seq(expr);
-					seq.PostAction = RemoveBraces(expr);
-					return seq;
+					// User action {block}
+					if (ctx == Context.And || ctx == Context.GateLeft) {
+						_sink.Error(expr, ctx == Context.And ?
+							"Cannot use an action block inside an '&' or '&!' predicate; these predicates are for prediction only." :
+							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
+					}
+					return new ActionPred(expr, expr.Args);
 				}
 				else if (expr.Calls(S.OrBits, 2) || (slash = expr.Calls(S.Div, 2)))
 				{
@@ -130,31 +134,7 @@ namespace Loyc.LLParserGenerator
 				}
 				else if ((not = expr.Calls(_AndNot, 1)) || expr.Calls(_And, 1))
 				{
-					expr = expr.Args[0];
-					var subpred = AutoNodeToPred(expr, Context.And);
-					LNode subexpr = subpred as LNode, subexpr0 = subexpr;
-					bool local = false;
-					if (subexpr != null) {
-						local = true;
-						if ((subexpr = subexpr.WithoutAttrNamed(_Hoist)) != subexpr0)
-							local = false;
-						// also recognize [Local], which was not the default until v1.9.1
-						subexpr = subexpr.WithoutAttrNamed(_Local);
-					}
-					// Extract error message for Check(), if provided.
-					string errorString = null;
-					if (subexpr != null)
-						subexpr = subexpr.WithAttrs(n => {
-							if (n.Value is string) {
-								errorString = (string)n.Value;
-								return NoValue.Value; // drop attribute from output
-							} else if (n.IsIdNamed("NoCheck")) {
-								errorString = "";
-								return NoValue.Value;
-							}
-							return n;
-						});
-					return new AndPred(expr, subexpr ?? subpred, not, local) { CheckErrorMessage = errorString };
+					return TranslateAndPred(expr, not);
 				}
 				else if (expr.Calls(S.NotBits, 1))
 				{
@@ -169,13 +149,13 @@ namespace Loyc.LLParserGenerator
 						return subpred;
 					}
 				}
-				else if (expr.Calls(_Any, 2) && expr.Args[0].IsId) 
-				{
-					return Translate_any_in_Expr(expr, ctx);
-				}
 				else if ((name.Name.EndsWith(":") || name.Name.EndsWith("=")) && expr.ArgCount == 2)
 				{
 					return TranslateLabeledExpr(expr, ctx);
+				}
+				else if (expr.Calls(_Any, 2) && expr.Args[0].IsId) 
+				{
+					return Translate_any_in_Expr(expr, ctx);
 				}
 			}
 			
@@ -183,9 +163,12 @@ namespace Loyc.LLParserGenerator
 			Rule rule = TryGetRule(expr);
 			if (rule != null)
 			{
-				//int ruleArgc = rule.Basis.Args[2].ArgCount;
-				//if (expr.ArgCount > ruleArgc) // don't complain about too few args, in case there are default args (I'm too lazy to check)
-				//    _sink.Write(MessageSink.Error, expr, "Rule '{0}' takes {1} arguments ({2} given)", rule.Name, ruleArgc, expr.ArgCount);
+				LNode _, args;
+				if (EcsValidators.MethodDefinitionKind(rule.Basis, out _, out _, out args, out _, false) == S.Fn) {
+					if (expr.ArgCount > args.ArgCount) // don't complain about too few args, in case there are default args (I'm too lazy to check)
+						_sink.Error(expr, "Rule '{0}' takes {1} arguments ({2} given)", rule.Name, args.ArgCount, expr.ArgCount);
+				}
+
 				return new RuleRef(expr, rule) { Params = expr.Args };
 			}
 
@@ -224,6 +207,46 @@ namespace Loyc.LLParserGenerator
 				return new Seq(subpred, alts, expr);
 			else
 				return alts;
+		}
+
+		private Pred TranslateAndPred(LNode andExpr, bool not)
+		{
+			var expr = andExpr.Args[0];
+
+			// Distinguish between semantic and syntactic predicates
+			LNode subexpr = null;
+			Pred subpred = null;
+			if (expr.Calls(S.Braces))
+				subexpr = expr.ArgCount == 1 ? expr[0] : expr;
+			else
+				subpred = NodeToPred(expr, Context.And);
+			LNode subexpr0 = subexpr;
+
+			// Extract [Local] or [Hoist] attribute
+			bool local = false;
+			if (subexpr != null) {
+				local = true;
+				if ((subexpr = subexpr.WithoutAttrNamed(_Hoist)) != subexpr0)
+					local = false;
+				// also recognize [Local], which was not the default until v1.9.1
+				subexpr = subexpr.WithoutAttrNamed(_Local);
+			}
+
+			// Extract error message for Check(), if provided.
+			string errorString = null;
+			if (subexpr != null)
+				subexpr = subexpr.WithAttrs(n => {
+					if (n.Value is string) {
+						errorString = (string)n.Value;
+						return NoValue.Value; // drop attribute from output
+					} else if (n.IsIdNamed("NoCheck")) {
+						errorString = "";
+						return NoValue.Value;
+					}
+					return n;
+				});
+
+			return new AndPred(expr, (object)subexpr ?? subpred, not, local) { CheckErrorMessage = errorString };
 		}
 
 		private Pred TranslateLabeledExpr(LNode expr, Context ctx)
@@ -332,51 +355,15 @@ namespace Loyc.LLParserGenerator
 			return NodeToPred(expr, ctx);
 		}
 
-		Pred ArgsToSeq(LNode expr, Context ctx)
+		// Convert a `expr`, which is a tuple, to a Seq predicate
+		Pred TranslateToSeq(LNode expr, Context ctx)
 		{
-			List<object> objs = expr.Args.Select(node => AutoNodeToPred(node, ctx)).ToList();
-			Seq seq = new Seq(expr);
-			LNode action = null;
-			bool error = false;
-			for (int i = 0; i < objs.Count; i++)
-			{
-				if (objs[i] is LNode)
-				{
-					var code = (LNode)objs[i];
-					if ((ctx == Context.And || ctx == Context.GateLeft) && !error) {
-						error = true;
-						_sink.Error(objs[i], ctx == Context.And ?
-							"Cannot use an action block inside an '&' or '!' predicate; these predicates are for prediction only." :
-							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
-					}
-					action = Pred.MergeActions(action, code);
-				}
-				else // Pred
-				{
-					Pred pred = (Pred)objs[i];
-					pred.PreAction = Pred.MergeActions(action, pred.PreAction);
-					action = null;
-					seq.List.Add(pred);
-				}
-			}
-			if (action != null)
-				seq.PostAction = action;
-
-			if (seq.List.Count == 1) {
-				var contents = seq.List[0];
-				contents.PreAction = Pred.MergeActions(seq.PreAction, contents.PreAction);
-				contents.PostAction = Pred.MergeActions(seq.PostAction, contents.PostAction);
-				return contents;
-			}
-
-			return seq;
+			List<Pred> list = expr.Args.Select(node => NodeToPred(node, ctx)).ToList();
+			if (list.Count == 1)
+				return list[0];
+			return new Seq(expr) { List = list };
 		}
-		object AutoNodeToPred(LNode expr, Context ctx)
-		{
-			if (expr.CallsMin(S.Braces, 0))
-				return RemoveBraces(expr);
-			return NodeToPred(expr, ctx);
-		}
+
 		static LNode RemoveBraces(LNode expr)
 		{
 			Debug.Assert(expr.Calls(S.Braces));

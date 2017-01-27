@@ -81,21 +81,25 @@ namespace Loyc.LLParserGenerator
 
 			new public void Visit(Pred pred)
 			{
-				if (pred.PreAction != null && !_recognizerMode)
-					AddUserAction(pred.PreAction);
 				var old = _currentPred;
 				_currentPred = pred;
 				pred.Call(this);
 				_currentPred = old;
-				if (pred.PostAction != null && !_recognizerMode)
-					AddUserAction(pred.PostAction);
 			}
 
-			private void AddUserAction(LNode action)
+			public override void Visit(ActionPred pred)
+			{
+				if (!_recognizerMode)
+					AddUserAction(pred.Statements);
+			}
+			private void AddUserAction(VList<LNode> actions)
 			{
 				int i = _target.Count;
-				_target.SpliceAdd(action, S.Splice);
-				if (action.Range.StartIndex > 0 && _target.Count > i) {
+
+				_target.AddRange(actions);
+
+				if (actions.Any(stmt => stmt.Range.StartIndex > 0))
+				{
 					if (LLPG.AddCsLineDirectives) {
 						// Remove folder name. This only makes sense if the output
 						// file and input file are in the same folder; sadly we have

@@ -205,8 +205,6 @@ namespace Loyc.LLParserGenerator
 				if (rref.IsInline ?? rref.Rule.IsInline)
 					if (rref.ResultSaver == null && rref.Params.IsEmpty) {
 						Replacement = rref.Rule.Pred.Clone();
-						Replacement.PreAction = Pred.MergeActions(rref.PreAction, Replacement.PreAction);
-						Replacement.PostAction = Pred.MergeActions(Replacement.PostAction, rref.PreAction);
 					} else {
 						ParamError(rref);
 					}
@@ -954,6 +952,10 @@ namespace Loyc.LLParserGenerator
 			{
 				Visit(gate.Predictor);
 			}
+			public override void Visit(ActionPred pred)
+			{
+				Visit(pred.Next);
+			}
 			public override void Visit(EndOfRule end)
 			{
 				if (_result.Return != null) {
@@ -1086,6 +1088,10 @@ namespace Loyc.LLParserGenerator
 			{
 				if (!(_currentPos.InsideOtherRule && and.Local))
 					_andPreds.Add(and);
+				Visit(and.Next); // skip
+			}
+			public override void Visit(ActionPred and)
+			{
 				Visit(and.Next); // skip
 			}
 			public override void Visit(EndOfRule end)

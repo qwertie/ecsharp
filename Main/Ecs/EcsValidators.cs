@@ -191,6 +191,13 @@ namespace Loyc.Ecs
 			LNode retType, methodName, argList, body;
 			return MethodDefinitionKind(n, out retType, out methodName, out argList, out body, allowDelegate, p);
 		}
+
+		/// <summary>Alias for <see cref="MethodDefinitionKind"/> that returns true if 
+		/// MethodDefinitionKind returns #fn.</summary>
+		public static bool IsNormalMethod(LNode n, Pedantics p = Pedantics.Lax)
+		{
+			return MethodDefinitionKind(n, false, p) == S.Fn;
+		}
 		
 		/// <summary>If the given node has a valid syntax tree for a method definition,
 		/// a constructor, or (when orDelegate is true) a delegate definition, gets

@@ -49,7 +49,12 @@ namespace Loyc.LLParserGenerator
 		{
 			return new Seq(null);
 		}
-		protected static Pred Set(string varName, Pred pred) { return Pred.Set(varName, pred); }
+		protected static Pred Set(string varName, Pred pred) {
+			pred.ResultSaver = res => {
+				return F.Assign(F.Id(varName), res);
+			};
+			return pred;
+		}
 		protected static Pred SetVar(string varName, Pred pred) { return Pred.SetVar(varName, pred); }
 		protected static Pred AddSet(string varName, Pred pred) { return Pred.AddSet(varName, pred); }
 
@@ -80,12 +85,6 @@ namespace Loyc.LLParserGenerator
 	[TestFixture]
 	public class LlpgCoreTests : LlpgHelpers
 	{
-		public Pred Do(Pred pred, LNode postAction)
-		{
-			pred.PostAction = Pred.MergeActions(pred.PostAction, postAction);
-			return pred;
-		}
-
 		protected LLParserGenerator _pg;
 		protected ISourceFile _file;
 
@@ -96,14 +95,17 @@ namespace Loyc.LLParserGenerator
 			_pg = new LLParserGenerator(new IntStreamCodeGenHelper());
 			_pg.Sink = new MessageSinkFromDelegate(OutputMessage);
 			_messageCounter = 0;
-			_expectingOutput = false;
+			_expectingOutput = _suppressWarning = false;
 			_file = new EmptySourceFile("LlpgTests.cs");
 		}
 
 		int _messageCounter;
 		bool _expectingOutput;
+		bool _suppressWarning;
 		void OutputMessage(Severity type, object context, string msg, params object[] args)
 		{
+			if (_suppressWarning && type <= Severity.Warning)
+				return;
 			++_messageCounter;
 			var tmp = Console.ForegroundColor;
 			Console.ForegroundColor = _expectingOutput ? ConsoleColor.DarkGray : ConsoleColor.Yellow;
@@ -542,9 +544,10 @@ namespace Loyc.LLParserGenerator
 
 		public Pred Act(string pre, Pred pred, string post)
 		{
-			if (pre != null) pred.PreAction = F.Id(pre);
-			if (post != null) pred.PostAction = F.Id(post);
-			return pred;
+			Pred result = pred;
+			if (pre != null) result = new Seq(new ActionPred(F.Id(pre)), result);
+			if (post != null) result = new Seq(result, new ActionPred(F.Id(post)));
+			return result;
 		}
 		[Test]
 		public void ActionsTest()
@@ -990,8 +993,11 @@ namespace Loyc.LLParserGenerator
 			// | ':')
 			Rule Foo = Rule("Foo", And("a") + (And("b") | And("c") + Stmt("Foo")) + And("d") + '?' + ':'
 			                     | And("a") + '?' + '?' | ':');
+
 			_pg.AddRule(Foo);
+			_suppressWarning = true; // "It's poor style to put a code block {..} before an and-predicate"
 			LNode result = _pg.Run(_file);
+
 			CheckResult(result, @"{
 				public void Foo()
 				{
@@ -1807,7 +1813,10 @@ namespace Loyc.LLParserGenerator
 				+ (And("f") + Set("[xy]") | 'X')
 				| And("c") + (And("f") + Set("[wy]") | 'x') + 'z'
 				| '!'));
+			_suppressWarning = true; // "It's poor style to put a code block {..} before an and-predicate"
 			LNode result = _pg.Run(_file);
+
+			// TODO: check result
 		}
 
 		[Test]
