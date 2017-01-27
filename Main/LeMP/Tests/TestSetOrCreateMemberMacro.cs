@@ -72,24 +72,28 @@ namespace LeMP.Tests
 		{
 			TestEcs(
 				@"void Set(
+					// Hello
 					[Spanish] set int _hola, 
 					[field: English] static int _hello, 
 					[field: Alzheimer's] partial long goodbye = 8, 
 					[Hawaii] protected internal string Aloha = 5,
+					// Comment
 					[French] internal string _Bonjour = 7,
-					[Other] readonly int _ciao = 4) { Foo(_ciao); }",
+					[Other] readonly int _ciao = 4
+				) { Foo(_ciao); }",
 				@"
 				[English] static int _hello;
+				
 				[Alzheimer's] partial long goodbye;
+				
 				protected internal string Aloha;
+				
+				// Comment
 				internal string _Bonjour;
+
 				void Set(
-					[Spanish] int hola, 
-					int hello, 
-					long goodbye = 8, 
-					[Hawaii] string aloha = 5,
-					[French] string Bonjour = 7,
-					[Other] readonly int _ciao = 4)
+					// Hello
+					[Spanish] int hola, int hello, long goodbye = 8, [Hawaii] string aloha = 5, [French] string Bonjour = 7, [Other] readonly int _ciao = 4)
 				{
 					_hola = hola;
 					_hello = hello;

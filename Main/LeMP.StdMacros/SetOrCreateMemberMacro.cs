@@ -176,6 +176,8 @@ namespace LeMP
 				var name = attr.Name;
 				if (attr.IsId && (FieldCreationAttributes.Contains(name) || name == S.Readonly))
 					fieldAttrs.Add(attr);
+				else if (name == S.TriviaSLComment || name == S.TriviaNewline)
+					fieldAttrs.Add(attr); // Put doc comments and leading newline on the field/prop
 				else if (attr.Calls(S.NamedArg, 2) && (attr.Args[0].IsIdNamed("field") || attr.Args[0].IsIdNamed("property")))
 					fieldAttrs.Add(attr.Args[1]);
 				else
