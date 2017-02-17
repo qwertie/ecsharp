@@ -40,9 +40,9 @@ namespace Loyc
 	/// Most often <c>null</c> is used for this purpose; <c>NoValue.Value</c> 
 	/// is used when <c>null</c> is a considered to be a valid, meaningful 
 	/// value and you want to distinguish between "no value" and "null".
-	/// For example, this is used by the the <see cref="Loyc.Syntax.LNode.Value"/>
-	/// class, in which <c>NoValue</c> has a different meaning than both 
-	/// <c>null</c> and <c>void</c>.
+	/// For example, this is used by the the Value property of Loyc.Syntax.LNode,
+	/// in which <c>NoValue</c> has a different meaning than both <c>null</c> 
+	/// and <c>void</c>.
 	/// <para/>
 	/// Also, this value converts implicitly to <see cref="Maybe{T}.NoValue"/>.
 	/// </remarks>

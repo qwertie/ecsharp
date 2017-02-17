@@ -366,9 +366,8 @@ namespace Loyc.Collections
 		/// <param name="key">The key to find. If passed by reference, when this 
 		/// method returns, item is set to the next greater item than the item you 
 		/// searched for, or left unchanged if there is no greater item.</param>
-		/// <param name="index">The index of the next greater item that was found,
-		/// or Count if the given item is greater than all items in the list.</param>
-		/// <returns></returns>
+		/// <returns>The index of the next greater item that was found,
+		/// or Count if the given item is greater than all items in the list.</returns>
 		public int FindUpperBound(K key)
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();

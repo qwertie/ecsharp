@@ -213,9 +213,10 @@ namespace Loyc
 		static Dictionary<char, string> HtmlEntityTable;
 
 		/// <summary>Gets a bare HTML entity name for an ASCII character, or null if
-		/// there is no entity name for the given character, e.g. <c>'"'=>"quot"</c>.
+		/// there is no entity name for the given character, e.g. 
+		/// <c>BareHtmlEntityNameForAscii('"') == "quot"</c>.
 		/// </summary><remarks>
-		/// The complete entity name is <c>"&" + GetHtmlEntityNameForAscii(c) + ";"</c>.
+		/// The complete entity name is an ampersand (&amp;) plus <c>BareHtmlEntityNameForAscii(c) + ";"</c>.
 		/// Some HTML entities have multiple names; this function returns one of them.
 		/// There is a name in this table for all ASCII punctuation characters.
 		/// </remarks>

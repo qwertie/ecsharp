@@ -21,7 +21,7 @@ namespace Util.UI
 	///	   return true;
 	/// }
 	/// </code>
-	/// The static method <see cref="CommandAttribute.GetCommandList()"/> converts 
+	/// The static method <see cref="CommandAttribute.GetCommandList"/> converts 
 	/// all the methods that are marked with [Command] into ICommand objects. If 
 	/// 'run' is false, the action must not be taken; the method must simply return 
 	/// true if the command is available and false if not.

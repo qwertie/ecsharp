@@ -193,7 +193,7 @@ namespace Loyc
 		/// <c>messagePrefix</c> to avoid accidental misbehavior when the string is formatted. 
 		/// <b>Note:</b> in fact, <c>messagePrefix</c> should not contain braces at all, 
 		/// because message formatting is optional. <see cref="Write(Severity, TContext, string)"/>
-		/// does not perform formatting while <see cref="Write(Severity, TContext, string, params object[])"/>
+		/// does not perform formatting while <see cref="Write(Severity, TContext, string, object[])"/>
 		/// does. Consequently, when calling the first overload, the scrubbing process will 
 		/// cause braces in <c>messagePrefix</c> to be doubled as in "{{" or "}}". We could
 		/// fix this by storing two separate MessagePrefix strings in this object, one

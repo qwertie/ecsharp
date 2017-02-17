@@ -192,7 +192,7 @@ namespace Loyc.Ecs
 			return MethodDefinitionKind(n, out retType, out methodName, out argList, out body, allowDelegate, p);
 		}
 
-		/// <summary>Alias for <see cref="MethodDefinitionKind"/> that returns true if 
+		/// <summary>Alias for <see cref="MethodDefinitionKind(LNode,bool,Pedantics)"/> that returns true if 
 		/// MethodDefinitionKind returns #fn.</summary>
 		public static bool IsNormalMethod(LNode n, Pedantics p = Pedantics.Lax)
 		{

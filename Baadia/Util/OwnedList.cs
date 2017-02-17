@@ -34,7 +34,7 @@ namespace Util.Collections
 		TParent Parent { get; }
 	}
 
-	/// <summary>A variation of <see cref="IChildOf{P}"/> that has a <see cref="Parent"/> property.</summary>
+	/// <summary>A variation of <see cref="IChildOf{P}"/> that has a Parent property.</summary>
 	/// <seealso cref="ChildOfOneParent{Parent}"/>
 	public interface IChildOfOneParent<TParent> : IChildOf<TParent>, IHasParent<TParent> {}
 

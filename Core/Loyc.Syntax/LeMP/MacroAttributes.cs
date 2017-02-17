@@ -74,28 +74,30 @@ namespace LeMP
 	}
 
 	/// <summary>Flags that affect the way that <see cref="LeMP.MacroProcessor"/>
-	/// uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
-	/// the macro accepts the input by returning a non-null result.</summary>
+	/// uses a LexicalMacro.</summary>
 	[Flags]
 	public enum MacroMode
 	{
 		/// <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
 		Normal = 0,
-		/// <summary>The macro's result (including children) is not processed further.</summary>
+		/// <summary>The macro's result (including children) is not processed further. 
+		/// This flag only takes effect when the macro accepts the input by returning a non-null result.</summary>
 		NoReprocessing = 1,
-		/// <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
+		/// <summary>The macro's result is not reprocessed, but the result's children are processed. 
+		/// This flag only takes effect when the macro accepts the input by returning a non-null result.</summary>
 		ProcessChildrenAfter = 2,
-		/// <summary>The result is pre-processed before calling the macro, and not processed afterward.</summary>
+		/// <summary>The result is pre-processed before calling the macro, and not processed afterward
+		/// (if the macro accepts the input by returning a non-null result).</summary>
 		ProcessChildrenBefore = 4,
 		/// <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input by returning null.</summary>
 		Passive = 8,
-		/// <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce the same results.</summary>
+		/// <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce equivalent results.</summary>
 		AllowDuplicates = 16,
 		/// <summary>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</summary>
 		/// <remarks>This option may be used by macros that splice together the list of <see cref="IMacroContext.RemainingNodes"/> into their own result.
 		/// It is more common, however, to set the <see cref="IMacroContext.DropRemainingNodes"/> property inside the macro.</remarks>
 		DropRemainingListItems = 32,
-		/// <summary>If this flag is present, the macro can match a plain identifier. By default, a macro must be a call.</summary>
+		/// <summary>If this flag is present, the macro can match a plain identifier. By default, only calls can be treated as macros.</summary>
 		/// <remarks>This flag does <i>not</i> prevent the macro from matching calls.</remarks>
 		MatchIdentifier = 64,
 		/// <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>

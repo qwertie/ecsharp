@@ -33,7 +33,7 @@ namespace Loyc.Collections
 
 	/// <summary>Helper struct. A sequence that stores one value, but acts like a list in which
 	/// that value is repeated a specified number of times. Returned from 
-	/// <see cref="Range.Repeat{T}"/>.</summary>
+	/// <see cref="ListExt.Repeat{T}(T, int)"/>.</summary>
 	[Serializable]
 	public struct Repeated<T> : IListAndListSource<T>, IRange<T>, IIsEmpty
 	{

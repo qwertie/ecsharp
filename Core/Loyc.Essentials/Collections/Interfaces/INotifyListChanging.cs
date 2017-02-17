@@ -26,7 +26,7 @@ namespace Loyc.Collections
 	/// <para/>
 	/// An optimization is available when only a single item is being added or
 	/// changed. In that case, the collection class should create a lightweight 
-	/// read-only single-item list by calling <see cref="Range.Single{T}(T)"/>.
+	/// read-only single-item list by calling <see cref="ListExt.Single{T}(T)"/>.
 	/// Such a list has less overhead than <see cref="List{T}"/> and the same
 	/// overhead as an array of one item.
 	/// </remarks>

@@ -24,7 +24,7 @@ namespace Util.WinForms
 		No, Yes, Partial
 	}
 
-	/// <summary>Base class for results returned from <see cref="IInputWidget.HitTest()"/>.</summary>
+	/// <summary>Base class for results returned from <see cref="IInputWidget.HitTest"/>.</summary>
 	public class HitTestResult
 	{
 		public HitTestResult(IShapeWidget shape, Cursor cursor)

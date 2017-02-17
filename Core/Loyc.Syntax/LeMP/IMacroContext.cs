@@ -109,7 +109,7 @@ namespace LeMP
 		/// is reset to contain only predefined properties.</param>
 		/// <remarks>The node(s)</remarks>
 		VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
-		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool)"/>
+		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false);
 
 		/// <summary>Gets information about all macros registered with the macro 

@@ -20,18 +20,18 @@ namespace Loyc.Ecs
 	/// <br/>60+: Add: + -     (Shift is 56 but ideally would be 70)
 	/// <br/>50+: Range: ..    (`custom operators` are 28 to 55)
 	/// <br/>40+: Compare: &lt; > &lt;= >= is as using == !=
-	/// <br/>30+: Bitwise &^|  (Ideally would be 54..59)
-	/// <br/>20+: Conditional && || ^^
+	/// <br/>30+: Bitwise &amp;^|  (Ideally would be 54..59)
+	/// <br/>20+: Conditional &amp;&amp; || ^^
 	/// <br/>10+: Ternary
 	/// <br/> 1:  Assignment
 	/// <br/>-1:  Lambda (only the right-hand side of '=>')
 	/// <para/>
-	/// When printing an expression, we avoid emitting <c>x & y == z</c> because 
-	/// the ranges of == and & overlap. Instead <see cref="EcsNodePrinter"/> prints 
-	/// <c>#&(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
-	/// the <see cref="EcsNodePrinter.AllowExtraParenthesis"/> option, which allows 
+	/// When printing an expression, we avoid emitting <c>x | y == z</c> because 
+	/// the ranges of == and | overlap. Instead <see cref="EcsNodePrinter"/> prints 
+	/// <c>@`'|`(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
+	/// the <see cref="EcsNodePrinter.AllowChangeParentheses"/> option, which allows 
 	/// parenthesis to be added so that a Loyc tree with the structure 
-	/// <c>#&(x, y == z)</c> is emitted as <c>x & (y == z)</c>, even though the 
+	/// <c>@`'|`(x, y == z)</c> is emitted as <c>x | (y == z)</c>, even though the 
 	/// latter is a slightly different tree.
 	/// <para/>
 	/// Most of the operators use a range of two adjacent numbers, e.g. 10..11. 

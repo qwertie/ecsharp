@@ -23,7 +23,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Adapter: provides a view of an <see cref="IListSource{T}"/> in which the Count 
 	/// is the same, but the minimum index is not necessarily zero. Returned from 
-	/// <see cref="LCExt.NegView{T}(IListSource{T},int)"/>.
+	/// <see cref="LCExt.AsNegList{T}(IListSource{T},int)"/>.
 	/// </summary>
 	/// <remarks>
 	/// This wrapper is a structure in order to offer high performance in certain 

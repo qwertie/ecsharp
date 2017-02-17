@@ -97,7 +97,7 @@ namespace Loyc.Collections.Impl
 	}
 
 	/// <summary>The concrete implementation of <see cref="KeylessHashtable{T}"/>.
-	/// Do not use directly; instead, call <see cref="KeylessHashtable{T}.New"/>.</summary>
+	/// Do not use directly; instead, call <see cref="KeylessHashtable{T}.New(int)"/>.</summary>
 	[Serializable]
 	public class KeylessHashtable<T, Int, Math> : KeylessHashtable<T> 
 		where Int : struct, IConvertible

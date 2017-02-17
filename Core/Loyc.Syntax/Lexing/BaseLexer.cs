@@ -628,7 +628,7 @@ namespace Loyc.Syntax.Lexing
 		}
 		/// <summary>Handles an error that occurs during Match(), MatchExcept(), MatchRange() or MatchExceptRange()</summary>
 		/// <param name="inverted">Set inversion flag. If true, then <c>expected</c> is actually a list of things that were NOT expected.</param>
-		/// <param name="expected">List of items that were expected (or unexpected, if <c>inverted</c>)</param>
+		/// <param name="ranges">List of ranges of characters that were expected (or unexpected, if <c>inverted</c>)</param>
 		protected virtual void MatchError(bool inverted, IList<int> ranges)
 		{
 			if (InputPosition == _lastErrorPosition)

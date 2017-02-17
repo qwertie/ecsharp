@@ -604,7 +604,7 @@ namespace Loyc.Syntax
 	}
 
 	/// <summary>Flags that can be used with 
-	/// <see cref="ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)"/>
+	/// <see cref="ParseHelpers.TryParseUInt(ref UString, out ulong, int, ParseNumberFlag)"/>
 	/// </summary>
 	public enum ParseNumberFlag
 	{

@@ -43,7 +43,7 @@ namespace Loyc
 	/// sink itself should perform localization using <see 
 	/// cref="Localize.Localized(string, object[])"/>.
 	/// <para/>
-	/// Only a single Write() method is truly needed (<see cref="Write(Severity, object, string, object[])"/>),
+	/// Only a single Write() method is truly needed (<see cref="Write(Severity, TContext, string, object[])"/>),
 	/// but for efficiency reasons the interface contains two other writers. It 
 	/// is expected to be fairly common that a message sink will drop some or
 	/// all messages without printing them, e.g. if a message sink is used for 
@@ -61,10 +61,6 @@ namespace Loyc
 	/// doing any work required to prepare a message for printing when a certain
 	/// category of output is disabled.
 	/// </remarks>
-	/// <typeparam name="TSeverity">The type of the first parameter to <c>Write</c>, 
-	/// which is used to indicate the "kind" of message being logged. Typically this 
-	/// parameter is <see cref="Severity"/>, which includes values like Note, Warning 
-	/// and Error.</typeparam>
 	/// <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
 	/// which indicates where the error occurs. If the message relates to a text
 	/// file or source code, the location is typically indicated with an object of
@@ -80,7 +76,7 @@ namespace Loyc
 	public interface IMessageSink<in TContext>
 	{
 		/// <summary>Writes a message to the target that this object represents.</summary>
-		/// <param name="type">Severity or importance of the message; widely-used
+		/// <param name="level">Severity or importance of the message; widely-used
 		/// types include Error, Warning, Note, Debug, and Verbose. The special 
 		/// type Detail is intended to provide more information about a previous 
 		/// message.</param>

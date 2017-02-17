@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.4.0.1
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.5.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -18,7 +18,7 @@ namespace Loyc.Collections
 	/// </summary><remarks>
 	/// For example, the <see cref="Enumerable.Last()"/> extension 
 	/// method scans the entire list before returning the last item, while 
-	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
+	/// <see cref="Last{T}(IReadOnlyList{T})"/> and <see cref="Last{T}(IList{T})"/> simply
 	/// return the last item directly.
 	/// </remarks>
 	public static partial class LinqToLists
@@ -177,7 +177,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
 		/// the list immediately.</summary>
-		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
 		public static ListSlice<T> TakeNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
 		{
@@ -192,7 +192,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice without the initial elements of the list that meet the specified
 		/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
 		/// method scans the list immediately.</summary>
-		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
 		public static ListSlice<T> SkipNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
 		{
@@ -208,7 +208,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
 		/// the list immediately.</summary>
-		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
 		public static Slice_<T> TakeNowWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
 		{
@@ -223,7 +223,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice without the initial elements of the list that meet the specified
 		/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
 		/// method scans the list immediately.</summary>
-		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
 		public static Slice_<T> SkipNowWhile<T>(this IListSource<T> list, Func<T, bool> predicate)
 		{
@@ -239,7 +239,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
 		/// the list immediately.</summary>
-		/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the first 3 elements.</remarks>
 		public static NegListSlice<T> TakeNowWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
 		{
@@ -254,7 +254,7 @@ namespace Loyc.Collections
 		/// <summary>Returns a slice without the initial elements of the list that meet the specified
 		/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
 		/// method scans the list immediately.</summary>
-		/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
+		/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
 		/// (not a copy) of the last 2 elements.</remarks>
 		public static NegListSlice<T> SkipNowWhile<T>(this INegListSource<T> list, Func<T, bool> predicate)
 		{

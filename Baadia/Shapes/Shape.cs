@@ -62,8 +62,8 @@ namespace BoxDiagrams
 		/// <returns>Null indicates a failed hit test. Inside the result object, the 
 		/// cursor <see cref="Cursors.Arrow"/> means that the shape is selectable, 
 		/// <see cref="Cursors.SizeAll"/> indicates that the user will be moving something, 
-		/// and a sizing cursor such as <see cref="SizeNS"/> indicates that something will 
-		/// be resized or that one line in a collection of lines will be moved along the 
+		/// and a sizing cursor such as <see cref="Cursors.SizeNS"/> indicates that something 
+		/// will be resized or that one line in a collection of lines will be moved along the 
 		/// indicated direction (e.g. up-down for SizeNS).</returns>
 		public abstract HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel);
 

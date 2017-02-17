@@ -213,7 +213,7 @@ namespace Loyc
 
 		/// <summary>Uses a standard <see cref="ResourceManager"/> object to obtain translations.</summary>
 		/// <param name="manager">A ResourceManager that provides access to resources (resx embedded in an assembly)</param>
-		/// <param name="cultureInfo">A value of <see cref="CultureInfo"/> that
+		/// <param name="culture">A value of <see cref="CultureInfo"/> that
 		/// represents the language to look up in the ResourceManager. If this is
 		/// null, the ResourceManager will use CultureInfo.CurrentUICulture.</param>
 		/// <param name="resxNameCalculator">An optional function that will be 

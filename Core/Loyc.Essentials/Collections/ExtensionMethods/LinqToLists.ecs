@@ -134,7 +134,7 @@ namespace Loyc.Collections
 			/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 			/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
 			/// the list immediately.</summary>
-			/// <remarks>Example: new[] { 3, 6, 9, 12, 1, 2 }.TakeNowWhile(n => n < 10) returns a slice 
+			/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
 			/// (not a copy) of the first 3 elements.</remarks>
 			public static $ListSlice<T> TakeNowWhile<T>(this $IList<T> list, Func<T, bool> predicate)
 			{
@@ -149,7 +149,7 @@ namespace Loyc.Collections
 			/// <summary>Returns a slice without the initial elements of the list that meet the specified
 			/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
 			/// method scans the list immediately.</summary>
-			/// <remarks>Example: new[] { 4, 8, 12, 2, 10 }.SkipNowWhile(n => n < 10) returns a slice 
+			/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
 			/// (not a copy) of the last 2 elements.</remarks>
 			public static $ListSlice<T> SkipNowWhile<T>(this $IList<T> list, Func<T, bool> predicate)
 			{

@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace Loyc
 {
 	/// <summary>Extension methods for strings, such as <see cref="SplitAt"/>, 
-	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="Format"/> and <see cref="Slice"/>.</summary>
+	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="FormatCore"/> and <see cref="Slice"/>.</summary>
 	public static partial class StringExt
 	{
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
@@ -171,7 +171,7 @@ namespace Loyc
 		/// <summary>Called by Format to replace named placeholders with numeric
 		/// placeholders in format strings.</summary>
 		/// <returns>A format string that can be used to call string.Format.</returns>
-		/// <seealso cref="Format"/>
+		/// <seealso cref="FormatCore"/>
 		public static string EliminateNamedArgs(string format, params object[] args)
 		{
 			char c;

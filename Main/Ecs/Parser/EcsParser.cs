@@ -20,7 +20,8 @@ namespace Loyc.Ecs.Parser
 	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees 
 	/// (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
-	/// You can use <see cref="EcsLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
+	/// You can use <see cref="EcsLanguageService.Value"/> with extension method
+	/// <see cref="ParsingService.Parse(IParsingService, UString, IMessageSink, ParsingMode, bool)"/>
 	/// to easily parse a text string (holding zero or more EC# statements) into a 
 	/// Loyc tree. One does not normally use this class directly.
 	/// </remarks>

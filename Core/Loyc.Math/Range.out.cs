@@ -22,15 +22,15 @@ namespace Loyc
 	/// Note: the following <c>InRange</c> extension methods have been moved to 
 	/// class <see cref="G"/> in Loyc.Essentials so that Loyc.Syntax can use them:
 	/// <ul>
-	/// <li><c>n.IsInRange(lo, hi)</c> returns true if <c>n >= lo && hi >= n</c>, 
+	/// <li><c>n.IsInRange(lo, hi)</c> returns true if <c>n >= lo</c> and <c>hi >= n</c>, 
 	///     which corresponds to <c>n in lo...hi</c> in EC#.</li>
-	/// <li><c>n.IsInRangeExcludeHi(lo, hi)</c> returns true if <c>n >= lo && hi > n</c>,
+	/// <li><c>n.IsInRangeExcludeHi(lo, hi)</c> returns true if <c>n >= lo</c> and <c>hi > n</c>,
 	///     which corresponds to <c>n in lo..hi</c> in EC#.</li>
 	/// </ul>
 	/// If `in` and a range operator are not used together, something 
 	/// slightly different happens:
 	/// <ul>
-	/// <li><c>var r = lo..hi</c> becomes Range.ExcludeHi(lo, hi)</c> 
+	/// <li><c>var r = lo..hi</c> becomes <c>Range.ExcludeHi(lo, hi)</c> 
 	///     (<c>Range.Inclusive</c> for <c>...</c>).</li>
 	/// <li><c>x in r</c> becomes <c>r.Contains(x)</c>.</li>
 	/// </ul>

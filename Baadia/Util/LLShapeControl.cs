@@ -174,7 +174,7 @@ namespace Util.WinForms
 	/// or when <i>all</i> the layers underneath rarely change. Also, the alpha
 	/// channel should be disabled on the first layer.
 	/// <para/>
-	/// When calling <see cref="LLShapeControl.Add"/>, you can specify 
+	/// When calling <see cref="LLShapeControl.AddLayer"/>, you can specify 
 	/// <c>useAlpha: null</c> to decide automatically based on the number of shapes
 	/// in the layer.
 	/// <para/>

@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Helper class: provides a modified view of an IList by transforming each element 
 	/// on-demand. Objects of this type are returned from 
-	/// <see cref="LinqToCollections.Select{T,TResult}(IList{T},Func{T,TResult})"/>
+	/// <see cref="LinqToLists.Select{T,TResult}(IList{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
@@ -53,7 +53,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Helper class: provides a modified view of an IListSource by transforming each element 
 	/// on-demand. Objects of this type are returned from 
-	/// <see cref="LinqToCollections.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
+	/// <see cref="LinqToLists.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>

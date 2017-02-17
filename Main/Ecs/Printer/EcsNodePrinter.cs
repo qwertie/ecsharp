@@ -33,11 +33,11 @@ namespace Loyc.Ecs
 	/// to EC# source code.</summary>
 	/// <remarks>
 	/// To print EC# code, you not use this class directly. Instead, call 
-	/// <see cref="EcsLanguageService.Print"/> via 
+	/// <see cref="EcsLanguageService.Print(LNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)"/> via 
 	/// <see cref="EcsLanguageService.WithPlainCSharpPrinter"/> or via
 	/// <see cref="EcsLanguageService.Value"/>. This class does have some static
-	/// methods like <see cref="PrintLiteral"/> and <see cref="PrintId"/> that
-	/// are useful for printing tokens efficiently.
+	/// methods like <see cref="PrintLiteral(object, NodeStyle)"/> and 
+	/// <see cref="PrintId"/> that are useful for printing tokens efficiently.
 	/// <para/>
 	/// This class is designed to faithfully preserve most Loyc trees; almost any 
 	/// Loyc tree that can be represented as EC# source code will be represented 
@@ -136,7 +136,7 @@ namespace Loyc.Ecs
 		}
 
 		/// <summary>Attaches a new <see cref="StringBuilder"/>, then prints a node 
-		/// with <see cref="Print(LNode, object)"/>.</summary>
+		/// with <see cref="Print(LNode, ParsingMode)"/>.</summary>
 		internal void Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode)
 		{
 			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
@@ -145,7 +145,7 @@ namespace Loyc.Ecs
 		}
 
 		/// <summary>Attaches a new <see cref="TextWriter"/>, then prints a node 
-		/// with <see cref="Print(LNode, object)"/>.</summary>
+		/// with <see cref="Print(LNode, ParsingMode)"/>.</summary>
 		internal void Print(LNode node, TextWriter target, IMessageSink sink, ParsingMode mode)
 		{
 			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
@@ -1319,13 +1319,14 @@ namespace Loyc.Ecs
 		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
 		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
 		/// automatically, space trivia (if any) may be redundant unless you set 
-		/// <see cref="_o.SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
+		/// <see cref="SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
 		public bool OmitSpaceTrivia { get; set; }
 
 		/// <summary>When this flag is set, raw text trivia attributes (e.g. <see 
 		/// cref="CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
 		/// output); otherwise such attributes are treated as unknown trivia and, 
-		/// if <see cref="OmitUnknownTrivia"/> is false, printed as attributes.</summary>
+		/// if <see cref="LNodePrinterOptions.OmitUnknownTrivia"/> is false, 
+		/// printed as attributes.</summary>
 		/// <remarks>Initial value: true</remarks>
 		public bool ObeyRawText { get; set; }
 
@@ -1335,7 +1336,7 @@ namespace Loyc.Ecs
 		public bool QuoteUnprintableLiterals { get; set; }
 
 		/// <summary>Causes the ambiguity between constructors and method calls to
-		/// be ignored; see <see cref="EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
+		/// be ignored; see <see cref="Loyc.Ecs.Tests.EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
 		public bool AllowConstructorAmbiguity { get; set; }
 
 		/// <summary>Prints statements like "foo (...) bar()" in the equivalent form

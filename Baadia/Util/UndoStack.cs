@@ -94,7 +94,7 @@ namespace Util.UI
 		/// <remarks>All tentative actions pending at the same time are placed
 		/// in the same undo group. Call <see cref="AcceptTentativeAction"/> or 
 		/// <see cref="Do"/> to finalize, or <see cref="UndoTetativeAction"/> to
-		/// undo.
+		/// undo.</remarks>
 		public virtual void DoTentatively(DoOrUndo action)
 		{
 			_tempStack.Add(new Command(action, false).Do());

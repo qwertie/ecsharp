@@ -13,7 +13,7 @@ using System.Collections.Generic;
 namespace Loyc.Collections
 {
 	/// <summary>Adapter: reversed view of <see cref="IListSource{T}"/> returned 
-	/// from <see cref="LCExt.Reverse{T}"/>.</summary>
+	/// from <see cref="LinqToLists.Reverse{T}"/>.</summary>
 	[Serializable]
 	public class ReversedListSource<T> : ListSourceBase<T>
 	{

@@ -35,7 +35,7 @@ namespace Loyc.Geometry
 	/// <para/>
 	/// The object may or may not require X2 >= X1 and Y2 >= Y1 and Z2 >= Z1.
 	/// If X1>X2 or Y1>Y2 or Z1>Z2, the rectangle is said to be "not 
-	/// normalized" and the <see cref="Rectangle3Ext.IsNormal"/> extension 
+	/// normalized" and the <see cref="Rectangle3Ext.IsNormal{Rect,T}(Rect)"/> extension 
 	/// method returns false.
 	/// </remarks>
 	public interface IRectangle3Reader<T> : IRectangleReader<T>, ISize3Reader<T>
