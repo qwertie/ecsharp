@@ -122,6 +122,7 @@ namespace Loyc.Ecs
 			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
 			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>("AutoPrintOfOperator")));
+			d.Add(S.Linq, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>("AutoPrintLinqExpression")));
 
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
@@ -972,7 +973,97 @@ namespace Loyc.Ecs
 			}
 		}
 
+		#region Linq expressions
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintLinqExpression(Precedence primary)
+		{
+			if (EcsValidators.IsLinqExpression(_n, Pedantics)) {
+				// Print the clauses
+				bool first = true;
+				foreach (LNode clause in _n.Args)
+				{
+					if (!first)
+						Space(SpaceOpt.Default);
+					first = false;
+					PrintLinqClause(clause);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		private void PrintLinqClause(LNode clause)
+		{
+			PrintTrivia(clause, false);
+			var name = clause.Name;
+			var arg0 = clause[0];
+			if (name == S.From) {
+				_out.Write("from ", true);
+				Debug.Assert(clause.ArgCount == 1);
+				if (arg0.Calls(S.In, 2)) {
+					PrintExpr(arg0[0], StartExpr, Ambiguity.AllowUnassignedVarDecl);
+					_out.Write(" in ", true);
+					PrintExpr(arg0[1], ContinueExpr);
+				} else
+					PrintExpr(arg0, StartExpr);
+			} else if (name == S.OrderBy) {
+				_out.Write("orderby ", true);
+				var first = true;
+				foreach (var arg in clause.Args) {
+					if (!first)
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					first = false;
+					if (arg.Calls(S.Ascending, 1)) {
+						PrintExpr(arg[0], StartExpr);
+						_out.Write(" ascending", true);
+					} else if (arg.Calls(S.Descending, 1)) {
+						PrintExpr(arg[0], StartExpr);
+						_out.Write(" descending", true);
+					} else {
+						PrintExpr(arg, StartExpr);
+					}
+				}
+			} else if (name == S.Join) {
+				_out.Write("join ", true);
+				LNode equals = clause.Args[1], into = clause.Args[2, null];
+				Debug.Assert(arg0.Calls(S.In, 2));
+				Debug.Assert(equals.Calls("#equals", 2));
+				Debug.Assert(into == null || into.Calls("#into", 1));
+				PrintExpr(arg0[0], StartExpr, Ambiguity.AllowUnassignedVarDecl);
+				_out.Write(" in ", true);
+				PrintExpr(arg0[1], ContinueExpr);
+				_out.Write(" on ", true);
+				PrintExpr(equals[0], StartExpr);
+				_out.Write(" equals ", true);
+				PrintExpr(equals[1], StartExpr);
+				if (into != null) {
+					_out.Write(" into ", true);
+					PrintExpr(into[0], StartExpr);
+				}
+			} else if (name == S.GroupBy) {
+				_out.Write("group ", true);
+				Debug.Assert(clause.ArgCount == 2);
+				LNode arg1 = clause.Args[1];
+				PrintExpr(arg0, StartExpr);
+				_out.Write(" by ", true);
+				PrintExpr(arg1, StartExpr);
+			} else if (name == S.Into) {
+				_out.Write("into ", true);
+				PrintExpr(arg0, StartExpr);
+				for (int i = 1; i < clause.ArgCount; i++)
+					PrintLinqClause(clause[i]);
+			} else {
+				Debug.Assert(name == S.Let || name == S.Where || name == S.Select);
+				_out.Write(name.Name.Substring(1), true);
+				Space(SpaceOpt.Default);
+				Debug.Assert(clause.ArgCount == 1);
+				PrintExpr(arg0, StartExpr);
+			}
+			PrintTrivia(clause, true);
+		}
+
+		#endregion
 
 		#region PrintType()
 

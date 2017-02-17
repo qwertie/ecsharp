@@ -23,6 +23,9 @@ namespace LeMP
 			"The first applicable rule is used.", "#in")]
 		public static LNode In(LNode node, IMacroContext context)
 		{
+			if (context.Parent.Calls(S.From) || context.Parent.Calls(S.Join))
+				return null; // ignore 'in' inside LINQ expression
+
 			matchCode(node) {
 			case $x in $range:
 				LNode parens;

@@ -13,7 +13,7 @@ namespace Loyc.Ecs.Tests
 {
 	/// <summary>EC# parser tests. Most of the tests are inherited.</summary>
 	[TestFixture]
-	public class EcsParserTests : EcsPrinterAndParserTests
+	public partial class EcsParserTests : EcsPrinterAndParserTests
 	{
 		Func<Token, string> _oldTSS;
 		[SetUp] public void SetUp()
@@ -32,33 +32,36 @@ namespace Loyc.Ecs.Tests
 			if ((mode & (Mode.ParserTest | Mode.ExpectAndDropParserError)) == 0)
 				return;
 			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)ConsoleMessageSink.Value;
-			// This is the easy way: 
-			//LNode result = EcsLanguageService.Value.ParseSingle(text, sink, exprMode ? ParsingMode.Expressions : ParsingMode.Statements, preserveComments: true);
-			// But to make debugging easier, I'll do it the long way:
-			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", sink);
-			var preprocessed = new EcsPreprocessor(lexer, true);
-			var treeified = new TokensToTree(preprocessed, false);
-			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
-			VList<LNode> results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
-			//if (!preprocessed.TriviaList.IsEmpty) 
+			
+			using (Token.SetToStringStrategy(TokenExt.ToString)) // debugging aid
 			{
-				// Inject comments
-				var injector = new EcsTriviaInjector(preprocessed.TriviaList, preprocessed.SourceFile, (int)TokenType.Newline, "/*", "*"+"/", "//");
-				results = LNode.List(injector.Run(results.GetEnumerator()).ToList());
-			}
-			LNode result = results.AsLNode(S.Splice);
-			AreEqual(TokenType.EOF, parser.LT0.Type(), string.Format("Parser stopped before EOF at [{0}] in {1}", parser.LT0.StartIndex, text));
+				// This is the easy way: 
+				//   LNode result = EcsLanguageService.Value.ParseSingle(text, sink, exprMode ? ParsingMode.Expressions : ParsingMode.Statements, preserveComments: true);
+				// But to make debugging easier, I'll do it the long way:
+				ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", sink);
+				var preprocessed = new EcsPreprocessor(lexer, true);
+				var treeified = new TokensToTree(preprocessed, false);
+				var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
+				VList<LNode> results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
 
-			if ((mode & Mode.IgnoreTrivia) != 0)
-				result = result.ReplaceRecursive(n => n.IsTrivia ? Maybe<LNode>.NoValue : n, LNode.ReplaceOpt.ProcessAttrs).Value;
-			if (sink is MessageHolder) {
-				((MessageHolder)sink).WriteListTo(TraceMessageSink.Value);
-				GreaterOrEqual(((MessageHolder)sink).List.Count(m => m.Severity >= Severity.Error), 1, 
-					"Expected an error but got none for "+text);
-				if (expected == null)
-					return;
+				// Inject comments
+				var injector = new EcsTriviaInjector(preprocessed.TriviaList, preprocessed.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				results = LNode.List(injector.Run(results.GetEnumerator()).ToList());
+
+				LNode result = results.AsLNode(S.Splice);
+				AreEqual(TokenType.EOF, parser.LT0.Type(), string.Format("Parser stopped before EOF at [{0}] in {1}", parser.LT0.StartIndex, text));
+
+				if ((mode & Mode.IgnoreTrivia) != 0)
+					result = result.ReplaceRecursive(n => n.IsTrivia ? Maybe<LNode>.NoValue : n, LNode.ReplaceOpt.ProcessAttrs).Value;
+				if (sink is MessageHolder) {
+					((MessageHolder)sink).WriteListTo(TraceMessageSink.Value);
+					GreaterOrEqual(((MessageHolder)sink).List.Count(m => m.Severity >= Severity.Error), 1, 
+						"Expected an error but got none for "+text);
+					if (expected == null)
+						return;
+				}
+				AreEqual(expected, result);
 			}
-			AreEqual(expected, result);
 		}
 
 		[Test]

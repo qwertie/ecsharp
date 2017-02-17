@@ -179,12 +179,6 @@ namespace Loyc.Ecs.Parser
 			|	'@' (NormalId / isBQ=FancyId) {skipAt=1;} )
 			{ParseIdValue(skipAt, isBQ);}
 		};
-		def OtherContextualKeyword()
-		{
-			_parseNeeded = _verbatim = false;
-			_type = TT.ContextualKeyword;
-			ParseIdValue(0, false);
-		};
 		@[private] rule LettersOrPunc @{ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' };
 			
@@ -355,20 +349,20 @@ namespace Loyc.Ecs.Parser
 			/ "alias"                 (EndId=>{_type=TT.ContextualKeyword; _value = _alias;})
 			/ "assembly"              (EndId=>{_type=TT.ContextualKeyword; _value = _assembly;})
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
-			/ "from"                  (EndId=>{_type=TT.ContextualKeyword; _value = _from;})
-			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
+			/ "from"                  (EndId=>{_type=TT.LinqKeyword;       _value = _from;})
+			/ "where"                 (EndId=>{_type=TT.LinqKeyword;       _value = _where;})
 			/ "when"                  (EndId=>{_type=TT.ContextualKeyword; _value = _when;})
-			/ "select"                (EndId=>{_type=TT.ContextualKeyword; _value = _select;})
-			/ "join"                  (EndId=>{OtherContextualKeyword();})
-			/ "on"                    (EndId=>{OtherContextualKeyword();})
-			/ "equals"                (EndId=>{OtherContextualKeyword();})
-			/ "into"                  (EndId=>{OtherContextualKeyword();})
-			/ "let"                   (EndId=>{OtherContextualKeyword();})
-			/ "orderby"               (EndId=>{OtherContextualKeyword();})
-			/ "ascending"             (EndId=>{OtherContextualKeyword();})
-			/ "descending"            (EndId=>{OtherContextualKeyword();})
-			/ "group"                 (EndId=>{OtherContextualKeyword();})
-			/ "by"                    (EndId=>{OtherContextualKeyword();})
+			/ "select"                (EndId=>{_type=TT.LinqKeyword;       _value = _select;})
+			/ "join"                  (EndId=>{_type=TT.LinqKeyword;       _value = _join;})
+			/ "on"                    (EndId=>{_type=TT.LinqKeyword;       _value = _on;})
+			/ "equals"                (EndId=>{_type=TT.LinqKeyword;       _value = _equals;})
+			/ "into"                  (EndId=>{_type=TT.LinqKeyword;       _value = _into;})
+			/ "let"                   (EndId=>{_type=TT.LinqKeyword;       _value = _let;})
+			/ "orderby"               (EndId=>{_type=TT.LinqKeyword;       _value = _orderby;})
+			/ "ascending"             (EndId=>{_type=TT.LinqKeyword;       _value = _ascending;})
+			/ "descending"            (EndId=>{_type=TT.LinqKeyword;       _value = _descending;})
+			/ "group"                 (EndId=>{_type=TT.LinqKeyword;       _value = _group;})
+			/ "by"                    (EndId=>{_type=TT.LinqKeyword;       _value = _by;})
 			/ "await"                 (EndId=>{_type=TT.ContextualKeyword; _value = _await;})
 			/ Id
 		};
@@ -395,10 +389,6 @@ namespace Loyc.Ecs.Parser
 		@[static, readonly] _descending::Symbol = GSymbol.Get("descending");
 		@[static, readonly] _group::Symbol = GSymbol.Get("group");
 		@[static, readonly] _by::Symbol = GSymbol.Get("by");
-		// This is used by EcsParser
-		@[internal, static, readonly] LinqKeywords::HashSet!object = (new HashSet!object { 
-			_where; _select; _from; _join; _on; _equals; _into; _let; _orderby; _ascending; _descending; _group; _by
-		});
 
 		rule RestOfPPLine::string @{
 			{start::int = InputPosition;}
