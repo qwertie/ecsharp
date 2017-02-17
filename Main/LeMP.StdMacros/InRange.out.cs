@@ -1,4 +1,4 @@
-// Generated from InRange.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from InRange.ecs by LeMP custom tool. LeMP version: 2.5.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -30,6 +30,8 @@ namespace LeMP
 		"The first applicable rule is used.", "#in")] 
 		public static LNode In(LNode node, IMacroContext context)
 		{
+			if (context.Parent.Calls(S.From) || context.Parent.Calls(S.Join))
+				return null;	// ignore 'in' inside LINQ expression
 			{
 				LNode range, x;
 				if (node.Calls(CodeSymbols.In, 2) && (x = node.Args[0]) != null && (range = node.Args[1]) != null) {

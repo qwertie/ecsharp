@@ -583,6 +583,102 @@ namespace Loyc.Ecs
 			return _n.ArgCount == 1 && HasSimpleHeadWPA(_n, p) && CallsWPAIH(_n.Args[0], S.Forward, 1, p);
 		}
 
+		#region Linq expression validation
+
+		public static bool IsLinqExpression(LNode n, Pedantics p = Pedantics.Lax)
+		{
+			var parts = n.Args;
+			if (n.CallsMin(S.Linq, 2) && parts[0].Calls(S.From)) {
+				if (IsValidIntoClause(parts.Last, p)) {
+					parts = parts.WithoutLast(1);
+				}
+				if (DetectSelectOrGroupBy(parts.Last) == null)
+					return false;
+				parts = parts.WithoutLast(1);
+				return AreValidLinqClauses(parts, 1, p);
+			}
+			return false;
+		}
+
+		private static bool AreValidLinqClauses(VList<LNode> parts, int i, Pedantics p)
+		{
+			for (; i < parts.Count; i++)
+				if (LinqClauseKind(parts[i], p) == null)
+					return false;
+			return true;
+		}
+
+		private static Symbol LinqClauseKind(LNode n, Pedantics p)
+		{
+			Symbol name = n.Name;
+			var args = n.Args;
+			if (name == S.From) {
+				if (!IsInExpr(args[0], p))
+					return null;
+			} else if (name == S.Let) {
+				if (args.Count != 1)
+					return null;
+			} else if (n.Calls(S.Where)) {
+				if (args.Count != 1)
+					return null;
+			} else if (n.Calls(S.Join)) {
+				if (args.Count < 2 || args.Count > 3)
+					return null;
+				if (!IsInExpr(args[0], p))
+					return null;
+				if (!args[1].Calls("#equals", 2))
+					return null;
+				if (args.Count >= 3) {
+					LNode into = args[2], id;
+					if (!(into.Calls(S.Into, 1) && !HasPAttrsOrParens(id = into[0], p) && (id.IsId || id.Calls(S.Substitute, 1))))
+						return null;
+				}
+			} else if (n.Calls(S.OrderBy)) {
+				// All argument lists are acceptable
+			} else
+				return null;
+			return name;
+		}
+
+		private static bool IsInExpr(LNode expr, Pedantics p)
+		{
+			LNode lhs;
+			return expr.Calls(S.In, 2) && ((lhs = expr.Args[0]).IsId || lhs.Calls(S.Var, 2)) && !HasPAttrsOrParens(lhs, p);
+		}
+
+		private static Symbol DetectSelectOrGroupBy(LNode n)
+		{
+			Symbol name = n.Name;
+			var args = n.Args;
+			if (name == S.Select) {
+				if (args.Count != 1)
+					return null;
+			} else if (name == S.GroupBy) {
+				if (args.Count != 2)
+					return null;
+			} else
+				return null;
+			return name;
+		}
+
+		private static bool IsValidIntoClause(LNode n, Pedantics p)
+		{
+			if (n.Name != S.Into || n.ArgCount < 2)
+				return false;
+			var parts = n.Args;
+			if (!(parts[0].IsId || parts[0].Calls(S.Substitute, 1)) || HasPAttrsOrParens(parts[0], p))
+				return false;
+
+			if (IsValidIntoClause(parts.Last, p) && n.ArgCount >= 3)
+				parts = parts.WithoutLast(1);
+			if (DetectSelectOrGroupBy(parts.Last) == null)
+				return false;
+			parts = parts.WithoutLast(1);
+			return AreValidLinqClauses(parts, 1, p);
+		}
+
+		#endregion
+
 		/// <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
 		/// this method identifies the base name component, which in this example 
 		/// is Bar. This is used, for example, to identify the expected name for

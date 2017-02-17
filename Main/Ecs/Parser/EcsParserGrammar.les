@@ -101,8 +101,7 @@ namespace Loyc.Ecs.Parser
 
 		// A potential LINQ keyword that, it turns out, can be treated as an identifier
 		@[private] rule LinqKeywordAsId()::Token @{
-			&!{_insideLinqExpr} t:=TT.LinqKeyword
-			{return t;}
+			&!{_insideLinqExpr} result:TT.LinqKeyword
 		};
 		
 		// ---------------------------------------------------------------------
@@ -576,7 +575,7 @@ namespace Loyc.Ecs.Parser
 				{Down(lp);}
 				{kind::Symbol;}
 				{var attrs = VList!LNode.Empty;}
-				( op:"->"      {kind = S.Cast;} 
+				( op:"->"     {kind = S.Cast;} 
 				| op:TT.As    {kind = S.As;}
 				| op:TT.Using {kind = S.UsingCast;})
 				NormalAttributes(ref attrs)
@@ -603,7 +602,7 @@ namespace Loyc.Ecs.Parser
 		|	// C-style cast
 			&{@[Hoist] Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 			lp:="(" ")"
-			(&!("+"|"-"|"*"|"&"|"."|TT.BQString|("++,--" "(")))
+			&!("+"|"-"|"*"|"&"|"."|TT.BQString | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
 			e:=PrefixExpr
 			{Down(lp); return SetOperatorStyle(F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex));}
 		/	e:=KeywordOrPrimaryExpr {return e;}
@@ -726,9 +725,9 @@ namespace Loyc.Ecs.Parser
 						?? TentativeExpr(attrs, out result);
 				} else {
 					expr = TentativeExpr(attrs, out result);
-					// If parsing as expression succeeds but it's an assignment, try
-					// parsing as a variable declaration too (consider `List<Foo>x=0`)
-					if expr == null || expr.Calls(S.Assign, 2) {
+					// If parsing as expression succeeds but it's an assignment with
+					// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
+					if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
 						InputPosition = result.OldPosition;
 						expr = TentativeVarDecl(attrs, out _, allowUnassignedVarDecl);
 					};
@@ -746,7 +745,7 @@ namespace Loyc.Ecs.Parser
 				// A var decl like "A B" looks like an expression followed by
 				// an identifier. To cede victory to VarDeclExpr, detect that
 				// the expression didn't end properly and emit an error.
-				if (LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma) {
+				if LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma && !(LA0 == TT.LinqKeyword && _insideLinqExpr) {
 					failed = @true;
 				};
 			));
@@ -956,7 +955,8 @@ namespace Loyc.Ecs.Parser
 				on_finally { _insideLinqExpr = false; };
 				var parts = LNode.List();
 			}
-			parts+=LinqFromClause QueryBody(ref parts) parts+=QueryContinuation*
+			parts+=LinqFromClause
+			QueryBody(ref parts)
 			{return F.Call(S.Linq, parts, startIndex, parts.Last.Range.EndIndex, startIndex, startIndex);}
 		};
 		
@@ -978,10 +978,11 @@ namespace Loyc.Ecs.Parser
 		@[LL(1)]
 		@[private] rule QueryBody(ref parts::VList!LNode) @{
 			greedy[parts+=QueryBodyClause]*
-			(	parts+=LinqSelectClause
-			|	parts+=LinqGroupClause
+			(	parts+=LinqGroupClause
+			|	parts+=LinqSelectClause
 			|	error {Error("Expected 'select' or 'group' clause to end LINQ query");}
 			)
+			[parts+=QueryContinuation]?
 		};
 
 		@[LL(1)]
@@ -1038,9 +1039,9 @@ namespace Loyc.Ecs.Parser
 			result:ExprStart(false)
 			greedy
 			[	&{Is($LI, @@ascending)} dir:TT.LinqKeyword
-				{$result = F.Call(S.Ascending, result, dir.StartIndex, result.Range.EndIndex, dir.StartIndex, dir.EndIndex);}
+				{$result = F.Call(S.Ascending, result, result.Range.StartIndex, dir.EndIndex, dir.StartIndex, dir.EndIndex);}
 			|	&{Is($LI, @@descending)} dir:TT.LinqKeyword
-				{$result = F.Call(S.Descending, result, dir.StartIndex, result.Range.EndIndex, dir.StartIndex, dir.EndIndex);}
+				{$result = F.Call(S.Descending, result, result.Range.StartIndex, dir.EndIndex, dir.StartIndex, dir.EndIndex);}
 			]?
 		};
 

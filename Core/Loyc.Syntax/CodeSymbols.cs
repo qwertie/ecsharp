@@ -229,8 +229,8 @@ namespace Loyc.Syntax
 
 		// C# LINQ clauses
 		public static readonly Symbol Linq = GSymbol.Get("#linq");           // e.g. #linq(#from(x in list), #where(x > 0), #select(x))
-		public static readonly Symbol From = GSymbol.Get("#from");           // e.g. #from(x in list)
-		public static readonly Symbol Let = GSymbol.Get("#let");             // e.g. #let(x = y.Foo)
+		public static readonly Symbol From = GSymbol.Get("#from");           // e.g. #from(x in list) // LHS of `in` can be id or var decl
+		public static readonly Symbol Let = GSymbol.Get("#let");             // e.g. #let(x = y.Foo) // can have any expression inside
 		public static readonly Symbol Join = GSymbol.Get("#join");           // e.g. #join(p in products, #equals(c.ID, p.CID), #into(pGroup))
 		public static readonly Symbol OrderBy = GSymbol.Get("#orderby");     // e.g. #orderby(#ascending(p.Name), #descending(p.Date))
 		public static readonly Symbol Ascending = GSymbol.Get("#ascending");

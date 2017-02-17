@@ -182,6 +182,7 @@ namespace Loyc.Ecs.Parser
 				case TT.Shebang: return "#!" + (t.Value ?? "").ToString() + "\n";
 				case TT.Id:
 				case TT.ContextualKeyword:
+				case TT.LinqKeyword:
 					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
 				case TT.Base: return "base";
 				case TT.This: return "this";
