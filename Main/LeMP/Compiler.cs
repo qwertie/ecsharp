@@ -90,6 +90,8 @@ namespace LeMP
 
 			var argList = args.ToList();
 			var options = c.ProcessArguments(argList, false, true);
+			if (options == null)
+				return; // error occurred, message should have printed already
 			if (argList.Count == 0) {
 				filter.Error(null, "No input files provided, stopping.");
 				return;
@@ -253,12 +255,22 @@ namespace LeMP
 				Assembly assembly;
 				TryCatch("While opening " + macroDll, sink, () =>
 				{
-					if (macroDll.Contains('\\') || macroDll.Contains('/')) {
-						// Avoid "Absolute path information is required" exception
-						string fullPath = Path.Combine(Environment.CurrentDirectory, macroDll);
-						assembly = Assembly.LoadFile(fullPath);
-					} else
-						assembly = Assembly.LoadFrom(macroDll);
+					// When running standalone, Assembly.Load works properly,
+					// but not when running in Visual Studio. I'm speculating it's 
+					// because Visual Studio loads the Custom Tool in the "LoadFrom"
+					// context and Assembly.Load ignores assemblies loaded in the 
+					// LoadFrom context (maybe not VS's fault as it loads us via COM)
+					// See https://blogs.msdn.microsoft.com/suzcook/2003/05/29/choosing-a-binding-context/
+					// Workaround for idiotic MS design: reprogram Load to find 
+					// assemblies that are already loaded.
+					AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
+					     return AppDomain.CurrentDomain.GetAssemblies()
+					                     .FirstOrDefault(a => a.FullName == e.Name);
+					};
+
+					string path = Path.Combine(Environment.CurrentDirectory, macroDll);
+					byte[] bytes = File.ReadAllBytes(path);
+					assembly = Assembly.Load(bytes);
 					c.AddMacros(assembly);
 				});
 			}

@@ -8,8 +8,6 @@
 // C# (e.g. "struct X { Y(); }"). Such invalid code is allowed by the parser in 
 // case a macro might transform it later into something that makes more sense.
 //
-// NOTE: LINQ is not yet implemented.
-//
 #importMacros LeMP.Prelude.Les;
 #ecs;
 import System;
