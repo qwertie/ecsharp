@@ -48,17 +48,17 @@ namespace Loyc.Math
 		
 		public static explicit operator FPI16(FPI8 value)
 		{
-			if (value.N > Int32.MaxValue >> 8)
+			if (value.N > (Int32.MaxValue >> 8))
 				return FPI16.MaxValue;
-			if (value.N < Int32.MinValue >> 8)
+			if (value.N < (Int32.MinValue >> 8))
 				return FPI16.MinValue;
 			return FPI16.Prescaled((Int32)(value.N << 8));
 		}
 		public static explicit operator FPI23(FPI8 value)
 		{
-			if (value.N > Int32.MaxValue >> 15)
+			if (value.N > (Int32.MaxValue >> 15))
 				return FPI23.MaxValue;
-			if (value.N < Int32.MinValue >> 15)
+			if (value.N < (Int32.MinValue >> 15))
 				return FPI23.MinValue;
 			return FPI23.Prescaled((Int32)(value.N << 15));
 		}
@@ -363,9 +363,9 @@ namespace Loyc.Math
 		}
 		public static explicit operator FPI23(FPI16 value)
 		{
-			if (value.N > Int32.MaxValue >> 7)
+			if (value.N > (Int32.MaxValue >> 7))
 				return FPI23.MaxValue;
-			if (value.N < Int32.MinValue >> 7)
+			if (value.N < (Int32.MinValue >> 7))
 				return FPI23.MinValue;
 			return FPI23.Prescaled((Int32)(value.N << 7));
 		}
@@ -965,33 +965,33 @@ namespace Loyc.Math
 		
 		public static explicit operator FPI8(FPL16 value)
 		{
-			if (value.N > Int64.MaxValue >> 24)
+			if (value.N > (Int64.MaxValue >> 24))
 				return FPI8.MaxValue;
-			if (value.N < Int64.MinValue >> 24)
+			if (value.N < (Int64.MinValue >> 24))
 				return FPI8.MinValue;
 			return FPI8.Prescaled((Int32)(value.N >> 8));
 		}
 		public static explicit operator FPI16(FPL16 value)
 		{
-			if (value.N > Int64.MaxValue >> 32)
+			if (value.N > (Int64.MaxValue >> 32))
 				return FPI16.MaxValue;
-			if (value.N < Int64.MinValue >> 32)
+			if (value.N < (Int64.MinValue >> 32))
 				return FPI16.MinValue;
 			return FPI16.Prescaled((Int32)(value.N));
 		}
 		public static explicit operator FPI23(FPL16 value)
 		{
-			if (value.N > Int64.MaxValue >> 39)
+			if (value.N > (Int64.MaxValue >> 39))
 				return FPI23.MaxValue;
-			if (value.N < Int64.MinValue >> 39)
+			if (value.N < (Int64.MinValue >> 39))
 				return FPI23.MinValue;
 			return FPI23.Prescaled((Int32)(value.N << 7));
 		}
 		public static explicit operator FPL32(FPL16 value)
 		{
-			if (value.N > Int64.MaxValue >> 16)
+			if (value.N > (Int64.MaxValue >> 16))
 				return FPL32.MaxValue;
-			if (value.N < Int64.MinValue >> 16)
+			if (value.N < (Int64.MinValue >> 16))
 				return FPL32.MinValue;
 			return FPL32.Prescaled(((Int64)value.N << 16));
 		}
@@ -1283,25 +1283,25 @@ namespace Loyc.Math
 		
 		public static explicit operator FPI8(FPL32 value)
 		{
-			if (value.N > Int64.MaxValue >> 8)
+			if (value.N > (Int64.MaxValue >> 8))
 				return FPI8.MaxValue;
-			if (value.N < Int64.MinValue >> 8)
+			if (value.N < (Int64.MinValue >> 8))
 				return FPI8.MinValue;
 			return FPI8.Prescaled((Int32)(value.N >> 24));
 		}
 		public static explicit operator FPI16(FPL32 value)
 		{
-			if (value.N > Int64.MaxValue >> 16)
+			if (value.N > (Int64.MaxValue >> 16))
 				return FPI16.MaxValue;
-			if (value.N < Int64.MinValue >> 16)
+			if (value.N < (Int64.MinValue >> 16))
 				return FPI16.MinValue;
 			return FPI16.Prescaled((Int32)(value.N >> 16));
 		}
 		public static explicit operator FPI23(FPL32 value)
 		{
-			if (value.N > Int64.MaxValue >> 23)
+			if (value.N > (Int64.MaxValue >> 23))
 				return FPI23.MaxValue;
-			if (value.N < Int64.MinValue >> 23)
+			if (value.N < (Int64.MinValue >> 23))
 				return FPI23.MinValue;
 			return FPI23.Prescaled((Int32)(value.N >> 9));
 		}
