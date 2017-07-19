@@ -74,9 +74,9 @@ namespace Loyc.Math
 <#			int fracDif = T.Frac - T2.Frac; #>
 <#			int loss = T.WholeBits - T2.WholeBits; #>
 <#			if (loss > 0) { #>
-			if (value.N > <#=T.Int#>.MaxValue >> <#=loss#>)
+			if (value.N > (<#=T.Int#>.MaxValue >> <#=loss#>))
 				return <#=T2#>.MaxValue;
-			if (value.N < <#=T.Int#>.MinValue >> <#=loss#>)
+			if (value.N < (<#=T.Int#>.MinValue >> <#=loss#>))
 				return <#=T2#>.MinValue;
 <#			} #>
 			return <#=T2#>.Prescaled(<#= 
