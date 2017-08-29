@@ -134,13 +134,13 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("-x", F.Call(S.Sub, x));
 			Exact("- 2", F.Call(S.Sub, two));
-			Exact("-2", F.Literal(-2));
-			Stmt("-111222333444", F.Literal(-111222333444));
-			Exact("-2L", F.Literal(-2L));
-			Stmt("-2.0", F.Literal(-2.0));
-			Stmt("-2d", F.Literal(-2.0));
-			Exact("-2f", F.Literal(-2.0f));
-			Stmt("-2.0f", F.Literal(-2.0f));
+			Exact("n\"-2\"", F.Literal(-2));
+			Stmt("n\"-111222333444\"", F.Literal(-111222333444));
+			Exact("L\"-2\"", F.Literal(-2L));
+			Stmt("n\"-2.0\"", F.Literal(-2.0));
+			Stmt("d\"-2\"", F.Literal(-2.0));
+			Exact("f\"-2\"", F.Literal(-2.0f));
+			Stmt("f\"-2.0\"", F.Literal(-2.0f));
 		}
 
 		[Test]
@@ -149,8 +149,7 @@ namespace Loyc.Syntax.Les
 			Exact(@"123z", F.Literal(new BigInteger(123)));
 			// TODO: add underscores in printer
 			Stmt (@"9_876_543_210z", F.Literal(new BigInteger(9876543210)));
-			// TODO: don't print this as a string in printer
-			Stmt ("-2z", F.Literal(new BigInteger(-2)));
+			Exact("z\"-2\"", F.Literal(new BigInteger(-2)));
 		}
 		
 		#endregion
@@ -180,7 +179,7 @@ namespace Loyc.Syntax.Les
 			Exact("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Exact("a + b + 1",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("a = b = 0",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
-			Exact("a >= b .. c",  F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a >= b..c",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Exact("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
 			Exact("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Exact("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
@@ -190,7 +189,7 @@ namespace Loyc.Syntax.Les
 			
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!!c .?. 1", F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
+			Exact("a.b!!!c.?. 1",  F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c",   F.Call("'+/", a, F.Call("'*+", b, c)));
 		}
 
@@ -276,7 +275,7 @@ namespace Loyc.Syntax.Les
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
 			Exact("| a = %b", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
-			Exact(".. a + b && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
 			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
 			Exact("/x", F.Call(S.Div, x));
 		}
@@ -395,7 +394,7 @@ namespace Loyc.Syntax.Les
 			Exact("@Foo (a)(b)",       F.Attr(Foo, F.Call(F.InParens(a), b)));
 			Exact("@123 Foo(x)",       F.Attr(F.Literal(123), F.Call(Foo, x)));
 			Exact("@'!' Foo(x)",       F.Attr(F.Literal('!'), F.Call(Foo, x)));
-			Exact("@-12 Foo(x)",       F.Attr(F.Literal(-12), F.Call(Foo, x)));
+			Exact("@n\"-12\" Foo(x)",  F.Attr(F.Literal(-12), F.Call(Foo, x)));
 		}
 
 		[Test]
@@ -528,7 +527,7 @@ namespace Loyc.Syntax.Les
 			// Challenges involving `-`
 			Exact("- 2", F.Call(S.Sub, two));
 			Exact("- 2.5", F.Call(S.Sub, F.Literal(2.5)));
-			Exact("+ -2", F.Call(S.Add, F.Literal(-2)));
+			Exact("+n\"-2\"", F.Call(S.Add, F.Literal(-2)));
 			Exact("+- 2", F.Call("'+-", F.Literal(2)));
 			Exact("-(2.5)", F.Call(S.Sub, F.InParens(F.Literal(2.5))));
 			Exact("-x** +x", F.Call(S.Exp, F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)));

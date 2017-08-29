@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.4.2.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.5.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -67,7 +67,9 @@ namespace Loyc.Syntax.Les
 					Skip();
 			} else
 				Match('\n');
+			// line 28
 			AfterNewline(ignoreIndent, skipIndent: false);
+			// line 31
 			return _brackStack.Last == TokenType.LBrace ? null : WhitespaceTag.Value;
 		}
 	
@@ -154,13 +156,10 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			UString suffix = default(UString);
-			// Line 42: ([\-])?
+			// Line 42: ([−])?
 			la0 = LA0;
-			if (la0 == '-') {
+			if (la0 == '−')
 				Skip();
-				// line 42
-				_type = TT.NegativeLiteral;
-			}
 			// Line 43: ( HexNumber / BinNumber / DecNumber )
 			la0 = LA0;
 			if (la0 == '0') {
@@ -191,7 +190,9 @@ namespace Loyc.Syntax.Les
 				break;
 			matchIdCore:
 				{
+					// line 45
 					_startPosition = InputPosition;
+					// line 46
 					object boolOrNull = NoValue.Value;
 					suffix = IdCore(ref boolOrNull);
 					// line 48
@@ -288,14 +289,12 @@ namespace Loyc.Syntax.Les
 		bool Scan_HexDigits()
 		{
 			int la0, la1;
-			if (!TryMatch(HexDigit_set0))
-				return false;
+			Skip();
 			// Line 54: greedy([0-9A-Fa-f])*
 			for (;;) {
 				la0 = LA0;
-				if (HexDigit_set0.Contains(la0)){
-					if (!TryMatch(HexDigit_set0))
-						return false;}
+				if (HexDigit_set0.Contains(la0))
+					Skip();
 				else
 					break;
 			}
@@ -305,16 +304,13 @@ namespace Loyc.Syntax.Les
 				if (la0 == '\'' || la0 == '_') {
 					la1 = LA(1);
 					if (HexDigit_set0.Contains(la1)) {
-						if (!TryMatch('\'', '_'))
-							return false;
-						if (!TryMatch(HexDigit_set0))
-							return false;
+						Skip();
+						Skip();
 						// Line 54: greedy([0-9A-Fa-f])*
 						for (;;) {
 							la0 = LA0;
-							if (HexDigit_set0.Contains(la0)){
-								if (!TryMatch(HexDigit_set0))
-									return false;}
+							if (HexDigit_set0.Contains(la0))
+								Skip();
 							else
 								break;
 						}
@@ -326,8 +322,7 @@ namespace Loyc.Syntax.Les
 			// Line 54: greedy([_])?
 			la0 = LA0;
 			if (la0 == '_')
-				if (!TryMatch('_'))
-					return false;
+				Skip();
 			return true;
 		}
 	
@@ -488,7 +483,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 86: (["] / )
+			// Line 86: (["] / {..})
 			la0 = LA0;
 			if (la0 == '"')
 				Skip();
@@ -502,7 +497,9 @@ namespace Loyc.Syntax.Les
 		object TQString()
 		{
 			int la0, la1, la2;
+			// line 90
 			bool parseNeeded = true;
+			// line 91
 			_style = NodeStyle.TDQStringLiteral;
 			// Line 92: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
@@ -640,6 +637,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
+			// line 108
 			result = ParseOp(out _type);
 			return result;
 		}
@@ -757,12 +755,10 @@ namespace Loyc.Syntax.Les
 			int la0;
 			// Line 141: ( [#A-Z_a-z] | [0-9] | ['] &!(['] [']) )
 			la0 = LA0;
-			if (Number_set0.Contains(la0)){
-				if (!TryMatch(Number_set0))
-					return false;}
-			else if (la0 >= '0' && la0 <= '9'){
-				if (!TryMatchRange('0', '9'))
-					return false;}
+			if (Number_set0.Contains(la0))
+				Skip();
+			else if (la0 >= '0' && la0 <= '9')
+				Skip();
 			else {
 				if (!TryMatch('\''))
 					return false;
@@ -970,24 +966,9 @@ namespace Loyc.Syntax.Les
 							value = Operator();
 					}
 					break;
-				case '-':
-					{
-						la1 = LA(1);
-						if (la1 >= '0' && la1 <= '9')
-							goto matchNumber;
-						else if (la1 == '.') {
-							la2 = LA(2);
-							if (la2 >= '0' && la2 <= '9')
-								goto matchNumber;
-							else
-								value = Operator();
-						} else
-							value = Operator();
-					}
-					break;
 				case '0': case '1': case '2': case '3':
 				case '4': case '5': case '6': case '7':
-				case '8': case '9':
+				case '8': case '9': case '−':
 					goto matchNumber;
 				case '.':
 					{
@@ -1129,14 +1110,14 @@ namespace Loyc.Syntax.Les
 					}
 					break;
 				case '!': case '$': case '%': case '&':
-				case '*': case '+': case ':': case '<':
-				case '=': case '>': case '?': case '^':
-				case '|': case '~':
+				case '*': case '+': case '-': case ':':
+				case '<': case '=': case '>': case '?':
+				case '^': case '|': case '~':
 					value = Operator();
 					break;
 				default:
 					{
-						Skip();
+						MatchExcept();
 						// line 201
 						_type = TT.Unknown;
 					}

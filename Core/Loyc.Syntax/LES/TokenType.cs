@@ -20,7 +20,6 @@ namespace Loyc.Syntax.Les
 		Id         = TokenKind.Id,
 		BQId       = TokenKind.Id + 1, // LESv3 only
 		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
-		NegativeLiteral = TokenKind.Literal + 1, // -12345
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,

@@ -39,7 +39,7 @@ public partial class Les3Lexer
 	// Numbers ---------------------------------------------------------------
 	
 	token Number returns [object result] :
-		('-' {_type = TT.NegativeLiteral;})?
+		('\u2212')? // '−'
 		(HexNumber / BinNumber / DecNumber)
 		{UString numberText = Text();}
 		(	{_startPosition = InputPosition;} // as expected by IdCore

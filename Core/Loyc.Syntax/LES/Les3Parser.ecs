@@ -1,8 +1,8 @@
 ﻿#ecs;
 #importMacros(Loyc.LLPG);
 using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
-using Loyc;               // optional (for IMessageSink, Symbol, etc.)
-using Loyc.Collections;   // optional (many handy interfaces & classes)
+using Loyc;               // for IMessageSink, Symbol, etc.
+using Loyc.Collections;   // many handy interfaces & classes
 using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
 
@@ -162,9 +162,6 @@ partial class Les3Parser
 				opName:=InfixOperatorName[out Token op]
 				rhs:=Expr(prec)
 				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-			|	&{[Local] context.CanParse(P.Add)}
-				rhs:=TT.NegativeLiteral
-				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex, rhs.StartIndex, rhs.StartIndex + 1, NodeStyle.Operator);}
 			|	// Suffix operator
 				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:TT.PreOrSufOp
@@ -227,7 +224,7 @@ partial class Les3Parser
 
 	PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
-			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
+			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
 			e:Expr[PrefixPrecedenceOf(op)]
 			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
 		/	result:Particle
@@ -244,7 +241,7 @@ partial class Les3Parser
 	Particle[bool isAttribute = false] returns [LNode result]
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
-		|	lit:=(TT.Literal|TT.NegativeLiteral) // literal
+		|	lit:=TT.Literal // literal
 			{$result = F.Literal(lit);}
 		|	// ' token list
 			op:=TT.SingleQuoteOp TokenList

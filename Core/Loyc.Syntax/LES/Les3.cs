@@ -17,7 +17,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Les
 {
-	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
+	[EditorBrowsable(EditorBrowsableState.Never)] // external code shouldn't use this class, except the syntax highlighter
 	public partial class Les3Lexer : BaseILexer<ICharSource, Token>, ILexer<Token>
 	{
 		// When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
@@ -85,7 +85,7 @@ namespace Loyc.Syntax.Les
 						Debug.Assert(char.IsDigit(parsedText[0]));
 						return CG.Cache((int)(parsedText[0] - '0'));
 					}
-					typeMarker = "number";
+					typeMarker = "n"; // number
 				} else {
 					syntaxError = null;
 					return parsedText.ToString();
@@ -138,7 +138,8 @@ namespace Loyc.Syntax.Les
 			Func<UString, object> u32 = s => { long n; return ParseSigned(s, out n) && (uint)n == n ? (object)(uint)n : null; };
 			Func<UString, object> i64 = s => { long n; return ParseSigned(s, out n) ? (object)(long)n : null; };
 			Func<UString, object> u64 = s => { ulong n; return ParseULong(s, out n) ? (object)(ulong)n : null; };
-			Func<UString, object> big = s => { BigInteger n; return ParseSigned(s, out n) ? (object)n : null; };
+			Func<UString, object> u   = s => { ulong n; return ParseULong(s, out n) ? ((uint)n == n ? (object)(uint)n : (object)(ulong)n) : null; };
+			Func<UString, object> big = s => { BigInteger n; return ParseBigInt(s, out n) ? (object)n : null; };
 			Func<UString, object> f32 = s => { double n; return ParseDouble(s, out n) && n >= float.MinValue && n <= float.MaxValue ? (object)(float)n : null; };
 			Func<UString, object> f64 = s => { double n; return ParseDouble(s, out n) ? (object)n : null; };
 			Func<UString, object> dec = s => {
@@ -152,9 +153,10 @@ namespace Loyc.Syntax.Les
 				return null;
 			};
 
-			dict["u32"] = dict["u"] = dict["U"] = u32;
+			dict["u32"] = u32;
 			dict["i32"] = i32;
 			dict["u64"] = dict["ul"] = dict["uL"] = dict["UL"] = dict["Ul"] = u64;
+			dict["u"]   = dict["U"] = u;
 			dict["i64"] = dict["l"] = dict["L"] = i64;
 			dict["f32"] = dict["f"] = dict["F"] = f32;
 			dict["f64"] = dict["d"] = dict["D"] = f64;
@@ -165,7 +167,7 @@ namespace Loyc.Syntax.Les
 				try { return new System.Text.RegularExpressions.Regex((string)s); }
 				catch { return new CustomLiteral(s, (Symbol)"re"); }
 			};
-			dict["number"] = GeneralNumberParser;
+			dict["n"]  = GeneralNumberParser;
 			dict["@@"] = ParseSingletonLiteral;
 			return dict;
 		}
@@ -182,7 +184,7 @@ namespace Loyc.Syntax.Les
 					return (uint)n;
 				else
 					return n;
-			} else if (s.Length >= 18 && ParseSigned(s, out z)) {
+			} else if (s.Length >= 18 && ParseBigInt(s, out z)) {
 				// (The length check is an optimization: the shortest number that 
 				// does not fit in a long is 0x8000000000000000.)
 				if (z >= 0 && z <= UInt64.MaxValue)
@@ -209,9 +211,10 @@ namespace Loyc.Syntax.Les
 			}
 			return false;
 		}
-		static bool ParseSigned(UString s, out BigInteger n)
+
+		static bool ParseBigInt(UString s, out BigInteger n)
 		{
-			n = 0;
+			n = BigInteger.Zero;
 			bool negative;
 			int radix = GetSignAndRadix(ref s, out negative);
 			if (radix == 0)
@@ -223,6 +226,7 @@ namespace Loyc.Syntax.Les
 			}
 			return false;
 		}
+
 		static bool ParseULong(UString s, out ulong u)
 		{
 			u = 0;
@@ -233,6 +237,7 @@ namespace Loyc.Syntax.Les
 			var flags = ParseNumberFlag.SkipSingleQuotes | ParseNumberFlag.SkipUnderscores | ParseNumberFlag.StopBeforeOverflow;
 			return ParseHelpers.TryParseUInt(ref s, out u, radix, flags) && s.Length == 0;
 		}
+
 		private static bool ParseDouble(UString s, out double d)
 		{
 			d = double.NaN;
@@ -251,7 +256,8 @@ namespace Loyc.Syntax.Les
 			negative = false;
 			if (s.Length == 0)
 				return 0;
-			if (s[0] == '-') {
+			char s0 = s[0];
+			if (s0 == '-' || s0 == '\x2212') {
 				negative = true;
 				s = s.Slice(1);
 				if (s.Length == 0)
@@ -339,14 +345,16 @@ namespace Loyc.Syntax.Les
 			TokenType tt;
 			Symbol name;
 
-			if (op == "!")
-				return Pair.Create(CodeSymbols.Not, TokenType.Not);
-			if (op == ":")
-				return Pair.Create(CodeSymbols.Colon, TokenType.Colon);
-
-			// Get first and last of the operator's initial punctuation
 			int length = op.Length;
+			// Get first and last of the operator's initial punctuation
 			char first = op[0], last = op[length - 1];
+
+			if (length == 1) {
+				if (first == '!')
+					return Pair.Create(CodeSymbols.Not, TokenType.Not);
+				if (first == ':')
+					return Pair.Create(CodeSymbols.Colon, TokenType.Colon);
+			}
 
 			Debug.Assert(first != '\'');
 			name = (Symbol)("'" + op);
@@ -457,7 +465,7 @@ namespace Loyc.Syntax.Les
 		internal static readonly Dictionary<object, Symbol> Continuators =
 			ContinuatorOps.ToDictionary(kw => (object)(Symbol)kw.Name.Substring(1), kw => kw);
 
-		/// <summary>Helper method used in Expr for cases like x-2, which is an 
+		/*/// <summary>Helper method used in Expr for cases like x-2, which is an 
 		/// Id token followed by a NegativeLiteral token, which needs to be 
 		/// reinterpreted as a subtraction by <i>positive</i> 2.</summary>
 		LNode ToPositiveLiteral(Token rhs)
@@ -495,7 +503,7 @@ namespace Loyc.Syntax.Les
 				return value.ToString().Substring(1);
 			}
 			throw new InvalidOperationException("Invalid negative literal: {0}".Localized(value));
-		}
+		}*/
 
 		bool CanParse(Precedence context, int li, out Precedence prec)
 		{

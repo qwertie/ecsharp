@@ -17,7 +17,7 @@ namespace Loyc.Syntax.Les
 		{
 			// There are certain instances of CustomLiteral that the parser will 
 			// not produce, which come out as ordinary literals when printed:
-			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"number")));
+			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"n")));
 			Exact("1234.5f00bar", F.Literal(new CustomLiteral("1234.5", (Symbol)"f00bar")));
 			Exact(@"0x1234`f00bar`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
 			Exact(@"0x1234`WTF!\n`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
@@ -27,9 +27,9 @@ namespace Loyc.Syntax.Les
 			Exact("123456789012345678901234567890z", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
 			// Ensure we can't trick printer into printing non-number as number
 			Exact(@"f00bar""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"f00bar")));
-			Exact(@"number""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"number")));
-			Exact(@"number""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"number")));
-			Exact(@"number""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"number")));
+			Exact(@"n""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"n")));
+			Exact(@"n""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"n")));
+			Exact(@"n""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"n")));
 		}
 
 		[Test]
@@ -68,8 +68,8 @@ namespace Loyc.Syntax.Les
 			//Exact("x 'Foo `'*`(a, b)", F.Call("'Foo", x, F.Call(S.Mul, a, b)).SetStyle(NodeStyle.Operator));
 			//Exact("x 'Foo a**b", F.Call("'Foo", x, F.Call(S.Exp, a, b)).SetStyle(NodeStyle.Operator));
 			//Exact("x 'Foo 1 == a", F.Call(S.Eq, F.Call("'Foo", x, one).SetStyle(NodeStyle.Operator), a));
-			Exact(".. `'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact("`'..`(a) & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+			Exact("..`'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
+			Exact("..a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)

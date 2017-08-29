@@ -243,22 +243,22 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
 		public static readonly Precedence DoubleBang  = new Precedence(91, 90);         // !!
 		public static readonly Precedence Prefix      = new Precedence(85);             // most prefix operators, e.g. - ~ *
-		public static readonly Precedence Power       = new Precedence(80);             // **
-		public static readonly Precedence Multiply    = new Precedence(70);             // * /
-		public static readonly Precedence Add         = new Precedence(60);             // + -
-		public static readonly Precedence Shift       = new Precedence(65, 65, 60, 70); // >> <<
-		public static readonly Precedence Arrow       = new Precedence(55);             // -> <-
-		public static readonly Precedence PrefixDots  = new Precedence(50);             // prefix ..
-		public static readonly Precedence Range       = new Precedence(45);             // infix ..
+		public static readonly Precedence Power       = new Precedence(81, 80);         // **
+		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..
+		public static readonly Precedence Range       = new Precedence(65);             // infix ..
+		public static readonly Precedence Multiply    = new Precedence(60);             // * /
+		public static readonly Precedence Add         = new Precedence(50);             // + -
+		public static readonly Precedence Shift       = new Precedence(55, 55, 50, 60); // >> <<
+		public static readonly Precedence Arrow       = new Precedence(45);             // -> <-
+		public static readonly Precedence Other       = new Precedence(45, 45, 45, 60); // unrecognized op
 		public static readonly Precedence OrIfNull    = new Precedence(40);             // ??
-		public static readonly Precedence Other       = new Precedence(40, 40, 40, 75); // unrecognized op
 		public static readonly Precedence Compare     = new Precedence(35);             // == != > < >= <=
-		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 50); // &
-		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50); // | ^
+		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 40); // &
+		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 40); // | ^
 		public static readonly Precedence And         = new Precedence(20);             // &&
 		public static readonly Precedence Or          = new Precedence(15);             // ||
 		public static readonly Precedence IfElse      = new Precedence(10, 2, 2, 2);    // ? :    a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
-		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);    // =      label : (b = (c ? (d : e)))
+		public static readonly Precedence Assign      = new Precedence(22, 5, 5, 5);    // =      label : (b = (c ? (d : e)))
 		public static readonly Precedence LowerKeyword = new Precedence(1, 0, 0, 0);    // (a = b) 'implies (a 'knows ('b = 'c)); a = (b ? (c 'else d))
 		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5); // =>
 		public static readonly Precedence PrefixOr    = new Precedence(-10);            // prefix |

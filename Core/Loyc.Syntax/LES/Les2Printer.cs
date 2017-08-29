@@ -710,8 +710,8 @@ namespace Loyc.Syntax.Les
 					SpaceAfterPrefixStopPrecedence = LesPrecedence.SuperExpr.Lo;
 				} else {
 					SpacesBetweenAppendedStatements = true;
-					SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
-					SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
 				}
 			}
 		}
@@ -733,10 +733,10 @@ namespace Loyc.Syntax.Les
 		/// <summary>The printer avoids printing spaces around infix (binary) 
 		/// operators that have the specified precedence or higher.</summary>
 		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
 
 		/// <summary>The printer avoids printing spaces after prefix operators 
 		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
 	}
 }

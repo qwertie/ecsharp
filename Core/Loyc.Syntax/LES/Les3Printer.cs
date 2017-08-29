@@ -174,7 +174,7 @@ namespace Loyc.Syntax.Les
 			Minus = 8,
 			Dot = 16,
 			NumberStart = IdStart | Minus | Dot, // Numbers can start minus/dot (- .) and charset overlaps Id
-			NegativeNumberStart = Punc | Minus,  // Numbers that starts with minus (-) must not touch other Punc
+			//NegativeNumberStart = Punc | Minus,  // Numbers no longer start with -, they start with Id
 			NumberEnd   = Id | BQId | Dot, // Numbers can end in backquotes (``), letters or digits, and '.' afterward could create ambiguity
 			IdAndPunc = Id | Punc | Minus | Dot,
 			DoubleQuote = 32,
@@ -472,7 +472,7 @@ namespace Loyc.Syntax.Les
 		protected static Symbol _L = GSymbol.Get("L");
 		protected static Symbol _UL = GSymbol.Get("uL");
 		protected static Symbol _Z = GSymbol.Get("z");
-		protected static Symbol _number = GSymbol.Get("number");
+		protected static Symbol _number = GSymbol.Get("n");
 
 		#endregion
 
@@ -490,7 +490,7 @@ namespace Loyc.Syntax.Les
 			Action<Les3Printer, object, NodeStyle, Symbol> printHelper;
 			if (value == null) {
 				if (tmarker != null)
-					MessageSink.Write(Severity.Warning, _n, "Les3Printer: Null SpecialLiteral will print as 'null'");
+					MessageSink.Write(Severity.Warning, _n, "Les3Printer: type marker ('{0}') attached to 'null' is unprintable", tmarker);
 				WriteToken("null", LesColorCode.KeywordLiteral, Chars.Id);
 			} else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out printHelper)) {
 				printHelper(this, value, style, tmarker);
@@ -546,12 +546,15 @@ namespace Loyc.Syntax.Les
 		{
 			bool negative = value < 0;
 			if (negative) {
-				StartToken(LesColorCode.Number, Chars.NegativeNumberStart, Chars.NumberEnd);
-				value = -value;
-				SB.Append('-');
-			} else
+				StartToken(LesColorCode.Number, Chars.Id, Chars.NumberEnd);
+				PrintIdCore(suffix ?? _number, startToken: false);
+				SB.Append("\"-");
+				PrintIntegerCore((ulong)-value, style, suffix: null);
+				SB.Append('\"');
+			} else {
 				StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-			PrintIntegerCore((ulong)value, style, suffix);
+				PrintIntegerCore((ulong)value, style, suffix);
+			}
 		}
 
 		void PrintInteger(ulong value, NodeStyle style, Symbol suffix)
@@ -591,11 +594,20 @@ namespace Loyc.Syntax.Les
 			} else if (float.IsNegativeInfinity(value)) {
 				WriteToken(NegativeInfinityPrefix, LesColorCode.KeywordLiteral, Chars.At, Chars.IdAndPunc);
 			} else {
-				StartToken(LesColorCode.Number, value < 0 ? Chars.NegativeNumberStart : Chars.NumberStart, Chars.NumberEnd);
+				StartToken(LesColorCode.Number, value < 0 ? Chars.Id : Chars.NumberStart, Chars.NumberEnd);
+				var asStr = value.ToString("R", CultureInfo.InvariantCulture);
 				// TODO: support hex & binary floats, and digit separators
 				// The "R" round-trip specifier makes sure that no precision is lost, and
 				// that parsing a printed version of double.MaxValue is possible.
-				SB.Append(value.ToString("R", CultureInfo.InvariantCulture));
+				if (value < 0) {
+					PrintIdCore(suffix ?? _F, startToken: false);
+					SB.Append('\"');
+					SB.Append(asStr);
+					SB.Append('\"');
+					return;
+				} else {
+					SB.Append(asStr);
+				}
 			}
 			PrintIdCore(suffix, startToken: false);
 		}
@@ -609,16 +621,24 @@ namespace Loyc.Syntax.Les
 			} else if (double.IsNegativeInfinity(value)) {
 				WriteToken(NegativeInfinityPrefix, LesColorCode.KeywordLiteral, Chars.At, Chars.IdAndPunc);
 			} else {
+				StartToken(LesColorCode.Number, value < 0 ? Chars.Id : Chars.NumberStart, Chars.NumberEnd);
+				var asStr = value.ToString("R", CultureInfo.InvariantCulture);
 				// TODO: support hex & binary floats, and digit separators
 				// The "R" round-trip specifier makes sure that no precision is lost, and
 				// that parsing a printed version of double.MaxValue is possible.
-				StartToken(LesColorCode.Number, value < 0 ? Chars.NegativeNumberStart : Chars.NumberStart, Chars.NumberEnd);
-				var asStr = value.ToString("R", CultureInfo.InvariantCulture);
-				SB.Append(asStr);
-				if (suffix == _D) {
-					if (!asStr.Contains(".") && !asStr.Contains("e"))
-						SB.Append(".0");
+				if (value < 0) {
+					PrintIdCore(suffix ?? _D, startToken: false);
+					SB.Append('\"');
+					SB.Append(asStr);
+					SB.Append('\"');
 					return;
+				} else {
+					SB.Append(asStr);
+					if (suffix == _D) {
+						if (!asStr.Contains(".") && !asStr.Contains("e"))
+							SB.Append(".0");
+						return;
+					}
 				}
 			}
 			PrintIdCore(suffix, startToken: false);
@@ -1309,8 +1329,8 @@ namespace Loyc.Syntax.Les
 					SpaceInsideListBrackets = false;
 				} else {
 					SpacesBetweenAppendedStatements = true;
-					SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
-					SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+					SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
+					SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
 				}
 				SpaceAfterComma = value;
 				SpacesBetweenAppendedStatements = value;
@@ -1377,11 +1397,11 @@ namespace Loyc.Syntax.Les
 		/// <summary>The printer avoids printing spaces around infix (binary) 
 		/// operators that have the specified precedence or higher.</summary>
 		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
 
 		/// <summary>The printer avoids printing spaces after prefix operators 
 		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
 
 		/// <summary>Although the LES3 printer is not designed to insert line breaks
 		/// mid-expression or to keep lines under a certain length, this option can 

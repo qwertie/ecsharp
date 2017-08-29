@@ -23,7 +23,15 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void OtherParseErrors()
 		{
-			Test(Mode.Stmt, 1, "-2u;", F.Literal(new CustomLiteral("-2", (Symbol)"u")));
+			Test(Mode.Stmt, 1, "u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"u")));
+		}
+
+		[Test]
+		public void ParseBug()
+		{
+			Test(Mode.Stmt, 0, "a - 2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
+			// This was parsed as (a - 2) ** b
+			Test(Mode.Stmt, 0, "a -2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
 		}
 
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string text, params LNode[] expected)
