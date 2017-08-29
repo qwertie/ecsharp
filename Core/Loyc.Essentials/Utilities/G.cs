@@ -26,6 +26,12 @@ namespace Loyc
 			a = b;
 			b = tmp;
 		}
+		public static void Swap(ref dynamic a, ref dynamic b)
+		{
+			var tmp = a;
+			a = b;
+			b = tmp;
+		}
 
 		public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp)
 		{
@@ -111,6 +117,15 @@ namespace Loyc
 		{
 			return action(obj);
 		}
+
+		/// <summary>Returns true. This method has no effect; it is used to do an action in a conditional expression.</summary>
+		/// <param name="value">Ignored.</param>
+		/// <returns>True.</returns>
+		public static bool True<T>(T value) { return true; }
+		
+        /// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
+		/// <returns>True</returns>
+		public static bool True(Action action) { action(); return true; }
 
 		public static readonly object BoxedFalse = false;      //!< Singleton false cast to object.
 		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
