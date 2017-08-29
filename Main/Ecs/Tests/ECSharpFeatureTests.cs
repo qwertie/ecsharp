@@ -447,6 +447,13 @@ namespace Loyc.Ecs.Tests
 			// both statements in the method body.
 			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(a, x)));
 			Stmt("this(int x)\n   : base(x) =>\n  a = x;", stmt, Mode.ParserTest);
+			// This doesn't work because Foo(...) => x; is parsed as an expression.
+			// That would be mostly okay for passing code through LeMP, except that 
+			// the printer drops the 'public' attribute when it is operating in 
+			// plain C# mode. Perhaps this should be parsed and printed as a 
+			// constructor ?
+			//stmt = F.Call(S.Class, Foo, F.List(), F.Braces(Attr(@public, F.Call(S.Constructor, F.Missing, Foo, list_int_x, x))));
+			//Stmt("class Foo {\n  public Foo(int x) => x;\n}", stmt);
 		}
 
 		[Test]

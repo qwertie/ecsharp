@@ -226,8 +226,8 @@ namespace Loyc.Ecs.Tests
 		public void MiscPrinterFocusedTests()
 		{
 			// Not a type context
-			Expr("checked(@`#[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
-			Expr("unchecked(@`#[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("checked(@`'[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("unchecked(@`'[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
 		}
 	}
 }

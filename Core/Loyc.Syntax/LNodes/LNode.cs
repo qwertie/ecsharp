@@ -177,7 +177,7 @@ namespace Loyc.Syntax
 	///     decided this wasn't an improvement, it would just shift the pain around.)</li>
 	/// <li>A constructor argument list is required on <i>all</i> types using the #new
 	///     operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
-	///     on int[], i.e. <c>#new(#of(#[],int)(), x)</c>; this rule makes the 
+	///     on int[], i.e. <c>#new(#of(@`'[]`,int)(), x)</c>; this rule makes the 
 	///     different kinds of new expressions easier to interpret by making them 
 	///     consistent with each other.</li>
 	/// <li>A missing syntax element is now represented by the empty identifier 

@@ -620,7 +620,7 @@ namespace Loyc.Ecs
 				PrintBracedBlockInNewExpr(1);
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
 				_out.Write("new", true);
-				Debug.Assert(type.Name.Name.StartsWith("#"));
+				Debug.Assert(type.Name.Name.StartsWith("'"));
 				_out.Write(type.Name.Name.Substring(1), true);
 				Space(SpaceOpt.Default);
 				PrintBracedBlockInNewExpr(1);
@@ -708,7 +708,7 @@ namespace Loyc.Ecs
 			// Write the brackets for the inner array types
 			for (int i = dimStack.Count - 1; i >= 0; i--) {
 				var arrayKW = S.GetArrayKeyword(dimStack[i]).Name;
-				Debug.Assert(arrayKW.StartsWith("#"));
+				Debug.Assert(arrayKW.StartsWith("'"));
 				_out.Write(arrayKW.Substring(1), true);
 			}
 		}
@@ -1106,7 +1106,7 @@ namespace Loyc.Ecs
 					PrintType(innerType, EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
 
 					for (int i = 0; i < stack.Count; i++) {
-						Debug.Assert(stack[i].Name.StartsWith("#"));
+						Debug.Assert(stack[i].Name.StartsWith("'"));
 						_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
 					}
 				} else {

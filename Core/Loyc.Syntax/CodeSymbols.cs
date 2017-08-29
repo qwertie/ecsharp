@@ -51,9 +51,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol Braces = GSymbol.Get("'{}"); //!< "{}" Creates a scope.
 		public static readonly Symbol IndexBracks = GSymbol.Get("'_[]"); //!< "_[]" indexing operator
 		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> #of(@`[]`, Foo)
-		public static readonly Symbol Array = GSymbol.Get("#[]");  //!< Used for list/array literals. Not used for attributes.
+		public static readonly Symbol Array = GSymbol.Get("'[]");  //!< Used for list/array literals. Not used for attributes.
 		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`#[]`)
-		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("#[,]"); //!< int[,] <=> #of(@`#[,]`, int)
+		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("'[,]"); //!< int[,] <=> #of(@`#[,]`, int)
 
 		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
 		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
@@ -198,7 +198,7 @@ namespace Loyc.Syntax
 		// Enhanced C# stuff (node names)
 		public static readonly Symbol NullDot = GSymbol.Get("'?.");       //!< "?."  safe navigation ("null dot") operator
 		public static readonly Symbol Exp = GSymbol.Get("'**");           //!< "**"  exponent operator
-		public static readonly Symbol In = GSymbol.Get("#in");            //!< "#in" membership test operator
+		public static readonly Symbol In = GSymbol.Get("'in");            //!< "'in" membership test operator
 		public static readonly Symbol Substitute = GSymbol.Get(@"'$");    //!< "$"   substitution operator
 		public static readonly Symbol _TemplateArg = GSymbol.Get(@"'$");  //!< Alias for Substitude
 		public static readonly Symbol DotDot = GSymbol.Get("'..");        //!< ".." Binary range operator (exclusive)
@@ -379,7 +379,7 @@ namespace Loyc.Syntax
 		/// is true, or 0 if the symbol does not represent an array type.</summary>
 		public static int CountArrayDimensions(Symbol s)
 		{
-			if (s.Name.Length >= 3 && s.Name.StartsWith("#[") && s.Name[s.Name.Length-1] == ']') {
+			if (s.Name.Length >= 3 && s.Name.StartsWith("'[") && s.Name[s.Name.Length-1] == ']') {
 				for (int i = 2; i < s.Name.Length-1; i++)
 					if (s.Name[i] != ',')
 						return 0;
@@ -394,7 +394,7 @@ namespace Loyc.Syntax
 			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
 			if (dims == 1) return Array;
 			if (dims == 2) return TwoDimensionalArray;
-			return GSymbol.Get("#[" + new string(',', dims-1) + "]");
+			return GSymbol.Get("'[" + new string(',', dims-1) + "]");
 		}
 		public static bool IsTriviaSymbol(Symbol name) { return name != null && name.Name.StartsWith("#trivia_"); }
 	}

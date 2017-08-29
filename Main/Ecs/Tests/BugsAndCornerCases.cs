@@ -197,7 +197,7 @@ namespace Loyc.Ecs.Tests
 			var FooNullable = F.Of(_(S.QuestionMark), Foo);
 			var FooPointer = F.Of(_(S._Pointer), Foo);
 			Expr("Foo[]",             FooBracks);
-			Expr("@`#[]`<Foo>",        FooArray);
+			Expr("@`'[]`<Foo>",        FooArray);
 			Expr("@`'?`<Foo>",         FooNullable);
 			Expr("@`'*`<Foo>",         FooPointer);
 			Stmt("#var(Foo[], a);",   F.Vars(FooBracks, a));
