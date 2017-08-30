@@ -280,6 +280,11 @@ namespace Loyc.Ecs.Parser
 			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
 				// unconditionally accept "*" as a pointer marker.
 				t:="*" {e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
+			|	t:="**" {
+					var ptr = F.Id(S._Pointer, t.StartIndex, t.EndIndex); 
+					e = F.Of(ptr, F.Of(ptr, e, e.Range.StartIndex, t.EndIndex - 1), e.Range.StartIndex, t.EndIndex);
+					result=true;
+				}
 			|	// int[][,] means "array of (two-dimensional array of int)", so we
 				// must process array adornments in reverse order.
 				{var dims = InternalList!(Pair!(int,int)).Empty;}

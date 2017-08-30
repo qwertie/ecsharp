@@ -220,6 +220,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("typeof(float*);",      F.Call(S.Typeof, F.Of(S._Pointer, S.Single)));
 			Stmt("decimal[,,,] x;",      F.Vars(F.Of(S.GetArrayKeyword(4), S.Decimal), x));
 			Stmt("double? x;",           F.Vars(F.Of(S.QuestionMark, S.Double), x));
+			Stmt("Foo x;",               F.Vars(Foo, x));
+			Stmt("Foo** x;",             F.Vars(F.Of(S._Pointer, F.Of(S._Pointer, Foo)), x));
 			Stmt("Foo<a.b.c>? x;",       F.Vars(F.Of(_(S.QuestionMark), F.Of(Foo, F.Dot(a, b, c))), x));
 			Stmt("Foo<a?, b.c[,]>[] x;", F.Vars(F.Of(_(S.Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
 		}
@@ -295,6 +297,9 @@ namespace Loyc.Ecs.Tests
 			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
 			var stmt = F.Call(S.Fixed, F.Vars(F.Of(_(S._Pointer), F.Int32), F.Assign(x, F.Call(S._AddressOf, Foo))), ChildStmt(F.Call(a, x)));
 			Stmt("fixed (int* x = &Foo)\n  a(x);", stmt);
+			stmt = F.Call(S.Fixed, F.Vars(F.Of(_(S._Pointer), F.Of(_(S._Pointer), F.Int32)),
+			                         F.Assign(x, F.Call(S._AddressOf, Foo))), ChildStmt(F.Call(a, x)));
+			Stmt("fixed (int** x = &Foo)\n  a(x);", stmt);
 
 			stmt = F.Call(S.While, F.Call(S.GT, x, one), ChildStmt(F.Call(S.PostDec, x)));
 			Stmt("while (x > 1)\n  x--;", stmt);
