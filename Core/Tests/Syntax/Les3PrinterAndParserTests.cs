@@ -186,10 +186,11 @@ namespace Loyc.Syntax.Les
 			Exact("a - b / c**2", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
 			Exact("a >>= 1",      F.Call(S.ShrAssign, a, one));
 			Exact("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
+			Exact(@"a!.b**2",     F.Call(S.Exp, F.Call((Symbol)"'!.", a, b), two));
 			
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!!c.?. 1",  F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
+			Exact("a.b!!.c.?. 1",  F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c",   F.Call("'+/", a, F.Call("'*+", b, c)));
 		}
 
@@ -278,6 +279,9 @@ namespace Loyc.Syntax.Les
 			Exact("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
 			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
 			Exact("/x", F.Call(S.Div, x));
+			// TODO: change printer to produce this Exact() output instead of `'-`
+			Expr(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
+			Expr(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
 		}
 
 		[Test]
@@ -289,6 +293,8 @@ namespace Loyc.Syntax.Les
 			// Ensure printer isn't confused by "suf" suffix which also appears on suffix operators
 			Exact(@"do_suf(x)", F.Call(@"do_suf", x).SetBaseStyle(NodeStyle.Operator));
 			Exact(@"`'do_suf`(x)", F.Call(@"'do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"a!! !!", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
+			Exact(@"!!a!!", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
 		}
 
 		[Test]

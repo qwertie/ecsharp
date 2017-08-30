@@ -81,16 +81,17 @@ namespace Loyc.Syntax.Les
 			new MMap<object, Precedence>() {
 				{ S.PreInc,     P.Primary }, // ++, never mind that it's called "pre"inc
 				{ S.PreDec,     P.Primary }, // --
+				{ S.PreBangBang,P.Primary }, // !!
 			}.AsImmutable();
 
 		protected static readonly Map<object, Precedence> PredefinedInfixPrecedence =
 			new MMap<object, Precedence>() {
 				{ S.Dot,         P.Primary    }, // .
 				{ S.QuickBind,   P.Primary    }, // =:
+				{ (Symbol)"'!.", P.Primary    }, // !.
 				{ S.Not,         P.Of         }, // !
 				{ S.NullDot,     P.NullDot    }, // ?.
 				{ S.ColonColon,  P.NullDot    }, // ::
-				{ S.DoubleBang,  P.DoubleBang }, // !!
 				{ S.Exp,         P.Power      }, // **
 				{ S.Mul,         P.Multiply   }, // *
 				{ S.Div,         P.Multiply   }, // /

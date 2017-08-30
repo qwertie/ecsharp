@@ -219,6 +219,8 @@ namespace Loyc.Syntax.Les
 			//Case(@"\++ ++ ++\", A(TT.PreOrSufOp, TT.PreOrSufOp, TT.SuffixOp), _("++"), _("++"), _(@"++\"));
 			//Case(@"\solve-for-x x\squared\", A(TT.NormalOp, TT.Id, TT.SuffixOp), _("solve-for-x"), _("x"), _(@"squared\"));
 			Case(@"+++x---", A(TT.PreOrSufOp, TT.Id, TT.PreOrSufOp), _("'+++"), _("x"), _("'---"));
+			Case(@"!!x!?!", A(TT.PreOrSufOp, TT.Id, TT.PreOrSufOp), _("'!!"), _("x"), _("'!?!"));
+			Case(@"x!!.y", A(TT.Id, TT.NormalOp, TT.Id), _("x"), _("'!!."), _("y"));
 			//Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("$"), _("x"), _(@"y\"), _("bq"), _(@"\"));
 			Case(@"$~!%^&*-+=|<>/?:._", A(TT.PrefixOp, TT.Id), _("'$~!%^&*-+=|<>/?:."), _("_"));
 			Case(@"$~!%^&*-+=|<>_/?:.", A(TT.PrefixOp, TT.Id, TT.NormalOp), _("'$~!%^&*-+=|<>"), _("_"), _("'/?:."));

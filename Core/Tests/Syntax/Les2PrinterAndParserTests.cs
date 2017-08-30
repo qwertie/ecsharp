@@ -106,7 +106,7 @@ namespace Loyc.Syntax.Les
 			
 			// Custom ops
 			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!!c.?.1;",   F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
+			Exact("a.b!!.c.?.1;",   F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c;",   F.Call("'+/", a, F.Call("'*+", b, c)));
 		}
 

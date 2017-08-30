@@ -241,7 +241,6 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Of          = new Precedence(102, 101);       // List!T
 		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x--
 		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
-		public static readonly Precedence DoubleBang  = new Precedence(91, 90);         // !!
 		public static readonly Precedence Prefix      = new Precedence(85);             // most prefix operators, e.g. - ~ *
 		public static readonly Precedence Power       = new Precedence(81, 80);         // **
 		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..

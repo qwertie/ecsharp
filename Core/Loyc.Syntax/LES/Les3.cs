@@ -361,7 +361,7 @@ namespace Loyc.Syntax.Les
 			if (name == CodeSymbols.Dot)
 				return Pair.Create(name, TokenType.Dot);
 			
-			if (length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
+			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
 				tt = TokenType.PreOrSufOp;
 			else if (first == '$')
 				tt = TokenType.PrefixOp;

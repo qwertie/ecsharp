@@ -166,10 +166,14 @@ namespace Loyc.Syntax
 		public static readonly Symbol ArrayInit = GSymbol.Get("#arrayInit"); //!< C# e.g. int[] x = {1,2} <=> int[] x = #arrayInit(1, 2)
 
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)
-		public static readonly Symbol Backslash = GSymbol.Get(@"'\");    //!< "\" operator
-		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");  //!< "!!" operator
-		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->"); //!< Alias for PtrArrow
-		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");   //!< "<-" operator
+		public static readonly Symbol Backslash = GSymbol.Get(@"'\");      //!< "\" operator
+		[Obsolete("Use PreBangBang or SufBangBang")]
+		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "!!" operator
+		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "!!" operator
+		public static readonly Symbol SufBangBang = GSymbol.Get(@"'!!suf"); //!< "!!" operator
+		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "!!." operator
+		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
+		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "<-" operator
 
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly"); //!< "#readonly" e.g. readonly int X; <=> [#readonly] #var(#int, X);
 		public static readonly Symbol Const = GSymbol.Get("#const");       //!< "#const"    e.g. const int X = 1; <=> [#const] #var(#int, X = 1);
