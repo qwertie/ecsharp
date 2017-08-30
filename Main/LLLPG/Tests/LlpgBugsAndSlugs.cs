@@ -9,6 +9,24 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+		[Test]
+		public void Bug_2017_08_UnexpectedWarning()
+		{
+			// Spurious "It's poor style to put a code block {..} before an and-predicate"
+			// warning was caused by a synthetic ActionPred inserted by AutoValueSaverVisitor
+			Test(@"
+				LLLPG parser(terminalType:Token) {
+					@[private] rule Rule()::Token @{ &{cond} result:1234 };
+				}",
+				@"private Token Rule()
+				{
+					Token result = default(Token);
+					Check(cond, ""Expected cond"");
+					result = Match(1234);
+					return result;
+				}", new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.Warning));
+		}
+
 		[Test(Fails = "TODO: figure out how to implement this properly")]
 		public void Bug_2017_01_CannotSharePrematchData()
 		{

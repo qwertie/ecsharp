@@ -49,13 +49,16 @@ namespace Loyc.LLParserGenerator
 				VisitChildrenOf(pred);
 			}
 
-			bool _codeBeforeAndWarning = false;
+			bool _codeBeforeAndWarningPrinted = false;
 			public override void Visit(ActionPred pred)
 			{
-				if (pred.Next is AndPred && !_codeBeforeAndWarning) {
-					LLPG.Output(Severity.Warning, pred, 
-						"It's poor style to put a code block {..} before an and-predicate &{..} because the and-predicate normally runs first.");
-					_codeBeforeAndWarning = true;
+				if (pred.Next is AndPred && !_codeBeforeAndWarningPrinted) {
+					// Block warning in case this is a synthetic action created by AutoValueSaverVisitor
+					if (pred.Basis != _currentRule.Basis) {
+						LLPG.Output(Severity.Warning, pred, 
+							"It's poor style to put a code block {..} before an and-predicate &{..} because the and-predicate normally runs first.");
+						_codeBeforeAndWarningPrinted = true;
+					}
 				}
 			}
 
