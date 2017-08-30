@@ -241,7 +241,10 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Of          = new Precedence(102, 101);       // List!T
 		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x--
 		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
-		public static readonly Precedence Prefix      = new Precedence(85);             // most prefix operators, e.g. - ~ *
+		// Prefix operators effectively have infinite precedence on the left side.
+		// Increasing the precedence of Prefix.Left allows printer to print things 
+		// like - -x without a special notation. It has no effect on the parser.
+		public static readonly Precedence Prefix      = new Precedence(111, 85, 85, 85); // most prefix operators, e.g. - ~ *
 		public static readonly Precedence Power       = new Precedence(81, 80);         // **
 		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..
 		public static readonly Precedence Range       = new Precedence(65);             // infix ..

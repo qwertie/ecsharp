@@ -279,9 +279,26 @@ namespace Loyc.Syntax.Les
 			Exact("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
 			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
 			Exact("/x", F.Call(S.Div, x));
-			// TODO: change printer to produce this Exact() output instead of `'-`
-			Expr(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
-			Expr(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
+			Exact(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
+			Exact(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
+		}
+
+		[Test]
+		public void PrecedenceOverrideEffect()
+		{
+			// The precedence override effect is something weird that prefix operators do.
+			// Whereas a.b.c means (a.b).c, a. -b.c means a.(-(b.c)). Effectively, the '-' 
+			// operator lowers the precedence of the expression that follows it.
+			Expr (@"a.(@@ -b)",    F.Dot(a, F.Call(S.Sub, b)));
+			Exact(@"a. -b",        F.Dot(a, F.Call(S.Sub, b)));
+			Expr (@"a.(@@ -b.c)",  F.Dot(a, F.Call(S.Sub, F.Dot(b, c))));
+			Exact(@"a. -b++",      F.Dot(a, F.Call(S.Sub, F.Call(S.PostInc, b))));
+			Exact(@"a.(@@ -b)++",  F.Call(S.PostInc, F.Dot(a, F.Call(S.Sub, b))));
+			Exact("a.(@@ !b)(x)",  F.Call(F.Dot(a, F.Call(S.Not, b)), x));
+			Exact("a. !b(x)",      F.Dot(a, F.Call(S.Not, F.Call(b, x))));
+			Exact(@"a. -b.c",      F.Dot(a, F.Call(S.Sub, F.Dot(b, c))));
+			// TODO: rethink keyword parsing (parser sees .c as keyword)
+			//Exact(@"a.(@@ -b).c",     F.Dot(a, F.Call(S.Sub, b), c));
 		}
 
 		[Test]
@@ -554,13 +571,6 @@ namespace Loyc.Syntax.Les
 			Exact("(`'++suf`)(x)",  Op(F.Call(F.InParens(F.Id(S.PostInc)), x)));
 			Exact("(`'+`)(a, b)",   Op(F.Call(F.InParens(F.Id(S.Add)), a, b)));
 			Exact("(`.foo`)(a, b)", Op(F.Call(F.InParens(F.Id(".foo")), a, b)));
-		}
-
-		[Test]
-		public void PrecedenceChallenge()
-		{
-			Exact("a.(@@ -b)",    F.Dot(a, F.Call(S._Negate, b)));
-			Exact("a.(@@ -b)(x)", F.Call(F.Dot(a, F.Call(S._Negate, b)), x));
 		}
 
 		[Test]
