@@ -365,13 +365,13 @@ namespace Loyc.Syntax.Les
 				tt = TokenType.PreOrSufOp;
 			else if (first == '$')
 				tt = TokenType.PrefixOp;
-			else if (first == '.' && (length == 1 || last != '.'))
+			else if (last == '.' && (length == 1 || first != '.'))
 				tt = TokenType.Dot;
 			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
 				tt = TokenType.Assignment;
 			else
 				tt = TokenType.NormalOp;
-
+			
 			return Pair.Create(name, tt);
 		}
 
@@ -426,7 +426,7 @@ namespace Loyc.Syntax.Les
 				case TokenType.Comma:  return "','";
 				case TokenType.Semicolon: return "';'";
 			}
-			return ((TokenType)type).ToString();
+			return ((TokenType)type).ToString().Localized();
 		}
 
 		// This is virtual so that a syntax highlighter can easily override and colorize it
@@ -440,9 +440,16 @@ namespace Loyc.Syntax.Les
 			return n.SetBaseStyle(NodeStyle.PrefixNotation);
 		}
 
-		protected LNode MissingExpr(Token tok) { return F.Id(S.Missing, tok.StartIndex, tok.EndIndex); }
+		protected LNode MissingExpr(Token tok, string error = null, bool afterToken = false)
+		{
+			int startIndex = afterToken ? tok.EndIndex : tok.StartIndex;
+			LNode missing = F.Id(S.Missing, startIndex, tok.EndIndex);
+			if (error != null)
+				ErrorSink.Write(Severity.Error, missing.Range, error);
+			return missing;
+		}
 
-		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
+		protected Les3PrecedenceMap _prec = Les3PrecedenceMap.Default;
 
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
@@ -455,11 +462,10 @@ namespace Loyc.Syntax.Les
 
 		// Note: continuators cannot be used as binary operator names
 		internal static readonly HashSet<Symbol> ContinuatorOps = new HashSet<Symbol> {
-			(Symbol)"'else",  (Symbol)"'elsif",
-			(Symbol)"'catch", (Symbol)"'except", (Symbol)"'finally",
-			(Symbol)"'while", (Symbol)"'until",
-			(Symbol)"'plus",  (Symbol)"'minus",
-			(Symbol)"'or", (Symbol)"'and", (Symbol)"'but", (Symbol)"'so",
+			(Symbol)"#else",  (Symbol)"#elsif",  (Symbol)"#elseif",
+			(Symbol)"#catch", (Symbol)"#except", (Symbol)"#finally",
+			(Symbol)"#while", (Symbol)"#until",
+			(Symbol)"#plus",  (Symbol)"#using",
 		};
 
 		internal static readonly Dictionary<object, Symbol> Continuators =

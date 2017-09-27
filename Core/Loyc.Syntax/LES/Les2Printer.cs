@@ -108,7 +108,7 @@ namespace Loyc.Syntax.Les
 
 		private bool AutoPrintInfixOp(ILNode node, Precedence context)
 		{
-			var prec = GetPrecedenceIfOperator(node, OperatorShape.Infix, context);
+			var prec = GetPrecedenceIfOperator(node, node.Name, OperatorShape.Infix, context);
 			if (prec == null)
 				return false;
 			Print(node[0], prec.Value.LeftContext(context));
@@ -122,15 +122,15 @@ namespace Loyc.Syntax.Les
 		private bool AutoPrintPrefixOrSuffixOp(ILNode node, Precedence context)
 		{
 			Symbol bareName;
-			if (LesPrecedenceMap.IsSuffixOperatorName(node.Name, out bareName, false)) {
-				var prec = GetPrecedenceIfOperator(node, OperatorShape.Suffix, context);
+			if (Les2PrecedenceMap.IsSuffixOperatorName(node.Name, out bareName)) {
+				var prec = GetPrecedenceIfOperator(node, bareName, OperatorShape.Suffix, context);
 				if (prec == null || prec.Value == LesPrecedence.Other)
 					return false;
 				Print(node[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence);
 				WriteOpName(bareName, node.Target, prec.Value);
 			} else {
-				var prec = GetPrecedenceIfOperator(node, OperatorShape.Prefix, context);
+				var prec = GetPrecedenceIfOperator(node, bareName, OperatorShape.Prefix, context);
 				if (prec == null)
 					return false;
 				var spaceAfter = prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence;
@@ -157,7 +157,7 @@ namespace Loyc.Syntax.Les
 				target = null; // optimize the usual case
 			if (target != null)
 				PrintPrefixTrivia(target);
-			if (!LesPrecedenceMap.IsNaturalOperator(op.Name))
+			if (!Les2PrecedenceMap.IsNaturalOperator(op.Name))
 				PrintStringCore('`', false, op.Name);
 			else {
 				Debug.Assert(op.Name.StartsWith("'"));
@@ -173,20 +173,19 @@ namespace Loyc.Syntax.Les
 			if (cond) _out.Space();
 		}
 
-		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
+		protected Les2PrecedenceMap _prec = Les2PrecedenceMap.Default;
 
-		private Precedence? GetPrecedenceIfOperator(ILNode node, OperatorShape shape, Precedence context)
+		private Precedence? GetPrecedenceIfOperator(ILNode node, Symbol opName, OperatorShape shape, Precedence context)
 		{
 			int ac = node.ArgCount();
 			if ((ac == (int)shape || ac == -(int)shape) && HasTargetIdWithoutPAttrs(node))
 			{
 				var bs = node.BaseStyle();
-				var op = node.Name;
-				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op.Name);
+				bool naturalOp = Les2PrecedenceMap.IsNaturalOperator(opName.Name);
 				if ((naturalOp && bs != NodeStyle.PrefixNotation) ||
 					(bs == NodeStyle.Operator && node.Name != null))
 				{
-					var result = _prec.Find(shape, op);
+					var result = _prec.Find(shape, opName);
 					if (!result.CanAppearIn(context) || !result.CanMixWith(context))
 						return null;
 					return result;

@@ -16,5 +16,5 @@ using System.Reflection;
 // from linking together without an exact match - and now that I'm no longer using 
 // '.*' I am still having occasional problems with 'MissingMethodException' in the 
 // Visual Studio SFG, but I don't know why, maybe it's not about version numbers..)
-[assembly: AssemblyVersion("2.6.0.0")]
-[assembly: AssemblyFileVersion("2.6.0.0")]
+[assembly: AssemblyVersion("2.6.1.0")]
+[assembly: AssemblyFileVersion("2.6.1.0")]

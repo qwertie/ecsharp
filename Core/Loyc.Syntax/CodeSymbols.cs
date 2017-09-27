@@ -174,6 +174,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "!!." operator
 		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "<-" operator
+		public static readonly Symbol SingleQuote = GSymbol.Get("'");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
+		public static readonly Symbol Parens = GSymbol.Get("'()");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly"); //!< "#readonly" e.g. readonly int X; <=> [#readonly] #var(#int, X);
 		public static readonly Symbol Const = GSymbol.Get("#const");       //!< "#const"    e.g. const int X = 1; <=> [#const] #var(#int, X = 1);
@@ -207,6 +209,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol _TemplateArg = GSymbol.Get(@"'$");  //!< Alias for Substitude
 		public static readonly Symbol DotDot = GSymbol.Get("'..");        //!< ".." Binary range operator (exclusive)
 		public static readonly Symbol DotDotDot = GSymbol.Get("'...");    //!< "..." Binary range operator (inclusive)
+		public static readonly Symbol DotDotLT = GSymbol.Get("'..<");     //!< "..<" Swift uses this instead of ".."
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");      //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)

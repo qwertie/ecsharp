@@ -13,6 +13,16 @@ using S = CodeSymbols;
 
 public partial class Les3Lexer
 {
+	// Code snippet related to error recovery in case of mismatched brackets
+	define PopBrackStack($expected, $autoCloseExpr) {
+		replace (#TOS => _brackStack[_brackStack.Count-1, default(TT)]) {
+			while ($autoCloseExpr)
+				_brackStack.Pop();
+			if (_brackStack.Count > 1 && static_if($expected `code==` _, true, _brackStack.Last == $expected))
+				_brackStack.Pop();
+		}
+	}
+
 	[FullLLk, PrematchByDefault]
 	LLLPG (lexer) @{
 	// `@{` invokes LLLPG in ANTLR-style syntax mode, but there are several 
@@ -61,10 +71,10 @@ public partial class Les3Lexer
 	HexNumber :
 		'0' ('x'|'X')
 		(HexDigits | '.' HexDigits =>)
-		// Avoid ambiguity with 0x5.Equals(): a dot is not enough
-		(	'.' ( '0'..'9' => () / &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) )
-			HexDigits )?
-		greedy( ('p'|'P') ('+'|'-')? DecDigits )?
+		(	'.' ('p'|'P'|HexDigit) =>
+			'.' greedy( HexDigits )? 
+			greedy( ('p'|'P') ('+'|'-')? DecDigits )?
+		)?
 		;
 	BinNumber :
 		'0' ('b'|'B')
@@ -100,12 +110,19 @@ public partial class Les3Lexer
 		('`' | error {parseNeeded = true; Error(0, "Expected closing backquote");});
 
 	// Nontrivial punctuation & operators -----------------------------------
-		
-	[inline] extern token OpChar :
+	
+	[inline] extern OpCharExceptDot :
+		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':';
+	[inline] extern OpChar : 
 		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.';
+	LettersOrPunc : 'a'..'z'|'A'..'Z'|'_'|'0'..'9'|'#'|
+		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$';
+	
+	// Treat dot specially so that 2*.5 means 2 * 0.5, but 2..5 means 2 .. 5
 	token Operator returns [object result] : 
-		('$'|OpChar) OpChar* 
+		( '$'? ( OpCharExceptDot | '.' ((~'0'..'9' | EOF) =>) greedy('.')* )+ / '$' )
 		{$result = ParseOp(out _type);};
+	
 	token SQOperator returns [object result] : 
 		"'" LettersOrPunc* 
 		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
@@ -119,8 +136,8 @@ public partial class Les3Lexer
 		// Check that the character before '.' is not an identifier character;
 		// LLLPG makes faster code in NextToken if we delay the check until after '.'
 		&{[Hoist] InputPosition < 2-$LI || !Try_ScanIdContChar($LI-2)}
-		IdStartChar+
-		{return (Symbol) Text();};
+		NormalId
+		{return (Symbol)("#" + CharSource.Slice(int sp = _startPosition + 1, InputPosition - sp));};
 
 	token Id returns [object result] :
 		{object boolOrNull = NoValue.Value;}
@@ -135,7 +152,6 @@ public partial class Les3Lexer
 		)?
 		{return boolOrNull != NoValue.Value ? boolOrNull : (Symbol) idtext;};
 
-	// LES3 might not officially treat # as an identifier character, but it's handy for now
 	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#';
 	[recognizer { bool ScanIdContChar(); }]
 	token IdContChar : IdStartChar | '0'..'9' | '\'' &!("''");
@@ -152,8 +168,6 @@ public partial class Les3Lexer
 		  }
 		);
 
-	token LettersOrPunc : '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'
-		|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ;
 
 	token SpecialLiteral returns [object result] :
 		"@@" LettersOrPunc+ {return ParseAtAtLiteral(Text());};
@@ -190,11 +204,11 @@ public partial class Les3Lexer
 		/ {_type = TT.Comma;}      ',' { value = @@`',`; }
 		/ {_type = TT.Semicolon;}  ';' { value = @@`';`; }
 		/ {_type = TT.LParen;}     '(' {_brackStack.Add(_type);}
-		/ {_type = TT.RParen;}     ')' {if (_brackStack.Count > 1) _brackStack.Pop();}
+		/ {_type = TT.RParen;}     ')' {PopBrackStack(TT.LParen, #TOS == TT.LBrack);}
 		/ {_type = TT.LBrack;}     '[' {_brackStack.Add(_type);}
-		/ {_type = TT.RBrack;}     ']' {if (_brackStack.Count > 1) _brackStack.Pop();}
+		/ {_type = TT.RBrack;}     ']' {PopBrackStack(TT.LBrack, #TOS == TT.LParen);}
 		/ {_type = TT.LBrace;}     '{' {_brackStack.Add(_type);}
-		/ {_type = TT.RBrace;}     '}' {if (_brackStack.Count > 1) _brackStack.Pop();}
+		/ {_type = TT.RBrace;}     '}' {PopBrackStack(_, #TOS != TT.LBrace);}
 		/ {_type = TT.At;}         '@' { value = @@`'@`; }
 		/ {_type = TT.Keyword;}    value:Keyword
 		/                          value:Operator

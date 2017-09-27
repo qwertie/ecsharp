@@ -769,11 +769,11 @@ namespace Loyc.Syntax.Les
 					return Pair.Create(name, TT.Dot);
 			}
 			
-			if (length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
+			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
 				tt = TT.PreOrSufOp;
 			else if (first == '$')
 				tt = TT.PrefixOp;
-			else if (first == '.' && (length == 1 || last != '.'))
+			else if (last == '.' && (length == 1 || first != '.'))
 				tt = TT.Dot;
 			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
 				tt = TT.Assignment;

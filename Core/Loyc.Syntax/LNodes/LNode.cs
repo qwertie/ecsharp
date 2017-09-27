@@ -520,8 +520,8 @@ namespace Loyc.Syntax
 		/// The full list of specials is <c>! " # $ % &amp; ' ( ) * + , - . /</c> plus
 		/// the space character and the control characters.
 		/// </remarks>
-		public static bool IsSpecialName(string name) { return name != null && name.Length > 0 && name[0] < '0'; }
-		public static bool IsSpecialName(Symbol name) { return name != null && name.Name.Length > 0 && name.Name[0] < '0'; }
+		public static bool IsSpecialName(string name) { return name != null && name.Length > 0 && name[0] <= '\''; }
+		public static bool IsSpecialName(Symbol name) { return name != null && name.Name.Length > 0 && name.Name[0] <= '\''; }
 
 		/// <summary>Creates a node with a new value for Name.</summary>
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 

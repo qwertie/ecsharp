@@ -12,19 +12,20 @@ namespace Loyc.Syntax.Les
 
 	/// <summary>This class's main job is to maintain a table of 
 	/// <see cref="Precedence"/> values for LES operators. When you ask about a
-	/// new operator, its precedence is cached for future reference.</summary>
-	public class LesPrecedenceMap
+	/// new operator, its precedence is chosen by this class and cached for 
+	/// future reference.</summary>
+	public class Les2PrecedenceMap
 	{
 		[ThreadStatic]
-		protected static LesPrecedenceMap _default;
-		public static LesPrecedenceMap Default { get { 
-			return _default = _default ?? new LesPrecedenceMap();
+		protected static Les2PrecedenceMap _default;
+		public static Les2PrecedenceMap Default { get { 
+			return _default = _default ?? new Les2PrecedenceMap();
 		} }
 
-		public LesPrecedenceMap() { Reset(); }
+		public Les2PrecedenceMap() { Reset(); }
 
 		/// <summary>Forgets previously encountered operators to save memory.</summary>
-		public void Reset() {
+		public virtual void Reset() {
 			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.Primary);
 			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Other);
 			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.Other);
@@ -44,8 +45,8 @@ namespace Loyc.Syntax.Les
 		}
 
 		// Maps from Symbol to Precedence, paired with a default precedece for \word operators
-		Pair<MMap<object, Precedence>, Precedence>[] _precedenceMap = new Pair<MMap<object, Precedence>, Precedence>[4];
-		Pair<MMap<object, Precedence>, Precedence> this[OperatorShape s]
+		protected Pair<MMap<object, Precedence>, Precedence>[] _precedenceMap = new Pair<MMap<object, Precedence>, Precedence>[4];
+		protected Pair<MMap<object, Precedence>, Precedence> this[OperatorShape s]
 		{
 			get { return _precedenceMap[(int)s + 1]; }
 			set { _precedenceMap[(int)s + 1] = value; }
@@ -88,7 +89,7 @@ namespace Loyc.Syntax.Les
 			new MMap<object, Precedence>() {
 				{ S.Dot,         P.Primary    }, // .
 				{ S.QuickBind,   P.Primary    }, // =:
-				{ (Symbol)"'!.", P.Primary    }, // !.
+				//{ (Symbol)"'!.", P.Primary    }, // !. (redundant now that the final char determines the precedence)
 				{ S.Not,         P.Of         }, // !
 				{ S.NullDot,     P.NullDot    }, // ?.
 				{ S.ColonColon,  P.NullDot    }, // ::
@@ -108,6 +109,7 @@ namespace Loyc.Syntax.Les
 				{ S.XorBits,     P.OrBits     }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
 				{ S.DotDot,      P.Range      }, // ..
+				{ (Symbol)".<",  P.Range      }, // .< (controls the precedence of ..<)
 				{ S.GT,          P.Compare    }, // >
 				{ S.LT,          P.Compare    }, // <
 				{ S.LE,          P.Compare    }, // <=
@@ -176,7 +178,7 @@ namespace Loyc.Syntax.Les
 			if (table.TryGetValue(twoCharOp, out prec))
 				return table[symbol] = prec;
 
-			var oneCharOp = GSymbol.Get("'" + first);
+			var oneCharOp = GSymbol.Get("'" + last);
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
@@ -276,10 +278,7 @@ namespace Loyc.Syntax.Les
 				return name;
 
 			var was = symbol.ToString();
-			//if (was.EndsWith("\\"))
-			//	return _suffixOpNames[symbol] = (Symbol)symbol;
-			//else
-				return _suffixOpNames[symbol] = GSymbol.Get(symbol.ToString() + "suf");
+			return _suffixOpNames[symbol] = GSymbol.Get(symbol.ToString() + "suf");
 		}
 
 		/// <summary>Decides whether the name appears to represent a suffix operator 
@@ -287,18 +286,30 @@ namespace Loyc.Syntax.Les
 		/// <param name="name">Potential operator name to evaluate.</param>
 		/// <param name="bareName">If the name ends with "suf", this is the same 
 		/// name without "suf", otherwise it is set to <c>name</c> itself. This
-		/// output is calculated even if the function returns false.</param>
-		/// <param name="checkNatural">If true, part of the requirement for 
-		/// returning true will be that IsNaturalOperator(bareName) == true.</param>
-		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName, bool checkNatural)
+		/// output is calculated even if the function returns false.
+		/// IsNaturalOperator(bareName) is true if the function returns true.</param>
+		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName)
 		{
 			if (name.Name.EndsWith("suf")) {
 				bareName = (Symbol)name.Name.Substring(0, name.Name.Length - 3);
-				return !checkNatural || IsNaturalOperator(bareName.Name);
+				return IsNaturalOperator(bareName.Name);
 			} else {
 				bareName = name;
 				return false;
 			}
+		}
+	}
+
+	public class Les3PrecedenceMap : Les2PrecedenceMap
+	{
+		[ThreadStatic]
+		protected new static Les3PrecedenceMap _default;
+		public new static Les3PrecedenceMap Default { get { 
+			return _default = _default ?? new Les3PrecedenceMap();
+		} }
+		public override void Reset() {
+			base.Reset();
+			this[OperatorShape.Infix].Item1[S.ColonColon] = LesPrecedence.Primary;
 		}
 	}
 }

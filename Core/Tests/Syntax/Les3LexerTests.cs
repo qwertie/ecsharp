@@ -94,11 +94,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestKeywords()
 		{
-			Case(".if .If", A(TT.Keyword, TT.Keyword), _(".if"), _(".If"));
+			Case(".if .If", A(TT.Keyword, TT.Keyword), _("#if"), _("#If"));
 			Case("A.kw 5.kw", A(TT.Id, TT.Dot, TT.Id, TT.Literal, TT.Dot, TT.Id), _("A"), _("'."), _("kw"), 5, _("'."), _("kw"));
 			Case("x'.abc.de", A(TT.Id, TT.Dot, TT.Id, TT.Dot, TT.Id), _("x'"), _("'."), _("abc"), _("'."), _("de"));
-			// Keywords currently don't allow continuation characters like ' or digits
-			Case(".kw123", A(TT.Keyword, TT.Literal), _(".kw"), 123);
+			// Keywords now allow continuation characters like ' and digits
+			Case(".kw'123!", A(TT.Keyword, TT.Not), _("#kw'123"), _("'!"));
 		}
 
 		[Test]
@@ -220,10 +220,10 @@ namespace Loyc.Syntax.Les
 			//Case(@"\solve-for-x x\squared\", A(TT.NormalOp, TT.Id, TT.SuffixOp), _("solve-for-x"), _("x"), _(@"squared\"));
 			Case(@"+++x---", A(TT.PreOrSufOp, TT.Id, TT.PreOrSufOp), _("'+++"), _("x"), _("'---"));
 			Case(@"!!x!?!", A(TT.PreOrSufOp, TT.Id, TT.PreOrSufOp), _("'!!"), _("x"), _("'!?!"));
-			Case(@"x!!.y", A(TT.Id, TT.NormalOp, TT.Id), _("x"), _("'!!."), _("y"));
+			Case(@"x!!.y", A(TT.Id, TT.Dot, TT.Id), _("x"), _("'!!."), _("y"));
 			//Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("$"), _("x"), _(@"y\"), _("bq"), _(@"\"));
 			Case(@"$~!%^&*-+=|<>/?:._", A(TT.PrefixOp, TT.Id), _("'$~!%^&*-+=|<>/?:."), _("_"));
-			Case(@"$~!%^&*-+=|<>_/?:.", A(TT.PrefixOp, TT.Id, TT.NormalOp), _("'$~!%^&*-+=|<>"), _("_"), _("'/?:."));
+			Case(@"$~!%^&*-+=|<>_/?:.", A(TT.PrefixOp, TT.Id, TT.Dot), _("'$~!%^&*-+=|<>"), _("_"), _("'/?:."));
 			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _("'@"), _("',"), _("'!"), _("';"), _("':"), _(@"':^="));
 		}
 
@@ -291,6 +291,15 @@ namespace Loyc.Syntax.Les
 			Case("Y.5", A(TT.Id, TT.Literal), _("Y"), .5);
 			Case("0.1.5", A(TT.Literal, TT.Literal), 0.1, .5);
 			Case("5.ToString", A(TT.Literal, TT.Dot, TT.Id), 5, _("'."), _("ToString"));
+		}
+
+		[Test]
+		public void TestOperatorFloatAmbiguity()
+		{
+			Case("x..5", A(TT.Id, TT.NormalOp, TT.Literal), _("x"), _("'.."), 5);
+			Case("x*.5", A(TT.Id, TT.NormalOp, TT.Literal), _("x"), _("'*"), 0.5);
+			Case("x...5", A(TT.Id, TT.NormalOp, TT.Literal), _("x"), _("'..."), 5);
+			Case("x.*.5", A(TT.Id, TT.NormalOp, TT.Literal), _("x"), _("'.*"), 0.5);
 		}
 
 		[Test(Fails = "Succeeds on qwertie's PC but not AppVeyor. Rounding difference somewhere.")]
@@ -363,6 +372,12 @@ namespace Loyc.Syntax.Les
 			Case("123over500", A(TT.Literal), CL("123",   "over500"));
 			Case("123.0float", A(TT.Literal), CL("123.0", "float"));
 			Case("123f123d", A(TT.Literal),   CL("123",   "f123d"));
+		}
+
+		[Test]
+		public void TestAmbiguousHexLiteral()
+		{
+			Case("0x2.Equals", A(TT.Literal), CL("0x2.E", "quals"));
 		}
 
 		[Test]
@@ -441,6 +456,7 @@ namespace Loyc.Syntax.Les
 			Case("'\n'o'\"pq\n?", A(TT.SingleQuoteOp, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
 			                      _("'"), null, 'o', new Error("pq"), null, _("'?"));
 			Case("0x!0b", A(TT.Literal, TT.Not, TT.Literal), new Error(CL("0x", "n")), _("'!"), new Error(CL("0b", "n")));
+			Case("0b102", A(TT.Literal), new Error(CL("0b102", "n")));
 			Case("(`weird\nnewline", A(TT.LParen, TT.BQId, TT.Newline, TT.Id), null, new Error(_("weird")), WS, _("newline"));
 			Case("0xFF_0000_0000_0000_0000U", A(TT.Literal), new Error(CL("0xFF_0000_0000_0000_0000", "U")));
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), new Error(CL("0xFFFF_FFFF_0000_0000", "L")));
@@ -449,7 +465,7 @@ namespace Loyc.Syntax.Les
 			Case("'' ''", A(TT.Literal, TT.Literal), new Error(CL("", "char")), new Error(CL("", "char")));
 			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), CL("null?", "null"));
 			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), new Error(CL("nonbool", "true")), new Error(CL("nonnull", "null")));
-			Case(".kw'", A(TT.Keyword, TT.SingleQuoteOp), _(".kw"), _("'"));
+			Case(".kw '", A(TT.Keyword, TT.SingleQuoteOp), _("#kw"), _("'"));
 		}
 
 		[Test]
@@ -460,7 +476,7 @@ namespace Loyc.Syntax.Les
 			Case(" .\n. ", A(TT.Dot, TT.Newline), _("'."), null);
 			Case(".   .  . Hello", A(TT.Id), _("Hello"));
 			Case(".\t.\t.\tHello\n.. Goodbye", A(TT.Id, TT.Newline, TT.NormalOp, TT.Id), _("Hello"), null, _("'.."), _("Goodbye"));
-			Case(". .Hello",  A(TT.Keyword), _(".Hello"));
+			Case(". .Hello",  A(TT.Keyword), _("#Hello"));
 			Case(". ..Hello", A(TT.NormalOp, TT.Id), _("'.."), _("Hello"));
 		}
 

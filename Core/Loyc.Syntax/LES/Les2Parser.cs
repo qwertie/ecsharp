@@ -26,7 +26,7 @@ namespace Loyc.Syntax.Les
 	public partial class Les2Parser : BaseParserForList<Token, int>
 	{
 		protected LNodeFactory F;
-		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
+		protected Les2PrecedenceMap _prec = Les2PrecedenceMap.Default;
 
 		new const TT EOF = TT.EOF;
 

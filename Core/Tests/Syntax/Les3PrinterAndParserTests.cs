@@ -45,11 +45,18 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void NumericLiterals()
 		{
-			Exact(@"123", F.Literal(123));
-			Exact(@"(123)", F.InParens(F.Literal(123)));
-			Exact(@"123uL", F.Literal(123uL));
-			Exact(@"123.25", F.Literal(123.25));
-			Exact(@"123.25f", F.Literal(123.25f));
+			Exact(@"123",       F.Literal(123));
+			Exact(@"(123)",     F.InParens(F.Literal(123)));
+			Exact(@"123uL",     F.Literal(123uL));
+			Exact(@"123.25",    F.Literal(123.25));
+			Exact(@"123.25f",   F.Literal(123.25f));
+			Exact("0x5D",       F.Literal(0x5D).WithStyle(NodeStyle.HexLiteral));
+			Exact("0b1011101",  F.Literal(0x5D).WithStyle(NodeStyle.BinaryLiteral));
+			Exact("0x2.E8",     F.Literal(0x2E8/256.0).WithStyle(NodeStyle.HexLiteral));
+			Exact("0b10.11101", F.Literal(0x2E8/256.0).WithStyle(NodeStyle.BinaryLiteral));
+			Exact("@@inf.f",     F.Literal(float.PositiveInfinity).WithStyle(NodeStyle.HexLiteral));
+			Exact("@@-inf.d",    F.Literal(double.NegativeInfinity).WithStyle(NodeStyle.HexLiteral));
+			// TODO: more tests for printer, especially of hex/binary literals... random numbers? denormals?
 		}
 
 		[Test]
@@ -133,7 +140,7 @@ namespace Loyc.Syntax.Les
 		public void NegativeLiteral()
 		{
 			Exact("-x", F.Call(S.Sub, x));
-			Exact("- 2", F.Call(S.Sub, two));
+			Exact("-2", F.Call(S.Sub, two));
 			Exact("n\"-2\"", F.Literal(-2));
 			Stmt("n\"-111222333444\"", F.Literal(-111222333444));
 			Exact("L\"-2\"", F.Literal(-2L));
@@ -187,11 +194,12 @@ namespace Loyc.Syntax.Les
 			Exact("a >>= 1",      F.Call(S.ShrAssign, a, one));
 			Exact("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			Exact(@"a!.b**2",     F.Call(S.Exp, F.Call((Symbol)"'!.", a, b), two));
+			Exact("a.b::x.c",     F.Dot(F.Call(S.ColonColon, F.Dot(a, b), x), c));
 			
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
 			Exact("a.b!!.c.?. 1",  F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
-			Exact("a +/ b *+ c",   F.Call("'+/", a, F.Call("'*+", b, c)));
+			Exact("a +/ b *+ c",   F.Call("'*+", F.Call("'+/", a, b), c));
 		}
 
 		[Test]
@@ -200,10 +208,21 @@ namespace Loyc.Syntax.Les
 			Exact("a b c", Op(F.Call("'b", a, c)));
 			Exact("a is b as c", Op(F.Call("'is", a, Op(F.Call("'as", b, c)))));
 			Exact("{\n  a\n} foo_bar (b)", Op(F.Call("'foo_bar", F.Braces(a), F.InParens(b))));
+			Exact("a if c otherwise b", Op(F.Call("'if", a, Op(F.Call("'otherwise", c, b)))));
+
+			// Lowercase word ops have ultra-low precedence
+			var stmt = Op(F.Call("'if", F.Call(S.Assign, a, b),
+			           Op(F.Call("'otherwise", F.Call(S.And, c, x), F.Call(S.AddAssign, a, b)))));
+			Exact("a = b if c && x otherwise a += b", stmt);
+
+			// Uppercase has a higher precedence
+			Exact("a MOD b == 0", F.Call(S.Eq, Op(F.Call("'MOD", a, b)), zero));
+			Exact("a HATES b but b LOVES a", Op(F.Call("'but", 
+				Op(F.Call("'HATES", a, b)), Op(F.Call("'LOVES", b, a)))));
 			
-			// Uppercase and digits are not supported in operator names
+			// Printer doesn't allow digits in operator names
 			Exact("`'f00`(a, b)", Op(F.Call("'f00", a, b)));
-			Exact("`'FOO`(a, b)", Op(F.Call("'FOO", a, b)));
+			Exact("a FOO b", Op(F.Call("'FOO", a, b)));
 		}
 
 		[Test]
@@ -302,6 +321,12 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void PrecedenceChallenge()
+		{
+			Exact("a.b::(@@ x.c)", F.Call(S.ColonColon, F.Dot(a, b), F.Dot(x, c)));
+		}
+
+		[Test]
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
@@ -330,9 +355,6 @@ namespace Loyc.Syntax.Les
 			Exact(@"$-b",      F.Call("'$-", b));
 			Stmt (@"a-$-b",    F.Call(S.Sub, a, F.Call("'$-", b)));
 			Exact(@"a - $-b",  F.Call(S.Sub, a, F.Call("'$-", b)));
-			// TODO: need resolution in specification: $ is only for prefix ops,
-			// but ' is only for infix ops, so how do we treat '$-?
-			//Exact(@"a '$- b",  F.Call("'$-", a, b));
 		}
 
 		#endregion
@@ -343,13 +365,14 @@ namespace Loyc.Syntax.Les
 		public void Tuples()
 		{
 			Stmt("(a)", F.InParens(a));
-			Stmt("(a;)", F.Tuple(a));
+			Exact("(a;)", F.Tuple(a));
 			Stmt("(;)", F.Tuple(_("")));
 			Exact("(``;)", F.Tuple(_("")));
 			Stmt("(a; ;)", F.Tuple(a, _("")));
-			Exact("(a; ``;)", F.Tuple(a, _("")));
 			Stmt("(a; b)", F.Tuple(a, b));
+			Stmt("(a; ``)", F.Tuple(a, _("")));
 			Stmt("(a; b; c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
+			Stmt("(a, b, c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
 		}
 
 		[Test]
@@ -442,27 +465,28 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Block expressions, juxtaposition, and keyword statements
-
+		#region Block expressions, and keyword statements
+		
 		[Test]
 		public void KeywordStatements()
 		{
 			LNode code;
-			Exact(".on_catch Foo()",   KeywordExpr(F.Call(".on_catch", F.Call(Foo))));
-			Test(Mode.Exact, 0, ".return\nFoo()", KeywordExpr(F.Call(".return")), F.Call(Foo));
-			Exact(".return (x + 1)",   KeywordExpr(F.Call(".return", F.InParens(F.Call(S.Add, x, one)))));
-			Exact(".return x + 1",     KeywordExpr(F.Call(".return", F.Call(S.Add, x, one))));
-			// Keyword names can only contain letters and underscores
-			Exact("`.r3turn`(x - 1)",  KeywordExpr(F.Call(".r3turn", F.Call(S.Sub, x, one))));
-			Exact(".if Foo {\n  a\n}", KeywordExpr(F.Call(".if", Foo, F.Braces(a))));
-			Exact(".if Foo {\n  a\n} else {\n  b\n}", KeywordExpr(F.Call(".if", Foo, F.Braces(a), 
-				F.Call("'else", F.Braces(b)))));
-			code = KeywordExpr(F.Call(".class",
+			Exact(".return",           KeywordExpr(F.Call("#return")));
+			Exact(".on_catch Foo()",   KeywordExpr(F.Call("#on_catch", F.Call(Foo))));
+			Exact("#on_catch(Foo())",              F.Call("#on_catch", F.Call(Foo)));
+			Test(Mode.Exact, 0, ".return\nFoo()", KeywordExpr(F.Call("#return")), F.Call(Foo));
+			Test(Mode.Expr, 1, ".`foo`");
+			Exact(".return (x + 1)",   KeywordExpr(F.Call("#return", F.InParens(F.Call(S.Add, x, one)))));
+			Exact(".return x + 1",     KeywordExpr(F.Call("#return", F.Call(S.Add, x, one))));
+			Exact(".if Foo {\n  a\n}", KeywordExpr(F.Call("#if", Foo, F.Braces(a))));
+			Exact(".if Foo {\n  a\n} else {\n  b\n}", KeywordExpr(F.Call("#if", Foo, F.Braces(a), 
+				F.Call("#else", F.Braces(b)))));
+			code = KeywordExpr(F.Call("#class",
 				F.Call("'where", F.Of(Foo, T), F.Call(S.Colon, T, F.Id("IFoo"))),
 				F.Braces(a)));
 			Stmt (".class Foo!T where T : IFoo {\n  a\n}", code);
 			code = F.Braces(
-				KeywordExpr(F.Call(".while", c, F.Braces(F.Id("body")))),
+				KeywordExpr(F.Call("#while", c, F.Braces(F.Id("body")))),
 				F.Call("andSoOn"));
 			Stmt("{\n"+
 			     "  .while c {\n    body\n  }\n"+
@@ -470,7 +494,7 @@ namespace Loyc.Syntax.Les
 				 "}", code);
 			if (this is Les3ParserTests) { // TODO: make printer support newlines in kw exprs
 				code = F.Braces(
-					KeywordExpr(F.Call(".while", c, OnNewLine(F.Braces(F.Id("body"))))),
+					KeywordExpr(F.Call("#while", c, OnNewLine(F.Braces(F.Id("body"))))),
 					F.Call("andSoOn"));
 				Stmt("{\n"+
 					 "  .while c\n  {\n    body\n  }\n"+
@@ -478,9 +502,9 @@ namespace Loyc.Syntax.Les
 					 "}", code);
 			}
 			code = F.Braces(
-				KeywordExpr(F.Call(".if", c, 
+				KeywordExpr(F.Call("#if", c, 
 				  F.Braces(F.Id("then")),
-				  F.Call("'else",
+				  F.Call("#else",
 				    F.Braces(F.Id("else"))))),
 				F.Call("andSoOn"));
 			Stmt("{\n"+
@@ -489,9 +513,9 @@ namespace Loyc.Syntax.Les
 				 "}", code);
 			if (this is Les3ParserTests) { // TODO: make printer support newlines in kw exprs
 				code = F.Braces(
-					KeywordExpr(F.Call(".if", c, 
+					KeywordExpr(F.Call("#if", c, 
 					  OnNewLine(F.Braces(F.Id("then"))),
-					  OnNewLine(F.Call("'else",
+					  OnNewLine(F.Call("#else",
 						OnNewLine(F.Braces(F.Id("else"))))))),
 					F.Call("andSoOn"));
 				Stmt("{\n"+
@@ -506,31 +530,33 @@ namespace Loyc.Syntax.Les
 		public void KeywordStmtWithMissingExpr()
 		{
 			// Here, the braced block counts as the initial expression
-			var stmt = KeywordExpr(F.Call(".try",
+			var stmt = KeywordExpr(F.Call("#try",
 						   F.Braces(F.Call(Foo)),
-						   F.Call("'catch", F.Id("Exception"), F.Braces())));
+						   F.Call("#catch", F.Id("Exception"), F.Braces())));
 			Exact(".try {\n  Foo()\n} catch Exception { }", stmt);
 			if (this is Les3ParserTests) { // TODO: make printer support this
 				// But the newline here means that the initial expression is missing
-				stmt = KeywordExpr(F.Call(".try",
+				stmt = KeywordExpr(F.Call("#try",
 						   OnNewLine(F.Braces(F.Call(Foo))),
-						   F.Call("'catch", F.Id("Exception"), F.Braces())));
+						   F.Call("#catch", F.Id("Exception"), F.Braces())));
 				Exact(".try\n{\n  Foo()\n} catch Exception { }", stmt);
 			}
 			// TODO: try to trick printer into printing newlines that make a keyword statement invalid
 			// TODO: try to trick printer into printing something with invalid continuators
+			// TODO: try to trick printer into printing a newline before a word operator
 		}
 
 		[Test]
 		public void AvoidKeywordStatementAmbiguity()
 		{
+			// TODO: try to trick printer into printing wrong output for this: Foo = .foo {}; \n __else(x)
 			if (this is Les3ParserTests) // TODO: make printer support this
-				Test(Mode.Exact, 0, ".return\n{ }", KeywordExpr(F.Call(".return", OnNewLine(F.Braces()))));
-			Test(Mode.Exact, 0, ".return;\n{ }", KeywordExpr(F.Call(".return")), F.Braces());
-			if (this is Les3ParserTests) // Printer prefers semicolons
-				Test(Mode.Stmt , 0, ".return\n@@ { }", KeywordExpr(F.Call(".return")), F.Braces());
-			Test(Mode.Exact, 0, ".if true;\n{ }", KeywordExpr(F.Call(".if", F.True)), F.Braces());
-			Test(Mode.Exact, 0, "{\n  .return;\n  { }\n}", F.Braces(KeywordExpr(F.Call(".return")), F.Braces()));
+				Test(Mode.Exact, 0, ".return\n{ }", KeywordExpr(F.Call("#return", OnNewLine(F.Braces()))));
+			Test(Mode.Exact, 0, ".return;\n{ }", KeywordExpr(F.Call("#return")), F.Braces());
+			Test(Mode.Exact, 0, ".return;\n{ }", KeywordExpr(F.Call("#return")), F.Braces());
+			Test(Mode.Stmt , 0, ".return\n@@ { }", KeywordExpr(F.Call("#return")), F.Braces());
+			Test(Mode.Exact, 0, ".if true;\n{ }", KeywordExpr(F.Call("#if", F.True)), F.Braces());
+			Test(Mode.Exact, 0, "{\n  .return;\n  { }\n}", F.Braces(KeywordExpr(F.Call("#return")), F.Braces()));
 		}
 
 		[Test]
@@ -538,8 +564,19 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("abc.foo", F.Dot(F.Id("abc"), F.Id("foo")));
 			Test(Mode.Stmt, 1, "123 .foo", F.Literal(123)); // error
-			// Printer should add a space both before and after the dot
-			Exact("123 . foo", F.Dot(F.Literal(123), F.Id("foo")));
+		}
+
+		#endregion
+
+		#region Token lists Prefix notation demarcated with single-quote (')
+
+		[Test]
+		public void BasicPrefixNotation()
+		{
+			// TODO: add printer support
+			Stmt("' a 2 'z'", F.Call(S.SingleQuote, a, two, F.Literal('z')));
+			Stmt("' + x 1", F.Call(S.SingleQuote, _(S.Add), x, one));
+			Stmt("' ()", F.Call(S.SingleQuote, F.Call(S.Parens)));
 		}
 
 		#endregion
@@ -547,11 +584,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void PrinterSpacingMinefield()
 		{
-			// Challenges involving `-`
-			Exact("- 2", F.Call(S.Sub, two));
-			Exact("- 2.5", F.Call(S.Sub, F.Literal(2.5)));
+			// LESv3 changed; `-` is no longer challenging. We could remove these tests.
+			Exact("-2", F.Call(S.Sub, two));
+			Exact("-2.5", F.Call(S.Sub, F.Literal(2.5)));
 			Exact("+n\"-2\"", F.Call(S.Add, F.Literal(-2)));
-			Exact("+- 2", F.Call("'+-", F.Literal(2)));
+			Exact("+-2", F.Call("'+-", F.Literal(2)));
 			Exact("-(2.5)", F.Call(S.Sub, F.InParens(F.Literal(2.5))));
 			Exact("-x** +x", F.Call(S.Exp, F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)));
 			// Challenges involving `.`
@@ -561,6 +598,7 @@ namespace Loyc.Syntax.Les
 			Exact("1 . 2", F.Dot(one, two));
 			Exact("1 x. 2", F.Call("'x.", one, two));
 			Exact("@@inf.d . Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+			Exact("0x2 . Ep0", F.Dot(two.WithStyle(NodeStyle.HexLiteral), F.Id("Ep0")));
 		}
 
 		[Test]
@@ -571,6 +609,20 @@ namespace Loyc.Syntax.Les
 			Exact("(`'++suf`)(x)",  Op(F.Call(F.InParens(F.Id(S.PostInc)), x)));
 			Exact("(`'+`)(a, b)",   Op(F.Call(F.InParens(F.Id(S.Add)), a, b)));
 			Exact("(`.foo`)(a, b)", Op(F.Call(F.InParens(F.Id(".foo")), a, b)));
+		}
+
+		[Test]
+		public void OperatorFollowedByFraction()
+		{
+			Expr ("1**.2", Op(F.Call(S.Exp, one, F.Literal(0.2))));
+			Exact("1**0.2", Op(F.Call(S.Exp, one, F.Literal(0.2))));
+			Exact("1**. 2", Op(F.Call(_("'**."), one, two)));
+			Expr ("1*.2", Op(F.Call(S.Mul, one, F.Literal(0.2))));
+			Exact("1*. 2", Op(F.Call(_("'*."), one, two)));
+			Expr ("1.*.2", Op(F.Call(_("'.*"), one, F.Literal(0.2))));
+			// TODO: Shouldn't the printer print this as "1..2"? It's using "1 .. 2"
+			Expr("1..2", Op(F.Call(S.DotDot, one, two)));
+			Expr("1.*. 2", Op(F.Call(_("'.*."), one, two)));
 		}
 
 		[Test]

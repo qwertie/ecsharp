@@ -103,11 +103,12 @@ namespace Loyc.Syntax.Les
 			Exact("a - b / c**2;", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
 			Exact("a >>= 1;",      F.Call(S.ShrAssign, a, one));
 			Exact("a.b?.c(x);",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
+			Exact("a.b::x.c;",     F.Call(S.ColonColon, F.Dot(a, b), F.Dot(x, c)));
 			
 			// Custom ops
 			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
 			Exact("a.b!!.c.?.1;",   F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
-			Exact("a +/ b *+ c;",   F.Call("'+/", a, F.Call("'*+", b, c)));
+			Exact("a +/ b *+ c;",   F.Call("'*+", F.Call("'+/", a, b), c));
 		}
 
 		[Test]
@@ -133,14 +134,21 @@ namespace Loyc.Syntax.Les
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
 			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Stmt("..a + b && c;", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Stmt(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
 		}
 
 		[Test]
 		public void SuffixOps()
 		{
-			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
+			Exact("a++;", F.Call(S.PostInc, a));
+			Exact("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
 			Stmt(@"a.b --;", F.Call(@"'--suf", F.Call(S.Dot, a, b)));
 			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'-<>-suf", b)));
+			// Ensure printer isn't confused by "suf" suffix which also appears on suffix operators
+			Exact(@"`do_suf` x;",  F.Call(@"do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"`'do_suf` x;", F.Call(@"'do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"a!! !!;", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
+			Exact(@"!!a!!;", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
 		}
 
 		[Test]
@@ -229,6 +237,7 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("a.(@[] -b);",    F.Dot(a, F.Call(S._Negate, b)));
 			Exact("a.(@[] -b)(x);", F.Call(F.Dot(a, F.Call(S._Negate, b)), x));
+			Exact("@'::(a.b, x).c;", F.Dot(F.Call(S.ColonColon, F.Dot(a, b), x), c));
 		}
 
 		[Test]

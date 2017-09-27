@@ -49,7 +49,7 @@ namespace Loyc.Syntax.Les
 	/// <ol>
 	/// <li>Substitute: prefix $ . :</li>
 	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
-	/// <li>NullDot: binary ?. ::</li>
+	/// <li>NullDot: binary ?. :: (in LESv2, :: is NullDot, in LESv3 it's Primary)</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
 	/// <li>Prefix: prefix ~ ! % ^ * / - + &amp; `backtick` (LESv2 only)</li>
 	/// <li>Power: binary **</li>
@@ -202,9 +202,9 @@ namespace Loyc.Syntax.Les
 	/// <li>Look for an operator named AZ from the section above. If it is defined,
 	/// the operator will have the same precedence. For example, binary <c>=|></c>
 	/// has the same precedence as binary "=>".</li>
-	/// <li>Otherwise, look for an entry in the table for A. For example,
-	/// binary "%+" has the same precedence as binary "%" and unary "-*" has
-	/// the same precedence as unary "-".</li>
+	/// <li>Otherwise, look for an entry in the table for Z. For example,
+	/// binary "%+" has the same precedence as binary "+" and unary "-*" has
+	/// the same precedence as unary "*".</li>
 	/// <li>If the operator is not an infix operator, it is illegal
 	/// (e.g. prefix ?? doesn't exist).</li>
 	/// <li>If A is a lowercase letter, the precedence is LowerKeyword.</li>
@@ -240,7 +240,7 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Substitute  = new Precedence(106, 105);       // prefix $
 		public static readonly Precedence Of          = new Precedence(102, 101);       // List!T
 		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x--
-		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
+		public static readonly Precedence NullDot     = new Precedence(95);             // ?. (in LESv2, :: is NullDot, in LESv3 it's Primary)
 		// Prefix operators effectively have infinite precedence on the left side.
 		// Increasing the precedence of Prefix.Left allows printer to print things 
 		// like - -x without a special notation. It has no effect on the parser.
@@ -249,14 +249,14 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..
 		public static readonly Precedence Range       = new Precedence(65);             // infix ..
 		public static readonly Precedence Multiply    = new Precedence(60);             // * /
-		public static readonly Precedence Add         = new Precedence(50);             // + -
 		public static readonly Precedence Shift       = new Precedence(55, 55, 50, 60); // >> <<
-		public static readonly Precedence Arrow       = new Precedence(45);             // -> <-
-		public static readonly Precedence Other       = new Precedence(45, 45, 45, 60); // unrecognized op
-		public static readonly Precedence OrIfNull    = new Precedence(40);             // ??
-		public static readonly Precedence Compare     = new Precedence(35);             // == != > < >= <=
-		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 40); // &
-		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 40); // | ^
+		public static readonly Precedence Add         = new Precedence(50);             // + -
+		public static readonly Precedence Other       = new Precedence(55, 55, 50, 60); // unrecognized op
+		public static readonly Precedence OrIfNull    = new Precedence(45);             // ??
+		public static readonly Precedence Compare     = new Precedence(40);             // == != > < >= <=
+		public static readonly Precedence AndBits     = new Precedence(35, 35, 30, 40); // &
+		public static readonly Precedence OrBits      = new Precedence(30, 30, 30, 40); // | ^
+		public static readonly Precedence Arrow       = new Precedence(25, 25, 15, 40); // -> <-
 		public static readonly Precedence And         = new Precedence(20);             // &&
 		public static readonly Precedence Or          = new Precedence(15);             // ||
 		public static readonly Precedence IfElse      = new Precedence(10, 2, 2, 2);    // ? :    a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
