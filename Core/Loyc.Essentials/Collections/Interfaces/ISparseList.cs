@@ -190,8 +190,8 @@ namespace Loyc.Collections
 		void ClearSpace(int index, int count = 1);
 		/// <summary>Inserts empty space starting at the specified index.</summary>
 		/// <exception cref="OverflowException"><c>index + count</c> overflowed.</exception>
-		/// <exception cref="ArgumentOutOfRangeException"><c>index</c> or <c>count</c
-		/// > was negative. If <c>index > Count</c>, this method may throw: if, for 
+		/// <exception cref="ArgumentOutOfRangeException"><c>index</c> or <c>count</c>
+		/// was negative. If <c>index > Count</c>, this method may throw: if, for 
 		/// this kind of list, setting this[i] for some invalid i>=0 throws 
 		/// <c>ArgumentOutOfRangeException</c>, then so too does this method throw.
 		/// If you want the list to be enlarged instead, call <c>Clear(index, 0)</c> 

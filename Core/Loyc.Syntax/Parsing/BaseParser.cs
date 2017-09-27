@@ -106,11 +106,11 @@ namespace Loyc.Syntax
 		/// on failure.
 		/// <para/>
 		/// The <c>StartIndex</c> reported by an EOF token is assumed not 
-		/// to be trustworthy: this method will ensure that the character index 
-		/// returned for EOF is at least as large as <c>SourceFile.Text.Count</c>
-		/// if a <see cref="SourceFile"/> was provided, or, otherwise, at least as 
-		/// large as the last token in the file, by scanning backward to find the 
-		/// last token in the file.
+		/// to be trustworthy (since it is allowed to be a "dummy" token): this 
+		/// method will ensure that the character index returned for EOF is at least 
+		/// as large as <c>SourceFile.Text.Count</c> if a <see cref="SourceFile"/> was 
+		/// provided, or, otherwise, at least as large as the last token in the file, 
+		/// by scanning backward to find the last token in the file.
 		/// </remarks>
 		protected virtual int LaIndexToCharIndex(int lookaheadIndex)
 		{

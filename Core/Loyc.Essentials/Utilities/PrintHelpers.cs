@@ -172,7 +172,7 @@ namespace Loyc.Syntax
 		/// <param name="value">Integer to be converted</param>
 		/// <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
 		/// <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
-		/// <param name="separatorInterval">Number of digits in a group</param>
+		/// <param name="separatorInterval">Number of digits in a group (use 0 or less to disable digit separators)</param>
 		/// <param name="separatorChar">Digit group separator</param>
 		/// <returns>The target StringBuilder.</returns>
 		public static StringBuilder AppendIntegerTo(StringBuilder target, long value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
@@ -185,7 +185,7 @@ namespace Loyc.Syntax
 			} else 
 				return AppendIntegerTo(target, (ulong)value, prefix, @base, separatorInterval, separatorChar);
 		}
-		
+
 		public static StringBuilder AppendIntegerTo(StringBuilder target, ulong value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
 		{
 			CheckParam.IsInRange("base", @base, 2, 36);
