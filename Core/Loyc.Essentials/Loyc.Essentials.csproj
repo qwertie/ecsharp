@@ -170,6 +170,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SelectListSource.ecs</DependentUpon>
     </Compile>
+    <None Include="Collections\Interfaces\ISparseList64.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ISparseList64.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Collections\Interfaces\ISparseList64.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ISparseList64.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Compatibility\Contract.Assert.cs" />
     <Compile Include="Compatibility\Enum.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />

@@ -33,4 +33,19 @@ namespace System.Collections.Generic
 	}
 
 	#endif
+
+	public interface IReadOnlyCollection64<out T> : IEnumerable<T>
+	{
+		long Count { get; }
+	}
+
+	public interface IReadOnlyList64<out T> : IReadOnlyCollection64<T>, IEnumerable<T>
+	{
+		/// <summary>Gets the item at the specified index.</summary>
+		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
+		/// in this list.</exception>
+		/// <param name="index">An index in the range 0 to Count-1.</param>
+		/// <returns>The element at the specified index.</returns>
+		T this[long index] { get; }
+	}
 }

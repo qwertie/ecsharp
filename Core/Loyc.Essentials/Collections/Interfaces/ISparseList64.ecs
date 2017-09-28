@@ -1,0 +1,20 @@
+﻿// Insert the contents of the file into the inner replace command (if you 
+// write includeFile("ISparseList.cs") directly inside replace, it doesn't 
+// work because the replacements happen before includeFile runs.
+replacePP(file => includeFile("ISparseList.cs"))
+{
+	// Bug in replace: replace({ using index = System.Int32; } => { using index = System.Int64; }) doesn't work.
+	// Workaround:     replace(      { index = System.Int32; } => { index = System.Int64; }) does happen to work.
+	replace(
+		{ index = System.Int32; } => { index = System.Int64; },
+		ISparseListSource<T>  => ISparseListSource64<T>,
+		ISparseList<T>        => ISparseList64<T>,
+		ISparseListEx<T>      => ISparseListEx64<T>,
+		// there is currently no 64-bit version of IList<T>, IListSource<T>, IListAndListSource<T>, or IListEx<T>
+		IListSource<T>        => IReadOnlyList64<T>,
+		IListAndListSource<T> => IReadOnlyList64<T>,
+		IListEx<T>            => IReadOnlyList64<T>)
+	{
+		file;
+	}
+}

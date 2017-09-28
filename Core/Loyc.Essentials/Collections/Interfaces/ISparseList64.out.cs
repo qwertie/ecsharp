@@ -1,9 +1,16 @@
-﻿using System;
+// Generated from ISparseList64.ecs by LeMP custom tool. LeMP version: 2.5.2.0
+// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
+// --no-out-header       Suppress this message
+// --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
+// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
+// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using index = System.Int32;
+using index = System.Int64;
 
 namespace Loyc.Collections
 {
@@ -42,7 +49,7 @@ namespace Loyc.Collections
 	/// this interface and <see cref="ISparseList{T}"/>.
 	/// </remarks>
 	/// <seealso cref="LCExt.AsSparse"/>
-	public interface ISparseListSource<T> : IListSource<T>
+	public interface ISparseListSource64<T> : IReadOnlyList64<T>
 	{
 		/// <summary>Increases <c>index</c> by at least one to reach the next index
 		/// that is not classified as empty space, and returns the item at that 
@@ -59,7 +66,7 @@ namespace Loyc.Collections
 		/// input, including invalid indexes.
 		/// </remarks>
 		T NextHigherItem(ref index? index);
-
+	
 		/// <summary>Decreases <c>index</c> by at least one to reach the next index
 		/// that is not classified as empty space, and returns the item at that 
 		/// index.</summary>
@@ -75,7 +82,7 @@ namespace Loyc.Collections
 		/// input, including invalid indexes.
 		/// </remarks>
 		T NextLowerItem(ref index? index);
-
+	
 		/// <summary>Determines whether a value exists at the specified index.</summary>
 		/// <param name="index"></param>
 		/// <returns>true if a value is assigned at the specified index, or false
@@ -89,32 +96,33 @@ namespace Loyc.Collections
 		/// <summary>Gets the next higher index that is not classified as an
 		/// empty space, or null if there are no non-blank higher indexes.</summary>
 		/// <remarks>This extension method works by calling <c>NextHigherItem()</c>.</remarks>
-		public static index? NextHigherIndex<T>(this ISparseListSource<T> list, index? index)
+		public static index? NextHigherIndex<T>(this ISparseListSource64<T> list, index? index)
 		{
 			list.NextHigherItem(ref index);
 			return index;
 		}
-		
+	
 		/// <summary>Gets the next lower index that is not classified as an
 		/// empty space, or null if there are no non-blank lower indexes.</summary>
 		/// <remarks>This extension method works by calling <c>NextHigherItem()</c>.</remarks>
-		public static index? NextLowerIndex<T>(this ISparseListSource<T> list, index? index)
+		public static index? NextLowerIndex<T>(this ISparseListSource64<T> list, index? index)
 		{
 			list.NextLowerItem(ref index);
 			return index;
 		}
-
+	
 		/// <summary>Returns the non-cleared items in the sparse list, along with 
 		/// their indexes, sorted by index.</summary>
 		/// <remarks>
 		/// The returned sequence should exactly match the set of indexes for which 
 		/// <c>list.IsSet(Key)</c> returns true.</remarks>
-		public static IEnumerable<KeyValuePair<index, T>> Items<T>(this ISparseListSource<T> list)
+		public static IEnumerable<KeyValuePair<index, T>> Items<T>(this ISparseListSource64<T> list)
 		{
 			index? i = null;
 			for (;;) {
 				T value = list.NextHigherItem(ref i);
-				if (i == null) break;
+				if (i == null)
+					break;
 				yield return new KeyValuePair<index, T>(i.Value, value);
 			}
 		}
@@ -182,7 +190,7 @@ namespace Loyc.Collections
 	/// report that <c>IsSet(i)==false</c> after you call <c>Clear(i)</c> or
 	/// <c>InsertSpace(i)</c>.
 	/// </remarks>
-	public interface ISparseList<T> : ISparseListSource<T>, IListAndListSource<T>
+	public interface ISparseList64<T> : ISparseListSource64<T>, IReadOnlyList64<T>
 	{
 		/// <summary>Unsets the range of indices <c>index</c> to <c>index+count-1</c> inclusive.
 		/// If <c>index + count > Count</c>, the sparse list shall enlarge <c>Count</c>
@@ -201,13 +209,13 @@ namespace Loyc.Collections
 		/// same situation.</exception>
 		void InsertSpace(index index, index count = 1);
 	}
-	
+
 	/// <summary>A sparse list that supports additional methods including 
 	/// <see cref="InsertRange(index, ISparseListSource{T})"/>.</summary>
 	/// <seealso cref="ISparseList{T}"/>
-	public interface ISparseListEx<T> : ISparseList<T>, IListEx<T>
+	public interface ISparseListEx64<T> : ISparseList64<T>, IReadOnlyList64<T>
 	{
 		/// <summary>Inserts another sparse list into this one.</summary>
-		void InsertRange(index index, ISparseListSource<T> list);
+		void InsertRange(index index, ISparseListSource64<T> list);
 	}
 }
