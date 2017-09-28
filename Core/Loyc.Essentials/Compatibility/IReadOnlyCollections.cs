@@ -34,12 +34,20 @@ namespace System.Collections.Generic
 
 	#endif
 
+	#if !DotNet2 && !DotNet3
 	public interface IReadOnlyCollection64<out T> : IEnumerable<T>
+	#else
+	public interface IReadOnlyCollection64<T> : IEnumerable<T>
+	#endif
 	{
 		long Count { get; }
 	}
 
+	#if !DotNet2 && !DotNet3
 	public interface IReadOnlyList64<out T> : IReadOnlyCollection64<T>, IEnumerable<T>
+	#else
+	public interface IReadOnlyList64<T> : IReadOnlyCollection64<T>, IEnumerable<T>
+	#endif
 	{
 		/// <summary>Gets the item at the specified index.</summary>
 		/// <exception cref="ArgumentOutOfRangeException">The index was not valid
