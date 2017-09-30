@@ -103,10 +103,15 @@
             so that all original characters are preserved if the output is written 
             back to text.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.Les3Parser.ToPositiveLiteral(Loyc.Syntax.Lexing.Token)">
-            <summary>Helper method used in Expr for cases like x-2, which is an 
-            Id token followed by a NegativeLiteral token, which needs to be 
-            reinterpreted as a subtraction by <i>positive</i> 2.</summary>
+        <member name="P:Loyc.Syntax.Les.Les3Lexer.SkipValueParsing">
+            <summary>Used for syntax highlighting, which doesn't care about token values.
+            This option causes the Token.Value to be set to a default, like '\0' for 
+            single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3Parser.Start(Loyc.Holder{Loyc.Syntax.Les.TokenType})">
+            <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
+            <param name="separator">If there are multiple expressions, the Value of 
+            this Holder is set to the separator between them: Comma or Semicolon.</param>
         </member>
         <member name="T:Loyc.Syntax.Les.Les3PrettyPrinter">
             <summary>
@@ -235,6 +240,12 @@
             line comments ending in a newline) are permitted, to avoid printing
             newline trivia where it would count as "end of expression".</summary>
         </member>
+        <member name="M:Loyc.Syntax.Les.Les3Printer.CanBeBinaryOperator(System.String)">
+            <summary>Returns true if the given name can be printed as a binary operator in LESv3.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les3Printer.CanBePrefixOperator(System.String)">
+            <summary>Returns true if the given name can be printed as a prefix operator in LESv3.</summary>
+        </member>
         <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.SpaceInsideListBrackets">
             <summary>Whether to print a space inside square brackets for lists <c>[ ... ]</c>.</summary>
         </member>
@@ -314,6 +325,17 @@
             in braces) to appear on a new line. Lines can still be arbitrarily long 
             with this option, since breaks are only added at the end of expressions 
             within a braced block.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.DigitSeparator">
+            <summary>Sets the "thousands" or other digit separator for numeric 
+            literals. Valid values are null (to disable the separator), underscore (_) 
+            and single quote (').</summary>
+            <exception cref="T:System.ArgumentException">Invalid property value.</exception>
+            <remarks>
+            For decimal numbers, this value separates thousands (e.g. 12'345'678).
+            For hex numbers, it separates groups of four digits (e.g. 0x1234'5678).
+            For binary numbers, it separates groups of eight digits.
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.Les.CustomLiteral">
@@ -482,7 +504,7 @@
              <ol>
              <li>Substitute: prefix $ . :</li>
              <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
-             <li>NullDot: binary ?. ::</li>
+             <li>NullDot: binary ?. :: (in LESv2, :: is NullDot, in LESv3 it's Primary)</li>
              <li>DoubleBang: binary right-associative !!</li>
              <li>Prefix: prefix ~ ! % ^ * / - + &amp; `backtick` (LESv2 only)</li>
              <li>Power: binary **</li>
@@ -635,9 +657,9 @@
              <li>Look for an operator named AZ from the section above. If it is defined,
              the operator will have the same precedence. For example, binary <c>=|></c>
              has the same precedence as binary "=>".</li>
-             <li>Otherwise, look for an entry in the table for A. For example,
-             binary "%+" has the same precedence as binary "%" and unary "-*" has
-             the same precedence as unary "-".</li>
+             <li>Otherwise, look for an entry in the table for Z. For example,
+             binary "%+" has the same precedence as binary "+" and unary "-*" has
+             the same precedence as unary "*".</li>
              <li>If the operator is not an infix operator, it is illegal
              (e.g. prefix ?? doesn't exist).</li>
              <li>If A is a lowercase letter, the precedence is LowerKeyword.</li>
@@ -669,37 +691,38 @@
              </remarks>
              <seealso cref="T:Loyc.Syntax.Precedence"/>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesPrecedenceMap">
+        <member name="T:Loyc.Syntax.Les.Les2PrecedenceMap">
             <summary>This class's main job is to maintain a table of 
             <see cref="T:Loyc.Syntax.Precedence"/> values for LES operators. When you ask about a
-            new operator, its precedence is cached for future reference.</summary>
+            new operator, its precedence is chosen by this class and cached for 
+            future reference.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.Reset">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.Reset">
             <summary>Forgets previously encountered operators to save memory.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.Find(Loyc.Syntax.OperatorShape,System.Object,System.Boolean)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.Find(Loyc.Syntax.OperatorShape,System.Object,System.Boolean,System.Boolean)">
             <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
             <param name="shape">Specifies which precedence table and rules to use 
             (Prefix, Suffix or Infix). Note: when this is Suffix, "suf" must not be 
-            part of the name in <c>op</c> (see <see cref="M:Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@,System.Boolean)"/>)</param>
+            part of the name in <c>op</c> (see <see cref="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@)"/>)</param>
             <param name="op">Parsed form of the operator. op must be a Symbol, but 
             the parameter has type object to avoid casting Token.Value in the parser.</param>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsOpChar(System.Char)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsOpChar(System.Char)">
             <summary>Returns true if this character is one of those that operators are normally made out of in LES.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsOpCharEx(System.Char)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsOpCharEx(System.Char)">
             <summary>Returns true if this character is one of those that can appear 
             in "extended" LESv3 operators that start with an apostrophe.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsNaturalOperator(System.String)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator(System.String)">
             <summary>Returns true if the given Symbol can be printed as an operator 
-            without escaping it (LESv2) or adding an apostrophe on the front (LESv3).</summary>
+            without escaping it in LESv2.</summary>
             <remarks>The parser should read something like <c>+/*</c> as an operator
             with three characters, rather than "+" and a comment, but the printer 
             is more conservative, so this function returns false in such a case.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsExtendedOperator(System.String,System.String)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsExtendedOperator(System.String,System.String)">
             <summary>Returns true if the given Symbol can ever be used as an "extended" 
             binary operator in LESv3.</summary>
             <remarks>A binary operator's length must be between 2 and 255, its name must
@@ -707,20 +730,19 @@
             from natural operators and/or characters from the set 
             {'#', '_', 'a'..'z', 'A'..'Z', '0'..'9', '$'}.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.ToSuffixOpName(System.Object)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.ToSuffixOpName(System.Object)">
             <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
             the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
             <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@,System.Boolean)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@)">
             <summary>Decides whether the name appears to represent a suffix operator 
             of the form <c>sufOP</c> or <c>OP\</c>.</summary>
             <param name="name">Potential operator name to evaluate.</param>
             <param name="bareName">If the name ends with "suf", this is the same 
             name without "suf", otherwise it is set to <c>name</c> itself. This
-            output is calculated even if the function returns false.</param>
-            <param name="checkNatural">If true, part of the requirement for 
-            returning true will be that IsNaturalOperator(bareName) == true.</param>
+            output is calculated even if the function returns false.
+            IsNaturalOperator(bareName) is true if the function returns true.</param>
         </member>
         <member name="T:Loyc.Syntax.Les.TokenExt">
             <summary>Provides the <c>Type()</c> extension method required by 
@@ -746,7 +768,7 @@
             <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>. You should use this base class if you want to 
             wrap your lexer in a postprocessor such as <see cref="T:Loyc.Syntax.Lexing.IndentTokenGenerator"/> 
             or <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>. It can also be used with the <see 
-            cref="M:Loyc.Collections.LCExt.Buffered``1(System.Collections.Generic.IEnumerator{``0})"/> extension method to help feed data to your parser.
+            cref="M:Loyc.Collections.LinqToLists.Buffered``1(System.Collections.Generic.IEnumerator{``0})"/> extension method to help feed data to your parser.
             </summary>
             <remarks>
             Important: the derived class must call <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline"/> after
@@ -1319,6 +1341,11 @@
             <param name="format">An error description with argument placeholders.</param>
             <param name="args">Arguments to insert into the error message.</param>
         </member>
+        <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.MatchError(System.Boolean,System.Collections.Generic.IList{System.Int32})">
+            <summary>Handles an error that occurs during Match(), MatchExcept(), MatchRange() or MatchExceptRange()</summary>
+            <param name="inverted">Set inversion flag. If true, then <c>expected</c> is actually a list of things that were NOT expected.</param>
+            <param name="ranges">List of ranges of characters that were expected (or unexpected, if <c>inverted</c>)</param>
+        </member>
         <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.RangesToString(System.Collections.Generic.IList{System.Int32})">
             <summary>Converts a list of character ranges to a string, e.g. for input
             list {'*','*','a','z'}, the output is "'*' 'a'..'z'".</summary>
@@ -1834,7 +1861,7 @@
             corresponding to the attributes and arguments.
             <para/>
             Tip: the LES node printer can print any ILNode as a string. See
-            <see cref="!:Loyc.Syntax.Les.LesLanguageService.Print(ILNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)"/>
+            <see cref="M:Loyc.Syntax.Les.Les3LanguageService.Print(Loyc.Syntax.ILNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)"/>
             </remarks>
         </member>
         <member name="P:Loyc.Syntax.ILNode.Kind">
@@ -2084,11 +2111,11 @@
             on failure.
             <para/>
             The <c>StartIndex</c> reported by an EOF token is assumed not 
-            to be trustworthy: this method will ensure that the character index 
-            returned for EOF is at least as large as <c>SourceFile.Text.Count</c>
-            if a <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/> was provided, or, otherwise, at least as 
-            large as the last token in the file, by scanning backward to find the 
-            last token in the file.
+            to be trustworthy (since it is allowed to be a "dummy" token): this 
+            method will ensure that the character index returned for EOF is at least 
+            as large as <c>SourceFile.Text.Count</c> if a <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/> was 
+            provided, or, otherwise, at least as large as the last token in the file, 
+            by scanning backward to find the last token in the file.
             </remarks>
         </member>
         <member name="M:Loyc.Syntax.BaseParser`2.LaIndexToMsgContext(System.Int32)">
@@ -2115,6 +2142,11 @@
         </member>
         <member name="T:Loyc.Syntax.BaseParser`2.SavePosition">
             <summary>A helper class used by LLLPG for backtracking.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParser`2.MatchError(System.Boolean,System.Collections.Generic.IEnumerable{`1})">
+            <summary>Handles an error that occurs during Match() or MatchExcept()</summary>
+            <param name="inverted">Set inversion flag. If true, then <c>expected</c> is actually a list of things that were NOT expected.</param>
+            <param name="expected">List of items that were expected (or unexpected, if <c>inverted</c>)</param>
         </member>
         <member name="T:Loyc.Syntax.BaseParser`1">
             <summary>
@@ -2468,7 +2500,7 @@
             <summary>Standard extension methods for <see cref="T:Loyc.Syntax.IParsingService"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.ParsingService.Default">
-            <summary>Gets or sets the active language service on this thread. If 
+            <summary>Gets or sets the default language service on this thread. If 
             no service has been assigned on this thread, returns <see cref="!:LesLanguageService.Value"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.ParsingService.RegisteredLanguages">
@@ -2528,7 +2560,7 @@
             <summary>Parses a Stream.</summary>
         </member>
         <member name="M:Loyc.Syntax.ParsingService.ParseFile(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)">
-            <summary>Opens the specified file and parses it.</summary>
+            <summary>Opens the specified file, parses the entire file, and closes the file.</summary>
         </member>
         <member name="M:Loyc.Syntax.ParsingService.TokenizeFile(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink)">
             <summary>Opens the specified file and tokenizes it.</summary>
@@ -2720,7 +2752,7 @@
                  decided this wasn't an improvement, it would just shift the pain around.)</li>
              <li>A constructor argument list is required on <i>all</i> types using the #new
                  operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
-                 on int[], i.e. <c>#new(#of(#[],int)(), x)</c>; this rule makes the 
+                 on int[], i.e. <c>#new(#of(@`'[]`,int)(), x)</c>; this rule makes the 
                  different kinds of new expressions easier to interpret by making them 
                  consistent with each other.</li>
              <li>A missing syntax element is now represented by the empty identifier 
@@ -3445,7 +3477,7 @@
             sequences were encountered, and which categories.</param>
             <param name="removeUnnecessaryBackslashes">Causes the backslash before 
             an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-            <remarks>See <see cref="!:UnescapeChar(string, ref int, ref EscapeC)"/> for details.</remarks>
+            <remarks>See <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeChar(Loyc.UString@,Loyc.Syntax.EscapeC@)"/> for details.</remarks>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.UnescapeChar(Loyc.UString@,Loyc.Syntax.EscapeC@)">
             <summary>Unescapes a single character of a string. Returns the 
@@ -3555,7 +3587,7 @@
             with <c>exponentBaseR=3</c>.</param>
             <param name="numDigits">Set to the number of digits in the number, not 
             including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:Loyc.Syntax.ParseNumberFlag"/>.</param>
             <remarks>
             The syntax required is
             <code>
@@ -3587,7 +3619,7 @@
             <param name="exponentBase2">Base-2 exponent to apply.</param>
             <param name="exponentBase10">Base-10 exponent to apply.</param>
             <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:Loyc.Syntax.ParseNumberFlag"/>.</param>
             <remarks>
             This method is a wrapper around the other overload that combines 
             the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
@@ -3600,14 +3632,14 @@
             failure or an infinity value on overflow.</summary>
             <param name="radix">Base of the number to parse; must be 2 (binary), 
             4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:Loyc.Syntax.ParseNumberFlag"/>.</param>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloat(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
             <summary>Parses a string to a single-precision float, returning NaN on 
             failure or an infinity value on overflow.</summary>
             <param name="radix">Base of the number to parse; must be 2 (binary), 
             4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:Loyc.Syntax.ParseNumberFlag"/>.</param>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(Loyc.UString)">
             <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
@@ -3615,7 +3647,7 @@
         </member>
         <member name="T:Loyc.Syntax.ParseNumberFlag">
             <summary>Flags that can be used with 
-            <see cref="!:ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)"/>
+            <see cref="M:Loyc.Syntax.ParseHelpers.TryParseUInt(Loyc.UString@,System.UInt64@,System.Int32,Loyc.Syntax.ParseNumberFlag)"/>
             </summary>
         </member>
         <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInFront">
@@ -3950,14 +3982,14 @@
             <summary>A four-byte tuple that represents the precedence and miscibility 
             of an operator.</summary>
             <remarks>
-            An operator's precedence is encoded in the two numbers, <see cref="F:Loyc.Syntax.Precedence.Left"/> 
-            and <see cref="F:Loyc.Syntax.Precedence.Right"/>. These numbers encode the knowledge that, for example, 
-            <c>x &amp; y == z</c> will be parsed as <c>x &amp; (y == z)</c>. For normal 
-            left-associative operators, Left and Right are the same. However, some 
-            operators have different precedence on the left than on the right, a prime
-            example being the => operator: <c>x = a => y = a</c> is parsed 
-            <c>x = (a => (y = a))</c>; it has very high precedence on the left, but
-            very low precedence on the right.
+            Precedences encode knowledge like the fact that <c>x &amp; y == z</c> will 
+            be parsed as <c>x &amp; (y == z)</c> in C#. An operator's precedence is 
+            encoded in the two numbers, <see cref="F:Loyc.Syntax.Precedence.Left"/> and <see cref="F:Loyc.Syntax.Precedence.Right"/>.  
+            For typical operators which are left-associative, Left and Right are the 
+            same. However, some operators have different precedence on the left than 
+            on the right, a prime example being the => operator: <c>x = a => y = a</c> 
+            is parsed <c>x = (a => (y = a))</c>; it has very high precedence on the 
+            left, but very low precedence on the right.
             <para/>
             To understand how this works, remember that a parser scans from left to 
             right. Each time it encounters a new operator, it needs to figure out 
@@ -4000,14 +4032,14 @@
             is parsed <c>a = (b = c)</c>, because its precedence is 1 on the left and 
             0 on the right. When the parser sees the first '=' it sets the PF to 0 
             because it is about to parse the right side. When it encounters the second 
-            '=', the left-hand precedence of that operator is 1 which is higher than 
-            the current PF (0) so it is included in the right-hand side of the first 
-            '='. This behavior is called "right associativity"; <see cref="P:Loyc.Syntax.Precedence.IsRightAssociative"/> 
-            returns true when <c>Left > Right</c>.
+            '=', the precedence of the Left side of that operator is 1 which is higher 
+            than the current PF (0) so it is included in the right-hand side of the 
+            first '='. This behavior is called "right associativity"; 
+            <see cref="P:Loyc.Syntax.Precedence.IsRightAssociative"/> returns true when <c>Left > Right</c>.
             <para/>
             Prefix and suffix operators only have one "side"; you can imagine that the 
             unused side (e.g. the left side of prefix -) has infinite precedence, so 
-            that EC# can parse $-x as $(-x) even though the precedence of '-' is 
+            that EC# could parse $-x as $(-x) even though the precedence of '-' is 
             supposedly lower than '$'.
             <para/>
             Some languages have a conditional operator (a?b:c) with three parts. In 
@@ -4021,11 +4053,19 @@
             perspective of a parser, but an actual parser may or may not use the PF 
             concept and <c>Precedence</c> objects.
             <para/>
+            In summary: <see cref="F:Loyc.Syntax.Precedence.Left"/> and <see cref="F:Loyc.Syntax.Precedence.Right"/> represent the 
+            precedence of the left and right side of a binary operator. A parser can 
+            keep track of a number called the "precedence floor" or PF, which has its 
+            minimum value when parsing starts. When a binary operator <c>Op</c> is 
+            encountered, the parser should "accept" the operator when <c>O.Left > PF</c>
+            and, if it accepts the operator, set <c>PF = O.Right</c> temporarily as it 
+            parses the right side of the operator.
+            <para/>
             This struct contains two other numbers, <see cref="F:Loyc.Syntax.Precedence.Lo"/> and <see cref="F:Loyc.Syntax.Precedence.Hi"/>,
             which are a precedence range that determines whether and how the operator 
             can be mixed with other operators, as explained below.
             <para/>
-            A printer (e.g. <see cref="T:Loyc.Syntax.Les.LesLanguageService"/>) has a different way of analyzing
+            A printer (which writes a syntax tree as text) has a different way of analyzing
             precedence. It starts with a known parse tree and then has to figure out 
             how to output something that the parser will reconstruct into the original
             tree. This is more difficult if perfect round-tripping is required: parentheses
@@ -4087,7 +4127,7 @@
             whether the precedence of the <i>left-hand side</i> of the "+" operator
             is above the <i>right-hand side</i> of the "=" operator. The fact that
             there is a "??" later on is irrelevant. In contrast, when printing the 
-            expression "b + c", both sides of the "+" operator and both sides of the 
+            expression "b + c", both sides of the subexpression and both sides of the 
             context must be considered. The right-hand side is relevant because if 
             the right-hand operator was "*" instead of "??", the following printout 
             would be wrong:
@@ -4102,8 +4142,9 @@
             cref="M:Loyc.Syntax.Precedence.LeftContext(Loyc.Syntax.Precedence)"/> and <see cref="M:Loyc.Syntax.Precedence.RightContext(Loyc.Syntax.Precedence)"/>, while for parsing you 
             only need <see cref="M:Loyc.Syntax.Precedence.CanParse(Loyc.Syntax.Precedence)"/> (to raise the precedence floor, simply
             replace the current <see cref="T:Loyc.Syntax.Precedence"/> value with that of the new 
-            operator). In a parser, the "current" precedence is represented by 
-            <see cref="F:Loyc.Syntax.Precedence.Right"/>; the value of <see cref="F:Loyc.Syntax.Precedence.Left"/> doesn't matter.
+            operator). If one chooses to use this type to represent the precedence 
+            floor in a parser, the "current" precedence is represented by <see 
+            cref="F:Loyc.Syntax.Precedence.Right"/>; the value of <see cref="F:Loyc.Syntax.Precedence.Left"/> doesn't matter.
             <para/>
             Both printers and parsers can use <see cref="M:Loyc.Syntax.Precedence.CanMixWith(Loyc.Syntax.Precedence)"/>.
             
@@ -4141,7 +4182,7 @@
             
             <h3>Overall Range</h3>
             
-            By convention, precedence scales range from 0 to 100 (or slightly higher).
+            By convention, precedence scales range from about 0 to about 100.
             The precedence numbers are stored in this structure as <c>sbyte</c>s, so 
             <c>Left</c>, <c>Right</c>, <c>Lo</c>, and <c>Hi</c> must be between -128 
             and 127.
@@ -4606,19 +4647,22 @@
             null.</summary>
             <remarks>See remarks at <see cref="M:LeMP.MacroContext.GetArgsAndBody(LeMP.IMacroContext,System.Boolean)"/>.</remarks>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>Runs the macro processor on the specified node(s).</summary>
             <param name="input">The node or node list to process.</param>
             <param name="asRoot">If false, the nodes are treated as children of the 
-            current node (using the current list of ancestors as a basis), otherwise
-            the nodes are processed alone as if they were a separate file.</param>
+            current node (using the current list of ancestors as a basis); if true,
+            the list of parent nodes is cleared.</param>
             <param name="resetOpenNamespaces">If false, the set of open namespaces
             stays the same; if true it is cleared to the set of pre-opened 
-            namespaces (<see cref="!:MacroProcessor.PreOpenedNamespaces"/>).</param>
+            namespaces (<see cref="!:MacroProcessor.PreOpenedNamespaces"/>) and
+            macros defined with <see cref="M:LeMP.IMacroContext.RegisterMacro(LeMP.MacroInfo)"/> are forgotten.</param>
+            <param name="resetProperties">If true, <see cref="P:LeMP.IMacroContext.ScopedProperties"/>
+            is reset to contain only predefined properties.</param>
             <remarks>The node(s)</remarks>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Syntax.LNode,System.Boolean,System.Boolean,System.Boolean)">
-            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)"/>
+        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Syntax.LNode,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean,System.Boolean)"/>
         </member>
         <member name="P:LeMP.IMacroContext.AllKnownMacros">
             <summary>Gets information about all macros registered with the macro 
@@ -4689,10 +4733,10 @@
         <member name="M:LeMP.MacroContext.GetOptions(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Transforms an option list in the format <c>option1(v1), option2(v2)</c> 
             or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
-            If the format of a given node is invalid, this function yields <c>(null, node)</c>.</summary>
+            If the format of a given node is invalid, this function yields <c>(node, null)</c>.</summary>
             <remarks>
             <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
-            #namedArg(option2, v2)</c> in EC# or <c>@:(option1, v1), @:(option2, v2)</c> in LES.
+            #namedArg(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
             This function recognizes both forms.
             </remarks>
         </member>
@@ -4746,26 +4790,28 @@
         </member>
         <member name="T:LeMP.MacroMode">
             <summary>Flags that affect the way that <see cref="!:LeMP.MacroProcessor"/>
-            uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
-            the macro accepts the input by returning a non-null result.</summary>
+            uses a LexicalMacro.</summary>
         </member>
         <member name="F:LeMP.MacroMode.Normal">
             <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
         </member>
         <member name="F:LeMP.MacroMode.NoReprocessing">
-            <summary>The macro's result (including children) is not processed further.</summary>
+            <summary>The macro's result (including children) is not processed further. 
+            This flag only takes effect when the macro accepts the input by returning a non-null result.</summary>
         </member>
         <member name="F:LeMP.MacroMode.ProcessChildrenAfter">
-            <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
+            <summary>The macro's result is not reprocessed, but the result's children are processed. 
+            This flag only takes effect when the macro accepts the input by returning a non-null result.</summary>
         </member>
         <member name="F:LeMP.MacroMode.ProcessChildrenBefore">
-            <summary>The result is pre-processed before calling the macro, and not processed afterward.</summary>
+            <summary>The result is pre-processed before calling the macro, and not processed afterward
+            (if the macro accepts the input by returning a non-null result).</summary>
         </member>
         <member name="F:LeMP.MacroMode.Passive">
             <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input by returning null.</summary>
         </member>
         <member name="F:LeMP.MacroMode.AllowDuplicates">
-            <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce the same results.</summary>
+            <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce equivalent results.</summary>
         </member>
         <member name="F:LeMP.MacroMode.DropRemainingListItems">
             <summary>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</summary>
@@ -4773,7 +4819,7 @@
             It is more common, however, to set the <see cref="P:LeMP.IMacroContext.DropRemainingNodes"/> property inside the macro.</remarks>
         </member>
         <member name="F:LeMP.MacroMode.MatchIdentifier">
-            <summary>If this flag is present, the macro can match a plain identifier. By default, a macro must be a call.</summary>
+            <summary>If this flag is present, the macro can match a plain identifier. By default, only calls can be treated as macros.</summary>
             <remarks>This flag does <i>not</i> prevent the macro from matching calls.</remarks>
         </member>
         <member name="F:LeMP.MacroMode.PriorityFallbackMin">

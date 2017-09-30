@@ -12,7 +12,8 @@
             <summary>Parses Enhanced C# code into a sequence of Loyc trees 
             (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
             <remarks>
-            You can use <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/>
+            You can use <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> with extension method
+            <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/>
             to easily parse a text string (holding zero or more EC# statements) into a 
             Loyc tree. One does not normally use this class directly.
             </remarks>
@@ -202,12 +203,53 @@
             </remarks>
         </member>
         <member name="T:Loyc.Ecs.Tests.EcsParserTests">
-            <summary>EC# parser tests</summary>
+            <summary>EC# parser tests. Most of the tests are inherited.</summary>
         </member>
         <member name="T:Loyc.Ecs.Tests.EcsNodePrinterTests">
-            <summary>EC# node printer tests</summary>
+            <summary>EC# node printer tests. Most of the tests are inherited.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Ecs.EcsPrecedence" -->
+        <member name="T:Loyc.Ecs.EcsPrecedence">
+            <summary>Contains <see cref="T:Loyc.Syntax.Precedence"/> objects that represent the 
+            precedence rules of EC#.</summary>
+            <remarks>
+            Summary:
+            <br/>100+: Primary: x.y x::y f(x) a[i] etc.
+            <br/>90+: Prefix: +  -  !  ~  ++x  --x  (T)x 
+            <br/>80+: Power: x**y
+            <br/>70+: Mult: * / %
+            <br/>60+: Add: + -     (Shift is 56 but ideally would be 70)
+            <br/>50+: Range: ..    (`custom operators` are 28 to 55)
+            <br/>40+: Compare: &lt; > &lt;= >= is as using == !=
+            <br/>30+: Bitwise &amp;^|  (Ideally would be 54..59)
+            <br/>20+: Conditional &amp;&amp; || ^^
+            <br/>10+: Ternary
+            <br/> 1:  Assignment
+            <br/>-1:  Lambda (only the right-hand side of '=>')
+            <para/>
+            When printing an expression, we avoid emitting <c>x | y == z</c> because 
+            the ranges of == and | overlap. Instead <see cref="T:Loyc.Ecs.EcsNodePrinter"/> prints 
+            <c>@`'|`(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
+            the <see cref="!:EcsNodePrinter.AllowChangeParentheses"/> option, which allows 
+            parenthesis to be added so that a Loyc tree with the structure 
+            <c>@`'|`(x, y == z)</c> is emitted as <c>x | (y == z)</c>, even though the 
+            latter is a slightly different tree.
+            <para/>
+            Most of the operators use a range of two adjacent numbers, e.g. 10..11. 
+            This represents a couple of ideas for future use in a compiler that allows
+            you to define new operators; one idea is, you could give new operators the
+            "same" precedence as existing operators, but make them immiscible with 
+            those operators... yet still make them miscible with another new operator.
+            For instance, suppose you define two new operators `glob` and `fup` with
+            PrecedenceRange 41..41 and 40..40 respectively. Then neither can be mixed
+            with + and -, but they can be mixed with each other and `fup` has higher
+            precedence. Maybe this is not very useful, but hey, why not? If simply
+            incrementing a number opens up new extensibility features, I'm happy to
+            do it. (I could have used a non-numeric partial ordering system to do
+            the same thing, but it would have been more complex, and of questionable
+            value.)
+            </remarks>
+            <seealso cref="T:Loyc.Syntax.Precedence"/>
+        </member>
         <member name="T:Loyc.Ecs.EcsValidators">
             <summary>
             A class filled with methods for checking whether a node has the correct 
@@ -241,6 +283,10 @@
             a constructor, or (when orDelegate is true) a delegate definition, gets
             the definition kind (#fn, #cons, or #delegate).</summary>
         </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsNormalMethod(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Alias for <see cref="M:Loyc.Ecs.EcsValidators.MethodDefinitionKind(Loyc.Syntax.LNode,System.Boolean,Loyc.Ecs.EcsValidators.Pedantics)"/> that returns true if 
+            MethodDefinitionKind returns #fn.</summary>
+        </member>
         <member name="M:Loyc.Ecs.EcsValidators.MethodDefinitionKind(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,System.Boolean,Loyc.Ecs.EcsValidators.Pedantics)">
             <summary>If the given node has a valid syntax tree for a method definition,
             a constructor, or (when orDelegate is true) a delegate definition, gets
@@ -265,6 +311,14 @@
             <summary>Returns true iff the given node has a valid syntax tree for 
             a property definition, and gets the component parts of the definition.</summary>
             <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsVariableDeclExpr(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@)">
+            <summary>Verifies that a declaration of a single variable is valid and gets its parts.</summary>
+            <param name="expr">Potential variable or field declaration</param>
+            <param name="type">Variable type (empty identifier if `var`)</param>
+            <param name="name">Variable name (identifier or $substutution expr)</param>
+            <param name="initialValue">Initial value that is assigned in <c>expr</c>, or null if unassigned.</param>
+            <returns>True if <c>expr</c> is declaration of a single variable.</returns>
         </member>
         <member name="M:Loyc.Ecs.EcsValidators.IsPrintableTypeParam(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
             <summary>Checks if 'n' is a legal type parameter definition.</summary>
@@ -305,8 +359,8 @@
             <see cref="M:Loyc.Ecs.EcsLanguageService.Print(Loyc.Syntax.LNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)"/> via 
             <see cref="F:Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter"/> or via
             <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/>. This class does have some static
-            methods like <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintLiteral(System.Object,Loyc.Syntax.NodeStyle)"/> and <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintId(Loyc.Symbol,System.Boolean)"/> that
-            are useful for printing tokens efficiently.
+            methods like <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintLiteral(System.Object,Loyc.Syntax.NodeStyle)"/> and 
+            <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintId(Loyc.Symbol,System.Boolean)"/> that are useful for printing tokens efficiently.
             <para/>
             This class is designed to faithfully preserve most Loyc trees; almost any 
             Loyc tree that can be represented as EC# source code will be represented 
@@ -367,7 +421,7 @@
             a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
             <remarks>This was moved to EcsValidators.</remarks>
         </member>
-        <member name="P:Loyc.Ecs.EcsNodePrinter.Errors">
+        <member name="P:Loyc.Ecs.EcsNodePrinter.ErrorSink">
             <summary>Any error that occurs during printing is printed to this object.</summary>
         </member>
         <member name="M:Loyc.Ecs.EcsNodePrinter.PrintPlainCSharp(Loyc.Syntax.LNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)">
@@ -381,11 +435,11 @@
         </member>
         <member name="M:Loyc.Ecs.EcsNodePrinter.Print(Loyc.Syntax.LNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)">
             <summary>Attaches a new <see cref="T:System.Text.StringBuilder"/>, then prints a node 
-            with <see cref="!:Print(LNode, object)"/>.</summary>
+            with <see cref="M:Loyc.Ecs.EcsNodePrinter.Print(Loyc.Syntax.LNode,Loyc.Syntax.ParsingMode)"/>.</summary>
         </member>
         <member name="M:Loyc.Ecs.EcsNodePrinter.Print(Loyc.Syntax.LNode,System.IO.TextWriter,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)">
             <summary>Attaches a new <see cref="T:System.IO.TextWriter"/>, then prints a node 
-            with <see cref="!:Print(LNode, object)"/>.</summary>
+            with <see cref="M:Loyc.Ecs.EcsNodePrinter.Print(Loyc.Syntax.LNode,Loyc.Syntax.ParsingMode)"/>.</summary>
         </member>
         <member name="M:Loyc.Ecs.EcsNodePrinter.Print(Loyc.Syntax.LNode,Loyc.Syntax.ParsingMode)">
             <summary>Print a node to the writer attached to this printer.</summary>
@@ -430,15 +484,14 @@
             block, so #result can be represented by omitting a semicolon.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.TypeContext">
-            <summary>An expression is being printed in a context where a type
-            is expected (its syntax has been verified in advance.)</summary>
+            <summary>An expression is being printed in a context where a type is expected.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.InDefinitionName">
             <summary>The expression being printed is a complex identifier that
             may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.InOf">
-            <summary>Inside angle brackets or (of ...).</summary>
+            <summary>Printing a type inside angle brackets or !(...).</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.AllowPointer">
             <summary>Allow pointer notation (when combined with TypeContext). 
@@ -449,11 +502,6 @@
             <summary>Used to communicate to the operator printers that a binary 
             call should be expressed with the backtick operator.</summary>
         </member>
-        <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.DropAttributes">
-            <summary>Drop attributes only on the immediate expression being 
-            printed. Used when printing the return type on a method, whose 
-            attributes were already described by <c>[return: ...]</c>.</summary>
-        </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.ForEachInitializer">
             <summary>Forces a variable declaration to be allowed as the 
             initializer of a foreach loop.</summary>
@@ -462,7 +510,8 @@
             <summary>After 'else', valid 'if' statements are not indented.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.NoParentheses">
-            <summary>A statement is being printed, so it can't be surrounded by parens.</summary>
+            <summary>A statement is being printed, or the return value or name
+            of a method, so parentheses cannot be emitted here.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.AllowThisAsCallTarget">
             <summary>Print #this(...) as this(...) inside a method</summary>
@@ -551,13 +600,14 @@
             (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
             <remarks>Note: since EcsNodePrinter inserts its own spaces 
             automatically, space trivia (if any) may be redundant unless you set 
-            <see cref="!:_o.SpaceOptions"/> and/or <see cref="P:Loyc.Ecs.EcsPrinterOptions.NewlineOptions"/> to zero.</remarks>
+            <see cref="P:Loyc.Ecs.EcsPrinterOptions.SpaceOptions"/> and/or <see cref="P:Loyc.Ecs.EcsPrinterOptions.NewlineOptions"/> to zero.</remarks>
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.ObeyRawText">
             <summary>When this flag is set, raw text trivia attributes (e.g. <see 
             cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
             output); otherwise such attributes are treated as unknown trivia and, 
-            if <see cref="!:OmitUnknownTrivia"/> is false, printed as attributes.</summary>
+            if <see cref="P:Loyc.Syntax.LNodePrinterOptions.OmitUnknownTrivia"/> is false, 
+            printed as attributes.</summary>
             <remarks>Initial value: true</remarks>
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.QuoteUnprintableLiterals">
@@ -567,7 +617,7 @@
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.AllowConstructorAmbiguity">
             <summary>Causes the ambiguity between constructors and method calls to
-            be ignored; see <see cref="!:EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
+            be ignored; see <see cref="M:Loyc.Ecs.Tests.EcsPrinterAndParserTests.ConstructorAmbiguities"/>.</summary>
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.AvoidMacroSyntax">
             <summary>Prints statements like "foo (...) bar()" in the equivalent form

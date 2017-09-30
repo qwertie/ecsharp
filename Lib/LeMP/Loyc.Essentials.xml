@@ -4,11 +4,137 @@
         <name>Loyc.Essentials</name>
     </assembly>
     <members>
+        <member name="T:Loyc.Collections.LinqToLists">
+            <summary>
+            This class enhances LINQ-to-Objects with extension methods that preserve the
+            interface (e.g. Take(IList&lt;int>) returns a struct that implements IList&lt;int>)
+            or have higher performance than the ones in System.Linq.Enumerable.
+            </summary><remarks>
+            For example, the <see cref="!:Enumerable.Last()"/> extension 
+            method scans the entire list before returning the last item, while 
+            <see cref="M:Loyc.Collections.LinqToLists.Last``1(System.Collections.Generic.IReadOnlyList{``0})"/> and <see cref="M:Loyc.Collections.LinqToLists.Last``1(System.Collections.Generic.IList{``0})"/> simply
+            return the last item directly.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Last``1(System.Collections.Generic.IList{``0})">
+            <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
+            <exception cref="T:Loyc.Collections.EmptySequenceException">The list is empty</exception>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.LastOrDefault``1(System.Collections.Generic.IList{``0},``0)">
+            <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Last``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
+            <exception cref="T:Loyc.Collections.EmptySequenceException">The list is empty</exception>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.LastOrDefault``1(System.Collections.Generic.IReadOnlyList{``0},``0)">
+            <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Last``1(Loyc.Collections.INegListSource{``0})">
+            <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
+            <exception cref="T:Loyc.Collections.EmptySequenceException">The list is empty</exception>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.LastOrDefault``1(Loyc.Collections.INegListSource{``0},``0)">
+            <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Skip``1(Loyc.Collections.IListSource{``0},System.Int32)">
+            <summary>Skips the specified number of elements immediately and 
+            returns a slice of part of the list that remains, or an empty 
+            slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Take``1(Loyc.Collections.IListSource{``0},System.Int32)">
+            <summary>Returns a slice of the specified number of elements from 
+            the beginning of the list, or a slice of the entire list if <c>count</c> 
+            is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Skip``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>Skips the specified number of elements immediately and 
+            returns a slice of part of the list that remains, or an empty 
+            slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Take``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>Returns a slice of the specified number of elements from 
+            the beginning of the list, or a slice of the entire list if <c>count</c> 
+            is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Skip``1(Loyc.Collections.IListAndListSource{``0},System.Int32)">
+            <summary>Skips the specified number of elements immediately and 
+            returns a slice of part of the list that remains, or an empty 
+            slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Take``1(Loyc.Collections.IListAndListSource{``0},System.Int32)">
+            <summary>Returns a slice of the specified number of elements from 
+            the beginning of the list, or a slice of the entire list if <c>count</c> 
+            is greater than or equal to the <c>list.Count</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.TakeNowWhile``1(System.Collections.Generic.IList{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
+            The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
+            the list immediately.</summary>
+            <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the first 3 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.SkipNowWhile``1(System.Collections.Generic.IList{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice without the initial elements of the list that meet the specified
+            criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
+            method scans the list immediately.</summary>
+            <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the last 2 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.TakeNowWhile``1(Loyc.Collections.IListSource{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
+            The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
+            the list immediately.</summary>
+            <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the first 3 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.SkipNowWhile``1(Loyc.Collections.IListSource{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice without the initial elements of the list that meet the specified
+            criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
+            method scans the list immediately.</summary>
+            <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the last 2 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.TakeNowWhile``1(Loyc.Collections.INegListSource{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
+            The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
+            the list immediately.</summary>
+            <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the first 3 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.SkipNowWhile``1(Loyc.Collections.INegListSource{``0},System.Func{``0,System.Boolean})">
+            <summary>Returns a slice without the initial elements of the list that meet the specified
+            criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
+            method scans the list immediately.</summary>
+            <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
+            (not a copy) of the last 2 elements.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>Copies the contents of a list to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.ToArray``1(System.Collections.Generic.IList{``0})">
+            <summary>Copies the contents of a list to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.ToArray``1(Loyc.Collections.INegListSource{``0})">
+            <summary>Copies the contents of an <see cref="T:Loyc.Collections.INegListSource`1"/> to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Reverse``1(Loyc.Collections.IListSource{``0})">
+            <summary>Returns a reversed view of a read-only list.</summary>
+            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Reverse``1(System.Collections.Generic.IList{``0})">
+            <summary>Returns an editable reversed view of a list.</summary>
+            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.LinqToLists.Reverse``1(Loyc.Collections.IListAndListSource{``0})">
+            <summary>Returns an editable reversed view of a list.</summary>
+            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+        </member>
         <member name="T:Loyc.Collections.SelectList`2">
             <summary>
             Helper class: provides a modified view of an IList by transforming each element 
             on-demand. Objects of this type are returned from 
-            <see cref="M:Loyc.Collections.LinqToCollections.Select``2(System.Collections.Generic.IList{``0},System.Func{``0,``1})"/>
+            <see cref="M:Loyc.Collections.LinqToLists.Select``2(System.Collections.Generic.IList{``0},System.Func{``0,``1})"/>
             </summary>
             <typeparam name="T">input type</typeparam>
             <typeparam name="TResult">output type</typeparam>
@@ -17,7 +143,7 @@
             <summary>
             Helper class: provides a modified view of an IListSource by transforming each element 
             on-demand. Objects of this type are returned from 
-            <see cref="M:Loyc.Collections.LinqToCollections.Select``2(Loyc.Collections.IListSource{``0},System.Func{``0,``1})"/>
+            <see cref="M:Loyc.Collections.LinqToLists.Select``2(Loyc.Collections.IListSource{``0},System.Func{``0,``1})"/>
             </summary>
             <typeparam name="T">input type</typeparam>
             <typeparam name="TResult">output type</typeparam>
@@ -511,10 +637,6 @@
         <member name="M:Loyc.Collections.LCExt.AsNegList``1(Loyc.Collections.IListSource{``0},System.Int32)">
             <inheritdoc cref="M:Loyc.Collections.NegListSource`1.#ctor"/>
         </member>
-        <member name="M:Loyc.Collections.LCExt.Reverse``1(Loyc.Collections.IListSource{``0})">
-            <summary>Returns a reversed view of a read-only list.</summary>
-            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-        </member>
         <member name="M:Loyc.Collections.LCExt.AsCollection``1(System.Collections.Generic.IReadOnlyCollection{``0})">
             <summary>Adapter: treats any IReadOnlyCollection{T} as a read-only ICollection{T}.</summary>
             <remarks>This method is named "AsCollection" and not "ToCollection" 
@@ -531,24 +653,6 @@
         <member name="T:Loyc.Collections.UpCastListSource`2">
             <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
             <see cref="M:Loyc.Collections.LCExt.UpCast``2(System.Collections.Generic.IReadOnlyCollection{``0})"/>
-        </member>
-        <member name="T:Loyc.Collections.LinqToCollections">
-            <summary>
-            This class enhances LINQ-to-Objects with extension methods that preserve the
-            interface (e.g. Take(List&lt;int>) returns IList&lt;int>) and/or have higher
-            performance than the ones in System.Linq.Enumerable.
-            </summary><remarks>
-            For example, the <see cref="!:Enumerable.Last()"/> extension 
-            method scans the entire list before returning the last item, while 
-            <see cref="!:Last(IReadOnlyList&lt;T&gt;)"/> and <see cref="!:Last(IList&lt;T&gt;)"/> simply
-            return the last item directly.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.LinqToCollections.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>Copies the contents of an IListSource or IReadOnlyList to an array.</summary>
-        </member>
-        <member name="M:Loyc.Collections.LinqToCollections.ToArray``1(Loyc.Collections.INegListSource{``0})">
-            <summary>Copies the contents of an <see cref="T:Loyc.Collections.INegListSource`1"/> to an array.</summary>
         </member>
         <member name="T:Loyc.Collections.ListExt">
             <summary>Extension methods and helper methods for <see cref="T:System.Collections.Generic.List`1"/>,
@@ -745,14 +849,6 @@
             a read-only list of one item.</summary>
             <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
         </member>
-        <member name="M:Loyc.Collections.ListExt.Reverse``1(System.Collections.Generic.IList{``0})">
-            <summary>Returns an editable reversed view of a list.</summary>
-            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Reverse``1(Loyc.Collections.IListAndListSource{``0})">
-            <summary>Returns a reversed view of a list.</summary>
-            <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-        </member>
         <member name="T:Loyc.Collections.ListSourceAsSparse`1">
             <summary>Adapter from <see cref="T:Loyc.Collections.IListSource`1"/> to <see cref="T:Loyc.Collections.ISparseListSource`1"/>.</summary>
             <seealso cref="M:Loyc.Collections.LCExt.AsSparse``1(Loyc.Collections.IListSource{``0})"/>
@@ -870,7 +966,7 @@
         <member name="T:Loyc.Collections.NegList`1">
             <summary>
             Adapter: provides a view of an <see cref="T:System.Collections.Generic.IList`1"/> in which the Count is the same, but the 
-            minimum index is not necessarily zero. Returned from <see cref="!:LCExt.NegView&lt;T&gt;(IList&lt;T&gt;,int)"/>.
+            minimum index is not necessarily zero. Returned from <see cref="M:Loyc.Collections.LCExt.AsNegList``1(System.Collections.Generic.IList{``0},System.Int32)"/>.
             </summary>
             <remarks>This wrapper is a structure in order to offer high performance in 
             certain scenarios.</remarks>
@@ -929,7 +1025,7 @@
             <summary>
             Adapter: provides a view of an <see cref="T:Loyc.Collections.IListSource`1"/> in which the Count 
             is the same, but the minimum index is not necessarily zero. Returned from 
-            <see cref="!:LCExt.NegView&lt;T&gt;(IListSource&lt;T&gt;,int)"/>.
+            <see cref="M:Loyc.Collections.LCExt.AsNegList``1(Loyc.Collections.IListSource{``0},System.Int32)"/>.
             </summary>
             <remarks>
             This wrapper is a structure in order to offer high performance in certain 
@@ -1029,7 +1125,7 @@
         <member name="T:Loyc.Collections.Repeated`1">
             <summary>Helper struct. A sequence that stores one value, but acts like a list in which
             that value is repeated a specified number of times. Returned from 
-            <see cref="!:Range.Repeat&lt;T&gt;"/>.</summary>
+            <see cref="M:Loyc.Collections.ListExt.Repeat``1(``0,System.Int32)"/>.</summary>
         </member>
         <member name="T:Loyc.Collections.ReverseBinumerator`1">
             <summary>Adapter: a <see cref="T:Loyc.Collections.IBinumerator`1"/> that swaps the MoveNext() and MovePrev() methods.</summary>
@@ -1048,7 +1144,7 @@
         </member>
         <member name="T:Loyc.Collections.ReversedListSource`1">
             <summary>Adapter: reversed view of <see cref="T:Loyc.Collections.IListSource`1"/> returned 
-            from <see cref="M:Loyc.Collections.LCExt.Reverse``1(Loyc.Collections.IListSource{``0})"/>.</summary>
+            from <see cref="M:Loyc.Collections.LinqToLists.Reverse``1(Loyc.Collections.IListSource{``0})"/>.</summary>
         </member>
         <member name="T:Loyc.Collections.Slice_`1">
             <summary>Adapter: a random-access range for a slice of an 
@@ -1461,8 +1557,8 @@
         <member name="M:Loyc.Collections.ISparseList`1.InsertSpace(System.Int32,System.Int32)">
             <summary>Inserts empty space starting at the specified index.</summary>
             <exception cref="T:System.OverflowException"><c>index + count</c> overflowed.</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException"><c>index</c> or <c>count</c
-            > was negative. If <c>index > Count</c>, this method may throw: if, for 
+            <exception cref="T:System.ArgumentOutOfRangeException"><c>index</c> or <c>count</c>
+            was negative. If <c>index > Count</c>, this method may throw: if, for 
             this kind of list, setting this[i] for some invalid i>=0 throws 
             <c>ArgumentOutOfRangeException</c>, then so too does this method throw.
             If you want the list to be enlarged instead, call <c>Clear(index, 0)</c> 
@@ -2190,7 +2286,7 @@
             <para/>
             An optimization is available when only a single item is being added or
             changed. In that case, the collection class should create a lightweight 
-            read-only single-item list by calling <see cref="!:Range.Single&lt;T&gt;(T)"/>.
+            read-only single-item list by calling <see cref="M:Loyc.Collections.ListExt.Single``1(``0)"/>.
             Such a list has less overhead than <see cref="T:System.Collections.Generic.List`1"/> and the same
             overhead as an array of one item.
             </remarks>
@@ -2264,7 +2360,7 @@
             <returns>The value of the array at the specified index.</returns>
             <remarks>
             This redundant indexer is required by C# because the compiler imagines
-            that the setter in <see cref="T:Loyc.Collections.ISinkArray`1"/> conflicts with the getter
+            that the setter in <see cref="T:Loyc.Collections.IArraySink`1"/> conflicts with the getter
             in <see cref="T:Loyc.Collections.IListSource`1"/>.
             </remarks>
         </member>
@@ -2322,7 +2418,7 @@
             In Enhanced C# I plan to add some kind of prioritization feature that will 
             eliminate the need for interfaces like this one.
             <para/>
-            Does not include <see cref="T:Loyc.Collections.ISinkList`1"/> because this interface may be 
+            Does not include <see cref="T:Loyc.Collections.IListSink`1"/> because this interface may be 
             implemented by list classes that are read-only.
             </remarks>
         </member>
@@ -2334,7 +2430,7 @@
             </summary>
             <remarks>
             <see cref="T:Loyc.Collections.IArray`1"/> (a version of <see cref="T:Loyc.Collections.IListSource`1"/> that adds the writability of an
-            array) and <see cref="T:Loyc.Collections.ISinkList`1"/> are largely subsets of the IList(T) interface. 
+            array) and <see cref="T:Loyc.Collections.IListSink`1"/> are largely subsets of the IList(T) interface. 
             IListSource has two methods that IList(T) does not (TryGet() and Slice()), while
             <see cref="T:Loyc.Collections.ICollectionEx`1"/> adds RemoveAll and AddRange.
             <para/>
@@ -2373,14 +2469,14 @@
         <member name="T:Loyc.Collections.IAdd`1">
             <summary>An interface for depositing items. Includes only an Add(T) method.</summary>
         </member>
-        <member name="T:Loyc.Collections.ISinkCollection`1">
+        <member name="T:Loyc.Collections.ICollectionSink`1">
             <summary>Represents a write-only collection: you can modify it, but you
             cannot learn what it contains.</summary>
         </member>
-        <member name="T:Loyc.Collections.ISinkArray`1">
+        <member name="T:Loyc.Collections.IArraySink`1">
             <summary>Represents a write-only array.</summary>
         </member>
-        <member name="T:Loyc.Collections.ISinkList`1">
+        <member name="T:Loyc.Collections.IListSink`1">
             <summary>Represents a write-only indexable list class.</summary>
         </member>
         <member name="T:Loyc.Collections.EnumerationException">
@@ -2397,6 +2493,132 @@
         </member>
         <member name="T:Loyc.Compatibility.EnumStatic">
             <summary>Implements Enum.TryParse in .NET 3.5</summary>
+        </member>
+        <member name="T:Loyc.MessageHolder">
+            <summary>A message sink that puts the messages it receives in a list.</summary>
+        </member>
+        <member name="M:Loyc.MessageHolder.IsEnabled(Loyc.Severity)">
+            <summary>Always returns true.</summary>
+        </member>
+        <member name="T:Loyc.LogMessage">
+            <summary>Holds an argument list compatible with 
+            <see cref="M:Loyc.IMessageSink`1.Write(Loyc.Severity,`0,System.String)"/>.
+            Typically used with <see cref="T:Loyc.MessageHolder"/>.</summary>
+        </member>
+        <member name="T:Loyc.IHasLocation">
+            <summary>This interface allows an object to declare its "location".</summary>
+            <remarks>For example, <see cref="!:Loyc.Syntax.LNode"/> implements this 
+            interface so that when a compiler error refers to a source code construct,
+            the error message contains the location of that source code rather than the
+            code itself.
+            <para/>
+            Given a context object that may or may not implement this interface, it's
+            handy to use <see cref="P:Loyc.MessageSink.ContextToString"/> to convert the 
+            "context" of a message into a string, or <see cref="M:Loyc.MessageSink.LocationOf(System.Object)"/> 
+            to unwrap objects that implement IHasLocation.
+            </remarks>
+        </member>
+        <member name="T:Loyc.WriteMessageFn">
+            <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 
+            can convert from one of these delegates to <see cref="T:Loyc.IMessageSink"/> by 
+            calling <see cref="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})"/>.</summary>
+            <param name="type">Severity or importance of the message; widely-used
+            types include Error, Warning, Note, Debug, and Verbose. The special 
+            type Detail is intended to provide more information about a previous 
+            message.</param>
+            <param name="context">An object that represents the location that the
+            message applies to, a string that indicates what the program was doing 
+            when the message was generated, or any other relevant context information.
+            See also <see cref="P:Loyc.MessageSink.ContextToString"/>().</param>
+            <param name="format">A message to display. If there are additional 
+            arguments, placeholders such as {0} and {1} refer to these arguments.</param>
+            <param name="args">Optional arguments to fill in placeholders in the format 
+            string.</param>
+        </member>
+        <member name="T:Loyc.LogException">
+            <summary>An exception that includes a "context" object as part of a
+            <see cref="T:Loyc.LogMessage"/> structure, typically used to indicate where an 
+            error occurred.</summary>
+        </member>
+        <member name="P:Loyc.LogException.Msg">
+            <summary>Contains additional information about the error that occurred.</summary>
+        </member>
+        <member name="T:Loyc.SeverityMessageFilter`1">
+            <summary>A decorator (wrapper) for <see cref="T:Loyc.IMessageSink"/> that filters
+            out some messages if their <see cref="T:Loyc.Severity"/> is too low, according
+            to the value of the <see cref="P:Loyc.SeverityMessageFilter`1.MinSeverity"/> property.</summary>
+        </member>
+        <member name="M:Loyc.SeverityMessageFilter`1.#ctor(Loyc.IMessageSink{`0},Loyc.Severity,System.Boolean)">
+            <summary>Initializes the filter with a minimum severity.</summary>
+            <param name="target">Another sink to which all messages will be written that pass this filter.</param>
+            <param name="minSeverity">Minimum severity for which <see cref="M:Loyc.SeverityMessageFilter`1.IsEnabled(Loyc.Severity)"/> returns true,
+            possibly modified by <c>includeDetails</c>.</param>
+            <param name="includeDetails">Causes <c>minSeverity</c> to be reduced
+            by one if <c>minSeverity</c> is an even number. Often when one uses
+            a severity like <see cref="F:Loyc.Severity.Warning"/>, one actually intends 
+            to also include any associated <see cref="F:Loyc.Severity.WarningDetail"/> 
+            messages. This parameter ensures that you do not exclude details 
+            accidentally by changing <c>minSeverity</c> for you. To disable 
+            this behavior, set this parameter to false.</param>
+        </member>
+        <member name="P:Loyc.SeverityMessageFilter`1.MinSeverity">
+            <summary>Gets or sets the minimum severity that passes the filter. Note:
+            usually this property should be set to a detail level such as 
+            <see cref="F:Loyc.Severity.InfoDetail"/> rather than a "normal" level such 
+            as <see cref="F:Loyc.Severity.Info"/>, which is one higher.</summary>
+        </member>
+        <member name="T:Loyc.SeverityMessageFilter">
+            <summary>Alias for SeverityMessageFilter&lt;object>.</summary>
+        </member>
+        <member name="M:Loyc.SeverityMessageFilter.#ctor(Loyc.IMessageSink{System.Object},Loyc.Severity,System.Boolean)">
+            <inheritdoc cref="M:Loyc.SeverityMessageFilter`1.#ctor(Loyc.IMessageSink{`0},Loyc.Severity,System.Boolean)"/>
+        </member>
+        <member name="T:Loyc.MessageFilter">
+            <summary>A decorator that uses a delegate to accept or ignore messages.</summary>
+            <remarks>The filter can accept or reject messages based on both the message 
+            type and the actual message (format string). When someone calls 
+            <see cref="M:Loyc.MessageFilter.IsEnabled(Loyc.Severity)"/>, the filter is invoked with only the type;
+            the message is set to null. Accepted messages are sent to the 
+            <see cref="P:Loyc.MessageFilter.Target"/> message sink.</remarks>
+        </member>
+        <member name="M:Loyc.MessageFilter.IsEnabled(Loyc.Severity)">
+            <summary>Returns true if <c>Filter(type, null)</c> and <c>target.IsEnabled(type)</c> are both true.</summary>
+        </member>
+        <member name="T:Loyc.MessageMulticaster`1">
+            <summary>A message sink that sends its messages to a list of other sinks.</summary>
+            <remarks>Null elements are allowed in the <see cref="P:Loyc.MessageMulticaster`1.List"/> and are ignored.</remarks>
+        </member>
+        <member name="M:Loyc.MessageMulticaster`1.IsEnabled(Loyc.Severity)">
+            <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
+        </member>
+        <member name="T:Loyc.MessageMulticaster">
+            <summary>Alias for MessageSplitter&lt;object>.</summary>
+        </member>
+        <member name="T:Loyc.MessageSinkWithContext`1">
+            <summary>A message sink wrapper that has a default value for the context 
+            parameter, which is used when the context provided is null, and an optional 
+            message prefix which is inserted at the beginning of the format string.</summary>
+        </member>
+        <member name="M:Loyc.MessageSinkWithContext`1.#ctor(Loyc.IMessageSink{`0},`0,System.String,System.Boolean)">
+            <summary>Initializes the wrapper.</summary>
+            <param name="target">Message sink to which all messages are forwarded. If this parameter 
+            is null, then messages are written to <see cref="P:Loyc.MessageSink.Default"/>
+            <i>at the time a message is written</i>.</param>
+            <param name="defaultContext">Default context object, used if Write is called with a context of null.</param>
+            <param name="messagePrefix">A prefix to prepend at the beginning of all messages written.</param>
+            <param name="scrubPrefix">Whether to replace "{" with ""{{" and "}" with "}}" in 
+            <c>messagePrefix</c> to avoid accidental misbehavior when the string is formatted. 
+            <b>Note:</b> in fact, <c>messagePrefix</c> should not contain braces at all, 
+            because message formatting is optional. <see cref="M:Loyc.MessageSinkWithContext`1.Write(Loyc.Severity,`0,System.String)"/>
+            does not perform formatting while <see cref="M:Loyc.MessageSinkWithContext`1.Write(Loyc.Severity,`0,System.String,System.Object[])"/>
+            does. Consequently, when calling the first overload, the scrubbing process will 
+            cause braces in <c>messagePrefix</c> to be doubled as in "{{" or "}}". We could
+            fix this by storing two separate MessagePrefix strings in this object, one
+            for each situation, but that's currently not implemented as it is simpler to
+            just ask users not to put braces in prefixes.</param>
+        </member>
+        <member name="T:Loyc.MessageSinkWithContext">
+            <summary>Alias for MessageSinkWithContext&lt;object>.</summary>
         </member>
         <member name="T:Loyc.Threading.SavedValue`1">
             <summary>
@@ -2675,13 +2897,14 @@
             ConcurrentDictionary which has fine-grained locking (.NET 4 only).
             </remarks>
         </member>
-        <member name="M:Loyc.Threading.ThreadLocalVariable`1.#ctor(`0)">
+        <member name="M:Loyc.Threading.ThreadLocalVariable`1.#ctor(`0,System.Boolean)">
             <summary>Constructs a ThreadLocalVariable.</summary>
             <param name="initialValue">Initial value on the current thread;
             also used as the FallbackValue in threads that are not created
             via ThreadEx and in other threads that are already running.</param>
+            <param name="autoFallback">Sets the <see cref="P:Loyc.Threading.ThreadLocalVariable`1.AutoFallbackMode"/> property</param>
         </member>
-        <member name="M:Loyc.Threading.ThreadLocalVariable`1.#ctor(`0,`0,Loyc.Threading.ThreadLocalVariable{`0}.Func{`0,`0})">
+        <member name="M:Loyc.Threading.ThreadLocalVariable`1.#ctor(`0,`0,System.Func{`0,`0})">
             <summary>Constructs a ThreadLocalVariable.</summary>
             <param name="initialValue">Initial value on the current thread. 
             Does not affect other threads that are already running.</param>
@@ -2708,6 +2931,12 @@
             By default, the FallbackValue is the initialValue passed to the 
             constructor.
             </remarks>
+        </member>
+        <member name="P:Loyc.Threading.ThreadLocalVariable`1.AutoFallbackMode">
+            <summary>Returns true if this variable was created in "auto-fallback" 
+            mode, which means that setting the <see cref="P:Loyc.Threading.ThreadLocalVariable`1.Value"/> property will 
+            simultaneously set the <see cref="P:Loyc.Threading.ThreadLocalVariable`1.FallbackValue"/> to the same value 
+            at the same time.</summary>
         </member>
         <member name="T:Loyc.Threading.ScratchBuffer`1">
              <summary>Holds a single Value that is associated with the thread that
@@ -2949,10 +3178,10 @@
             Divison: Divide(a,b)==Multiply(a,Inverse(b)) for all a in T
             Neutral element: Multiply(One,a)==a for all a in T
             <br/><br/>
-            ShiftLeft and ShiftRight operations are commonly thought of as binary 
+            Shl and Shr (shift left/right) operations are commonly thought of as binary 
             operations, but some algorithms need to multiply numbers by powers of two 
             and want to do so efficiently, while still supporting floating-point types. 
-            Therefore it makes sense to offer ShiftLeft ("multiply by a power of two")
+            Therefore it makes sense to offer Shl ("multiply by a power of two")
             and ShiftRight ("divide by a power of two") operators as part of the 
             multiple/divide interface, not just <see cref="T:Loyc.Math.IBinaryMath`1"/>. Even 
             floating-point types can support these two operations efficiently by 
@@ -2995,8 +3224,8 @@
             List of operations and properties: From, CompareTo, Equals, IsLess, 
             IsLessOrEqual, Abs, Min, Max, MinValue, MaxValue, Epsilon, PositiveInfinity,
             NegativeInfinity, IsSigned, Increment, Decrement, NextHigher, NextLower, 
-            Add, Subtract, Zero, One, Multiply, Divide, ShiftLeft, ShiftRight, Sqrt, 
-            Square.
+            Add, Subtract, Zero, One, Multiply, Divide, Shl (Shift left), Shr (shift right), 
+            Sqrt, Square.
             <para/>
             Also available as extension methods: IsGreater, IsGreaterOrEqual
             <para/>
@@ -3327,7 +3556,8 @@
             <para/>
             A rectangle may or may not require X2 >= X1 and Y2 >= Y1. If X1>X2 or
             Y1>Y2, the rectangle is said to be "not normalized" and the 
-            <see cref="!:RectangleExt.IsNormal"/> extension method returns false.
+            <see cref="!:RectangleExt.IsNormal&lt;Rect, T&gt;(Rect)"/> extension method 
+            returns false.
             </remarks>
         </member>
         <member name="T:Loyc.Geometry.IRectangleBase`1">
@@ -3397,7 +3627,7 @@
             <para/>
             The object may or may not require X2 >= X1 and Y2 >= Y1 and Z2 >= Z1.
             If X1>X2 or Y1>Y2 or Z1>Z2, the rectangle is said to be "not 
-            normalized" and the <see cref="!:Rectangle3Ext.IsNormal"/> extension 
+            normalized" and the <see cref="!:Rectangle3Ext.IsNormal&lt;Rect,T&gt;(Rect)"/> extension 
             method returns false.
             </remarks>
         </member>
@@ -3780,7 +4010,7 @@
             <param name="value">Integer to be converted</param>
             <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
             <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
-            <param name="separatorInterval">Number of digits in a group</param>
+            <param name="separatorInterval">Number of digits in a group (use 0 or less to disable digit separators)</param>
             <param name="separatorChar">Digit group separator</param>
             <returns>The target StringBuilder.</returns>
         </member>
@@ -4102,6 +4332,15 @@
             <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
             of this method, except that the action has a return value.</summary>
         </member>
+        <member name="M:Loyc.G.True``1(``0)">
+            <summary>Returns true. This method has no effect; it is used to do an action in a conditional expression.</summary>
+            <param name="value">Ignored.</param>
+            <returns>True.</returns>
+        </member>
+        <member name="M:Loyc.G.True(System.Action)">
+            <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
+            <returns>True</returns>
+        </member>
         <member name="M:Loyc.G.ToComparison``1">
             <summary>Gets a <see cref="T:System.Comparison`1"/> for the specified type.</summary>
             <remarks>This method is optimized and does not allocate on every call.</remarks>
@@ -4124,7 +4363,16 @@
             <summary>Same as <c>Debug.Assert</c> except that the argument is 
             evaluated even in a Release build.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)" -->
+        <member name="M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)">
+            <summary>Gets a bare HTML entity name for an ASCII character, or null if
+            there is no entity name for the given character, e.g. 
+            <c>BareHtmlEntityNameForAscii('"') == "quot"</c>.
+            </summary><remarks>
+            The complete entity name is an ampersand (&amp;) plus <c>BareHtmlEntityNameForAscii(c) + ";"</c>.
+            Some HTML entities have multiple names; this function returns one of them.
+            There is a name in this table for all ASCII punctuation characters.
+            </remarks>
+        </member>
         <member name="M:Loyc.G.CountOnes(System.Byte)">
             <summary>Returns the number of bits that are set in the specified integer.</summary>
         </member>
@@ -4303,7 +4551,7 @@
             a base class but can be used on its own.
             </summary>
         </member>
-        <member name="T:Loyc.IMessageSink`2">
+        <member name="T:Loyc.IMessageSink`1">
             <summary>A general-purpose interface for a class that accepts formatted 
             messages with context information.</summary>
             <remarks>
@@ -4330,10 +4578,11 @@
             "hard" error. Fatal, in contrast, represents an error that causes the
             compiler to halt immediately.
             <para/>
-            The message sink itself should perform localization, which can be done
-            with <see cref="M:Loyc.Localize.Localized(Loyc.Symbol,System.String,System.Object[])"/>.
+            If the message sink may produce messages that users will see, the message 
+            sink itself should perform localization using <see 
+            cref="M:Loyc.Localize.Localized(System.String,System.Object[])"/>.
             <para/>
-            Only a single Write() method is truly needed (<see cref="!:Write(Severity, object, string, object[])"/>),
+            Only a single Write() method is truly needed (<see cref="M:Loyc.IMessageSink`1.Write(Loyc.Severity,`0,System.String,System.Object[])"/>),
             but for efficiency reasons the interface contains two other writers. It 
             is expected to be fairly common that a message sink will drop some or
             all messages without printing them, e.g. if a message sink is used for 
@@ -4347,14 +4596,10 @@
             an overload that takes no formatting arguments (this indicates that 
             parameter substitution is not required and should not be attempted.)
             <para/>
-            In addition, the caller can call <see cref="!:IsEnabled(Severity)"/> to avoid 
+            In addition, the caller can call <see cref="M:Loyc.IMessageSink`1.IsEnabled(Loyc.Severity)"/> to avoid 
             doing any work required to prepare a message for printing when a certain
             category of output is disabled.
             </remarks>
-            <typeparam name="TSeverity">The type of the first parameter to <c>Write</c>, 
-            which is used to indicate the "kind" of message being logged. Typically this 
-            parameter is <see cref="T:Loyc.Severity"/>, which includes values like Note, Warning 
-            and Error.</typeparam>
             <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
             which indicates where the error occurs. If the message relates to a text
             file or source code, the location is typically indicated with an object of
@@ -4365,33 +4610,29 @@
             <seealso cref="T:Loyc.NullMessageSink"/>
             <seealso cref="T:Loyc.MessageFilter"/>
             <seealso cref="T:Loyc.MessageHolder"/>
-            <seealso cref="T:Loyc.MessageSplitter"/>
+            <seealso cref="T:Loyc.MessageMulticaster"/>
             <seealso cref="T:Loyc.IHasLocation"/>
         </member>
-        <member name="M:Loyc.IMessageSink`2.Write(`0,`1,System.String)">
+        <member name="M:Loyc.IMessageSink`1.Write(Loyc.Severity,`0,System.String)">
             <summary>Writes a message to the target that this object represents.</summary>
-            <param name="type">Severity or importance of the message; widely-used
+            <param name="level">Severity or importance of the message; widely-used
             types include Error, Warning, Note, Debug, and Verbose. The special 
             type Detail is intended to provide more information about a previous 
             message.</param>
             <param name="context">An object that the message is related to, or that 
             represents the location that the message applies to. The message sink
             may try to convert this object to a string and include it in its output.
-            See also <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/>().</param>
+            See also <see cref="P:Loyc.MessageSink.ContextToString"/>().</param>
             <param name="format">A message to display. If there are additional 
             arguments, placeholders such as {0} and {1} refer to these arguments.</param>
         </member>
-        <member name="M:Loyc.IMessageSink`2.IsEnabled(`0)">
+        <member name="M:Loyc.IMessageSink`1.IsEnabled(Loyc.Severity)">
             <summary>Returns true if messages of the specified type will actually be 
             printed, or false if Write(type, ...) has no effect.</summary>
         </member>
-        <member name="T:Loyc.IMessageSink`1">
-            <summary>Alias for IMessageSink&lt;Severity, TContext>.</summary>
-            <seealso cref="T:Loyc.IMessageSink`2"/>
-        </member>
         <member name="T:Loyc.IMessageSink">
-            <summary>Alias for IMessageSink&lt;Severity, object>.</summary>
-            <seealso cref="T:Loyc.IMessageSink`2"/>
+            <summary>Alias for IMessageSink&lt;object>.</summary>
+            <seealso cref="T:Loyc.IMessageSink`1"/>
         </member>
         <member name="T:Loyc.Severity">
             <summary>A linear scale to categorize the importance and seriousness of 
@@ -4405,160 +4646,144 @@
             Some of the enumeration values begin with an underscore. These are
             values defined by Log4net that are deprecated in LoycCore.
             <para/>
-            Messages of type Detail are meant to contain extra information associated 
-            with the most recent non-Detail message, e.g. stack traces or extra 
-            diagnostic information for Errors.
+            The "Detail" severity levels are meant to contain extra information 
+            associated with the most recent non-Detail message, e.g. stack traces 
+            or extra diagnostic information for Errors.
             </remarks>
         </member>
-        <member name="T:Loyc.MessageSink">
-            <summary>Holds the default message sink for this thread (<see cref="P:Loyc.MessageSink.Default"/>),
-            <see cref="T:Loyc.Symbol"/>s for the common message types, such as Warning and 
-            Error, and default instances of <see cref="T:Loyc.ConsoleMessageSink"/>,
-            <see cref="T:Loyc.TraceMessageSink"/> and <see cref="T:Loyc.NullMessageSink"/>.</summary>
-            <seealso cref="T:Loyc.IMessageSink"/>
-        </member>
-        <member name="M:Loyc.MessageSink.SetDefault(Loyc.IMessageSink)">
-            <summary>Used to change the <see cref="P:Loyc.MessageSink.Default"/> property temporarily.</summary>
-            <example><code>
-            using (var old = MessageSink.PushCurrent(MessageSink.Console))
-                MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
-            </code></example>
-        </member>
-        <member name="T:Loyc.MessageSink.PushedCurrent">
-            <summary>Returned by <see cref="M:Loyc.MessageSink.PushCurrent(Loyc.IMessageSink)"/>.</summary>
-        </member>
-        <member name="M:Loyc.MessageSink.LocationString(System.Object)">
-            <summary>Gets the location information from the specified object, or
-            converts the object to a string.</summary>
-            <param name="context">A value whose string representation you want to get.</param>
-            <returns>
-            If <c>context</c> implements <see cref="T:Loyc.IHasLocation"/>,
-            this function returns <see cref="P:Loyc.IHasLocation.Location"/>; 
-            if <c>context</c> is null, this method returns <c>null</c>; otherwise 
-            it returns <c>context.ToString()</c>.
-            </returns>
-            <remarks>Message sinks are commonly used to display error and warning 
-            messages, and when you write a message with <c>IMessageSink.Write()</c>, 
-            the second parameter is a "context" argument which specifies the object
-            to which the message is related (for example, when writing compiler 
-            output, the context might be a node in a syntax tree). Most message 
-            sinks display the message in text form (in a log file or terminal), and 
-            in that case the best option is to display the location information 
-            associated with the context object (e.g. Foo.cpp:45), rather than a 
-            string representation of the object itself.
+        <member name="T:Loyc.ServiceProvider">
+            <summary>Adds extension methods to modernize .NET's simple built-in service locator.</summary>
+            <remarks>
+            .NET has had a litte-known built-in simple service locator since .NET 1.1 called
+            <see cref="T:System.ComponentModel.Design.ServiceContainer"/>, which implements both 
+            <see cref="T:System.ComponentModel.Design.IServiceContainer"/> and <see cref="T:System.IServiceProvider"/>. 
+            IServiceContainer lets you add services (associating a Type object with a factory or 
+            a singleton):
+            <pre>
+            interface IServiceContainer {
+                void AddService(Type serviceType, object serviceInstance);
+                void AddService(Type serviceType, ServiceCreatorCallback callback);
+                ...
+            }
+            delegate object ServiceCreatorCallback(IServiceContainer container, Type serviceType);
+            </pre>
+            
+            Meanwhile, IServiceProvider is a simple service locator:
+            <pre>
+            public interface IServiceProvider
+            {
+            	object GetService(Type serviceType);
+            }
+            </pre>
+            
+            This class adds three extension methods to make IServiceContainer and IServiceProvider 
+            generic, so you can write code like
+            <pre>
+               var services = new ServiceContainer();
+               services.AddService&lt;IFoo>(p => new Foo());
+               
+               // elsewhere in your code...
+               IFoo newFoo = services.GetService&lt;IFoo>();
+            </pre>
+            
+            Remember that service locators are generally an antipattern! However, if you have one
+            of those rare, legitimate needs to use one, you should prefer the IServiceProvider 
+            interface built into .NET (if it is enough for your needs) so that your lower-level 
+            code avoids taking an unnecessary dependency on an IoC framework.
             <para/>
-            Therefore, message sinks that display a message in text form will call
-            this method to convert the context object to a string, and if available,
-            this method calls the <see cref="P:Loyc.IHasLocation.Location"/>
-            property of the context object.
-            </remarks>
-        </member>
-        <member name="M:Loyc.MessageSink.LocationOf(System.Object)">
-            <summary>Returns context.Location if context implements 
-            <see cref="T:Loyc.IHasLocation"/>; otherwise, returns context itself.</summary>
-        </member>
-        <member name="F:Loyc.MessageSink.Trace">
-            <summary>Sends all messages to <see cref="M:System.Diagnostics.Trace.WriteLine(System.String)"/>.</summary>
-        </member>
-        <member name="F:Loyc.MessageSink.Console">
-            <summary>Sends all messages to the <see cref="M:System.Console.WriteLine(System.String)"/>.</summary>
-        </member>
-        <member name="F:Loyc.MessageSink.Null">
-            <summary>Discards all messages.</summary>
-        </member>
-        <member name="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})">
-            <summary>Sends all messages to a user-defined method.</summary>
-        </member>
-        <member name="T:Loyc.IHasLocation">
-            <summary>This interface allows an object to declare its "location".</summary>
-            <remarks>For example, <see cref="!:Loyc.Syntax.LNode"/> implements this 
-            interface so that when a compiler error refers to a source code construct,
-            the error message contains the location of that source code rather than the
-            code itself.
+            See also: http://core.loyc.net/essentials/ambient-service-pattern.html
             <para/>
-            Given a context object that may or may not implement this interface, it's
-            handy to use <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/> to convert the 
-            "context" of a message into a string, or <see cref="M:Loyc.MessageSink.LocationOf(System.Object)"/> 
-            to unwrap objects that implement IHasLocation.
+            Thanks to <a href="http://blog.differentpla.net/blog/2011/12/20/did-you-know-that-net-already-had-an-ioc-container">
+            Roger's blog</a> for the idea of these extension methods.
             </remarks>
-        </member>
-        <member name="T:Loyc.WriteMessageFn">
-            <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 
-            can convert from one of these delegates to <see cref="T:Loyc.IMessageSink"/> by 
-            calling <see cref="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})"/>.</summary>
-            <param name="type">Severity or importance of the message; widely-used
-            types include Error, Warning, Note, Debug, and Verbose. The special 
-            type Detail is intended to provide more information about a previous 
-            message.</param>
-            <param name="context">An object that represents the location that the
-            message applies to, a string that indicates what the program was doing 
-            when the message was generated, or any other relevant context information.
-            See also <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/>().</param>
-            <param name="format">A message to display. If there are additional 
-            arguments, placeholders such as {0} and {1} refer to these arguments.</param>
-            <param name="args">Optional arguments to fill in placeholders in the format 
-            string.</param>
-        </member>
-        <member name="T:Loyc.LogException">
-            <summary>An exception that includes a "context" object as part of a
-            <see cref="T:Loyc.LogMessage"/> structure, typically used to indicate where an 
-            error occurred.</summary>
-        </member>
-        <member name="P:Loyc.LogException.Msg">
-            <summary>Contains additional information about the error that occurred.</summary>
         </member>
         <member name="T:Loyc.Localize">
             <summary>
             Localize is a global hook into which a string-mapping localizer can be
-            installed. It is designed to make internationalization exceptionally easy
-            for developers. TODO: expand I18N features based on Mozilla's L20N.
+            installed. It makes your program localization-ready with no effort.
             </summary><remarks>
-            All Loyc code should call this hook in order to localize text (although
-            as of June 2015, no one has made any translation tables). Use it like
-            this:
+            The idea of this Localize facility is to convince programmers to support
+            localization by making it dead-easy to do. By default it is not connected to
+            any translator (it just passes strings through), so people who are only
+            writing a program for a one-language market can easily make their code
+            "multiligual-ready" without doing any extra work. All you do is call the
+            <c>.Localized()</c> extension method, which is actually shorter than the
+            traditional <c>string.Format()</c>.
+            <p/>
+            The translation system itself is separate from this class, and connected 
+            to `Localized()` by a delegate, so that multiple translation systems are 
+            possible. This class should be suitable for use in any .NET program, and 
+            some programs using this utility will want to plug-in a different localizer.
+            <p/>
+            Use it like this:
             <code>
             string result = "Hello, {0}".Localized(userName);
             </code>
-            If no localizer is installed, the format string is left unchanged.
-            <para/>
+            Or, for increased clarity, use named placeholders:
+            <code>
+            string result = "Hello, {person's name}".Localized("person's name", userName);
+            </code>
             Whatever localizer is installed will look up the text in its database and
             return a translation. If no translation to the end user's language is
             available, an appropriate default translation should be returned: either the
             original text, or a translation to some default language, e.g. English.
             <para/>
-            Alternately, assuming you have the ability to change the table of
-            translations, you can use a Symbol in your code and call the other overload
-            of Localize() to look up the text that should be shown to the end user:
-            <code>
-            string result = ((Symbol)"MY_STRING").Localized();
-            string result = @@MY_STRING.Localized();  // Enhanced C# with #useSymbols
-            </code>
+            The localizer will need an external table of translations, conceptually like 
+            this:
+            <pre>
+            | Key name      | Language | Translated text |
+            | "Hello, {0}"  | "es"     | "Hola, {0}"     |
+            | "Hello, {0}"  | "fr"     | "Bonjour, {0}"  |
+            | "Load"        | "es"     | "Cargar"        |
+            | "Load"        | "fr"     | "Charge"        |
+            | "Save"        | "es"     | "Guardar"       |
+            | "Save"        | "fr"     | "Enregistrer"   |
+            </pre>
+            Many developers use a resx file to store translations. This class supports 
+            that approach, as explained below.
+            <para/>
+            For longer messages, it is preferable to use a short name to represent the
+            message so that, when the English language text is edited, the translation
+            tables do not have to be updated. To do this, use the 
+            <see cref="M:Loyc.Localize.Symbol(System.String,System.String,System.Object[])"/> method:
+            <pre>
+            string result = Localize.Symbol("ConfirmQuitWithoutSaving", 
+            	"Are you sure you want to quit without saving '{filename}'?", "filename", fileName);
+            
+            // Enhanced C# syntax with symbol literal
+            string result = Localize.Symbol(@@ConfirmQuitWithoutSaving, 
+            	"Are you sure you want to quit without saving '{filename}'?", "filename", fileName);
+            </pre>
             This is most useful for long strings or paragraphs of text, but I expect
             that some projects, as a policy, will use symbols for all localizable text.
+            (When using Localize.Symbol, the actual message is allowed to be null. In 
+            that case, the symbol (first argument) is returned as a last resort if no 
+            translation is found.
             <p/>
-            Localize.Formatter() is then called to make the completed string, unless the
-            variable argument list is empty. It is possible to perform formatting
-            separately, for example:
+            If the variable argument list is not empty, <see cref="P:Loyc.Localize.Formatter"/> 
+            is called to build the completed string from the format string. It is 
+            possible to perform formatting separately, for example:
             <code>
             Console.WriteLine("{0} is {0:X} in hexadecimal".Localized(), N);
             </code>
-            Here, writeline performs the formatting instead. However, Localize's
-            default formatter, StringExt.FormatCore, has an extra feature that the 
-            standard formatter does not: named arguments. Here is an example:
+            Here, WriteLine itself performs the formatting instead. 
+            <p/>
+            As demonstrated above, Localize's default formatter, <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/>, 
+            has an extra feature that the standard formatter does not: named arguments. 
+            Here is an example:
             <code>
             ...
             string verb = (IsFileLoaded ? "parse" : "load").Localized();
             MessageBox.Show(
                 "Not enough memory to {load/parse} '{filename}'.".Localized(
-                  {Message}", "load/parse", verb, "filename", FileName));
-            }
+                  "load/parse", verb, "filename", FileName));
             </code>
             As you can see, named arguments are mentioned in the format string by
-            specifying an argument name such as {filename} instead of a number like
-            {0}. The variable argument list contains the same name followed by its
-            value, e.g. "filename", FileName. This feature gives you, the developer,
-            the opportunity to indicate to the translator person what a particular 
-            argument is for.
+            specifying an argument name such as <c>{filename}</c> instead of a number 
+            like <c>{0}</c>. The variable argument list contains the same name followed 
+            by its value, e.g. "filename", FileName. This feature gives you, the 
+            developer, the opportunity to tell the person writing translations what 
+            the purpose of a particular argument is.
             <p/>
             The translator must not change any of the arguments: the word "{filename}"
             is not to be translated.
@@ -4576,10 +4801,11 @@
             directly request strings from it:
             <code>
             private ResourceManager rm;
-            rm = new ResourceManager("MyStrings", this.GetType().Assembly);
-            Console.Writeline(rm.GetString("HEXER"), N);
+            rm = new ResourceManager("AssemblyName.Resources", this.GetType().Assembly);
+            Console.Writeline(rm.GetString("StringIdentifier"));
             </code>
             This approach has drawbacks:
+            
             * It may be cumbersome to pass around a ResourceManager instance between all
               classes that might contain localizable strings; a global facility is
               much more convenient.
@@ -4588,31 +4814,47 @@
               to switch to the resource file and add the string to it. Someone reading
               the code, in turn, can't tell what the string says and has to load up
               the resource file to find out.
-            * It is nontrivial to change the localization manager; for instance, what if
+            * It is not easy to change the localization manager; for instance, what if
               someone wants to store translations in an .ini, .xml or .les file rather 
               than inside the assembly? What if the user wants to centralize all
               translations for a set of assemblies, rather than having separate
               resources in each assembly? 
-            * Keeping in mind that the guy in charge of translation is typically
-              different than the guys writing most of the code, it makes sense to keep
-              translations separate from everything else.
             <p/>
-            The idea of the Localize facility is to convince programmers to support
-            localization by making it dead-easy to do. By default it is not connected to
-            any translator (it just passes strings through), so people who are only
-            writing a program for a one-language market can easily make their code
-            "multiligual-ready" without doing any extra work, since `.Localized()` is
-            no harder to type than `string.Format()`.
+            Microsoft does address the first of these drawbacks by providing a code 
+            generator built into Visual Studio that gives you a global property for
+            each string; see
+            http://stackoverflow.com/questions/1142802/how-to-use-localization-in-c-sharp
             <p/>
-            The translation system itself is separate, and connected to `Localized` by a
-            delegate, for two reasons:
+            Even so, you may find that this class provides a more convenient approach 
+            because your native-language strings are written right in your code, and 
+            because you are guaranteed to get a string at runtime (not null) if the 
+            desired language is not available.
+            <p/>
+            This class supports ResourceManager via the <see cref="M:Loyc.Localize.UseResourceManager(System.Resources.ResourceManager,System.Globalization.CultureInfo,System.Func{System.String,System.String},System.Boolean)"/> 
+            helper method. For example, after calling 
+            <c>Localize.UseResourceManager(resourceManager)</c>, if you write 
+            <code>
+            "Save As...".Localized()
+            </code>
+            Then <c>resourceManager.GetString("Save As...")</c> is called to get the 
+            translated string, or the original string if no translation was found. 
+            You can even add a "name calculator" to encode your resx file's naming 
+            convention, e.g. by removing spaces and punctuation (for details, see 
+            <see cref="M:Loyc.Localize.UseResourceManager(System.Resources.ResourceManager,System.Globalization.CultureInfo,System.Func{System.String,System.String},System.Boolean)"/>.)
+            <p/>
+            It is conventional in .NET programs to have one "main" resx file, e.g.
+            Resources.resx, that contains default strings, along other files with 
+            non-English translations (e.g. Resources.es.resx for Spanish). When using
+            Localized() you would typically use a slightly different approach: you
+            still have a Resources.resx file, but you leave the string table empty. 
+            This causes Visual Studio to generate a Resources class with a 
+            ResourceManager property so that you need can easily get the ResourceManager 
+            object.
             <ol>
-            <li>Multiple translation systems are possible. This class should be suitable
-                for any .NET program, and some programs using this utility will want to
-                plug-in a different localizer. </li>
-            <li>I personally don't have the time or expertise to write a localizer at 
-                this time. So until I do, the Localize class will make my code ready for 
-                translation, although not actually localized.</li>
+            <li>When your program starts, call <c>Localize.UseResourceManager(Resources.ResourceManager)</c>.</li>
+            <li>Use the <c>Localized()</c> extension method to get translations of short strings.</li>
+            <li>For long strings, use <c>Localize.Symbol("ShortAlias", "Long string", params...)</c>.
+            The first argument is the string passed to ResourceManager.GetString()</li>
             </ol>
             In the open source world, most developers don't have a team of translators
             ready make translations for them. The idea of Loyc, for example, is that
@@ -4628,14 +4870,54 @@
             needing translation. It would also have to detect certain calls that
             perform translation implicity, such as IMessageSink.Write(). See
             <see cref="T:Loyc.LocalizableAttribute"/>.
+            <p/>
+            TODO: expand I18N features based on Mozilla's L20N.
             </remarks>
         </member>
         <member name="P:Loyc.Localize.Localizer">
-            <summary>Localizer method (thread-local), which is a do-nothing pass-through by default</summary>
+            <summary>Localizer method, which is a do-nothing pass-through by default</summary>
+        </member>
+        <member name="M:Loyc.Localize.SetLocalizer(Loyc.LocalizerDelegate)">
+            <summary>Sets the localizer method.</summary>
+            <remarks><see cref="P:Loyc.Localize.Localizer"/> is a thread-local value, but since
+            .NET does not support inheritance of thread-local values, this method
+            also sets the global default used by threads on which this method was 
+            never called.
+            <para/>
+            This property follows the Ambient Service Pattern:
+            http://core.loyc.net/essentials/ambient-service-pattern.html
+            </remarks>
+        </member>
+        <member name="M:Loyc.Localize.UseResourceManager(System.Resources.ResourceManager,System.Globalization.CultureInfo,System.Func{System.String,System.String},System.Boolean)">
+            <summary>Uses a standard <see cref="T:System.Resources.ResourceManager"/> object to obtain translations.</summary>
+            <param name="manager">A ResourceManager that provides access to resources (resx embedded in an assembly)</param>
+            <param name="culture">A value of <see cref="T:System.Globalization.CultureInfo"/> that
+            represents the language to look up in the ResourceManager. If this is
+            null, the ResourceManager will use CultureInfo.CurrentUICulture.</param>
+            <param name="resxNameCalculator">An optional function that will be 
+            called when a translation is requested without providing a resource 
+            key symbol. For example, if someone writes <c>"Save as...".Localized()</c>
+            using the <see cref="M:Loyc.Localize.Localized(System.String)"/> extension method, this 
+            function is called on the string "Save as...". This function could
+            be used to compute a resource name such as "strSaveAs" automatically,
+            according to whatever naming convention is used in your resource file.
+            </param>
+            <param name="fallbackToPrevious">If a translation was not found in the 
+            specified ResourceManager and this parameter is true, the previously-
+            installed <see cref="P:Loyc.Localize.Localizer"/> is called instead. Otherwise, the 
+            dummy translator <see cref="M:Loyc.Localize.Passthru(Loyc.Symbol,System.String)"/> is used.</param>
+            <returns></returns>
         </member>
         <member name="P:Loyc.Localize.Formatter">
-            <summary>Formatting delegate (thread-local), which is set to 
-            <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> by default.</summary>
+            <summary>Formatting delegate, which is <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> by default.</summary>
+        </member>
+        <member name="M:Loyc.Localize.SetFormatter(Loyc.FormatterDelegate)">
+            <summary>Sets the formatter method.</summary>
+            <remarks><see cref="P:Loyc.Localize.Formatter"/> is a thread-local value, but since
+            .NET does not support inheritance of thread-local values, this method
+            also sets the global default used by threads on which this method was 
+            never called.
+            </remarks>
         </member>
         <member name="M:Loyc.Localize.Passthru(Loyc.Symbol,System.String)">
             <summary>
@@ -4644,19 +4926,36 @@
             so it is simply converted to a string.
             </summary>
         </member>
-        <member name="M:Loyc.Localize.Localized(Loyc.Symbol,System.String,System.Object[])">
+        <member name="M:Loyc.Localize.Symbol(Loyc.Symbol,System.String,System.Object[])">
             <summary>
-            This is the heart of the Localize class, which localizes and formats a
-            string.
+            This is the heart of the Localize class, which localizes and formats a string.
             </summary>
-            <param name="resourceId">Resource ID used to look up a string. If
-            it is null then message must be provided; otherwise, message is only used 
-            if no translation is available for the specified ID.</param>
+            <param name="resourceId">Resource ID used to look up a translated format
+            string using the current user-defined <see cref="P:Loyc.Localize.Localizer"/>. If this 
+            parameter is null, a message must be provided; otherwise, the message is only 
+            used if no translation is associated with the specified Symbol.</param>
+            <param name="message">The message to be translated, which may include 
+            argument placeholders (e.g. "{0}"). The default formatter also accepts 
+            named parameters like "{firstName}"; see <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> 
+            for details.</param>
+            <param name="args">Arguments given to <see cref="P:Loyc.Localize.Formatter"/> to fill in 
+            placeholders after the Localizer is called. If args is null or empty then 
+            Formatter is not called.</param>
+            <returns>The translated and formatted string.</returns>
+        </member>
+        <member name="M:Loyc.Localize.Symbol(System.String,System.String,System.Object[])">
+            <inheritdoc cref="M:Loyc.Localize.Symbol(Loyc.Symbol,System.String,System.Object[])"/>
+        </member>
+        <member name="M:Loyc.Localize.Localized(System.String,System.Object[])">
+            <summary>Finds and formats a localization of the given message. If none is 
+            found, the original string is formatted.</summary>
             <param name="message">The message to translate, which may include argument 
-            placeholders (e.g. "{0}").</param>
-            <param name="args">Arguments given to Formatter to fill in placeholders
-            after the Localizer is called. If args is null or empty then Formatter
-            is not called.</param>
+            placeholders (e.g. "{0}"). The default formatter also accepts named 
+            parameters like "{firstName}"; see <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> for 
+            details.</param>
+            <param name="args">Arguments given to <see cref="P:Loyc.Localize.Formatter"/> to fill in 
+            placeholders after the Localizer is called. If args is null or empty then 
+            Formatter is not called.</param>
             <returns>The translated and formatted string.</returns>
         </member>
         <member name="T:Loyc.LocalizableAttribute">
@@ -4725,6 +5024,109 @@
             <remarks>This class is faster for getting the same name repeatedly, but 
             demands more memory and initialization overhead from the CLR.</remarks>
         </member>
+        <member name="T:Loyc.MessageSink">
+            <summary>Keeps track of the default message sink (<see cref="P:Loyc.MessageSink.Default"/>); 
+            contains a series of helper methods; and contains extension methods 
+            modeled after log4net: Fatal, Error, Warn, Info, Debug.</summary>
+            <seealso cref="T:Loyc.IMessageSink"/>
+        </member>
+        <member name="M:Loyc.MessageSink.SetDefault(Loyc.IMessageSink)">
+            <summary>Used to change the <see cref="P:Loyc.MessageSink.Default"/> property temporarily.</summary>
+            <example><code>
+            using (MessageSink.SetDefault(ConsoleMessageSink.Value))
+                MessageSink.Default.Write(Severity.Warning, null, "This prints on the console.")
+            </code></example>
+            <remarks>This method sets a thread-local value, but it also sets the
+            global default used by threads on which this method was never called.
+            <para/>
+            This property follows the Ambient Service Pattern:
+            http://core.loyc.net/essentials/ambient-service-pattern.html
+            </remarks>
+        </member>
+        <member name="T:Loyc.MessageSink.PushedCurrent">
+            <summary>Returned by <see cref="M:Loyc.MessageSink.PushCurrent(Loyc.IMessageSink)"/>.</summary>
+        </member>
+        <member name="M:Loyc.MessageSink.LocationOf(System.Object)">
+            <summary>Returns context.Location if context implements 
+            <see cref="T:Loyc.IHasLocation"/>; otherwise, returns context itself.</summary>
+        </member>
+        <member name="M:Loyc.MessageSink.GetLocationString(System.Object)">
+            <summary>Gets the location information from the specified object, or
+            converts the object to a string. This is the default method returned
+            from <see cref="P:Loyc.MessageSink.ContextToString"/>.</summary>
+            <param name="context">A value whose string representation you want to get.</param>
+            <returns>
+            If <c>context</c> implements <see cref="T:Loyc.IHasLocation"/>,
+            this converts <see cref="P:Loyc.IHasLocation.Location"/> to a string; 
+            if <c>context</c> is null, this method returns <c>null</c>; otherwise 
+            it returns <c>context.ToString()</c>.
+            </returns>
+        </member>
+        <member name="P:Loyc.MessageSink.ContextToString">
+            <summary>Gets the strategy that message sinks should use to convert 
+            a context object to a string.</summary>
+            <remarks>
+            Message sinks are commonly used to display error and warning 
+            messages, and when you write a message with <c>IMessageSink.Write()</c>, 
+            the second parameter is a "context" argument which specifies the object
+            to which the message is related (for example, when writing compiler 
+            output, the context might be a node in a syntax tree). Most message 
+            sinks display the message in text form (in a log file or terminal), and 
+            in that case the best option is to display the location information 
+            associated with the context object (e.g. Foo.cpp:45), rather than a 
+            string representation of the object itself.
+            <para/>
+            Therefore, message sinks that display a message in text form will call
+            this delegate to convert the context object to a string.
+            <para/>
+            See <see cref="M:Loyc.MessageSink.GetLocationString(System.Object)"/> to learn how the 
+            default strategy works, but message sinks should call this delegate 
+            rather than GetLocationString().
+            </remarks>
+        </member>
+        <member name="M:Loyc.MessageSink.SetContextToString(System.Func{System.Object,System.String})">
+            <summary>Sets the strategy that message sinks should use to convert 
+            a context object to a string.</summary>
+            <remarks><see cref="P:Loyc.MessageSink.ContextToString"/> is a thread-local value, but since
+            .NET does not support inheritance of thread-local values, this method
+            also sets the global default used by threads on which this method was 
+            never called.
+            <para/>
+            This property follows the Ambient Service Pattern:
+            http://core.loyc.net/essentials/ambient-service-pattern.html
+            </remarks>
+        </member>
+        <member name="M:Loyc.MessageSink.FormatMessage(Loyc.Severity,System.Object,System.String,System.Object[])">
+            <summary>Converts a quadruplet (type, context, format, args) to a single 
+            string containing all that information. The format string and the Severity
+            are localized with <see cref="M:Loyc.Localize.Localized(System.String,System.Object[])"/>.</summary>
+            <remarks>For example, <c>FormatMessage(Severity.Error, "context", "Something happened!")</c>
+            comes out as "Error: context: Something happened!".</remarks>
+        </member>
+        <member name="F:Loyc.MessageSink.Trace">
+            <summary>Sends all messages to <see cref="M:System.Diagnostics.Trace.WriteLine(System.String)"/>.</summary>
+        </member>
+        <member name="F:Loyc.MessageSink.Console">
+            <summary>Sends all messages to the <see cref="M:System.Console.WriteLine(System.String)"/>.</summary>
+        </member>
+        <member name="F:Loyc.MessageSink.Null">
+            <summary>The message sink that discards all messages.</summary>
+        </member>
+        <member name="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})">
+            <summary>Sends all messages to a user-defined method.</summary>
+        </member>
+        <member name="M:Loyc.MessageSink.WithContext(System.Object,System.String)">
+            <summary>Creates a message sink that writes to <see cref="P:Loyc.MessageSink.Default"/> with a default context to be used
+            when <c>Write</c> is called with <c>context: null</c>, so that you 
+            can use extension methods like <c>Error(string)</c> that do not 
+            have any context parameter.</summary>
+        </member>
+        <member name="M:Loyc.MessageSink.WithContext``1(Loyc.IMessageSink{``0},``0,System.String)">
+            <summary>Creates a message sink with a default context to be used
+            when <c>Write</c> is called with <c>context: null</c>, so that you 
+            can use extension methods like <c>Error(string)</c> that do not 
+            have any context parameter.</summary>
+        </member>
         <member name="T:Loyc.ConsoleMessageSink">
             <summary>Sends all messages to <see cref="M:System.Console.WriteLine"/>, 
             with hard-coded colors for Error, Warning, Note, Verbose, and Detail.</summary>
@@ -4742,6 +5144,12 @@
             <summary>Discards all messages. However, there is a Count property that 
             increases by one with each message received, as well as an ErrorCount.</summary>
         </member>
+        <member name="P:Loyc.NullMessageSink.Count">
+            <summary>Total number of messages that have been discarded.</summary>
+        </member>
+        <member name="P:Loyc.NullMessageSink.ErrorCount">
+            <summary>Number of errors sent to this object so far, not including detail messages.</summary>
+        </member>
         <member name="M:Loyc.NullMessageSink.IsEnabled(Loyc.Severity)">
             <summary>Always returns false.</summary>
         </member>
@@ -4750,38 +5158,6 @@
         </member>
         <member name="M:Loyc.TraceMessageSink.IsEnabled(Loyc.Severity)">
             <summary>Always returns true.</summary>
-        </member>
-        <member name="T:Loyc.LogMessage">
-            <summary>Holds an argument list compatible with <see cref="!:IMessageSink.Write"/>.
-            Typically used with <see cref="T:Loyc.MessageHolder"/>.</summary>
-        </member>
-        <member name="T:Loyc.MessageHolder">
-            <summary>A message sink that puts the messages it receives in a list.</summary>
-        </member>
-        <member name="M:Loyc.MessageHolder.IsEnabled(Loyc.Severity)">
-            <summary>Always returns true.</summary>
-        </member>
-        <member name="T:Loyc.MessageFilter">
-            <summary>A decorator that uses a delegate to accept or ignore messages.</summary>
-            <remarks>The filter can accept or reject messages based on both the message 
-            type and the actual message (format string). When someone calls 
-            <see cref="M:Loyc.MessageFilter.IsEnabled(Loyc.Severity)"/>, the filter is invoked with only the type;
-            the message is set to null. Accepted messages are sent to the 
-            <see cref="P:Loyc.MessageFilter.Target"/> message sink.</remarks>
-        </member>
-        <member name="M:Loyc.MessageFilter.IsEnabled(Loyc.Severity)">
-            <summary>Returns true if <c>Filter(type, null)</c> and <c>target.IsEnabled(type)</c> are both true.</summary>
-        </member>
-        <member name="T:Loyc.SeverityMessageFilter">
-            <summary>A decorator (wrapper) for <see cref="T:Loyc.IMessageSink"/> that filters
-            out some messages if their <see cref="T:Loyc.Severity"/> is too low, according
-            to the value of the <see cref="P:Loyc.SeverityMessageFilter.MinSeverity"/> property.</summary>
-        </member>
-        <member name="T:Loyc.MessageSplitter">
-            <summary>A message sink that sends its messages to a list of other sinks.</summary>
-        </member>
-        <member name="M:Loyc.MessageSplitter.IsEnabled(Loyc.Severity)">
-            <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
         </member>
         <member name="T:Loyc.MessageSinkFromDelegate">
             <summary>This helper class lets you implement <see cref="T:Loyc.IMessageSink"/> 
@@ -4810,7 +5186,7 @@
             Is is possible that Tags==this to reduce overhead.
             </remarks>
         </member>
-        <member name="T:Loyc.IReferenceComparable">
+        <member name="T:Loyc.IReferenceEquatable">
             <summary>This is a tag which indicates that objects of this type are 
             unique; specifically, any two different objects that implement this 
             interface are always unequal, and one object is equal only to itself.</summary>
@@ -4875,7 +5251,7 @@
         </member>
         <member name="T:Loyc.StringExt">
             <summary>Extension methods for strings, such as <see cref="M:Loyc.StringExt.SplitAt(System.String,System.Char)"/>, 
-            <see cref="M:Loyc.StringExt.Left(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.Right(System.String,System.Int32)"/>, <see cref="!:Format"/> and <see cref="M:Loyc.StringExt.Slice(System.String,System.Int32,System.Int32)"/>.</summary>
+            <see cref="M:Loyc.StringExt.Left(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.Right(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> and <see cref="M:Loyc.StringExt.Slice(System.String,System.Int32,System.Int32)"/>.</summary>
         </member>
         <member name="M:Loyc.StringExt.SplitAt(System.String,System.Char)">
             <summary>Gets the substrings to the left and right of a dividing character.</summary>
@@ -4967,7 +5343,7 @@
             <summary>Called by Format to replace named placeholders with numeric
             placeholders in format strings.</summary>
             <returns>A format string that can be used to call string.Format.</returns>
-            <seealso cref="!:Format"/>
+            <seealso cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/>
         </member>
         <member name="T:Loyc.Symbol">
             <summary>Represents a symbol, which is a singleton string that supports fast 
@@ -5227,9 +5603,9 @@
             Most often <c>null</c> is used for this purpose; <c>NoValue.Value</c> 
             is used when <c>null</c> is a considered to be a valid, meaningful 
             value and you want to distinguish between "no value" and "null".
-            For example, this is used by the the <see cref="!:Loyc.Syntax.LNode.Value"/>
-            class, in which <c>NoValue</c> has a different meaning than both 
-            <c>null</c> and <c>void</c>.
+            For example, this is used by the the Value property of Loyc.Syntax.LNode,
+            in which <c>NoValue</c> has a different meaning than both <c>null</c> 
+            and <c>void</c>.
             <para/>
             Also, this value converts implicitly to <see cref="P:Loyc.Maybe`1.NoValue"/>.
             </remarks>

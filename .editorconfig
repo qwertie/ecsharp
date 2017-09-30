@@ -1,0 +1,4 @@
+[*.{cs,ecs,tt}]
+end_of_line = lf
+indent_style = tab
+charset = utf-8

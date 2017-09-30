@@ -199,7 +199,9 @@ namespace Loyc.VisualStudio
 			var tokens = ToNormalTokens(eTokens);
 			var results = new DList<ITagSpan<ClassificationTag>>();
 			var parser = new MyLesParser(tokens, sourceFile, TraceMessageSink.Value, results);
-			var _ = parser.StmtList();
+			var endMarker = default(TokenType);
+			var _ = parser.ExprList(ref endMarker, isBracedBlock: true);
+
 			results.Sort((t1, t2) => t1.Span.Start.Position.CompareTo(t2.Span.Start.Position));
 			return results;
 		}
