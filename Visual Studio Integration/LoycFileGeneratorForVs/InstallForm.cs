@@ -63,8 +63,8 @@ namespace SingleFileGenerator
 				string path2, path2_norm = vs.RegistryPath2, path2_wow = PathForWow64(path2_norm);
 				RegistryKey key = Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_wow, "Generators"), false)
 				               ?? Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_norm, "Generators"), false);
-				RegistryKey key2 = Registry.LocalMachine.OpenSubKey(path2 = Path.Combine(path2_wow, "Generators"), false)
-							    ?? Registry.LocalMachine.OpenSubKey(path2 = Path.Combine(path2_norm, "Generators"), false);
+				RegistryKey key2 = Registry.CurrentUser.OpenSubKey(path2 = Path.Combine(path2_wow, "Generators"), false)
+							    ?? Registry.CurrentUser.OpenSubKey(path2 = Path.Combine(path2_norm, "Generators"), false);
 				if (key != null || key2 != null)
 					using (key) {
 						var lvi = new ListViewItem(vs.Name);

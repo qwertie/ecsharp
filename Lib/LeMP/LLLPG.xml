@@ -48,6 +48,9 @@
             A statement like <c>Type x</c> just sets <c>ListType = Type</c>; and any other
             expression <c>expr</c> sets <c>ListInitializer = expr</c>.</summary>
         </member>
+        <member name="P:Loyc.LLParserGenerator.CodeGenHelperBase.NoCheckByDefault">
+            <summary>If true, calls to <c>Check()</c> are suppressed when <see cref="F:Loyc.LLParserGenerator.AndPred.CheckErrorMessage"/> is null.</summary>
+        </member>
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateTest(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.Syntax.LNode,Loyc.Symbol)">
             <summary>Generates code to test whether a terminal is in the set.</summary>
             <param name="subject">Represents the variable to be tested.</param>
@@ -85,7 +88,8 @@
             <param name="code">The expression to be checked</param>
             <param name="li">Current lookahead amount. -1 means "prediction is 
             complete, generate a Check() statement".</param>
-            <remarks>LLLPG substitutes $LI and $LA before it calls this method.</remarks>
+            <remarks>LLLPG substitutes $LI and $LA before it calls this method.
+            This method can return null to suppress the Check statement.</remarks>
         </member>
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateMatchExpr(Loyc.LLParserGenerator.IPGTerminalSet,System.Boolean,System.Boolean)">
             <summary>Generate code to match a set, e.g. 
@@ -342,7 +346,7 @@
             adding index 2 means that switch cases should be generated for sets[2].
             The caller (<see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/>) will create an if-else 
             chain for all branches that are not added to casesToInclude, and this 
-            chain will be passed to <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode[],Loyc.Syntax.LNode,Loyc.Syntax.LNode)"/>.</param>
+            chain will be passed to <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Syntax.LNode[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode,Loyc.Syntax.LNode)"/>.</param>
             <remarks>
             Using a switch() statement can be important for performance, since the
             compiler may be able to implement a switch statement using as little as
@@ -398,11 +402,11 @@
             in the grammar DSL.)
             </remarks>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode[],Loyc.Syntax.LNode,Loyc.Syntax.LNode)">
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Syntax.LNode[],Loyc.Collections.MSet{System.Int32},Loyc.Syntax.LNode,Loyc.Syntax.LNode)">
             <summary>Generates a switch statement with the specified branches where
             branchCode[i] is the code to run if the input is in the set branchSets[i].</summary>
             <param name="casesToInclude">The set chosen by <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.ShouldGenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},System.Boolean)"/>.</param>
-            <param name="defaultBranch">Code to be placed in the default: case (if none, the blank stmt <c>@``;</c>)</param>
+            <param name="defaultBranch">Code to be placed in the default: case, or the empty identifier (@``) if none</param>
             <param name="laVar">The lookahead variable being switched on (e.g. la0)</param>
             <returns>The generated switch block.</returns>
         </member>
@@ -579,19 +583,27 @@
             </summary>
         </member>
         <member name="T:Loyc.LLParserGenerator.LLParserGenerator.KthSet">
-            <summary>Represents the possible interpretations of a single input 
-            character, in terms of transitions in the grammar.</summary>
+            <summary>Holds information about the first set or kth set of a single
+            arm of an <see cref="T:Loyc.LLParserGenerator.Alts"/>.</summary>
             <remarks>
+            The main information this class holds is
+            (1) a list of <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.Transition"/>s (e.g. for the first set, LA = 0, 
+                each Transition represents moving from the beginning of the Alts to 
+                another location in the grammar based on a single input terminal),
+                and
+            (2) the <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> of all terminals used in any of the 
+                transitions.
+            <para/>
             For example, suppose the grammar is as follows (where "strings" are
             actually aliases for tokens):
             <code>
-                rule For   @{ "for" ($id "in" $collection | $id '=' range) };
-                rule Range @{ start ".." stop };
+                rule For   @{ "for" (ident "in" ident | ident '=' Range) };
+                rule Range @{ literal ".." literal };
             </code>
             If the starting position is right after "for", then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/>
-            will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>$id."in" $collection</c> 
-            and another at <c>\id.'=' stop</c>. In both cases, the Set is $id, 
-            so <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> will also be $id.
+            will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>ident."in" ident</c> 
+            and another at <c>ident.'=' Range</c>. In both cases, the Set is ident, 
+            so <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> will also be ident.
             </remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.LLParserGenerator.Transition">
@@ -693,6 +705,12 @@
         </member>
         <member name="F:Loyc.LLParserGenerator.LLParserGenerator.AddCsLineDirectives">
             <summary>Whether to add #line directives for C# before and after user actions.</summary>
+            <remarks>Superceded. It is preferred to use the <c>#lines</c> macro instead.</remarks>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.PrematchByDefault">
+            <summary>If true, rules that are not marked private, public, or internal are 
+            assumed not to be called from outside the grammar so the prematch 
+            optimization can be used.</summary>
         </member>
         <member name="P:Loyc.LLParserGenerator.LLParserGenerator.Sink">
             <summary>Called when an error or warning occurs while parsing a grammar
@@ -1361,6 +1379,18 @@
         <member name="F:Loyc.LLParserGenerator.AndPred.Pred">
             <summary>The predicate to match and backtrack. Must be of type 
             <see cref="T:Loyc.Syntax.LNode"/> or <see cref="F:Loyc.LLParserGenerator.AndPred.Pred"/>.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.AndPred.CheckErrorMessage">
+            <summary>
+            Error string passed to Check() in the generated code if the predicate 
+            is not matched. <see cref="M:Loyc.LLParserGenerator.CodeGenHelperBase.GenerateAndPredCheck(Loyc.LLParserGenerator.AndPred,Loyc.Syntax.LNode,System.Int32)"/>
+            suppresses generation of Check() call when this is an empty string.
+            </summary><remarks>
+            Initial value: null. User code can set this property by attaching a 
+            string as an attribute to an and-predicate (as of Jan 2017 this can 
+            only be done for semantic predicates as there is no syntax for 
+            attaching attributes to syntactic predicates).
+            </remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.TerminalPred">
             <summary>Represents a terminal (which is a token or a character) or a set 

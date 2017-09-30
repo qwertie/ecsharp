@@ -49,7 +49,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+			using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
@@ -69,7 +69,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(EcsLanguageService.Value))
+			using (LNode.SetPrinter(EcsLanguageService.Value))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
@@ -88,7 +88,7 @@ namespace Loyc.VisualStudio
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
-			using (LNode.PushPrinter(LesLanguageService.Value))
+			using (LNode.SetPrinter(LesLanguageService.Value))
 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}

@@ -1634,7 +1634,7 @@
         </member>
         <member name="F:Loyc.Collections.Impl.InternalSet`1.DefaultComparer">
             <summary>This is <see cref="P:System.Collections.Generic.EqualityComparer`1.Default"/>, or
-            null if T implements <see cref="T:Loyc.IReferenceComparable"/>.</summary>
+            null if T implements <see cref="T:Loyc.IReferenceEquatable"/>.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.InternalSet`1.Node.ClearTAt(System.Int32)">
             <summary>Clears the value at _items[i] and updates the bookkeeping
@@ -2431,9 +2431,8 @@
             <param name="key">The key to find. If passed by reference, when this 
             method returns, item is set to the next greater item than the item you 
             searched for, or left unchanged if there is no greater item.</param>
-            <param name="index">The index of the next greater item that was found,
-            or Count if the given item is greater than all items in the list.</param>
-            <returns></returns>
+            <returns>The index of the next greater item that was found,
+            or Count if the given item is greater than all items in the list.</returns>
         </member>
         <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBoundExact(`0@,`1@,System.Boolean@)">
             <summary>Does the same thing as <see cref="M:Loyc.Collections.BMultiMap`2.IndexOfExact(`0)"/>, but with 

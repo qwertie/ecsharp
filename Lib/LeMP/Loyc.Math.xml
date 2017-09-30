@@ -37,7 +37,7 @@
             or infinite line that is nearest to a specified point.</summary>
             <param name="seg">The line segment</param>
             <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
+            <param name="type">Whether to extend the line segment infinitely.</param>
             <param name="end">Set to 0 if the point is on the line segment (including
             one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
             after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
@@ -56,10 +56,12 @@
             <summary>Gets the projection of a point onto a line, expressed as a 
             fraction where 0 represents the start of the line and 1 represents the 
             end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
-            (0, 1) if the projection is outside the line segment. If this is false,
-            the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
+            <param name="type">Whether to return numbers outside the range
+            (0, 1) if the projection is outside the line segment. If this is 
+            LineType.Segment, the result is clamped to (0, 1)</param>
+            <param name="end">Set to 0 if the point is on the line segment (including
+            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
             <returns>The fraction of p along seg, as explained already. If seg is
             zero-length, the result is always 0.</returns>
             <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
@@ -163,7 +165,7 @@
             or infinite line that is nearest to a specified point.</summary>
             <param name="seg">The line segment</param>
             <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
+            <param name="type">Whether to treat the line segment as extended to infinite length.</param>
             <param name="end">Set to 0 if the point is on the line segment (including
             one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
             after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
@@ -182,10 +184,12 @@
             <summary>Gets the projection of a point onto a line, expressed as a 
             fraction where 0 represents the start of the line and 1 represents the 
             end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
+            <param name="type">Whether to return numbers outside the range
             (0, 1) if the projection is outside the line segment. If this is false,
             the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
+            <param name="end">Set to 0 if the point is on the line segment (including
+            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
             <returns>The fraction of p along seg, as explained already. If seg is
             zero-length, the result is always 0.</returns>
             <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
@@ -1462,22 +1466,44 @@
         <member name="T:Loyc.Math.MathD">
             <summary>Implements <see cref="T:Loyc.Math.IFloatMath`1"/> for numbers of type System.Double.</summary>
         </member>
-        <member name="T:Loyc.Math.MathF8">
+        <member name="T:Loyc.Math.MathFPI8">
             <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI8.</summary>
         </member>
-        <member name="T:Loyc.Math.MathF16">
+        <member name="T:Loyc.Math.MathFPI16">
             <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI16.</summary>
         </member>
-        <member name="T:Loyc.Math.MathF23">
+        <member name="T:Loyc.Math.MathFPI23">
             <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPI23.</summary>
         </member>
-        <member name="T:Loyc.Math.MathFL16">
+        <member name="T:Loyc.Math.MathFPL16">
             <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPL16.</summary>
         </member>
-        <member name="T:Loyc.Math.MathFL32">
+        <member name="T:Loyc.Math.MathFPL32">
             <summary>Implements <see cref="T:Loyc.Math.IRationalMath`1"/> for numbers of type FPL32.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Range" -->
+        <member name="T:Loyc.Range">
+            <summary>
+            Contains the functions used by the Enhanced C# <c>in</c>, <c>..</c> and 
+            <c>...</c> operators... plus the handy <c>PutInRange()</c> methods.
+            </summary>
+            <remarks>
+            Note: the following <c>InRange</c> extension methods have been moved to 
+            class <see cref="T:Loyc.G"/> in Loyc.Essentials so that Loyc.Syntax can use them:
+            <ul>
+            <li><c>n.IsInRange(lo, hi)</c> returns true if <c>n >= lo</c> and <c>hi >= n</c>, 
+                which corresponds to <c>n in lo...hi</c> in EC#.</li>
+            <li><c>n.IsInRangeExcludeHi(lo, hi)</c> returns true if <c>n >= lo</c> and <c>hi > n</c>,
+                which corresponds to <c>n in lo..hi</c> in EC#.</li>
+            </ul>
+            If `in` and a range operator are not used together, something 
+            slightly different happens:
+            <ul>
+            <li><c>var r = lo..hi</c> becomes <c>Range.ExcludeHi(lo, hi)</c> 
+                (<c>Range.Inclusive</c> for <c>...</c>).</li>
+            <li><c>x in r</c> becomes <c>r.Contains(x)</c>.</li>
+            </ul>
+            </remarks>
+        </member>
         <member name="M:Loyc.Range.Inclusive(System.Int32,System.Int32)">
             <summary>Returns a range from lo to hi that includes both lo and hi.</summary>
         </member>
