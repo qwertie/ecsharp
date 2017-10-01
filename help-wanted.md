@@ -5,11 +5,6 @@ toc: true
 redirectDomain: ecsharp.net
 ---
 
-Task: add LINQ support
-----------------------
-
-The Enhanced C# parser still doesn't support "from x in y" expressions. Edit /Main/Ecs/Parser/EcsParserGrammar.les to add a grammar for LINQ (search for "LINQ" and find the part that needs to be filled in). Remember to ask me for advice.
-
 Task: make EC# real
 -------------------
 

@@ -6,6 +6,30 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.6.0: August 30, 2017 ###
+
+- **Enhanced C#**: Bug fix: double pointer types like `Foo** x` were incorrectly parsed as exponentiation expressions.
+
+### v2.5.3: March 26, 2017 ###
+
+- **LeMP**: Reprogrammed `Assembly.Load()` to find assemblies that are already loaded, so that `--macros:CustomMacro.dll` works inside Visual Studio.
+
+### v2.5.2: February 17, 2017 ###
+
+#### LeMP
+
+- `IMacroContext.PreProcess`: added boolean `resetProperties` parameter
+- `SetOrCreateMemberMacro` (e.g. `void SetX(public T x) {}`): now transfers comments associated with the parameter to the newly created field
+- Added `macro_scope {...}` and `reset_macros {..}` macros
+
+#### Enhanced C#
+
+- Added LINQ support in parser and printer (finally!)
+- Fixed parse error on `operator>>` and `operator<<`.
+- Fixed regression: lexer no longer recognized UTF BOM.
+- Fixed reported error message locations in lexer.
+- Fixed EC# to recognize `goto default` instead of `goto case default` which was never a thing.
+
 ### v2.4.2: January 8, 2017 ###
 
 #### LeMP

@@ -15,7 +15,7 @@ See [status at core.loyc.net](http://core.loyc.net/project-status.html).
 - Design: Main points complete, taking suggestions.
 - Parser:
     - Supports most of C# and most planned syntax for EC#
-    - TODO: LINQ parsing with tests
+    - Done: LINQ parsing with tests
 - Printer:
     - Supports most of C# and most planned syntax for EC#
     - Includes plain C# output mode that avoids using EC# syntax (only works when the syntax tree does not contain EC#-only stuff)

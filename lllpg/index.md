@@ -7,7 +7,7 @@ commentIssueId: 35
 
 ![Logo](lllpg-logo.png)
 
-LLLPG is a recursive-decent parser generator for C#, with Visual Studio integration and a feature set better than ANTLR version 2. 
+LLLPG is a recursive-decent LL(k) parser generator for C# that generates efficient code and integrates with Visual Studio. Parsers written with LLLPG include [Enhanced C#](https://github.com/loycnet/ecsharp/tree/master/Main/Ecs/Parser) and [LES](https://github.com/loycnet/ecsharp/tree/master/Core/Loyc.Syntax/LES). Help wanted to add additional output languages.
 
 Learn it!
 ---------

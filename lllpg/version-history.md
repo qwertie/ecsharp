@@ -5,6 +5,15 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which change more frequently.
 
+### LLLPG 2.6.0: August 30, 2017 ###
+
+- Fix spurious warning "It's poor style to put a code block {..} before an and-predicate"
+
+### LLLPG v2.5.2: February 17, 2017 ###
+
+- Fix code generation for recognizers based on rules that have an error branch. Use prematch data when generating recognizer code.
+- Regression: Avoid generating empty default branch in switch in certain cases
+
 ### LLLPG v2.4.2: January 8, 2017 ###
 
 - Added `PrematchByDefault` option, to perform cross-rule prematch analysis on rules that are not marked `public`, `protected` or `internal`. This optimization, which replaces `Match()` calls with `Skip()` calls, previously required a rule to be explicitly marked `private`.
