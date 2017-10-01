@@ -195,6 +195,9 @@ namespace Loyc.Syntax.Les
 			Exact("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			Exact(@"a!.b**2",     F.Call(S.Exp, F.Call((Symbol)"'!.", a, b), two));
 			Exact("a.b::x.c",     F.Dot(F.Call(S.ColonColon, F.Dot(a, b), x), c));
+			Exact("a <- b <- c",  F.Call(S.LeftArrow, a, F.Call(S.LeftArrow, b, c)));
+			Exact("a -> a * b",   F.Call(S._RightArrow, a, F.Call(S.Mul, a, b)));
+			Exact("c && a <- b > 1", F.Call(S.And, c, F.Call(S.LeftArrow, a, F.Call(S.GT, b, one))));
 			
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));

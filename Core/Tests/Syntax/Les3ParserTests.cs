@@ -17,12 +17,11 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 0, "a & b | c;",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), c));
 			Test(Mode.Expr, 1, "x & Foo == 0;", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
 			Test(Mode.Expr, 1, "0 == x & Foo;", F.Call(S.AndBits, F.Call(S.Eq, zero, x), Foo));
-			Test(Mode.Expr, 1, "x >> a + 1;", F.Call(S.Add, F.Call(S.Shr, x, a), one));
-			Test(Mode.Expr, 1, "1 + x << a;", F.Call(S.Add, one, F.Call(S.Shl, x, a)));
-			Test(Mode.Expr, 1, "a MOD b * c",  F.Call("'MOD", a, F.Call(S.Mul, b, c)));
-			Test(Mode.Expr, 1, "a MOD b - c",  F.Call(S.Sub, F.Call("'MOD", a, b), c));
-			Test(Mode.Expr, 1, "a + b MOD c",  F.Call(S.Add, a, F.Call("'MOD", b, c)));
-			Test(Mode.Expr, 1, "a -> b == c",  F.Call(S._RightArrow, a, F.Call(S.Eq, b, c)));
+			Test(Mode.Expr, 1, "x >> a + 1;",   F.Call(S.Add, F.Call(S.Shr, x, a), one));
+			Test(Mode.Expr, 1, "1 + x << a;",   F.Call(S.Add, one, F.Call(S.Shl, x, a)));
+			Test(Mode.Expr, 1, "a MOD b * c",   F.Call("'MOD", a, F.Call(S.Mul, b, c)));
+			Test(Mode.Expr, 1, "a MOD b - c",   F.Call(S.Sub, F.Call("'MOD", a, b), c));
+			Test(Mode.Expr, 1, "a + b MOD c",   F.Call(S.Add, a, F.Call("'MOD", b, c)));
 		}
 
 		[Test]

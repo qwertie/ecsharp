@@ -256,7 +256,7 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Compare     = new Precedence(40);             // == != > < >= <=
 		public static readonly Precedence AndBits     = new Precedence(35, 35, 30, 40); // &
 		public static readonly Precedence OrBits      = new Precedence(30, 30, 30, 40); // | ^
-		public static readonly Precedence Arrow       = new Precedence(25, 25, 15, 40); // -> <-
+		public static readonly Precedence Arrow       = new Precedence(26, 25);         // -> <-
 		public static readonly Precedence And         = new Precedence(20);             // &&
 		public static readonly Precedence Or          = new Precedence(15);             // ||
 		public static readonly Precedence IfElse      = new Precedence(10, 2, 2, 2);    // ? :    a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
