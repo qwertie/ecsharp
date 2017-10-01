@@ -101,8 +101,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Contains global functions that don't belong in any specific class. 
  <a href="classLoyc_1_1G.html#details">More...</a></p>
-<hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/G.cs'>/Core/Loyc.Essentials/G.cs</a></li>
+<hr/><b>Source file</b>s:<ul>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/G.cs'>/Core/Loyc.Essentials/Utilities/G.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/GRange.out.cs'>/Core/Loyc.Essentials/Utilities/GRange.out.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains global functions that don't belong in any specific class.</p>
@@ -128,6 +129,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5026487dcc499e0485cc2e81fc983e94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5026487dcc499e0485cc2e81fc983e94"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap&lt; T &gt;</b> (ref T a, ref T b)</td></tr>
 <tr class="separator:a5026487dcc499e0485cc2e81fc983e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a954ef942cf96f7bb6a2f6debb85dc31c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a954ef942cf96f7bb6a2f6debb85dc31c"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap</b> (ref dynamic a, ref dynamic b)</td></tr>
+<tr class="separator:a954ef942cf96f7bb6a2f6debb85dc31c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b3d0c049e9e3efe9e797e47805f37f6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b3d0c049e9e3efe9e797e47805f37f6"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SortPair&lt; T &gt;</b> (ref T lo, ref T hi, Comparison&lt; T &gt; comp)</td></tr>
+<tr class="separator:a1b3d0c049e9e3efe9e797e47805f37f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26ae9aa4c1f5f82d96cf5132ae9f8533"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26ae9aa4c1f5f82d96cf5132ae9f8533"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SortPair&lt; T &gt;</b> (ref T lo, ref T hi)</td></tr>
+<tr class="separator:a26ae9aa4c1f5f82d96cf5132ae9f8533"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d8b56d6db235a19182226b216fd9c1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d8b56d6db235a19182226b216fd9c1f"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T &gt;</b> (this T value, T item1, T item2)</td></tr>
 <tr class="separator:a1d8b56d6db235a19182226b216fd9c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,6 +159,12 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T 
 <tr class="memitem:a2449794f23bbac4ec1b6029269795bef"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a2449794f23bbac4ec1b6029269795bef">With&lt; T &gt;</a> (this T obj, Func&lt; T, T &gt; action)</td></tr>
 <tr class="memdesc:a2449794f23bbac4ec1b6029269795bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>action(obj)</code>. This is similar to the other overload of this method, except that the action has a return value. <a href="#a2449794f23bbac4ec1b6029269795bef">More...</a><br /></td></tr>
 <tr class="separator:a2449794f23bbac4ec1b6029269795bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14649b8261a791e8874bcab8f7682716"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a14649b8261a791e8874bcab8f7682716">True&lt; T &gt;</a> (T value)</td></tr>
+<tr class="memdesc:a14649b8261a791e8874bcab8f7682716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true. This method has no effect; it is used to do an action in a conditional expression. <a href="#a14649b8261a791e8874bcab8f7682716">More...</a><br /></td></tr>
+<tr class="separator:a14649b8261a791e8874bcab8f7682716"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3383084368495273052b50b4bddecd01"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a3383084368495273052b50b4bddecd01">True</a> (Action action)</td></tr>
+<tr class="memdesc:a3383084368495273052b50b4bddecd01"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression. <a href="#a3383084368495273052b50b4bddecd01">More...</a><br /></td></tr>
+<tr class="separator:a3383084368495273052b50b4bddecd01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9d9d90722d454664467ed0dc58a58fe"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab9d9d90722d454664467ed0dc58a58fe">ToComparison&lt; T &gt;</a> ()</td></tr>
 <tr class="memdesc:ab9d9d90722d454664467ed0dc58a58fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a Comparison&lt;T&gt; for the specified type. <a href="#ab9d9d90722d454664467ed0dc58a58fe">More...</a><br /></td></tr>
 <tr class="separator:ab9d9d90722d454664467ed0dc58a58fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,7 +175,7 @@ static Func&lt; T, T, int &gt;&#160;</td><td class="memItemRight" valign="bottom
 <tr class="memdesc:ac1691620ffff28c742698cfe81c8bf4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer&lt;T&gt; to a Comparison&lt;T&gt;. <a href="#ac1691620ffff28c742698cfe81c8bf4a">More...</a><br /></td></tr>
 <tr class="separator:ac1691620ffff28c742698cfe81c8bf4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="memItemLeft" align="right" valign="top">static Func&lt; T, T, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4d579d8bd94f9f444052638d5c1f5ea0">ToComparisonFunc&lt; T &gt;</a> (IComparer&lt; T &gt; pred)</td></tr>
-<tr class="memdesc:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer&lt;T&gt; to a Func&lt;T,T,int&gt;. <a href="#a4d579d8bd94f9f444052638d5c1f5ea0">More...</a><br /></td></tr>
+<tr class="memdesc:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer&lt;T&gt; to a Func(T,T,int). <a href="#a4d579d8bd94f9f444052638d5c1f5ea0">More...</a><br /></td></tr>
 <tr class="separator:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc087cc7c55ddafb84276e7add77e34d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc087cc7c55ddafb84276e7add77e34d"></a>
 static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitCommandLineArguments</b> (string listString)</td></tr>
@@ -171,11 +187,98 @@ static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memdesc:a4ce38fca60499fd9c5a5c4428fa12437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>Debug.Assert</code> except that the argument is evaluated even in a Release build. <a href="#a4ce38fca60499fd9c5a5c4428fa12437">More...</a><br /></td></tr>
 <tr class="separator:a4ce38fca60499fd9c5a5c4428fa12437"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad0d8e0cbc602e3f8a0f38500328e6078">BareHtmlEntityNameForAscii</a> (char c)</td></tr>
-<tr class="memdesc:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>.  <a href="#ad0d8e0cbc602e3f8a0f38500328e6078">More...</a><br /></td></tr>
+<tr class="memdesc:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>BareHtmlEntityNameForAscii('"') == "quot"</code>.  <a href="#ad0d8e0cbc602e3f8a0f38500328e6078">More...</a><br /></td></tr>
 <tr class="separator:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a557938338e36e3d8899d416d87bb4c13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a557938338e36e3d8899d416d87bb4c13"></a>
-*&lt;/example &gt; *static <a class="el" href="structLoyc_1_1Threading_1_1PushedTLV.html">PushedTLV</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PushTLV&lt; T &gt;</b> (<a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt; T &gt; variable, T newValue)</td></tr>
-<tr class="separator:a557938338e36e3d8899d416d87bb4c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6871f9ddd2cf3e290932e91857ffd76e"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a6871f9ddd2cf3e290932e91857ffd76e">CountOnes</a> (byte x)</td></tr>
+<tr class="memdesc:a6871f9ddd2cf3e290932e91857ffd76e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of bits that are set in the specified integer. <a href="#a6871f9ddd2cf3e290932e91857ffd76e">More...</a><br /></td></tr>
+<tr class="separator:a6871f9ddd2cf3e290932e91857ffd76e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad811da2dd4a70924b9a28a6fb48e8c64"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad811da2dd4a70924b9a28a6fb48e8c64">CountOnes</a> (int x)</td></tr>
+<tr class="memdesc:ad811da2dd4a70924b9a28a6fb48e8c64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of bits that are set in the specified integer. <a href="#ad811da2dd4a70924b9a28a6fb48e8c64">More...</a><br /></td></tr>
+<tr class="separator:ad811da2dd4a70924b9a28a6fb48e8c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c5c04de1063b5464f7fafc7977d1893"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8c5c04de1063b5464f7fafc7977d1893"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a8c5c04de1063b5464f7fafc7977d1893">CountOnes</a> (uint x)</td></tr>
+<tr class="separator:a8c5c04de1063b5464f7fafc7977d1893"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52b7f78d7818f3bcdce385234666944f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a52b7f78d7818f3bcdce385234666944f"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>Int64BitsToDouble</b> (long bits)</td></tr>
+<tr class="separator:a52b7f78d7818f3bcdce385234666944f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a891ce2a4cf535875b9d8b59252dc79db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a891ce2a4cf535875b9d8b59252dc79db"></a>
+static long&#160;</td><td class="memItemRight" valign="bottom"><b>DoubleToInt64Bits</b> (double value)</td></tr>
+<tr class="separator:a891ce2a4cf535875b9d8b59252dc79db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7813e7547eeb4c721bceb0c435ef1081"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7813e7547eeb4c721bceb0c435ef1081"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a7813e7547eeb4c721bceb0c435ef1081">Log2Floor</a> (uint x)</td></tr>
+<tr class="separator:a7813e7547eeb4c721bceb0c435ef1081"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3ca1f0ebae57e6446dc56b340271973"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab3ca1f0ebae57e6446dc56b340271973">Log2Floor</a> (int x)</td></tr>
+<tr class="memdesc:ab3ca1f0ebae57e6446dc56b340271973"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the floor of the base-2 logarithm of x. e.g. 1024 -&gt; 10, 1000 -&gt; 9  <a href="#ab3ca1f0ebae57e6446dc56b340271973">More...</a><br /></td></tr>
+<tr class="separator:ab3ca1f0ebae57e6446dc56b340271973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61c3628e8aa5d52e83631f5fc4b83256"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61c3628e8aa5d52e83631f5fc4b83256"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>ShiftLeft</b> (double num, int amount)</td></tr>
+<tr class="separator:a61c3628e8aa5d52e83631f5fc4b83256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add26fb927246f8821347debf648c5706"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add26fb927246f8821347debf648c5706"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>ShiftRight</b> (double num, int amount)</td></tr>
+<tr class="separator:add26fb927246f8821347debf648c5706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a745d19827dc7896187e50ebbde92aab1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a745d19827dc7896187e50ebbde92aab1"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this int num, int lo, int hi)</td></tr>
+<tr class="separator:a745d19827dc7896187e50ebbde92aab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51008f4d66f34218b311defed9698141"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51008f4d66f34218b311defed9698141"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this int num, int lo, int hi)</td></tr>
+<tr class="separator:a51008f4d66f34218b311defed9698141"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e67258b7667a4ba13473518d4892900"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e67258b7667a4ba13473518d4892900"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this int n, int min, int max)</td></tr>
+<tr class="separator:a5e67258b7667a4ba13473518d4892900"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23c780a8aa7810e43136cf160be6edda"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23c780a8aa7810e43136cf160be6edda"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this uint num, uint lo, uint hi)</td></tr>
+<tr class="separator:a23c780a8aa7810e43136cf160be6edda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ce3a5fda207fcd7b1e19da1ad33cbf7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ce3a5fda207fcd7b1e19da1ad33cbf7"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this uint num, uint lo, uint hi)</td></tr>
+<tr class="separator:a9ce3a5fda207fcd7b1e19da1ad33cbf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4e428089761f78b6b665a3aefbc7555"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4e428089761f78b6b665a3aefbc7555"></a>
+static uint&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this uint n, uint min, uint max)</td></tr>
+<tr class="separator:aa4e428089761f78b6b665a3aefbc7555"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0eecb4cbe09e1306b0673ab93912bbcf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0eecb4cbe09e1306b0673ab93912bbcf"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this long num, long lo, long hi)</td></tr>
+<tr class="separator:a0eecb4cbe09e1306b0673ab93912bbcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb747994ed7a066dce93da4a3692f206"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb747994ed7a066dce93da4a3692f206"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this long num, long lo, long hi)</td></tr>
+<tr class="separator:abb747994ed7a066dce93da4a3692f206"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60dc7229066475b6827fd23421268ba5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60dc7229066475b6827fd23421268ba5"></a>
+static long&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this long n, long min, long max)</td></tr>
+<tr class="separator:a60dc7229066475b6827fd23421268ba5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac03d6ff898bef28a63160edfaf688011"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac03d6ff898bef28a63160edfaf688011"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this ulong num, ulong lo, ulong hi)</td></tr>
+<tr class="separator:ac03d6ff898bef28a63160edfaf688011"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8257c60dbbb3ef2239ade68cf74c2260"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8257c60dbbb3ef2239ade68cf74c2260"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this ulong num, ulong lo, ulong hi)</td></tr>
+<tr class="separator:a8257c60dbbb3ef2239ade68cf74c2260"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4570a9cd0a0e474a73096964d1b5972d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4570a9cd0a0e474a73096964d1b5972d"></a>
+static ulong&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this ulong n, ulong min, ulong max)</td></tr>
+<tr class="separator:a4570a9cd0a0e474a73096964d1b5972d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a280070186ddeb31eb16c9ba516b87b6e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a280070186ddeb31eb16c9ba516b87b6e"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this float num, float lo, float hi)</td></tr>
+<tr class="separator:a280070186ddeb31eb16c9ba516b87b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af66792bf9854be7263c5e1ae110af3b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af66792bf9854be7263c5e1ae110af3b8"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this float num, float lo, float hi)</td></tr>
+<tr class="separator:af66792bf9854be7263c5e1ae110af3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09444178a7d32a1aee7202acb65ebfe1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09444178a7d32a1aee7202acb65ebfe1"></a>
+static float&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this float n, float min, float max)</td></tr>
+<tr class="separator:a09444178a7d32a1aee7202acb65ebfe1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ca6749476e7a5c39b72cc81b50f8d0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ca6749476e7a5c39b72cc81b50f8d0c"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi</b> (this double num, double lo, double hi)</td></tr>
+<tr class="separator:a8ca6749476e7a5c39b72cc81b50f8d0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31af2b95949d4e0382586839b24b3162"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31af2b95949d4e0382586839b24b3162"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange</b> (this double num, double lo, double hi)</td></tr>
+<tr class="separator:a31af2b95949d4e0382586839b24b3162"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5431361de3c87def476f27b8759f1c21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5431361de3c87def476f27b8759f1c21"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange</b> (this double n, double min, double max)</td></tr>
+<tr class="separator:a5431361de3c87def476f27b8759f1c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfa4a20c7e8f480b5aa7e9484ec6b961"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfa4a20c7e8f480b5aa7e9484ec6b961"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRangeExcludeHi&lt; T &gt;</b> (this T num, T lo, T hi)</td></tr>
+<tr class="separator:acfa4a20c7e8f480b5aa7e9484ec6b961"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96b35e6691900971f7ce1381353df2f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96b35e6691900971f7ce1381353df2f9"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInRange&lt; T &gt;</b> (this T num, T lo, T hi)</td></tr>
+<tr class="separator:a96b35e6691900971f7ce1381353df2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a224e3b09f75918e3017331e8b1aed10b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a224e3b09f75918e3017331e8b1aed10b"></a>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T &gt;</b> (this T n, T min, T max)</td></tr>
+<tr class="separator:a224e3b09f75918e3017331e8b1aed10b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ad0d8e0cbc602e3f8a0f38500328e6078"></a>
@@ -200,10 +303,99 @@ static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 </table>
 </div><div class="memdoc">
 
-<p>Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>. </p>
-<p>The complete entity name is <code>"&amp;" + GetHtmlEntityNameForAscii(c) + ";"</code>. Some HTML entities have multiple names; this function returns one of them. There is a name in this table for all ASCII punctuation characters. </p>
+<p>Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>BareHtmlEntityNameForAscii('"') == "quot"</code>. </p>
+<p>The complete entity name is an ampersand (&amp;) plus <code>BareHtmlEntityNameForAscii(c) + ";"</code>. Some HTML entities have multiple names; this function returns one of them. There is a name in this table for all ASCII punctuation characters. </p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a02fefc647ac6f984a5470a2f103f95">Loyc.Ecs.EcsValidators.SanitizeIdentifier()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6871f9ddd2cf3e290932e91857ffd76e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.G.CountOnes </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the number of bits that are set in the specified integer.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1G.html#a7813e7547eeb4c721bceb0c435ef1081">Loyc.G.Log2Floor()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#a5de45aaff18329740d9f532a772f8056">Loyc.Collections.Impl.InternalSet&lt; KeyValuePair&lt; K, V &gt; &gt;.Thaw()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad811da2dd4a70924b9a28a6fb48e8c64"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.G.CountOnes </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the number of bits that are set in the specified integer.</p>
+<p>This is a duplicate of MathEx.CountOnes() needed by <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc.), collection implementations (Loyc.Collections.DList&lt;T&gt;, Loyc.Collections.WeakValueDictionary&lt;K,V&gt;, etc.), extension methods (Loyc.Collections.LCExt, Loyc.Collections.EnumerableExt, etc.), helper classes (Loyc.Collections.EmptyList&lt;T&gt;, (Loyc.Collections.Repeated&lt;T&gt;, etc.), and adapter classes (Loyc.Collections.ListSlice&lt;T&gt;, Loyc.Collections.BufferedSequence&lt;T&gt;, etc.). ">Loyc.Collections</a>, which does not have a reference to Loyc.Math.dll which contains MathEx. However this uses a compact SWAR implementation, whereas <a class="el" href="namespaceLoyc_1_1Math.html" title="Contains general-purpose math algorithms beyond what is provided in the .NET BCL (Base Class Library)...">Loyc.Math</a> uses a potentially faster lookup table.</p>
+
+<p>References <a class="el" href="classLoyc_1_1G.html#ad811da2dd4a70924b9a28a6fb48e8c64">Loyc.G.CountOnes()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1G.html#ad811da2dd4a70924b9a28a6fb48e8c64">Loyc.G.CountOnes()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab3ca1f0ebae57e6446dc56b340271973"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.G.Log2Floor </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the floor of the base-2 logarithm of x. e.g. 1024 -&gt; 10, 1000 -&gt; 9 </p>
+<p>The return value is -1 for an input that is zero or negative. </p>
+<p>Some processors have a dedicated instruction for this operation, but the .NET framework provides no access to it. </p>
+
+<p>References <a class="el" href="classLoyc_1_1G.html#a7813e7547eeb4c721bceb0c435ef1081">Loyc.G.Log2Floor()</a>.</p>
 
 </div>
 </div>
@@ -340,7 +532,67 @@ static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 </table>
 </div><div class="memdoc">
 
-<p>Converts an IComparer&lt;T&gt; to a Func&lt;T,T,int&gt;.</p>
+<p>Converts an IComparer&lt;T&gt; to a Func(T,T,int).</p>
+
+</div>
+</div>
+<a class="anchor" id="a3383084368495273052b50b4bddecd01"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool Loyc.G.True </td>
+          <td>(</td>
+          <td class="paramtype">Action&#160;</td>
+          <td class="paramname"><em>action</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</p>
+<dl class="section return"><dt>Returns</dt><dd>True</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a14649b8261a791e8874bcab8f7682716"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool <a class="el" href="classLoyc_1_1G.html#a3383084368495273052b50b4bddecd01">Loyc.G.True</a>&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true. This method has no effect; it is used to do an action in a conditional expression.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">value</td><td>Ignored.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True.</dd></dl>
 
 </div>
 </div>
@@ -452,7 +704,7 @@ static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

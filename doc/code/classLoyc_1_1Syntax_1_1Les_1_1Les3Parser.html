@@ -108,7 +108,6 @@ Inheritance diagram for Loyc.Syntax.Les.Les3Parser:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.png" usemap="#Loyc.Syntax.Les.Les3Parser_map" alt=""/>
   <map id="Loyc.Syntax.Les.Les3Parser_map" name="Loyc.Syntax.Les.Les3Parser_map">
-<area href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html" title="Parses LES (Loyc Expression Syntax) code into a sequence of Loyc trees (LNode), one per top-level sta..." alt="Loyc.Syntax.Les.Les2Parser" shape="rect" coords="0,56,271,80"/>
 <area href="classLoyc_1_1Syntax_1_1BaseParserForList.html" alt="Loyc.Syntax.BaseParserForList&lt; Token, int &gt;" shape="rect" coords="0,0,271,24"/>
 </map>
  </div></div>
@@ -118,118 +117,103 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7d191fb86958d5aae4dc5d000a1969de"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d191fb86958d5aae4dc5d000a1969de"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Les3Parser</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, int startIndex=0)</td></tr>
 <tr class="separator:a7d191fb86958d5aae4dc5d000a1969de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ef1490a3f9691954e24c4c1cb4eb4ec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ef1490a3f9691954e24c4c1cb4eb4ec"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;), bool allowBlockCalls=true)</td></tr>
-<tr class="separator:a4ef1490a3f9691954e24c4c1cb4eb4ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ecbe38355a59db621b82e738940fdbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ecbe38355a59db621b82e738940fdbc"></a>
-override <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (ref TokenType endMarker, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;))</td></tr>
-<tr class="separator:a6ecbe38355a59db621b82e738940fdbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2acf78dd3adc9d5ab28a58c325ccda2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2acf78dd3adc9d5ab28a58c325ccda2"></a>
-new <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>StmtList</b> ()</td></tr>
-<tr class="separator:af2acf78dd3adc9d5ab28a58c325ccda2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a099c67a7701e653a7b82f48862aba5f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a099c67a7701e653a7b82f48862aba5f0"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (ref TokenType endMarker, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, bool allowBlockCalls)</td></tr>
-<tr class="separator:a099c67a7701e653a7b82f48862aba5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bb887deefd16babfc638ad277fc373f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3bb887deefd16babfc638ad277fc373f"></a>
-override IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprListLazy</b> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; endMarker)</td></tr>
-<tr class="separator:a3bb887deefd16babfc638ad277fc373f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Loyc.Syntax.Les.Les2Parser</a></td></tr>
-<tr class="memitem:ab4c8219df47c599ff5e5c438373bbd9f inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4c8219df47c599ff5e5c438373bbd9f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
-<tr class="separator:ab4c8219df47c599ff5e5c438373bbd9f inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ed6799c4df979857b0ee0bb974fb357 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ed6799c4df979857b0ee0bb974fb357"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
-<tr class="separator:a7ed6799c4df979857b0ee0bb974fb357 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8993a6bf92adda6f2cf9ef841d324633 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8993a6bf92adda6f2cf9ef841d324633"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink, int startIndex=0)</td></tr>
-<tr class="separator:a8993a6bf92adda6f2cf9ef841d324633 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bd542db7f45e1890140a2fb42177efd inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3bd542db7f45e1890140a2fb42177efd"></a>
+<tr class="memitem:a93163afb870fe4e2921d035cdec38fdf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a93163afb870fe4e2921d035cdec38fdf"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, int startIndex=0)</td></tr>
-<tr class="separator:a3bd542db7f45e1890140a2fb42177efd inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a838433ac15910a21cd5ad01ec6021a57 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#a838433ac15910a21cd5ad01ec6021a57">Start</a> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; separator)</td></tr>
-<tr class="memdesc:a838433ac15910a21cd5ad01ec6021a57 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top-level rule: expects a sequence of statements followed by EOF <a href="#a838433ac15910a21cd5ad01ec6021a57">More...</a><br /></td></tr>
-<tr class="separator:a838433ac15910a21cd5ad01ec6021a57 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a580e14de4b34d362654c5b8c0c869664 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a580e14de4b34d362654c5b8c0c869664"></a>
+<tr class="separator:a93163afb870fe4e2921d035cdec38fdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbbeb8aa85af2ea6ea3135433810ef26"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.html#adbbeb8aa85af2ea6ea3135433810ef26">Start</a> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; separator)</td></tr>
+<tr class="memdesc:adbbeb8aa85af2ea6ea3135433810ef26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top-level rule: expects a sequence of statements followed by EOF <a href="#adbbeb8aa85af2ea6ea3135433810ef26">More...</a><br /></td></tr>
+<tr class="separator:adbbeb8aa85af2ea6ea3135433810ef26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed9351b2eeafef4d3f44c7673f048ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ed9351b2eeafef4d3f44c7673f048ff"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;))</td></tr>
-<tr class="separator:a580e14de4b34d362654c5b8c0c869664 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae06673a9bee6c177930bfe65ebcf3ff inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae06673a9bee6c177930bfe65ebcf3ff"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>StmtList</b> ()</td></tr>
-<tr class="separator:aae06673a9bee6c177930bfe65ebcf3ff inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a0ed9351b2eeafef4d3f44c7673f048ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20f52cbb06f6f3cef043b13b09a9379e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a20f52cbb06f6f3cef043b13b09a9379e"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CheckForSpaceAtEndOfAttribute</b> ()</td></tr>
+<tr class="separator:a20f52cbb06f6f3cef043b13b09a9379e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a103f6daf16b1180490f11045390b83a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a103f6daf16b1180490f11045390b83a1"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsContinuator</b> (object ltv)</td></tr>
+<tr class="separator:a103f6daf16b1180490f11045390b83a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe66b9e3038fb9122012177afbc1ead3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afe66b9e3038fb9122012177afbc1ead3"></a>
+<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (ref TokenType endMarker, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;), bool isBracedBlock=false)</td></tr>
+<tr class="separator:afe66b9e3038fb9122012177afbc1ead3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cabca1d46256b4aaf562f77ccac8d93"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6cabca1d46256b4aaf562f77ccac8d93"></a>
+IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprListLazy</b> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; endMarker)</td></tr>
+<tr class="separator:a6cabca1d46256b4aaf562f77ccac8d93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a6fe81c529ce1e596c390340aadd754da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fe81c529ce1e596c390340aadd754da"></a>
-override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (int tokenType)</td></tr>
-<tr class="separator:a6fe81c529ce1e596c390340aadd754da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a74ef63ff982e80b28621a77e181cd2d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74ef63ff982e80b28621a77e181cd2d9"></a>
-new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrefixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
-<tr class="separator:a74ef63ff982e80b28621a77e181cd2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b215468020fa20667f05ec7342968dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5b215468020fa20667f05ec7342968dd"></a>
-new <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TopExpr</b> ()</td></tr>
-<tr class="separator:a5b215468020fa20667f05ec7342968dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Loyc.Syntax.Les.Les2Parser</a></td></tr>
-<tr class="memitem:a6a05f49cb443eb1c503a0552c587dd0f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a05f49cb443eb1c503a0552c587dd0f"></a>
+<tr class="memitem:a89d040b077ae10084a7077f4f8876548"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89d040b077ae10084a7077f4f8876548"></a>
 override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> eofToken, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, int startIndex=0)</td></tr>
-<tr class="separator:a6a05f49cb443eb1c503a0552c587dd0f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a949799b933df41bab5f8b20d5a199eca inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a949799b933df41bab5f8b20d5a199eca"></a>
+<tr class="separator:a89d040b077ae10084a7077f4f8876548"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bd368c79776c24dc83e971d318973ec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7bd368c79776c24dc83e971d318973ec"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (int type)</td></tr>
-<tr class="separator:a949799b933df41bab5f8b20d5a199eca inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0248251bd620022587d6abb98b194e4 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0248251bd620022587d6abb98b194e4"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MissingExpr</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> tok)</td></tr>
-<tr class="separator:af0248251bd620022587d6abb98b194e4 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a801b89bf0af9e5ff92929ff4ca526f31 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a801b89bf0af9e5ff92929ff4ca526f31"></a>
-<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ToSuffixOpName</b> (object symbol)</td></tr>
-<tr class="separator:a801b89bf0af9e5ff92929ff4ca526f31 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6262ff8de4a0ee2b527838fd52153d23 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6262ff8de4a0ee2b527838fd52153d23"></a>
-<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrefixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
-<tr class="separator:a6262ff8de4a0ee2b527838fd52153d23 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06d90bdf4d35681f747f222432bda12c inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a06d90bdf4d35681f747f222432bda12c"></a>
-<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SuffixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
-<tr class="separator:a06d90bdf4d35681f747f222432bda12c inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d67ccdd30da94881923a2cda917a33f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d67ccdd30da94881923a2cda917a33f"></a>
-<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InfixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
-<tr class="separator:a0d67ccdd30da94881923a2cda917a33f inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4426fb89fd1aba26596eabacb7ec3585 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4426fb89fd1aba26596eabacb7ec3585"></a>
+<tr class="separator:a7bd368c79776c24dc83e971d318973ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e66fc8e7ae73924af424b675fd1a707"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e66fc8e7ae73924af424b675fd1a707"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MarkSpecial</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n)</td></tr>
-<tr class="separator:a4426fb89fd1aba26596eabacb7ec3585 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb21f997fe692121d7d4bcf51e7f1cfd inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adb21f997fe692121d7d4bcf51e7f1cfd"></a>
+<tr class="separator:a0e66fc8e7ae73924af424b675fd1a707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae16e065a1d2db6b3301b53706a4af5e0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae16e065a1d2db6b3301b53706a4af5e0"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MarkCall</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n)</td></tr>
-<tr class="separator:adb21f997fe692121d7d4bcf51e7f1cfd inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a081643127dfad78b97ae37961fac9f92 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a081643127dfad78b97ae37961fac9f92"></a>
-override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (bool inverted, IEnumerable&lt; int &gt; expected_)</td></tr>
-<tr class="separator:a081643127dfad78b97ae37961fac9f92 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36d86b6c42b33bd1e32783b00818e3a3 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36d86b6c42b33bd1e32783b00818e3a3"></a>
+<tr class="separator:ae16e065a1d2db6b3301b53706a4af5e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeab4cbd3b682043029ec4ec415cabdcb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeab4cbd3b682043029ec4ec415cabdcb"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MissingExpr</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> tok, string error=null, bool afterToken=false)</td></tr>
+<tr class="separator:aeab4cbd3b682043029ec4ec415cabdcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08c8955b88f0f1eea7ad37dd8651d968"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a08c8955b88f0f1eea7ad37dd8651d968"></a>
+<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrefixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="separator:a08c8955b88f0f1eea7ad37dd8651d968"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d30674001270ecb62fd6dd03c9972df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6d30674001270ecb62fd6dd03c9972df"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TopExpr</b> ()</td></tr>
-<tr class="separator:a36d86b6c42b33bd1e32783b00818e3a3 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a6d30674001270ecb62fd6dd03c9972df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
+<tr class="memitem:ac44496b8065017c1e6ed163347a9275c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac44496b8065017c1e6ed163347a9275c"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html">Les3PrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = Les3PrecedenceMap.Default</td></tr>
+<tr class="separator:ac44496b8065017c1e6ed163347a9275c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5479392c6b4a40678a2405a68c7a0236"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5479392c6b4a40678a2405a68c7a0236"></a>
 new const TT&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b> = TT.EOF</td></tr>
 <tr class="separator:a5479392c6b4a40678a2405a68c7a0236"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c316530855ed38e6cfb73be973a51bb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c316530855ed38e6cfb73be973a51bb"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_allowBlockCalls</b> = true</td></tr>
-<tr class="separator:a2c316530855ed38e6cfb73be973a51bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser')"><img src="closed.png" alt="-"/>&#160;Protected fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Loyc.Syntax.Les.Les2Parser</a></td></tr>
-<tr class="memitem:a996857f2c86a91288759dbce85fa0134 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a996857f2c86a91288759dbce85fa0134"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html">LNodeFactory</a>&#160;</td><td class="memItemRight" valign="bottom"><b>F</b></td></tr>
-<tr class="separator:a996857f2c86a91288759dbce85fa0134 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68afb4b359d6613559885f5a8bee0483 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68afb4b359d6613559885f5a8bee0483"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html">LesPrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = LesPrecedenceMap.Default</td></tr>
-<tr class="separator:a68afb4b359d6613559885f5a8bee0483 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser')"><img src="closed.png" alt="-"/>&#160;Public static fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Loyc.Syntax.Les.Les2Parser</a></td></tr>
-<tr class="memitem:a4a445549e78b0c69c39f088bfb7d434c inherit pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a445549e78b0c69c39f088bfb7d434c"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartStmt</b> = Precedence.MinValue</td></tr>
-<tr class="separator:a4a445549e78b0c69c39f088bfb7d434c inherit pub_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les2Parser"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="adbbeb8aa85af2ea6ea3135433810ef26"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.Les.Les3Parser.Start </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt;&#160;</td>
+          <td class="paramname"><em>separator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Top-level rule: expects a sequence of statements followed by EOF</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">separator</td><td>If there are multiple expressions, the Value of this <a class="el" href="classLoyc_1_1Holder.html" title="A trivial class that holds a single value of type T in the Value property. ">Holder</a> is set to the separator between them: Comma or Semicolon.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>References <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a494101430520b6ca70b21de7627b1c74">Loyc.Syntax.Precedence.CanMixWith()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a2d2b5a804370c95545031ed1f5da0df3">Loyc.Syntax.Precedence.CanParse()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a75e7dcd665b344827826863acff6840d">Loyc.Syntax.Lexing.Token.EndIndex</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#ad3a3b1f2a4fa217ed8a6f2d8c6e02e1f">Loyc.Syntax.Les.Les2PrecedenceMap.Find()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165">Loyc.Syntax.Lexing.Token.StartIndex</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910">Loyc.Syntax.Lexing.Token.Value</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html#a834d86bd19ca370868c824675d68fa4c">Loyc.Syntax.Les.Les3LanguageService.Parse()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

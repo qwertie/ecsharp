@@ -213,12 +213,12 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <p>Two types of options are recognized, short (-s) and long (&ndash;long), and only one argument is supported per option. The documentation is above. </p>
-<p>You can choose whether to permit duplicate options or not. If you use a standard Dictionary&lt;K,V&gt; to hold the options, an exception will occur when this method calls Add() to add the duplicate. The exception is caught, the first ocurrance is kept, and a warning message is printed to MessageSink.Current. </p>
+<p>You can choose whether to permit duplicate options or not. If you use a standard Dictionary&lt;K,V&gt; to hold the options, an exception will occur when this method calls Add() to add the duplicate. The exception is caught, the first ocurrance is kept, and a warning message is printed to MessageSink.Default. </p>
 <p>To allow duplicates, store options in a different data structure such as <code>List(KeyValuePair(string, string))</code> or <code>BMultiMap(string,string)</code>. </p>
 <p>DOS-style slash-options like /foo are not supported. Since Windows recognizes the forward slash as a path separator, forward-slash options can be recognized as paths. If you want to recognize them as options instead, you can preprocess the argument list, replacing every command that starts with "/" with a "--" command: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; args.Count &gt; i; i++)</div><div class="line">  <span class="keywordflow">if</span> (args[i].StartsWith(<span class="stringliteral">&quot;/&quot;</span>)) </div><div class="line">    args[i] = <span class="stringliteral">&quot;--&quot;</span> + args[i].Substring(1);</div></div><!-- fragment --> <p>Globs (e.g. *.txt) are not recognized or expanded, but environment variables are expanded when <code>expandEnvVars</code> is true. </p>
 <p>Quote marks are not processed. An argument of <code>"--a"</code>, with quote marks, is not recognized as an option (these quote marks should be removed before calling this method, e.g. G.SplitCommandLineArguments handles this.) </p>
 
-<p>References <a class="el" href="classLoyc_1_1Utilities_1_1UG.html#a67f642cbc5500595487800a9f80f6121">Loyc.Utilities.UG.ProcessCommandLineArguments()</a>, and <a class="el" href="classLoyc_1_1MessageSink.html#a59c2f1932daf118d2b4f16ca7a0991a6">Loyc.MessageSink.PushCurrent()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Utilities_1_1UG.html#a67f642cbc5500595487800a9f80f6121">Loyc.Utilities.UG.ProcessCommandLineArguments()</a>, and <a class="el" href="classLoyc_1_1MessageSink.html#a40fb494c06c087d13f1394b140ae26a5">Loyc.MessageSink.SetDefault()</a>.</p>
 
 <p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a6ca005b126cd7d544e66c8d2e2099c59">LeMP.Compiler.ProcessArguments()</a>, and <a class="el" href="classLoyc_1_1Utilities_1_1UG.html#a67f642cbc5500595487800a9f80f6121">Loyc.Utilities.UG.ProcessCommandLineArguments()</a>.</p>
 
@@ -228,7 +228,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -9,6 +9,7 @@ var searchData=
   ['millisec',['Millisec',['../structLoyc_1_1EzStopwatch.html#a85e82a5e3745fd78931ba1bad8fc844a',1,'Loyc.EzStopwatch.Millisec()'],['../classLoyc_1_1Utilities_1_1SimpleTimer.html#af7b77cda40a36126001674fad36f1b00',1,'Loyc.Utilities.SimpleTimer.Millisec()']]],
   ['min',['Min',['../structLoyc_1_1Collections_1_1NegList.html#abf6cb87a2ed3db9976debb93ff2e57d1',1,'Loyc.Collections.NegList.Min()'],['../structLoyc_1_1Collections_1_1NegListSource.html#a37e66cdb99385a9696556b04845c32cf',1,'Loyc.Collections.NegListSource.Min()'],['../interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d',1,'Loyc.Collections.INegListSource.Min()']]],
   ['minint',['MinInt',['../interfaceLoyc_1_1Math_1_1INumTraits.html#a98c2dc75fb19814d11b0367705fb54eb',1,'Loyc::Math::INumTraits']]],
+  ['minseverity',['MinSeverity',['../classLoyc_1_1SeverityMessageFilter.html#ae22ba7c561d9e7d34991a212779b839f',1,'Loyc::SeverityMessageFilter']]],
   ['mintrials',['MinTrials',['../classLoyc_1_1MiniTest_1_1BenchmarkAttribute.html#a0af2be33e7b68e4d03a4d8ac7899022f',1,'Loyc::MiniTest::BenchmarkAttribute']]],
   ['minvalue',['MinValue',['../interfaceLoyc_1_1Math_1_1INumTraits.html#a5a791cf2398d20c0192cdbc0921b5938',1,'Loyc::Math::INumTraits']]],
   ['miximmiscibleoperators',['MixImmiscibleOperators',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#ab3e672a37c215f925f8721bf2376d489',1,'Loyc::Ecs::EcsPrinterOptions']]],

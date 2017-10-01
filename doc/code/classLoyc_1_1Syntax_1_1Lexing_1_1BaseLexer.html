@@ -153,7 +153,7 @@ Nested classes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6">LogExceptionErrorSink</a></td></tr>
-<tr class="memdesc:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Current. <a href="#a1fbcd1f42ea2ebe33b7ee53481fd73e6">More...</a><br /></td></tr>
+<tr class="memdesc:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Default. <a href="#a1fbcd1f42ea2ebe33b7ee53481fd73e6">More...</a><br /></td></tr>
 <tr class="separator:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2519061cb92a4df83891264cec3796f0"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FormatExceptionErrorSink</b></td></tr>
 <tr class="separator:a2519061cb92a4df83891264cec3796f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,7 +161,7 @@ Public static fields</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a2e052d761c53ba883b58b03cb7f8e4ff">ErrorSink</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Current.">LogExceptionErrorSink</a>, which throws an exception if an error occurs. <a href="#a2e052d761c53ba883b58b03cb7f8e4ff">More...</a><br /></td></tr>
+<tr class="memdesc:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Default.">LogExceptionErrorSink</a>, which throws an exception if an error occurs. <a href="#a2e052d761c53ba883b58b03cb7f8e4ff">More...</a><br /></td></tr>
 <tr class="separator:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94e48d9dc50a8819b2eef0d066271ca9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94e48d9dc50a8819b2eef0d066271ca9"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>LA0</b><code> [get]</code></td></tr>
@@ -351,15 +351,12 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <tr class="memitem:ae6d6401f50d9084d45fc515b4ed09437"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6d6401f50d9084d45fc515b4ed09437"></a>
 virtual object&#160;</td><td class="memItemRight" valign="bottom"><b>IndexToPositionObject</b> (int charIndex)</td></tr>
 <tr class="separator:ae6d6401f50d9084d45fc515b4ed09437"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f5a8dac7528f7c40c7758241042f50f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f5a8dac7528f7c40c7758241042f50f"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (bool inverted, int range0lo, int range0hi)</td></tr>
-<tr class="separator:a2f5a8dac7528f7c40c7758241042f50f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ab861c69cc4eb30535481b27b2e278f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ab861c69cc4eb30535481b27b2e278f"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (bool inverted, params int[] ranges)</td></tr>
-<tr class="separator:a0ab861c69cc4eb30535481b27b2e278f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7097245fc3157c28d5b7c68699bedfd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7097245fc3157c28d5b7c68699bedfd"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (bool inverted, IList&lt; int &gt; ranges)</td></tr>
-<tr class="separator:aa7097245fc3157c28d5b7c68699bedfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a180ca0bc2dd4cb5dae55a6b82de2dbdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a180ca0bc2dd4cb5dae55a6b82de2dbdd"></a>
+virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MatchError</b> (bool inverted, params int[] ranges)</td></tr>
+<tr class="separator:a180ca0bc2dd4cb5dae55a6b82de2dbdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2621df0453538154db43418000a82073"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a2621df0453538154db43418000a82073">MatchError</a> (bool inverted, IList&lt; int &gt; ranges)</td></tr>
+<tr class="memdesc:a2621df0453538154db43418000a82073"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles an error that occurs during Match(), MatchExcept(), MatchRange() or MatchExceptRange() <a href="#a2621df0453538154db43418000a82073">More...</a><br /></td></tr>
+<tr class="separator:a2621df0453538154db43418000a82073"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a570afeccb0831511129a01a928789746"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a570afeccb0831511129a01a928789746"></a>
 virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (bool inverted, HashSet&lt; int &gt; set)</td></tr>
 <tr class="separator:a570afeccb0831511129a01a928789746"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -586,6 +583,49 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 
 </div>
 </div>
+<a class="anchor" id="a2621df0453538154db43418000a82073"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.MatchError </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>inverted</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IList&lt; int &gt;&#160;</td>
+          <td class="paramname"><em>ranges</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Handles an error that occurs during Match(), MatchExcept(), MatchRange() or MatchExceptRange()</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inverted</td><td>Set inversion flag. If true, then <code>expected</code> is actually a list of things that were NOT expected.</td></tr>
+    <tr><td class="paramname">ranges</td><td>List of ranges of characters that were expected (or unexpected, if <code>inverted</code>)</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="abae963fe4011bda74065554b7f606f0e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -649,7 +689,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 
 <p>Prints a character as a string, e.g. <code>'a' -&gt; "'a'"</code>, with the special value -1 representing EOF, so PrintChar(-1, ...) == "EOF".</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a86791e41dbd2adb89f2d4ec6c605c9f1">Loyc.Syntax.ParseHelpers.EscapeCStyle()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a60a4d97fc46d2f5826bd42f1016032ac">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>.</p>
 
 </div>
 </div>
@@ -799,7 +839,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; { </div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.LocationString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.Localized(fmt, args));</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    MessageSink.Current.Write(sev, location, fmt, args);</div><div class="line">            })</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; { </div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.ContextToString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.Localized(fmt, args));</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    MessageSink.Default.Write(sev, location, fmt, args);</div><div class="line">            })</div></div><!-- fragment -->
 </div>
 </div>
 <a class="anchor" id="a1fbcd1f42ea2ebe33b7ee53481fd73e6"></a>
@@ -819,8 +859,8 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; {</div><div class="line">                LogMessage msg = <span class="keyword">new</span> LogMessage(sev, location, fmt, args);</div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> LogException(msg);</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    msg.WriteTo(MessageSink.Current);</div><div class="line">            })</div></div><!-- fragment -->
-<p>Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Current.</p>
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; {</div><div class="line">                LogMessage msg = <span class="keyword">new</span> LogMessage(sev, location, fmt, args);</div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> LogException(msg);</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    msg.WriteTo(MessageSink.Default);</div><div class="line">            })</div></div><!-- fragment -->
+<p>Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Default.</p>
 
 </div>
 </div>
@@ -843,7 +883,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 </table>
 </div><div class="memdoc">
 
-<p>Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Current.">LogExceptionErrorSink</a>, which throws an exception if an error occurs.</p>
+<p>Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Default.">LogExceptionErrorSink</a>, which throws an exception if an error occurs.</p>
 
 </div>
 </div>
@@ -895,7 +935,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

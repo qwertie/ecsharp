@@ -119,6 +119,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Les2Parser</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html">Les2PrecedenceMap</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class's main job is to maintain a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is chosen by this class and cached for future reference. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html">Les2Printer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree in LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) format. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,6 +133,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html">Les3Lexer</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.html">Les3Parser</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html">Les3PrecedenceMap</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html">Les3PrettyPrinter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A variant of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a> that adds syntax highlighting in one of three ways: as console output, as HTML output, or as <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168" title="These codes are produced as control characters (i.e. cast to char) in the output of Les3PrettyPrinter...">LesColorCode</a> control codes.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#details">More...</a><br /></td></tr>
@@ -143,9 +148,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedence.html">LesPrecedence</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> objects that represent the precedence levels of LES. <a href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedence.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html">LesPrecedenceMap</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class's main job is to maintain a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is cached for future reference. <a href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html">NodePrinterWriterBase</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. Has an protected <code>_indentLevel</code> field that is increased by Indent() and decreased by Dedent(). <a href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html#details">More...</a><br /></td></tr>
@@ -203,31 +205,31 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<b>BQId</b> = TokenKind.Id + 1, 
 <b>Literal</b> = TokenKind.Literal, 
-<b>NegativeLiteral</b> = TokenKind.Literal + 1, 
+<b>Dot</b> = TokenKind.Dot, 
 <br />
-&#160;&#160;<b>Dot</b> = TokenKind.Dot, 
-<b>Assignment</b> = TokenKind.Assignment, 
+&#160;&#160;<b>Assignment</b> = TokenKind.Assignment, 
 <b>NormalOp</b> = TokenKind.Operator, 
+<b>PreOrSufOp</b> = TokenKind.Operator + 1, 
 <br />
-&#160;&#160;<b>PreOrSufOp</b> = TokenKind.Operator + 1, 
-<b>PrefixOp</b> = TokenKind.Operator + 2, 
+&#160;&#160;<b>PrefixOp</b> = TokenKind.Operator + 2, 
 <b>At</b> = TokenKind.Operator + 5, 
+<b>Not</b> = TokenKind.Operator + 6, 
 <br />
-&#160;&#160;<b>Not</b> = TokenKind.Operator + 6, 
-<b>BQOperator</b> = TokenKind.Operator + 7, 
+&#160;&#160;<b>BQOperator</b> = TokenKind.Operator + 7, 
 <b>Colon</b> = TokenKind.Operator + 8, 
+<b>SingleQuoteOp</b> = TokenKind.Operator + 9, 
 <br />
 &#160;&#160;<b>Comma</b> = TokenKind.Separator, 
 <b>Semicolon</b> = TokenKind.Separator + 1, 
-<b>LParen</b> = TokenKind.LParen, 
+<b>Keyword</b> = TokenKind.OtherKeyword, 
 <br />
-&#160;&#160;<b>SpaceLParen</b> = TokenKind.LParen + 1, 
+&#160;&#160;<b>LParen</b> = TokenKind.LParen, 
+<b>SpaceLParen</b> = TokenKind.LParen + 1, 
 <b>RParen</b> = TokenKind.RParen, 
-<b>LBrack</b> = TokenKind.LBrack, 
 <br />
-&#160;&#160;<b>RBrack</b> = TokenKind.RBrack, 
+&#160;&#160;<b>LBrack</b> = TokenKind.LBrack, 
+<b>RBrack</b> = TokenKind.RBrack, 
 <b>LBrace</b> = TokenKind.LBrace, 
-<b>LTokenLiteral</b> = TokenKind.LBrace + 1, 
 <br />
 &#160;&#160;<b>RBrace</b> = TokenKind.RBrace, 
 <b>Unknown</b> = TokenKind.Other
@@ -265,7 +267,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

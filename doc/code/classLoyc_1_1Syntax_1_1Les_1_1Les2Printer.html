@@ -115,9 +115,9 @@ Properties</h2></td></tr>
 <tr class="memitem:ac29651f72cfa672874ff1bade89aab6c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac29651f72cfa672874ff1bade89aab6c"></a>
 <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Writer</b><code> [get, set]</code></td></tr>
 <tr class="separator:ac29651f72cfa672874ff1bade89aab6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4a60c8d42805e8cf784570dcfc05617"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4a60c8d42805e8cf784570dcfc05617"></a>
-<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Errors</b><code> [get, set]</code></td></tr>
-<tr class="separator:aa4a60c8d42805e8cf784570dcfc05617"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63ce74da7154cf0d5b3ab69fe3ebbd75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63ce74da7154cf0d5b3ab69fe3ebbd75"></a>
+<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorSink</b><code> [get, set]</code></td></tr>
+<tr class="separator:a63ce74da7154cf0d5b3ab69fe3ebbd75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8df8c1c8892c532b004696cfbced1f4e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8df8c1c8892c532b004696cfbced1f4e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html">Les2PrinterOptions</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Options</b><code> [get]</code></td></tr>
 <tr class="separator:a8df8c1c8892c532b004696cfbced1f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,9 +145,9 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
-<tr class="memitem:a370696a8b6b73ea9335b1eef8565779d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a370696a8b6b73ea9335b1eef8565779d"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html">LesPrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = LesPrecedenceMap.Default</td></tr>
-<tr class="separator:a370696a8b6b73ea9335b1eef8565779d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa67dee1a9dae27a5264385154d7d96e1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa67dee1a9dae27a5264385154d7d96e1"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html">Les2PrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = Les2PrecedenceMap.Default</td></tr>
+<tr class="separator:aa67dee1a9dae27a5264385154d7d96e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Protected static fields</h2></td></tr>
@@ -180,7 +180,7 @@ Protected static fields</h2></td></tr>
 
 <p>Returns true if the given symbol can be printed as a normal identifier, without an "@" prefix. Note: identifiers starting with "#" still count as normal; call <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708" title="Returns true if Name is a &quot;special&quot; name (i.e. starts with &#39;#&#39; or &#39;\&#39;&#39; or &#39;.&#39; or any character below ...">LNode.HasSpecialName</a> to detect this.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a86791e41dbd2adb89f2d4ec6c605c9f1">Loyc.Syntax.ParseHelpers.EscapeCStyle()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a54d22833b94c7394ced9c393ec60ad49">Loyc.Syntax.ILNode.Name</a>, <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#ae349a7c840a84407ae47d60b57a46ebc">Loyc.Syntax.Les.Les2PrinterOptions.QuoteUnprintableLiterals</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#aa89e114fb6f473a26e1bed876ceff9a6">Loyc.Syntax.ILNode.Style</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240">Loyc.Syntax.Les.TokenExt.ToString()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a60a4d97fc46d2f5826bd42f1016032ac">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#a54d22833b94c7394ced9c393ec60ad49">Loyc.Syntax.ILNode.Name</a>, <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#ae349a7c840a84407ae47d60b57a46ebc">Loyc.Syntax.Les.Les2PrinterOptions.QuoteUnprintableLiterals</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html#aa89e114fb6f473a26e1bed876ceff9a6">Loyc.Syntax.ILNode.Style</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240">Loyc.Syntax.Les.TokenExt.ToString()</a>.</p>
 
 </div>
 </div>
@@ -211,7 +211,7 @@ Protected static fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

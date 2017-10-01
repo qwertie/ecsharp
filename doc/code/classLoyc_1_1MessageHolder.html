@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A message sink that puts the messages it receives in a list. 
  <a href="classLoyc_1_1MessageHolder.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/MessageSinks.cs'>/Core/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/MessageHolder.cs'>/Core/Loyc.Essentials/MessageSinks/MessageHolder.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.MessageHolder:</div>
@@ -109,8 +109,8 @@ Inheritance diagram for Loyc.MessageHolder:</div>
  <div class="center">
   <img src="classLoyc_1_1MessageHolder.png" usemap="#Loyc.MessageHolder_map" alt=""/>
   <map id="Loyc.MessageHolder_map" name="Loyc.MessageHolder_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;" shape="rect" coords="0,0,318,24"/>
-<area href="interfaceLoyc_1_1ICloneable.html" alt="Loyc.ICloneable&lt; MessageHolder &gt;" shape="rect" coords="328,0,646,24"/>
+<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TContext &gt;" shape="rect" coords="0,0,225,24"/>
+<area href="interfaceLoyc_1_1ICloneable.html" alt="Loyc.ICloneable&lt; MessageHolder &gt;" shape="rect" coords="235,0,460,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -127,28 +127,38 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af4c8e496bff7edbd9a74739395bd5edc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4c8e496bff7edbd9a74739395bd5edc"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteListTo</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
 <tr class="separator:af4c8e496bff7edbd9a74739395bd5edc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a1532e7248448fc601906300c89a3ec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a1532e7248448fc601906300c89a3ec"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
-<tr class="separator:a8a1532e7248448fc601906300c89a3ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f5de47db22c953899be8652748c1414"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f5de47db22c953899be8652748c1414"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, object arg0, object arg1=null)</td></tr>
-<tr class="separator:a1f5de47db22c953899be8652748c1414"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd6ae9fb606a332f1977ba249d0d1ba5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd6ae9fb606a332f1977ba249d0d1ba5"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
-<tr class="separator:acd6ae9fb606a332f1977ba249d0d1ba5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3d605bd8f1d55df87bdd53205a0b0b0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageHolder.html#aa3d605bd8f1d55df87bdd53205a0b0b0">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type)</td></tr>
-<tr class="memdesc:aa3d605bd8f1d55df87bdd53205a0b0b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Always returns true. <a href="#aa3d605bd8f1d55df87bdd53205a0b0b0">More...</a><br /></td></tr>
-<tr class="separator:aa3d605bd8f1d55df87bdd53205a0b0b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ccb5865abf3e936bbccbb3e2bac92a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ccb5865abf3e936bbccbb3e2bac92a2"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format)</td></tr>
+<tr class="separator:a7ccb5865abf3e936bbccbb3e2bac92a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6a652ef8fbbd02275747258428fe82c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac6a652ef8fbbd02275747258428fe82c"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:ac6a652ef8fbbd02275747258428fe82c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4591c1cd175b6efbd03f4794cbc6411e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4591c1cd175b6efbd03f4794cbc6411e"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, params object[] args)</td></tr>
+<tr class="separator:a4591c1cd175b6efbd03f4794cbc6411e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdf4891b53287b029609ffc2613c6d88"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageHolder.html#abdf4891b53287b029609ffc2613c6d88">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
+<tr class="memdesc:abdf4891b53287b029609ffc2613c6d88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Always returns true. <a href="#abdf4891b53287b029609ffc2613c6d88">More...</a><br /></td></tr>
+<tr class="separator:abdf4891b53287b029609ffc2613c6d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad48d106159a15529b68a6db5c34229d8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad48d106159a15529b68a6db5c34229d8"></a>
 <a class="el" href="classLoyc_1_1MessageHolder.html">MessageHolder</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:ad48d106159a15529b68a6db5c34229d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1IMessageSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1IMessageSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink&lt; in in TContext &gt;</a></td></tr>
+<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format)</td></tr>
+<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
+<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, params object[] args)</td></tr>
+<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1ICloneable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1ICloneable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1ICloneable.html">Loyc.ICloneable&lt; MessageHolder &gt;</a></td></tr>
 <tr class="memitem:a3e23b2ef8eae98cfa0bc268c5d705c31 inherit pub_methods_interfaceLoyc_1_1ICloneable"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e23b2ef8eae98cfa0bc268c5d705c31"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a3e23b2ef8eae98cfa0bc268c5d705c31 inherit pub_methods_interfaceLoyc_1_1ICloneable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aa3d605bd8f1d55df87bdd53205a0b0b0"></a>
+<a class="anchor" id="abdf4891b53287b029609ffc2613c6d88"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -159,7 +169,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
           <td class="memname">bool Loyc.MessageHolder.IsEnabled </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -172,13 +182,15 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 
 <p>Always returns true.</p>
 
+<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

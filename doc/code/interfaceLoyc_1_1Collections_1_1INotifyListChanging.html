@@ -122,7 +122,7 @@ Inheritance diagram for Loyc.Collections.INotifyListChanging&lt; T &gt;:</div>
 </dl>
 <p>This approach to change notification is more lightweight than the standard INotifyCollectionChanged interface because that interface sends both a list of new items and a list of old items, so many changes require a pair of temporary objects to be created that hold the two lists of items. </p>
 <p>In contrast, the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event includes only one list that specifies the set of new items. In the case of Remove events, no change list is included. Since the collection has not been modified yet, the user handling the event can examine the list to learn which item(s) are being removed; if the list is being changed, it can similarly examine the list to see the old set of items. </p>
-<p>An optimization is available when only a single item is being added or changed. In that case, the collection class should create a lightweight read-only single-item list by calling Range.Single&lt;T&gt;(T). Such a list has less overhead than List&lt;T&gt; and the same overhead as an array of one item. </p>
+<p>An optimization is available when only a single item is being added or changed. In that case, the collection class should create a lightweight read-only single-item list by calling <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a113e21367fef9583bcbe11ff88058c02" title="Returns a helper object that stores one value, but acts like a read-only list of one item...">ListExt.Single&lt;T&gt;(T)</a>. Such a list has less overhead than List&lt;T&gt; and the same overhead as an array of one item. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="events"></a>
 Events</h2></td></tr>
@@ -152,7 +152,7 @@ Events</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

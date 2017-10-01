@@ -129,13 +129,13 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a location in a grammar: a predicate and a "return stack" which is a so-called persistent singly-linked list. This type is used within <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html" title="Represents a position in a grammar (GrammarPos) plus the set of characters that leads to that positio...">Transition</a>. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html">KthSet</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the possible interpretations of a single input character, in terms of transitions in the grammar. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds information about the first set or kth set of a single arm of an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a>. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html">PredictionAnalysisVisitor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs prediction analysis using the visitor pattern to visit the predicates in a rule. The process starts with Analyze(Rule).  <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html">Transition</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a position in a grammar (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html" title="Represents a location in a grammar: a predicate and a &quot;return stack&quot; which is a so-called persistent ...">GrammarPos</a>) plus the set of characters that leads to that position from the previous position. This is a single case in a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html" title="Represents the possible interpretations of a single input character, in terms of transitions in the g...">KthSet</a>. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a position in a grammar (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html" title="Represents a location in a grammar: a predicate and a &quot;return stack&quot; which is a so-called persistent ...">GrammarPos</a>) plus the set of characters that leads to that position from the previous position. This is a single case in a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html" title="Holds information about the first set or kth set of a single arm of an Alts.">KthSet</a>. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -161,9 +161,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acc72ef47f84486172275c361c995927f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#acc72ef47f84486172275c361c995927f">AddComments</a> = true</td></tr>
 <tr class="memdesc:acc72ef47f84486172275c361c995927f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to insert Specifies the default maximum lookahead for rules that do not specify a lookahead value. <a href="#acc72ef47f84486172275c361c995927f">More...</a><br /></td></tr>
 <tr class="separator:acc72ef47f84486172275c361c995927f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ae6465e3f7f9d5c47902f08b7198097"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a3ae6465e3f7f9d5c47902f08b7198097">AddCsLineDirectives</a> = true</td></tr>
+<tr class="memitem:a3ae6465e3f7f9d5c47902f08b7198097"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a3ae6465e3f7f9d5c47902f08b7198097">AddCsLineDirectives</a> = false</td></tr>
 <tr class="memdesc:a3ae6465e3f7f9d5c47902f08b7198097"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to add #line directives for C# before and after user actions. <a href="#a3ae6465e3f7f9d5c47902f08b7198097">More...</a><br /></td></tr>
 <tr class="separator:a3ae6465e3f7f9d5c47902f08b7198097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#afc2c8dd017187099f09dfcca1aaaf3b8">PrematchByDefault</a> = false</td></tr>
+<tr class="memdesc:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">If true, rules that are not marked private, public, or internal are assumed not to be called from outside the grammar so the prematch optimization can be used. <a href="#afc2c8dd017187099f09dfcca1aaaf3b8">More...</a><br /></td></tr>
+<tr class="separator:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f0916e4b7835c1792d412376d55e83c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c">Sink</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a0f0916e4b7835c1792d412376d55e83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an error or warning occurs while parsing a grammar or while generating code for a parser. Also called to print "verbose" messages. <a href="#a0f0916e4b7835c1792d412376d55e83c">More...</a><br /></td></tr>
 <tr class="separator:a0f0916e4b7835c1792d412376d55e83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -286,7 +289,7 @@ static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, 
 <p>Even without analyzing the contents of an and-predicate, they can still make prediction extremely complicated. Consider this example: </p><div class="fragment"><div class="line">(.&amp;amp;{a} (&amp;amp;{b} {B();} | &amp;amp;{c})</div><div class="line">  &amp;amp;{d} [&amp;amp;{e} (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;E&#39;</span>)]?</div><div class="line">  (&amp;amp;{f} (<span class="charliteral">&#39;f&#39;</span>|<span class="charliteral">&#39;t&#39;</span>) | <span class="charliteral">&#39;F&#39;</span>)</div><div class="line">| &amp;amp;{c} (&amp;amp;{f} (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;t&#39;</span>) | <span class="charliteral">&#39;f&#39;</span>) <span class="charliteral">&#39;g&#39;</span></div><div class="line">| <span class="charliteral">&#39;!&#39;</span> )</div></div><!-- fragment --><p> In this example, the first branch requires 'a' and 'd' to be true, there's a pair of zero-width alternatives that require 'b' or 'c' to be true, {B()} must be executed if 'b' is true, 'e' must be true if LA(0) is ('e'|'E'), 'f' must be true if LA(0) is 'f' and no condition is required for 'F'. The second branch also allows 'e' or 'f', provided that 'c' is true, but requires 'f' if LA(0) is 'e'. </p>
 <p>LLLPG appears to handle this case correctly. </p>
 
-<p>References <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#af1ff4bbda3d044d8ee00b6899ba38e9d">Loyc.LLParserGenerator.Alts.Greedy</a>, <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a46efa20acf8b9b4b1df5b80a5c7bfb5b">Loyc.Collections.Impl.InternalList&lt; T &gt;.Move()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#af1ff4bbda3d044d8ee00b6899ba38e9d">Loyc.LLParserGenerator.Alts.Greedy</a>, <a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Loyc.Localize.Localized()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a46efa20acf8b9b4b1df5b80a5c7bfb5b">Loyc.Collections.Impl.InternalList&lt; T &gt;.Move()</a>.</p>
 
 </div>
 </div>
@@ -312,12 +315,13 @@ static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Loyc.LLParserGenerator.LLParserGenerator.AddCsLineDirectives = true</td>
+          <td class="memname">bool Loyc.LLParserGenerator.LLParserGenerator.AddCsLineDirectives = false</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Whether to add #line directives for C# before and after user actions.</p>
+<p>Superceded. It is preferred to use the <code>#lines</code> macro instead.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>.</p>
 
@@ -377,6 +381,22 @@ approximate" lookahead still has problems with certain cases involving nested al
 
 </div>
 </div>
+<a class="anchor" id="afc2c8dd017187099f09dfcca1aaaf3b8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.LLParserGenerator.LLParserGenerator.PrematchByDefault = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>If true, rules that are not marked private, public, or internal are assumed not to be called from outside the grammar so the prematch optimization can be used.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a1ffdf62c82de0aeb1a953b3dfba67edd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -422,7 +442,7 @@ approximate" lookahead still has problems with certain cases involving nested al
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:52 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

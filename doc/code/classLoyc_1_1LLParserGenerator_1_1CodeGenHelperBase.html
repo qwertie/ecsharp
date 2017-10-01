@@ -142,6 +142,9 @@ Properties</h2></td></tr>
 <tr class="memitem:a543c98c95bf8df0fa811b8bded3d0800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a543c98c95bf8df0fa811b8bded3d0800">ListInitializer</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a543c98c95bf8df0fa811b8bded3d0800"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the initializer expression for lists created with the +: operator (default: new List&lt;T&gt;()). The identifier "T" should appear in the expression; it will be replaced with the type of items in the list. <a href="#a543c98c95bf8df0fa811b8bded3d0800">More...</a><br /></td></tr>
 <tr class="separator:a543c98c95bf8df0fa811b8bded3d0800"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13d66f552fd4c72fa349ebbb919b440a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a13d66f552fd4c72fa349ebbb919b440a">NoCheckByDefault</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a13d66f552fd4c72fa349ebbb919b440a"><td class="mdescLeft">&#160;</td><td class="mdescRight">If true, calls to <code>Check()</code> are suppressed when <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#a9ba21c2c960ef1feec1287c69da58e9f" title="Error string passed to Check() in the generated code if the predicate is not matched. CodeGenHelperBase.GenerateAndPredCheck suppresses generation of Check() call when this is an empty string. ">AndPred.CheckErrorMessage</a> is null. <a href="#a13d66f552fd4c72fa349ebbb919b440a">More...</a><br /></td></tr>
+<tr class="separator:a13d66f552fd4c72fa349ebbb919b440a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68ef7659f0cc438997e4d60f52731cfd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68ef7659f0cc438997e4d60f52731cfd"></a>
 abstract <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EmptySet</b><code> [get]</code></td></tr>
 <tr class="separator:a68ef7659f0cc438997e4d60f52731cfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -305,9 +308,9 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="memitem:a4da34024797e052d4522d9c4ed4bed25"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25">ShouldGenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] sets, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, bool hasErrorBranch)</td></tr>
 <tr class="memdesc:a4da34024797e052d4522d9c4ed4bed25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decides whether to use a switch() and for which cases, using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a7323186133730fb8bc0914c1f475a176" title="Used to help decide whether a &quot;switch&quot; or an if-else chain will be used for prediction. This is the starting cost of a switch (the starting cost of an if-else chain is set to zero).">BaseCostForSwitch</a> and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a25fbb15ae3491eaaea959a04bfbe178c" title="Used to help decide whether a &quot;switch&quot; or an if statement will be used to handle a prediction tree...">GetRelativeCostForSwitch</a>. <a href="#a4da34024797e052d4522d9c4ed4bed25">More...</a><br /></td></tr>
 <tr class="separator:a4da34024797e052d4522d9c4ed4bed25"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aae7475d5e1a113d8b0317e4dc4da5cfb">GenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] branchCode, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> defaultBranch, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
-<tr class="memdesc:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a switch statement with the specified branches where branchCode[i] is the code to run if the input is in the set branchSets[i]. <a href="#aae7475d5e1a113d8b0317e4dc4da5cfb">More...</a><br /></td></tr>
-<tr class="separator:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2e8cd4d7a011fb8b5a2c9089db30b0a"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#af2e8cd4d7a011fb8b5a2c9089db30b0a">GenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] branchCode, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> defaultBranch, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
+<tr class="memdesc:af2e8cd4d7a011fb8b5a2c9089db30b0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a switch statement with the specified branches where branchCode[i] is the code to run if the input is in the set branchSets[i]. <a href="#af2e8cd4d7a011fb8b5a2c9089db30b0a">More...</a><br /></td></tr>
+<tr class="separator:af2e8cd4d7a011fb8b5a2c9089db30b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac00429f16525464eaf306172c8e673ad"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac00429f16525464eaf306172c8e673ad">CreateRuleMethod</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; methodBody)</td></tr>
 <tr class="memdesc:ac00429f16525464eaf306172c8e673ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates the method for a rule, given the method's contents. <a href="#ac00429f16525464eaf306172c8e673ad">More...</a><br /></td></tr>
 <tr class="separator:ac00429f16525464eaf306172c8e673ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -899,11 +902,11 @@ complete, generate a Check() statement".</td></tr>
   </table>
   </dd>
 </dl>
-<p>LLLPG substitutes $LI and $LA before it calls this method.</p>
+<p>LLLPG substitutes $LI and $LA before it calls this method. This method can return null to suppress the Check statement.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a8170abf75a0b0c7ad6f3f8614c9667aa">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff">Loyc.Syntax.ParsingMode.Expressions</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#a18c9d523ef4f2c88dfbfcce2eac3a4e9">Loyc.LLParserGenerator.AndPred.Not</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#aeca6e1b4b9c41116cd6c98c14cbda4eb">Loyc.LLParserGenerator.AndPred.Pred</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#a9ba21c2c960ef1feec1287c69da58e9f">Loyc.LLParserGenerator.AndPred.CheckErrorMessage</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff">Loyc.Syntax.ParsingMode.Expressions</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#a18c9d523ef4f2c88dfbfcce2eac3a4e9">Loyc.LLParserGenerator.AndPred.Not</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#aeca6e1b4b9c41116cd6c98c14cbda4eb">Loyc.LLParserGenerator.AndPred.Pred</a>.</p>
 
 </div>
 </div>
@@ -1063,7 +1066,7 @@ complete, generate a Check() statement".</td></tr>
 
 </div>
 </div>
-<a class="anchor" id="aae7475d5e1a113d8b0317e4dc4da5cfb"></a>
+<a class="anchor" id="af2e8cd4d7a011fb8b5a2c9089db30b0a"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1079,14 +1082,14 @@ complete, generate a Check() statement".</td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt;&#160;</td>
-          <td class="paramname"><em>casesToInclude</em>, </td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[]&#160;</td>
+          <td class="paramname"><em>branchCode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[]&#160;</td>
-          <td class="paramname"><em>branchCode</em>, </td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt;&#160;</td>
+          <td class="paramname"><em>casesToInclude</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1117,14 +1120,14 @@ complete, generate a Check() statement".</td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">casesToInclude</td><td>The set chosen by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25" title="Decides whether to use a switch() and for which cases, using BaseCostForSwitch and GetRelativeCostFor...">ShouldGenerateSwitch</a>.</td></tr>
-    <tr><td class="paramname">defaultBranch</td><td>Code to be placed in the default: case (if none, the blank stmt <code>@``;</code>)</td></tr>
+    <tr><td class="paramname">defaultBranch</td><td>Code to be placed in the default: case, or the empty identifier (@``) if none</td></tr>
     <tr><td class="paramname">laVar</td><td>The lookahead variable being switched on (e.g. la0)</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The generated switch block.</dd></dl>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a87ef547f3c1b1417a978674f3e7fb91f">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
+<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a55a54a81c5e29452abd78f091440fc28">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -1511,8 +1514,6 @@ complete, generate a Check() statement".</td></tr>
 
 <p>Sets ListType and/or ListInitializer based on an expression. A statement like <code>Type x = expr</code> sets <code>ListType = Type</code> and <code>ListInitializer = expr</code>; A statement like <code>Type x</code> just sets <code>ListType = Type</code>; and any other expression <code>expr</code> sets <code>ListInitializer = expr</code>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a48ba76d2600b73aca2aa8f04fe17bfc6">Loyc.Syntax.LNode.Calls()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a4da34024797e052d4522d9c4ed4bed25"></a>
@@ -1713,6 +1714,28 @@ complete, generate a Check() statement".</td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a13d66f552fd4c72fa349ebbb919b440a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.LLParserGenerator.CodeGenHelperBase.NoCheckByDefault</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If true, calls to <code>Check()</code> are suppressed when <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#a9ba21c2c960ef1feec1287c69da58e9f" title="Error string passed to Check() in the generated code if the predicate is not matched. CodeGenHelperBase.GenerateAndPredCheck suppresses generation of Check() call when this is an empty string. ">AndPred.CheckErrorMessage</a> is null.</p>
+
+</div>
+</div>
 <a class="anchor" id="a57a585f6a44a4f5e5c40e819866aa965"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1739,7 +1762,7 @@ complete, generate a Check() statement".</td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:51 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

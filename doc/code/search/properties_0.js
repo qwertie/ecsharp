@@ -9,5 +9,6 @@ var searchData=
   ['ancestors',['Ancestors',['../interfaceLeMP_1_1IMacroContext.html#abb6b2fbd85b1bb5fb33bf25f04aa890b',1,'LeMP::IMacroContext']]],
   ['args',['Args',['../classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844',1,'Loyc::Syntax::LNode']]],
   ['attrs',['Attrs',['../classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5',1,'Loyc::Syntax::LNode']]],
+  ['autofallbackmode',['AutoFallbackMode',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a7de440568b4db0aa84819f10eb743f90',1,'Loyc::Threading::ThreadLocalVariable']]],
   ['avoidmacrosyntax',['AvoidMacroSyntax',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a4985450810fc5d17c74a5ec6ea423b95',1,'Loyc::Ecs::EcsPrinterOptions']]]
 ];

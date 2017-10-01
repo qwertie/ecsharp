@@ -286,7 +286,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">input</td><td>A source of tokens.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates how the input should be parsed. <code>null</code> is a synonym for <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a21183532357aeb06a10658785b67c97d" title="Tells IParsingService.Parse to treat the input as a complete source file (this should be the default...">ParsingMode.File</a></td></tr>
     <tr><td class="paramname">preserveComments</td><td>Whether to preserve comments and newlines by attaching trivia attributes to the output. If the property CanPreserveComments is false, this parameter will not work.</td></tr>
   </table>
@@ -355,7 +355,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
   <table class="params">
     <tr><td class="paramname">tokens</td><td>List of tokens</td></tr>
     <tr><td class="paramname">file</td><td>A source file to associate with errors, warnings, and output nodes.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">inputType</td><td>Indicates how the input should be parsed.</td></tr>
   </table>
   </dd>
@@ -429,7 +429,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
   <table class="params">
     <tr><td class="paramname">nodes</td><td><a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> trees to print.</td></tr>
     <tr><td class="paramname">target</td><td>An output buffer, to which output is appended.</td></tr>
-    <tr><td class="paramname">sink</td><td>An object used to print warning and error messages. If this is null, messages are sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">sink</td><td>An object used to print warning and error messages. If this is null, messages are sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates the context in which the node(s) to be printed should be understood (e.g. is it a statement or an expression?).</td></tr>
     <tr><td class="paramname">options</td><td>A set of options to control printer behavior. If null, an appropriate default set of options should be used. Some languages may support additional option interfaces beyond <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand.">ILNodePrinterOptions</a>.</td></tr>
   </table>
@@ -501,7 +501,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

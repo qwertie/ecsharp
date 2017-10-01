@@ -103,8 +103,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Describes a series of alternatives (branches), a kleene star (*), or an optional element (?). 
  <a href="classLoyc_1_1LLParserGenerator_1_1Alts.html#details">More...</a></p>
-<hr/><b>Source file</b>:<ul>
+<hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/RuleAndPreds/Predicates.cs'>/Main/LLLPG/RuleAndPreds/Predicates.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/RuleAndPreds/PredVisitor.cs'>/Main/LLLPG/RuleAndPreds/PredVisitor.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.Alts:</div>
@@ -150,12 +151,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>ExitOnError</b> = tru
 <tr class="memdesc:aa42f5797f460395295450b35e15b91e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the case that should be encoded as the default in the prediction tree, i.e., the else clause in the if-else chain or the "default:" label in the switch statement. <a href="#aa42f5797f460395295450b35e15b91e9">More...</a><br /></td></tr>
 <tr class="separator:aa42f5797f460395295450b35e15b91e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred')"><img src="closed.png" alt="-"/>&#160;Public fields inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Loyc.LLParserGenerator.Pred</a></td></tr>
-<tr class="memitem:a0f9fbc80c01e5ea9a1e06a9e579e75a2 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0f9fbc80c01e5ea9a1e06a9e579e75a2"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PreAction</b></td></tr>
-<tr class="separator:a0f9fbc80c01e5ea9a1e06a9e579e75a2 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4103a18e0ebaefdb6a20240665709c6 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4103a18e0ebaefdb6a20240665709c6"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PostAction</b></td></tr>
-<tr class="separator:ab4103a18e0ebaefdb6a20240665709c6 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40e3ce486fced5d206814ea676554eb1 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40e3ce486fced5d206814ea676554eb1"></a>
 <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VarLabel</b></td></tr>
 <tr class="separator:a40e3ce486fced5d206814ea676554eb1 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,9 +192,6 @@ object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> 
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a271ae682ad6cca4fae829a295a3a61da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a271ae682ad6cca4fae829a295a3a61da"></a>
-override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">PredVisitor</a> visitor)</td></tr>
-<tr class="separator:a271ae682ad6cca4fae829a295a3a61da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09a832faf757a280e9aa502ca475f5a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09a832faf757a280e9aa502ca475f5a1"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Alts</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> basis, <a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a73e40c77d59d71084e7c77e58b02363b">LoopMode</a> mode, bool?greedy=null)</td></tr>
 <tr class="separator:a09a832faf757a280e9aa502ca475f5a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -224,6 +216,9 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <tr class="memitem:af3f85c7466ade39a17ea30c23a09e152"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3f85c7466ade39a17ea30c23a09e152"></a>
 string&#160;</td><td class="memItemRight" valign="bottom"><b>AltName</b> (int altNum)</td></tr>
 <tr class="separator:af3f85c7466ade39a17ea30c23a09e152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a271ae682ad6cca4fae829a295a3a61da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a271ae682ad6cca4fae829a295a3a61da"></a>
+override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">PredVisitor</a> visitor)</td></tr>
+<tr class="separator:a271ae682ad6cca4fae829a295a3a61da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Loyc.LLParserGenerator.Pred</a></td></tr>
 <tr class="memitem:afcc0946f4273be3a8da612c334e63a69 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afcc0946f4273be3a8da612c334e63a69"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Pred</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> basis)</td></tr>
@@ -427,7 +422,7 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:51 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

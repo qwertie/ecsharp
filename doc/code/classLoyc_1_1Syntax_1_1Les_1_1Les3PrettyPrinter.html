@@ -195,6 +195,9 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:a2237f154804f4752d63e5bc5b2cc0016 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2237f154804f4752d63e5bc5b2cc0016"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsNormalIdentifier</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a2237f154804f4752d63e5bc5b2cc0016 inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae273f1b5a42049817f0871b6558abe0f inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae273f1b5a42049817f0871b6558abe0f"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOpPrefixChar</b> (char c)</td></tr>
+<tr class="separator:ae273f1b5a42049817f0871b6558abe0f inherit pub_static_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -208,9 +211,15 @@ override <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed2
 <tr class="memitem:a354366d7a06647cd87fd37f15977df48 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a354366d7a06647cd87fd37f15977df48"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, string suffix=null, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">NewlineContext</a> nlContext=NewlineContext.AutoDetect)</td></tr>
 <tr class="separator:a354366d7a06647cd87fd37f15977df48 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad7af0c5cae339d4bdd4e32d3a8b80d57 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad7af0c5cae339d4bdd4e32d3a8b80d57"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintCore</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, string suffix)</td></tr>
-<tr class="separator:ad7af0c5cae339d4bdd4e32d3a8b80d57 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d149e37b2315e3750643110e2087115 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d149e37b2315e3750643110e2087115"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintCore</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, string suffix, bool avoidKwExprBraceAmbiguity=false)</td></tr>
+<tr class="separator:a3d149e37b2315e3750643110e2087115 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0311c78ec7066bc8cbec316fcb5050e9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0311c78ec7066bc8cbec316fcb5050e9"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartToken</b> (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> charSet)</td></tr>
+<tr class="separator:a0311c78ec7066bc8cbec316fcb5050e9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35de13166154c23413b7c4276ba2e565"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartToken</b> (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> startSet, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> endSet)</td></tr>
+<tr class="separator:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9b970d87fe18ced42f0cfce6f58fc3b inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9b970d87fe18ced42f0cfce6f58fc3b"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteToken</b> (char firstChar, <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> tokenSet)</td></tr>
 <tr class="separator:ae9b970d87fe18ced42f0cfce6f58fc3b inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -220,12 +229,6 @@ override <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed2
 <tr class="memitem:afbeefcbe6ab2f1ff65b39bbfd4656ec2 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbeefcbe6ab2f1ff65b39bbfd4656ec2"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteToken</b> (string text, <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> startSet, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> endSet)</td></tr>
 <tr class="separator:afbeefcbe6ab2f1ff65b39bbfd4656ec2 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0311c78ec7066bc8cbec316fcb5050e9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0311c78ec7066bc8cbec316fcb5050e9"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartToken</b> (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> charSet)</td></tr>
-<tr class="separator:a0311c78ec7066bc8cbec316fcb5050e9 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35de13166154c23413b7c4276ba2e565"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StartToken</b> (<a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html#a2c4b0a54ca4ed26c90b34d0368746168">LesColorCode</a> kind, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> startSet, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a> endSet)</td></tr>
-<tr class="separator:a35de13166154c23413b7c4276ba2e565 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72c3a1361b5643d83962c60007937774 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a72c3a1361b5643d83962c60007937774"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteOutsideToken</b> (char space)</td></tr>
 <tr class="separator:a72c3a1361b5643d83962c60007937774 inherit pro_methods_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -246,21 +249,18 @@ Additional Inherited Members</h2></td></tr>
 <br />
 &#160;&#160;<b>Id</b> = IdStart | SingleQuote, 
 <b>Punc</b> = 4, 
-<b>Minus</b> = 8, 
+<b>Dot</b> = 16, 
 <br />
-&#160;&#160;<b>Dot</b> = 16, 
-<b>NumberStart</b> = IdStart | Minus | Dot, 
-<b>NegativeNumberStart</b> = Punc | Minus, 
+&#160;&#160;<b>NumberStart</b> = IdStart | Dot, 
+<b>NumberEnd</b> = Id | BQId | Dot, 
+<b>IdAndPunc</b> = Id | Punc | Dot, 
 <br />
-&#160;&#160;<b>NumberEnd</b> = Id | BQId | Dot, 
-<b>IdAndPunc</b> = Id | Punc | Minus | Dot, 
-<b>DoubleQuote</b> = 32, 
-<br />
-&#160;&#160;<b>BQId</b> = 64, 
+&#160;&#160;<b>DoubleQuote</b> = 32, 
+<b>BQId</b> = 64, 
 <b>StringStart</b> = DoubleQuote | Id | BQId, 
-<b>At</b> = 128, 
 <br />
-&#160;&#160;<b>Space</b> = 256, 
+&#160;&#160;<b>At</b> = 128, 
+<b>Space</b> = 256, 
 <b>SLComment</b> = 512
 <br />
  }<tr class="memdesc:ac3f44cd68d595c31416420c57f2f3867"><td class="mdescLeft">&#160;</td><td class="mdescRight">Based on these flags, StartToken() and WriteToken() ensure that two adjacent tokens aren't treated like a single token when reparsed, by printing a space between them if necessary.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">More...</a><br /></td></tr>
@@ -271,8 +271,7 @@ Additional Inherited Members</h2></td></tr>
 <b>NewlineSafeAfter</b> = 1, 
 <b>NewlineSafeBefore</b> = 2, 
 <br />
-&#160;&#160;<b>AfterBinOp</b> = 4, 
-<b>StatementLevel</b> = NewlineSafeBefore | NewlineSafeAfter, 
+&#160;&#160;<b>StatementLevel</b> = NewlineSafeBefore | NewlineSafeAfter, 
 <b>AutoDetect</b> = 8
 <br />
  }<tr class="memdesc:a30490372385ebcbe3dda64e9f018e121"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to help keep track of where newline trivia (and single- line comments ending in a newline) are permitted, to avoid printing newline trivia where it would count as "end of expression". <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">More...</a><br /></td></tr>
@@ -291,18 +290,18 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a2e30449a9c0533fd4442fd7b61ae854a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e30449a9c0533fd4442fd7b61ae854a"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a30490372385ebcbe3dda64e9f018e121">NewlineContext</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_nlContext</b> = NewlineContext.NewlineUnsafe</td></tr>
 <tr class="separator:a2e30449a9c0533fd4442fd7b61ae854a inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af81c25aa914a7154d442e514bdb49187"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_curSet</b> = 0</td></tr>
-<tr class="separator:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0c00f8f8a688810d288705ae93e234d inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad0c00f8f8a688810d288705ae93e234d"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_allowBlockCalls</b> = true</td></tr>
-<tr class="separator:ad0c00f8f8a688810d288705ae93e234d inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7f9438ad0dae7f843a823782db65728 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7f9438ad0dae7f843a823782db65728"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_inParensOrBracks</b> = false</td></tr>
 <tr class="separator:ae7f9438ad0dae7f843a823782db65728 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a5b509817c4c61d4912a529cadf79a09f">_isOneLiner</a> = false</td></tr>
 <tr class="memdesc:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates whether the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf" title="Indicates that the there is no comment or newline trivia associated with the children of this node...">NodeStyle.OneLiner</a> flag is present on the current node or any of its parents. It suppresses newlines within braced blocks. <a href="#a5b509817c4c61d4912a529cadf79a09f">More...</a><br /></td></tr>
 <tr class="separator:a5b509817c4c61d4912a529cadf79a09f inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af81c25aa914a7154d442e514bdb49187"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#ac3f44cd68d595c31416420c57f2f3867">Chars</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_curSet</b> = 0</td></tr>
+<tr class="separator:af81c25aa914a7154d442e514bdb49187 inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a646eca26f9759453c9a624489d31a1be inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a646eca26f9759453c9a624489d31a1be"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>HexNegativeExponentThreshold</b> = -8</td></tr>
+<tr class="separator:a646eca26f9759453c9a624489d31a1be inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td colspan="2" onclick="javascript:toggleInherit('pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer')"><img src="closed.png" alt="-"/>&#160;Protected static fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Loyc.Syntax.Les.Les3Printer</a></td></tr>
 <tr class="memitem:a705ca746983a417cf26b76ad7ed4a63f inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a705ca746983a417cf26b76ad7ed4a63f"></a>
 static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_s</b> = GSymbol.Get(&quot;s&quot;)</td></tr>
@@ -329,7 +328,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_Z</b> = GSymbol.Get(&quot;z&quot;)</td></tr>
 <tr class="separator:aa4869d883cd8e5c8f2b15a3ba6c1dc8e inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a183c558481c7e70342c7be4e3759d41f inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a183c558481c7e70342c7be4e3759d41f"></a>
-static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_number</b> = GSymbol.Get(&quot;number&quot;)</td></tr>
+static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_number</b> = GSymbol.Get(&quot;n&quot;)</td></tr>
 <tr class="separator:a183c558481c7e70342c7be4e3759d41f inherit pro_static_attribs_classLoyc_1_1Syntax_1_1Les_1_1Les3Printer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -444,7 +443,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 .highlight .c  { color: #5A5; } /* Comment */
 .highlight .n  { color: #111; } /* Name (omitted by default) */
 .highlight .m  { color: #909; } /* Number */
-.highlight .s  { color: #B44; } /* String */
+.highlight .s  { color: #B44; } /* <a class="el" href="namespaceString.html">String</a> */
 .highlight .l  { color: #B04; } /* Literal (other) */
 .highlight .kc { color: #41F; } /* Keyword.Constant */
 .highlight .o  { color: #940; } /* Operator */
@@ -618,7 +617,7 @@ static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td cl
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -169,7 +169,7 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f">MacroMode.PriorityMask</a> = 0xF00
 <br />
- }<tr class="memdesc:ab267185fdc116f4e8f06125be9858721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a SimpleMacro. Unless otherwise specified, these flags only apply when the macro accepts the input by returning a non-null result. <a href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721">More...</a><br /></td></tr>
+ }<tr class="memdesc:ab267185fdc116f4e8f06125be9858721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a LexicalMacro. <a href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:ab267185fdc116f4e8f06125be9858721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -200,32 +200,32 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a SimpleMacro. Unless otherwise specified, these flags only apply when the macro accepts the input by returning a non-null result.</p>
+<p>Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a LexicalMacro.</p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0"></a>Normal&#160;</td><td class="fielddoc">
 <p>The macro's result is reprocessed directly (this is the default behavior).</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98"></a>NoReprocessing&#160;</td><td class="fielddoc">
-<p>The macro's result (including children) is not processed further.</p>
+<p>The macro's result (including children) is not processed further. This flag only takes effect when the macro accepts the input by returning a non-null result.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92"></a>ProcessChildrenAfter&#160;</td><td class="fielddoc">
-<p>The macro's result is not reprocessed, but the result's children are processed.</p>
+<p>The macro's result is not reprocessed, but the result's children are processed. This flag only takes effect when the macro accepts the input by returning a non-null result.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1"></a>ProcessChildrenBefore&#160;</td><td class="fielddoc">
-<p>The result is pre-processed before calling the macro, and not processed afterward.</p>
+<p>The result is pre-processed before calling the macro, and not processed afterward (if the macro accepts the input by returning a non-null result).</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85"></a>Passive&#160;</td><td class="fielddoc">
 <p>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input by returning null.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721acaccf488509e944ace72367a515cdda5"></a>AllowDuplicates&#160;</td><td class="fielddoc">
-<p>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce the same results.</p>
+<p>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce equivalent results.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a0aadb65b9c0a1c1d1de0da006a23f4c0"></a>DropRemainingListItems&#160;</td><td class="fielddoc">
 <p>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</p>
 <p>This option may be used by macros that splice together the list of <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a68425589ee09ef9f92085782abf8b53b" title="Gets a list of the remaining nodes (arguments/statements or attributes) after this point in the code ...">IMacroContext.RemainingNodes</a> into their own result. It is more common, however, to set the <a class="el" href="interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1" title="Gets or sets a value that indicates whether to drop all remaining node after the current one when the...">IMacroContext.DropRemainingNodes</a> property inside the macro.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a1c6e83359ec733bb9cd02d31e396d090"></a>MatchIdentifier&#160;</td><td class="fielddoc">
-<p>If this flag is present, the macro can match a plain identifier. By default, a macro must be a call.</p>
+<p>If this flag is present, the macro can match a plain identifier. By default, only calls can be treated as macros.</p>
 <p>This flag does <em>not</em> prevent the macro from matching calls.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a03517381d93013b68e8706d60f65cf0c"></a>PriorityFallbackMin&#160;</td><td class="fielddoc">
@@ -301,7 +301,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

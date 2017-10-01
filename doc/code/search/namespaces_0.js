@@ -14,6 +14,7 @@ var searchData=
   ['loyc',['Loyc',['../namespaceLoyc.html',1,'']]],
   ['math',['Math',['../namespaceLoyc_1_1Math.html',1,'Loyc']]],
   ['minitest',['MiniTest',['../namespaceLoyc_1_1MiniTest.html',1,'Loyc']]],
+  ['newengine',['NewEngine',['../namespaceLoyc_1_1LLParserGenerator_1_1NewEngine.html',1,'Loyc::LLParserGenerator']]],
   ['parser',['Parser',['../namespaceLoyc_1_1Ecs_1_1Parser.html',1,'Loyc::Ecs']]],
   ['prelude',['Prelude',['../namespaceLeMP_1_1Prelude.html',1,'LeMP']]],
   ['syntax',['Syntax',['../namespaceLoyc_1_1Syntax.html',1,'Loyc']]],

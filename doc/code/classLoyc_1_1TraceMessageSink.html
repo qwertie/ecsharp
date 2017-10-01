@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classLoyc_1_1TraceMessageSink-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -100,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Sends all messages to System.Diagnostics.Trace.WriteLine(string). 
  <a href="classLoyc_1_1TraceMessageSink.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/MessageSinks.cs'>/Core/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/BasicSinks.cs'>/Core/Loyc.Essentials/MessageSinks/BasicSinks.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.TraceMessageSink:</div>
@@ -108,12 +109,18 @@ Inheritance diagram for Loyc.TraceMessageSink:</div>
  <div class="center">
   <img src="classLoyc_1_1TraceMessageSink.png" usemap="#Loyc.TraceMessageSink_map" alt=""/>
   <map id="Loyc.TraceMessageSink_map" name="Loyc.TraceMessageSink_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;" shape="rect" coords="0,0,318,24"/>
+<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TContext &gt;" shape="rect" coords="0,0,225,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Sends all messages to System.Diagnostics.Trace.WriteLine(string).</p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Public static fields</h2></td></tr>
+<tr class="memitem:ab74272a3cf821df046242d55c9e6f185"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab74272a3cf821df046242d55c9e6f185"></a>
+static readonly <a class="el" href="classLoyc_1_1TraceMessageSink.html">TraceMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b> = new <a class="el" href="classLoyc_1_1TraceMessageSink.html">TraceMessageSink</a>()</td></tr>
+<tr class="separator:ab74272a3cf821df046242d55c9e6f185"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a6cebf14b0cf4cc985b2f461692a0cef0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6cebf14b0cf4cc985b2f461692a0cef0"></a>
@@ -131,6 +138,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a60b1854d5d7739a9103eaefd78a9e1e6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1TraceMessageSink.html#a60b1854d5d7739a9103eaefd78a9e1e6">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type)</td></tr>
 <tr class="memdesc:a60b1854d5d7739a9103eaefd78a9e1e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Always returns true. <a href="#a60b1854d5d7739a9103eaefd78a9e1e6">More...</a><br /></td></tr>
 <tr class="separator:a60b1854d5d7739a9103eaefd78a9e1e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1IMessageSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1IMessageSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink&lt; in in TContext &gt;</a></td></tr>
+<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format)</td></tr>
+<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
+<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, params object[] args)</td></tr>
+<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a60b1854d5d7739a9103eaefd78a9e1e6"></a>
@@ -157,13 +174,15 @@ Public Member Functions</h2></td></tr>
 
 <p>Always returns true.</p>
 
+<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

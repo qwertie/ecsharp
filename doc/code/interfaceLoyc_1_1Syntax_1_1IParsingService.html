@@ -117,7 +117,7 @@ Inheritance diagram for Loyc.Syntax.IParsingService:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees.</p>
-<p>The simplest way to parse code is with the extension method <code>Parse(string, <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="Alias for IMessageSink&lt;Severity, TContext&gt;.">IMessageSink</a> msgs = null, <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> inputType = null)</code>. The simplest way to print is with <code>Print(LNode, IMessageSink)</code> </p>
+<p>The simplest way to parse code is with the extension method <code>Parse(string, <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> msgs = null, <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> inputType = null)</code>. The simplest way to print is with <code>Print(LNode, IMessageSink)</code> </p>
 <p>The ToString() method should return a string that indicates the programming language represented by this object, e.g. "Enhanced C#". </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html" title="Standard extension methods for IParsingService.">ParsingService</a></dd></dl>
 </div><table class="memberdecls">
@@ -249,7 +249,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">input</td><td>A source of tokens.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates how the input should be parsed. <code>null</code> is a synonym for <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a21183532357aeb06a10658785b67c97d" title="Tells IParsingService.Parse to treat the input as a complete source file (this should be the default...">ParsingMode.File</a></td></tr>
     <tr><td class="paramname">preserveComments</td><td>Whether to preserve comments and newlines by attaching trivia attributes to the output. If the property <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a935b134eb841d2923f0228445152e02b" title="Returns true if the parser supports preserving comments.">CanPreserveComments</a> is false, this parameter will not work.</td></tr>
   </table>
@@ -308,7 +308,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">tokens</td><td>List of tokens</td></tr>
     <tr><td class="paramname">file</td><td>A source file to associate with errors, warnings, and output nodes.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">inputType</td><td>Indicates how the input should be parsed.</td></tr>
   </table>
   </dd>
@@ -446,7 +446,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:33 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

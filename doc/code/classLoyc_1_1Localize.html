@@ -99,98 +99,116 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers. TODO: expand I18N features based on Mozilla's L20N.  
+<p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It makes your program localization-ready with no effort.  
  <a href="classLoyc_1_1Localize.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/Localize.cs'>/Core/Loyc.Essentials/Utilities/Localize.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers. TODO: expand I18N features based on Mozilla's L20N. </p>
-<p>All <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> code should call this hook in order to localize text (although as of June 2015, no one has made any translation tables). Use it like this: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = <span class="stringliteral">&quot;Hello, {0}&quot;</span>.Localized(userName);</div></div><!-- fragment --><p> If no localizer is installed, the format string is left unchanged. </p>
-<p>Whatever localizer is installed will look up the text in its database and return a translation. If no translation to the end user's language is available, an appropriate default translation should be returned: either the original text, or a translation to some default language, e.g. English. </p>
-<p>Alternately, assuming you have the ability to change the table of translations, you can use a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> in your code and call the other overload of Localize() to look up the text that should be shown to the end user: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = ((Symbol)<span class="stringliteral">&quot;MY_STRING&quot;</span>).Localized();</div><div class="line"><span class="keywordtype">string</span> result = @@MY_STRING.Localized();  <span class="comment">// Enhanced C# with #useSymbols</span></div></div><!-- fragment --><p> This is most useful for long strings or paragraphs of text, but I expect that some projects, as a policy, will use symbols for all localizable text. </p>
-<p><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate (thread-local), which is set to StringExt.Format by default.">Localize.Formatter()</a> is then called to make the completed string, unless the variable argument list is empty. It is possible to perform formatting separately, for example: </p><div class="fragment"><div class="line">Console.WriteLine(<span class="stringliteral">&quot;{0} is {0:X} in hexadecimal&quot;</span>.<a class="code" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Localized</a>(), N);</div></div><!-- fragment --><p> Here, writeline performs the formatting instead. However, <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a>'s default formatter, <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a>, has an extra feature that the standard formatter does not: named arguments. Here is an example: </p><div class="fragment"><div class="line">...</div><div class="line">string verb = (IsFileLoaded ? <span class="stringliteral">&quot;parse&quot;</span> : <span class="stringliteral">&quot;load&quot;</span>).<a class="code" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Localized</a>();</div><div class="line">MessageBox.Show(</div><div class="line">    <span class="stringliteral">&quot;Not enough memory to {load/parse} &#39;{filename}&#39;.&quot;</span>.<a class="code" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Localized</a>(</div><div class="line">      {Message}<span class="stringliteral">&quot;, &quot;</span>load/parse<span class="stringliteral">&quot;, verb, &quot;</span>filename<span class="stringliteral">&quot;, FileName));</span></div><div class="line"><span class="stringliteral">}</span></div></div><!-- fragment --><p> As you can see, named arguments are mentioned in the format string by specifying an argument name such as {filename} instead of a number like {0}. The variable argument list contains the same name followed by its value, e.g. "filename", FileName. This feature gives you, the developer, the opportunity to indicate to the translator person what a particular argument is for. </p>
+<div class="textblock"><p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It makes your program localization-ready with no effort. </p>
+<p>The idea of this <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> facility is to convince programmers to support localization by making it dead-easy to do. By default it is not connected to any translator (it just passes strings through), so people who are only writing a program for a one-language market can easily make their code "multiligual-ready" without doing any extra work. All you do is call the <code>.<a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48" title="Finds and formats a localization of the given message. If none is found, the original string is forma...">Localized()</a></code> extension method, which is actually shorter than the traditional <code>string.Format()</code>. </p>
+<p>The translation system itself is separate from this class, and connected to <code><a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48" title="Finds and formats a localization of the given message. If none is found, the original string is forma...">Localized()</a></code> by a delegate, so that multiple translation systems are possible. This class should be suitable for use in any .NET program, and some programs using this utility will want to plug-in a different localizer. </p>
+<p>Use it like this: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = <span class="stringliteral">&quot;Hello, {0}&quot;</span>.Localized(userName);</div></div><!-- fragment --><p> Or, for increased clarity, use named placeholders: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = <span class="stringliteral">&quot;Hello, {person&#39;s name}&quot;</span>.Localized(<span class="stringliteral">&quot;person&#39;s name&quot;</span>, userName);</div></div><!-- fragment --><p> Whatever localizer is installed will look up the text in its database and return a translation. If no translation to the end user's language is available, an appropriate default translation should be returned: either the original text, or a translation to some default language, e.g. English. </p>
+<p>The localizer will need an external table of translations, conceptually like this: </p><pre>
+| Key name      | Language | Translated text |
+| "Hello, {0}"  | "es"     | "Hola, {0}"     |
+| "Hello, {0}"  | "fr"     | "Bonjour, {0}"  |
+| "Load"        | "es"     | "Cargar"        |
+| "Load"        | "fr"     | "Charge"        |
+| "Save"        | "es"     | "Guardar"       |
+| "Save"        | "fr"     | "Enregistrer"   |
+</pre><p> Many developers use a resx file to store translations. This class supports that approach, as explained below. </p>
+<p>For longer messages, it is preferable to use a short name to represent the message so that, when the English language text is edited, the translation tables do not have to be updated. To do this, use the Symbol(string, string, object[]) method: </p><pre>
+string result = <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460" title="This is the heart of the Localize class, which localizes and formats a string. ">Localize.Symbol</a>("ConfirmQuitWithoutSaving", 
+    "Are you sure you want to quit without saving '{filename}'?", "filename", fileName);</pre><pre>// Enhanced C# syntax with symbol literal
+string result = <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460" title="This is the heart of the Localize class, which localizes and formats a string. ">Localize.Symbol</a>(@ConfirmQuitWithoutSaving, 
+    "Are you sure you want to quit without saving '{filename}'?", "filename", fileName);
+</pre><p> This is most useful for long strings or paragraphs of text, but I expect that some projects, as a policy, will use symbols for all localizable text. (When using <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460" title="This is the heart of the Localize class, which localizes and formats a string. ">Localize.Symbol</a>, the actual message is allowed to be null. In that case, the symbol (first argument) is returned as a last resort if no translation is found. </p>
+<p>If the variable argument list is not empty, <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate, which is StringExt.FormatCore by default.">Localize.Formatter</a> is called to build the completed string from the format string. It is possible to perform formatting separately, for example: </p><div class="fragment"><div class="line">Console.WriteLine(<span class="stringliteral">&quot;{0} is {0:X} in hexadecimal&quot;</span>.<a class="code" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Localized</a>(), N);</div></div><!-- fragment --><p> Here, WriteLine itself performs the formatting instead. </p>
+<p>As demonstrated above, <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a>'s default formatter, <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a>, has an extra feature that the standard formatter does not: named arguments. Here is an example: </p><div class="fragment"><div class="line">...</div><div class="line">string verb = (IsFileLoaded ? <span class="stringliteral">&quot;parse&quot;</span> : <span class="stringliteral">&quot;load&quot;</span>).<a class="code" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Localized</a>();</div><div class="line">MessageBox.Show(</div><div class="line">    <span class="stringliteral">&quot;Not enough memory to {load/parse} &#39;{filename}&#39;.&quot;</span>.<a class="code" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Localized</a>(</div><div class="line">      <span class="stringliteral">&quot;load/parse&quot;</span>, verb, <span class="stringliteral">&quot;filename&quot;</span>, FileName));</div></div><!-- fragment --><p> As you can see, named arguments are mentioned in the format string by specifying an argument name such as <code>{filename}</code> instead of a number like <code>{0}</code>. The variable argument list contains the same name followed by its value, e.g. "filename", FileName. This feature gives you, the developer, the opportunity to tell the person writing translations what the purpose of a particular argument is. </p>
 <p>The translator must not change any of the arguments: the word "{filename}" is not to be translated. </p>
 <p>At run-time, the format string with named arguments is converted to a "normal" format string with numbered arguments. The above example would become "Could not {1} the file: {3}" and then be passed to string.Format.</p>
 <h3>Design rationale</h3>
-<p>Many developers don't want to spend time writing internationalization or localization code, and are tempted to write code that is only for one language. It's no wonder, because it's a relative pain in the neck. Microsoft suggests that code carry around a "ResourceManager" object and directly request strings from it: </p><div class="fragment"><div class="line"><span class="keyword">private</span> ResourceManager rm;</div><div class="line">rm = <span class="keyword">new</span> ResourceManager(<span class="stringliteral">&quot;MyStrings&quot;</span>, this.GetType().Assembly);</div><div class="line">Console.Writeline(rm.GetString(<span class="stringliteral">&quot;HEXER&quot;</span>), N);</div></div><!-- fragment --><p> This approach has drawbacks:</p><ul>
+<p>Many developers don't want to spend time writing internationalization or localization code, and are tempted to write code that is only for one language. It's no wonder, because it's a relative pain in the neck. Microsoft suggests that code carry around a "ResourceManager" object and directly request strings from it: </p><div class="fragment"><div class="line"><span class="keyword">private</span> ResourceManager rm;</div><div class="line">rm = <span class="keyword">new</span> ResourceManager(<span class="stringliteral">&quot;AssemblyName.Resources&quot;</span>, this.GetType().Assembly);</div><div class="line">Console.Writeline(rm.GetString(<span class="stringliteral">&quot;StringIdentifier&quot;</span>));</div></div><!-- fragment --><p> This approach has drawbacks:</p>
+<ul>
 <li>It may be cumbersome to pass around a ResourceManager instance between all classes that might contain localizable strings; a global facility is much more convenient.</li>
 <li>The programmer has to put all translations in the resource file; consequently, writing the code is bothersome because the programmer has to switch to the resource file and add the string to it. Someone reading the code, in turn, can't tell what the string says and has to load up the resource file to find out.</li>
-<li>It is nontrivial to change the localization manager; for instance, what if someone wants to store translations in an .ini, .xml or .les file rather than inside the assembly? What if the user wants to centralize all translations for a set of assemblies, rather than having separate resources in each assembly?</li>
-<li>Keeping in mind that the guy in charge of translation is typically different than the guys writing most of the code, it makes sense to keep translations separate from everything else. </li>
+<li>It is not easy to change the localization manager; for instance, what if someone wants to store translations in an .ini, .xml or .les file rather than inside the assembly? What if the user wants to centralize all translations for a set of assemblies, rather than having separate resources in each assembly? </li>
 </ul>
-<p>The idea of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> facility is to convince programmers to support localization by making it dead-easy to do. By default it is not connected to any translator (it just passes strings through), so people who are only writing a program for a one-language market can easily make their code "multiligual-ready" without doing any extra work, since <code>.<a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e" title="This is the heart of the Localize class, which localizes and formats a string. ">Localized()</a></code> is no harder to type than <code>string.Format()</code>. </p>
-<p>The translation system itself is separate, and connected to <code>Localized</code> by a delegate, for two reasons: </p><ol>
+<p>Microsoft does address the first of these drawbacks by providing a code generator built into Visual Studio that gives you a global property for each string; see <a href="http://stackoverflow.com/questions/1142802/how-to-use-localization-in-c-sharp">http://stackoverflow.com/questions/1142802/how-to-use-localization-in-c-sharp</a> </p>
+<p>Even so, you may find that this class provides a more convenient approach because your native-language strings are written right in your code, and because you are guaranteed to get a string at runtime (not null) if the desired language is not available. </p>
+<p>This class supports ResourceManager via the <a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a" title="Uses a standard ResourceManager object to obtain translations.">UseResourceManager</a> helper method. For example, after calling <code>Localize.UseResourceManager(resourceManager)</code>, if you write </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;Save As...&quot;</span>.Localized()</div></div><!-- fragment --><p> Then <code>resourceManager.GetString("Save As...")</code> is called to get the translated string, or the original string if no translation was found. You can even add a "name calculator" to encode your resx file's naming convention, e.g. by removing spaces and punctuation (for details, see <a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a" title="Uses a standard ResourceManager object to obtain translations.">UseResourceManager</a>.) </p>
+<p>It is conventional in .NET programs to have one "main" resx file, e.g. Resources.resx, that contains default strings, along other files with non-English translations (e.g. Resources.es.resx for Spanish). When using <a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48" title="Finds and formats a localization of the given message. If none is found, the original string is forma...">Localized()</a> you would typically use a slightly different approach: you still have a Resources.resx file, but you leave the string table empty. This causes Visual Studio to generate a Resources class with a ResourceManager property so that you need can easily get the ResourceManager object. </p><ol>
 <li>
-Multiple translation systems are possible. This class should be suitable for any .NET program, and some programs using this utility will want to plug-in a different localizer.  </li>
+When your program starts, call <code><a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a" title="Uses a standard ResourceManager object to obtain translations.">Localize.UseResourceManager</a>(Resources.ResourceManager)</code>. </li>
 <li>
-I personally don't have the time or expertise to write a localizer at this time. So until I do, the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> class will make my code ready for translation, although not actually localized. </li>
+Use the <code><a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48" title="Finds and formats a localization of the given message. If none is found, the original string is forma...">Localized()</a></code> extension method to get translations of short strings. </li>
+<li>
+For long strings, use <code><a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460" title="This is the heart of the Localize class, which localizes and formats a string. ">Localize.Symbol</a>("ShortAlias", "Long string", params...)</code>. The first argument is the string passed to ResourceManager.GetString() </li>
 </ol>
 <p>In the open source world, most developers don't have a team of translators ready make translations for them. The idea of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>, for example, is that many different individuals&ndash;not one big team&ndash;of programmers will create and maintain features. By centralizing this translation facility, it should be straightforward for a single multilingual individual to translate the text of many modules made by many different people. </p>
-<p>To facilitate this, I propose that in addition to a translator, a program should be made to figure out all the strings/symbols for which translations are needed. To do this it would scan source code (at compile time) for calls to methods in this class and generate a list of strings and symbols needing translation. It would also have to detect certain calls that perform translation implicity, such as IMessageSink.Write(). See <a class="el" href="classLoyc_1_1LocalizableAttribute.html" title="I plan to use this attribute someday to gather all the localizable strings in an application. This attribute should be applied to a string function parameter if the method calls Localized() using that parameter as the format string. ">LocalizableAttribute</a>. </p>
+<p>To facilitate this, I propose that in addition to a translator, a program should be made to figure out all the strings/symbols for which translations are needed. To do this it would scan source code (at compile time) for calls to methods in this class and generate a list of strings and symbols needing translation. It would also have to detect certain calls that perform translation implicity, such as <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a>. See <a class="el" href="classLoyc_1_1LocalizableAttribute.html" title="I plan to use this attribute someday to gather all the localizable strings in an application. This attribute should be applied to a string function parameter if the method calls Localized() using that parameter as the format string. ">LocalizableAttribute</a>. </p>
+<p>TODO: expand I18N features based on Mozilla's L20N. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a374d50933d2028b44c7d82b4599fdf8b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a374d50933d2028b44c7d82b4599fdf8b"></a>
-static <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt; LocalizerDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_localizer</b> = new <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt;LocalizerDelegate&gt;(<a class="el" href="classLoyc_1_1Localize.html#af4bd9fc128255a3f8480c5d0a2d80610">Passthru</a>)</td></tr>
+static <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt; LocalizerDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_localizer</b> = new <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt;LocalizerDelegate&gt;(<a class="el" href="classLoyc_1_1Localize.html#af4bd9fc128255a3f8480c5d0a2d80610">Passthru</a>, autoFallback: true)</td></tr>
 <tr class="separator:a374d50933d2028b44c7d82b4599fdf8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d61e21207b9374db6ac60e8c285ffcc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d61e21207b9374db6ac60e8c285ffcc"></a>
-static <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt; FormatterDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_formatter</b> = new <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt;FormatterDelegate&gt;(<a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45">StringExt.FormatCore</a>)</td></tr>
+static <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt; FormatterDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_formatter</b> = new <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a>&lt;FormatterDelegate&gt;(<a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45">StringExt.FormatCore</a>, autoFallback: true)</td></tr>
 <tr class="separator:a9d61e21207b9374db6ac60e8c285ffcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="memItemLeft" align="right" valign="top">static LocalizerDelegate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c">Localizer</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Localizer method (thread-local) <a href="#aa44d91f1fdb4b4adf5a4927f8ea59e4c">More...</a><br /></td></tr>
+<tr class="memitem:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="memItemLeft" align="right" valign="top">static LocalizerDelegate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c">Localizer</a><code> [get]</code></td></tr>
+<tr class="memdesc:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Localizer method, which is a do-nothing pass-through by default <a href="#aa44d91f1fdb4b4adf5a4927f8ea59e4c">More...</a><br /></td></tr>
 <tr class="separator:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="memItemLeft" align="right" valign="top">static FormatterDelegate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Formatter</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Formatting delegate (thread-local), which is set to StringExt.Format by default. <a href="#abf0bc6e4f5f4b69f3185d8ae11f3a43b">More...</a><br /></td></tr>
+<tr class="memitem:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="memItemLeft" align="right" valign="top">static FormatterDelegate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Formatter</a><code> [get]</code></td></tr>
+<tr class="memdesc:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Formatting delegate, which is <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a> by default. <a href="#abf0bc6e4f5f4b69f3185d8ae11f3a43b">More...</a><br /></td></tr>
 <tr class="separator:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ae62800f9f1a28f0fdfaf5dea4e269f90"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; LocalizerDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#ae62800f9f1a28f0fdfaf5dea4e269f90">SetLocalizer</a> (LocalizerDelegate newValue)</td></tr>
+<tr class="memdesc:ae62800f9f1a28f0fdfaf5dea4e269f90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the localizer method. <a href="#ae62800f9f1a28f0fdfaf5dea4e269f90">More...</a><br /></td></tr>
+<tr class="separator:ae62800f9f1a28f0fdfaf5dea4e269f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdbaacc351c3672314fbbd0b4e6dee7a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; LocalizerDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a">UseResourceManager</a> (ResourceManager manager, CultureInfo culture=null, Func&lt; string, string &gt; resxNameCalculator=null, bool fallbackToPrevious=true)</td></tr>
+<tr class="memdesc:afdbaacc351c3672314fbbd0b4e6dee7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses a standard ResourceManager object to obtain translations. <a href="#afdbaacc351c3672314fbbd0b4e6dee7a">More...</a><br /></td></tr>
+<tr class="separator:afdbaacc351c3672314fbbd0b4e6dee7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af84b3b51ba94ac7a6b0cd8b715f39404"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; FormatterDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#af84b3b51ba94ac7a6b0cd8b715f39404">SetFormatter</a> (FormatterDelegate newValue)</td></tr>
+<tr class="memdesc:af84b3b51ba94ac7a6b0cd8b715f39404"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the formatter method. <a href="#af84b3b51ba94ac7a6b0cd8b715f39404">More...</a><br /></td></tr>
+<tr class="separator:af84b3b51ba94ac7a6b0cd8b715f39404"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4bd9fc128255a3f8480c5d0a2d80610"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#af4bd9fc128255a3f8480c5d0a2d80610">Passthru</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> msgId, string msg)</td></tr>
 <tr class="memdesc:af4bd9fc128255a3f8480c5d0a2d80610"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the dummy translator, which is the default value of Localizer. It passes strings through untranslated. A msgId symbol cannot be handled so it is simply converted to a string.  <a href="#af4bd9fc128255a3f8480c5d0a2d80610">More...</a><br /></td></tr>
 <tr class="separator:af4bd9fc128255a3f8480c5d0a2d80610"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43de4c76abc8352800a789b371e15a8e"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Localized</a> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, params object[] args)</td></tr>
-<tr class="memdesc:a43de4c76abc8352800a789b371e15a8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the heart of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> class, which localizes and formats a string.  <a href="#a43de4c76abc8352800a789b371e15a8e">More...</a><br /></td></tr>
-<tr class="separator:a43de4c76abc8352800a789b371e15a8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27b7fc280c97600d9b3c57ab0de5a084"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27b7fc280c97600d9b3c57ab0de5a084"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, params object[] args)</td></tr>
-<tr class="separator:a27b7fc280c97600d9b3c57ab0de5a084"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5055bea1e0b949af83eea78cc48ceb48"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5055bea1e0b949af83eea78cc48ceb48"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> ([Localizable] this string message, params object[] args)</td></tr>
+<tr class="memitem:a98c07790fee0d46d41c92b2cd30a4460"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460">Symbol</a> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, params object[] args)</td></tr>
+<tr class="memdesc:a98c07790fee0d46d41c92b2cd30a4460"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the heart of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> class, which localizes and formats a string.  <a href="#a98c07790fee0d46d41c92b2cd30a4460">More...</a><br /></td></tr>
+<tr class="separator:a98c07790fee0d46d41c92b2cd30a4460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80475b2f3c64956e0a2261c4823a33d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80475b2f3c64956e0a2261c4823a33d1"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#a80475b2f3c64956e0a2261c4823a33d1">Symbol</a> (this string resourceId, [Localizable] string message, params object[] args)</td></tr>
+<tr class="separator:a80475b2f3c64956e0a2261c4823a33d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5055bea1e0b949af83eea78cc48ceb48"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Localized</a> ([Localizable] this string message, params object[] args)</td></tr>
+<tr class="memdesc:a5055bea1e0b949af83eea78cc48ceb48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds and formats a localization of the given message. If none is found, the original string is formatted. <a href="#a5055bea1e0b949af83eea78cc48ceb48">More...</a><br /></td></tr>
 <tr class="separator:a5055bea1e0b949af83eea78cc48ceb48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09762ed36cea801efd3263014c3a0e8d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09762ed36cea801efd3263014c3a0e8d"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId)</td></tr>
-<tr class="separator:a09762ed36cea801efd3263014c3a0e8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38701f9b4d317db2fea9f53a2495617c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38701f9b4d317db2fea9f53a2495617c"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> ([Localizable] this string message)</td></tr>
 <tr class="separator:a38701f9b4d317db2fea9f53a2495617c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45517872f52047929d1b6230e4e9fcd9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45517872f52047929d1b6230e4e9fcd9"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message)</td></tr>
-<tr class="separator:a45517872f52047929d1b6230e4e9fcd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3aba99e5b222abb019e7c2b9ad332794"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3aba99e5b222abb019e7c2b9ad332794"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, object arg1)</td></tr>
-<tr class="separator:a3aba99e5b222abb019e7c2b9ad332794"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adde4329d7ca15a04f0133a5f4af6b60c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adde4329d7ca15a04f0133a5f4af6b60c"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> ([Localizable] this string message, object arg1)</td></tr>
 <tr class="separator:adde4329d7ca15a04f0133a5f4af6b60c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbb83c3f601ff3a6227242f0004226b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adbb83c3f601ff3a6227242f0004226b2"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, object arg1)</td></tr>
-<tr class="separator:adbb83c3f601ff3a6227242f0004226b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4289730bd4459ac39518c3571131dc63"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4289730bd4459ac39518c3571131dc63"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, object arg1, object arg2)</td></tr>
-<tr class="separator:a4289730bd4459ac39518c3571131dc63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aaa5d3f28214537fb87be76f618fad4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1aaa5d3f28214537fb87be76f618fad4"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>Symbol</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, object arg1)</td></tr>
+<tr class="separator:a1aaa5d3f28214537fb87be76f618fad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2eb5250f1b33f6fa3d9969323fa410f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2eb5250f1b33f6fa3d9969323fa410f"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> ([Localizable] this string message, object arg1, object arg2)</td></tr>
 <tr class="separator:ae2eb5250f1b33f6fa3d9969323fa410f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf4ef58b5a5ccbd26d868cfa5dca9fb8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf4ef58b5a5ccbd26d868cfa5dca9fb8"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b> (this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, object arg1, object arg2)</td></tr>
-<tr class="separator:abf4ef58b5a5ccbd26d868cfa5dca9fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1efbd5fdcd27eaa41c598705fb6cff79"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1efbd5fdcd27eaa41c598705fb6cff79"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>Symbol</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, [Localizable] string message, object arg1, object arg2)</td></tr>
+<tr class="separator:a1efbd5fdcd27eaa41c598705fb6cff79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a43de4c76abc8352800a789b371e15a8e"></a>
+<a class="anchor" id="a5055bea1e0b949af83eea78cc48ceb48"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -200,13 +218,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
         <tr>
           <td class="memname">static string Loyc.Localize.Localized </td>
           <td>(</td>
-          <td class="paramtype">this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
-          <td class="paramname"><em>resourceId</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">[Localizable] string&#160;</td>
+          <td class="paramtype">[Localizable] this string&#160;</td>
           <td class="paramname"><em>message</em>, </td>
         </tr>
         <tr>
@@ -228,20 +240,19 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
 </table>
 </div><div class="memdoc">
 
-<p>This is the heart of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> class, which localizes and formats a string. </p>
+<p>Finds and formats a localization of the given message. If none is found, the original string is formatted.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">resourceId</td><td>Resource ID used to look up a string. If it is null then message must be provided; otherwise, message is only used if no translation is available for the specified ID.</td></tr>
-    <tr><td class="paramname">message</td><td>The message to translate, which may include argument placeholders (e.g. "{0}").</td></tr>
-    <tr><td class="paramname">args</td><td>Arguments given to Formatter to fill in placeholders after the Localizer is called. If args is null or empty then Formatter is not called.</td></tr>
+    <tr><td class="paramname">message</td><td>The message to translate, which may include argument placeholders (e.g. "{0}"). The default formatter also accepts named parameters like "{firstName}"; see <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a> for details.</td></tr>
+    <tr><td class="paramname">args</td><td>Arguments given to <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate, which is StringExt.FormatCore by default.">Formatter</a> to fill in placeholders after the Localizer is called. If args is null or empty then Formatter is not called.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The translated and formatted string.</dd></dl>
 
-<p>References <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Loyc.Localize.Formatter</a>, <a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c">Loyc.Localize.Localizer</a>, and <a class="el" href="structLoyc_1_1Threading_1_1ScratchBuffer.html#ace7a39176d2bf9adddb08cd088cd8a02">Loyc.Threading.ScratchBuffer&lt; T &gt;.Value</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460">Loyc.Localize.Symbol()</a>, and <a class="el" href="structLoyc_1_1Threading_1_1ScratchBuffer.html#ace7a39176d2bf9adddb08cd088cd8a02">Loyc.Threading.ScratchBuffer&lt; T &gt;.Value</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie.html#a937ff57812380bae148e634b57e89be3">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a18ebde2188fb5d082324bb002d4491fc">Loyc.Collections.MSet&lt; Symbol &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie.html#aefc3f371b9754dc7b40f8532ed71c893">Loyc.Collections.Impl.CPIntTrie&lt; TValue &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="structLoyc_1_1Collections_1_1Set.html#a659b33491b503cec1c5cdde15148e436">Loyc.Collections.Set&lt; Loyc.LLParserGenerator.AndPred &gt;.Find()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a8f289aee67d4b75a35b10e5d8a14ef1a">Loyc.Collections.VListBlock&lt; T &gt;.FindNextBlock()</a>, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html#af5a085654b654cc8ccaa547f9edcae18">Loyc.Collections.WListProtected&lt; T &gt;.IndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html#af12ed07ece6b2cd2408eb05ea3ea3574">Loyc.Syntax.BaseParser&lt; Token &gt;.LaIndexToMsgContext()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe">Loyc.MessageSink.LocationOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a2f5bdaa0ccdff63d9d79aab102bf9fa8">Loyc.Syntax.Les.Les2Lexer.ParseNumberCore()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a1a33fef8bbf5e901a89473b26ad91669">Loyc.Syntax.ParsingService.ParseSingle()</a>, <a class="el" href="classLoyc_1_1Collections_1_1DList.html#ade113f4589488a9fb4be7b21af20e36c">Loyc.Collections.DList&lt; Pair&lt; LNode, int &gt; &gt;.RemoveAll()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12">Loyc.LLParserGenerator.LLParserGenerator.Run()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html#a67c92612e281b8dcd5927b8186205457">Loyc.Syntax.StreamCharSource.Slice()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#ae214c1397f4b8a9e759d96efd847579a">Loyc.Syntax.Les.Les2Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Collections_1_1CPStringTrie.html#ac44ea41d06ea4430dac0b06352af1b7f">Loyc.Collections.CPStringTrie&lt; TValue &gt;.TryAdd()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie.html#a1d3975760b82725b63a58a0d9dec9343">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;.TryAdd()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a66cb4cd6745dbbfa40c7851874cd1657">Loyc.Syntax.Les.Les2Lexer.UnescapeQuotedString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie.html#a937ff57812380bae148e634b57e89be3">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a18ebde2188fb5d082324bb002d4491fc">Loyc.Collections.MSet&lt; Symbol &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie.html#aefc3f371b9754dc7b40f8532ed71c893">Loyc.Collections.Impl.CPIntTrie&lt; TValue &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="structLoyc_1_1Collections_1_1Set.html#a659b33491b503cec1c5cdde15148e436">Loyc.Collections.Set&lt; Loyc.LLParserGenerator.AndPred &gt;.Find()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a8f289aee67d4b75a35b10e5d8a14ef1a">Loyc.Collections.VListBlock&lt; T &gt;.FindNextBlock()</a>, <a class="el" href="classLoyc_1_1MessageSink.html#afc8aff67a735cac3ae92e0b89bdff453">Loyc.MessageSink.FormatMessage()</a>, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html#af5a085654b654cc8ccaa547f9edcae18">Loyc.Collections.WListProtected&lt; T &gt;.IndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html#af12ed07ece6b2cd2408eb05ea3ea3574">Loyc.Syntax.BaseParser&lt; Token &gt;.LaIndexToMsgContext()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html#a49618bc157320f61c501897b3ba6b451">Loyc.Syntax.BaseParser&lt; Token &gt;.MatchError()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a2f5bdaa0ccdff63d9d79aab102bf9fa8">Loyc.Syntax.Les.Les2Lexer.ParseNumberCore()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a1a33fef8bbf5e901a89473b26ad91669">Loyc.Syntax.ParsingService.ParseSingle()</a>, <a class="el" href="classLoyc_1_1Collections_1_1DList.html#ade113f4589488a9fb4be7b21af20e36c">Loyc.Collections.DList&lt; Pair&lt; LNode, int &gt; &gt;.RemoveAll()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12">Loyc.LLParserGenerator.LLParserGenerator.Run()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html#a67c92612e281b8dcd5927b8186205457">Loyc.Syntax.StreamCharSource.Slice()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#ae214c1397f4b8a9e759d96efd847579a">Loyc.Syntax.Les.Les2Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Collections_1_1CPStringTrie.html#ac44ea41d06ea4430dac0b06352af1b7f">Loyc.Collections.CPStringTrie&lt; TValue &gt;.TryAdd()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie.html#a1d3975760b82725b63a58a0d9dec9343">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;.TryAdd()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a66cb4cd6745dbbfa40c7851874cd1657">Loyc.Syntax.Les.Les2Lexer.UnescapeQuotedString()</a>.</p>
 
 </div>
 </div>
@@ -281,6 +292,184 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
 
 <p>References <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#ae62800f9f1a28f0fdfaf5dea4e269f90">Loyc.Localize.SetLocalizer()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="af84b3b51ba94ac7a6b0cd8b715f39404"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt;FormatterDelegate&gt; Loyc.Localize.SetFormatter </td>
+          <td>(</td>
+          <td class="paramtype">FormatterDelegate&#160;</td>
+          <td class="paramname"><em>newValue</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the formatter method.</p>
+<p><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate, which is StringExt.FormatCore by default.">Formatter</a> is a thread-local value, but since .NET does not support inheritance of thread-local values, this method also sets the global default used by threads on which this method was never called. </p>
+
+<p>References <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45">Loyc.StringExt.FormatCore()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ae62800f9f1a28f0fdfaf5dea4e269f90"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt;LocalizerDelegate&gt; Loyc.Localize.SetLocalizer </td>
+          <td>(</td>
+          <td class="paramtype">LocalizerDelegate&#160;</td>
+          <td class="paramname"><em>newValue</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the localizer method.</p>
+<p><a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c" title="Localizer method, which is a do-nothing pass-through by default">Localizer</a> is a thread-local value, but since .NET does not support inheritance of thread-local values, this method also sets the global default used by threads on which this method was never called. </p>
+<p>This property follows the Ambient Service Pattern: <a href="http://core.loyc.net/essentials/ambient-service-pattern.html">http://core.loyc.net/essentials/ambient-service-pattern.html</a> </p>
+
+<p>References <a class="el" href="classLoyc_1_1Localize.html#af4bd9fc128255a3f8480c5d0a2d80610">Loyc.Localize.Passthru()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a">Loyc.Localize.UseResourceManager()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a98c07790fee0d46d41c92b2cd30a4460"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.Localize.Symbol </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>resourceId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">[Localizable] string&#160;</td>
+          <td class="paramname"><em>message</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">params object[]&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This is the heart of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> class, which localizes and formats a string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">resourceId</td><td>Resource ID used to look up a translated format string using the current user-defined <a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c" title="Localizer method, which is a do-nothing pass-through by default">Localizer</a>. If this parameter is null, a message must be provided; otherwise, the message is only used if no translation is associated with the specified <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>.</td></tr>
+    <tr><td class="paramname">message</td><td>The message to be translated, which may include argument placeholders (e.g. "{0}"). The default formatter also accepts named parameters like "{firstName}"; see <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a> for details.</td></tr>
+    <tr><td class="paramname">args</td><td>Arguments given to <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate, which is StringExt.FormatCore by default.">Formatter</a> to fill in placeholders after the Localizer is called. If args is null or empty then Formatter is not called.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The translated and formatted string.</dd></dl>
+
+<p>References <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Loyc.Localize.Formatter</a>, and <a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c">Loyc.Localize.Localizer</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Loyc.Localize.Localized()</a>, and <a class="el" href="classLoyc_1_1Localize.html#a80475b2f3c64956e0a2261c4823a33d1">Loyc.Localize.Symbol()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="afdbaacc351c3672314fbbd0b4e6dee7a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt;LocalizerDelegate&gt; Loyc.Localize.UseResourceManager </td>
+          <td>(</td>
+          <td class="paramtype">ResourceManager&#160;</td>
+          <td class="paramname"><em>manager</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">CultureInfo&#160;</td>
+          <td class="paramname"><em>culture</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; string, string &gt;&#160;</td>
+          <td class="paramname"><em>resxNameCalculator</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>fallbackToPrevious</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Uses a standard ResourceManager object to obtain translations.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">manager</td><td>A ResourceManager that provides access to resources (resx embedded in an assembly)</td></tr>
+    <tr><td class="paramname">culture</td><td>A value of CultureInfo that represents the language to look up in the ResourceManager. If this is null, the ResourceManager will use CultureInfo.CurrentUICulture.</td></tr>
+    <tr><td class="paramname">resxNameCalculator</td><td>An optional function that will be called when a translation is requested without providing a resource key symbol. For example, if someone writes <code>"Save as...".<a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48" title="Finds and formats a localization of the given message. If none is found, the original string is forma...">Localized()</a></code> using the Localized(string) extension method, this function is called on the string "Save as...". This function could be used to compute a resource name such as "strSaveAs" automatically, according to whatever naming convention is used in your resource file. </td></tr>
+    <tr><td class="paramname">fallbackToPrevious</td><td>If a translation was not found in the specified ResourceManager and this parameter is true, the previously- installed <a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c" title="Localizer method, which is a do-nothing pass-through by default">Localizer</a> is called instead. Otherwise, the dummy translator <a class="el" href="classLoyc_1_1Localize.html#af4bd9fc128255a3f8480c5d0a2d80610" title="This is the dummy translator, which is the default value of Localizer. It passes strings through untr...">Passthru</a> is used.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+
+<p>References <a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Loyc.Localize.Formatter</a>, <a class="el" href="classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c">Loyc.Localize.Localizer</a>, <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>, and <a class="el" href="classLoyc_1_1Localize.html#ae62800f9f1a28f0fdfaf5dea4e269f90">Loyc.Localize.SetLocalizer()</a>.</p>
+
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
@@ -297,14 +486,14 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">get</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Formatting delegate (thread-local), which is set to StringExt.Format by default.</p>
+<p>Formatting delegate, which is <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.FormatCore</a> by default.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460">Loyc.Localize.Symbol()</a>, and <a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a">Loyc.Localize.UseResourceManager()</a>.</p>
 
 </div>
 </div>
@@ -321,14 +510,14 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">get</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Localizer method (thread-local)</p>
+<p>Localizer method, which is a do-nothing pass-through by default</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#a98c07790fee0d46d41c92b2cd30a4460">Loyc.Localize.Symbol()</a>, and <a class="el" href="classLoyc_1_1Localize.html#afdbaacc351c3672314fbbd0b4e6dee7a">Loyc.Localize.UseResourceManager()</a>.</p>
 
 </div>
 </div>
@@ -336,7 +525,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localized</b
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

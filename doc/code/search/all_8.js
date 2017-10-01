@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['halfwayto_3c_20t_20_3e',['HalfwayTo&lt; T &gt;',['../classLoyc_1_1Geometry_1_1PointMath.html#ab9d36808e438019fbf818b8882349c65',1,'Loyc::Geometry::PointMath']]],
   ['handlechildsplit',['HandleChildSplit',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a735666d7c291bc652f377279d91e7381',1,'Loyc::Collections::Impl::AListInnerBase']]],
   ['handled',['Handled',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed',1,'Loyc::Syntax']]],
   ['handleundersized',['HandleUndersized',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3',1,'Loyc::Collections::Impl::AListInnerBase']]],
@@ -16,7 +15,7 @@ var searchData=
   ['hasspecialname',['HasSpecialName',['../classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708',1,'Loyc::Syntax::LNode']]],
   ['hastokenizer',['HasTokenizer',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#a423c32c87da703adfc474562a07a1634',1,'Loyc::Syntax::IParsingService']]],
   ['height',['Height',['../interfaceLoyc_1_1Geometry_1_1ISizeReader.html#aae7275767dd4e152a27d880e580a0333',1,'Loyc::Geometry::ISizeReader']]],
-  ['hexdigitchar',['HexDigitChar',['../classLoyc_1_1Syntax_1_1ParseHelpers.html#a1333d677058281a70e2e08fa3dfc752b',1,'Loyc::Syntax::ParseHelpers']]],
+  ['hexdigitchar',['HexDigitChar',['../classLoyc_1_1Syntax_1_1PrintHelpers.html#abc86d956aa747ca9235514dbe4eb1b25',1,'Loyc::Syntax::PrintHelpers']]],
   ['hexdigitvalue',['HexDigitValue',['../classLoyc_1_1Syntax_1_1ParseHelpers.html#aeaf423c37f20238079c7224b8d0a9460',1,'Loyc::Syntax::ParseHelpers']]],
   ['hexliteral',['HexLiteral',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a8639f1ee4587daec2567aacdb1ac704d',1,'Loyc::Syntax']]],
   ['highlightgroup',['HighlightGroup',['../classTextEditor_1_1HighlightGroup.html',1,'TextEditor']]],

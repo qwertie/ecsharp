@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>This interface allows an object to declare its "location". 
  <a href="interfaceLoyc_1_1IHasLocation.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/IMessageSink.cs'>/Core/Loyc.Essentials/Utilities/IMessageSink.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/Misc.cs'>/Core/Loyc.Essentials/MessageSinks/Misc.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.IHasLocation:</div>
@@ -109,17 +109,17 @@ Inheritance diagram for Loyc.IHasLocation:</div>
   <img src="interfaceLoyc_1_1IHasLocation.png" usemap="#Loyc.IHasLocation_map" alt=""/>
   <map id="Loyc.IHasLocation_map" name="Loyc.IHasLocation_map">
 <area href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator." alt="Loyc.LLParserGenerator.Pred" shape="rect" coords="0,56,268,80"/>
-<area href="structLoyc_1_1LogMessage.html" title="Holds an argument list compatible with IMessageSink.Write. Typically used with MessageHolder." alt="Loyc.LogMessage" shape="rect" coords="278,56,546,80"/>
+<area href="structLoyc_1_1LogMessage.html" title="Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string). Typically used with MessageHolder." alt="Loyc.LogMessage" shape="rect" coords="278,56,546,80"/>
 <area href="interfaceLoyc_1_1Syntax_1_1ILNode.html" title="A read-only interface for objects that act as Loyc trees." alt="Loyc.Syntax.ILNode" shape="rect" coords="556,56,824,80"/>
 <area href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class." alt="Loyc.Syntax.LNode" shape="rect" coords="834,56,1102,80"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (..." alt="Loyc.LLParserGenerator.Alts" shape="rect" coords="278,112,546,136"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1AndPred.html" title="Represents a zero-width assertion: either user-defined code to check a condition, or a predicate that..." alt="Loyc.LLParserGenerator.AndPred" shape="rect" coords="278,168,546,192"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html" title="A singleton to be used as the value of Alts.ErrorBranch, representing the default_error branch..." alt="Loyc.LLParserGenerator.DefaultErrorBranch" shape="rect" coords="278,224,546,248"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule." alt="Loyc.LLParserGenerator.EndOfRule" shape="rect" coords="278,280,546,304"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1Gate.html" title="Represents a &quot;gate&quot; (p =&gt; m), which is a mechanism to separate prediction from matching in the contex..." alt="Loyc.LLParserGenerator.Gate" shape="rect" coords="278,336,546,360"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule." alt="Loyc.LLParserGenerator.RuleRef" shape="rect" coords="278,392,546,416"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1Seq.html" title="Represents a sequence of predicates (Preds)." alt="Loyc.LLParserGenerator.Seq" shape="rect" coords="278,448,546,472"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html" title="Represents a terminal (which is a token or a character) or a set of possible terminals (e..." alt="Loyc.LLParserGenerator.TerminalPred" shape="rect" coords="278,504,546,528"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html" title="A singleton to be used as the value of Alts.ErrorBranch, representing the default_error branch..." alt="Loyc.LLParserGenerator.DefaultErrorBranch" shape="rect" coords="278,168,546,192"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule." alt="Loyc.LLParserGenerator.EndOfRule" shape="rect" coords="278,224,546,248"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1Gate.html" title="Represents a &quot;gate&quot; (p =&gt; m), which is a mechanism to separate prediction from matching in the contex..." alt="Loyc.LLParserGenerator.Gate" shape="rect" coords="278,280,546,304"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule." alt="Loyc.LLParserGenerator.RuleRef" shape="rect" coords="278,336,546,360"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1Seq.html" title="Represents a sequence of predicates (Preds)." alt="Loyc.LLParserGenerator.Seq" shape="rect" coords="278,392,546,416"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html" title="Represents a terminal (which is a token or a character) or a set of possible terminals (e..." alt="Loyc.LLParserGenerator.TerminalPred" shape="rect" coords="278,448,546,472"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1ZeroWidthPred.html" alt="Loyc.LLParserGenerator.ZeroWidthPred" shape="rect" coords="278,504,546,528"/>
 <area href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class." alt="Loyc.Syntax.LNode" shape="rect" coords="556,112,824,136"/>
 <area href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y..." alt="Loyc.Syntax.CallNode" shape="rect" coords="1112,112,1380,136"/>
 <area href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)..." alt="Loyc.Syntax.IdNode" shape="rect" coords="1112,168,1380,192"/>
@@ -129,7 +129,7 @@ Inheritance diagram for Loyc.IHasLocation:</div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>This interface allows an object to declare its "location".</p>
 <p>For example, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a> implements this interface so that when a compiler error refers to a source code construct, the error message contains the location of that source code rather than the code itself. </p>
-<p>Given a context object that may or may not implement this interface, it's handy to use <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Gets the location information from the specified object, or converts the object to a string...">MessageSink.LocationString</a> to convert the "context" of a message into a string, or <a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe" title="Returns context.Location if context implements IHasLocation; otherwise, returns context itself...">MessageSink.LocationOf(object)</a> to unwrap objects that implement <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>. </p>
+<p>Given a context object that may or may not implement this interface, it's handy to use <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">MessageSink.ContextToString</a> to convert the "context" of a message into a string, or <a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe" title="Returns context.Location if context implements IHasLocation; otherwise, returns context itself...">MessageSink.LocationOf(object)</a> to unwrap objects that implement <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -141,7 +141,7 @@ object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

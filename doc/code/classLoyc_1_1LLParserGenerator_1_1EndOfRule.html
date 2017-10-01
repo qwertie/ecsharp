@@ -101,8 +101,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>A container for the follow set of a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>. 
  <a href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html#details">More...</a></p>
-<hr/><b>Source file</b>:<ul>
+<hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/RuleAndPreds/Predicates.cs'>/Main/LLLPG/RuleAndPreds/Predicates.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/RuleAndPreds/PredVisitor.cs'>/Main/LLLPG/RuleAndPreds/PredVisitor.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.EndOfRule:</div>
@@ -127,12 +128,6 @@ HashSet&lt; <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pre
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ContainingRule</b></td></tr>
 <tr class="separator:a4d0c743ffad6d95279e7839882ac4fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred')"><img src="closed.png" alt="-"/>&#160;Public fields inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Loyc.LLParserGenerator.Pred</a></td></tr>
-<tr class="memitem:a0f9fbc80c01e5ea9a1e06a9e579e75a2 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0f9fbc80c01e5ea9a1e06a9e579e75a2"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PreAction</b></td></tr>
-<tr class="separator:a0f9fbc80c01e5ea9a1e06a9e579e75a2 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4103a18e0ebaefdb6a20240665709c6 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4103a18e0ebaefdb6a20240665709c6"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PostAction</b></td></tr>
-<tr class="separator:ab4103a18e0ebaefdb6a20240665709c6 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40e3ce486fced5d206814ea676554eb1 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40e3ce486fced5d206814ea676554eb1"></a>
 <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VarLabel</b></td></tr>
 <tr class="separator:a40e3ce486fced5d206814ea676554eb1 inherit pub_attribs_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,12 +163,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4ad21ef06763a8d56d23b7d13c398f2f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ad21ef06763a8d56d23b7d13c398f2f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>EndOfRule</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> containingRule)</td></tr>
 <tr class="separator:a4ad21ef06763a8d56d23b7d13c398f2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6688d50c01abe0e6ff0bfd639f27c986"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6688d50c01abe0e6ff0bfd639f27c986"></a>
-override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">PredVisitor</a> visitor)</td></tr>
-<tr class="separator:a6688d50c01abe0e6ff0bfd639f27c986"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c06bca0e37305605ecbbd4877f69b1d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c06bca0e37305605ecbbd4877f69b1d"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:a9c06bca0e37305605ecbbd4877f69b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6688d50c01abe0e6ff0bfd639f27c986"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6688d50c01abe0e6ff0bfd639f27c986"></a>
+override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">PredVisitor</a> visitor)</td></tr>
+<tr class="separator:a6688d50c01abe0e6ff0bfd639f27c986"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Loyc.LLParserGenerator.Pred</a></td></tr>
 <tr class="memitem:afcc0946f4273be3a8da612c334e63a69 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1Pred"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afcc0946f4273be3a8da612c334e63a69"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Pred</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> basis)</td></tr>
@@ -296,7 +291,7 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:51 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

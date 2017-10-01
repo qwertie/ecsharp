@@ -97,13 +97,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Right</a>, Format and Slice. 
+<p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Right</a>, <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">FormatCore</a> and Slice. 
  <a href="classLoyc_1_1StringExt.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Strings/StringExt.cs'>/Core/Loyc.Essentials/Strings/StringExt.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Right</a>, Format and Slice.</p>
+<div class="textblock"><p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Right</a>, <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">FormatCore</a> and Slice.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -182,7 +182,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 
 <p>Called by Format to replace named placeholders with numeric placeholders in format strings.</p>
 <dl class="section return"><dt>Returns</dt><dd>A format string that can be used to call string.Format.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd>Format</dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">FormatCore</a></dd></dl>
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>.</p>
 
@@ -230,6 +230,8 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 
 <p>References <a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">Loyc.StringExt.EliminateNamedArgs()</a>.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#af84b3b51ba94ac7a6b0cd8b715f39404">Loyc.Localize.SetFormatter()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a7370bdab343dcd0d65aa7d862e7b6e6b"></a>
@@ -270,7 +272,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 
 <p>References <a class="el" href="classLoyc_1_1StringExt.html#a7370bdab343dcd0d65aa7d862e7b6e6b">Loyc.StringExt.Join()</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Seq.html#a5c63871e82f973098723c1503a1cba17">Loyc.LLParserGenerator.Seq.Clone()</a>, and <a class="el" href="classLoyc_1_1StringExt.html#a7370bdab343dcd0d65aa7d862e7b6e6b">Loyc.StringExt.Join()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Seq.html#a5c63871e82f973098723c1503a1cba17">Loyc.LLParserGenerator.Seq.Clone()</a>, <a class="el" href="classLoyc_1_1StringExt.html#a7370bdab343dcd0d65aa7d862e7b6e6b">Loyc.StringExt.Join()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html#a49618bc157320f61c501897b3ba6b451">Loyc.Syntax.BaseParser&lt; Token &gt;.MatchError()</a>.</p>
 
 </div>
 </div>
@@ -425,7 +427,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 <p>Gets the substrings to the left and right of a dividing character.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>String to split</td></tr>
+    <tr><td class="paramname">s</td><td><a class="el" href="namespaceString.html">String</a> to split</td></tr>
     <tr><td class="paramname">delimiter</td><td>Dividing character.</td></tr>
   </table>
   </dd>
@@ -438,7 +440,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

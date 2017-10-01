@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A decorator that uses a delegate to accept or ignore messages. 
  <a href="classLoyc_1_1MessageFilter.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/MessageSinks.cs'>/Core/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/WrapperSinks.cs'>/Core/Loyc.Essentials/MessageSinks/WrapperSinks.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.MessageFilter:</div>
@@ -109,12 +109,12 @@ Inheritance diagram for Loyc.MessageFilter:</div>
  <div class="center">
   <img src="classLoyc_1_1MessageFilter.png" usemap="#Loyc.MessageFilter_map" alt=""/>
   <map id="Loyc.MessageFilter_map" name="Loyc.MessageFilter_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;" shape="rect" coords="0,0,318,24"/>
+<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TContext &gt;" shape="rect" coords="0,0,225,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A decorator that uses a delegate to accept or ignore messages.</p>
-<p>The filter can accept or reject messages based on both the message type and the actual message (format string). When someone calls <a class="el" href="classLoyc_1_1MessageFilter.html#a6c715bff091dfe3b339e66628a02f812" title="Returns true if Filter(type, null) and target.IsEnabled(type) are both true.">IsEnabled(Severity)</a>, the filter is invoked with only the type; the message is set to null. Accepted messages are sent to the Target message sink.</p>
+<p>The filter can accept or reject messages based on both the message type and the actual message (format string). When someone calls <a class="el" href="classLoyc_1_1MessageFilter.html#a71f8d2c1edd7e8db9eae78c2999233c4" title="Returns true if Filter(type, null) and target.IsEnabled(type) are both true.">IsEnabled(Severity)</a>, the filter is invoked with only the type; the message is set to null. Accepted messages are sent to the Target message sink.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -130,27 +130,37 @@ Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a51fbb51a4438316cba7d182f4019314b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51fbb51a4438316cba7d182f4019314b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageFilter</b> (Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, bool &gt; filter, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> target)</td></tr>
-<tr class="separator:a51fbb51a4438316cba7d182f4019314b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fabdb48d6c353ac64fdf828fbdd462e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fabdb48d6c353ac64fdf828fbdd462e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageFilter</b> (Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; filter, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> target)</td></tr>
-<tr class="separator:a4fabdb48d6c353ac64fdf828fbdd462e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9825b92b37e5da89c498d114d63491ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9825b92b37e5da89c498d114d63491ee"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
-<tr class="separator:a9825b92b37e5da89c498d114d63491ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacd813d396a6f9215b30cf0039f89f8b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aacd813d396a6f9215b30cf0039f89f8b"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, object arg0, object arg1=null)</td></tr>
-<tr class="separator:aacd813d396a6f9215b30cf0039f89f8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8116cb676067d943d4779af0d7d9d45d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8116cb676067d943d4779af0d7d9d45d"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
-<tr class="separator:a8116cb676067d943d4779af0d7d9d45d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c715bff091dfe3b339e66628a02f812"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageFilter.html#a6c715bff091dfe3b339e66628a02f812">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type)</td></tr>
-<tr class="memdesc:a6c715bff091dfe3b339e66628a02f812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>Filter(type, null)</code> and <code>target.IsEnabled(type)</code> are both true. <a href="#a6c715bff091dfe3b339e66628a02f812">More...</a><br /></td></tr>
-<tr class="separator:a6c715bff091dfe3b339e66628a02f812"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae235e243319e4fa5511ce70c5d5f64c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae235e243319e4fa5511ce70c5d5f64c3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageFilter</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> target, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, bool &gt; filter)</td></tr>
+<tr class="separator:ae235e243319e4fa5511ce70c5d5f64c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2632fc72014e91830fabb6710ce66f7a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2632fc72014e91830fabb6710ce66f7a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageFilter</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> target, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; filter)</td></tr>
+<tr class="separator:a2632fc72014e91830fabb6710ce66f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8683bc6ab280e039d038bd9286dab3b9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8683bc6ab280e039d038bd9286dab3b9"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format)</td></tr>
+<tr class="separator:a8683bc6ab280e039d038bd9286dab3b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab62bc23bec3cf1d1cf94f81033ff3bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aab62bc23bec3cf1d1cf94f81033ff3bf"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:aab62bc23bec3cf1d1cf94f81033ff3bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae48bfc03ef6528337aae25bdea4064a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae48bfc03ef6528337aae25bdea4064a0"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, params object[] args)</td></tr>
+<tr class="separator:ae48bfc03ef6528337aae25bdea4064a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71f8d2c1edd7e8db9eae78c2999233c4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageFilter.html#a71f8d2c1edd7e8db9eae78c2999233c4">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
+<tr class="memdesc:a71f8d2c1edd7e8db9eae78c2999233c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>Filter(type, null)</code> and <code>target.IsEnabled(type)</code> are both true. <a href="#a71f8d2c1edd7e8db9eae78c2999233c4">More...</a><br /></td></tr>
+<tr class="separator:a71f8d2c1edd7e8db9eae78c2999233c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1IMessageSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1IMessageSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink&lt; in in TContext &gt;</a></td></tr>
+<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format)</td></tr>
+<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
+<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, params object[] args)</td></tr>
+<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a6c715bff091dfe3b339e66628a02f812"></a>
+<a class="anchor" id="a71f8d2c1edd7e8db9eae78c2999233c4"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -161,7 +171,7 @@ Public Member Functions</h2></td></tr>
           <td class="memname">bool Loyc.MessageFilter.IsEnabled </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -174,13 +184,15 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns true if <code>Filter(type, null)</code> and <code>target.IsEnabled(type)</code> are both true.</p>
 
+<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

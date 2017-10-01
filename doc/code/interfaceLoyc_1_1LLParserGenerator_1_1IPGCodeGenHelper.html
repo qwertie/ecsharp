@@ -176,9 +176,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4b2b259bfcdf3eeff6d0843e221f2693"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a4b2b259bfcdf3eeff6d0843e221f2693">ShouldGenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, bool hasErrorBranch)</td></tr>
 <tr class="memdesc:a4b2b259bfcdf3eeff6d0843e221f2693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if a "switch" statement is the preferable code generation technique rather than the default if-else chain <a href="#a4b2b259bfcdf3eeff6d0843e221f2693">More...</a><br /></td></tr>
 <tr class="separator:a4b2b259bfcdf3eeff6d0843e221f2693"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87ef547f3c1b1417a978674f3e7fb91f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a87ef547f3c1b1417a978674f3e7fb91f">GenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] branchCode, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> defaultBranch, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
-<tr class="memdesc:a87ef547f3c1b1417a978674f3e7fb91f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a switch statement with the specified branches where branchCode[i] is the code to run if the input is in the set branchSets[i]. <a href="#a87ef547f3c1b1417a978674f3e7fb91f">More...</a><br /></td></tr>
-<tr class="separator:a87ef547f3c1b1417a978674f3e7fb91f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55a54a81c5e29452abd78f091440fc28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a55a54a81c5e29452abd78f091440fc28">GenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] branchCode, <a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt; casesToInclude, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> defaultBranch, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
+<tr class="memdesc:a55a54a81c5e29452abd78f091440fc28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a switch statement with the specified branches where branchCode[i] is the code to run if the input is in the set branchSets[i]. <a href="#a55a54a81c5e29452abd78f091440fc28">More...</a><br /></td></tr>
+<tr class="separator:a55a54a81c5e29452abd78f091440fc28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83dc26fcf51a9f672aeafa376af6ab52"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a83dc26fcf51a9f672aeafa376af6ab52">GenerateTest</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
 <tr class="memdesc:a83dc26fcf51a9f672aeafa376af6ab52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates code to test whether the terminal denoted 'laVar' is in the set. <a href="#a83dc26fcf51a9f672aeafa376af6ab52">More...</a><br /></td></tr>
 <tr class="separator:a83dc26fcf51a9f672aeafa376af6ab52"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -626,7 +626,7 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a87ef547f3c1b1417a978674f3e7fb91f"></a>
+<a class="anchor" id="a55a54a81c5e29452abd78f091440fc28"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -639,14 +639,14 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt;&#160;</td>
-          <td class="paramname"><em>casesToInclude</em>, </td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[]&#160;</td>
+          <td class="paramname"><em>branchCode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[]&#160;</td>
-          <td class="paramname"><em>branchCode</em>, </td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html">MSet</a>&lt; int &gt;&#160;</td>
+          <td class="paramname"><em>casesToInclude</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -672,14 +672,14 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">casesToInclude</td><td>The set chosen by <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a4b2b259bfcdf3eeff6d0843e221f2693" title="Returns true if a &quot;switch&quot; statement is the preferable code generation technique rather than the defa...">ShouldGenerateSwitch</a>.</td></tr>
-    <tr><td class="paramname">defaultBranch</td><td>Code to be placed in the default: case (if none, the blank stmt <code>@``;</code>)</td></tr>
+    <tr><td class="paramname">defaultBranch</td><td>Code to be placed in the default: case, or the empty identifier (@``) if none</td></tr>
     <tr><td class="paramname">laVar</td><td>The lookahead variable being switched on (e.g. la0)</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The generated switch block.</dd></dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aae7475d5e1a113d8b0317e4dc4da5cfb">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#af2e8cd4d7a011fb8b5a2c9089db30b0a">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
 </div>
 </div>
@@ -902,7 +902,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">branchSets</td><td>Non-overlapping terminal sets, one set for each branch of the prediction tree.</td></tr>
-    <tr><td class="paramname">casesToInclude</td><td>To this set, this method should add the indexes of branches for which case labels should be generated, e.g. adding index 2 means that switch cases should be generated for sets[2]. The caller (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>) will create an if-else chain for all branches that are not added to casesToInclude, and this chain will be passed to <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a87ef547f3c1b1417a978674f3e7fb91f" title="Generates a switch statement with the specified branches where branchCode[i] is the code to run if th...">GenerateSwitch</a>.</td></tr>
+    <tr><td class="paramname">casesToInclude</td><td>To this set, this method should add the indexes of branches for which case labels should be generated, e.g. adding index 2 means that switch cases should be generated for sets[2]. The caller (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>) will create an if-else chain for all branches that are not added to casesToInclude, and this chain will be passed to <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a55a54a81c5e29452abd78f091440fc28" title="Generates a switch statement with the specified branches where branchCode[i] is the code to run if th...">GenerateSwitch</a>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -1017,7 +1017,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:52 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

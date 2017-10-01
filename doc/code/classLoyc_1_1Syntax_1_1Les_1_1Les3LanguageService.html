@@ -279,7 +279,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">input</td><td>A source of tokens.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates how the input should be parsed. <code>null</code> is a synonym for <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a21183532357aeb06a10658785b67c97d" title="Tells IParsingService.Parse to treat the input as a complete source file (this should be the default...">ParsingMode.File</a></td></tr>
     <tr><td class="paramname">preserveComments</td><td>Whether to preserve comments and newlines by attaching trivia attributes to the output. If the property CanPreserveComments is false, this parameter will not work.</td></tr>
   </table>
@@ -348,7 +348,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
   <table class="params">
     <tr><td class="paramname">tokens</td><td>List of tokens</td></tr>
     <tr><td class="paramname">file</td><td>A source file to associate with errors, warnings, and output nodes.</td></tr>
-    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Current.</td></tr>
+    <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">inputType</td><td>Indicates how the input should be parsed.</td></tr>
   </table>
   </dd>
@@ -363,7 +363,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a4b30d6ea04c5c13346a5bac1e5b44df6">Loyc.Syntax.IParsingService</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff">Loyc.Syntax.ParsingMode.Expressions</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#a838433ac15910a21cd5ad01ec6021a57">Loyc.Syntax.Les.Les2Parser.Start()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff">Loyc.Syntax.ParsingMode.Expressions</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.html#adbbeb8aa85af2ea6ea3135433810ef26">Loyc.Syntax.Les.Les3Parser.Start()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
@@ -425,7 +425,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

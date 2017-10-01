@@ -117,10 +117,10 @@ Public fields</h2></td></tr>
 <tr class="memitem:a2c8cea91b597b325d66aae9b848f2391"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a2c8cea91b597b325d66aae9b848f2391">SpacesBetweenAppendedStatements</a> = true</td></tr>
 <tr class="memdesc:a2c8cea91b597b325d66aae9b848f2391"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to add a space between multiple statements printed on one line (initial value: true). <a href="#a2c8cea91b597b325d66aae9b848f2391">More...</a><br /></td></tr>
 <tr class="separator:a2c8cea91b597b325d66aae9b848f2391"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26c7467c9881cc5af21d433526af12b9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a26c7467c9881cc5af21d433526af12b9">SpaceAroundInfixStopPrecedence</a> = LesPrecedence.Power.Lo</td></tr>
+<tr class="memitem:a26c7467c9881cc5af21d433526af12b9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a26c7467c9881cc5af21d433526af12b9">SpaceAroundInfixStopPrecedence</a> = LesPrecedence.Range.Lo</td></tr>
 <tr class="memdesc:a26c7467c9881cc5af21d433526af12b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The printer avoids printing spaces around infix (binary) operators that have the specified precedence or higher. <a href="#a26c7467c9881cc5af21d433526af12b9">More...</a><br /></td></tr>
 <tr class="separator:a26c7467c9881cc5af21d433526af12b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3dbdb1e2f40be28eba2ca190f5caa2e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aa3dbdb1e2f40be28eba2ca190f5caa2e">SpaceAfterPrefixStopPrecedence</a> = LesPrecedence.Prefix.Lo</td></tr>
+<tr class="memitem:aa3dbdb1e2f40be28eba2ca190f5caa2e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aa3dbdb1e2f40be28eba2ca190f5caa2e">SpaceAfterPrefixStopPrecedence</a> = LesPrecedence.Range.Lo</td></tr>
 <tr class="memdesc:aa3dbdb1e2f40be28eba2ca190f5caa2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The printer avoids printing spaces after prefix operators that have the specified precedence or higher. <a href="#aa3dbdb1e2f40be28eba2ca190f5caa2e">More...</a><br /></td></tr>
 <tr class="separator:aa3dbdb1e2f40be28eba2ca190f5caa2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -165,6 +165,9 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>CompactMode<
 <tr class="memitem:a27414abefdf6301a9bc408ac1b4a6932"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a27414abefdf6301a9bc408ac1b4a6932">ForcedLineBreakThreshold</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a27414abefdf6301a9bc408ac1b4a6932"><td class="mdescLeft">&#160;</td><td class="mdescRight">Although the LES3 printer is not designed to insert line breaks mid-expression or to keep lines under a certain length, this option can avoid extremely long lines in some cases, by (1) inserting line breaks after commas in argument lists, or after very long attribute lists, and (2) ignoring the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf" title="Indicates that the there is no comment or newline trivia associated with the children of this node...">NodeStyle.OneLiner</a> flag or CodeSymbols.TriviaAppendStatement attribute when an expression within a braced block starts after this column on a line.  <a href="#a27414abefdf6301a9bc408ac1b4a6932">More...</a><br /></td></tr>
 <tr class="separator:a27414abefdf6301a9bc408ac1b4a6932"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35932647b51676cf15d45d6a11c2b07b"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a35932647b51676cf15d45d6a11c2b07b">DigitSeparator</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a35932647b51676cf15d45d6a11c2b07b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the "thousands" or other digit separator for numeric literals. Valid values are null (to disable the separator), underscore (_) and single quote ('). <a href="#a35932647b51676cf15d45d6a11c2b07b">More...</a><br /></td></tr>
+<tr class="separator:a35932647b51676cf15d45d6a11c2b07b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_classLoyc_1_1Syntax_1_1LNodePrinterOptions"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Syntax_1_1LNodePrinterOptions')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinterOptions.html">Loyc.Syntax.LNodePrinterOptions</a></td></tr>
 <tr class="memitem:ae9daddc348f40947899a55948da83a70 inherit properties_classLoyc_1_1Syntax_1_1LNodePrinterOptions"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9daddc348f40947899a55948da83a70"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>AllowChangeParentheses</b><code> [get, set]</code></td></tr>
@@ -232,7 +235,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int Loyc.Syntax.Les.Les3PrinterOptions.SpaceAfterPrefixStopPrecedence = LesPrecedence.Prefix.Lo</td>
+          <td class="memname">int Loyc.Syntax.Les.Les3PrinterOptions.SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -246,7 +249,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int Loyc.Syntax.Les.Les3PrinterOptions.SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo</td>
+          <td class="memname">int Loyc.Syntax.Les.Les3PrinterOptions.SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -291,6 +294,35 @@ Public Member Functions</h2></td></tr>
 
 <p>Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow perfect round-tripping.</p>
 <p>For example, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree <code>x * +(a, b)</code> will be printed <code>x * (a + b)</code>, which is a slightly different tree (the parenthesis add the trivia attribute #trivia_inParens.)</p>
+
+</div>
+</div>
+<a class="anchor" id="a35932647b51676cf15d45d6a11c2b07b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">char Loyc.Syntax.Les.Les3PrinterOptions.DigitSeparator</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the "thousands" or other digit separator for numeric literals. Valid values are null (to disable the separator), underscore (_) and single quote (').</p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">ArgumentException</td><td>Invalid property value.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>For decimal numbers, this value separates thousands (e.g. 12'345'678). For hex numbers, it separates groups of four digits (e.g. 0x1234'5678). For binary numbers, it separates groups of eight digits. </p>
 
 </div>
 </div>
@@ -545,7 +577,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

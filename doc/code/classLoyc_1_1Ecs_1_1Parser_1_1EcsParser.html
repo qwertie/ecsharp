@@ -119,7 +119,7 @@ Inheritance diagram for Loyc.Ecs.Parser.EcsParser:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Parses Enhanced C# code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (LNode), one per top-level statement.</p>
-<p>You can use EcsLanguageService.Value with ParsingService.Parse to easily parse a text string (holding zero or more EC# statements) into a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree. One does not normally use this class directly. </p>
+<p>You can use EcsLanguageService.Value with extension method ParsingService.Parse(IParsingService, UString, IMessageSink, ParsingMode, bool) to easily parse a text string (holding zero or more EC# statements) into a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree. One does not normally use this class directly. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
@@ -173,9 +173,12 @@ IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>
 <tr class="memitem:a645aea6c91dc849fe35a1b421010c634"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a645aea6c91dc849fe35a1b421010c634"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExprStart</b> (bool allowUnassignedVarDecl)</td></tr>
 <tr class="separator:a645aea6c91dc849fe35a1b421010c634"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aefd2ee1e73a5996e5fa92af95753ff6e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefd2ee1e73a5996e5fa92af95753ff6e"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExprStart2</b> (bool allowUnassignedVarDecl)</td></tr>
-<tr class="separator:aefd2ee1e73a5996e5fa92af95753ff6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad6170c13428b60dce2533924c871665"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad6170c13428b60dce2533924c871665"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExprStartNNP</b> (bool allowUnassignedVarDecl)</td></tr>
+<tr class="separator:aad6170c13428b60dce2533924c871665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b50fced262fd04aba64520baed4df6a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b50fced262fd04aba64520baed4df6a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>LinqQueryExpression</b> ()</td></tr>
+<tr class="separator:a1b50fced262fd04aba64520baed4df6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb817357ede02a6a59f5ed67f3e2a250"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb817357ede02a6a59f5ed67f3e2a250"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Stmt</b> ()</td></tr>
 <tr class="separator:abb817357ede02a6a59f5ed67f3e2a250"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -274,7 +277,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_startTextIndex</b> = 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:50 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

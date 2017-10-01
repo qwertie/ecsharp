@@ -461,8 +461,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 
 <p>Removes the back item (at index Count-1) from the list and returns it.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a8eb0140372c610b6de934231f494aa25"></a>
@@ -490,8 +488,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 <p>Resizes the list to the specified size.</p>
 <p>If the new size is larger than the old size, empty elements are added to the end. If the new size is smaller, elements are truncated from the end. </p>
 <p>I decided not to offer a <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25" title="Resizes the list to the specified size.">Resize()</a> method for the <a class="el" href="classLoyc_1_1Collections_1_1FWList.html" title="FWList is the mutable variant of the FVList data structure. ">FWList</a> because the natural place to insert or remove items in a <a class="el" href="classLoyc_1_1Collections_1_1FWList.html" title="FWList is the mutable variant of the FVList data structure. ">FWList</a> is at the beginning. For a <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25" title="Resizes the list to the specified size.">Resize()</a> method to do so, I felt, would come as too much of a surprise to some programmers. </p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>.</p>
 
 </div>
 </div>
@@ -527,7 +523,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 <dl class="section return"><dt>Returns</dt><dd>The list after the map function is applied to each item. The original <a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList. ">VList</a> structure is not modified.</dd></dl>
 <p>This method is called "Smart" because of what happens if the map doesn't do anything. If the map function returns the first N items unmodified (the items at the tail of the <a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a>), those N items are typically not copied, but shared between the existing list and the new one. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1WList.html#ad1229f947f1201edc17dfe4a47128584">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.SmartSelect()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#ad1229f947f1201edc17dfe4a47128584">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.SmartSelect()</a>.</p>
 
 </div>
 </div>
@@ -614,8 +610,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 <dl class="section return"><dt>Returns</dt><dd>A list formed from transforming all items in the list</dd></dl>
 <p>See the documentation of <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a00aaff73e8bd2e48b545a53d9dbc8047" title="Transforms a list (combines filtering with selection and more).">FVList.Transform()</a> for more information.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a14cd1fe7e486f7228aebb146766c431d"></a>
@@ -650,7 +644,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 <dl class="section return"><dt>Returns</dt><dd>The list after filtering has been applied. The original <a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList. ">VList</a> structure is not modified.</dd></dl>
 <p>If the predicate keeps the first N items it is passed (which are the last or "tail" items in a <a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a>), those N items are typically not copied, but shared between the existing list and the new one. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a14cd1fe7e486f7228aebb146766c431d">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Where()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a14cd1fe7e486f7228aebb146766c431d">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Where()</a>.</p>
 
 </div>
 </div>
@@ -709,8 +703,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 
 <p>Returns the last item of the list (at index Count-1).</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WList.html#a8eb0140372c610b6de934231f494aa25">Loyc.Collections.WList&lt; Loyc.Syntax.LNode &gt;.Resize()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a3b7a7c913f7acc1a3f0c591b4916b4ed"></a>
@@ -739,7 +731,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:49 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -128,7 +128,7 @@ Inheritance diagram for Loyc.UString:</div>
 <p>The difference between StringSlice and <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> is that StringSlice is a random-access range of char, while <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> is a bidirectional range of uchar (int). Since <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> implements IListSource&lt;Char&gt;, it requires StringSlice in order to support the Slice method. </p>
 <p><a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> has a <a class="el" href="structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815" title="Returns the UCS code point that starts at the specified index.">DecodeAt(int)</a> method that tries to decode a UTF character to UCS at a particular index. </p>
 <p>Since <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> and StringSlice are just slightly different views of the same data, you can implicitly cast between them. </p>
-<p>Unfortunately, it's not possible for <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> to compare equal to its equivalent string, for two reasons: (1) System.String.Equals cannot be changed, and (2) UString.GetHashCode cannot return the same value as String.GetHashCode without actually generating a String object, which would be inefficient (String.GetHashCode cannot be emulated because it changes between versions of the .NET framework and even between 32- and 64-bit builds.) </p>
+<p>Unfortunately, it's not possible for <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> to compare equal to its equivalent string, for two reasons: (1) System.String.Equals cannot be changed, and (2) UString.GetHashCode cannot return the same value as String.GetHashCode without actually generating a <a class="el" href="namespaceString.html">String</a> object, which would be inefficient (String.GetHashCode cannot be emulated because it changes between versions of the .NET framework and even between 32- and 64-bit builds.) </p>
 <p>TODO: add Right, Normalize, EndsWith, FindLast, ReplaceAll, etc. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -338,6 +338,12 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SubstringEqual
 <tr class="memitem:a828e8301c06c2bb16ea74c6a7eb77c20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a828e8301c06c2bb16ea74c6a7eb77c20"></a>
 static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Append</b> (StringBuilder sb, <a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
 <tr class="separator:a828e8301c06c2bb16ea74c6a7eb77c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd30b04dd3fc09e55340ff94f131019"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aecd30b04dd3fc09e55340ff94f131019"></a>
+static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (string a, <a class="el" href="structLoyc_1_1UString.html">UString</a> b)</td></tr>
+<tr class="separator:aecd30b04dd3fc09e55340ff94f131019"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27b9c281d9505e21c1647e647e024887"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27b9c281d9505e21c1647e647e024887"></a>
+static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> a, string b)</td></tr>
+<tr class="separator:a27b9c281d9505e21c1647e647e024887"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af99245c9cffdbe09b141c5cb6de6c187"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af99245c9cffdbe09b141c5cb6de6c187"></a>
 static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> a, <a class="el" href="structLoyc_1_1UString.html">UString</a> b)</td></tr>
 <tr class="separator:af99245c9cffdbe09b141c5cb6de6c187"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -721,7 +727,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">Loyc.StringExt.EliminateNamedArgs()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html#a0a19241db8db078399b6dd65ecd13f83">Loyc.Ecs.Parser.EcsLexer.Error()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6513179396d5da4cc24f218448dee9ec">Loyc.Syntax.Les.Les2Lexer.ParseIdentifier()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a575a6df8ad461f0e9558174a542d1fe5">Loyc.Syntax.Lexing.BaseILexer&lt; ICharSource, Token &gt;.ScanIndent()</a>, <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#ae214c1397f4b8a9e759d96efd847579a">Loyc.Syntax.Les.Les2Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef">Loyc.Syntax.ParseHelpers.TryParseInt()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6906dd3e2f2685923a21be2353246409">Loyc.Syntax.Les.Les2Lexer.UnescapeString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">Loyc.StringExt.EliminateNamedArgs()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html#a0a19241db8db078399b6dd65ecd13f83">Loyc.Ecs.Parser.EcsLexer.Error()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6513179396d5da4cc24f218448dee9ec">Loyc.Syntax.Les.Les2Lexer.ParseIdentifier()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a575a6df8ad461f0e9558174a542d1fe5">Loyc.Syntax.Lexing.BaseILexer&lt; ICharSource, Token &gt;.ScanIndent()</a>, <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#af5940bce275d5540e7dae0ea6fcdec1b">Loyc.Syntax.Les.Les3Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#ae214c1397f4b8a9e759d96efd847579a">Loyc.Syntax.Les.Les2Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef">Loyc.Syntax.ParseHelpers.TryParseInt()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6906dd3e2f2685923a21be2353246409">Loyc.Syntax.Les.Les2Lexer.UnescapeString()</a>.</p>
 
 </div>
 </div>
@@ -813,7 +819,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <p>Determines whether this string starts with the specified other string.</p>
 <dl class="section return"><dt>Returns</dt><dd>true if this string starts with the contents of 'what'</dd></dl>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#af5940bce275d5540e7dae0ea6fcdec1b">Loyc.Syntax.Les.Les3Lexer.SupportDotIndents()</a>.</p>
 
 </div>
 </div>
@@ -853,7 +859,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89">Loyc.UString.UString()</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7d63e3da3ba67d3d0a04f18babd4c56f">Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.IndexToMsgContext()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="structLoyc_1_1UString.html#aa10969232f461b9540f28395faf5eaf0">Loyc.UString.Replace()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#ac50139ed454f580106765536df3fef56">Loyc.Syntax.ParseHelpers.SkipSpaces()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#addcfd89299dcf4919dafc7ac0536baf1">Loyc.Syntax.ParseHelpers.UnescapeChar()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6906dd3e2f2685923a21be2353246409">Loyc.Syntax.Les.Les2Lexer.UnescapeString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#a7d63e3da3ba67d3d0a04f18babd4c56f">Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.IndexToMsgContext()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="structLoyc_1_1UString.html#aa10969232f461b9540f28395faf5eaf0">Loyc.UString.Replace()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#ac50139ed454f580106765536df3fef56">Loyc.Syntax.ParseHelpers.SkipSpaces()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#af5940bce275d5540e7dae0ea6fcdec1b">Loyc.Syntax.Les.Les3Lexer.SupportDotIndents()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#addcfd89299dcf4919dafc7ac0536baf1">Loyc.Syntax.ParseHelpers.UnescapeChar()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#a6906dd3e2f2685923a21be2353246409">Loyc.Syntax.Les.Les2Lexer.UnescapeString()</a>.</p>
 
 </div>
 </div>
@@ -963,7 +969,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <p>Returns the original string.</p>
 <p>Ideally, keep the string private, there would be no way to access its contents beyond the boundaries of the slice. However, the reality in .NET today is that many methods accept "slices" in the form of a triple (string, start index, count). In order to call such an old-style API using a slice, one must be able to extract the internal string and start index values.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a8ea501c3f584e02372967de27aaf56ef">Loyc.Syntax.ParseHelpers.EscapeCStyle()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ad70fbaf1388e889796be4bd575230755">Loyc.Collections.StringSlice.Slice()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ad70fbaf1388e889796be4bd575230755">Loyc.Collections.StringSlice.Slice()</a>.</p>
 
 </div>
 </div>
@@ -1043,7 +1049,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

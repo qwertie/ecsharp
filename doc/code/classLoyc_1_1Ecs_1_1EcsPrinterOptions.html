@@ -141,13 +141,13 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>CompactMode<
 <tr class="memdesc:a3768c538fe26b772805c86f0215672af"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter). <a href="#a3768c538fe26b772805c86f0215672af">More...</a><br /></td></tr>
 <tr class="separator:a3768c538fe26b772805c86f0215672af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfbfceed2431d2a77bc9e7f971ea6ab3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#acfbfceed2431d2a77bc9e7f971ea6ab3">ObeyRawText</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:acfbfceed2431d2a77bc9e7f971ea6ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, raw text trivia attributes (e.g. CodeSymbols.TriviaRawTextBefore) are obeyed (cause raw text output); otherwise such attributes are treated as unknown trivia and, if OmitUnknownTrivia is false, printed as attributes. <a href="#acfbfceed2431d2a77bc9e7f971ea6ab3">More...</a><br /></td></tr>
+<tr class="memdesc:acfbfceed2431d2a77bc9e7f971ea6ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, raw text trivia attributes (e.g. CodeSymbols.TriviaRawTextBefore) are obeyed (cause raw text output); otherwise such attributes are treated as unknown trivia and, if LNodePrinterOptions.OmitUnknownTrivia is false, printed as attributes. <a href="#acfbfceed2431d2a77bc9e7f971ea6ab3">More...</a><br /></td></tr>
 <tr class="separator:acfbfceed2431d2a77bc9e7f971ea6ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2b54200bf096416c06638a03d90b4ad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#ac2b54200bf096416c06638a03d90b4ad">QuoteUnprintableLiterals</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ac2b54200bf096416c06638a03d90b4ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">When the printer encounters an unprintable literal, it calls Value.ToString(). When this flag is set, the string is placed in double quotes; when this flag is clear, it is printed as raw text. <a href="#ac2b54200bf096416c06638a03d90b4ad">More...</a><br /></td></tr>
 <tr class="separator:ac2b54200bf096416c06638a03d90b4ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3b48848ba7c5144fb5d46a48710e89d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#ad3b48848ba7c5144fb5d46a48710e89d">AllowConstructorAmbiguity</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ad3b48848ba7c5144fb5d46a48710e89d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes the ambiguity between constructors and method calls to be ignored; see EcsPrinterAndParserTests.ConstructorAmbiguities(). <a href="#ad3b48848ba7c5144fb5d46a48710e89d">More...</a><br /></td></tr>
+<tr class="memdesc:ad3b48848ba7c5144fb5d46a48710e89d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes the ambiguity between constructors and method calls to be ignored; see Loyc.Ecs.Tests.EcsPrinterAndParserTests.ConstructorAmbiguities(). <a href="#ad3b48848ba7c5144fb5d46a48710e89d">More...</a><br /></td></tr>
 <tr class="separator:ad3b48848ba7c5144fb5d46a48710e89d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4985450810fc5d17c74a5ec6ea423b95"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a4985450810fc5d17c74a5ec6ea423b95">AvoidMacroSyntax</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a4985450810fc5d17c74a5ec6ea423b95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints statements like "foo (...) bar()" in the equivalent form "foo (..., bar())" instead. Does not affect foo {...} because property and event definitions require this syntax (get {...}, set {...}). <a href="#a4985450810fc5d17c74a5ec6ea423b95">More...</a><br /></td></tr>
@@ -250,7 +250,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Causes the ambiguity between constructors and method calls to be ignored; see EcsPrinterAndParserTests.ConstructorAmbiguities().</p>
+<p>Causes the ambiguity between constructors and method calls to be ignored; see Loyc.Ecs.Tests.EcsPrinterAndParserTests.ConstructorAmbiguities().</p>
 
 </div>
 </div>
@@ -385,7 +385,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>When this flag is set, raw text trivia attributes (e.g. CodeSymbols.TriviaRawTextBefore) are obeyed (cause raw text output); otherwise such attributes are treated as unknown trivia and, if OmitUnknownTrivia is false, printed as attributes.</p>
+<p>When this flag is set, raw text trivia attributes (e.g. CodeSymbols.TriviaRawTextBefore) are obeyed (cause raw text output); otherwise such attributes are treated as unknown trivia and, if LNodePrinterOptions.OmitUnknownTrivia is false, printed as attributes.</p>
 <p>Initial value: true</p>
 
 </div>
@@ -431,7 +431,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter).</p>
-<p>Note: since <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">EcsNodePrinter</a> inserts its own spaces automatically, space trivia (if any) may be redundant unless you set _o.SpaceOptions and/or <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a252fb0a7ff67e43c3a4e8ee74db6cad9" title="Controls the locations where newlines should be emitted.">NewlineOptions</a> to zero.</p>
+<p>Note: since <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">EcsNodePrinter</a> inserts its own spaces automatically, space trivia (if any) may be redundant unless you set <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a81213a1b92b8f685ac950d95d680af26" title="Controls the locations where spaces should be emitted.">SpaceOptions</a> and/or <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a252fb0a7ff67e43c3a4e8ee74db6cad9" title="Controls the locations where newlines should be emitted.">NewlineOptions</a> to zero.</p>
 
 </div>
 </div>
@@ -556,7 +556,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:50 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -199,7 +199,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The element at the specified index, or default(T) if the index is not valid.</dd></dl>
-<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span> index, ref <a class="code" href="namespaceT.html">T</a> value);</div><div class="line"><a class="code" href="namespaceT.html">T</a> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span>, <a class="code" href="namespaceT.html">T</a> defaultValue);</div></div><!-- fragment --> 
+<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span> index, ref T value);</div><div class="line">T <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span>, T defaultValue);</div></div><!-- fragment --> 
 <p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>.</p>
 
 </div>
@@ -293,7 +293,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

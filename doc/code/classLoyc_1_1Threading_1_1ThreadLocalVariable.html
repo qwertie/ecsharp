@@ -110,7 +110,9 @@ Inheritance diagram for Loyc.Threading.ThreadLocalVariable&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Threading_1_1ThreadLocalVariable.png" usemap="#Loyc.Threading.ThreadLocalVariable_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Threading.ThreadLocalVariable_3C_20T_20_3E_map" name="Loyc.Threading.ThreadLocalVariable&lt; T &gt;_map">
-<area href="classLoyc_1_1Threading_1_1ThreadLocalVariableBase.html" title="When used with ThreadEx, implementing this base class allows you to be notified when a child thread i..." alt="Loyc.Threading.ThreadLocalVariableBase" shape="rect" coords="0,0,255,24"/>
+<area href="classLoyc_1_1Threading_1_1ThreadLocalVariableBase.html" title="When used with ThreadEx, implementing this base class allows you to be notified when a child thread i..." alt="Loyc.Threading.ThreadLocalVariableBase" shape="rect" coords="0,56,255,80"/>
+<area href="interfaceLoyc_1_1IHasMutableValue.html" alt="Loyc.IHasMutableValue&lt; T &gt;" shape="rect" coords="265,56,520,80"/>
+<area href="interfaceLoyc_1_1IHasValue.html" alt="Loyc.IHasValue&lt; T &gt;" shape="rect" coords="265,0,520,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -141,15 +143,23 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasValue</b><code> [g
 <tr class="memitem:a6c1e736aae51e5b1dc50d4fbde1b650f"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a6c1e736aae51e5b1dc50d4fbde1b650f">FallbackValue</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a6c1e736aae51e5b1dc50d4fbde1b650f"><td class="mdescLeft">&#160;</td><td class="mdescRight">When a thread is not created using <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html" title="Creates and controls a thread, and fills in a gap in the .NET framework by propagating thread-local v...">ThreadEx</a>, the value of your <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html" title="Provides access to a thread-local variable through a dictionary that maps thread IDs to values...">ThreadLocalVariable</a> fails to propagate from the parent thread to the child thread. In that case, Value takes on the value of FallbackValue the first time it is called.  <a href="#a6c1e736aae51e5b1dc50d4fbde1b650f">More...</a><br /></td></tr>
 <tr class="separator:a6c1e736aae51e5b1dc50d4fbde1b650f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7de440568b4db0aa84819f10eb743f90"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a7de440568b4db0aa84819f10eb743f90">AutoFallbackMode</a><code> [get]</code></td></tr>
+<tr class="memdesc:a7de440568b4db0aa84819f10eb743f90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this variable was created in "auto-fallback" mode, which means that setting the <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#aa9a110d48f2270d2981c74669795f437" title="Value of the thread-local variable.">Value</a> property will simultaneously set the <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a6c1e736aae51e5b1dc50d4fbde1b650f" title="When a thread is not created using ThreadEx, the value of your ThreadLocalVariable fails to propagate...">FallbackValue</a> to the same value at the same time. <a href="#a7de440568b4db0aa84819f10eb743f90">More...</a><br /></td></tr>
+<tr class="separator:a7de440568b4db0aa84819f10eb743f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1IHasMutableValue"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasMutableValue')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasMutableValue.html">Loyc.IHasMutableValue&lt; T &gt;</a></td></tr>
+<tr class="memitem:a4d730548b75caf21c4d4ff256eea67c0 inherit properties_interfaceLoyc_1_1IHasMutableValue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4d730548b75caf21c4d4ff256eea67c0"></a>
+new T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get, set]</code></td></tr>
+<tr class="separator:a4d730548b75caf21c4d4ff256eea67c0 inherit properties_interfaceLoyc_1_1IHasMutableValue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1IHasValue"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasValue')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasValue.html">Loyc.IHasValue&lt; T &gt;</a></td></tr>
+<tr class="memitem:a8b63e9edc4a6b4d3877a0621c17be20c inherit properties_interfaceLoyc_1_1IHasValue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b63e9edc4a6b4d3877a0621c17be20c"></a>
+T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get]</code></td></tr>
+<tr class="separator:a8b63e9edc4a6b4d3877a0621c17be20c inherit properties_interfaceLoyc_1_1IHasValue"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afa04386ff8e3a25c02f0b7e030a3a0a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa04386ff8e3a25c02f0b7e030a3a0a0"></a>
-delegate TResult&#160;</td><td class="memItemRight" valign="bottom"><b>Func&lt; TArg0, TResult &gt;</b> (TArg0 arg0)</td></tr>
-<tr class="separator:afa04386ff8e3a25c02f0b7e030a3a0a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa940e51dd31efe3dfe151cd46b4a148a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#aa940e51dd31efe3dfe151cd46b4a148a">ThreadLocalVariable</a> (T initialValue)</td></tr>
-<tr class="memdesc:aa940e51dd31efe3dfe151cd46b4a148a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html" title="Provides access to a thread-local variable through a dictionary that maps thread IDs to values...">ThreadLocalVariable</a>. <a href="#aa940e51dd31efe3dfe151cd46b4a148a">More...</a><br /></td></tr>
-<tr class="separator:aa940e51dd31efe3dfe151cd46b4a148a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a695f82c8107972277b6846211b8cc3d2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a695f82c8107972277b6846211b8cc3d2">ThreadLocalVariable</a> (T initialValue, bool autoFallback=false)</td></tr>
+<tr class="memdesc:a695f82c8107972277b6846211b8cc3d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html" title="Provides access to a thread-local variable through a dictionary that maps thread IDs to values...">ThreadLocalVariable</a>. <a href="#a695f82c8107972277b6846211b8cc3d2">More...</a><br /></td></tr>
+<tr class="separator:a695f82c8107972277b6846211b8cc3d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91d2af97d7b6a7a5a75234a43d6f4369"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a91d2af97d7b6a7a5a75234a43d6f4369">ThreadLocalVariable</a> (T initialValue, T fallbackValue, Func&lt; T, T &gt; propagator)</td></tr>
 <tr class="memdesc:a91d2af97d7b6a7a5a75234a43d6f4369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html" title="Provides access to a thread-local variable through a dictionary that maps thread IDs to values...">ThreadLocalVariable</a>. <a href="#a91d2af97d7b6a7a5a75234a43d6f4369">More...</a><br /></td></tr>
 <tr class="separator:a91d2af97d7b6a7a5a75234a43d6f4369"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +178,12 @@ Func&lt; T, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_propag
 <tr class="memitem:a2dfe8ab920494e800a2fca607768c7b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2dfe8ab920494e800a2fca607768c7b5"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td></tr>
 <tr class="separator:a2dfe8ab920494e800a2fca607768c7b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b7a3900f205742d28fc308087c2dc11"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b7a3900f205742d28fc308087c2dc11"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_autoFallback</b></td></tr>
+<tr class="separator:a9b7a3900f205742d28fc308087c2dc11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="aa940e51dd31efe3dfe151cd46b4a148a"></a>
+<a class="anchor" id="a695f82c8107972277b6846211b8cc3d2"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -181,8 +194,18 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td><
           <td class="memname"><a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">Loyc.Threading.ThreadLocalVariable</a>&lt; T &gt;.<a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">ThreadLocalVariable</a> </td>
           <td>(</td>
           <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>initialValue</em></td><td>)</td>
+          <td class="paramname"><em>initialValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>autoFallback</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -196,6 +219,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td><
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">initialValue</td><td>Initial value on the current thread; also used as the FallbackValue in threads that are not created via <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html" title="Creates and controls a thread, and fills in a gap in the .NET framework by propagating thread-local v...">ThreadEx</a> and in other threads that are already running.</td></tr>
+    <tr><td class="paramname">autoFallback</td><td>Sets the <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a7de440568b4db0aa84819f10eb743f90" title="Returns true if this variable was created in &quot;auto-fallback&quot; mode, which means that setting the Value...">AutoFallbackMode</a> property</td></tr>
   </table>
   </dd>
 </dl>
@@ -253,6 +277,28 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td><
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="a7de440568b4db0aa84819f10eb743f90"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html">Loyc.Threading.ThreadLocalVariable</a>&lt; T &gt;.AutoFallbackMode</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if this variable was created in "auto-fallback" mode, which means that setting the <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#aa9a110d48f2270d2981c74669795f437" title="Value of the thread-local variable.">Value</a> property will simultaneously set the <a class="el" href="classLoyc_1_1Threading_1_1ThreadLocalVariable.html#a6c1e736aae51e5b1dc50d4fbde1b650f" title="When a thread is not created using ThreadEx, the value of your ThreadLocalVariable fails to propagate...">FallbackValue</a> to the same value at the same time.</p>
+
+</div>
+</div>
 <a class="anchor" id="a6c1e736aae51e5b1dc50d4fbde1b650f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -305,7 +351,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

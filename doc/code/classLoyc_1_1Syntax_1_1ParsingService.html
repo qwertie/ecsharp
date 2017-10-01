@@ -115,8 +115,11 @@ Nested classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:adcf957b6612a2e000b487f1efae9e5d9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#adcf957b6612a2e000b487f1efae9e5d9">Current</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:adcf957b6612a2e000b487f1efae9e5d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the active language service on this thread. If no service has been assigned on this thread, returns LesLanguageService.Value. <a href="#adcf957b6612a2e000b487f1efae9e5d9">More...</a><br /></td></tr>
+<tr class="memitem:a2319cb282da0d4b66cfce7b101fe05ee"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a2319cb282da0d4b66cfce7b101fe05ee">Default</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a2319cb282da0d4b66cfce7b101fe05ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the default language service on this thread. If no service has been assigned on this thread, returns LesLanguageService.Value. <a href="#a2319cb282da0d4b66cfce7b101fe05ee">More...</a><br /></td></tr>
+<tr class="separator:a2319cb282da0d4b66cfce7b101fe05ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcf957b6612a2e000b487f1efae9e5d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adcf957b6612a2e000b487f1efae9e5d9"></a>
+static <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Current</b><code> [get, set]</code></td></tr>
 <tr class="separator:adcf957b6612a2e000b487f1efae9e5d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adbd870fd81502f4c6bb1cffe366d9ec6"><td class="memItemLeft" align="right" valign="top">static IReadOnlyDictionary&lt; string, <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#adbd870fd81502f4c6bb1cffe366d9ec6">RegisteredLanguages</a><code> [get]</code></td></tr>
 <tr class="memdesc:adbd870fd81502f4c6bb1cffe366d9ec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dictionary of registered parsing services, keyed by file extension (without leading dots). The default dictionary contains one pair: <code>("les", LesLanguageService.Value)</code> <a href="#adbd870fd81502f4c6bb1cffe366d9ec6">More...</a><br /></td></tr>
@@ -124,6 +127,9 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a92621c07b0b0c38344492ec69528e234"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92621c07b0b0c38344492ec69528e234"></a>
+static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SetDefault</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> newValue)</td></tr>
+<tr class="separator:a92621c07b0b0c38344492ec69528e234"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa63099785f5004c0e1085723f56eb36a"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#aa63099785f5004c0e1085723f56eb36a">Register</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> service, IEnumerable&lt; string &gt; fileExtensions=null)</td></tr>
 <tr class="memdesc:aa63099785f5004c0e1085723f56eb36a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registers a parsing service. <a href="#aa63099785f5004c0e1085723f56eb36a">More...</a><br /></td></tr>
 <tr class="separator:aa63099785f5004c0e1085723f56eb36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,7 +161,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab30fa906c5c6d23d9781327b829aa9c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a Stream. <a href="#ab30fa906c5c6d23d9781327b829aa9c1">More...</a><br /></td></tr>
 <tr class="separator:ab30fa906c5c6d23d9781327b829aa9c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75815b22ecfabb133861de31410a88ef"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a75815b22ecfabb133861de31410a88ef">ParseFile</a> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null, bool preserveComments=true)</td></tr>
-<tr class="memdesc:a75815b22ecfabb133861de31410a88ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens the specified file and parses it. <a href="#a75815b22ecfabb133861de31410a88ef">More...</a><br /></td></tr>
+<tr class="memdesc:a75815b22ecfabb133861de31410a88ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens the specified file, parses the entire file, and closes the file. <a href="#a75815b22ecfabb133861de31410a88ef">More...</a><br /></td></tr>
 <tr class="separator:a75815b22ecfabb133861de31410a88ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6de23e9463b245c4c3740cd77d0356a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#aa6de23e9463b245c4c3740cd77d0356a">TokenizeFile</a> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
 <tr class="memdesc:aa6de23e9463b245c4c3740cd77d0356a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens the specified file and tokenizes it. <a href="#aa6de23e9463b245c4c3740cd77d0356a">More...</a><br /></td></tr>
@@ -359,7 +365,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Opens the specified file and parses it.</p>
+<p>Opens the specified file, parses the entire file, and closes the file.</p>
 
 <p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a21183532357aeb06a10658785b67c97d">Loyc.Syntax.ParsingMode.File</a>.</p>
 
@@ -491,7 +497,7 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>References <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a99ae146a79f387ca324cffddac107eaf">Loyc.Syntax.IParsingService.Parse()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Loyc.Localize.Localized()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a99ae146a79f387ca324cffddac107eaf">Loyc.Syntax.IParsingService.Parse()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
@@ -572,7 +578,7 @@ Static Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>The number of new file extensions registered, or 0 if none.</dd></dl>
 <p>This method does not replace existing registrations.</p>
 
-<p>References <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#aadf333e9962a5a94e2a2c9c445941041">Loyc.Syntax.IParsingService.FileExtensions</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Map.html#a4c63e4a2931a5334d46ab0e253541dfc">Loyc.Collections.Map&lt; K, V &gt;.With()</a>.</p>
+<p>References <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#aadf333e9962a5a94e2a2c9c445941041">Loyc.Syntax.IParsingService.FileExtensions</a>.</p>
 
 </div>
 </div>
@@ -755,12 +761,12 @@ Static Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>The number of file extensions unregistered, or 0 if none.</dd></dl>
 <p>The service for a file extension is not removed unless the given service reference is equal to the registered service.</p>
 
-<p>References <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#aadf333e9962a5a94e2a2c9c445941041">Loyc.Syntax.IParsingService.FileExtensions</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Map.html#ace1557f590370c2614db005db9a5e8fe">Loyc.Collections.Map&lt; K, V &gt;.Without()</a>.</p>
+<p>References <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#aadf333e9962a5a94e2a2c9c445941041">Loyc.Syntax.IParsingService.FileExtensions</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="adcf957b6612a2e000b487f1efae9e5d9"></a>
+<a class="anchor" id="a2319cb282da0d4b66cfce7b101fe05ee"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -768,7 +774,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> Loyc.Syntax.ParsingService.Current</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> Loyc.Syntax.ParsingService.Default</td>
         </tr>
       </table>
   </td>
@@ -778,7 +784,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Gets or sets the active language service on this thread. If no service has been assigned on this thread, returns LesLanguageService.Value.</p>
+<p>Gets or sets the default language service on this thread. If no service has been assigned on this thread, returns LesLanguageService.Value.</p>
 
 <p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLeMP_1_1Compiler.html#af3631a985a8996576b04da7d1d253b35">LeMP.Compiler.CompleteInputOutputOptions()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html#a4d5404b4221ec44af88cd18407ea5614">Loyc.LLParserGenerator.Program.QuickRun()</a>.</p>
 
@@ -810,7 +816,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

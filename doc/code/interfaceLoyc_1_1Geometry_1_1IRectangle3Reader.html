@@ -122,7 +122,7 @@ Inheritance diagram for Loyc.Geometry.IRectangle3Reader&lt; T &gt;:</div>
 <p>Conventionally, when using the size representation, the Width is defined as X2 - X1, the Height as Y2 - Y1, and the Depth as Z2 - Z1. A bounding rectangle is defined slightly differently: the Width is X2 - X1 + e, the Height is Y2 - Y1 + e, and the Depth is Z2 - Z1 + e, where e is an infitessimal value of type T (e=1 if T is an integer type). </p>
 <p>Finally, this interface could simply represent a pair of points. In that case, Width and Height return the absolute value of X2-X1 and Y2-Y1 respectively. </p>
 <p>The object may or may not require X2 &gt;= X1 and Y2 &gt;= Y1 and Z2 &gt;= Z1. If X1&gt;X2 or Y1&gt;Y2 or Z1&gt;Z2, the rectangle is said to be "not 
-normalized" and the Rectangle3Ext.IsNormal extension method returns false. </p>
+normalized" and the Rectangle3Ext.IsNormal&lt;Rect,T&gt;(Rect) extension method returns false. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -161,7 +161,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Y2</b><code> [get]</code
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:51 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

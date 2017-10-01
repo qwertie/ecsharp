@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classLoyc_1_1NullMessageSink-members.html">List of all members</a>  </div>
@@ -101,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Discards all messages. However, there is a Count property that increases by one with each message received, as well as an ErrorCount. 
  <a href="classLoyc_1_1NullMessageSink.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/MessageSinks.cs'>/Core/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/BasicSinks.cs'>/Core/Loyc.Essentials/MessageSinks/BasicSinks.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.NullMessageSink:</div>
@@ -109,21 +110,27 @@ Inheritance diagram for Loyc.NullMessageSink:</div>
  <div class="center">
   <img src="classLoyc_1_1NullMessageSink.png" usemap="#Loyc.NullMessageSink_map" alt=""/>
   <map id="Loyc.NullMessageSink_map" name="Loyc.NullMessageSink_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;" shape="rect" coords="0,56,318,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICount.html" title="Holds the Count property found in nearly all collection interfaces." alt="Loyc.Collections.ICount" shape="rect" coords="328,56,646,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="328,0,646,24"/>
+<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TContext &gt;" shape="rect" coords="0,56,225,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICount.html" title="Holds the Count property found in nearly all collection interfaces." alt="Loyc.Collections.ICount" shape="rect" coords="235,56,460,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="235,0,460,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Discards all messages. However, there is a Count property that increases by one with each message received, as well as an ErrorCount.</p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Public static fields</h2></td></tr>
+<tr class="memitem:a10afc55dc60e47000148d995da917363"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10afc55dc60e47000148d995da917363"></a>
+static readonly <a class="el" href="classLoyc_1_1NullMessageSink.html">NullMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b> = new <a class="el" href="classLoyc_1_1NullMessageSink.html">NullMessageSink</a>()</td></tr>
+<tr class="separator:a10afc55dc60e47000148d995da917363"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:ada38c38a32296ebef213ca0167e7c7d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada38c38a32296ebef213ca0167e7c7d0"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
+<tr class="memitem:ada38c38a32296ebef213ca0167e7c7d0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html#ada38c38a32296ebef213ca0167e7c7d0">Count</a><code> [get]</code></td></tr>
+<tr class="memdesc:ada38c38a32296ebef213ca0167e7c7d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of messages that have been discarded. <a href="#ada38c38a32296ebef213ca0167e7c7d0">More...</a><br /></td></tr>
 <tr class="separator:ada38c38a32296ebef213ca0167e7c7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae168320c64f822df3af250736d355db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae168320c64f822df3af250736d355db"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorCount</b><code> [get]</code></td></tr>
+<tr class="memitem:aae168320c64f822df3af250736d355db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html#aae168320c64f822df3af250736d355db">ErrorCount</a><code> [get]</code></td></tr>
+<tr class="memdesc:aae168320c64f822df3af250736d355db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of errors sent to this object so far, not including detail messages. <a href="#aae168320c64f822df3af250736d355db">More...</a><br /></td></tr>
 <tr class="separator:aae168320c64f822df3af250736d355db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4d8f48ac29b57158ab6758bc938f972"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4d8f48ac29b57158ab6758bc938f972"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
@@ -142,21 +149,31 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a967d25862263bb0cac6257a6bf1e6d40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a967d25862263bb0cac6257a6bf1e6d40"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ResetCountersToZero</b> ()</td></tr>
 <tr class="separator:a967d25862263bb0cac6257a6bf1e6d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a7debbe881d1adc644ae7bfb15f0449"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a7debbe881d1adc644ae7bfb15f0449"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
-<tr class="separator:a5a7debbe881d1adc644ae7bfb15f0449"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8e4b93674b674106b566f91c578a587"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8e4b93674b674106b566f91c578a587"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, object arg0, object arg1=null)</td></tr>
-<tr class="separator:ab8e4b93674b674106b566f91c578a587"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e6673ad7c61f4680341ed6db79e60a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e6673ad7c61f4680341ed6db79e60a2"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
-<tr class="separator:a4e6673ad7c61f4680341ed6db79e60a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf1596417682d7cc759aeace4188dd7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html#aaf1596417682d7cc759aeace4188dd7f">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type)</td></tr>
-<tr class="memdesc:aaf1596417682d7cc759aeace4188dd7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Always returns false. <a href="#aaf1596417682d7cc759aeace4188dd7f">More...</a><br /></td></tr>
-<tr class="separator:aaf1596417682d7cc759aeace4188dd7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee071e56f917b38c8f1ebf9de9f051c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee071e56f917b38c8f1ebf9de9f051c9"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format)</td></tr>
+<tr class="separator:aee071e56f917b38c8f1ebf9de9f051c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ee47fa4c53bfc27ebc2163fd5af11b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ee47fa4c53bfc27ebc2163fd5af11b5"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:a8ee47fa4c53bfc27ebc2163fd5af11b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11ce9205ca9bb8ca7cf7f5a9b744c44f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11ce9205ca9bb8ca7cf7f5a9b744c44f"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, object context, string format, params object[] args)</td></tr>
+<tr class="separator:a11ce9205ca9bb8ca7cf7f5a9b744c44f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4d0ea4f4ebb61c9ade9fbddc21dc8f9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html#ae4d0ea4f4ebb61c9ade9fbddc21dc8f9">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
+<tr class="memdesc:ae4d0ea4f4ebb61c9ade9fbddc21dc8f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Always returns false. <a href="#ae4d0ea4f4ebb61c9ade9fbddc21dc8f9">More...</a><br /></td></tr>
+<tr class="separator:ae4d0ea4f4ebb61c9ade9fbddc21dc8f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1IMessageSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1IMessageSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink&lt; in in TContext &gt;</a></td></tr>
+<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format)</td></tr>
+<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
+<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, params object[] args)</td></tr>
+<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aaf1596417682d7cc759aeace4188dd7f"></a>
+<a class="anchor" id="ae4d0ea4f4ebb61c9ade9fbddc21dc8f9"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -167,7 +184,7 @@ Public Member Functions</h2></td></tr>
           <td class="memname">bool Loyc.NullMessageSink.IsEnabled </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -180,13 +197,60 @@ Public Member Functions</h2></td></tr>
 
 <p>Always returns false.</p>
 
+<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="ada38c38a32296ebef213ca0167e7c7d0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Loyc.NullMessageSink.Count</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Total number of messages that have been discarded.</p>
+
+</div>
+</div>
+<a class="anchor" id="aae168320c64f822df3af250736d355db"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Loyc.NullMessageSink.ErrorCount</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Number of errors sent to this object so far, not including detail messages.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:45 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Enhanced C#: Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt; Interface Template Reference</title>
+<title>Enhanced C#: Loyc.IMessageSink&lt; in in TContext &gt; Interface Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,56 +89,146 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="interfaceLoyc_1_1IMessageSink-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt; Interface Template Reference</div>  </div>
+<div class="title">Loyc.IMessageSink&lt; in in TContext &gt; Interface Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p>A general-purpose interface for a class that accepts formatted messages with context information. 
  <a href="interfaceLoyc_1_1IMessageSink.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/IMessageSink.cs'>/Core/Loyc.Essentials/Utilities/IMessageSink.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/IMessageSink.cs'>/Core/Loyc.Essentials/MessageSinks/IMessageSink.cs</a></li>
 </ul>
 <div class="dynheader">
-Inheritance diagram for Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;:</div>
+Inheritance diagram for Loyc.IMessageSink&lt; in in TContext &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="interfaceLoyc_1_1IMessageSink.png" usemap="#Loyc.IMessageSink_3C_20in_20in_20TSeverity_2C_20in_20in_20TContext_20_3E_map" alt=""/>
-  <map id="Loyc.IMessageSink_3C_20in_20in_20TSeverity_2C_20in_20in_20TContext_20_3E_map" name="Loyc.IMessageSink&lt; in in TSeverity, in in TContext &gt;_map">
-<area href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP)." alt="LeMP.IMacroContext" shape="rect" coords="328,56,646,80"/>
-<area href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail." alt="Loyc.ConsoleMessageSink" shape="rect" coords="328,112,646,136"/>
-<area href="classLoyc_1_1MessageFilter.html" title="A decorator that uses a delegate to accept or ignore messages." alt="Loyc.MessageFilter" shape="rect" coords="328,168,646,192"/>
-<area href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list." alt="Loyc.MessageHolder" shape="rect" coords="328,224,646,248"/>
-<area href="classLoyc_1_1MessageSinkFromDelegate.html" title="This helper class lets you implement IMessageSink with one or two delegates (a writer method..." alt="Loyc.MessageSinkFromDelegate" shape="rect" coords="328,280,646,304"/>
-<area href="classLoyc_1_1MessageSplitter.html" title="A message sink that sends its messages to a list of other sinks." alt="Loyc.MessageSplitter" shape="rect" coords="328,336,646,360"/>
-<area href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec..." alt="Loyc.NullMessageSink" shape="rect" coords="328,392,646,416"/>
-<area href="classLoyc_1_1SeverityMessageFilter.html" title="A decorator (wrapper) for IMessageSink that filters out some messages if their Severity is too low..." alt="Loyc.SeverityMessageFilter" shape="rect" coords="328,448,646,472"/>
-<area href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string)." alt="Loyc.TraceMessageSink" shape="rect" coords="328,504,646,528"/>
+  <img src="interfaceLoyc_1_1IMessageSink.png" usemap="#Loyc.IMessageSink_3C_20in_20in_20TContext_20_3E_map" alt=""/>
+  <map id="Loyc.IMessageSink_3C_20in_20in_20TContext_20_3E_map" name="Loyc.IMessageSink&lt; in in TContext &gt;_map">
+<area href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP)." alt="LeMP.IMacroContext" shape="rect" coords="268,56,526,80"/>
+<area href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail." alt="Loyc.ConsoleMessageSink" shape="rect" coords="268,112,526,136"/>
+<area href="classLoyc_1_1MessageFilter.html" title="A decorator that uses a delegate to accept or ignore messages." alt="Loyc.MessageFilter" shape="rect" coords="268,168,526,192"/>
+<area href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list." alt="Loyc.MessageHolder" shape="rect" coords="268,224,526,248"/>
+<area href="classLoyc_1_1MessageMulticaster.html" title="A message sink that sends its messages to a list of other sinks." alt="Loyc.MessageMulticaster&lt; TContext &gt;" shape="rect" coords="268,280,526,304"/>
+<area href="classLoyc_1_1MessageSinkFromDelegate.html" title="This helper class lets you implement IMessageSink with one or two delegates (a writer method..." alt="Loyc.MessageSinkFromDelegate" shape="rect" coords="268,336,526,360"/>
+<area href="classLoyc_1_1MessageSinkWithContext.html" title="A message sink wrapper that has a default value for the context parameter, which is used when the con..." alt="Loyc.MessageSinkWithContext&lt; TContext &gt;" shape="rect" coords="268,392,526,416"/>
+<area href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec..." alt="Loyc.NullMessageSink" shape="rect" coords="268,448,526,472"/>
+<area href="classLoyc_1_1SeverityMessageFilter.html" title="A decorator (wrapper) for IMessageSink that filters out some messages if their Severity is too low..." alt="Loyc.SeverityMessageFilter&lt; TContext &gt;" shape="rect" coords="268,504,526,528"/>
+<area href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string)." alt="Loyc.TraceMessageSink" shape="rect" coords="268,560,526,584"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A general-purpose interface for a class that accepts formatted messages with context information.</p>
-<p><a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="Alias for IMessageSink&lt;Severity, TContext&gt;.">IMessageSink</a> is used for dependency injection of a target for formatted messages; it could be used for log messages, compiler error messages, or to report the progress of a process, for instance. </p>
-<p>It is typical to use <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="Alias for IMessageSink&lt;Severity, TContext&gt;.">IMessageSink</a> without type parameters. </p>
-<p>Since .NET does not allow static members in an interface, the static members can be found in <a class="el" href="classLoyc_1_1MessageSink.html" title="Holds the default message sink for this thread (Current), Symbols for the common message types...">MessageSink</a>. </p>
+<p>Alias for <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a>&lt;object&gt;.</p>
+<p><a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> is used for dependency injection of a target for formatted messages; it could be used for log messages, compiler error messages, or to report the progress of a process, for instance. </p>
+<p>It is typical to use <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> without type parameters. </p>
+<p>Since .NET does not allow static members in an interface, the static members can be found in <a class="el" href="classLoyc_1_1MessageSink.html" title="Keeps track of the default message sink (Default); contains a series of helper methods; and contains ...">MessageSink</a>. </p>
 <p>Each message has a <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e" title="A linear scale to categorize the importance and seriousness of messages sent to IMessageSink.">Severity</a>. For message sinks that are used as loggers, this should be one of the following logging levels, listed in order of importance: Fatal, Error, Warning, Note, Debug, Verbose. </p>
 <p>For message sinks that are used for compiler messages, the standard levels are: Fatal, Error, Warning, Note, Detail. "Detail" provides more information about a previously-printed message, while "Note" is intended for independent messages that are less severe than warnings (e.g. lints). Some compilers may distiguish "soft" errors (which do not prevent the program from starting) from "critical" errors (which do). In that case, Error may represent such a "soft" error and Critical may represent a "hard" error. Fatal, in contrast, represents an error that causes the compiler to halt immediately. </p>
-<p>The message sink itself should perform localization, which can be done with <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e" title="This is the heart of the Localize class, which localizes and formats a string. ">Localize.Localized</a>. </p>
-<p>Only a single Write() method is truly needed (Write(Severity, object, string, object[])), but for efficiency reasons the interface contains two other writers. It is expected to be fairly common that a message sink will drop some or all messages without printing them, e.g. if a message sink is used for logging, verbose messages might be "off" by default. It would be wasteful to actually localize and format a message if the message will not actually be printed, and it would also be wasteful to create an array of objects to hold the arguments if they are just going to be discarded. With that in mind, since most formatting requests only need a couple of arguments, there is an overload of Write() that accepts up to two arguments without the need to package them into an array, and there is an overload that takes no formatting arguments (this indicates that parameter substitution is not required and should not be attempted.) </p>
-<p>In addition, the caller can call IsEnabled(Severity) to avoid doing any work required to prepare a message for printing when a certain category of output is disabled. </p>
+<p>If the message sink may produce messages that users will see, the message sink itself should perform localization using Localize.Localized(string, object[]). </p>
+<p>Only a single <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">Write()</a> method is truly needed (Write(Severity, TContext, string, object[])), but for efficiency reasons the interface contains two other writers. It is expected to be fairly common that a message sink will drop some or all messages without printing them, e.g. if a message sink is used for logging, verbose messages might be "off" by default. It would be wasteful to actually localize and format a message if the message will not actually be printed, and it would also be wasteful to create an array of objects to hold the arguments if they are just going to be discarded. With that in mind, since most formatting requests only need a couple of arguments, there is an overload of <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">Write()</a> that accepts up to two arguments without the need to package them into an array, and there is an overload that takes no formatting arguments (this indicates that parameter substitution is not required and should not be attempted.) </p>
+<p>In addition, the caller can call <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace" title="Returns true if messages of the specified type will actually be printed, or false if Write(type...">IsEnabled(Severity)</a> to avoid doing any work required to prepare a message for printing when a certain category of output is disabled. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">TSeverity</td><td>The type of the first parameter to <code>Write</code>, which is used to indicate the "kind" of message being logged. Typically this parameter is <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e" title="A linear scale to categorize the importance and seriousness of messages sent to IMessageSink.">Severity</a>, which includes values like Note, Warning and Error.</td></tr>
     <tr><td class="paramname">TContext</td><td>The type of the second parameer to <code>Write</code>, which indicates where the error occurs. If the message relates to a text file or source code, the location is typically indicated with an object of type <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">Loyc.Syntax.SourceRange</a> or <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1MessageSink.html" title="Holds the default message sink for this thread (Current), Symbols for the common message types...">MessageSink</a>, <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail.">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a>, <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>, <a class="el" href="classLoyc_1_1MessageFilter.html" title="A decorator that uses a delegate to accept or ignore messages.">MessageFilter</a>, <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>, <a class="el" href="classLoyc_1_1MessageSplitter.html" title="A message sink that sends its messages to a list of other sinks.">MessageSplitter</a>, <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a></dd></dl>
-</div></div><!-- contents -->
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1MessageSink.html" title="Keeps track of the default message sink (Default); contains a series of helper methods; and contains ...">MessageSink</a>, <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail.">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a>, <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>, <a class="el" href="classLoyc_1_1MessageFilter.html" title="A decorator that uses a delegate to accept or ignore messages.">MessageFilter</a>, <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>, <a class="el" href="classLoyc_1_1MessageMulticaster.html" title="A message sink that sends its messages to a list of other sinks.">MessageMulticaster</a>, <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink&lt;TContext&gt;</a></dd></dl>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format)</td></tr>
+<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
+<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, object arg0, object arg1=null)</td></tr>
+<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, [Localizable] string format, params object[] args)</td></tr>
+<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6db1db5451df906265c101e025accace"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
+<tr class="memdesc:a6db1db5451df906265c101e025accace"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if messages of the specified type will actually be printed, or false if Write(type, ...) has no effect. <a href="#a6db1db5451df906265c101e025accace">More...</a><br /></td></tr>
+<tr class="separator:a6db1db5451df906265c101e025accace"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a6db1db5451df906265c101e025accace"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink</a>&lt; in in TContext &gt;.IsEnabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns true if messages of the specified type will actually be printed, or false if Write(type, ...) has no effect.</p>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1MessageSinkWithContext.html#a13a55d218181e168ff4e71dd842231a1">Loyc.MessageSinkWithContext&lt; TContext &gt;</a>, <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a1569b605f0a05f5abd0df03549a1222a">Loyc.MessageSinkFromDelegate</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html#a60b1854d5d7739a9103eaefd78a9e1e6">Loyc.TraceMessageSink</a>, <a class="el" href="classLoyc_1_1MessageMulticaster.html#a7be6e35b458f2349a0320ba0736de240">Loyc.MessageMulticaster&lt; TContext &gt;</a>, <a class="el" href="classLoyc_1_1NullMessageSink.html#ae4d0ea4f4ebb61c9ade9fbddc21dc8f9">Loyc.NullMessageSink</a>, <a class="el" href="classLoyc_1_1MessageFilter.html#a71f8d2c1edd7e8db9eae78c2999233c4">Loyc.MessageFilter</a>, <a class="el" href="classLoyc_1_1ConsoleMessageSink.html#a4921151b2b970e6f8ca977e0a5f932e0">Loyc.ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#abcf127aeeb08bf4d16bfcc5d492bc137">Loyc.SeverityMessageFilter&lt; TContext &gt;</a>, and <a class="el" href="classLoyc_1_1MessageHolder.html#abdf4891b53287b029609ffc2613c6d88">Loyc.MessageHolder</a>.</p>
+
+<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">LeMP.Compiler.AddStdMacros()</a>, <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#abcf127aeeb08bf4d16bfcc5d492bc137">Loyc.SeverityMessageFilter&lt; TContext &gt;.IsEnabled()</a>, and <a class="el" href="classLoyc_1_1MessageSink.html#ad6b2bd7e5e4c197f8b286d5e2da3e6b6">Loyc.MessageSink.SetContextToString()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9a94824f7aa5fcf1311cd67edcf4e222"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink</a>&lt; in in TContext &gt;.Write </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
+          <td class="paramname"><em>level</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TContext&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">[Localizable] string&#160;</td>
+          <td class="paramname"><em>format</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Writes a message to the target that this object represents.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">level</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
+    <tr><td class="paramname">context</td><td>An object that the message is related to, or that represents the location that the message applies to. The message sink may try to convert this object to a string and include it in its output. See also <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">MessageSink.ContextToString</a>().</td></tr>
+    <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1MessageSinkWithContext.html#a2b9b67440b26096cbb83ff33f0a6c739">Loyc.MessageSinkWithContext&lt; TContext &gt;</a>, <a class="el" href="classLoyc_1_1MessageMulticaster.html#a007e5d4bba4ab0592d6778ed05cc1ed5">Loyc.MessageMulticaster&lt; TContext &gt;</a>, and <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#a296a47dbe6906f7495ef42519e5ad12f">Loyc.SeverityMessageFilter&lt; TContext &gt;</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, <a class="el" href="classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95">LeMP.Compiler.Run()</a>, <a class="el" href="classLoyc_1_1MessageSink.html#ad6b2bd7e5e4c197f8b286d5e2da3e6b6">Loyc.MessageSink.SetContextToString()</a>, and <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#a296a47dbe6906f7495ef42519e5ad12f">Loyc.SeverityMessageFilter&lt; TContext &gt;.Write()</a>.</p>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Dec 4 2016 11:50:44 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

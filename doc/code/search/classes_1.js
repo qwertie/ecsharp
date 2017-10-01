@@ -22,9 +22,6 @@ var searchData=
   ['bmultimap',['BMultiMap',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
   ['bmultimap_3c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistnode_3c_20k_2c_20t_20_3e_2c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistinnerbase_3c_20k_2c_20t_20_3e_20_3e',['BMultiMap&lt; Loyc::Collections::Impl::AListNode&lt; K, T &gt;, Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt; &gt;',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
   ['bmultimap_3c_20t_2c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistleaf_3c_20k_2c_20t_20_3e_20_3e',['BMultiMap&lt; T, Loyc::Collections::Impl::AListLeaf&lt; K, T &gt; &gt;',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
-  ['boundingbox',['BoundingBox',['../classLoyc_1_1Geometry_1_1BoundingBox.html',1,'Loyc::Geometry']]],
-  ['boundingboxext',['BoundingBoxExt',['../classLoyc_1_1Geometry_1_1BoundingBoxExt.html',1,'Loyc::Geometry']]],
-  ['boundingboxmath',['BoundingBoxMath',['../classLoyc_1_1Geometry_1_1BoundingBoxMath.html',1,'Loyc::Geometry']]],
   ['bufferedsequence',['BufferedSequence',['../classLoyc_1_1Collections_1_1BufferedSequence.html',1,'Loyc::Collections']]],
   ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]]
 ];
