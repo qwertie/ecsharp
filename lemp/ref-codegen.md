@@ -343,7 +343,7 @@ can be used later in the same braced block (although technically `$` is a macro 
 
 The left-hand side of `=` can specify multiple patterns separated by `|`. If you 
 want `=` or `|` themselves (or other low-precedence operators, such as `&&`) to be part of the pattern on the left-hand side, you should enclose the pattern in braces (note: expressions in braces must end with `;` in EC#). If the pattern itself is intended to match a braced block, use double braces (e.g. 
-`{{ $stuff; }}`).
+`{ { $stuff; } }`).
 
 Macros are expanded in the right-hand side (`tree`) before deconstruction occurs.
 

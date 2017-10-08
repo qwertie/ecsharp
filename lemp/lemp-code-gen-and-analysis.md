@@ -197,7 +197,7 @@ You'll see code in your output file (example.out.cs) to create a syntax tree rep
       LNode.List(LNode.Id((Symbol) "x"), call)).SetStyle(NodeStyle.Operator);
 ~~~
 
-`quote` accepts either an `(expression in parentheses)` or a `{ statement in braces; }`. When using braces, make sure to add a semicolon at the end of the statement! If you'd like to create a syntax tree that itself represents a braced block, you'll need to use double braces as in `quote {{ stuff; }}`.
+`quote` accepts either an `(expression in parentheses)` or a `{ statement in braces; }`. When using braces, make sure to add a semicolon at the end of the statement! If you'd like to create a syntax tree that itself represents a braced block, you'll need to use double braces as in `quote { { stuff; } }`.
 
 Because the output from `quote` refers to data types such as `Symbol`, `CodeSymbols`, and `LNode`, you may need to add references to the following namespaces when using this macro:
 

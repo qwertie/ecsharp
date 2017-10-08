@@ -4,6 +4,8 @@ layout: article
 toc: true
 ---
 
+TODO: update this documentation, it's **woefully** out of date.
+
 ## Features of the macro system ################################################
 
 As I mentioned, a macro is a method that is called at compile time, that takes syntax trees as arguments and returns another syntax tree, which is expanded in-place. A macro can also take values as arguments, which are evaluated as compile-time constants.
@@ -68,14 +70,14 @@ Similarly, a macro can safely declare variables:
 	[Macro]
 	public Node swap(Node a, Node b)
 	{
-		return s_quote {{
+		return s_quote { {
 			var temp = $a;
 			$a = $b;
 			$b = temp;
-		}};
+		} };
 	}
 
-Here, s_quote {{ ... }} is used to create a new scope. s_quote {{ ... }} is not really a special syntax, it is just a block "{...}" nested inside a quotation "s_quote {  }". "s_quote" does not propagate the outer braces to the output, so an extra pair are needed to create a block.
+Here, s_quote { { ... } } is used to create a new scope. s_quote { { ... } } is not really a special syntax, it is just a block "{...}" nested inside a quotation "s_quote {  }". "s_quote" does not propagate the outer braces to the output, so an extra pair are needed to create a block.
 
 The extra braces are needed because swap() is not isolated from itself. If you call swap() twice, you don't want "var temp" to be declared twice in the same scope, which is illegal according to the plain C# rules inherited by EC#.
 
@@ -161,10 +163,10 @@ Luckily, most macros just read variables and do not change them. Such macros can
 	[Macro]
 	public Node square(Node x)
 	{
-		return s_quote {{
+		return s_quote { {
 			var tmp = $x;
 			tmp * tmp;
-		}};
+		} };
 	}
 
 Here we create a temporary variable "tmp" to avoid evaluating "x" twice; the second statement implicitly returns the value of tmp*tmp to the macro's caller.
