@@ -9,6 +9,8 @@ namespace Loyc.Collections
 	/// interface (e.g. Take(IList&lt;int>) returns a struct that implements IList&lt;int>)
 	/// or have higher performance than the ones in System.Linq.Enumerable.
 	/// </summary><remarks>
+	/// Helpful article: http://core.loyc.net/essentials/linq-to-lists.html
+	/// <para/>
 	/// For example, the <see cref="Enumerable.Last()"/> extension 
 	/// method scans the entire list before returning the last item, while 
 	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply

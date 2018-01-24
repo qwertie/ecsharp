@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.5.1.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.6.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -16,9 +16,11 @@ namespace Loyc.Collections
 	/// interface (e.g. Take(IList&lt;int>) returns a struct that implements IList&lt;int>)
 	/// or have higher performance than the ones in System.Linq.Enumerable.
 	/// </summary><remarks>
+	/// Helpful article: http://core.loyc.net/essentials/linq-to-lists.html
+	/// <para/>
 	/// For example, the <see cref="Enumerable.Last()"/> extension 
 	/// method scans the entire list before returning the last item, while 
-	/// <see cref="Last{T}(IReadOnlyList{T})"/> and <see cref="Last{T}(IList{T})"/> simply
+	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
 	/// return the last item directly.
 	/// </remarks>
 	public static partial class LinqToLists

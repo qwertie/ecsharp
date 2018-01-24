@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.5.0.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.6.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -16,6 +16,7 @@ namespace Loyc
 	/// <summary>Keeps track of the default message sink (<see cref="Default"/>); 
 	/// contains a series of helper methods; and contains extension methods 
 	/// modeled after log4net: Fatal, Error, Warn, Info, Debug.</summary>
+	/// <remarks>Helpful article: http://core.loyc.net/essentials/messagesink.html </remarks>
 	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{

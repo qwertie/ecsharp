@@ -277,9 +277,15 @@ namespace Loyc.Collections
 		{
 			if (_root != null)
 			{
-				index = (index == null ? 0 : index + 1);
+				if (index == null)
+					index = 0;
+				else if (index == int.MaxValue)
+					goto end;
+				else
+					index++;
 				return _root.SparseGetNearest(ref index, 1);
 			}
+		end:
 			index = null;
 			return default(T);
 		}

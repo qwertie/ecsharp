@@ -9,6 +9,7 @@ namespace Loyc
 	/// <summary>Keeps track of the default message sink (<see cref="Default"/>); 
 	/// contains a series of helper methods; and contains extension methods 
 	/// modeled after log4net: Fatal, Error, Warn, Info, Debug.</summary>
+	/// <remarks>Helpful article: http://core.loyc.net/essentials/messagesink.html </remarks>
 	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{
@@ -218,7 +219,7 @@ namespace Loyc
 			return new MessageSinkFromDelegate(writer, isEnabled);
 		}
 
-		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"> with a default context to be used
+		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"/> with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
 		/// have any context parameter.</summary>

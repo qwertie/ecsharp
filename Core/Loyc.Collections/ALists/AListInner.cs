@@ -139,7 +139,7 @@ namespace Loyc.Collections.Impl
 		
 		internal override T SparseGetNearest(ref int? index, int direction)
 		{
-			int i = BinarySearchI((uint)index.Value);
+			int i = index.Value <= 0 ? 0 : BinarySearchI((uint)index.Value);
 			if (i >= _childCount) {
 				if (direction < 0)
 					i = _childCount - 1;

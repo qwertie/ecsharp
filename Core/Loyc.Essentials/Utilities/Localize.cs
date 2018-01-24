@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Created David on 7/20/2007 at 2:21 PM
  */
 
@@ -14,6 +14,7 @@ namespace Loyc
 	/// <summary>
 	/// Localize is a global hook into which a string-mapping localizer can be
 	/// installed. It makes your program localization-ready with no effort.
+	/// See article: http://core.loyc.net/essentials/localize.html
 	/// </summary><remarks>
 	/// The idea of this Localize facility is to convince programmers to support
 	/// localization by making it dead-easy to do. By default it is not connected to
@@ -51,7 +52,7 @@ namespace Loyc
 	/// | "Load"        | "fr"     | "Charge"        |
 	/// | "Save"        | "es"     | "Guardar"       |
 	/// | "Save"        | "fr"     | "Enregistrer"   |
- 	/// </pre>
+	/// </pre>
 	/// Many developers use a resx file to store translations. This class supports 
 	/// that approach, as explained below.
 	/// <para/>

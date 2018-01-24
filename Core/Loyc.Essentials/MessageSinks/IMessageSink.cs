@@ -16,9 +16,13 @@ namespace Loyc
 	/// <summary>A general-purpose interface for a class that accepts formatted 
 	/// messages with context information.</summary>
 	/// <remarks>
+	/// Helpful article: http://core.loyc.net/essentials/messagesink.html 
+	/// <para/>
 	/// IMessageSink is used for dependency injection of a target for formatted 
 	/// messages; it could be used for log messages, compiler error messages, or
-	/// to report the progress of a process, for instance.
+	/// to report the progress of a process, for instance. Frequently-used 
+	/// message sinks include <see cref="ConsoleMessageSink.Value"/>, 
+	/// <see cref="TraceMessageSink.Value"/>, and <see cref="MessageHolder"/>.
 	/// <para/>
 	/// It is typical to use <see cref="IMessageSink"/> without type parameters.
 	/// <para/>

@@ -302,7 +302,7 @@ namespace Loyc.Syntax.Les
 			Case("x.*.5", A(TT.Id, TT.NormalOp, TT.Literal), _("x"), _("'.*"), 0.5);
 		}
 
-		[Test(Fails = "Succeeds on qwertie's PC but not AppVeyor. Rounding difference somewhere.")]
+		[Test(Fails = "Succeeds on .NET 4 but not .NET 4.5. Rounding difference somewhere.")]
 		public void TestFloats2()
 		{
 			Case("1234567890123456789012345678901234567890d", A(TT.Literal), 1234567890123456789012345678901234567890d);
