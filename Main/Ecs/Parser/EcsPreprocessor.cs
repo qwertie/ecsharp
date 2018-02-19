@@ -83,7 +83,7 @@ namespace Loyc.Ecs.Parser
 		void AddWSToken(Token t)
 		{
 			if (SaveComments) {
-				if (t.Type() == TokenType.Newline && _triviaList[_triviaList.Count - 1, default(Token)].Kind == TokenKind.Other)
+				if (t.Type() == TokenType.Newline && _triviaList.Count != 0 && _triviaList[_triviaList.Count - 1].Kind == TokenKind.Other)
 					return; // Ignore newline at end of PP token
 				_triviaList.Add(t);
 			}
@@ -99,8 +99,8 @@ namespace Loyc.Ecs.Parser
 			redo:
 				if (!t_.HasValue)
 					break;
-			    var t = t_.Value;
-			    if (t.IsWhitespace) {
+				var t = t_.Value;
+				if (t.IsWhitespace) {
 					AddWSToken(t);
 					continue;
 				} else if (t.Kind == TokenKind.Other) {

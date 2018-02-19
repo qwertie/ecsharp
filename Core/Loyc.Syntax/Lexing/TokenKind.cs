@@ -46,9 +46,8 @@ namespace Loyc.Syntax.Lexing
 	/// </remarks>
 	public enum TokenKind
 	{
-		/// <summary>Spaces, tabs, non-semantic newlines, and EOF</summary>
-		/// <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
-		Spaces       = 0x0000, 
+		/// <summary>For token types not covered by other token kinds.</summary>
+		Other        = 0x0000,
 		/// <summary>Single- and multi-line comments</summary>
 		/// <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
 		Comment      = 0x0100,
@@ -70,8 +69,9 @@ namespace Loyc.Syntax.Lexing
 		TypeKeyword  = 0x0B00,
 		/// <summary>e.g. sizeof, struct. Does not include literal keywords (true, false, null)</summary>
 		OtherKeyword = 0x0C00,
-		/// <summary>For token types not covered by other token kinds.</summary>
-		Other        = 0x0F00,
+		/// <summary>Spaces, tabs, non-semantic newlines, and EOF</summary>
+		/// <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
+		Spaces       = 0x0F00, 
 		LParen       = 0x1000,
 		RParen       = 0x1100,
 		LBrack       = 0x1200,

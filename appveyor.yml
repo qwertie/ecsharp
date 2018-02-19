@@ -56,8 +56,7 @@ artifacts:
     - path: '*.nupkg'
       name: nupkgs
 
-# Uncomment the section below to push the NuGet
-# package whenever a git tag is pushed.
+# Push the NuGet packages whenever a git tag is pushed.
 deploy:
     - provider: NuGet
       server:
