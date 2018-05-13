@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -695,6 +695,24 @@ namespace Loyc.Ecs.Tests
 				F.Call(S.Try, F.Braces(F.Call(Foo)), F.Call(S.Catch, F.Missing, F.True, F.Braces())));
 			Stmt("try { } catch (Foo b) when (c) {\n  x();\n}",
 				F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Var(Foo, b), c, F.Braces(F.Call(x)))));
+		}
+
+		[Test]
+		public void CSharp7Patterns()
+		{
+			Expr("x is Foo", F.Call(S.Is, x, Foo));
+			Expr("x is Foo a", F.Call(S.Is, x, F.Var(Foo, a)));
+			Expr("x is Foo<T> a", F.Call(S.Is, x, F.Var(F.Of(Foo, T), a)));
+		}
+
+		[Test]
+		public void CSharp7TupleTypes()
+		{
+		}
+
+		[Test]
+		public void CSharp7OtherFeatures()
+		{
 		}
 	}
 }

@@ -78,8 +78,7 @@ namespace Loyc.Ecs
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
 			P(S.Cast, EP.Prefix),         // (Foo)x      (preferred form)
 			P(S.As, EP.IsAsUsing),        // x as Foo    (preferred form)
-			P(S.UsingCast, EP.IsAsUsing), // x using Foo (preferred form)
-			P(S.Is, EP.IsAsUsing)         // x is Foo (not a cast op, but we'd like to use the same printer)
+			P(S.UsingCast, EP.IsAsUsing)  // x using Foo (preferred form)
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
@@ -116,6 +115,7 @@ namespace Loyc.Ecs
 			var both = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOrInfixOperator");
 			var throwEtc = OpenDelegate<OperatorPrinter>("AutoPrintPrefixReturnThrowEtc");
 			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
+			var isOp = OpenDelegate<OperatorPrinter>("AutoPrintIsOperator");
 			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
 			var @new = OpenDelegate<OperatorPrinter>("AutoPrintNewOperator");
 			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
@@ -136,6 +136,7 @@ namespace Loyc.Ecs
 					d[op] = Pair.Create(EcsPrecedence.Lambda, throwEtc);
 			foreach (var p in CastOperators)
 				d[p.Key] = Pair.Create(p.Value, cast);
+			d[S.Is] = Pair.Create(EP.IsAsUsing, isOp);
 			foreach (Symbol op in ListOperators)
 				d[op] = Pair.Create(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators)
@@ -416,7 +417,7 @@ namespace Loyc.Ecs
 			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
 		}
-		
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintCastOperator(Precedence precedence)
 		{
@@ -495,8 +496,33 @@ namespace Loyc.Ecs
 		{
 			if (name == S.UsingCast) return "using";
 			if (name == S.As) return "as";
-			if (name == S.Is) return "is";
 			return "->";
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintIsOperator(Precedence precedence)
+		{   // C# 7 syntax: `x is Y y`  EC# syntax: `x is Y y (optional_subexprs)`
+			LNode subject, targetType, targetVarName, tuple;
+			if (!EcsValidators.IsIsTest(_n, out subject, out targetType, out targetVarName, out tuple, Pedantics))
+				return false;
+			bool needParens;
+			if (!CanAppearHere(precedence, out needParens))
+				return false;
+			if (WriteOpenParen(ParenFor.Grouping, needParens))
+				_context = StartExpr;
+
+			PrintExpr(subject, precedence.LeftContext(_context));
+			_out.Write("is ", true);
+			PrintType(targetType, EP.Primary);
+			if (targetVarName != null) {
+				_out.Space();
+				PrintExpr(targetVarName, EP.Primary, Ambiguity.InDefinitionName);
+			}
+			if (tuple != null)
+				PrintArgList(tuple.Args, ParenFor.MethodCall, true, false);
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
+			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -965,11 +991,9 @@ namespace Loyc.Ecs
 				PrintType(a[0], EP.Primary.LeftContext(_context), flags & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
-				var @var = a[i];
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
-
-				PrintExpr(@var, EP.Assign.RightContext(_context), Ambiguity.InDefinitionName);
+				PrintExpr(a[i], EP.Assign.RightContext(_context), Ambiguity.InDefinitionName);
 			}
 		}
 

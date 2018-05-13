@@ -98,6 +98,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// A potential LINQ keyword that, it turns out, can be treated as an identifier
+		// because we are not in the context of a LINQ expression.
 		@[private] rule LinqKeywordAsId()::Token @{
 			&!{_insideLinqExpr} result:TT.LinqKeyword
 		};
@@ -158,7 +159,7 @@ namespace Loyc.Ecs.Parser
 			result:IdAtom [TParams(declarationContext, ref result)]?
 		};
 
-		// identifier, $identifier, $(expr), or primitive type (int, string)
+		// identifier, $identifier, $(expr), operator+ (or another operator name), or a primitive type (int, string)
 		rule IdAtom::LNode @{
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
@@ -255,6 +256,9 @@ namespace Loyc.Ecs.Parser
 				// operator. It also fails to parse "x as Foo?*" with a syntax error, 
 				// not a semantic error, and for "x as Foo? * x" it again says 
 				// "':' expected".
+				//
+				// Note: C# 7 introduces "x is Foo y" syntax, but "x is Foo? y" is 
+				// illegal, just like "x as Foo? y" ("Syntax error, ':' expected")
 				// 
 				// Examples (usually there is more than one syntax error, but the message
 				// "':' expected" indicates how the parser sees the situation):
@@ -398,8 +402,7 @@ namespace Loyc.Ecs.Parser
 			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args, false, true)), F.Braces(StmtListInside(block), block.StartIndex, rb.EndIndex), 
 				            t.StartIndex, rb.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.OldStyle);}
-			|	t:=TT.Is dt:=DataType
-				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex, t.StartIndex, t.EndIndex);}
+			|	t:=TT.Is r=IsPattern(F.Missing, t)
 			|	error 
 				greedy[ (~(","|";")) ]*
 				{r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
@@ -675,13 +678,15 @@ namespace Loyc.Ecs.Parser
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.In )
 				rhs:=SubExpr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-			|	// is, as, or using cast (special case: #usingCast instead of #using)
-				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
-				op:=(TT.Is | TT.As | TT.Using)
+			|	// is-test or a more complex is-expr
+				&{@[Local] context.CanParse(prec=EP.Compare)}
+				op:=TT.Is
+				e=IsPattern(e, op)
+				// 'as' or 'using' cast (special case: #usingCast instead of #using)
+			|	&{@[Local] context.CanParse(prec=EP.Compare)}
+				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
-				{var opSym = op.Type() == TT.Using ? S.UsingCast : (op.Value -> Symbol);}
-				{e = F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
-				FinishPrimaryExpr(ref e)
+				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
@@ -697,6 +702,19 @@ namespace Loyc.Ecs.Parser
 						op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			)*
 			{return e;}
+		};
+
+		@[recognizer(fn Scan_IsPattern())]
+		@[private] token IsPattern(lhs::LNode, isTok::Token)::LNode // 'token' is used to avoid long analysis in LLLPG
+		@{
+			{argList::VList!LNode = (new VList!LNode(lhs));}
+			target:=DataType(true)
+			// C# 7 allows you to declare a variable as part of "is" expression
+			[targetName:=IdAtom {target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);}]?
+			{argList.Add(target);}
+			// EC# allows an argument list for recursive deconstruction
+			[ "(" ")" {argList.Add(F.Tuple(ExprListInside($"(", allowUnassignedVarDecl: true), $"(".StartIndex, $")".EndIndex));} ]?
+			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex);}
 		};
 
 		// An expression that can start with attributes [...], attribute keywords 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -574,7 +574,7 @@ namespace Loyc.Ecs
 		EcsValidators.Pedantics Pedantics {
 			get {
 				return
-					(_o.DropNonDeclarationAttributes ? EcsValidators.Pedantics.IgnoreWeirdAttributes : 0) |
+					(_o.DropNonDeclarationAttributes ? EcsValidators.Pedantics.IgnoreAttributesInOddPlaces : 0) |
 					(_o.AllowChangeParentheses ? EcsValidators.Pedantics.IgnoreIllegalParentheses : 0);
 			}
 		}

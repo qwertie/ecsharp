@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -85,7 +85,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");     //!< "#typeof" typeof(Foo) <=> #typeof(Foo),
 		                                                                   //!<           typeof<foo> <=> #of(#typeof, foo)
 		public static readonly Symbol As = GSymbol.Get("#as");             //!< "#as":   #as(x,string) <=> x as string <=> x(as string)
-		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string
+		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string, #is(x,#var(Foo,v),#tuple(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("#cast");         //!< "#cast": #cast(x,int) <=> (int)x <=> x(-> int)
 		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
 		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)

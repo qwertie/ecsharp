@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.Ecs.Parser;
@@ -526,23 +526,20 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void EcsAsPlusArguments()
+		public void EcsIsOperatorWithTuple()
 		{
-			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), Mode.ParserTest);
-			// Not sure why the printer changes syntax for "as Foo" but not "is Foo".
-			// The output is valid either way so I m not looking into it too closely.
-			Expr("x(as Foo)(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), Mode.PrinterTest);
-			Expr("x is Foo(a, b)", F.Call(F.Call(S.Is, x, Foo), a, b));
-			Expr("(x as Foo)(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), p => p.SetPlainCSharpMode(), Mode.PrinterTest);
-			Expr("x as Foo(a, b) in c", F.Call(S.In, F.Call(F.Call(S.As, x, Foo), a, b), c), Mode.ParserTest);
-			
+			Expr("x is Foo(a, b)", F.Call(S.Is, x, Foo, F.Tuple(a, b)));
+			Expr("(x is Foo)(a, b)", F.Call(F.InParens(F.Call(S.Is, x, Foo)), a, b));
+			Expr("x is Foo(a, b) in c", F.Call(S.In, F.Call(S.Is, x, Foo, F.Tuple(a, b)), c));
+			Expr("x is Foo<T>(a, b)", F.Call(S.Is, x, F.Of(Foo, T), F.Tuple(a, b)));
+			Expr("x is $(x + 1)(a, b)", F.Call(S.Is, x, F.Call(S.Substitute, F.Call(S.Add, x, one)), F.Tuple(a, b)));
+			Expr("x is Foo $a(b, c)", F.Call(S.Is, x, F.Var(Foo, F.Call(S.Substitute, a)), F.Tuple(b, c)));
+
 			// This doesn't parse because `?` is assumed not to be part of the 
 			// type if it is followed by `(`, and that's OK, since disambiguating 
 			// is hard and has virtually no benefit.
-			Expr("x as Foo?(a, b) in c", F.Call(S.QuestionMark, F.Call(S.As, x, Foo), F.Call(S.In, F.Tuple(a, b), c), F.Missing), 
+			Expr("x is Foo?(a, b) in c", F.Call(S.QuestionMark, F.Call(S.Is, x, Foo), F.Call(S.In, F.Tuple(a, b), c), F.Missing), 
 				Mode.ParserTest | Mode.ExpectAndDropParserError);
-			// Here's a version that does parse OK
-			Expr("x(as Foo?)(a, b) in c", F.Call(S.In, F.Call(Alternate(F.Call(S.As, x, F.Of(S.QuestionMark, Foo))), a, b), c));
 		}
 
 		[Test]

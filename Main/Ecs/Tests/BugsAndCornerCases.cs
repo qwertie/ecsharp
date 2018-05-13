@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -135,10 +135,8 @@ namespace Loyc.Ecs.Tests
 			Expr("x / a as Foo / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
 			Expr("x / a as Foo? / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			Expr("x / a is Foo? / b", F.Call(S.Div, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
-			// The printer prints x(as Foo)(a, b), which is a bit hard to fix, so don't test the printer here
-			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b).SetBaseStyle(NodeStyle.OldStyle), Mode.ParserTest);
-			Expr("x / a as Foo? < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
-			Expr("x / a is Foo? < b", F.Call(S.LT, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			Expr("x / a as Foo? < b", F.Call(S.LT,  F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			Expr("x / a is Foo? < b", F.Call(S.LT,  F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 		}
 		
 		[Test(Fails = "Failure caused by a bug in LLLPG")]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,8 +32,9 @@ namespace Loyc.Ecs
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {
 			Strict = 0,
-			IgnoreWeirdAttributes = 1, IgnoreIllegalParentheses = 2,
-			Lax = IgnoreWeirdAttributes | IgnoreIllegalParentheses
+			IgnoreAttributesInOddPlaces = 1, // Without this, attributes in illegal locations force prefix notation
+			IgnoreIllegalParentheses = 2,    // Without this, illegal parenthesis (around var decl) force prefix notation
+			Lax = IgnoreAttributesInOddPlaces | IgnoreIllegalParentheses
 		};
 
 		// These are validators for printing purposes: they check that each node 
@@ -43,11 +44,11 @@ namespace Loyc.Ecs
 
 		internal static bool HasPAttrs(LNode node, Pedantics p) // for use in expression context
 		{
-			return (p & Pedantics.IgnoreWeirdAttributes) == 0 && node.HasPAttrs();
+			return (p & Pedantics.IgnoreAttributesInOddPlaces) == 0 && node.HasPAttrs();
 		}
 		internal static bool HasSimpleHeadWPA(LNode self, Pedantics p)
 		{
-			return (p & Pedantics.IgnoreWeirdAttributes) != 0 ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
+			return (p & Pedantics.IgnoreAttributesInOddPlaces) != 0 ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
 
 #if false // Ended up not being used, but might be useful someday
@@ -308,23 +309,28 @@ namespace Loyc.Ecs
 				return argCount == 2;
 		}
 
-		/// <summary>Verifies that a declaration of a single variable is valid and gets its parts.</summary>
+		/// <summary>Verifies that a declaration of a single variable is valid, and gets its parts.</summary>
 		/// <param name="expr">Potential variable or field declaration</param>
 		/// <param name="type">Variable type (empty identifier if `var`)</param>
 		/// <param name="name">Variable name (identifier or $substutution expr)</param>
 		/// <param name="initialValue">Initial value that is assigned in <c>expr</c>, or null if unassigned.</param>
 		/// <returns>True if <c>expr</c> is declaration of a single variable.</returns>
-		public static bool IsVariableDeclExpr(LNode expr, out LNode type, out LNode name, out LNode initialValue)
+		public static bool IsVariableDeclExpr(LNode expr, out LNode type, out LNode name, out LNode initialValue, Pedantics p = Pedantics.Lax)
 		{
 			type = name = initialValue = null;
 			if (expr.Calls(S.Var, 2)) {
 				type = expr.Args[0];
 				name = expr.Args[1];
+				// don't need to call HasPAttrs(type, p) because IsComplexIdentifier will check for printable attrs
+				if (HasPAttrs(expr, p) || HasPAttrs(name, p))
+					return false;
 				if (name.Calls(S.Assign, 2)) {
 					initialValue = name.Args[1];
 					name = name.Args[0];
+					if (HasPAttrs(name, p) || HasPAttrs(initialValue, p))
+						return false;
 				}
-				return name.IsId || name.Calls(S.Substitute, 1);
+				return IsComplexIdentifier(type, ICI.AllowAnyExprInOf, p) && (name.IsId || name.Calls(S.Substitute, 1));
 			}
 			return false;
 		}
@@ -374,7 +380,7 @@ namespace Loyc.Ecs
 			var attrs = node.Attrs;
 			for (int i = 0, c = attrs.Count; i < c; i++) {
 				var a = attrs[i];
-				if (a.IsIdNamed(S.TriviaInParens) || (p & Pedantics.IgnoreWeirdAttributes) == 0 && !a.IsTrivia)
+				if (a.IsIdNamed(S.TriviaInParens) || (p & Pedantics.IgnoreAttributesInOddPlaces) == 0 && !a.IsTrivia)
 					return true;
 			}
 			return false;
@@ -475,10 +481,10 @@ namespace Loyc.Ecs
 						foreach (var arg in attr.Args)
 							if (!IsComplexIdentifier(arg, ICI.Default, p) && !arg.Calls(S.New, 0))
 								return false;
-					} else if ((p & Pedantics.IgnoreWeirdAttributes) == 0)
+					} else if ((p & Pedantics.IgnoreAttributesInOddPlaces) == 0)
 						return false;
 				} else {
-					if ((p & Pedantics.IgnoreWeirdAttributes) == 0 && name != S.In && name != S.Out)
+					if ((p & Pedantics.IgnoreAttributesInOddPlaces) == 0 && name != S.In && name != S.Out)
 						return false;
 					if (HasPAttrs(attr, p))
 						return false;
@@ -588,6 +594,33 @@ namespace Loyc.Ecs
 			//                  has the syntax tree  name(@==>(expr));
 			//      in contrast to the block syntax  name({ code });
 			return _n.ArgCount == 1 && HasSimpleHeadWPA(_n, p) && CallsWPAIH(_n.Args[0], S.Forward, 1, p);
+		}
+
+		/// <summary>Checks whether an expression is a valid "is" test (pattern-
+		/// matching expression) such as "x is Foo", "x is Foo y" or "x is Foo y(z)".</summary>
+		/// <remarks>The format of a valid "is" test is <c>#is(subject, type_or_vardecl, otherArgsTuple)</c>.
+		/// For example <c>a is Foo</c> would be <c>#is(a, Foo)</c> and
+		/// <c>a is Foo b(c, d)</c> would be <c>#is(a, #var(Foo, b), #tuple(c, d))</c>.
+		/// Unary "is" expressions like <c>is Foo</c> are stored as binary expressions 
+		/// with an empty identifier as the left-hand side: <c>#is(@``, Foo)</c>.
+		/// </remarks>
+		public static bool IsIsTest(LNode n, out LNode subject, out LNode targetType, out LNode targetVarName, out LNode tuple, Pedantics p = Pedantics.Lax)
+		{
+			// `x is Foo<T> y (e1, e2)` parses to #is(x, #var(Foo<T>, y), e1, e2)
+			subject = targetType = targetVarName = tuple = null;
+			if (!n.CallsMin(S.Is, 2))
+				return false;
+
+			int c = n.ArgCount;
+			if (c > 3 || c == 3 && !(tuple = n.Args[2]).Calls(S.Tuple))
+				return false;
+
+			subject = n.Args[0];
+			LNode target = n.Args[1], initialValue;
+			if (IsVariableDeclExpr(target, out targetType, out targetVarName, out initialValue, p))
+				return initialValue == null;
+			else
+				return IsComplexIdentifier(targetType = target, ICI.AllowAnyExprInOf, p);
 		}
 
 		#region Linq expression validation
