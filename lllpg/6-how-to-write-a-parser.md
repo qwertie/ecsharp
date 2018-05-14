@@ -185,7 +185,7 @@ Finally, you need some kind of grammar. The boilerplate code in Grammars.ecs sim
 ~~~csharp
 partial class Parser
 {
-    LLLPG (parser(matchType: int, laType: TokenType, terminalType: Token));
+    LLLPG (parser(laType: TokenType, matchType: int, terminalType: Token));
 
     rule List<double> Numbers @{
         // $result is special to LLLPG. It's the return value of the rule.
@@ -195,7 +195,7 @@ partial class Parser
 }
 ~~~
 
-The `laType` option tells LLLPG that your actual token type is `TokenType`. The `matchType: int` option is required because the base class uses `int` instead. And the `terminalType: Token` indicates that when you write something like `n:TT.Number`, the data type of `n` should be `Token`.
+The `laType` option tells LLLPG that your token type enum is `TokenType`. The `matchType: int` option is required because the base class uses `int` instead. And the `terminalType: Token` indicates that when you write something like `n:TokenType.Number`, the data type of `n` should be `Token`.
 
 Producing a Loyc syntax tree
 ----------------------------
@@ -302,7 +302,7 @@ partial class Parser
 
 I took the liberty of adding a bit of manual error handling in the last rule, as discussed in [Error Handling](7-error-handling.html).
 
-Finally, you'll need to change the `Parser.Parse` function (in Grammars.cs) to call `Expression` instead of `Numbers`:
+Finally, you'll need to change the `Parser.Parse` function (in Grammars.cs) to call `ExpressionAndEof` instead of `Numbers`:
 
 ~~~csharp
     public static LNode Parse(string text, string fileName = "")

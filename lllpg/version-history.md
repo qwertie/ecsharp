@@ -72,7 +72,7 @@ No functional changes. Updated to match LoycCore and LeMP.
 
 ### LLLPG v1.4.0: Aug 25, 2015 ### 
 
-- LLLPG: Fixed to support for aliases in code blocks e.g. rule Foo @{ "alias" { Process($"alias"); } }; now works when "alias" is an alias
+- LLLPG now recognizes aliases referenced in code blocks e.g. `rule Foo @{ "alias" { Process($"alias"); } };` now works when "alias" is an alias
 - LLLPG: eliminated `lexer(option = value)` and `parser(option = value)` syntax; added support for `parser(option: value)` syntax in LES to match EC#. See `MacroContext.GetOptions()`
 - LLLPG custom tool: reduced default timeout to 10 seconds
 

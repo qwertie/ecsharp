@@ -221,7 +221,7 @@ You may remember from <a href="http://www.codeproject.com/Articles/688152/The-Lo
 
     rule abc @[ ('a' / 'a' 'b') 'c' ];
 
-In a PEG (correct me if I'm wrong), the first branch always takes priority and the second branch is unreachable. If the input is `ac`, a PEG will not backtrack and try the `'a' 'b'` branch because the first branch was matched successfully. An LL(k) parser generator, however, performs prediction on the first `k` characters, even if those characters are beyond the list of alternatives under consideration, and that means the `'c'` influences code generation, producing the following code (by default):
+In a PEG (correct me if I'm wrong), the first branch always takes priority and the second branch is unreachable. If the input is `abc`, a PEG will not backtrack and try the `'a' 'b'` branch because the first branch was matched successfully. An LL(k) parser generator, however, performs prediction on the first `k` characters, even if those characters come after the set of alternatives under consideration, which means the `'c'` influences code generation, producing the following code (by default):
 
 	void abc()
 	{

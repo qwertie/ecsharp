@@ -29,7 +29,7 @@ So LLLPG is relying on the `Match()` method to decide how to handle errors. If t
 
 I'm not sure what the best approach is, but by default, `BaseLexer` throws a [`LogException`](http://ecsharp.net/doc/code/classLoyc_1_1LogException.html). You can modify the [`ErrorSink`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#a2e052d761c53ba883b58b03cb7f8e4ff) property to avoid throwing; for example, use [`MessageSink.Console`](http://ecsharp.net/doc/code/classLoyc_1_1MessageSink.html) to write errors to the terminal.
 
-Currently, all the `Match` methods of `BaseLexer`/`BaseILexer` and `BaseParser`/`BaseParserForList` _do not_ consume the current character or token when an error occurs.
+Currently, all the `Match` methods of `BaseLexer`/`BaseILexer` and `BaseParser`/`BaseParserForList` do not consume the current character or token when an error occurs, _unless_ a second error occurs at the same location.
 
 For cases that require if/else chains or switch statements, LLLPG's default behavior is optimistic: Quite simply, it assumes there are no erroroneous inputs. When you write
 
@@ -190,7 +190,7 @@ Another error-handling feature is that LLLPG can insert error handlers automatic
     }
 ~~~
 
-When `[NoDefaultArm]` is added, the output changes to
+When `[NoDefaultArm]` is added, the output for `Either` changes to
 
 ~~~csharp
     void Either()
@@ -317,7 +317,7 @@ Then the generated code is different:
 
 In this case, when LLLPG sees `'.'` it decides to enter the optional item `(&{!dot} '.' '0'..'9'+)?`  without checking `&{!dot}` first, because `'.'` is not considered a valid input for _skipping_ the optional item. Basically LLLPG thinks "if there's a dot here, matching the optional item is the only reasonable thing to do". So, it assumes there is a `Check(bool, string)` method, which it calls to check `&{!dot}` _after_ prediction.
 
-Currently you can't (in general) force an and-predicate to be checked as part of prediction; prediction analysis checks and-predicates _only_ when needed to resolve ambiguity. Nor can you suppress `Check` statements or override the second parameter to `Check`. Let me know if this limitation is causing problems for you.
+Currently you can't (in general) force an and-predicate to be checked as part of prediction; prediction analysis checks and-predicates _only_ when needed to resolve ambiguity. You can't suppress `Check` statements either, but you can override the second parameter to `Check` in a semantic predicate using a string attribute inside the curly braces, e.g. `&{["Too many dots"] !dot}`.
 
 That's it for error handling in LLLPG!
 

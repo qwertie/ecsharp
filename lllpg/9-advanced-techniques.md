@@ -320,6 +320,11 @@ To make this example compile, add the following code above `ExprParser` and ensu
         public int StartIndex { get; set; }
     }
 
+Compiler errors in syntactic predicates (scanners/recognizers)
+--------------------------------------------------------------
+
+You may run into problems when using syntactic predicates (like `&Foo`) in cases where rules used in the predicate have action blocks and call other rules that take parameters. In some cases, at least, such errors can be overcome using a `recognizer` attribute in order to suppress arguments in a recognizer, which is discussed in the appendix [Parameters to Recognizers](parameters-to-recognizers.md).
+
 Tree parsing
 ------------
 

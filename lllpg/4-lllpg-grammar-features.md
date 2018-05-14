@@ -298,12 +298,12 @@ I was saying something about and-predicates running earlier than you might expec
 
 ~~~csharp
 bool flag = false;
-public rule Paradox @{ {flag = true;} &{flag} 'x' / 'x' };
+public rule Paradox @{ {flag=true;} &{flag} 'x' / 'x' };
 ~~~
 
 Here I've introduced the "`/`" operator. It behaves identically to the "`|`" operator, but has the effect of suppressing warnings about ambiguity between the two branches (both branches match `'x'` if `flag == true`, so they are certainly ambiguous).
 
-What will the value of `flag` be after you call `Paradox()`? Since both branches are the same (`'x'`), the only way LLLPG can make a decision is by testing the and-predicate `&{flag}`. But the actions `{flag=false;}` and `{flag=true;}` execute _after_ prediction, so `&{flag}` actually runs first even though it appears to come after `{flag=true;}`. You can clearly see this when you look at the actual generated code:
+What will the value of `flag` be after you call `Paradox()`? Since both branches are the same (`'x'`), the only way LLLPG can make a decision is by testing the and-predicate `&{flag}`. It's worth noting that the `Paradox` grammar is equivalent to `({flag=true;} &{flag} 'x') / 'x'`. Therefore, the action `{flag=true;}` executes _after_ prediction, so `&{flag}` runs first even though it appears to come after `{flag=true;}`. You can clearly see this when you look at the actual generated code:
 
 ~~~csharp
 bool flag = false;
@@ -321,7 +321,7 @@ What happened here? Well, LLLPG doesn't bother to read `LA0` at all, because it 
 
 This example will give the following warning: "It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first."
 
-In a different sense, though, and-predicates might run after you might expect. Let's look again at the code for this `Number` rule from earlier:
+In a different sense, though, and-predicates might run *after* you might expect. Let's look again at the code for this `Number` rule from earlier:
 
 ~~~csharp
 token Number  @{ {dot::bool=false;}
@@ -379,10 +379,10 @@ void Foo()
 }
 ~~~
 
-First LLLPG tests for `'A'`, then it checks `&{a()}`, then it tests for `'B'`, and finally it checks `&{b()}`; it is as if the and-predicates are being "bumped" one position to the right. Actually, I decided that all zero-width  assertions should work this way for the sake of performance. To understand this, consider the `Letter` and `Word` rules from earlier:
+First LLLPG tests for `'A'`, then it checks `&{a()}`, then it tests for `'B'`, and finally it checks `&{b()}`; it is as if the and-predicates are being "bumped" one position to the right. Actually, I decided that all zero-width  assertions should behave this way for the sake of performance. To understand this, consider the `Letter` and `Word` rules from earlier:
 
 ~~~csharp
-rule Letter @{ 'a'..'z' | 'A'..'Z'| &{char.IsLetter($LA -> char)} 0x80..0xFFFC };
+rule Letter @{ 'a'..'z' | 'A'..'Z'| &{char.IsLetter((char) $LA)} 0x80..0xFFFC };
 [FullLLk] token Word @{ Letter+ };
 ~~~
 
@@ -407,7 +407,7 @@ And this makes sense: `char.IsLetter` is expected to be relatively expensive bec
 [FullLLk] rule Token @{ Spaces / Word / Number / Punctuation / Comma / _ };
 ~~~
 
-The Token method will look something like this (some newlines removed for brevity):
+The Token method will look something like this:
 
 ~~~csharp
 void Token()
@@ -494,7 +494,7 @@ LLLPG recognizes five operators for "assigning" a token or return value to a var
 - `x:Foo`: create a variable called `x` of the appropriate type at the beginning of the method and set `x` to it here. Because the variable is created separately, LLLPG must "guess" the correct data type for the variable. If `Foo` is a token or character, use the `terminalType` code-generation option to control the declared type of `x` (e.g. `LLLPG(parser(terminalType: Token))`). If you use the label `x` in more than once place, LLLPG will create only a single (non-list) variable called `x`.
 - `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.loyc.net/collections/dlist.html))
 
-This table how code is generated for these operators:
+This table shows how code is generated for these operators:
 
 <table  border="1" width="640px">
 <tr>
@@ -531,46 +531,46 @@ This table how code is generated for these operators:
 </tr>
 <tr>
 <td><code>+=</code></td>
-<td><code>lst+=Foo</code></td>
-<td><code>lst.Add(Match(Foo));</code></td>
-<td><code>lst.Add(Foo());</code></td>
+<td><code>L+=Foo</code></td>
+<td><code>L.Add(Match(Foo));</code></td>
+<td><code>L.Add(Foo());</code></td>
 </tr>
 <tr>
 <td><code>+:</code></td>
-<td><code>lst+:Foo</code></td>
+<td><code>L+:Foo</code></td>
 <td><code>// Use with `terminalType: Token`
      <br/>// Output at top of method:
-     <br/>List&lt;Token> x = new List&lt;Token>;
+     <br/>List&lt;Token> L = new List&lt;Token>;
      <br/>// output in-place:
-     <br/>lst.Add(Match(Foo)); // later</code></td>
+     <br/>L.Add(Match(Foo)); // later</code></td>
 <td><code>// RetType refers to Foo's return type
      <br/>// Output at top of method:
-     <br/>List&lt;RetType> x = new List&lt;RetType>;
+     <br/>List&lt;RetType> L = new List&lt;RetType>;
      <br/>// Output in-place:
-     <br/>lst.Add(Foo());</code></td>
+     <br/>L.Add(Foo());</code></td>
 </tr>
 </table>
 
 You can match one of a set of terminals, for example `x:=('+'|'-'|'.')` generates code like `var x = Match('+', '-', '.')` (or `var x = Match(set)` for some `set` object, for large sets). However, currently LLLPG does not support matching a list of nonterminals, e.g. `x:=(A()|B())` is not supported.
 
-In LLLPG 1.3.2 I added a feature where you would write simply `Foo` instead of `foo:=Foo` and then write `$Foo` in code later, which _retrospectively_ saves the value returned from `Foo` in an "anonymous" variable. For example, instead of writing code like this:
+In LLLPG 1.3.2 I added a feature so that you can write simply `Foo` instead of `foo:=Foo` and then write `$Foo` in code later, which _retrospectively_ saves the value returned from `Foo` in an "anonymous" variable. For example, instead of writing code like this:
 
 ~~~csharp
 private rule LNode IfStmt() @{
     {LNode els = null;}
     t:=TT.If "(" cond:=Expr ")" then:=Stmt 
     greedy[TT.Else els=Stmt]?
-    {return IfNode(t, cond, then, els);}
+    {return new IfNode(t, cond, then, els);}
 };
 ~~~
 
-It would be written like this instead:
+It can be written like this instead:
 
 ~~~csharp
 private rule LNode IfStmt() @{
     TT.If "(" Expr ")" Stmt 
     greedy[TT.Else els:Stmt]?
-    {return IfNode($(TT.If), $Expr, $Stmt, els);}
+    {return new IfNode($(TT.If), $Expr, $Stmt, els);}
 };
 ~~~
 
