@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 Memory management
 -----------------
 
@@ -49,11 +53,11 @@ Union types are more useful. A value of union type `A | B` has either type `A` o
 
 In a system with union types, `null` can be viewed as a perfectly ordinary singleton value of a perfectly ordinary `Null` class. The VM will treat it specially, of course, but at the type system level there is nothing special about null. Non-nullable types, then, are simply those that do not include `Null` in the union.
 
-In a VM designed for Java and .NET compatibility, it probably makes the most sense to implement union types as reference types. Thus values of type (A | B) are always stored on the heap even if A and B are both value types. Perhaps this could be invisible to the type system, though, which would enable the runtime to store small unions inline.
+In a VM designed for Java and .NET compatibility, it probably makes the most sense to implement union types as reference types. Thus values of type `A | B` are always stored on the heap even if A and B are both value types. Perhaps this could be invisible to the type system, though, which would enable the runtime to store small unions inline.
 
 For certain types like `String | Bool | Null` the runtime could use a bit twiddling trick to save memory. On all modern architectures, the low bit of all object references will always be zero. Thus we may form a union between any single value type smaller than a reference, and any collection of reference types, such as `Short | String | Regex | Null`. If the low bit is 1, the "reference" directly stores a value type. Otherwise it stores one of the other types in the union.
 
-Many programming languages (e.g. Haskell, F#, Nemerle, Rust) have a concept of "algebric data types" (ADTs) or non-extensible discriminated unions. Union types seem to be a strictly more general concept, as they are extensible (given any union A|B|C you can always add a new type D); thus if the VM supports union types, it also supports ADTs. ADTs can be simulated without union types using a base class and a series of derived classes, but union types add precision (the ability to say precisely which subclasses are allowed) and flexibility (such as the ability to use value types as elements of the union, even though value types cannot have a base class).
+Many programming languages (e.g. Haskell, F#, Nemerle, Rust) have a concept of "algebric data types" (ADTs) or non-extensible discriminated unions. Union types seem to be a strictly more general concept, as they are extensible (given any union `A|B|C` you can always add a new type D); thus if the VM supports union types, it also supports ADTs. ADTs can be simulated without union types using a base class and a series of derived classes, but union types add precision (the ability to say precisely which subclasses are allowed) and flexibility (such as the ability to use value types as elements of the union, even though value types cannot have a base class).
 
 Union types also provide a natural form of extensible enum type, since you can combine any enum with another enum.
 
