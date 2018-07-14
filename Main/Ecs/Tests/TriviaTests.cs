@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -84,6 +84,26 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Test, Benchmark] \n" +
 				 "[Test2] void Foo() { }", node);
 
+			node = Attr(_("Test"), F.TriviaNewline,
+				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+			Stmt("[Test] \n" +
+				 "void Foo() { }", node);
+
+			node = Attr(_("Test"), F.TriviaNewline, F.Var(F.Int32, Foo));
+			Stmt("[Test] \n" +
+				 "int Foo;", node);
+
+			node = F.Braces(Attr(_("Test"), F.TriviaNewline, F.Var(F.Int32, Foo)));
+			Stmt("{\n  [Test] \n" +
+				    "  int Foo;\n"+
+			     "}", node);
+
+			node = F.Braces(Attr(_("Test"), F.TriviaNewline, 
+			                F.Public, F.Var(F.Int32, Foo)));
+			Stmt("{\n  [Test] \n" +
+					"  public int Foo;\n" +
+				 "}", node);
+
 			node = Attr(_("Test"), SLComment(" NUnit"),
 					 F.Call(_("EditorBrowsable"), F.Dot(_("EditorBrowsableState"), _("Never"))), 
 					 F.TriviaNewline, F.Public,
@@ -135,7 +155,6 @@ namespace Loyc.Ecs.Tests
 				 "  x(a);\n" +
 				 "}", node);
 		}
-
 
 		[Test]
 		public void TriviaTest_Enums()

@@ -816,9 +816,10 @@ namespace Loyc.Ecs.Parser
 			/	nameAndInit:=VarInitializerOpt(name, IsArrayType(type))
 				{
 					hasInitializer = (nameAndInit != name);
-					start::int = type.Range.StartIndex;
+					var typeStart = type.Range.StartIndex;
+					var start = attrs.IsEmpty ? typeStart : attrs[0].Range.StartIndex;
 					$result = F.Call(S.Var, type, nameAndInit, 
-						start, nameAndInit.Range.EndIndex, start, start);
+						start, nameAndInit.Range.EndIndex, typeStart, typeStart);
 					hasInitializer = @true;
 				}
 			)
@@ -1709,7 +1710,7 @@ namespace Loyc.Ecs.Parser
 						parts+=VarInitializerOpt(name, isArray)]*
 				end:=";"
 				{var typeStart = type.Range.StartIndex;}
-				{$result = F.Call(S.Var, parts, typeStart, end.EndIndex, typeStart, typeStart);}
+				{$result = F.Call(S.Var, parts, startIndex, end.EndIndex, typeStart, typeStart);}
 			/	// Method declaration/definition
 				&{!isNamedThis}
 				result:MethodArgListAndBody(startIndex, type.Range.StartIndex, attrs, S.Fn, type, name)
