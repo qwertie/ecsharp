@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Impl
 {
 	using System;
 	using System.Collections.Generic;
@@ -52,12 +52,12 @@
 		}
 
 		/// <summary>Performs a binary search for a key.</summary>
-		/// <remarks>If the key matches one of the values of _aggregateKey, this
+		/// <remarks>If the key matches one of the values of _highestKey, this
 		/// method returns the index of the lowest node that contains that key so 
 		/// that non-add operations work correctly. If we were concerned ONLY with 
 		/// plain Add operations, it would be acceptable to return index i+1 
-		/// when key equals _aggregateKey[i] (and perhaps preferable, because it
-		/// guarantees that _aggregateKey[i] won't have to be updated).</remarks>
+		/// when key equals _highestKey[i] (and perhaps preferable, because it
+		/// guarantees that _highestKey[i] won't have to be updated).</remarks>
 		public int BinarySearchK(K key, Func<K,K,int> compare)
 		{
 			int keyCount = _childCount - 1;

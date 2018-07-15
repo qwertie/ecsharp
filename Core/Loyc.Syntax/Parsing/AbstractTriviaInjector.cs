@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -23,10 +23,11 @@ namespace Loyc.Syntax
 	/// <li>It must not include the newline character in the range of a single-line 
 	/// comment.</li>
 	/// <li>Generally, newlines (including the newline after a single-line comment)
-	/// must be included in the trivia list, as the algorithm relies on these newlines
-	/// instead of asking <see cref="LNode.Range"/> for line numbers, which is
-	/// slower. If newlines are omitted then a comment right after a statement (e.g.
-	/// on the same line) will be associated with the next statement instead.</li>
+	/// should be included in the trivia list, as the algorithm relies on newline trivia
+	/// to notice when a new line is starting. Notably, a comment/trivia right after a 
+	/// statement (e.g. on the same line) should normally be associated with that
+	/// statement; if this class is unaware of the newline it will be associated with
+	/// the next statement instead.</li>
 	/// </ul>
 	/// 
 	/// Typically one will wrap the lexer in <see cref="Lexing.TriviaSaver"/>, which 
@@ -37,12 +38,14 @@ namespace Loyc.Syntax
 	/// <ul>
 	/// <li>The parser should assign minimal boundaries to each node: the 
 	/// <see cref="LNode.Range"/> should not be wider than necessary. If there is 
-	/// a comment before an expression like <c>/*!* / x + y</c>, the parser should 
+	/// a comment before an expression like <c>/* ! * / x + y</c>, the parser should 
 	/// not include the comment as part of the range unless it wants the comment to 
 	/// be associated with a child node (<c>x</c>) instead of with the entire 
 	/// expression (<c>x + y</c>).</li>
-	/// <li>If a node has normal (non-trivia) attributes attached to it, the range of
-	/// the node should include those attributes.</li>
+	/// <li>However, if a node has normal (non-trivia) attributes attached to it, 
+	/// the Range of the node must include those attributes. If your parser fails 
+	/// to do this, one symptom can be that a newline after an attribute "moves up" 
+	/// in the attribute list so it appears before the attribute.</li>
 	/// <li>The parser should use <see cref="LNodeFactory.InParens"/> to place a
 	/// node in parentheses and include the index of the opening and closing parens.</li>
 	/// <li>If an expression/statement is terminated by a semicolon/comma, it's 
@@ -68,7 +71,7 @@ namespace Loyc.Syntax
 	///		argument1 + 1 /*1st comment* /, // 2nd comment
 	///		// Comment attached to «argument2 + 2»
 	///		argument2 + 2); // Comment attached to Foo() call
-	///	  Area = 3.14159265/*PI* / * /*radius* /r**2;
+	///	  Area = 3.14159265/*PI* /  *  /*radius* /r**2;
 	///	  // Comment attached to «Area =» statement, preceded by newline trivia?
 	///
 	///	  // Comment attached to Bar()

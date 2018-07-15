@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,9 @@ namespace Loyc.Syntax.Les
 		int Indent();
 		int Dedent();
 		void Space(); // should merge adjacent spaces
-		void Newline(bool pending = false); // pending = don't actually write a newline until next token starts
+		// pending = don't actually write a newline until next token starts.
+		// Calling Newline() again right afterward causes only one newline.
+		void Newline(bool pending = false);
 		void BeginStatement();
 		void BeginLabel();
 		void Push(LNode newNode);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,10 @@ using S = Loyc.Syntax.CodeSymbols;
 namespace Loyc.Syntax
 {
 	/// <summary>Encapsulates an algorithm that consumes trivia (comments and 
-	/// newlines) from a list and adds it as trivia attributes into LNodes.</summary>
+	/// newlines) from a list and adds it as trivia attributes into LNodes. This
+	/// makes it possible to preserve comments and newlines independently of the
+	/// language parser, so that the parser need not be specifically designed to 
+	/// preserve them.</summary>
 	/// <remarks>
 	/// Usage: Call the constructor, then call <see cref="AbstractTriviaInjector{T}.Run"/>.
 	/// See <see cref="AbstractTriviaInjector{T}"/> for more information.
@@ -34,16 +37,16 @@ namespace Loyc.Syntax
 	///		  #trivia_MLComment(" Leading Comment 2 "),
 	///		  #trivia_newline,
 	///		  #trivia_MLComment(" Leading Comment 3 "),
-	///		  #trivia_beginTrailingTrivia,
-	///		  #trivia_SLComment(" Trailing Comment 1"),
-	///		  #trivia_MLComment(" Trailing Comment 2 "),
-	///		  #trivia_newline]
+	///		  #trivia_trailing(
+	///		    #trivia_SLComment(" Trailing Comment 1"),
+	///		    #trivia_MLComment(" Trailing Comment 2 "),
+	///		    #trivia_newline)]
 	///		x = y;
 	///		y = z;
 	///		@[#trivia_appendStatement] TheEnd();
 	/// }
 	/// </pre>
-	/// By default, printers add newlines between statements within a braced 
+	/// By default, printers should add newlines between statements within a braced 
 	/// block. Therefore, this class does not add trivia to mark a single newline 
 	/// between statements; instead, it adds a #trivia_appendStatement attribute 
 	/// when the expected newline prior to a statement in a braced block was NOT 
@@ -129,8 +132,8 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Called to find out if a newline is to be added implicitly 
-        /// before the current child of the specified node.</summary>
-        /// <returns>By default, returns true if the node is a braced block.</returns>
+		/// before the current child of the specified node.</summary>
+		/// <returns>By default, returns true if the node is a braced block.</returns>
 		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode parent, int childIndex)
 		{
 			return parent.Calls(S.Braces) && childIndex >= 0;
@@ -163,7 +166,7 @@ namespace Loyc.Syntax
 				}
 				if (commentType == null)
 					return null;
-				return LNode.Trivia(commentType, text.ToString(), new SourceRange(SourceFile, t.StartIndex, t.Length));
+				return LNode.Trivia(commentType, text.ToString(), t.Range(SourceFile));
 			}
 		}
 
