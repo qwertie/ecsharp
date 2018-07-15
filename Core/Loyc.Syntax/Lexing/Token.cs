@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -410,11 +410,6 @@ namespace Loyc.Syntax.Lexing
 		IToken<int> ICloneable<IToken<int>>.Clone()
 		{
 			return this;
-		}
-
-		public SourceRange ToSourceRange(ISourceFile sourceFile)
-		{
-			return new SourceRange(sourceFile, StartIndex, Length);
 		}
 
 		public static bool IsOpener(TokenKind tt)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
@@ -197,11 +197,11 @@ namespace Loyc.Ecs.Tests
 				" Your life is going nowhere.", WS, "--sorry.", WS, " EC# only.");
 			Case("#region The netherworld\n#endregion",
 				A(TT.PPregion, TT.Newline, TT.PPendregion),
-				" The netherworld", WS, _("##endregion"));
+				" The netherworld", WS, "");
 			// Exact match or it's Id
-			Case("#defined\n#defin\n#regio\n#endregi", 
+			Case("#defined\n#defin\n#regio\n#endregions", 
 				A(TT.Id, TT.Newline, TT.Id, TT.Newline, TT.Id, TT.Newline, TT.Id),
-				_("#defined"), WS, _("#defin"), WS, _("#regio"), WS, _("#endregi"));
+				_("#defined"), WS, _("#defin"), WS, _("#regio"), WS, _("#endregions"));
 		}
 
 		const string ERROR = "ERROR";
