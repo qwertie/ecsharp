@@ -913,6 +913,7 @@ namespace Loyc.Ecs
 			InitStaticInstance();
 			_staticPrinter._n = LNode.Literal(value, null, style);
 			_staticPrinter.PrintLiteral();
+			_staticPrinter._n = null;
 			return _staticStringBuilder.ToString();
 		}
 

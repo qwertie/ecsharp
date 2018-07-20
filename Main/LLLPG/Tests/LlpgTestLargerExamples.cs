@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -752,7 +752,7 @@ namespace Loyc.LLParserGenerator
 								lit_dash = MatchAny();
 								var r = Expr(50);
 								// line 37
-								result = F.Call((Symbol) ""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
+								result = F.Call((Symbol) @""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
 							} else
 								result = Atom();
 						} else
@@ -890,7 +890,7 @@ namespace Loyc.LLParserGenerator
 								lit_dash = MatchAny();
 								var r = PrefixExpr();
 								// line 64
-								result = F.Call((Symbol) ""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
+								result = F.Call((Symbol) @""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
 							} else
 								result = PrimaryExpr();
 						} else
