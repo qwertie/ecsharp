@@ -528,12 +528,12 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsIsOperatorWithTuple()
 		{
-			Expr("x is Foo(a, b)", F.Call(S.Is, x, Foo, F.Tuple(a, b)));
+			Expr("x is Foo(a, b)", F.Call(S.Is, x, Foo, F.List(a, b)));
 			Expr("(x is Foo)(a, b)", F.Call(F.InParens(F.Call(S.Is, x, Foo)), a, b));
-			Expr("x is Foo(a, b) in c", F.Call(S.In, F.Call(S.Is, x, Foo, F.Tuple(a, b)), c));
-			Expr("x is Foo<T>(a, b)", F.Call(S.Is, x, F.Of(Foo, T), F.Tuple(a, b)));
-			Expr("x is $(x + 1)(a, b)", F.Call(S.Is, x, F.Call(S.Substitute, F.Call(S.Add, x, one)), F.Tuple(a, b)));
-			Expr("x is Foo $a(b, c)", F.Call(S.Is, x, F.Var(Foo, F.Call(S.Substitute, a)), F.Tuple(b, c)));
+			Expr("x is Foo(a, b) in c", F.Call(S.In, F.Call(S.Is, x, Foo, F.List(a, b)), c));
+			Expr("x is Foo<T>(a, b)", F.Call(S.Is, x, F.Of(Foo, T), F.List(a, b)));
+			Expr("x is $(x + 1)(a, b)", F.Call(S.Is, x, F.Call(S.Substitute, F.Call(S.Add, x, one)), F.List(a, b)));
+			Expr("x is Foo $a(b, c)", F.Call(S.Is, x, F.Var(Foo, F.Call(S.Substitute, a)), F.List(b, c)));
 
 			// This doesn't parse because `?` is assumed not to be part of the 
 			// type if it is followed by `(`, and that's OK, since disambiguating 

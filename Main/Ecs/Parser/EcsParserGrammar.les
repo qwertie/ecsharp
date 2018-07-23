@@ -713,7 +713,7 @@ namespace Loyc.Ecs.Parser
 			[targetName:=IdAtom {target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);}]?
 			{argList.Add(target);}
 			// EC# allows an argument list for recursive deconstruction
-			[ "(" ")" {argList.Add(F.Tuple(ExprListInside($"(", allowUnassignedVarDecl: true), $"(".StartIndex, $")".EndIndex));} ]?
+			[ "(" ")" {argList.Add(F.List(ExprListInside($"(", allowUnassignedVarDecl: true), $"(".StartIndex, $")".EndIndex));} ]?
 			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex);}
 		};
 
