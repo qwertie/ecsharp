@@ -214,20 +214,30 @@ namespace Loyc.Ecs.Parser
 			{$result = $result.WithAttrs(attrs);}
 		};
 
-		// This is the same as ComplexId except that it is used in declaration locations
-		// such as the name of a method. The difference is that the type parameters can 
-		// have [normal attributes] and in/out variance attrbutes. In addition, 'this' is 
-		// also allowed as a name if the current name is a property name.
+		// This is the same as ComplexId except that it is used in declaration 
+		// locations such as the name of a class. The difference is that the 
+		// type parameters can have [normal attributes] and in/out variance 
+		// attrbutes. This matcher also helps match properties and therefore 
+		// optionally allows names ending in 'this', such as 'IList<T>.this'
+		fn ComplexNameDecl()::LNode { _::bool; return ComplexNameDecl(false, out _); };
+
 		@[FullLLk, recognizer(fn Scan_ComplexNameDecl(thisAllowed::bool = false))]
 		token ComplexNameDecl(thisAllowed::bool, out hasThis::bool)::LNode @{
-			result:ComplexThisDecl(thisAllowed) {hasThis = true;}
-		|	result:ComplexId(declContext: true) {hasThis = false;}
+			result:ComplexId(declContext: true) {hasThis = false;}
 			[	op:="." ComplexThisDecl(thisAllowed) {hasThis = true;}
 				{result = F.Dot(result, $ComplexThisDecl, result.Range.StartIndex, $ComplexThisDecl.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			]?
 		};
-
-		fn ComplexNameDecl()::LNode { _::bool; return ComplexNameDecl(false, out _); };
+		
+		// The matcher for method and property names is similar to ComplexNameDecl but
+		// can allow 'this' if it's a property, and 'operator true' if it's a method.
+		@[recognizer(fn Scan_MethodOrPropertyName(thisAllowed::bool))]
+		token MethodOrPropertyName(thisAllowed::bool, out hasThis::bool)::LNode @{
+			result:ComplexNameDecl(thisAllowed, out hasThis)
+		|	result:ComplexThisDecl(thisAllowed) {hasThis = true;}
+		|	TT.Operator &{@["Expected 'true' or 'false'"] LT($LI).Value `is` bool} tf:TT.Literal
+			{ $result = F.Attr(_triviaUseOperatorKeyword, F.Literal(tf)); hasThis = false; }
+		};
 
 		// `this` with optional <type arguments>
 		token ComplexThisDecl(allowed::bool)::LNode @{
@@ -388,7 +398,7 @@ namespace Loyc.Ecs.Parser
 			|	t:=LinqKeywordAsId
 				{r = F.Id(t);}
 			|	t:=TT.Literal
-				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
+				{r = F.Literal(t);}
 			|	r=ExprInParensAuto  // (...)
 			|	r=NewExpr           // new ...
 			|	r=BracedBlock       // {...}
@@ -834,9 +844,10 @@ namespace Loyc.Ecs.Parser
 			/	nameAndInit:=VarInitializerOpt(name, IsArrayType(type))
 				{
 					hasInitializer = (nameAndInit != name);
-					start::int = type.Range.StartIndex;
+					var typeStart = type.Range.StartIndex;
+					var start = attrs.IsEmpty ? typeStart : attrs[0].Range.StartIndex;
 					$result = F.Call(S.Var, type, nameAndInit, 
-						start, nameAndInit.Range.EndIndex, start, start);
+						start, nameAndInit.Range.EndIndex, typeStart, typeStart);
 					hasInitializer = @true;
 				}
 			)
@@ -1376,7 +1387,10 @@ namespace Loyc.Ecs.Parser
 			InputPosition = wordsStartAt;
 			using (new SavePosition(this, 0)) {
 				TryMatch(TT.This->int); // skip 'this' attribute for extension methods
-				if (Scan_DataType(false) && Scan_ComplexNameDecl() && ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
+				// Use MethodOrPropertyName to detect all possible method, property, 
+				// and variable declarations (this incidentally matches some invalid 
+				// things like `bool operator true { get {} }`.)
+				if (Scan_DataType(false) && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
 					return StmtCat.MethodOrPropOrVar;
 				};
 			};
@@ -1716,9 +1730,17 @@ namespace Loyc.Ecs.Parser
 			{isExtensionMethod::bool = false; isNamedThis::bool;}
 			[ t:=TT.This {attrs.Add(F.Id(t)); isExtensionMethod = true;} ]?
 			type:=DataType
-			name:ComplexNameDecl(!isExtensionMethod, out isNamedThis)
-			(	// Variable declaration statement
+			name:MethodOrPropertyName(!isExtensionMethod, out isNamedThis)
+			(	// Method declaration/definition
 				&{!isNamedThis}
+				result:MethodArgListAndBody(startIndex, type.Range.StartIndex, attrs, S.Fn, type, name)
+				{return $result;} // don't add attributes again
+			|	// Property definition
+				&!{@["Invalid property name"] name.IsLiteral}
+				result:RestOfPropertyDefinition(startIndex, type, name, false)
+			|	// Variable declaration statement
+				&{!isNamedThis}
+				&!{@["Invalid variable name"] name.IsLiteral}
 				{MaybeRecognizeVarAsKeyword(ref type);}
 				{var parts = LNode.List(type);}
 				{var isArray = IsArrayType(type);}
@@ -1727,13 +1749,7 @@ namespace Loyc.Ecs.Parser
 						parts+=VarInitializerOpt(name, isArray)]*
 				end:=";"
 				{var typeStart = type.Range.StartIndex;}
-				{$result = F.Call(S.Var, parts, typeStart, end.EndIndex, typeStart, typeStart);}
-			/	// Method declaration/definition
-				&{!isNamedThis}
-				result:MethodArgListAndBody(startIndex, type.Range.StartIndex, attrs, S.Fn, type, name)
-				{return $result;} // don't add attributes again
-			|	// Property definition
-				result:RestOfPropertyDefinition(startIndex, type, name, false)
+				{$result = F.Call(S.Var, parts, startIndex, end.EndIndex, typeStart, typeStart);}
 			|	error {Error("Syntax error in what appears to be a method, property, or variable declaration");}
 				ScanToEndOfStmt
 				{$result = F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}

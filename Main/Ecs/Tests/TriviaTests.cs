@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -84,6 +84,26 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Test, Benchmark] \n" +
 				 "[Test2] void Foo() { }", node);
 
+			node = Attr(_("Test"), F.TriviaNewline,
+				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+			Stmt("[Test] \n" +
+				 "void Foo() { }", node);
+
+			node = Attr(_("Test"), F.TriviaNewline, F.Var(F.Int32, Foo));
+			Stmt("[Test] \n" +
+				 "int Foo;", node);
+
+			node = F.Braces(Attr(_("Test"), F.TriviaNewline, F.Var(F.Int32, Foo)));
+			Stmt("{\n  [Test] \n" +
+				    "  int Foo;\n"+
+			     "}", node);
+
+			node = F.Braces(Attr(_("Test"), F.TriviaNewline, 
+			                F.Public, F.Var(F.Int32, Foo)));
+			Stmt("{\n  [Test] \n" +
+					"  public int Foo;\n" +
+				 "}", node);
+
 			node = Attr(_("Test"), SLComment(" NUnit"),
 					 F.Call(_("EditorBrowsable"), F.Dot(_("EditorBrowsableState"), _("Never"))), 
 					 F.TriviaNewline, F.Public,
@@ -136,7 +156,6 @@ namespace Loyc.Ecs.Tests
 				 "}", node);
 		}
 
-
 		[Test]
 		public void TriviaTest_Enums()
 		{
@@ -149,6 +168,46 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(
 				F.Assign(a, one), b, c, F.Assign(x, F.Literal(24)))).SetStyle(NodeStyle.OneLiner);
 			Stmt("enum Foo : byte { a = 1, b, c, x = 24 }", stmt);
+		}
+
+		[Test]
+		public void TriviaTest_Region()
+		{
+			// This syntax tree takes into account that the trivia injector
+			// strips out certain newlines: the implicit newline before each 
+			// statement in a braced block, and the implicit newline before 
+			// the closing brace. However, the newline before and after each 
+			// preprocessor directive is not stripped out.
+			LNode node = F.Call(S.Class, Foo, F.List(), F.Braces(
+				 Attr(F.Trivia(S.TriviaRegion, " The Variable"), F.TriviaNewline,
+					 _("Attribute"), F.TriviaNewline,
+					 F.Public,
+					 F.Call(S.TriviaTrailing, F.TriviaNewline, F.Trivia(S.TriviaEndRegion, ""), F.TriviaNewline),
+					 F.Var(F.Int32, x)),
+				 Attr(
+					 F.Trivia(S.TriviaRegion, " The Constructor"), F.TriviaNewline,
+					 F.TriviaNewline,
+					 F.Call(S.TriviaTrailing,
+					   F.TriviaNewline, F.TriviaNewline,
+					   F.Trivia(S.TriviaEndRegion, "!")),
+					 F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(
+						 F.Call(S.Assign, x, one)
+					 )))
+				));
+			Stmt("class Foo {\n" +
+			     "  #region The Variable\n" +
+			     "  [Attribute] \n" +
+			     "  public int x;\n" +
+			     "  #endregion\n" +
+			     "\n" +
+			     "  #region The Constructor\n" +
+			     "\n" +
+			     "  Foo() {\n" +
+			     "    x = 1;\n" +
+			     "  }\n" +
+			     "\n" +
+			     "  #endregion!\n" +
+			     "}", node);
 		}
 	}
 }

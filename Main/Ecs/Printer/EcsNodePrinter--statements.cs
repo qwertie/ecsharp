@@ -512,6 +512,7 @@ namespace Loyc.Ecs
 
 			// A cast operator with the structure: #fn(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
+			// Note: operator bool is a cast operator but operator true/false are not
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
 			PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
@@ -565,13 +566,11 @@ namespace Loyc.Ecs
 
 			if (_name == S.Delegate)
 			{
-				_out.Write("delegate", true);
-				_out.Space();
+				_out.Write("delegate ", true);
 			}
 			if (isCastOperator)
 			{
-				_out.Write("operator", true);
-				_out.Space();
+				_out.Write("operator ", true);
 				PrintType(retType, ContinueExpr, Ambiguity.AllowPointer);
 			}
 			else
@@ -583,8 +582,12 @@ namespace Loyc.Ecs
 				}
 				if (isConstructor && name.IsIdNamed(S.This))
 					_out.Write("this", true);
-				else
+				else if (name.IsLiteral) { // operator true/false
+					_out.Write("operator ", true);
+					using (With(name, Precedence.MaxValue)) PrintLiteral();
+				} else { // Normal name
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName | Ambiguity.NoParentheses);
+				}
 			}
 		}
 		private void PrintArgList(VList<LNode> args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')

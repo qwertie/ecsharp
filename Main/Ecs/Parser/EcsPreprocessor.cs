@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -80,15 +80,6 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 
-		void AddWSToken(Token t)
-		{
-			if (SaveComments) {
-				if (t.Type() == TokenType.Newline && _triviaList.Count != 0 && _triviaList[_triviaList.Count - 1].Kind == TokenKind.Other)
-					return; // Ignore newline at end of PP token
-				_triviaList.Add(t);
-			}
-		}
-
 		Stack<Pair<Token,bool>> _ifRegions = new Stack<Pair<Token,bool>>();
 		Stack<Token> _regions = new Stack<Token>();
 
@@ -101,7 +92,8 @@ namespace Loyc.Ecs.Parser
 					break;
 				var t = t_.Value;
 				if (t.IsWhitespace) {
-					AddWSToken(t);
+					if (SaveComments)
+						_triviaList.Add(t);
 					continue;
 				} else if (t.Kind == TokenKind.Other) {
 					switch (t.Type()) {
@@ -115,7 +107,7 @@ namespace Loyc.Ecs.Parser
 							else
 								DefinedSymbols.Add((Symbol)_rest[0].Value);
 						} else
-							ErrorSink.Error(t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
+							ErrorSink.Error(t.Range(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
 						continue;
 					case TokenType.PPif:
 						var tree = ReadRestAsTokenTree();
@@ -130,7 +122,7 @@ namespace Loyc.Ecs.Parser
 						var tree_ = ReadRestAsTokenTree();
 
 						if (_ifRegions.Count == 0) {
-							ErrorSink.Error(t.ToSourceRange(SourceFile), 
+							ErrorSink.Error(t.Range(SourceFile), 
 								"Missing #if clause before '{0}'", t);
 							_ifRegions.Push(Pair.Create(t, false));
 						}
@@ -165,7 +157,7 @@ namespace Loyc.Ecs.Parser
 						continue;
 					case TokenType.PPwarning:
 						_triviaList.Add(t);
-						ErrorSink.Warning(t.ToSourceRange(SourceFile), t.Value.ToString());
+						ErrorSink.Warning(t.Range(SourceFile), t.Value.ToString());
 						continue;
 					case TokenType.PPregion:
 						_triviaList.Add(t);
@@ -174,7 +166,7 @@ namespace Loyc.Ecs.Parser
 					case TokenType.PPendregion:
 						_triviaList.Add(t);
 						if (_regions.Count == 0)
-							ErrorSink.Warning(t.ToSourceRange(SourceFile), "#endregion without matching #region");
+							ErrorSink.Warning(t.Range(SourceFile), "#endregion without matching #region");
 						else
 							_regions.Pop();
 						continue;
@@ -182,29 +174,29 @@ namespace Loyc.Ecs.Parser
 						_triviaList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest = ReadRestAsTokenTree();
 						// TODO: use LineRemapper
-						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
+						ErrorSink.Write(Severity.Note, t.Range(SourceFile), "Support for #line is not implemented");
 						continue;
 					case TokenType.PPpragma:
 						_triviaList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest_ = ReadRestAsTokenTree();
 						// TODO
-						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
+						ErrorSink.Write(Severity.Note, t.Range(SourceFile), "Support for #pragma is not implemented");
 						continue;
 					}
-			    }
+				}
 				return t_;
 			} while (true);
 			// end of stream
 			if (_ifRegions.Count > 0)
-				ErrorSink.Error(_ifRegions.Peek().A.ToSourceRange(SourceFile), "#if without matching #endif");
+				ErrorSink.Error(_ifRegions.Peek().A.Range(SourceFile), "#if without matching #endif");
 			if (_regions.Count > 0)
-				ErrorSink.Warning(_regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
+				ErrorSink.Warning(_regions.Peek().Range(SourceFile), "#region without matching #endregion");
 			return Maybe<Token>.NoValue;
 		}
 
 		private void Error(Token pptoken, string message)
 		{
-			ErrorSink.Error(pptoken.ToSourceRange(SourceFile), message);
+			ErrorSink.Error(pptoken.Range(SourceFile), message);
 		}
 
 		private Maybe<Token> SaveDirectiveAndAutoSkip(Token pptoken, bool cond)

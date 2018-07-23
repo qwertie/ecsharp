@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -150,9 +150,8 @@ namespace Loyc.Syntax
 		public static int Register(IParsingService service, IEnumerable<string> fileExtensions = null)
 		{
 			CheckParam.IsNotNull("service", service);
-			fileExtensions = fileExtensions ?? service.FileExtensions;
 			int oldCount = _registeredLanguages.Count;
-			foreach (var fileExt_ in service.FileExtensions) {
+			foreach (var fileExt_ in fileExtensions ?? service.FileExtensions) {
 				var fileExt = fileExt_; // make writable
 				if (fileExt.StartsWith("."))
 					fileExt = fileExt.Substring(1);

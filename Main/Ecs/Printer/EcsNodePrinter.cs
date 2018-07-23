@@ -504,6 +504,7 @@ namespace Loyc.Ecs
 			S.TriviaSLComment, S.TriviaMLComment, 
 			S.TriviaRawText, S.TriviaCsRawText, S.TriviaCsPPRawText,
 			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
+			S.TriviaRegion, S.TriviaEndRegion,
 		};
 
 		internal static HashSet<Symbol> SymbolSet(params string[] input)
@@ -807,6 +808,11 @@ namespace Loyc.Ecs
 					_out.Write(GetRawText(attr), false);
 					_out.Write("*/", true);
 				}
+			} else if (name == S.TriviaRegion || name == S.TriviaEndRegion) {
+				string arg = (attr.TriviaValue ?? "").ToString();
+				string prefix = name == S.TriviaRegion ? "#region" : "#endregion";
+				string prefix2 = char.IsLetterOrDigit(arg.TryGet(0, ' ')) ? prefix + " " : prefix;
+				WriteRawText(prefix2 + arg, true);
 			}
 			return true;
 		}
@@ -907,6 +913,7 @@ namespace Loyc.Ecs
 			InitStaticInstance();
 			_staticPrinter._n = LNode.Literal(value, null, style);
 			_staticPrinter.PrintLiteral();
+			_staticPrinter._n = null;
 			return _staticStringBuilder.ToString();
 		}
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -179,7 +179,7 @@ namespace LeMP
 			"In some cases this macro is more efficient than replace(...). " +
 			"The macro's arguments can be patterns; for example `replace Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`.", 
 			"#fn", Mode = MacroMode.Passive)]
-		public static LNode replaceFn(LNode node, IMacroContext context1)
+		public static LNode define(LNode node, IMacroContext context1)
 		{
 			var retType = node.Args[0, LNode.Missing].Name;
 			if (retType != _replace && retType != _define)

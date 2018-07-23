@@ -241,10 +241,13 @@ namespace Loyc.Ecs
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition, p)) {
 				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs, p) ? kind : null;
 			} else {
-				// Check for a destructor
-				return retType.IsIdNamed(S.Missing)
-					&& CallsWPAIH(name, S._Destruct, 1, p) 
-					&& IsSimpleIdentifier(name.Args[0], p) ? kind : null;
+				// Check for a destructor (name has the form ~Foo)
+				if (retType.IsIdNamed(S.Missing)
+					&& CallsWPAIH(name, S._Destruct, 1, p)
+					&& IsSimpleIdentifier(name.Args[0], p)) return kind;
+				if (name.Value is bool) // operator true/false
+					return kind;
+				return null;
 			}
 		}
 

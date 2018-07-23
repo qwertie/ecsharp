@@ -529,6 +529,19 @@ namespace Loyc.Ecs.Tests
 			             F.List(F.Vars(T, a), F.Vars(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
 			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b) {\n  a.x != b.x\n}", stmt);
+
+		}
+
+		[Test]
+		public void CsOperatorTrueAndFalse()
+		{
+			LNode stmt = Attr(F.Public, @static, 
+				F.Fn(F.Bool, Attr(trivia_operator, F.True), F.List(F.Var(Foo, x)), F.Braces(
+					F.Call(S.Return, F.Call(S.Neq, x, F.Null)))));
+			Stmt("public static bool operator true(Foo x) {\n  return x != null;\n}", stmt);
+			stmt = F.Fn(F.Bool, Attr(trivia_operator, F.False), F.List(F.Var(Foo, x)), F.Braces(
+					F.Call(S.Return, F.Call(S.Eq, x, F.Null)))).WithAttrs(stmt.Attrs);
+			Stmt("public static bool operator false(Foo x) {\n  return x == null;\n}", stmt);
 		}
 
 		[Test]

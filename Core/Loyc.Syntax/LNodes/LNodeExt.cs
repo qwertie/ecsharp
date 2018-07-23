@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -253,8 +253,7 @@ namespace Loyc.Syntax
 			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
-		/// <remarks>The node's range is changed to the provided <see cref="SourceRange"/>
-        /// and the original range of the node is assigned to the parentheses attribute.</remarks>
+		/// <remarks>The node's range is changed to the provided <see cref="SourceRange"/>.</remarks>
 		public static LNode InParens(this LNode node, SourceRange range)
 		{
 			return node.WithRange(range).PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens));

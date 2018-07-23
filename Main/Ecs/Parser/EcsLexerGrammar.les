@@ -338,11 +338,11 @@ namespace Loyc.Ecs.Parser
 			/ &{AllowPP} "#undef"     (EndId=>{_type=TT.PPundef;     _value = S.PPUndef;})
 			/ &{AllowPP} "#pragma"    (EndId=>{_type=TT.PPpragma;    _value = S.PPPragma;})
 			/ &{AllowPP} "#line"      (EndId=>{_type=TT.PPline;      _value = S.PPLine;})
-			/ &{AllowPP} "#error"     (EndId=>{_type=TT.PPerror;   } _value = RestOfPPLine)
-			/ &{AllowPP} "#warning"   (EndId=>{_type=TT.PPwarning; } _value = RestOfPPLine)
-			/ &{AllowPP} "#note"      (EndId=>{_type=TT.PPnote;    } _value = RestOfPPLine)
-			/ &{AllowPP} "#region"    (EndId=>{_type=TT.PPregion;  } _value = RestOfPPLine)
-			/ &{AllowPP} "#endregion" (EndId=>{_type=TT.PPendregion; _value = S.PPEndRegion;})
+			/ &{AllowPP} "#error"     (EndId=>{_type=TT.PPerror;    } _value=RestOfPPLine)
+			/ &{AllowPP} "#warning"   (EndId=>{_type=TT.PPwarning;  } _value=RestOfPPLine)
+			/ &{AllowPP} "#note"      (EndId=>{_type=TT.PPnote;     } _value=RestOfPPLine)
+			/ &{AllowPP} "#region"    (EndId=>{_type=TT.PPregion;   } _value=RestOfPPLine)
+			/ &{AllowPP} "#endregion" (EndId=>{_type=TT.PPendregion;} _value=RestOfPPLine)
 			/ "var"                   (EndId=>{_type=TT.ContextualKeyword; _value = _var;})
 			/ "dynamic"               (EndId=>{_type=TT.ContextualKeyword; _value = _dynamic;})
 			/ "trait"                 (EndId=>{_type=TT.ContextualKeyword; _value = _trait;})
@@ -390,7 +390,7 @@ namespace Loyc.Ecs.Parser
 		@[static, readonly] _group::Symbol = GSymbol.Get("group");
 		@[static, readonly] _by::Symbol = GSymbol.Get("by");
 
-		rule RestOfPPLine::string @{
+		rule RestOfPPLine::string @{ // Consume rest of line after preprocessor directive
 			{start::int = InputPosition;}
 			~('\r'|'\n')*
 			{return CharSource.Slice(start, InputPosition-start).ToString();}

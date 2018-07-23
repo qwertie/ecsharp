@@ -214,7 +214,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
-		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
+		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {this.x = 0;}) <=> Foo() {this.x = 0;)
 		public static readonly Symbol Forward = GSymbol.Get("'==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}
@@ -330,10 +330,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");         //!< obsolete
 		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword"); //!< "#trivia_useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([#trivia_useOperatorKeyword]@`+`)(a, b)
 		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");   //!< "#trivia_forwardedProperty" e.g. get ==> _x; <=> [#trivia_forwardedProperty] get(@`==>`(_x));
-		/// `[#trivia_rawText("eat my shorts!")] x;` is printed as "eat my shorts!x;".
-		public static readonly Symbol TriviaRawText = GSymbol.Get("#trivia_rawText");                 //!< "#trivia_rawText"
-		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< #trivia_C#RawText("stuff") for C# only
-		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("#trivia_C#PPRawText");         //!< #trivia_C#PPRawText("#stuff") for C# only
+		public static readonly Symbol TriviaRawText = GSymbol.Get("#trivia_rawText");                 //!< #trivia_rawText("stuff") - Arbitrary text to be emitted unchanged, e.g. `[#trivia_rawText("cue!")] q;` is printed as `cue!q;`.
+		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< #trivia_C#RawText("stuff") - Raw text that is only printed by the C# printer (not the printer for other languages)
+		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("#trivia_C#PPRawText");         //!< #trivia_C#PPRawText("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
 		[Obsolete]
 		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");     //!< "#trivia_rawTextBefore"
 		[Obsolete]
@@ -364,9 +363,11 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaSLComment = GSymbol.Get("#trivia_SLComment"); //!< "#trivia_SLCommentBefore"
 		public static readonly Symbol TriviaMLComment = GSymbol.Get("#trivia_MLComment"); //!< "#trivia_MLCommentBefore"
 		public static readonly Symbol TriviaNewline = GSymbol.Get("#trivia_newline");
-		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("#trivia_appendStatement"); //!< Suppresses the newline that ordinarily appears between statements in a braced block
+		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("#trivia_appendStatement"); //!< Suppresses the newline that ordinarily appears before each statement in a braced block
 		public static readonly Symbol TriviaSpaces = GSymbol.Get("#trivia_spaces");
 		public static readonly Symbol TriviaTrailing = GSymbol.Get("#trivia_trailing");
+		public static readonly Symbol TriviaRegion = GSymbol.Get("#trivia_region");       //!< Region begin marker: #region Title <=> #trivia_region(" Title");
+		public static readonly Symbol TriviaEndRegion = GSymbol.Get("#trivia_endRegion"); //!< Region end marker: #endregion End <=> #trivia_endregion(" End");
 
 		/// #rawText must be a call with a single literal argument. The Value of
 		/// the argument is converted to a string and printed out by EcsNodePrinter 

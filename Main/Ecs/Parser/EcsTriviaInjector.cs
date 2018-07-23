@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -61,6 +61,15 @@ namespace Loyc.Ecs.Parser
 				trivia = triviaSans;
 			}
 			return base.AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);
+		}
+
+		protected override LNode MakeTriviaAttribute(Token t)
+		{
+			if (t.Type() == TokenType.PPregion)
+				return LNode.Trivia(S.TriviaRegion, t.Value.ToString(), t.Range(SourceFile));
+			else if (t.Type() == TokenType.PPendregion)
+				return LNode.Trivia(S.TriviaEndRegion, t.Value.ToString(), t.Range(SourceFile));
+			return base.MakeTriviaAttribute(t);
 		}
 
 		protected override LNode DoneAttaching(LNode node, LNode parent, int indexInParent)
