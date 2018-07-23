@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -122,7 +122,7 @@ namespace LeMP.Tests
 				SizeF size;
 				Point<int> p;
 				match (obj) {
-					case is Shape(ShapeType.Circle, ref size, Location: ref p is Point<int>(ref x, $(ref y)) && x > y):
+					case is Shape(ShapeType.Circle, ref size, Location: $(ref p) is Point<int>(ref x, $(ref y)) && x > y):
 						Circle(size, x, y);
 				}", @"
 				int x, y;
