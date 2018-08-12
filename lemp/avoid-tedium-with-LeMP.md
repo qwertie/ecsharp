@@ -1,7 +1,7 @@
 ---
 title: Avoid tedious coding with LeMP
 layout: article
-tagline: "The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor."
+tagline: "The Lexical Macro Processor transforms your C# code with a Lisp-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor."
 toc: true
 date: 24 Aug 2015 (updated 10 Dec 2016)
 ---
@@ -607,7 +607,7 @@ Everything is an expression
 
 Enhanced C# is built on the concept of a "universal syntax tree" that I call the [Loyc tree](https://github.com/qwertie/LoycCore/wiki/Loyc-trees). Rather than parsing to a syntax tree designed specifically for C#, the EC# parser parses to this more general form. If you want to write your own macros, you may have to deal with Loyc trees, although often you can avoid knowing anything by relying on the `quote` and `matchCode` macros, described in the [second article](lemp-code-gen-and-analysis.html).
 
-If you've ever programmed in LISP, you know that there is no separate concept of "statements" and "expressions": _everything_ is an expression. Arguably the most interesting thing about Enhanced C# is that it's also an expression-based language. Of course, the parser must make a clear distinction between statements and expressions: `X * Y;` is a pointer variable declaration, whereas `N = (X * Y);` is a multiplication. Statements end in semicolons, while expressions, er, don't.
+If you've ever programmed in Lisp, you know that there is no separate concept of "statements" and "expressions": _everything_ is an expression. Arguably the most interesting thing about Enhanced C# is that it's also an expression-based language. Of course, the parser must make a clear distinction between statements and expressions: `X * Y;` is a pointer variable declaration, whereas `N = (X * Y);` is a multiplication. Statements end in semicolons, while expressions, er, don't.
 
 The following code, for example, relies on the lack of a distinction (in the syntax tree) between statements and expressions:
 
@@ -645,7 +645,7 @@ This output, of course, isn't valid C#, but it is a perfectly valid syntax tree.
 This concept of an expression-based language explains some otherwise puzzling things about EC#. For example, if I give EC# the following input:
 
     [#static]
-    #fn(int, Square, #(#var(int, x)), @`{}`( #return(x*x) ));
+    #fn(int, Square, #(#var(int, x)), @`'{}`( #return(x*x) ));
 
 It spits out the following output:
 
@@ -654,13 +654,17 @@ It spits out the following output:
         return x * x;
     }
 
-What the hell happened? No, `#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". The `#` sign is otherwise _not_ special to the parser; unless you write a preprocessor directive (like `#if`), `#` is treated as an identifier character, not more special than an underscore.
+What the heck happened? No, `#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". 
 
-`#fn` takes four arguments (and an unlimited number of attributes): the return type (`int`), the method name (`Square`), the argument list (`#(#var(int, x))` is a list containing a single item; `#var(int, x)` declares a variable called `x`), and the method body. The rarely-used notation ``@`{}` `` is an identifier named `"{}"` that is being "called" with one parameter, the `#return` statement. Of course, the braces themselves are not a function, and when I say ``@`{}` `` is being "called", I simply mean that subexpressions are being associated with an identifier named "{}". These subexpressions are said to be the "arguments" of ``@`{}` ``.
+Don't be confused by the `#` sign. It does _not_ mark a preprocessor directive; the EC# parser doesn't really treat `#` as a special character - unless you write a preprocessor directive (like `#if`), `#` is an identifier character, much like an underscore or a capital K. Although `#fn` is _parsed_ as an ordinary name, its _meaning_ is special, because it represents a function. By analogy, when you write `var s = ""`, the C# compiler parses `var` as an ordinary identifier, not a keyword, but it has a special meaning nonetheless. Likewise `#fn` is parsed like a method call but has a special meaning.
+
+`#fn` takes four arguments: the return type (`int`), the method name (`Square`), the argument list (`#(#var(int, x))` is a list containing a single item; `#var(int, x)` declares a variable called `x`), and the method body. It can also have an unlimited number of attributes. The rarely-used notation ``@`'{}` `` is an identifier named `"'{}"` that is being "called" with one parameter, the `#return` statement. Of course, the braces themselves are not a function, and when I say ``@`'{}` `` is being "called", I simply mean that subexpressions are being associated with an identifier named "'{}". These subexpressions are said to be the "arguments" of ``@`'{}` ``.
+
+Why do functions and braces look like function calls? Because Loyc trees do not have a concept of functions and braces, only "calls". Thus, ordinary function calls and other constructs like functions, properties and classes are all represented in a similar way, with "calls". This makes Loyc trees very simple; they were inspired by the simplicity of [Lisp](https://en.wikipedia.org/wiki/Lisp_(programming_language)), although Loyc trees are significantly more complex than Lisp s-expressions.
 
 There's something called an "EC# node printer" whose job is to print C# code. When it sees a tree like
     
-    @#fn(#of(@`?`, double), Sqrt, #(#var(double, x)), 
+    @#fn(#of(@`'?`, double), Sqrt, #(#var(double, x)), 
         { return x < 0 ? null : Math.Sqrt(x); }
     );
 
@@ -671,7 +675,7 @@ It recognizes this as a perfectly normal syntax tree for a function declaration,
         return x < 0 ? null : Math.Sqrt(x);
     }
 
-As you can see, you can freely mix "prefix notation" like `#var(double, x)` with ordinary notation like `Math.Sqrt(x)`. I recommend _not_ using things like `#fn` or `#var` directly, since the actual syntax tree for a method or variable declaration is not what I'd call stable; I might reform these trees in the future. 
+As you can see, you can freely mix "prefix notation" like `#var(double, x)` with ordinary notation like `Math.Sqrt(x)`. It is strongly recommended _not_ to use constructs like `#fn` or `#var` directly, because the underlying syntax tree for a method or variable declaration is not guaranteed not to change in the future. 
 
 The nice thing about representing programming languages with a "Loyc tree" is that it provides a starting point for converting code between programming languages. In theory one could define some kind of "[Standard Imperative Language](https://github.com/qwertie/Loyc/wiki/Standard-Imperative-Language)" as an intermediate representation, a go-between that would help convert any source language to any target language.
 
@@ -683,19 +687,20 @@ You might find it fun to go in the reverse direction and see what kind of syntax
 
     class MyList<T> : IList<T> {
         int _count;
-        public int Count { get { return this._count; } }
+        public int Count { 
+            get { return this._count; }
+        }
     }
 
-Then change the Visual Studio Custom Tool to "LeMP_les" to see the output as an [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) syntax tree:
+Then change the Visual Studio Custom Tool to "LeMP_les" to see the output as an [LES](http://loyc.net/les) syntax tree:
 
     #import(System.Collections.Generic);
-    #class(#of(MyList, T), #(#of(IList, T)), {
-        #var(#int32, _count);
-        [#public] #property(#int32, Count, {
-            get({
-                #return(#this._count);
-            });
-        });
+
+    #class(MyList `#of` T, #(IList `#of` T), {
+	    #var(#int32, _count);
+	    @[#public] #property(#int32, Count, @``, {
+		    get({ #return(#this._count); });
+	    });
     });
 
 Okay, that's enough bizzaro world for one day.
