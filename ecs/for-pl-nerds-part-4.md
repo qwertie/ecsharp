@@ -24,7 +24,6 @@ Tooltips and F1 help to explain the meaning of operators and other punctuation s
 
 Smart syntax coloring based on the syntax tree. It may be expensive to run the macros of an EC# program, so syntax highlighting should be based on the syntax tree as much as possible. Existing C# syntax coloring is based mostly on token types or very superficial syntax features; I'd like to see highlighting like this:
 
-<demo> we must write a colorizer anyway for these articles
 	struct Point<$T>
 	{
 		static readonly Point Empty = new Point<T>();
@@ -86,9 +85,8 @@ EC# also calls non-macro methods at compile-time inside any "const" context, e.g
 
 Once the program tree is complete, EC# builds any executable code that wasn't built in advance (phase 3), and then it converts the program tree to an output language (phase 4). 
 
+.
 
-
-
-
+.
 
 CTCE will be limited to a subset of EC#, and this subset will slowly expand as EC# is developed. Eventually the goal is to allow you to run any safe code (i.e. code that is not marked unsafe) that does not access global (static) variables, subject to restrictions on the use of external assemblies (by default, only certain whitelisted BCL classes will be accessible, e.g. you will not be able to access the file system at compile-time).
