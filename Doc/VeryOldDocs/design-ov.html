@@ -1,0 +1,1422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html style="direction: ltr;">
+<head>
+
+
+
+  
+  
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252">
+
+
+  
+
+
+  
+  
+  
+  <title>Loyc: Design Overview</title>
+  <meta name="GENERATOR" content="OpenOffice.org 2.0 (Win32)">
+
+
+
+  
+  
+  <meta name="CREATED" content="20070503;13063501">
+
+
+
+  
+  
+  <meta name="CHANGED" content="20070503;19431148">
+
+
+
+  
+  
+  <style>
+<!--
+@page { size: 8.5in 11in; margin: 0.79in }
+P { margin-bottom: 0.08in }
+H1 { margin-bottom: 0.08in }
+H1.cjk { font-family: "Lucida Sans Unicode"; font-size: 16pt }
+H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+H3 { margin-bottom: 0.08in }
+H3.western { font-family: "Arial", sans-serif }
+/* By Qwertie: very useful */
+.sidebox { border: 1px dotted rgb(127, 127, 127);
+padding: 4px 3px 4px 4px;
+min-width: 100px ! important;
+float: right ! important;
+font-size: small;
+margin-top: 1px;
+margin-bottom: 1px;
+margin-left: 4px;
+visibility: visible;
+max-width: 50%;
+width: 35%;
+}
+-->
+  </style>
+</head>
+
+
+<body>
+
+
+
+<h1>Loyc Design Overview</h1>
+
+
+
+[ <a href="loyc.html">Introduction</a> | Design
+overview | <a href="50features.html">Extension proposals</a>
+| <a href="http://qism.blogspot.com/">My blog</a> ]
+<h2>It's not just a compiler</h2>
+
+
+
+<span style="font-weight: bold;"></span>It will be
+possible to take
+parts of the compiler and use them for different purposes.
+The&nbsp;design of the compiler architecture should consider the
+needs
+of<br>
+
+
+
+<ol>
+
+
+
+  <li>Source tweaking tools: taking a program, parsing it, making
+small
+changes and emitting the result as a new source file, keeping the
+original spacing and comments (unless, of course, the tool's job is to
+modify whitespace and comments).</li>
+
+
+
+  <li>Syntax translation tools: taking source code and changing
+its syntax to that of a new language. Loyc should include a standard
+method of keeping comments intact during nontrivial transformations.</li>
+
+
+
+  <li>Refactoring tools: making specific user-directed
+transformations on-demand, probably in an IDE</li>
+
+
+
+  <li>Semantic translation tools: taking&nbsp;source code and
+changing its structure to do the same tasks in a new way (without
+specific refactoring directions from a user)</li>
+
+
+
+  <li>Smart text editors: "syntax" highlighting based on code
+semantics
+as well as syntax; using knowledge of program structure to display
+completion lists and other information; ability to hide code based on
+structure; showing call graphs and dependency graphs; finding
+errors even before compiling. </li>
+
+
+
+  <li>Quick compilation: pre-parsing code in a text editor so it
+builds faster when the user wants to run the code</li>
+
+
+
+  <li>Interactive usage: typing statements/expressions and
+getting an immediate result</li>
+
+
+
+  <li>Edit and continue: applying a user's&nbsp;code changes
+to a running program<br>
+
+
+
+  </li>
+
+
+
+</ol>
+
+
+
+Loyc will not have all these features at first--that could take
+years, even if I have a lot of help. But the architecture should not
+make any of the above tools excessively hard to write.
+The&nbsp;compiler should be modularized in such a way that the
+above
+tools do not have to re-write or even re-compile any functionality that
+exists in the compiler itself.<br>
+
+
+
+<br>
+
+
+
+For example, a code editor that does basic syntax highlighting should
+be able to use the same parser in the same DLL that is used
+by&nbsp;the
+compiler. A parser design that reads directly from a file, or that must
+parse a whole file at once, is unsuitable.
+<h2>It's not just a fixed language</h2>
+
+
+
+As I've said, it's not enough to support a single language. It's also
+not enough to allow the user to select a single desired grammar for the
+language, nor is it enough to let the parser&nbsp;be swapped out
+for
+another one. I want a system that allows many different people
+to&nbsp;add their own syntax to the language, <span style="font-style: italic;">independently of each other</span>.
+One guy adds syntax for unit checking, another adds embedded SQL,
+another adds an operator specifically for his class library, another
+adds some crazy functional thing like monads*.
+<div class="sidebox">*They didn't teach me monads in school
+:(</div>
+
+
+
+I want to
+see all
+this stuff work together, certainly in the same source file and maybe
+in the same expression. When a&nbsp;programmer comes along who
+wants to
+use these features, he or she should just have to add some new options
+on the compiler command-line and it just works. Inevitably, there will
+be conflicts and ambiguous syntax, but it should be rare.<br>
+
+
+
+<br>
+
+
+
+To this end I propose an front-end with several "hooks" in it where
+new syntax can be tacked on. The architecture will have an empirical
+design, that is, an ad-hoc design that works
+best with particular kinds of syntax. My hope is that
+with
+the right kind of overall front-end
+design,&nbsp;any useful feature can be added with little
+impact on other features. And in the event that a syntax cannot be
+added with the standard methods, there will still be&nbsp;the
+option
+of replacing the parser or adding another stage to the parsing
+pipeline.<br>
+
+
+
+<br>
+
+
+
+When new syntax is added, mechanisms are required for controlling
+when&nbsp;it is active. I assume most syntax extensions will not be
+active
+globally throughout a source file; rather the user will turn them on in
+specific lexical blocks, or they will be active with respect to
+specific functions or data types. I will discuss later
+how&nbsp;this
+"selective" syntax can be achieved, and what selection mechanisms will
+be available. The ability to turn syntax on and off is crucial if
+different extensions are to coexist, because <br>
+
+
+
+<ol>
+
+
+
+  <li>Different extensions may have incompatible syntax, so they
+can't be used at the same time. (for example, they may have the same
+syntax and Loyc can't tell them apart.)</li>
+
+
+
+  <li>When
+a user adds a new extension, it should not change the meaning of
+existing code, so it should usually be inactive until it is
+specifically requested.</li>
+
+
+
+</ol>
+
+
+
+As much as possible, the compiler should detect and report conflicts,
+such as ambiguity between newly added operators.<br>
+
+
+
+<br>
+
+
+
+Finally, it should usually be easy to take a syntax designed for one
+code style and transplant it to another--for example, to write a new
+kind of "switch" statement for C# and then use it in boo, making
+little or no changes to the extension.<br>
+
+
+
+<br>
+
+
+
+In the following subsections I discuss the kinds of syntax extensions
+that should be supported.<br>
+
+
+
+<h3>Brand new operators and brackets</h3>
+
+
+
+Users should be able to make new operators, including ternary and other
+complex operators. Examples:<br>
+
+
+
+<ul>
+
+
+
+  <li>a "to" operator that creates a range object: "1 to 10", "1
+to 101
+step 5". Or how about using a colon for the same purpose? "1:10",
+"1:101:5".</li>
+
+
+
+  <li>an "in" operator for testing membership in a set: "34 in
+[12, 67, 34, 0]"</li>
+
+
+
+  <li>chainable comparison operators: "0 &lt;= index &lt;
+list.Count"</li>
+
+
+
+  <li>long phrases like in COBOL. For example, consider this
+exclusive-or operator: &nbsp;"x &gt; 0 or y &gt; 0 but not
+both"</li>
+
+
+
+  <li>inline assertions: "x (== y) + 1" could compute x + 1 while
+asserting that x == y. An alternative syntax could be "(x |== y) + 1"
+or taking the COBOL approach, "x (which equals&nbsp;y) + 1"</li>
+
+
+
+  <li>multi-character operators. For example, one could define "x
+|&lt;| y" to test whether "the magnitude of x is less than the
+magnitude of y". However, just as "x &lt; &lt; = 8" is not a
+valid way
+to say "x &lt;&lt;= 8",&nbsp;"x | &lt; | y" would be
+invalid also. </li>
+
+
+
+</ul>
+
+
+
+It should be possible to make an operator with a word in it without
+reserving a new keyword globally. It should be possible for users to
+overload new operators, although it's okay if the syntax creator has to
+do more work to provide that possibility. The parser should be able to
+determine that "a--b" means "a - (-b)" rather than
+something&nbsp;invalid like "(a--) b" (unless, of course, a syntax
+extension makes the first interpretation meaningful).<br>
+
+
+
+<br>
+
+
+
+I would find it exciting (in a purely platonic way) to allow end-users
+to define one-off operators for particular functions. For example, it
+would be cool if you could make a function<br>
+
+
+
+<pre>void DrawLine(float&nbsp;x1, float&nbsp;x2 "to" float&nbsp;y1, float&nbsp;y2) { ... }</pre>
+
+
+
+and call it like so:<br>
+
+
+
+<pre>DrawLine(x1,y1 to x2,y2)</pre>
+
+
+
+Now I'm not making guarantees, but I believe this is possible.<br>
+
+
+
+<h3>New expression parsers</h3>
+
+
+
+It should be possible&nbsp;to parse expressions in new ways,
+although
+it is assumed that one would rarely need to. Here are examples of
+possible "alternative" parsers<br>
+
+
+
+<ul>
+
+
+
+  <li>Reverse Polish Notation (RPN): a syntax in which brackets
+are unnecessary. For example, 3 4 + 5 * means (3 + 4) * 5.</li>
+
+
+
+  <li>Precedence based on whitespace: a syntax in which spaces
+can indicate precedence, so 3+4 * 5 means (3+4) * 5.</li>
+
+
+
+</ul>
+
+
+
+It should be possible to switch the parser&nbsp;within particular
+blocks of code, but use the normal parser elsewhere.<br>
+
+
+
+<h3>New reserved words</h3>
+
+
+
+It should be possible, although not recommended, to reserve new
+keywords globally throughout a source file.<br>
+
+
+
+<h3>New attributes on classes, functions, enums and maybe other
+things</h3>
+
+
+
+As well as .NET attributes, functions and classes can by marked in
+C#&nbsp;with special attributes such as "public" and "static". It
+should be possible to mark functions, classes and perhaps other things
+with new flags that have special meaning to an extension. The
+main&nbsp;use of new flags would probably be&nbsp;to enable an
+extension within a particular class or function.<br>
+
+
+
+<h3>New kinds of lexical blocks</h3>
+
+
+
+It should be possible&nbsp;to define new kinds of blocks, where the
+interpretation of the&nbsp;contents of the block is controlled by
+an
+extension. The syntax allowed outside the block may be fairly limited.
+For example, when using the C#-style language, one should be able to
+write an extension that can be used at file scope (or inside namespace
+blocks) that provides the syntax<br>
+
+
+
+<pre>public globals {<br>	int thisVariableIsGlobal;<br>	void voodoo(float foo, bool bar) { <br>		Console.WriteLine("Wait, wait, a global function in C#?!")<br>	}<br>}</pre>
+
+
+
+This extension would allow "global static" variables and functions that
+can be used without a class name. Now although the interpretation of
+the block is controlled by the extension, this particular extension
+need not parse the contents. Instead it can invoke the normal parser
+and then augment the AST after parsing to put it all in a class and
+add "static" modifiers.<br>
+
+
+
+<br>
+
+
+
+Somebody who doesn't like how switch statements work in C# could write
+a new statement that works more like Visual Basic:<br>
+
+
+
+<pre>select (x) {<br>case y:<br>	Console.WriteLine("x equals y!!!!");<br>case is &gt;= 500000:<br>	Console.WriteLine("x is just too damn big!!!!");<br>}</pre>
+
+
+
+<h2>But I need advice.<br>
+
+
+
+</h2>
+
+
+
+There are innumerable issues to consider and angles to cover. It is not
+easy to make a design that meets the needs of hundreds of potential
+extensions, "intellisense" editors, syntax translators, refactoring
+tools, and all the rest while pleasing programmers at the same time. My
+expertise comes from mainly from the many languages that I have used in
+the past (namely VB, C, C++, Pascal, Java, C#, boo, Ruby, Haskell,
+Javascript, Verilog, ANTLR, and a couple of assembly languages) and
+from my drive to understand new techniques. But I am not experienced in
+the following areas:<br>
+
+
+
+<ul>
+
+
+
+  <li>Administration of bug-tracking systems</li>
+
+
+
+  <li>Administration of RCSs (SVN)</li>
+
+
+
+  <li>Code emission (Reflection.Emit or anything else)</li>
+
+
+
+  <li>Code optimization (I've merely read about the basics)</li>
+
+
+
+  <li>Extension/plug-in frameworks (what kind of plug-in
+architecture should I use?)</li>
+
+
+
+  <li>Smart editors (How do they work? How do they function in
+spite of syntax and semantic errors? How does Visual Studio avoid constantly re-parsing an entire program every time you press a
+key?)</li>
+
+
+
+</ul>
+
+
+
+Also, there may be various other projects that could help me with Loyc;
+for instance, related open-source projects, PhD theses, and academic
+papers in programming-language research.<br>
+
+
+
+<br>
+
+
+
+If you <br>
+
+
+
+<ul>
+
+
+
+  <li>have advice about these topics</li>
+
+
+
+  <li>have any opinions
+about what an Ultimate Programming Language should contain</li>
+
+
+
+  <li>are aware of open-source or academic projects related to my
+work</li>
+
+
+
+  <li>can suggest where the project should be hosted (I need a
+wiki, bug-tracking system and&nbsp;SVN server)</li>
+
+
+
+  <li>want to help develop or administer the project</li>
+
+
+
+</ul>
+
+
+
+please <a href="mailto:qwertie256@gmail.com">let me know</a>. Also let me know if you know someone who might be interested in the project.
+<h2>Loyc Parsing System</h2>
+
+
+I'm implementing an unconventional parsing system&nbsp;that separates
+several aspects of syntax:<br>
+
+
+
+<ul>
+
+
+
+  <li>The language style - C, C#, VB, boo, etc. Informally the
+term "style" may refer merely to the syntactic style of a language, but
+in this case, the language style includes</li>
+
+
+
+  
+  
+  <ul>
+
+
+
+    <li>A&nbsp;set of lexical blocks and a specific syntax
+for each. For example, C# style implies
+that there will be class, namespace, method blocks, and much more.</li>
+
+
+
+    <li>Specific lexing rules. For instance, in C# style, "_\"_"
+is a
+valid string, but not in Visual Basic. The
+equivalent&nbsp;VB&nbsp;string
+is "_""_". Lexing rules also govern whether comments can be nested,
+whether 134_001 is a single valid integer (or two integers separated by
+an underscore), and so on. Lexing rules apply throughout a file;
+however, if needed, an extension can reinterpret a section of program
+text with a different lexer.</li>
+
+
+
+    <li>A set of rules governing the <span style="font-style: italic;">essential tree structure</span>
+of the program, including statement breaks. In C and C# the essential
+tree structure can be determined by tracking brackets {}, (), [], and
+semicolons. In boo the structure is determined mostly by indentation
+and line breaks, but also by brackets. VB is slightly more challenging
+because there is no consistent rule for starting a block, but this is
+mitigated by how easy it is to discover where statements begin and end.</li>
+
+
+
+    <li>Unusual&nbsp;syntax elements, parsing rules or
+behavior (e.g.
+in C, #define statements or the syntax for declaring&nbsp;pointers
+to
+functions).</li>
+
+
+
+    <li>Semantics governing identifier lookup, function
+overloading, automatic coersion, and much more.</li>
+
+
+
+  
+  
+  </ul>
+
+
+
+  <li>The set of statements (class, struct, while loops, custom
+blocks) that follow a standard syntactical pattern</li>
+
+
+
+  <li>The set of operators available in expressions, including
+information about precedence levels.</li>
+
+
+
+  <li>The set of attributes that can be applied to functions,
+classes, etc.</li>
+
+
+
+  <li>The set of reserved words</li>
+
+
+
+</ul>
+
+
+
+<h3>
+Rats!</h3>
+
+
+
+I looked at a very cool parsing system yesterday called <a href="http://www.cs.nyu.edu/rgrimm/papers/pldi06.pdf"><span style="font-style: italic;">Rats!</span></a>
+(part of <a href="http://cs.nyu.edu/rgrimm/xtc/">eXTensible
+C</a>). <span style="font-style: italic;">Rats!</span>
+is a modular compiler compiler which allows different parts of syntax
+to be separated pretty easily; it also allows syntax to be expressed
+very concisely, and little effort is required to build an AST. <span style="font-style: italic;">Rats!</span>
+might make a good basis for Loyc, except for the fact that it is a
+compiler compiler, not a runtime. See, I envision people taking a bunch
+of ready-made extensions and slapping&nbsp;them together almost
+effortlessly - with no compiling required to create the compiler
+itself, and without any&nbsp;specification file saying how to put
+the
+extensions together. Just a few command-line arguments. Rats! requires
+that the grammar be compiled, which generates source files that also
+have to be compiled. It also requires a top-level module that might not
+be easy for an ordinary programmer (who himself has never made a
+compiler extension) to use.<br>
+
+
+
+<br>
+
+
+
+Another issue in <span style="font-style: italic;">Rats!</span>
+is the way it sweeps ambiguities under the rug&nbsp;by saying their
+aren't any. Yeah, in the <span style="font-style: italic;">theory</span>
+of PEGs there aren't any ambiguities, but if two people
+define expr!!expr operators that are both available at once,
+practically speaking, there is a conflict that the user should be
+informed of.<br>
+
+
+
+<br>
+
+
+
+However, none of this is&nbsp;a deal breaker. But the fact
+that&nbsp;<span style="font-style: italic;">Rats!</span>
+only generates Java code is.<br>
+
+
+
+<h3>
+ANTLR</h3>
+
+
+
+ANTLR 3 seems to be a better fit fo this project. Its new parsing
+algorithm looks awesome, and as a recursive descent parser, it is
+possible to parse parts of code&nbsp;"by hand" if necessary. It is
+written in Java, but targets C# and&nbsp;it appears that
+one can use IKVM to convert ANTLR to .NET. Even if not, it just
+means that one needs to install Java before one can compile the
+parser(s).<br>
+
+
+
+<br>
+
+
+
+ANTLR includes support for the type (1) tools mentioned at the
+beginning of this document. It's possible to parse a source file, make
+some changes, and emit the output as a modified source file with
+original spacing and comments intact.<br>
+
+
+
+<br>
+
+
+
+ANTLR doesn't support modularity the way <span style="font-style: italic;">Rats!</span>
+does, but that's okay because grammar-level modularity is not the means
+by which syntax extensions will be made possible. Instead, users are
+expected to add extensions by tacking on DLLs.<br>
+
+
+<br>
+
+
+Unfortunately, ANTLR 3 C# seems extremely buggy and the developers
+(except Jim Idle, who doesn't work on the C# stuff) have ignored my bug
+reports. After wrestling with ANTLR 3 for three or four weeks and
+failing to find reliable workarounds for the bugs, I decided that
+writing a parser-generator could be a nice proof-of-concept for Loyc's
+extensibility. So I'm planning to make a parser generator for&nbsp;Loyc
+and then using it to write parsers for boo and C#. I'm bootstrapping by
+writing a boo lexer and parser by hand.<br>
+
+
+
+<h3>CoCo/R</h3>
+
+
+
+I have not investigated other possible code generators such as CoCo/R.<br>
+
+
+
+<h3>Proposal</h3>
+
+
+
+I propose a multi-stage parsing framework with the
+following steps:
+<ol>
+
+
+
+  <li>Byte source (disk file or other source =&gt; bytes)</li>
+
+
+
+  <li>Code extraction (bytes =&gt; characters)</li>
+
+
+
+  <li>Preprocessing (characters =&gt; characters)</li>
+
+
+
+  <li>Lexing (characters =&gt; tokens)</li>
+
+
+
+  <li>Essential tree parsing (tokens =&gt; minimal AST)</li>
+
+
+
+  <li>Main parsing (minimal AST =&gt; complete AST)</li>
+
+
+
+</ol>
+
+
+
+The first three&nbsp;stages are essentially optional; normally,
+characters would be extracted directly from a text file. But you can
+imagine that someone might want to compile code from a zip file or
+compile code that is embedded in a word-processing document (*.doc,
+*.odt), and&nbsp;run a preprocessor on the result.<br>
+
+
+
+<br>
+
+
+
+Normally, stages 3 to 6 will be selected according to the language
+style (C#, boo, etc.) However, each of these stages will have hooks
+within it to control the set of available blocks, operators, attributes
+and reserved words, and "preprocessors" can be inserted between the
+stages.
+<h2>Essential tree parsing (ETP)<br>
+
+
+
+</h2>
+
+
+
+This stage attempts to discover to <span style="font-style: italic;">essential
+tree structure</span>
+of a language. I noticed that for most languages, you can discover a
+lot about "what is nested within what" while understanding only a
+little about the souce text. For example, in C, C#, C++, and Java,
+braces and brackets normally indicate nesting regardless of the context
+in which they appear. The same goes for boo, except that indentation
+also indicates structure. In VB and Ruby, it's not quite as easy to
+tell where a code block begins; you need to recognise specific patterns
+like "If ... Then" and "Do While ..." (VB) and "if ..." and "while ..."
+(Ruby). For the most part blocks end in a consistent way, however. In
+Haskell, although indentation represents structure, special logic is
+required to see the beginning&nbsp;of a block. Despite these
+difficulties, I think that it is not too hard to make an ETP system
+that can cooperate with syntax extensions, provided that the syntax
+added to a language follows certain rules.<br>
+
+
+
+<br>
+
+
+
+The main caveat is that brackets and braces (and indentation,
+sometimes)
+are meaningless in certain lexer contexts:<br>
+
+
+
+<br>
+
+
+
+void f() { char* c = "(}"; /* (]{)}[ */ }<br>
+
+
+
+<br>
+
+
+
+Obviously, the brackets/braces inside comments and strings must be
+ignored, and this is true regardless of the language style. For that
+reason, ETP is done after lexing.<span style="font-weight: bold;"></span><span style="font-weight: bold;"><br>
+
+
+
+</span>
+<h4>Why do ETP?</h4>
+
+
+
+ETP enables parsing algorithms written by different people to be used
+at different places within the same source file, without combining
+their grammars. Loyc assumes that source files may contain
+domain-specific languages as well as new types statements such as the
+"globals" and "select" statements mentioned earlier; ETP allows
+out-of-order parsing, so that information can be gathered from one part
+of a source file before another part (including earlier parts) has even
+been parsed. I believe this will come in handy in some DSLs.<br>
+
+
+
+<br>
+
+
+
+I am hoping that the ETP technique may help&nbsp;smart code editors
+(you know, intellisense, autocompletion, etc.) keep track of the
+classes and methods that exist in a program even when that program
+contains syntax errors. Of course, at the very moment you type "foo."
+and a completion list pops up, the code contains a syntax error. ETP
+can isolates syntax errors in a function, so that the rest of the
+program can be parsed successfully. Mind you I don't actually know much
+about smart code editors, but I have a solid educated guess that ETP is
+A Good Thing for them.<br>
+
+
+
+<br>
+
+
+
+By doing ETP as one of the first steps of parsing, a mismatched
+bracket/brace error tends to be the first one discovered, but the
+nature of the error is not
+necessarily obvious (especially since the
+ETP doesn't know much about the program). However, two heuristics
+should be able to suggest
+an error's location&nbsp;accurately most of the time. For instance,
+given this nonsense C-style code:<br>
+
+
+
+<pre>Gosh (*flat[ulance]<br>{<br>	Gapulus!(carpoony+++garb);<br>}&nbsp;</pre>
+
+
+
+it is clear that since C languages always match ( with ), [ with ] and
+{ with }, there is probably a missing ")" at the end of the first line,
+and it doesn't take a human to figure that out.&nbsp;Note, however,
+that this heuristic could be confused by a domain-specific language
+that allows [unusual) bracket matching.<br>
+
+
+
+<br>
+
+
+
+The second heuristic is indentation. In code like<br>
+
+
+
+<pre>if (naru[cam]) { // Line 1<br>	while (&amp;%sinbur[ger] $= "!!!") // Line 2<br>		triprper = 7;<br>		snub();<br>	} // Line 4<br>	goobernatorial(triprper);<br>} // Line 6</pre>
+
+
+
+Any human can see that there is a brace missing on line 2, because
+there is a closing brace on line 4 at the same indentation level (and
+all lines in-between are indented more). But a parser will detect no
+problem until reaching line 6. That's where most compilers will report
+an error, but it can be really annoying to get an error on line 1798
+when the problem is on line 921. As long as the parser tracks
+indentation, it can report a good guess of the problem location (in
+addition to the location where the parser got stuck); and perhaps it
+can even recover from the error, in order to go on and discover more
+errors.<br>
+
+
+
+<br>
+
+
+
+Notice the&nbsp;importance of error recovery in smart code editors,
+which are expected to keep working in code&nbsp;with syntax errors.
+However, I don't plan to implement a sophisticated recovery feature for
+the first version of Loyc.<br>
+
+
+
+<h4>The output of the ETP parser</h4>
+ETP produces a kind of AST of tokens. Each level of the tree can be
+thought of as a token stream with children removed. For example, the C
+code<br>
+
+
+
+<pre>if (foo) { foo(bar); } else bar++;</pre>
+
+
+
+comes out of the lexer as<br>
+
+
+
+<pre>IF LPAREN foo RPAREN LBRACE foo LPAREN bar RPAREN SEMI RBRACE ELSE bar PUNC SEMI</pre>
+
+
+
+(here uppercase words are the names of token types and lowercase words
+are ID tokens.) Next,<br>
+
+
+
+<pre>IF LPAREN RPAREN LBRACE RBRACE ELSE bar PUNC SEMI</pre>
+
+
+
+comes out of the ETP. &nbsp;Hidden inside the LPAREN and LBRACE tree tokens are more
+tokens; for example LBRACE contains<br>
+
+
+
+<pre>foo PARENS SEMI.</pre>
+
+
+
+Now rather than creating an entirely new set of tokens, ETP re-uses the
+same tokens but places them in a different&nbsp;list.
+<h2>The statement recognition algorithm</h2>
+
+
+
+When I looked at several languages, I noticed that
+many&nbsp;constructs could be identified in similar ways.<br>
+
+
+
+<h3>C</h3>
+
+
+
+<pre>struct .... class ...<br>typedef ...<br>while (...) ...<br>if (...) ...<br>do ...<br>for (...) {...}<br>template ...<br></pre>
+
+
+
+After filtering out preprocessor directives, in C/C++ there are many
+constructs that can be identified with the first word, although the
+remaining constructs (variables, functions, expressions) are aweful,
+messy
+beasts. Notice that we can check the first word of a statement and if
+it matches one of the above, we don't even have to consider whether the
+statement is a messy beast. But that's assuming we can tell where
+statements begin--which is equivalent to detecting where statements
+end. I'll propose the solution to that later.<br>
+
+
+
+<br>
+
+
+
+If statements are identified in this way, it is a good idea to support
+"substatements". For example, template&lt;class T&gt; could be
+followed
+by a struct, class, variable or function declarations. One way to look
+at this is that "template" begins a statement and that which follows
+the angle brackets is a substatement.<br>
+
+
+
+<br>
+
+
+
+There are two different kinds of "statements" here: executable code,
+and declarative statements. At the file level, only declarations are
+allowed, but within function definitions, the two types may be mixed;
+variable, struct, class, and typedef statements can&nbsp; appear
+alongside executable statements.<br>
+
+
+
+<br>
+
+
+
+Preprocessor statements should be treated specially because they can't
+be recognised properly with a single grammar. Consider that the
+following is valid C++:<br>
+
+
+
+<pre>template&lt;<br>#define FOO T<br>class FOO&gt; class why_would_anyone_write_crap_like_this { T foo; }<br></pre>
+
+
+
+I suppose it wouldn't be a great loss if the parser couldn't
+handle it, but it's good to do things by-the-book whereever possible.<br>
+
+
+
+<h3>C#</h3>
+
+
+
+<pre><span style="font-style: italic;">attributes</span> class ...<br><span style="font-style: italic;">attributes</span> struct ...<br>using ...<br>namespace ...<br></pre>
+
+
+
+"attributes" includes .NET attributes in [square][brackets], and
+keywords such as <span style="font-weight: bold;">virtual</span>
+and <span style="font-weight: bold;">static</span>.
+Again, there are a small number of preprocessor directives that may
+require special treatment, and some constructs such as variable
+declarations that are not identified by&nbsp;a keyword.<br>
+
+
+
+<br>
+
+
+
+Notice that some constructs allow attributes while others do not; but
+since this language is extentable, people may invent
+reasons&nbsp;to put attributes on any construct. Therefore, the
+syntax can be regularized to<br>
+
+
+
+<pre><span style="font-style: italic;">attributes</span> special_word ...</pre>
+
+
+
+Then, invalid attributes can be detected after parsing rather than
+during it. The main difficulty I see is distinguishing this kind of
+construct from&nbsp;variable declarations, function declarations
+and expressions.<br>
+
+
+
+<h3>boo</h3>
+
+
+
+boo, like Python, uses indentation to indicate structure and a
+very&nbsp;regular syntax like this:<br>
+
+
+
+<pre>import Namespace.Name<br><span style="font-style: italic;">attributes</span> class ... :<br><span style="font-style: italic;">attributes</span> struct ... :<br><span style="font-style: italic;">attributes</span> def ...:<br>if ...:<br>else:<br>while ...:<br>for ...:<br></pre>
+
+
+
+much as in C#,&nbsp;keywords&nbsp;mark the start of most
+statements.<br>
+
+
+
+<br>
+
+
+
+Look at this boo code:<br>
+
+
+
+<pre><span style="font-weight: bold;">def</span> bar(z):<br>	print "foo!" + z.ToString()<br><span style="font-weight: bold;">class</span> Bar:<br>	b <span style="font-weight: bold;">as int</span>, a <span style="font-weight: bold;">as int</span>, r <span style="font-weight: bold;">as int</span><br><br>name = "Bob"<br>print "Hello ${name}"<br><span style="font-weight: bold;"><span style="font-family: monospace;">def </span></span>Foo(foo as int): // ERROR<br>	<span style="font-weight: bold;">return</span> foo * foo</pre>
+
+
+
+As shown, boo can contain executable statements that are
+lexically&nbsp;at file scope. There is a special rule: as soon as
+an
+executable statement is reached, the "main" function (the entry point
+of the program) begins. Here, the main function starts at <span style="font-weight: bold;">name = "foo"</span>.
+After this, no more declarations are allowed, including function
+declarations. To enforce this rule properly, statements must be
+classified as imperative or declarative.<br>
+
+
+
+<h3>Haskell</h3>
+
+
+
+And now for something completely different.<br>
+
+
+
+<pre><span style="font-weight: bold;">module</span> Foo <span style="font-weight: bold;">where<br>import</span> <span style="font-family: monospace;">ModuleName<br><br></span><span style="font-weight: bold;">data</span> Tree a = Node Tree Tree<br> | Leaf a<br> <span style="font-weight: bold;">deriving</span> (Eq)<br><span style="font-weight: bold;">instance</span> Show Tree <span style="font-weight: bold;">where</span><br>&nbsp;&nbsp;&nbsp; show (Node a b) = "{ " ++ (show a) ++ " " ++ (show b) ++ " }"<br> show (Leaf a) = show a<br><br><span style="color: rgb(0, 102, 0);">-- split a list into two lists: ([1st, 3rd, 5th element...], [2nd, 4th, 6th, ...])</span> <br>msplit:: [a] -&gt; ([a],[a])<br>msplit (o:e:rest) = (o:os, e:es)<br> <span style="font-weight: bold;">where</span> (os, es)&nbsp;= <br> msplit rest<br>msplit [] = ([], [])<br>msplit x = (x, [])<br></pre>
+
+
+
+Ok, I'm not so talented at Haskell so that code is probably wrong. And
+if I don't look at Haskell code very often,&nbsp;I forget what it
+means. But anyway, brackets indicate structure and so do newlines and
+indentation. Whenever one of four special keywords (<span style="font-weight: bold;">let</span>, <span style="font-weight: bold;">where</span>, <span style="font-weight: bold;">of</span>, <span style="font-weight: bold;">do</span>) is encountered,
+a "block" is opened implicitly. As long as lines that follow are
+indented <span style="font-style: italic;">more</span>,
+they are part of the same block (<a href="http://en.wikibooks.org/wiki/Haskell/Indentation">see
+here</a>
+for more details). In this way, the ETP should be able to discern the
+tree structure. Unlike in most languages, the same function can be
+defined more than once (each definition matches a different <span style="font-style: italic;">pattern</span>).<br>
+
+
+
+<br>
+
+
+
+I suppose that for a language like this, the top-level statements (the
+ones that do not begin with whitespace) would be considered statements.
+Here, the statements are&nbsp;<span style="font-weight: bold;"></span><span style="font-weight: bold;">import</span>, <span style="font-weight: bold;">data</span>, <span style="font-weight: bold;">instance</span>,&nbsp;function
+declarations, and possibly <span style="font-weight: bold;">module</span>
+(but it is probably better to treat it specially since it can only
+appear at the beginning of a file). The block-opening keywords are
+typically used in expressions, they could be considered statements too.
+It seems to me that <span style="font-weight: bold;">data</span>,
+<span style="font-weight: bold;">instance</span>,
+and function definitions can be considered the declarative statements
+of Haskell, while subexpressions that contain blocks can be considered
+"executable" statements. In this view, a function contains either a
+series of guards or a single statement. A statement&nbsp;is either
+an
+expression or one of the following statement types:<br>
+
+
+
+<pre>where-stmt: expr <span style="font-weight: bold;">where</span>&nbsp;assignment* -- (does it start with a stmt or an expr?) <br>do-stmt: <span style="font-weight: bold;">do</span> stuff -- (monads!)<br>let-stmt: <span style="font-weight: bold;">let</span>&nbsp;assignment* <span style="font-weight: bold;">in</span> stmt<br>case-stmt: <span style="font-weight: bold;">case</span> stmt <span style="font-weight: bold;">of</span> stuff&nbsp; &nbsp;-- (does it contain a stmt or an expr?)<br></pre>
+
+
+
+The syntax of "stuff" is not really important (with regard to&nbsp;<span style="font-weight: bold;">do</span>, they didn't
+teach us about monads), but what Haskell has in common with the other
+languages is that <span style="font-style: italic;">some</span>
+common statements&nbsp;begin with a special word (<span style="font-weight: bold;">do</span>, <span style="font-weight: bold;">let</span>, <span style="font-weight: bold;">instance</span>, <span style="font-weight: bold;">type</span>).
+A major difference is that&nbsp;executable statements in Haskell
+must
+return a value, although there is an empty value () that perhaps could
+be used by an extension that prodices no value. Also, since Haskell is
+a lazy functional language, some major transformations may be applied
+to change code from functional to imperative form, which must be done
+before&nbsp;a computer can execute it; running functional code
+directly
+is impractical, as in this classic "fibonacci sequence" example:<br>
+
+
+
+<br>
+
+
+
+fibonacci&nbsp;0 = 0<br>
+
+
+
+fibonacci&nbsp;1 = 1<br>
+
+
+
+fibonacci n = (fibonacci (n-1)) + (fibonacci (n-2))<br>
+
+
+
+<br>
+
+
+
+This code works fine in Haskell, but the apparently equivalent C# code<br>
+
+
+
+<pre>int&nbsp;fibonacci(int n) {<br>	if (n == 0) return 0;<br>	if (n == 1) return 1;<br>	return fibonacci(n-1) + fibonacci(n-2);<br>}</pre>
+
+
+
+Will run very slowly for even small values of&nbsp;<span style="font-weight: bold;">n</span> (e.g. n=20) and
+will overflow the stack if <span style="font-weight: bold;">n</span>
+is very large. The point is, functional programs often require
+transformations that make them practical to execute. Unfortunately I
+have no idea what the transformations are, or how&nbsp;extensions
+should interact&nbsp;with those transformations.<br>
+
+
+
+<h3>Summary</h3>
+
+
+
+After stripping out preprocessor directives and comments, the syntax of
+most languages can be distilled down to this:<br>
+
+
+
+<pre>header stmt*</pre>
+
+
+
+where header is something (such as the <span style="font-weight: bold;">package</span> statement in
+Java and <span style="font-weight: bold;">module</span>
+in Haskell) that must come before all statements, and stmt* is a
+sequence of&nbsp;zero or more statements. Statements can contain
+expressions and/or statements; if they contain other statements then we
+call them <span style="font-style: italic;">block
+statements</span>.
+Statements can be declarative (class, struct, ...) or imperative (if,
+while, ...). In general, not all statements are available at the same
+time.<br>
+
+
+
+<br>
+
+
+
+There are two kinds of statement syntax: regular and messy. "Regular"
+statements start with a reserved word (or at least a <span style="font-style: italic;">special word</span>),
+possibly preceded by a list of attributes, while messy statements are
+things like variable declarations in C, which are not identified by a
+special word, and the <span style="font-weight: bold;">where</span>
+statement in Haskell which is not identified as a <span style="font-weight: bold;">where</span> statement
+until after the expression to which it applies.<br>
+
+
+
+<br>
+
+
+
+Given a starting point in a&nbsp;token stream, I have discussed how
+to
+detect which type of&nbsp;statement begins there, but I haven't
+said
+how the end of a statement can be detected.
+<h3>Proposal</h3>
+
+
+
+<br>
+
+
+
+<br>
+
+
+
+In most languages, the appropriate mechanism for adding new types of
+statements is to register a special word (which may or may not be a
+keyword) that the statements , possibly&nbsp;preceded by a list of
+"attributes". The set of possible attributes is also <br>
+
+
+
+Thus, following the pattern of the other languages, users could define
+new statements in terms of a word that starts off the statement.<br>
+
+
+
+<h2>Syntax extension mechanisms</h2>
+
+
+
+<br>
+
+
+
+<h2>Caveats for extension designers</h2>
+
+
+
+<ul>
+
+
+
+  <li>Extensions should not worry about where they are in the
+class
+hierarchy. Although some code is located in class X now, it may be
+somewhere else after all extensions have been run.</li>
+
+
+
+</ul>
+
+
+
+<h2>Security concerns</h2>
+
+
+
+Using extensions implies running code by third parties (or shifty-eyed
+employees) at compile time. Obviously this suggests room for abuse;
+however, at the moment I don't know a cure for this problem. It would
+be nice if extensions' access to the file system and network were
+blocked by default, but I do not know how to enforce a block (does
+Microsoft offer a way for programs to run untrusted code with
+restrictions?)<br>
+
+
+
+<br>
+
+
+
+If an extension that allows code to run at compile-time, it would be
+desirable that the resulting code also be restricted. Note
+that&nbsp;code generation per se is not an unsafe activity, as long
+as
+generated code that is run at compile-time, is run with the same
+restrictions as the code that created it.<br>
+
+
+
+<br>
+
+
+
+Of course, an extension can insert anything it wants into the code
+being compiled; a malicious extension could insert a virus. There is no
+practical way to detect maliciousness automatically. Loyc will have a
+"flattened output" option that will print the source code after all
+"normal" extensions have been run, so one can manually check that
+nothing weird has been added. However,&nbsp;coders will normally
+want
+to see the source before optimization because optimization could
+produce weird-looking code whose behavior is not readily obvious. Thus,
+one may implement a malicious extension as an "optimizer" in order to
+sneak in evil code. There's just no way to prevent this except to make
+sure you trust the extensions you use.<br>
+
+
+
+<br>
+
+
+
+</body>
+</html>

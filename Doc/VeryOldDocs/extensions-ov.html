@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html style="direction: ltr;">
+<head>
+
+
+
+
+
+  
+  
+  
+  
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252">
+
+
+
+
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  <title>Loyc: Design Features</title>
+  <meta name="GENERATOR" content="OpenOffice.org 2.0 (Win32)">
+
+
+
+
+
+  
+  
+  
+  
+  <meta name="CREATED" content="20070503;13063501">
+
+
+
+
+
+  
+  
+  
+  
+  <meta name="CHANGED" content="20070503;19431148">
+
+
+
+
+
+  
+  
+  
+  
+  <style>
+<!--
+@page { size: 8.5in 11in; margin: 0.79in }
+P { margin-bottom: 0.08in }
+H1 { margin-bottom: 0.08in }
+H1.cjk { font-family: "Lucida Sans Unicode"; font-size: 16pt }
+H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+H3 { margin-bottom: 0.08in }
+H3.western { font-family: "Arial", sans-serif }
+-->
+  </style>
+</head>
+
+
+<body>
+
+
+
+
+
+<h1>Loyc Extensibility Overview</h1>
+
+
+
+
+
+[ <a href="loyc.html">Introduction</a> | Syntax design
+overview | <a href="50features.html">Extension proposals</a>
+| <a href="http://qism.blogspot.com/">My blog</a> ]<br>
+<h2>The add-in tree</h2>
+Loyc add-ins and configuration information are placed in a tree called the add-in tree.<br>
+<br>
+<h2>Stages of compilation</h2>
+<h2>Syntax extensions</h2>
+Please see the <a href="syntax-ov.html">next section</a> for an in-depth discussion of syntax extensions.
+<h2>Error handling</h2>
+<br>
+<h2>Ordering constraints</h2>
+<br>
+Often it's necessary to run extensions in a cetain order to acheive a desired effect. Consider two extensions, one which <br>
+<br>
+<h2>Interactive&nbsp;Loyc</h2>
+interactive or "interpreted" Loyc compiles a statement typed by the
+user and then executes it if it is executable. Declarations go into a
+special class called&nbsp;InteractiveStmts, and executable statements
+are run in the context of a method called ImmediateStmts. Extensions
+that want to be available in interactive mode need simply to add their
+syntax [TODO] to the add-in tree in /Stmts/Categories/Interactive, in
+addition to other locations used for normal compilation.<br>
+<br>
+TODO
+
+
+
+
+</body>
+</html>
