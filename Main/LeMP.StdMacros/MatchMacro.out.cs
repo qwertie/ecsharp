@@ -345,7 +345,6 @@ namespace LeMP
 				//   inRange = quote(Range);
 				//   conds will have "conds" pushed to the front.
 				// 
-				bool haveSubPatterns = false;
 				subPatterns = VList<LNode>.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
 			
