@@ -261,7 +261,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
-    <None Include="packages.config" />
     <None Include="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>
