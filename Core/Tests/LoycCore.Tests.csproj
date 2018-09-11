@@ -168,6 +168,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\HeapTests.cs" />
     <Compile Include="Collections\VLists\FVListTests.cs" />
     <Compile Include="Collections\VLists\FWListTests.cs" />
     <Compile Include="Collections\VLists\VListTests.cs" />

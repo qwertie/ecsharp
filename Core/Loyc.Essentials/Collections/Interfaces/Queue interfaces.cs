@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -21,7 +21,7 @@ namespace Loyc.Collections
 		T TryPeek(out bool isEmpty);
 		bool IsEmpty { get; }
 	}
-	
+
 	public static partial class LCInterfaces
 	{
 		public static T Pop<T>(this IPop<T> c)
@@ -29,7 +29,7 @@ namespace Loyc.Collections
 			bool isEmpty;
 			T next = c.TryPop(out isEmpty);
 			if (isEmpty)
-				throw new InvalidOperationException("The {0} is empty".Localized(MemoizedTypeName.Get(c.GetType())));
+				throw new EmptySequenceException("The {0} is empty".Localized(MemoizedTypeName.Get(c.GetType())));
 			return next;
 		}
 		public static T Peek<T>(this IPop<T> c)
@@ -37,7 +37,7 @@ namespace Loyc.Collections
 			bool isEmpty;
 			T next = c.TryPeek(out isEmpty);
 			if (isEmpty)
-				throw new InvalidOperationException("The {0} is empty".Localized(MemoizedTypeName.Get(c.GetType())));
+				throw new EmptySequenceException("The {0} is empty".Localized(MemoizedTypeName.Get(c.GetType())));
 			return next;
 		}
 		public static bool TryPop<T>(this IPop<T> c, out T value)
@@ -75,19 +75,26 @@ namespace Loyc.Collections
 			return isEmpty ? defaultValue : value;
 		}
 	}
-	
-	/// <summary>Represents a FIFO (first-in-first-out) queue.</summary>
+
+	/// <summary>Represents a FIFO (first-in-first-out) queue (or a priority queue 
+	/// if <see cref="IPriorityQueue{ThisAssembly}"/> is also implemented).</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
 	public interface IQueue<T> : IPush<T>, IPop<T>, ICount
 	{
 	}
-	
+
 	/// <summary>Represents a LIFO (last-in-first-out) stack.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
 	public interface IStack<T> : IPush<T>, IPop<T>, ICount
 	{
 	}
-	
+
+	/// <summary>Represents a priority queue, in which Pop() always returns the largest or smallest item.</summary>
+	/// <typeparam name="T">Type of each element</typeparam>
+	public interface IPriorityQueue<T> : IQueue<T>
+	{
+	}
+
 	/// <summary>Represents a double-ended queue that allows items to be added or
 	/// removed at the beginning or end.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>

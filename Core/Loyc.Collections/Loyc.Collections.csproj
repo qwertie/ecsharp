@@ -140,6 +140,7 @@
     <Compile Include="ALists\SparseAList.cs" />
     <Compile Include="ALists\SparseAListLeaf.cs" />
     <Compile Include="CG.cs" />
+    <Compile Include="Heap.cs" />
     <Compile Include="Other\ArrayOf4.cs" />
     <Compile Include="Other\Bijection.cs">
       <SubType>Code</SubType>
