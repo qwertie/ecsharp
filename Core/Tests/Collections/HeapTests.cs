@@ -107,6 +107,10 @@ namespace Loyc.Collections.Tests
 		public void TestItemMoveDetection()
 		{
 			var heap = new MaxHeap<Item>(null, (item, index) => item.Index = index);
+			Action Check = () => {
+				for (int i = 0; i < heap.Count; i++)
+					AreEqual(i, heap.List[i].Index);
+			};
 
 			// Add a bunch of items (probability of a collision is very nearly zero)
 			for (int i = 0; i < 50; i++) {
@@ -129,11 +133,6 @@ namespace Loyc.Collections.Tests
 				if (prev != null)
 					Less(item.Priority, prev.Priority);
 				prev = item;
-			}
-
-			void Check() {
-				for (int i = 0; i < heap.Count; i++)
-					AreEqual(i, heap.List[i].Index);
 			}
 		}
 	}
