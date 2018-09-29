@@ -46,3 +46,13 @@ Installing the Visual Studio extensions
 				public this(public readonly string Name, public int WeightLb, public int Age) {}
 			}
 		}
+
+How to increment and publish new versions
+-----------------------------------------
+
+1. Update version in Core/AssemblyVersion.cs
+2. Update appveyor.yml at `version:` (first line)
+3. Update appveyor.yml at `- set SEMVER=` (semantic version combines w.x.y into wx.y, e.g. 2.7.1 => 27.1, because semantic versioning demands a new major version number for each breaking change, while the internal version number increments the minor version for a minor breaking change.)
+4. Commit changes
+5. Create an (unannotated) git tag like `v2.7.1` locally. Push changes. Appveyor should publish the NuGet packages.
+6. Separately, create a release on GitHub.com, at least if the Visual Studio extension changed. Run UpdateLibLeMPAndReinstall.bat and if it builds successfully, prepare a zip file from the built files and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.

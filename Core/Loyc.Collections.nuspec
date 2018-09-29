@@ -9,7 +9,7 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Defines a number of sophisticated data structures.</summary>
-    <description>Loyc.Collections is a library of sophisticated data structures that implement standard .NET collection interfaces. It includes ALists, VLists, and the hash tree types Set&lt;T&gt;, MSet&lt;T&gt;, Map&lt;T&gt; and MMap&lt;T&gt;.</description>
+    <description>Loyc.Collections is a library of sophisticated data structures that implement standard .NET collection interfaces. It includes ALists, VLists, hash tree types (Set&lt;T&gt;, MSet&lt;T&gt;, Map&lt;K,V&gt; and MMap&lt;K,V&gt;), and min/max heaps.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees</tags>
