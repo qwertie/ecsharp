@@ -7,7 +7,7 @@ Welcome
 
 Enhanced C# is a programming language that is backward-compatible with C#. Currently, only the front-end of EC# is complete; this front end is known as [_LeMP_](/lemp). LeMP is, in fact, language-agnostic and can support _any_ programming language for which a parser and printer has been written based on [Loyc trees](http://loyc.net/loyc-trees), but so far no volunteers have stepped forward to write parsers or printers for other languages.
 
-Since only the front-end is done, one uses LeMP as a C# preprocessor. Currently there is a Single-File Generator (a.k.a. Custom Tool) in Visual Studio that converts a single \*.ecs file to plain C# whenever you save it. Typically, then, you'll write projects that are mostly C#, with EC# used only when its benefits are big enough to outweigh the drawbacks of using a C# preprocessor.
+Since only the front-end is done, one uses LeMP as a C# preprocessor. Currently there is a Single-File Generator (a.k.a. Custom Tool) in Visual Studio that converts a single \*.ecs file to plain C# whenever you save it. Typically, then, you'll write projects that are mostly C#, with EC# used only when its benefits are big enough to outweigh the drawbacks of using a C# preprocessor (e.g. no IntelliSense).
 
 It's possible to use a modified build process, but more convenient not to; instead, just place both the \*.ecs and \*.out.cs files in source control. This has the advantage that you don't have to modify your build server, and those without LeMP installed can still compile your projects.
 
@@ -43,26 +43,26 @@ The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
                 ^          collections: ALists, VList,             ^
                 |          hash trees...)                          |
                 |                                                  |
-        Loyc.Syntax.dll (Loyc trees, LES, LLLPG helper types)       |
+        Loyc.Syntax.dll (Loyc trees, LES, LLLPG helper types)      |
          ^    ^    ^                                               |
          |    |    |                                               |
          |    |    +---------+-------------------------------------+
          |    |              |
          |    |         Loyc.Utilities
          |    |      (more utility classes)
-         |    |            ^       ^ 
-         |    |            |       |
-         |    |            |       |
-         |  LoycCore.Tests and     |
-         |  LoycCore.Benchmarks    |
-         |                         |
-    Loyc.Ecs.dll (Enhanced C#      |
-         |       parser & printer) |
-         |                         |
-         +----------------------+  | 
+         |    |            ^       ^   ^
+         |    |            |       |   |
+         |    |            |       |   |
+         |  LoycCore.Tests and     |   |
+         |  LoycCore.Benchmarks    |   |
+         |                         |   |
+    Loyc.Ecs.dll (Enhanced C#      |   |
+         |       parser & printer) |   |
+         |                         |   |
+         +----------------------+  |   |
                                 |  | LeMP.StdMacros.dll (standard LeMP macros)
-                                |  |  |
-                                |  |  |
+                                |  |   |
+                                |  |   |
                                LeMP.exe (Lexical Macro Processor + macros)
                                   |
                                   |
