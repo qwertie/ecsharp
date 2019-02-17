@@ -47,6 +47,11 @@ Installing the Visual Studio extensions
 			}
 		}
 
+How to build
+------------
+
+Open Loyc.sln in Visual Studio, set the build configuration to Debug.NET45, and build it!
+
 How to increment and publish new versions
 -----------------------------------------
 

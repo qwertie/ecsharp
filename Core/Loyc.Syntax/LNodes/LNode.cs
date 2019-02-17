@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -561,6 +561,8 @@ namespace Loyc.Syntax
 		/// is false. The target can be a symbol with no name (<see cref="GSymbol.Empty"/>)
 		/// to represent a parenthesized expression, if there is one argument.</summary>
 		public abstract LNode Target { get; }
+
+		ILNode ILNode.Target { get { return Target; } }
 
 		/// <summary>Returns the argument list of this node. Always empty when <c><see cref="IsCall"/>==false</c>.</summary>
 		/// <remarks>

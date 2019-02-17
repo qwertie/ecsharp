@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -197,7 +197,7 @@ namespace Loyc.Syntax.Les
 		private bool HasTargetIdWithoutPAttrs(ILNode node)
 		{
 			var t = node.Target;
-			return t.IsId && !HasPAttrs(t);
+			return t.IsId() && !HasPAttrs(t);
 		}
 		
 		#endregion
