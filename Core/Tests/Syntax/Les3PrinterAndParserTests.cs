@@ -289,6 +289,21 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void PrecedenceChecks()
+		{
+			Exact("a | b ^ c | x", F.Call("'|", F.Call("'^", F.Call("'|", a, b), c), x));
+			Exact("a | b -> b | c -> x", F.Call("'->", F.Call(S.OrBits, a, b), F.Call("'->", F.Call(S.OrBits, b, c), x)));
+			Exact("a <- b && b <- c", F.Call(S.And, F.Call("'<-", a, b), F.Call("'<-", b, c)));
+			Exact("a <- b so b <- c", F.Call("'so", F.Call("'<-", a, b), F.Call("'<-", b, c)));
+			Exact("a loves b |> b loves c", F.Call("'|>", Op(F.Call("'loves", a, b)), Op(F.Call("'loves", b, c))));
+			Exact("a <| b <| c |> b |> a", F.Call("'|>", F.Call("'|>", F.Call("'<|", F.Call("'<|", a, b), c), b), a));
+			Exact("a..b * b.<*>.c", F.Call(S.Mul, F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
+			Exact("a..b * b.<*>.c", F.Call(S.Mul, F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
+			Exact("a..<b + b...c", F.Call(S.Add, F.Call("'..<", a, b), F.Call("'...", b, c)));
+			Exact("a..b.c...x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
+		}
+
+		[Test]
 		public void PrefixOps()
 		{
 			Exact("-a * b", F.Call(S.Mul, F.Call(S._Negate, a), b));

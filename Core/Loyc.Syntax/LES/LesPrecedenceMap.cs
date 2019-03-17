@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -109,7 +109,7 @@ namespace Loyc.Syntax.Les
 				{ S.XorBits,     P.OrBits     }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
 				{ S.DotDot,      P.Range      }, // ..
-				{ (Symbol)".<",  P.Range      }, // .< (controls the precedence of ..<)
+				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
 				{ S.GT,          P.Compare    }, // >
 				{ S.LT,          P.Compare    }, // <
 				{ S.LE,          P.Compare    }, // <=
@@ -123,6 +123,8 @@ namespace Loyc.Syntax.Les
 				{ S.Colon,       P.IfElse     }, // :
 				{ S.Assign,      P.Assign     }, // =
 				{ S.Lambda,      P.Lambda     }, // =>
+				{ (Symbol)"'|>", P.Triangle   }, // |>
+				{ (Symbol)"'<|", P.Triangle   }, // <|
 				{ S.NotBits,     P.Other      }, // ~
 			}.AsImmutable();
 		
