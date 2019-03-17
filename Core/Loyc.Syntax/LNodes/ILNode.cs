@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,7 +46,7 @@ namespace Loyc.Syntax
 		/// <inheritdoc cref="LNode.Name"/>
 		Symbol Name { get; }
 		/// <inheritdoc cref="LNode.Target"/>
-		LNode Target { get; }
+		ILNode Target { get; }
 		/// <inheritdoc cref="LNode.Range"/>
 		SourceRange Range { get; }
 		/// <inheritdoc cref="LNode.Style"/>
@@ -68,6 +68,8 @@ namespace Loyc.Syntax
 	{
 		/// <summary>Converts this object to an <see cref="LNode"/>, or returns 
 		/// <c>this</c> if the object is already an <see cref="LNode"/>.</summary>
+		/// <remarks>If your class implements <see cref="ILNode"/>, you can implement
+		/// this method simply by calling <see cref="LNodeExt.ToLNode"/>.</remarks>
 		LNode ToLNode();
 	}
 }

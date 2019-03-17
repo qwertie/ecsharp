@@ -603,18 +603,12 @@ namespace Loyc.Syntax
 			}
 		}
 
-		/// <summary>Converts <see cref="ILNode"/> to <see cref="LNode"/> recursively.
-		/// If the specified node is already an <see cref="LNode"/>, this method simply
-		/// does a cast.</summary>
+		/// <summary>Converts <see cref="ILNode"/> to <see cref="LNode"/> recursively.</summary>
 		public static LNode ToLNode(ILNode node)
-		{
-			return node is LNode ? (LNode)node : ToLNodeCore(node);
-		}
-		static LNode ToLNodeCore(ILNode node)
 		{
 			var attrs = VList<LNode>.Empty;
 			for (int i = node.Min; i < -1; i++)
-				attrs.Add(ToLNodeCore(node[i]));
+				attrs.Add(ToLNode(node[i]));
 
 			switch (node.Kind) {
 				case LNodeKind.Id:
@@ -624,8 +618,8 @@ namespace Loyc.Syntax
 				default:
 					var args = VList<LNode>.Empty;
 					for (int i = 0, max = node.Max; i <= max; i++)
-						args.Add(ToLNodeCore(node[i]));
-					var target = ToLNodeCore(node.Target);
+						args.Add(ToLNode(node[i]));
+					var target = ToLNode(node.Target);
 					return LNode.Call(attrs, target, args, node.Range, node.Style);
 			}
 		}

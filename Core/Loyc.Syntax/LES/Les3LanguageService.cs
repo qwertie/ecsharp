@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,6 +32,12 @@ namespace Loyc.Syntax.Les
 			CheckParam.IsNotNull("target", target);
 			var p = new Les3Printer(target, sink, options);
 			p.Print(node);
+		}
+		public string Print(ILNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		{
+			StringBuilder target = new StringBuilder();
+			Print(node, target, sink, mode, options);
+			return target.ToString();
 		}
 		public void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{

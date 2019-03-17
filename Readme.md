@@ -21,7 +21,19 @@ This repository holds several tools for enhancing .NET and C# development:
 
 These projects are the first products of the [Loyc](http://loyc.net) (Language of Your Choice) initiative.
 
-For more information, please visit the [Enhanced C# web site](http://ecsharp.net).
+Installation
+------------
+
+If you just want the [core libraries](http://core.loyc.net/), you can find them in NuGet. Otherwise, see
+
+- How to set up [LeMP or LLLPG in Visual Studio](http://ecsharp.net/lemp/install.html)
+- How to set up [LeMP or LLLPG on other platforms](http://ecsharp.net/lemp/install.html#on-other-platforms)
+- [Download page](https://github.com/qwertie/ecsharp/releases)
+
+How to build
+------------
+
+Open Loyc.sln in Visual Studio, set the build configuration to Debug.NET45, and build it!
 
 What's the deal with the binaries?
 ----------------------------------
@@ -29,23 +41,6 @@ What's the deal with the binaries?
 LeMP and LLLPG are self-hosting: they rely on themselves to help build themselves. Therefore, a binary copy of LeMP and LLLPG is kept in the `Lib\LeMP` subdirectory. However, to avoid bloating the git history, it is rarely updated. Consider checking [here](https://github.com/qwertie/ecsharp/releases) for a newer release. As of late 2016, releases still contain the .NET 4 Release build rather than .NET 4.5, because the Visual Studio syntax highlighters are still built with VS 2010 (and compatible with VS 2010, VS 2012, VS 2013 and VS 2015). As soon as someone asks me to switch the main release .NET 4.5, I will.
 
 Of course, you can also just build Loyc.sln to get a .NET 4.5 or even .NET 3.5 build. Compatibility with .NET 3.5 is aided by the Theraot compatibility library.
-
-Installing the Visual Studio extensions
----------------------------------------
-
-- **To install the LeMP and LLLPG Custom Tools**, run **LoycFileGeneratorForVs.exe** (from one of the releases or from the Lib\LeMP folder), make sure your version of Visual Studio is listed, and click Register (install). **Note**: The custom tools run in-place; they are not copied anywhere else. Visual Studio versions 2008 through 2015 are supported.
-- **To install syntax highlighting for \*.ecs and \*.les files**, run **LoycSyntaxForVs.vsix**. Visual Studio versions 2010 through 2015 are supported.
-- **To use the custom tool in a C# project**, add a text file to your project with a `*.ecs` extension, e.g. example.ecs. Open the Properties pane and change the "Custom Tool" option to **LeMP** (or **LLLPG** if you will be writing parsers.) To make sure it works, save some sample code and check the output file, like this:
-
-		using System;
-		using System.Collections.Generic;
-		using System.Linq;
-		using System.Windows
-		namespace Loyc.Ecs {
-			class Person {
-				public this(public readonly string Name, public int WeightLb, public int Age) {}
-			}
-		}
 
 How to increment and publish new versions
 -----------------------------------------

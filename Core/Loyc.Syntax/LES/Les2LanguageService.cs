@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,6 +32,12 @@ namespace Loyc.Syntax.Les
 		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
 			Les2Printer.Print(node, target, sink, mode, options);
+		}
+		public string Print(ILNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		{
+			StringBuilder target = new StringBuilder();
+			Print(node, target, sink, mode, options);
+			return target.ToString();
 		}
 		public void Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink msgs = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{

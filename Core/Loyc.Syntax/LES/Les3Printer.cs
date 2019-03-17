@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -290,7 +290,7 @@ namespace Loyc.Syntax.Les
 		private bool HasTargetIdWithoutPAttrs(ILNode node)
 		{
 			var t = node.Target;
-			if (!t.IsId)
+			if (!t.IsId())
 				return false;
 			return !HasPAttrs(t);
 		}
@@ -1173,7 +1173,7 @@ namespace Loyc.Syntax.Les
 				if (!IsContinuator(args[i]))
 					return false;
 
-			Debug.Assert(node.Target.IsId);
+			Debug.Assert(node.Target.IsId());
 			return true;
 		}
 
