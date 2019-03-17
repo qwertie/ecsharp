@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -466,10 +466,20 @@ namespace Loyc.Syntax.Les
 			Exact("(@Foo (a)) = b(c)", F.Call(S.Assign, F.Attr(Foo, F.InParens(a)), F.Call(b, c)));
 		}
 
+		[Test]
+		public void AttributesWithParams()
+		{
+			Stmt("@Foo (a) (b)", F.Attr(Foo, F.Call(F.InParens(a), b)));
+			Stmt("@Foo(a, b) (c)", F.Attr(F.Call(Foo, a, b), F.InParens(c)));
+			// Dotted attribute names are still not supported (must use parens)
+			Exact("@(Foo.a(b)) +c", F.Attr(F.Call(F.Dot(Foo, a), b), F.Call(S.Add, c)));
+			Test(Mode.Stmt, 2, "@Foo.a(b) +c", F.Attr(Foo, F.Call(S.Add, F.Call(a, b), c)));
+		}
+
 		#endregion
 
 		#region Block expressions, and keyword statements
-		
+
 		[Test]
 		public void KeywordStatements()
 		{

@@ -1,4 +1,4 @@
-﻿#ecs;
+#ecs;
 #importMacros(Loyc.LLPG);
 using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
 using Loyc;               // for IMessageSink, Symbol, etc.
@@ -62,11 +62,15 @@ partial class Les3Parser
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, list);
 		}
-		public void CheckForSpaceAtEndOfAttribute()
+		public bool IsSpaceBefore(int li)
 		{
-			if (LT0.StartIndex == LT(-1).EndIndex) {
+			return LT(li).StartIndex > LT(li-1).EndIndex;
+		}
+		public void CheckForSpace(bool expectSpace, string errorMsg)
+		{
+			if ((LT0.StartIndex == LT(-1).EndIndex) == expectSpace) {
 				var location = new SourceRange(SourceFile, LT0.StartIndex);
-				ErrorSink.Write(Severity.Error, location, "Expected space after attribute");
+				ErrorSink.Write(Severity.Error, location, errorMsg);
 			}
 		}
 		public bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
@@ -120,8 +124,13 @@ partial class Les3Parser
 		{int startIndex = LT0.StartIndex;}
 		{var attrs = new VList<LNode>();}
 		(	// @Attribute
-			"@" ("@" | attrs+=Particle[isAttribute: true])
-			greedy(~("{"|"\n") => {CheckForSpaceAtEndOfAttribute();})?
+			"@" {CheckForSpace(false, "Unexpected space after `@`");}
+			(	"@" 
+			|	attr:=Particle[inAttribute: true]
+				(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
+				{attrs.Add(attr);}
+			)
+			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
 			NewlinesOpt
 		)*
 		(	e:Expr[Precedence.MinValue]
@@ -231,10 +240,9 @@ partial class Les3Parser
 	// - an (expression) in parenthesis or a tuple
 	// - a literal or simple identifier
 	//   - simple calls are also handled here, as a space optimization
-	// - a prefix operator followed by an Expr
 	// - a { block } in braces
 	// - a [ list  ] in square brackets
-	Particle[bool isAttribute = false] returns [LNode result]
+	Particle[bool inAttribute = false] returns [LNode result]
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=TT.Literal // literal
@@ -249,7 +257,7 @@ partial class Les3Parser
 			result:SquareBracketList
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
-			"(" {bool saveParens = !isAttribute && (TT)LA0 != TT.At;}
+			"(" {bool saveParens = !inAttribute && (TT)LA0 != TT.At;}
 			list:=ExprList[ref endMarker]
 			")" {
 				if (endMarker != default(TT) || list.Count != 1) {
