@@ -404,6 +404,8 @@ namespace Loyc.Syntax
 			if (dims == 2) return TwoDimensionalArray;
 			return GSymbol.Get("'[" + new string(',', dims-1) + "]");
 		}
-		public static bool IsTriviaSymbol(Symbol name) { return name != null && name.Name.StartsWith("#trivia_"); }
+		public static bool IsTriviaSymbol(Symbol name) {
+			return name != null && (name.Name.StartsWith("%") || name.Name.StartsWith("#trivia_"));
+		}
 	}
 }
