@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,7 +70,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void MiscibilityErrors()
+		public void ImmiscibilityErrors()
 		{
 			var msgs = Test(Mode.Expr, 1, "x & Foo == 0",   F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
 			ExpectMessageContains(msgs, "'==' is not allowed in this context");

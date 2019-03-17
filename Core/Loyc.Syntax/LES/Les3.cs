@@ -1,4 +1,4 @@
-﻿// Currently, no IntelliSense (code completion) is available in .ecs files,
+// Currently, no IntelliSense (code completion) is available in .ecs files,
 // so it can be useful to split your Lexer and Parser classes between two 
 // files. In this file (the .cs file) IntelliSense will be available and 
 // the other file (the .ecs file) contains your grammar code.
@@ -470,46 +470,6 @@ namespace Loyc.Syntax.Les
 
 		internal static readonly Dictionary<object, Symbol> Continuators =
 			ContinuatorOps.ToDictionary(kw => (object)(Symbol)kw.Name.Substring(1), kw => kw);
-
-		/*/// <summary>Helper method used in Expr for cases like x-2, which is an 
-		/// Id token followed by a NegativeLiteral token, which needs to be 
-		/// reinterpreted as a subtraction by <i>positive</i> 2.</summary>
-		LNode ToPositiveLiteral(Token rhs)
-		{
-			Debug.Assert(rhs.Type() == TokenType.NegativeLiteral);
-			object value = rhs.Value;
-			if (value is CustomLiteral) {
-				var cl = (CustomLiteral)value;
-				value = new CustomLiteral(NegateValue(cl.Value), cl.TypeMarker);
-			} else
-				value = NegateValue(value);
-			return F.Literal(value, rhs.StartIndex + 1, rhs.EndIndex);
-		}
-		static object NegateValue(object value)
-		{
-			// There is no easy way to do this. I investigated having the lexer keep track of
-			// the original positive value in a special "Les3NegativeValue" class, but this
-			// made the lexer so much more complicated that I decided it would be better to
-			// back out the changes and just implement a manual type-by-type negation process.
-			if (value is int) {
-				var n = (int)value;
-				return (n == int.MinValue ? (object)unchecked((uint)int.MinValue) : -n);
-			} else if (value is long) {
-				var n = (long)value;
-				return (n == long.MinValue ? (object)unchecked((ulong)long.MinValue) : -n);
-			} else if (value is double) {
-				return -(double)value;
-			} else if (value is float) {
-				return -(float)value;
-			} else if (value is decimal) {
-				return -(decimal)value;
-			} else if (value is BigInteger) {
-				return -(decimal)value;
-			} else if ((value as string ?? "").StartsWith("-")) {
-				return value.ToString().Substring(1);
-			}
-			throw new InvalidOperationException("Invalid negative literal: {0}".Localized(value));
-		}*/
 
 		bool CanParse(Precedence context, int li, out Precedence prec)
 		{

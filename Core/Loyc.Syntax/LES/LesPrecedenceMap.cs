@@ -104,9 +104,9 @@ namespace Loyc.Syntax.Les
 				{ S.Sub,         P.Add        }, // -
 				{ S._RightArrow, P.Arrow      }, // ->
 				{ S.LeftArrow,   P.Arrow      }, // <-
-				{ S.AndBits,     P.AndBits    }, // &
-				{ S.OrBits,      P.OrBits     }, // |
-				{ S.XorBits,     P.OrBits     }, // ^
+				{ S.AndBits,     P.AndBitsLESv2 }, // &
+				{ S.OrBits,      P.OrBitsLESv2 }, // |
+				{ S.XorBits,     P.OrBitsLESv2 }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
 				{ S.DotDot,      P.Range      }, // ..
 				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
@@ -312,6 +312,9 @@ namespace Loyc.Syntax.Les
 		public override void Reset() {
 			base.Reset();
 			this[OperatorShape.Infix].Item1[S.ColonColon] = LesPrecedence.Primary;
+			this[OperatorShape.Infix].Item1[S.AndBits] = LesPrecedence.AndBits;
+			this[OperatorShape.Infix].Item1[S.OrBits] = LesPrecedence.OrBits;
+			this[OperatorShape.Infix].Item1[S.XorBits] = LesPrecedence.OrBits;
 		}
 	}
 }

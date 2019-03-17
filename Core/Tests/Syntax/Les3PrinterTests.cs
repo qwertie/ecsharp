@@ -1,4 +1,4 @@
-﻿using Loyc.MiniTest;
+using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,17 +53,20 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void MiscibilityErrors()
+		public void ImmiscibilityErrors()
 		{
 			Exact("a & b | c", F.Call(S.OrBits, F.Call(S.AndBits, a, b), c));
 			Exact("x & `'==`(Foo, 0)", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
 			Exact("`'&`(x, Foo) == 0", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
 			Exact("x >> 1 == a", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
 			Exact("x >> `'+`(a, 1)", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
-			Exact("x >> `'*`(a, 2)", F.Call(S.Shr, x, F.Call(S.Mul, a, two)));
+			Exact("x << `'-`(a, 2)", F.Call(S.Shl, x, F.Call(S.Sub, a, two)));
 			Exact("`'>>`(x, a) + 1", F.Call(S.Add, F.Call(S.Shr, x, a), one));
 			Exact("`'>>`(x, a) * 2", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
 			Exact("x >> a**1", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
+			// No longer classified as immiscible
+			Exact("x >> a / 2", F.Call(S.Shr, x, F.Call(S.Div, a, two)));
+			Exact("a * 2 >> x", F.Call(S.Shr, F.Call(S.Mul, a, two), x));
 
 			Exact("x Foo `'*`(a, b)", Op(F.Call("'Foo", x, F.Call(S.Mul, a, b))));
 			Exact("`'+`(a, b) Foo c", Op(F.Call("'Foo", F.Call(S.Add, a, b), c)));

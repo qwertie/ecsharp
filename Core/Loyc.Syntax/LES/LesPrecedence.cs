@@ -249,13 +249,15 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..
 		public static readonly Precedence Range       = new Precedence(65);             // infix .. ..<
 		public static readonly Precedence Multiply    = new Precedence(60);             // * /
-		public static readonly Precedence Shift       = new Precedence(55, 55, 50, 60); // >> <<
+		public static readonly Precedence Shift       = new Precedence(55, 55, 50, 55); // >> <<
 		public static readonly Precedence Other       = new Precedence(55, 55, 50, 60); // unrecognized op
 		public static readonly Precedence Add         = new Precedence(50);             // + -
 		public static readonly Precedence OrIfNull    = new Precedence(45);             // ??
-		public static readonly Precedence Compare     = new Precedence(40);             // == != > < >= <=
-		public static readonly Precedence AndBits     = new Precedence(35, 35, 30, 40); // &
-		public static readonly Precedence OrBits      = new Precedence(30, 30, 30, 40); // | ^
+		public static readonly Precedence AndBits     = new Precedence(40, 40, 30, 40); // &
+		public static readonly Precedence OrBits      = new Precedence(38, 38, 30, 40); // | ^
+		public static readonly Precedence Compare     = new Precedence(35);             // == != > < >= <=
+		public static readonly Precedence AndBitsLESv2= new Precedence(32, 32, 30, 40); // &
+		public static readonly Precedence OrBitsLESv2 = new Precedence(30, 30, 30, 40); // | ^
 		public static readonly Precedence Arrow       = new Precedence(26, 25);         // -> <-
 		public static readonly Precedence And         = new Precedence(20);             // &&
 		public static readonly Precedence Or          = new Precedence(15);             // ||

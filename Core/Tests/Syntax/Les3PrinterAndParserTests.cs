@@ -203,6 +203,9 @@ namespace Loyc.Syntax.Les
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
 			Exact("a.b!!.c.?. 1",  F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c",   F.Call("'*+", F.Call("'+/", a, b), c));
+
+			// See also Les3ParserTests.ImmiscibilityErrors
+			//     and Les3PrinterTests.ImmiscibilityErrors
 		}
 
 		[Test]
