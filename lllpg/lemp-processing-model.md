@@ -1,10 +1,10 @@
 ---
 title: "Appendix: How LLLPG fits into LeMP & Enhanced C#"
 layout: article
-date: 30 May 2016
+date: Updated Mar 2019
 ---
 
-So here's the deal. I designed a language called Enhanced C#. It's supposed to be about 99.9% backward compatible with C#, and the parser is about 95% complete (LINQ support is missing, but C# 6 syntax is available and I'm working on C# 7.) There is no EC# compiler yet, but there is a _parser_ and a _printer_; so you use the parser + LeMP + printer and feed the output to the plain C# compiler. With a few lines of code, you can parse a block of EC# code and print it out again:
+So here's the deal. I designed a language called Enhanced C#. It's supposed to be about 99.9% backward compatible with C#, and the parser is about 95% complete (Let me know if you're waiting for C# 7 support.) There is no EC# compiler yet, but there is a _parser_ and a _printer_; so you use the parser + LeMP + printer and feed the output to the plain C# compiler. With a few lines of code, you can parse a block of EC# code and print it out again:
 
     using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
     using (ParsingService.PushCurrent(Ecs.Parser.EcsLanguageService.Value))
