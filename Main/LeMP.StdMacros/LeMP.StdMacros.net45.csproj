@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LeMP.StdMacros</RootNamespace>
+    <AssemblyName>LeMP.StdMacros</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug.NET35|AnyCPU' or '$(Configuration)|$(Platform)' == 'Debug.NET4|AnyCPU' or '$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET35|AnyCPU' or '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' or '$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET35' or '$(Configuration)' == 'Release.NET35'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+    <Reference Include="Theraot.Core">
+      <HintPath>..\..\Core\Lib\DotNet35\Theraot.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Core\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="AddLineDirectivesMacro.cs" />
+    <Compile Include="AlgebraicDataType.out.cs">
+      <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="AssertMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssertMacro.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="BackingFieldMacro.cs" />
+    <Compile Include="CodeQuoteMacro.cs" />
+    <Compile Include="ContractsMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ContractsMacro.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="DeconstructMacro.cs" />
+    <Compile Include="FluentMacro.cs" />
+    <Compile Include="ForwardingMacro.cs" />
+    <Compile Include="InRange.out.cs">
+      <DependentUpon>InRange.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="MatchCode.out.cs">
+      <DependentUpon>MatchCode.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="MatchMacro.out.cs">
+      <DependentUpon>MatchMacro.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="CSharp6Macro.cs" />
+    <Compile Include="OnFinallyThrowCatch.cs" />
+    <Compile Include="OnReturn.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OnReturn.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="Prelude.Les.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReplaceMacro.cs" />
+    <None Include="AssertMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>AssertMacro.out.cs</LastGenOutput>
+    </None>
+    <None Include="ContractsMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ContractsMacro.out.cs</LastGenOutput>
+    </None>
+    <None Include="SaveAndRestoreMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SaveAndRestoreMacro.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="SaveAndRestoreMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SaveAndRestoreMacro.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="SetOrCreateMemberMacro.cs" />
+    <Compile Include="StandardMacros.cs" />
+    <Compile Include="StaticMatchCodeMacro.cs" />
+    <Compile Include="ThisConstructorMacro.cs" />
+    <Compile Include="TupleMacros.cs" />
+    <Compile Include="UnrollMacro.cs" />
+    <Compile Include="UseSequenceExpressions.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UseSequenceExpressions.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="UseSymbolsMacro.cs" />
+    <Compile Include="UsingMultiMacro.out.cs">
+      <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="WithMacro.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AlgebraicDataType.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
+    </None>
+    <None Include="InRange.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>InRange.out.cs</LastGenOutput>
+    </None>
+    <None Include="MatchCode.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>MatchCode.out.cs</LastGenOutput>
+    </None>
+    <None Include="MatchMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
+    </None>
+    <None Include="OpenSourceKey.snk" />
+    <None Include="UseSequenceExpressions.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UseSequenceExpressions.out.cs</LastGenOutput>
+    </None>
+    <None Include="UsingMultiMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.net45.csproj">
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
+      <Name>Loyc.Collections.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.net45.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.net45.csproj">
+      <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
+      <Name>Loyc.Syntax.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.net45.csproj">
+      <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
+      <Name>Loyc.Ecs.net45</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OnReturn.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>OnReturn.out.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

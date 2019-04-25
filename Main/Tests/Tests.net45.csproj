@@ -118,41 +118,41 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
+    <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.net45.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
-      <Name>Loyc.Collections</Name>
+      <Name>Loyc.Collections.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj">
+    <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.net45.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials</Name>
+      <Name>Loyc.Essentials.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Math\Loyc.Math.csproj">
+    <ProjectReference Include="..\..\Core\Loyc.Math\Loyc.Math.net45.csproj">
       <Project>{7493a75d-106a-4a50-9dcf-a7a034629fff}</Project>
-      <Name>Loyc.Math</Name>
+      <Name>Loyc.Math.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj">
+    <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.net45.csproj">
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
-      <Name>Loyc.Syntax</Name>
+      <Name>Loyc.Syntax.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
+    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.net45.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
+      <Name>Loyc.Utilities.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.csproj">
+    <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.net45.csproj">
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
-      <Name>LoycCore.Tests</Name>
+      <Name>LoycCore.Tests.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.net45.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Loyc.Ecs</Name>
+      <Name>Loyc.Ecs.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LeMP\LeMP.csproj">
+    <ProjectReference Include="..\LeMP\LeMP.net45.csproj">
       <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>
-      <Name>LeMP</Name>
+      <Name>LeMP.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LLLPG\LLLPG.csproj">
+    <ProjectReference Include="..\LLLPG\LLLPG.net45.csproj">
       <Project>{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}</Project>
-      <Name>LLLPG</Name>
+      <Name>LLLPG.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
