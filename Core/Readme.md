@@ -31,8 +31,6 @@ Low-level libraries on top:
 
 These projects use couple of tricks to support .NET 3.5, .NET 4 and .NET 4.5 in a single solution file. The tricks are documented here: http://stackoverflow.com/questions/5006397/targetting-multiple-net-framework-versions-by-using-different-project-configura/23705790#23705790
 
-TODO: Add portable class library version.
-
 Note: the versions of these libraries for .NET 3.5 depend on the compatibility library [Theraot.Core.dll](https://github.com/theraot/Theraot).
 
 Links

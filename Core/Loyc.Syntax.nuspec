@@ -11,7 +11,7 @@
     <summary>A parser library.</summary>
     <description>Loyc.Syntax implements various interfaces and helper classes for Loyc Languages and for users of LLLPG. It also implements Loyc trees for .NET (LNode), and parsers and printers for Loyc Expression Syntax (LES) versions 2 and 3.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>Loyc Core Parser LES LLLPG</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />
@@ -21,6 +21,7 @@
   <files>
     <file src="readme.md" />
 
+    <file src="Bin\Release\netstandard2.0\Loyc.Syntax.*" target="lib\netstandard2.0\" />
     <file src="Bin\Release.NET3\Loyc.Syntax.*" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.Syntax.*" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.Syntax.*" target="lib\net45\" />

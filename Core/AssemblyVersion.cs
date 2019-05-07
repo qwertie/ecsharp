@@ -1,6 +1,6 @@
 using System.Reflection;
 
-[assembly: AssemblyCopyright("Copyright ©2016. Licence: LGPL")]
+[assembly: AssemblyCopyright("Copyright ©2019. Licence: LGPL")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -14,5 +14,5 @@ using System.Reflection;
 // command to change the version number which, I guess, produces an incompatible 
 // assembly in the presence of strong names (strong naming prevents two assemblies 
 // from linking together without an exact match.)
-[assembly: AssemblyVersion("2.6.7.0")]
-[assembly: AssemblyFileVersion("2.6.7.0")]
+[assembly: AssemblyVersion("2.6.8.0")]
+[assembly: AssemblyFileVersion("2.6.8.0")]

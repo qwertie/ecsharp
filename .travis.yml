@@ -1,18 +1,17 @@
 language: csharp
-solution: Loyc-Slim.sln
+solution: Loyc.netstd.sln
 install:
     # Restore NuGet packages first
-    - nuget restore Loyc-Slim.sln
+    - nuget restore Loyc.netstd.sln
 script:
     # Build the Loyc libraries in release mode, for all possible configurations.
-    - xbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
-    - xbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
+    - xbuild /p:Configuration=Release Loyc.netstd.sln
 
-    # Unfortunately, test set 7 (LLLPG) sometimes fails due to nondeterminism.
-    - mono Bin/Release.NET45/Tests.exe 1
-    - mono Bin/Release.NET45/Tests.exe 2
-    - mono Bin/Release.NET45/Tests.exe 3
-    - mono Bin/Release.NET45/Tests.exe 4
-    - mono Bin/Release.NET45/Tests.exe 5
-    - mono Bin/Release.NET45/Tests.exe 6
-    - mono Bin/Release.NET45/Tests.exe 7
+    # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
+    - mono Bin/Release/netstandard2.0/Tests.exe 1
+    - mono Bin/Release/netstandard2.0/Tests.exe 2
+    - mono Bin/Release/netstandard2.0/Tests.exe 3
+    - mono Bin/Release/netstandard2.0/Tests.exe 4
+    - mono Bin/Release/netstandard2.0/Tests.exe 5
+    - mono Bin/Release/netstandard2.0/Tests.exe 6
+    - mono Bin/Release/netstandard2.0/Tests.exe 7
