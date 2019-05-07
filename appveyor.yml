@@ -6,6 +6,8 @@ image: Visual Studio 2017
 before_build:
     - nuget restore Loyc.netfx.sln
     - nuget restore Loyc.netstd.sln
+    - nuget restore Core\LoycCore.netfx.sln
+    - nuget restore Core\LoycCore.netstd.sln
 
 build_script:
     # First, set some environment variables.
