@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,13 +70,6 @@ namespace LeMP
 		{
 			if (!args.Contains("--nologo"))
 				Console.WriteLine("LeMP macro compiler ({0})", typeof(Compiler).Assembly.GetName().Version.ToString());
-			if (args.Contains("--editor")) {
-				Console.WriteLine("Starting editor...");
-				System.Windows.Forms.Application.EnableVisualStyles();
-				System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-				System.Windows.Forms.Application.Run(new TextEditor.LempDemoForm());
-				return;
-			}
 
 			KnownOptions["editor"] = Pair.Create("", "Show built-in text editor");
 

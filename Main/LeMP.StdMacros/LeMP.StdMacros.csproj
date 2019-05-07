@@ -23,7 +23,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
     </None>
-    <Compile Include="AlgebraicDataType.out.cs">
+    <Compile Update="AlgebraicDataType.out.cs">
       <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -32,7 +32,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>AssertMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Include="AssertMacro.out.cs">
+    <Compile Update="AssertMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AssertMacro.ecs</DependentUpon>
@@ -41,7 +41,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>ContractsMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Include="ContractsMacro.out.cs">
+    <Compile Update="ContractsMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ContractsMacro.ecs</DependentUpon>
@@ -50,7 +50,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>InRange.out.cs</LastGenOutput>
     </None>
-    <Compile Include="InRange.out.cs">
+    <Compile Update="InRange.out.cs">
       <DependentUpon>InRange.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -59,7 +59,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>
     </None>
-    <Compile Include="MatchCode.out.cs">
+    <Compile Update="MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -68,7 +68,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Include="MatchMacro.out.cs">
+    <Compile Update="MatchMacro.out.cs">
       <DependentUpon>MatchMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -77,7 +77,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>OnReturn.out.cs</LastGenOutput>
     </None>
-    <Compile Include="OnReturn.out.cs">
+    <Compile Update="OnReturn.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OnReturn.ecs</DependentUpon>
@@ -86,7 +86,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>SaveAndRestoreMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Include="SaveAndRestoreMacro.out.cs">
+    <Compile Update="SaveAndRestoreMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SaveAndRestoreMacro.ecs</DependentUpon>
@@ -95,7 +95,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>UseSequenceExpressions.out.cs</LastGenOutput>
     </None>
-    <Compile Include="UseSequenceExpressions.out.cs">
+    <Compile Update="UseSequenceExpressions.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>UseSequenceExpressions.ecs</DependentUpon>
@@ -104,7 +104,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Include="UsingMultiMacro.out.cs">
+    <Compile Update="UsingMultiMacro.out.cs">
       <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

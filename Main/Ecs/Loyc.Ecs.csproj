@@ -15,13 +15,13 @@
     <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj" />
-    <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
-    <Compile Include="Parser\EcsLexerGrammar.out.cs">
+    <Compile Include="..\..\Core\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <Compile Update="Parser\EcsLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsLexerGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="Parser\EcsParserGrammar.out.cs">
+    <Compile Update="Parser\EcsParserGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsParserGrammar.les</DependentUpon>

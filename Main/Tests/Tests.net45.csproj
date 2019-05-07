@@ -147,7 +147,7 @@
       <Name>Loyc.Ecs.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\LeMP\LeMP.net45.csproj">
-      <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>
+      <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
       <Name>LeMP.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\LLLPG\LLLPG.net45.csproj">

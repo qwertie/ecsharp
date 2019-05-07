@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!--Change path to "obj" folder that causes a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
+    <BaseIntermediateOutputPath>..\Bin\obj.netfx\LoycCore.Benchmarks</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET4</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}</ProjectGuid>

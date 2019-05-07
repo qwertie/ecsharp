@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!--Change path to "obj" folder that causes a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
+    <BaseIntermediateOutputPath>..\Bin\obj.netfx\MiniTestRunner</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>

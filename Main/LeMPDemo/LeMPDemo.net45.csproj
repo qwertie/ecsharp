@@ -1,13 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!--Change path to "obj" folder that causes a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
-    <BaseIntermediateOutputPath>..\..\Bin\obj.netfx\LeMP</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E960917A-F32C-469F-91DA-0B75342FA5BC}</ProjectGuid>
+    <ProjectGuid>{445D4D88-E182-49E1-A7FA-7617A71397EE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LeMP</RootNamespace>
@@ -19,7 +17,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\Debug.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.NET35\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -56,7 +54,7 @@
     <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Debug\LEL.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\..\Bin\Debug.NET4\LeMPDemo.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
@@ -67,12 +65,12 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
-    <OutputPath>..\..\Bin\Release.NET4\</OutputPath>
+    <OutputPath>..\..\Bin\LeMP\Release.NET4\</OutputPath>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\..\Bin\Release.NET4\LeMP.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>bin\Release\LEL.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
@@ -82,18 +80,17 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <NoWarn>1591,1573</NoWarn>
-    <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU'">
     <OutputPath>..\..\Bin\Release.NET4\</OutputPath>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -122,7 +119,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;DotNet45</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -133,7 +129,8 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>EC#.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.TextEditor, Version=3.2.1.6466, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL">
@@ -158,34 +155,37 @@
     <Compile Include="..\..\Core\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Compiler.cs" />
-    <Compile Include="MacroProcessor.cs" />
-    <Compile Include="MacroProcessorTask.cs" />
-    <Compile Include="Tests\TestStaticDeconstructMacro.cs" />
-    <Compile Include="Tests\TestMacroCombinations.cs" />
-    <Compile Include="Tests\MacroProcessorTests.cs" />
-    <Compile Include="BuiltinMacros.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\TestOnFinallyReturnThrowMacros.cs" />
-    <Compile Include="Tests\PreludeMacroTests.cs" />
-    <Compile Include="Tests\TestReplaceMacro.cs" />
-    <Compile Include="Tests\TestSequenceExpressionMacro.cs" />
-    <Compile Include="Tests\MacroTesterBase.cs" />
-    <Compile Include="Tests\TestSetOrCreateMemberMacro.cs" />
-    <Compile Include="Tests\SmallerMacroTests.cs" />
-    <Compile Include="Tests\TestAlgebraicDataTypes.cs" />
-    <Compile Include="Tests\TestCodeContractMacros.cs" />
-    <Compile Include="Tests\TestCodeQuoteMacro.cs" />
-    <Compile Include="Tests\TestMatchCodeMacro.cs" />
-    <Compile Include="Tests\TestMatchMacro.cs" />
-    <Compile Include="Tests\TestStaticMatchCodeMacro.cs" />
-    <Compile Include="Tests\TestUnrollMacro.cs" />
-    <Compile Include="Tests\TestUseSymbolsMacro.cs" />
+    <Compile Include="FindAndReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FindAndReplaceForm.Designer.cs">
+      <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LempDemoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LempDemoForm.Designer.cs">
+      <DependentUpon>LempDemoForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LempDemoPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LempDemoPanel.Designer.cs">
+      <DependentUpon>LempDemoPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.net45.csproj">
       <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.net45.csproj">
+      <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
+      <Name>LoycCore.Tests.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Ecs\Loyc.Ecs.net45.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
@@ -207,12 +207,21 @@
       <Project>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</Project>
       <Name>LeMP.StdMacros.net45</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LeMP\LeMP.net45.csproj">
+      <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
+      <Name>LeMP.net45</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="OpenSourceKey.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="EC#.ico" />
+    <EmbeddedResource Include="FindAndReplaceForm.resx">
+      <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LempDemoForm.resx">
+      <DependentUpon>LempDemoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LempDemoPanel.resx">
+      <DependentUpon>LempDemoPanel.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
