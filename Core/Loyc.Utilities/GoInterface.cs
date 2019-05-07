@@ -52,9 +52,11 @@ namespace Loyc.Utilities
 		internal static readonly ModuleBuilder ModuleBuilder;
 		internal static readonly ModuleHandle ModuleHandle;
 
+		#if DotNet3 || DotNet4
 		// Ability to save is useful for debugging, but after saving, the assembly
 		// is frozen and you cannot define additional wrappers!
 		static readonly bool Savable = true;
+		#endif
 
 		static GoInterface()
 		{
