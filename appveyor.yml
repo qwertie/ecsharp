@@ -1,5 +1,8 @@
 version: 2.6.8.{build}
 
+# Try to fix "The project file ... is not supported by MSBuild and cannot be built."
+image: Visual Studio 2017
+
 before_build:
     - nuget restore Loyc.netfx.sln
     - nuget restore Loyc.netstd.sln
