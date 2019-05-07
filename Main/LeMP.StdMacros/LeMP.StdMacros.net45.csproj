@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug.NET35|AnyCPU' or '$(Configuration)|$(Platform)' == 'Debug.NET4|AnyCPU' or '$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug.NET35' or '$(Configuration)' == 'Debug.NET4' or '$(Configuration)' == 'Debug.NET45' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
