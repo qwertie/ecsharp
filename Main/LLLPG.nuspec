@@ -11,7 +11,7 @@
     <summary>A recursive-decent parser generator for C#.</summary>
     <description>LLLPG is a recursive-decent parser generator for C#, with Visual Studio integration and a feature set better than ANTLR version 2. This package contains the core LLLPG executable, which can be run from the command-line. Visual Studio users should typically download a release of LeMP from https://github.com/qwertie/ecsharp/releases instead of using this package.</description>
     <releaseNotes>See http://ecsharp.net/lllpg/version-history.html</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>Loyc LL Parser Generator LLLPG</tags>
     <dependencies>
       <dependency id="Loyc.Collections" version="$version$" />

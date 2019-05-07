@@ -107,7 +107,7 @@
     </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,DotNet45,CSharp4</DefineConstants>
     <NoWarn>1591, 1573</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -121,7 +121,7 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
+    <DefineConstants>TRACE;Loyc,DotNet4,DotNet45,CSharp4</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591, 1573</NoWarn>

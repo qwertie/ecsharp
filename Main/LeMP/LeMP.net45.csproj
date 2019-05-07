@@ -16,10 +16,10 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\Debug.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.NET3\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,7 +31,7 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OutputPath>..\..\Bin\Release.NET3\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
@@ -56,7 +56,7 @@
     <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Debug\LEL.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\..\Bin\Debug.NET4\LeMP.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
@@ -82,7 +82,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <NoWarn>1591,1573</NoWarn>
-    <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -111,7 +111,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\Bin\Debug.NET45\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet4;DotNet45</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -121,8 +121,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE;DotNet45</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
+    <DefineConstants>TRACE;DotNet4;DotNet45</DefineConstants>
+    <DocumentationFile>..\..\Bin\Release.NET45\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>

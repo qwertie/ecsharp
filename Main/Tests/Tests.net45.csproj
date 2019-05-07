@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
-    <BaseIntermediateOutputPath>..\Bin\obj.netfx\Tests</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\..\Bin\obj.netfx\Tests</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET35</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D418CCF8-0888-4648-A865-702A21273028}</ProjectGuid>
@@ -21,7 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug.NET35'">
-    <OutputPath>..\..\Bin\Debug.NET35\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.NET3\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET4'">
@@ -40,7 +40,7 @@
     <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release.NET35'">
-    <OutputPath>..\..\Bin\Release.NET35\</OutputPath>
+    <OutputPath>..\..\Bin\Release.NET3\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
     <DocumentationFile>..\..\Bin\Release.NET35\Tests.XML</DocumentationFile>
   </PropertyGroup>
