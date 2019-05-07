@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputPath>..\..\Bin\$(Configuration)\</OutputPath>
+    <NoWarn>1591, 1573</NoWarn>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <ProjectReference Include="..\..\Core\Loyc.Math\Loyc.Math.csproj" />
+    <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj" />
+    <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj" />
+    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj" />
+    <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.csproj" />
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj" />
+    <ProjectReference Include="..\LeMP\LeMP.csproj" />
+    <ProjectReference Include="..\LLLPG\LLLPG.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PlayPen.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>PlayPen.out.cs</LastGenOutput>
+    </None>
+    <None Include="Samples.ecs">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>Samples.out.cs</LastGenOutput>
+    </None>
+    <Compile Update="PlayPen.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PlayPen.ecs</DependentUpon>
+    </Compile>
+    <Compile Update="Samples.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Samples.ecs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>
