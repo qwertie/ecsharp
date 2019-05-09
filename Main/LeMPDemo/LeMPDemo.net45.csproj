@@ -8,8 +8,8 @@
     <ProjectGuid>{445D4D88-E182-49E1-A7FA-7617A71397EE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LeMP</RootNamespace>
-    <AssemblyName>LeMP</AssemblyName>
+    <RootNamespace>LeMPDemo</RootNamespace>
+    <AssemblyName>LeMPDemo</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
