@@ -1,4 +1,4 @@
-﻿//
+//
 // GoInterface library v1.01: Copyright 2010, David Piepgrass
 // 
 // A library for "dynamic interfaces" in any .NET language:
@@ -52,22 +52,30 @@ namespace Loyc.Utilities
 		internal static readonly ModuleBuilder ModuleBuilder;
 		internal static readonly ModuleHandle ModuleHandle;
 
+		#if DotNet3 || DotNet4
 		// Ability to save is useful for debugging, but after saving, the assembly
 		// is frozen and you cannot define additional wrappers!
 		static readonly bool Savable = true;
+		#endif
 
 		static GoInterface()
 		{
 			// Create a single assembly and module to hold all generated classes.
 			var name = new AssemblyName { Name = "GoInterfaceGeneratedClasses" };
-			AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, 
-				Savable ? AssemblyBuilderAccess.RunAndSave : AssemblyBuilderAccess.Run);
-			if (Savable)
-				ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module", "GoInterfaceGeneratedClasses.dll", true);
-			else
+			#if DotNet3 || DotNet4
+				AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, 
+					Savable ? AssemblyBuilderAccess.RunAndSave : AssemblyBuilderAccess.Run);
+				if (Savable)
+					ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module", "GoInterfaceGeneratedClasses.dll", true);
+				else
+					ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
+			#else
+				AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
 				ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
+			#endif
 			ModuleHandle = ModuleBuilder.ModuleHandle;
 		}
+		/*
 		internal static void SaveAssembly()
 		{
 			// We must pass a filename to both DefineDynamicModule and 
@@ -78,7 +86,7 @@ namespace Loyc.Utilities
 			// (matching the filename you passed to Save()) has pretty much 
 			// nothing in it. WEIRD!
 			AssemblyBuilder.Save("GoInterfaceGeneratedClasses.dll");
-		}
+		}*/
 
 		/// <summary>Unwraps an object if it was wrapped by GoInterface. Unwrapping
 		/// is recursive, so that if a wrapper is inside another wrapper, the
@@ -606,6 +614,13 @@ namespace Loyc.Utilities
 
 		#region GenerateWrapperClass & related (higher-level code generation)
 
+		static Type CreateType(TypeBuilder tb) =>
+			#if DotNet3 || DotNet4
+				tb.CreateType(); // .NET Framework 3/4
+			#else
+				tb.CreateTypeInfo().AsType(); // .NET Standard 1.1/2.0
+			#endif
+
 		static void GenerateWrapperClass()
 		{
 			_isInitialized = true;
@@ -694,7 +709,7 @@ namespace Loyc.Utilities
 			}
 
 			// Crystallize the type
-			_wrapperType = typeBuilder.CreateType();
+			_wrapperType = CreateType(typeBuilder);
 
 			// Reflection hidden rule #87: CreateDelegate requires you to specify a 
 			// new MethodInfo from the created type, not to re-use a MethodBuilder
@@ -732,7 +747,7 @@ namespace Loyc.Utilities
 			il.Emit(OpCodes.Newobj, exception);
 			il.Emit(OpCodes.Throw);
 
-			return typeBuilder.CreateType();
+			return CreateType(typeBuilder);
 		}
 
 		private static ConstructorInfo CheckBaseClassAndGetConstructor()

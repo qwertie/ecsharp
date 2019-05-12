@@ -3,33 +3,35 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests", "Core\Tests\LoycCore.Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests.net45", "Core\Tests\LoycCore.Tests.net45.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Core\Loyc.Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials.net45", "Core\Loyc.Essentials\Loyc.Essentials.net45.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniTestRunner", "Core\MiniTestRunner\MiniTestRunner.csproj", "{3C58D462-4B0D-49E3-A851-195EE3AD05B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniTestRunner.net45", "Core\MiniTestRunner\MiniTestRunner.net45.csproj", "{3C58D462-4B0D-49E3-A851-195EE3AD05B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Ecs", "Main\Ecs\Loyc.Ecs.csproj", "{E49944DB-0330-45C6-9EC5-BDBE1102AE07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Ecs.net45", "Main\Ecs\Loyc.Ecs.net45.csproj", "{E49944DB-0330-45C6-9EC5-BDBE1102AE07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Syntax", "Core\Loyc.Syntax\Loyc.Syntax.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Syntax.net45", "Core\Loyc.Syntax\Loyc.Syntax.net45.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Core\Loyc.Utilities\Loyc.Utilities.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities.net45", "Core\Loyc.Utilities\Loyc.Utilities.net45.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLLPG", "Main\LLLPG\LLLPG.csproj", "{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLLPG.net45", "Main\LLLPG\LLLPG.net45.csproj", "{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections", "Core\Loyc.Collections\Loyc.Collections.csproj", "{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections.net45", "Core\Loyc.Collections\Loyc.Collections.net45.csproj", "{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP", "Main\LeMP\LeMP.csproj", "{E960917A-F32C-469F-91DA-0B75342FA5BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP.net45", "Main\LeMP\LeMP.net45.csproj", "{E960917A-F32C-469F-91DA-0B75342FA5BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks", "Core\LoycCore.Benchmarks\LoycCore.Benchmarks.csproj", "{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks.net45", "Core\LoycCore.Benchmarks\LoycCore.Benchmarks.net45.csproj", "{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Main\Tests\Tests.csproj", "{D418CCF8-0888-4648-A865-702A21273028}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.net45", "Main\Tests\Tests.net45.csproj", "{D418CCF8-0888-4648-A865-702A21273028}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{30F2D32F-68A5-458D-8076-B669CAED2C52}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core (net45)", "Core (net45)", "{30F2D32F-68A5-458D-8076-B669CAED2C52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP.StdMacros", "Main\LeMP.StdMacros\LeMP.StdMacros.csproj", "{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP.StdMacros.net45", "Main\LeMP.StdMacros\LeMP.StdMacros.net45.csproj", "{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Math", "Core\Loyc.Math\Loyc.Math.csproj", "{7493A75D-106A-4A50-9DCF-A7A034629FFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Math.net45", "Core\Loyc.Math\Loyc.Math.net45.csproj", "{7493A75D-106A-4A50-9DCF-A7A034629FFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMPDemo.net45", "Main\LeMPDemo\LeMPDemo.net45.csproj", "{445D4D88-E182-49E1-A7FA-7617A71397EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,16 +241,32 @@ Global
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug.NET4|Any CPU.Build.0 = Debug.NET4|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug.NET45|Any CPU.ActiveCfg = Debug.NET45|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug.NET45|Any CPU.Build.0 = Debug.NET45|Any CPU
-		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug|Any CPU.ActiveCfg = Debug.NET45|Any CPU
+		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Debug|Any CPU.Build.0 = Debug.NET45|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET35|Any CPU.ActiveCfg = Release.Net35|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET35|Any CPU.Build.0 = Release.Net35|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET4|Any CPU.ActiveCfg = Release.NET4|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET4|Any CPU.Build.0 = Release.NET4|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET45|Any CPU.ActiveCfg = Release.NET45|Any CPU
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release.NET45|Any CPU.Build.0 = Release.NET45|Any CPU
-		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release|Any CPU.ActiveCfg = Release.NET45|Any CPU
+		{7493A75D-106A-4A50-9DCF-A7A034629FFF}.Release|Any CPU.Build.0 = Release.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET35|Any CPU.ActiveCfg = Debug.Net35|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET35|Any CPU.Build.0 = Debug.Net35|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET4|Any CPU.ActiveCfg = Debug.NET4|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET4|Any CPU.Build.0 = Debug.NET4|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET45|Any CPU.ActiveCfg = Debug.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug.NET45|Any CPU.Build.0 = Debug.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug|Any CPU.ActiveCfg = Debug.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Debug|Any CPU.Build.0 = Debug.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET35|Any CPU.ActiveCfg = Release.Net35|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET35|Any CPU.Build.0 = Release.Net35|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET4|Any CPU.ActiveCfg = Release.NET4|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET4|Any CPU.Build.0 = Release.NET4|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET45|Any CPU.ActiveCfg = Release.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release.NET45|Any CPU.Build.0 = Release.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release|Any CPU.ActiveCfg = Release.NET45|Any CPU
+		{445D4D88-E182-49E1-A7FA-7617A71397EE}.Release|Any CPU.Build.0 = Release.NET45|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

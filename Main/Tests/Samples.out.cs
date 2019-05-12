@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.3.0.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.6.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -129,18 +129,15 @@ namespace Samples
 namespace ADT
 {
 	// Example of ADT from "C# Gets Pattern Matching & Algebraic Data Types"
-	public class BinaryTree<T> where T: IComparable<T>
-	{
+	public class BinaryTree<T> where T: IComparable<T> {
 		public BinaryTree(T Value) {
 			this.Value = Value;
 		}
 		public T Value { get; private set; }
-		public virtual BinaryTree<T> WithValue(T newValue)
-		{
+		public virtual BinaryTree<T> WithValue(T newValue) {
 			return new BinaryTree<T>(newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public T Item1 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public T Item1 {
 			get {
 				return Value;
 			}
@@ -160,15 +157,12 @@ namespace ADT
 		}
 	}
 	// Example of ADT from "C# Gets Pattern Matching & Algebraic Data Types"
-	public static partial class BinaryTree
-	{
-		public static BinaryTree<T> New<T>(T Value) where T: IComparable<T>
-		{
+	public static partial class BinaryTree {
+		public static BinaryTree<T> New<T>(T Value) where T: IComparable<T> {
 			return new BinaryTree<T>(Value);
 		}
 	}
-	class Node<T> : BinaryTree<T> where T: IComparable<T>
-	{
+	class Node<T> : BinaryTree<T> where T: IComparable<T> {
 		public Node(T Value, BinaryTree<T> Left, BinaryTree<T> Right)
 			 : base(Value) {
 			this.Left = Left;
@@ -178,26 +172,21 @@ namespace ADT
 		}
 		public BinaryTree<T> Left { get; private set; }
 		public BinaryTree<T> Right { get; private set; }
-		public override BinaryTree<T> WithValue(T newValue)
-		{
+		public override BinaryTree<T> WithValue(T newValue) {
 			return new Node<T>(newValue, Left, Right);
 		}
-		public Node<T> WithLeft(BinaryTree<T> newValue)
-		{
+		public Node<T> WithLeft(BinaryTree<T> newValue) {
 			return new Node<T>(Value, newValue, Right);
 		}
-		public Node<T> WithRight(BinaryTree<T> newValue)
-		{
+		public Node<T> WithRight(BinaryTree<T> newValue) {
 			return new Node<T>(Value, Left, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public BinaryTree<T> Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public BinaryTree<T> Item2 {
 			get {
 				return Left;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public BinaryTree<T> Item3 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public BinaryTree<T> Item3 {
 			get {
 				return Right;
 			}
@@ -214,10 +203,8 @@ namespace ADT
 		}
 	}
 
-	static partial class Node
-	{
-		public static Node<T> New<T>(T Value, BinaryTree<T> Left, BinaryTree<T> Right) where T: IComparable<T>
-		{
+	static partial class Node {
+		public static Node<T> New<T>(T Value, BinaryTree<T> Left, BinaryTree<T> Right) where T: IComparable<T> {
 			return new Node<T>(Value, Left, Right);
 		}
 	}
@@ -228,8 +215,7 @@ namespace ADT
 		{ return new BinaryTree<T>(item); }
 	}
 
-	public abstract class Rectangle
-	{
+	public abstract class Rectangle {
 		public Rectangle(int X, int Y, int Width, int Height) {
 			this.X = X;
 			this.Y = Y;
@@ -244,33 +230,28 @@ namespace ADT
 		public abstract Rectangle WithY(int newValue);
 		public abstract Rectangle WithWidth(int newValue);
 		public abstract Rectangle WithHeight(int newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public int Item1 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item1 {
 			get {
 				return X;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public int Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item2 {
 			get {
 				return Y;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public int Item3 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item3 {
 			get {
 				return Width;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public int Item4 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item4 {
 			get {
 				return Height;
 			}
 		}
 	}
-	public abstract class Widget
-	{
+	public abstract class Widget {
 		public Widget(Rectangle Location) {
 			this.Location = Location;
 			if (Location == null)
@@ -278,59 +259,49 @@ namespace ADT
 		}
 		public Rectangle Location { get; private set; }
 		public abstract Widget WithLocation(Rectangle newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public Rectangle Item1 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Rectangle Item1 {
 			get {
 				return Location;
 			}
 		}
 	}
-	class Button : Widget
-	{
+	class Button : Widget {
 		public Button(Rectangle Location, string Text)
 			 : base(Location) {
 			this.Text = Text;
 		}
 		public string Text { get; private set; }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new Button(newValue, Text);
 		}
-		public Button WithText(string newValue)
-		{
+		public Button WithText(string newValue) {
 			return new Button(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public string Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item2 {
 			get {
 				return Text;
 			}
 		}
 	}
-	class TextBox : Widget
-	{
+	class TextBox : Widget {
 		public TextBox(Rectangle Location, string Text)
 			 : base(Location) {
 			this.Text = Text;
 		}
 		public string Text { get; private set; }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new TextBox(newValue, Text);
 		}
-		public TextBox WithText(string newValue)
-		{
+		public TextBox WithText(string newValue) {
 			return new TextBox(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public string Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item2 {
 			get {
 				return Text;
 			}
 		}
 	}
-	abstract class StringListWidget : Widget
-	{
+	abstract class StringListWidget : Widget {
 		public StringListWidget(Rectangle Location, string[] subItems)
 			 : base(Location) {
 			this.subItems = subItems;
@@ -338,110 +309,89 @@ namespace ADT
 		public string[] subItems { get; private set; }
 		public abstract override Widget WithLocation(Rectangle newValue);
 		public abstract StringListWidget WithsubItems(string[] newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public string[] Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string[] Item2 {
 			get {
 				return subItems;
 			}
 		}
 	}
-	class ComboBox : StringListWidget
-	{
+	class ComboBox : StringListWidget {
 		public ComboBox(Rectangle Location, string[] subItems)
 			 : base(Location, subItems) { }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new ComboBox(newValue, subItems);
 		}
-		public override StringListWidget WithsubItems(string[] newValue)
-		{
+		public override StringListWidget WithsubItems(string[] newValue) {
 			return new ComboBox(Location, newValue);
 		}
 	}
-	class ListBox : StringListWidget
-	{
+	class ListBox : StringListWidget {
 		public ListBox(Rectangle Location, string[] subItems)
 			 : base(Location, subItems) { }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new ListBox(newValue, subItems);
 		}
-		public override StringListWidget WithsubItems(string[] newValue)
-		{
+		public override StringListWidget WithsubItems(string[] newValue) {
 			return new ListBox(Location, newValue);
 		}
 	}
-	public abstract class Container : Widget
-	{
+	public abstract class Container : Widget {
 		public Container(Rectangle Location)
 			 : base(Location) { }
 		public abstract override Widget WithLocation(Rectangle newValue);
 	}
-	class TabControl : Container
-	{
+	class TabControl : Container {
 		public TabControl(Rectangle Location, TabPage[] Children)
 			 : base(Location) {
 			this.Children = Children;
 		}
 		public TabPage[] Children { get; private set; }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new TabControl(newValue, Children);
 		}
-		public TabControl WithChildren(TabPage[] newValue)
-		{
+		public TabControl WithChildren(TabPage[] newValue) {
 			return new TabControl(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public TabPage[] Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public TabPage[] Item2 {
 			get {
 				return Children;
 			}
 		}
 	}
-	class Panel : Container
-	{
+	class Panel : Container {
 		public Panel(Rectangle Location, Widget[] Children)
 			 : base(Location) {
 			this.Children = Children;
 		}
 		public Widget[] Children { get; private set; }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new Panel(newValue, Children);
 		}
-		public virtual Panel WithChildren(Widget[] newValue)
-		{
+		public virtual Panel WithChildren(Widget[] newValue) {
 			return new Panel(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public Widget[] Item2 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Widget[] Item2 {
 			get {
 				return Children;
 			}
 		}
 	}
-	class TabPage : Panel
-	{
+	class TabPage : Panel {
 		public TabPage(Rectangle Location, Widget[] Children, string Title)
 			 : base(Location, Children) {
 			this.Title = Title;
 		}
 		public string Title { get; private set; }
-		public override Widget WithLocation(Rectangle newValue)
-		{
+		public override Widget WithLocation(Rectangle newValue) {
 			return new TabPage(newValue, Children, Title);
 		}
-		public override Panel WithChildren(Widget[] newValue)
-		{
+		public override Panel WithChildren(Widget[] newValue) {
 			return new TabPage(Location, newValue, Title);
 		}
-		public TabPage WithTitle(string newValue)
-		{
+		public TabPage WithTitle(string newValue) {
 			return new TabPage(Location, Children, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] 
-		public string Item3 {
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item3 {
 			get {
 				return Title;
 			}
@@ -454,7 +404,10 @@ struct EmailAddress
 {
 	public UString UserName;
 	public UString Domain;
-	public EmailAddress(UString userName, UString domain) { UserName = userName; Domain = domain; }
+	public EmailAddress(UString userName, UString domain) {
+		UserName = userName;
+		Domain = domain;
+	}
 	public override string ToString() { return (UserName + "@" + Domain).ToString(); }
 
 	// LexerSource provides the APIs expected by LLLPG. This is
@@ -504,12 +457,11 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		#line 153 "Samples.ecs"
+		// line 153
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);	// re-use old object
-		#line default
 		UsernameChars(src);
 		// Line 158: ([.] UsernameChars)*
 		for (;;) {
@@ -520,7 +472,9 @@ struct EmailAddress
 			} else
 				break;
 		}
+		// line 159
 		int at = src.InputPosition;
+		// line 160
 		UString userName = email.Substring(0, at);
 	
 		src.Match('@');
@@ -535,7 +489,9 @@ struct EmailAddress
 				break;
 		}
 		src.Match(-1);
+		// line 163
 		UString domain = email.Substring(at + 1);
+		// line 164
 		return new EmailAddress(userName, domain);
 	}
 
@@ -544,7 +500,7 @@ struct EmailAddress
 
 // Parser for S-expressions => Loyc trees
 // It doesn't support attributes - it's really just an example
-public partial class SExprParser : BaseParserForList<Token,int>
+public partial class SExprParser : BaseParserForList<Token, int>
 {
 	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null)
 	{
@@ -585,17 +541,15 @@ public partial class SExprParser : BaseParserForList<Token,int>
 		case TT.PreOrSufOp:
 			{
 				t = MatchAny();
-				#line 206 "Samples.ecs"
+				// line 206
 				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
-				#line default
 			}
 			break;
 		default:
 			{
 				t = Match((int) TT.Literal);
-				#line 207 "Samples.ecs"
+				// line 207
 				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
-				#line default
 			}
 			break;
 		}
@@ -613,13 +567,11 @@ public partial class SExprParser : BaseParserForList<Token,int>
 		if (la1 == TT.RParen) {
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
-			#line 211 "Samples.ecs"
+			// line 211
 			return F.List(VList<LNode>.Empty, lit_lpar.StartIndex, lit_rpar.EndIndex);
-			#line default
 		} else {
-			#line 212 "Samples.ecs"
+			// line 212
 			var parts = VList<LNode>.Empty;
-			#line default
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
 			// Line 213: (Atom)*
@@ -636,9 +588,8 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			}
 		stop:;
 			lit_rpar = Match((int) TT.RParen);
-			#line 214 "Samples.ecs"
+			// line 214
 			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
-			#line default
 		}
 	}
 }

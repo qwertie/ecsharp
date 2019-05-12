@@ -3,21 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Loyc.Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Loyc.Essentials\Loyc.Essentials.net45.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Syntax", "Loyc.Syntax\Loyc.Syntax.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Syntax", "Loyc.Syntax\Loyc.Syntax.net45.csproj", "{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Loyc.Utilities\Loyc.Utilities.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Utilities", "Loyc.Utilities\Loyc.Utilities.net45.csproj", "{94BC16E0-2F14-4747-82F8-CFA22AD558CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections", "Loyc.Collections\Loyc.Collections.csproj", "{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections", "Loyc.Collections\Loyc.Collections.net45.csproj", "{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniTestRunner", "MiniTestRunner\MiniTestRunner.csproj", "{3C58D462-4B0D-49E3-A851-195EE3AD05B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniTestRunner", "MiniTestRunner\MiniTestRunner.net45.csproj", "{3C58D462-4B0D-49E3-A851-195EE3AD05B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests", "Tests\LoycCore.Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests", "Tests\LoycCore.Tests.net45.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks", "LoycCore.Benchmarks\LoycCore.Benchmarks.csproj", "{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks", "LoycCore.Benchmarks\LoycCore.Benchmarks.net45.csproj", "{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Math", "Loyc.Math\Loyc.Math.csproj", "{7493A75D-106A-4A50-9DCF-A7A034629FFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Math", "Loyc.Math\Loyc.Math.net45.csproj", "{7493A75D-106A-4A50-9DCF-A7A034629FFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

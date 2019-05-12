@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!--Change path to "obj" folder that causes a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
+    <BaseIntermediateOutputPath>..\Bin\obj.netfx\LoycCore.Benchmarks</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET4</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{26B7F676-7D66-496A-8F11-DA4B34B3AB8C}</ProjectGuid>
@@ -156,25 +158,25 @@
     <None Include="Resources\2of12.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.net45.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
-      <Name>Loyc.Collections</Name>
+      <Name>Loyc.Collections.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials</Name>
+      <Name>Loyc.Essentials.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj">
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.net45.csproj">
       <Project>{7493a75d-106a-4a50-9dcf-a7a034629fff}</Project>
-      <Name>Loyc.Math</Name>
+      <Name>Loyc.Math.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj">
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.net45.csproj">
       <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
-      <Name>Loyc.Syntax</Name>
+      <Name>Loyc.Syntax.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj">
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.net45.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
+      <Name>Loyc.Utilities.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

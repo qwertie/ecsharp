@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,9 +25,11 @@ namespace Loyc.Tests
 
 		public static void Main(string[] args)
 		{
+			#if DotNet3 || DotNet4
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
+			#endif
 			if (RunCoreTests.RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null) > 0)
 				// Let the outside world know that something
 				// went wrong by setting the exit code to

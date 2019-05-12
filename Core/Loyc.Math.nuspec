@@ -11,7 +11,7 @@
     <summary>Defines numeric and geometric data types.</summary>
     <description>Additional functionality beyond `System.Math` in `MathEx`; generic geometry interfaces and structures (points, lines, rectangles); numeric interfaces and "trait" types for doing arithmetic in generic code; fixed-point structures; 128-bit integer arithmetic. Contributors welcome: looking for things that ought to be built into the .NET framework, but aren't</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>Loyc Core Math Geometry FixedPoint</tags>
     <dependencies>
       <dependency id="Loyc.Essentials" version="$version$" />
@@ -20,6 +20,7 @@
   <files>
     <file src="readme.md" />
 
+    <file src="Bin\Release\netstandard2.0\Loyc.Math.*" target="lib\netstandard2.0\" />
     <file src="Bin\Release.NET3\Loyc.Math.*" target="lib\net35-client\" />
     <file src="Bin\Release.NET4\Loyc.Math.*" target="lib\net40-client\" />
     <file src="Bin\Release.NET45\Loyc.Math.*" target="lib\net45\" />

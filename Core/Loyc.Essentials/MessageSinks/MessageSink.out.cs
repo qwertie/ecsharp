@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.6.2.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.6.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -20,13 +20,23 @@ namespace Loyc
 	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{
-		static ThreadLocalVariable<IMessageSink> _default = new ThreadLocalVariable<IMessageSink>(null, autoFallback: true); public static IMessageSink Default { get {
-				return _default.Value ?? Null;
-			} } [Obsolete("This property is now called Default")] public static IMessageSink Current { get {
-				return Default;
-			} set {
-				_default.Value = value ?? Null;
-			} }	/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
+	#region Get/set default global message sink
+
+		static ThreadLocalVariable<IMessageSink> _default = new ThreadLocalVariable<IMessageSink>(null, autoFallback: true);
+	
+		public static IMessageSink Default
+		{
+			get { return _default.Value ?? Null; }
+		}
+	
+		[Obsolete("This property is now called Default")] 
+		public static IMessageSink Current
+		{
+			get { return Default; }
+			set { _default.Value = value ?? Null; }
+		}
+	
+		/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
 		/// <example><code>
 		/// using (MessageSink.SetDefault(ConsoleMessageSink.Value))
 		///     MessageSink.Default.Write(Severity.Warning, null, "This prints on the console.")
@@ -52,6 +62,10 @@ namespace Loyc
 			public PushedCurrent(IMessageSink @new) { OldValue = Default; _default.Value = @new ?? NullMessageSink.Value; }
 			public void Dispose() { _default.Value = OldValue; }
 		}
+	
+		#endregion
+	
+		#region Context-to-string conversion strategy
 	
 		/// <summary>Returns context.Location if context implements 
 		/// <see cref="IHasLocation"/>; otherwise, returns context itself.</summary>
@@ -271,6 +285,10 @@ namespace Loyc
 		{
 			sink.Write(Severity.Debug, null, format, arg0, arg1);
 		}
+		#endregion
+	
+		#region Other stuff
+	
 		/// <summary>Converts a quadruplet (type, context, format, args) to a single 
 		/// string containing all that information. The format string and the Severity
 		/// are localized with <see cref="Localize.Localized(string, object[])"/>.</summary>
@@ -318,5 +336,6 @@ namespace Loyc
 			return new MessageSinkWithContext<TContext>(target, context, messagePrefix);
 		}
 	
+		#endregion
 	}
 }

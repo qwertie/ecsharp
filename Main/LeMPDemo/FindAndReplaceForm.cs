@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,6 +9,7 @@ using ICSharpCode.TextEditor.Document;
 using ICSharpCode.TextEditor;
 using System.Diagnostics;
 using System.IO;
+using Loyc;
 
 namespace TextEditor
 {
@@ -361,7 +362,7 @@ namespace TextEditor
 			loopedAround = false;
 
 			int startAt = BeginOffset, endAt = EndOffset;
-			int curOffs = beginAtOffset.InRange(startAt, endAt);
+			int curOffs = beginAtOffset.PutInRange(startAt, endAt);
 
 			_lookFor2 = MatchCase ? _lookFor : _lookFor.ToUpperInvariant();
 			
@@ -471,5 +472,17 @@ namespace TextEditor
 		~HighlightGroup() { Dispose(); }
 
 		public IList<TextMarker> Markers { get { return _markers.AsReadOnly(); } }
+	}
+
+	static class ColorExt
+	{
+		public static Color HalfMix(this Color one, Color two)
+		{
+			return Color.FromArgb(
+				(one.A + two.A) >> 1,
+				(one.R + two.R) >> 1,
+				(one.G + two.G) >> 1,
+				(one.B + two.B) >> 1);
+		}
 	}
 }

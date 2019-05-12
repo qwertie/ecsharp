@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
+using Loyc;
 
 namespace TextEditor
 {
@@ -259,12 +260,12 @@ namespace TextEditor
 		private void menuFindAgain_Click(object sender, EventArgs e)
 		{
 			_findForm.FindNext(true, false, 
-				string.Format("Search text «{0}» not found.", _findForm.LookFor));
+				string.Format("Search text Â«{0}Â» not found.", _findForm.LookFor));
 		}
 		private void menuFindAgainReverse_Click(object sender, EventArgs e)
 		{
 			_findForm.FindNext(true, true, 
-				string.Format("Search text «{0}» not found.", _findForm.LookFor));
+				string.Format("Search text Â«{0}Â» not found.", _findForm.LookFor));
 		}
 
 		private void menuToggleBookmark_Click(object sender, EventArgs e)
