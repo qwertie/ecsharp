@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.6.8.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,8 +21,8 @@ namespace Loyc.LLParserGenerator
 
 	internal class AntlrStyleParser : StageOneParser
 	{
-
-		[ThreadStatic] static AntlrStyleParser _parser;
+		[ThreadStatic] 
+		static AntlrStyleParser _parser;
 	
 		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{

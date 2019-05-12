@@ -20,4 +20,26 @@
     <ProjectReference Include="..\LeMP.StdMacros\LeMP.StdMacros.csproj" />
     <ProjectReference Include="..\LeMP\LeMP.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ParsersAndMacros\AntlrStyleParserGrammar.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AntlrStyleParserGrammar.ecs</DependentUpon>
+    </Compile>
+    <Compile Update="ParsersAndMacros\StageOneParserGrammar.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StageOneParserGrammar.ecs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="ParsersAndMacros\AntlrStyleParserGrammar.ecs">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>AntlrStyleParserGrammar.out.cs</LastGenOutput>
+    </None>
+    <None Update="ParsersAndMacros\StageOneParserGrammar.ecs">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>StageOneParserGrammar.out.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 </Project>

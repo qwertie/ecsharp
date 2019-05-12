@@ -148,7 +148,7 @@
     <Compile Include="ParsersAndMacros\AutoValueSaverVisitor.cs" />
     <Compile Include="ParsersAndMacros\Macros.cs" />
     <Compile Include="ParsersAndMacros\StageOneParser.cs" />
-    <Compile Include="ParsersAndMacros\StageOneParserGrammar.cs">
+    <Compile Include="ParsersAndMacros\StageOneParserGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>StageOneParserGrammar.ecs</DependentUpon>
@@ -210,7 +210,7 @@
     <None Include="ParsersAndMacros\StageOneParserGrammar.ecs">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=5</CustomToolNamespace>
-      <LastGenOutput>StageOneParserGrammar.cs</LastGenOutput>
+      <LastGenOutput>StageOneParserGrammar.out.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

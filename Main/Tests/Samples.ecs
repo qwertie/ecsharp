@@ -1,4 +1,4 @@
-﻿#importMacros(Loyc.LLPG);
+#importMacros(Loyc.LLPG);
 using System(, .Collections(, .Generic), .Text, .Linq);
 using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing, .Les), .Ecs);
 using TT = Loyc.Syntax.Les.TokenType;

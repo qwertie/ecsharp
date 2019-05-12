@@ -2,7 +2,7 @@ REM This script builds the extension (vsix file) for Visual Studio 2017,
 REM copies it to Lib/LeMP and then starts the vsix file.
 REM   Note: Any previously installed vsix must first be uninstalled manually 
 REM from within VS.
-"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe" /out vsbuild.log /build Release.NET45 "Loyc.sln"
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe" /out vsbuild.log /build Release.NET45 "Loyc.netfx.sln"
 @IF ERRORLEVEL 1 GOTO ERROR
 copy Bin\Release.NET45\*.dll Lib\LeMP
 @IF ERRORLEVEL 1 GOTO ERROR

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +8,6 @@ using System.Text;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Windows.Forms;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;

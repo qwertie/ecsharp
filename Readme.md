@@ -42,12 +42,17 @@ LeMP and LLLPG are self-hosting: they rely on themselves to help build themselve
 
 Of course, you can also just build Loyc.sln to get a .NET 4.5 or even .NET 3.5 build. Compatibility with .NET 3.5 is aided by the Theraot compatibility library.
 
-How to increment and publish new versions
------------------------------------------
+How to publish new versions
+---------------------------
 
-1. Update version in Core/AssemblyVersion.cs
-2. Update appveyor.yml at `version:` (first line)
-3. Update appveyor.yml at `- set SEMVER=` (semantic version combines w.x.y into wx.y, e.g. 2.7.1 => 27.1, because semantic versioning demands a new major version number for each breaking change, while the internal version number increments the minor version for a minor breaking change.)
-4. Commit changes
-5. Create an (unannotated) git tag like `v2.7.1` locally. Push changes. Appveyor should publish the NuGet packages.
-6. Separately, create a release on GitHub.com, at least if the Visual Studio extension changed. Run UpdateLibLeMPAndReinstall.bat and if it builds successfully, prepare a zip file from the built files and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
+This is not necessary for pull requests: qwertie will take care of versioning.
+
+1. Rebuild all (Release configuration in Loyc.all.sln) and run tests (Tests.exe)
+2. Update version in Core/AssemblyVersion.cs
+3. Update appveyor.yml at `version:` (first line)
+4. Update appveyor.yml at `- set SEMVER=` (semantic version combines w.x.y into wx.y, e.g. 2.7.1 => 27.1, because semantic versioning demands a new major version number for each breaking change, while the internal version number increments the minor version for a minor breaking change.)
+5. If a GitHub release is to be created, uninstall the LeMP VS extension and rebuild it with UpdateLibLeMPAndReinstall.bat. Manually check that it still works.
+6. Commit changes
+7. Push changes. Appveyor will publish NuGet packages automatically.
+8. Create an (unannotated) git tag like `v2.7.1` locally: `git tag v2.7.1`. Push the tag: `git push origin v2.7.1` (optional if creating a release on GitHub)
+9. Every so often, create a release on GitHub.com. Prepare a zip file from the built binaries and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
