@@ -10,6 +10,7 @@ See also: version history of [LoycCore](http://core.loyc.net/version-history.htm
 
 - Introduced .NET Standard 2.0 versions. NuGet package now contains four builds: .NET 3.5, .NET 4.0, .NET 4.5 and .NET Standard 2.
 - LeMP demo window (WinForms) has been split into its own project (LeMPDemo.exe)
+- v2.6.8.1 (May 13): Visual Studio extension (LeMP_VisualStudio.vsix) can now install in Visual Studio 2019.
 
 ### v2.6.5: February 17, 2019 ###
 
