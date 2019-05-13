@@ -3,7 +3,11 @@ title: LLLPG Version History
 layout: article
 ---
 
-_Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which change more frequently.
+_Note_: some version numbers are skipped because the LLLPG version number is synchronized with [underlying](http://core.loyc.net/version-history.html) [subsystems](/lemp/version-history.html) which change more frequently.
+
+### LLLPG v2.6.8: May 12, 2019 ###
+
+- Introduced .NET Standard 2.0 build and removed VS2010 support. For Windows users, the most convenient option is still the single-file generator for Visual Studio (vsix file on [Releases page](https://github.com/qwertie/ecsharp/releases).)
 
 ### LLLPG 2.6.0: August 30, 2017 ###
 

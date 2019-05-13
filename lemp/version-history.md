@@ -6,6 +6,24 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.6.8: May 12, 2019 ###
+
+- Introduced .NET Standard 2.0 versions. NuGet package now contains four builds: .NET 3.5, .NET 4.0, .NET 4.5 and .NET Standard 2.
+- LeMP demo window (WinForms) has been split into its own project (LeMPDemo.exe)
+
+### v2.6.5: February 17, 2019 ###
+
+- Removed VS2010 support
+
+### v2.6.3: July 23, 2018 ###
+
+- Added new "is" syntax from C# 7. Removed special EC# syntax for `as` (e.g. `x as Y(a,b)` or `x as Y[a,b]`)  but added tuple notation for `is` (e.g. `x is Y(a, b)`).
+- EC#: Add support for preserving `#region/#endregion` in output.
+- EC#: Add support for methods named `operator true` and `operator false`
+- LeMP: Reconcile `match` macro with new `is` syntax of C# 7
+- Bug fix (EC#): .ecs file extension did not use EC# output mode.
+- Bug fix (EC#): trivia between an [attribute] and a variable declaration wasn't preserved correctly because the #var's Range failed to include its attributes.
+
 ### v2.6.0: August 30, 2017 ###
 
 - **Enhanced C#**: Bug fix: double pointer types like `Foo** x` were incorrectly parsed as exponentiation expressions.
