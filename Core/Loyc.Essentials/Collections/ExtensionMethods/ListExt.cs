@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -259,6 +259,15 @@ namespace Loyc.Collections
 			int dif = minSize - list.Count;
 			while (dif-- > 0)
 				list.Add(default(T));
+		}
+
+		public static bool AddIfNotPresent<TList, T>(this TList list, T item) where TList : IList<T>
+		{
+			if (!list.Contains(item)) {
+				list.Add(item);
+				return true;
+			}
+			return false;
 		}
 
 		/// <summary>Returns a sequence of length <c>Min(a.Count(), b.Count())</c> 

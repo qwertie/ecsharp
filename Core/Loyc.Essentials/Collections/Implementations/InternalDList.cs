@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/12/2011
@@ -32,9 +32,13 @@ namespace Loyc.Collections.Impl
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used (the one exception is the iterator,
 	/// which throws in case the collection is modified during enumeration; this 
-	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons, 
-	/// one should not expose it in a public API, and it should only be used when 
-	/// performance is very important.
+	/// is for the sake of <see cref="DList{T}"/>.)
+	/// <para/>
+	/// Passing this structure by value is dangerous because changes to a copy 
+	/// of the structure may or may not be reflected in the original list. It's
+	/// best not to pass it around at all, but if you must pass it, pass it by
+	/// reference. For these and other reasons, one should not expose this struct 
+	/// in a public API, and it should only be used when performance is important.
 	/// <para/>
 	/// Also, do not use the <c>default(InternalDList{T})</c> or the equivalent
 	/// "default constructor", which only exists because C# requires it. Always 
@@ -53,10 +57,10 @@ namespace Loyc.Collections.Impl
 	/// time.
 	/// <para/>
 	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, DOES
-	/// implement <see cref="IList{T}"/>. It's because there is no way to make
-	/// <see cref="List{T}"/> from <see cref="InternalList{T}"/> in O(1) time;
-	/// so boxing the <see cref="InternalList{T}"/> is the only fast way to get
-	/// an instance of <see cref="IList{T}"/>.
+	/// implement <see cref="IList{T}"/>. It's because there is no way to convert
+	/// <see cref="InternalList{T}"/> into a class in O(1) time, so boxing the 
+	/// <see cref="InternalList{T}"/> is the only fast way to get an instance of 
+	/// <see cref="IList{T}"/> from it.
 	/// </remarks>
 	[Serializable()]
 	#if !CompactFramework

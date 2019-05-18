@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,11 +20,19 @@ namespace Loyc.Collections
 	/// not occur automatically during read operations. You can allow cleanups
 	/// by calling AutoCleanup().
 	/// </remarks>
-	public class WeakValueDictionary<K,V> : BaseDictionary<K,V> where V : class
+	public class WeakValueDictionary<K,V> : DictionaryBase<K,V>, ICloneable<WeakValueDictionary<K, V>> where V : class
 	{
 		static readonly WeakReference<V> WeakNull = new WeakReference<V>(null);
-		Dictionary<K, WeakReference<V>> _dict = new Dictionary<K, WeakReference<V>>();
+		Dictionary<K, WeakReference<V>> _dict;
 		int _accessCounter;
+
+		public WeakValueDictionary() {
+			_dict = new Dictionary<K, WeakReference<V>>();
+		}
+		public WeakValueDictionary(WeakValueDictionary<K, V> other) {
+			_dict = new Dictionary<K, WeakReference<V>>(other._dict);
+		}
+		public WeakValueDictionary<K,V> Clone() => new WeakValueDictionary<K, V>(this);
 
 		/// <summary>Periodically removes entries with garbage-collected values from the dictionary</summary>
 		public bool AutoCleanup()

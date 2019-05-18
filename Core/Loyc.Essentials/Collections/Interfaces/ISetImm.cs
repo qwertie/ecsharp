@@ -1,4 +1,4 @@
-﻿// ISetImm and its component interfaces, ISetTests and ISetOperations
+// ISetImm and its component interfaces, ISetTests and ISetOperations
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +44,7 @@ namespace Loyc.Collections
 	/// <summary>An immutable set of type SetT with elements of type T.</summary>
 	/// <typeparam name="SetT">Type of this set.</typeparam>
 	/// <typeparam name="T">Type of items in the set</typeparam>
-	public interface ISetImm<T, SetT> : ISetOperations<T, SetT>, ISetTests<SetT>, IReadOnlyCollection<T> //ICount
+	public interface ISetImm<T, SetT> : ISetOperations<T, SetT>, ISetTests<SetT>, ICollectionSource<T> //ICount
 	{
 		/// <summary>Returns true if the set is inverted, which means that the
 		/// enumerator returns all the items that are <i>not</i> in the set, 

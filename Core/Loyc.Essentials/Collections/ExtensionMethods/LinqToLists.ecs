@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -206,17 +206,57 @@ namespace Loyc.Collections
 		}
 
 		// *** Reminder: do not edit the generated output! ***
-		public static SelectListSource<T, TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
+		public static SelectListSource<IListSource<T>, T, TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
 		{
-			return new SelectListSource<T, TResult>(source, selector);
+			return new SelectListSource<IListSource<T>, T, TResult>(source, selector);
 		}
-		public static SelectListSource<T, TResult> Select<T, TResult>(this IListAndListSource<T> source, Func<T, TResult> selector)
+		public static SelectReadOnlyList<IReadOnlyList<T>, T, TResult> Select<T, TResult>(this IReadOnlyList<T> list, Func<T, TResult> selector)
 		{
-			return new SelectListSource<T, TResult>(source, selector);
+			return new SelectReadOnlyList<IReadOnlyList<T>, T, TResult>(list, selector);
 		}
-		public static SelectList<T, TResult> Select<T, TResult>(this IList<T> source, Func<T, TResult> selector)
+		public static SelectList<IList<T>, T, TResult> Select<T, TResult>(this IList<T> list, Func<T, TResult> selector)
 		{
-			return new SelectList<T, TResult>(source, selector);
+			return new SelectList<IList<T>, T, TResult>(list, selector);
+		}
+		public static SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult> Select<T, TResult>(this IReadOnlyCollection<T> list, Func<T, TResult> selector)
+		{
+			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
+		}
+		public static SelectCollection<ICollection<T>, T, TResult> Select<T, TResult>(this ICollection<T> list, Func<T, TResult> selector)
+		{
+			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
+		}
+		
+		// *** Reminder: do not edit the generated output! ***
+		// Avoid ambiguity errors involving collections that support the ambiguity-avoidance interfaces
+		public static SelectListSource<IListSource<T>, T, TResult> Select<T, TResult>(this IListAndListSource<T> source, Func<T, TResult> selector)
+		{
+			return new SelectListSource<IListSource<T>, T, TResult>(source, selector);
+		}
+		public static SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult> Select<T, TResult>(this ICollectionAndReadOnly<T> list, Func<T, TResult> selector)
+		{
+			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
+		}
+		
+		// Microsoft didn't plan intelligently, so in new versions of .NET we have to 
+		// manually add overloads for standard lists like List<T> to avoid ambiguity errors.
+		// Perhaps we should transition off support for IList and ICollection to avoid 
+		// ambiguity in the first place.
+		public static SelectList<IList<T>, T, TResult> Select<T, TResult>(this List<T> list, Func<T, TResult> selector)
+		{
+			return new SelectList<IList<T>, T, TResult>(list, selector);
+		}
+		public static SelectCollection<ICollection<T>, T, TResult> Select<T, TResult>(this HashSet<T> list, Func<T, TResult> selector)
+		{
+			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
+		}
+		public static SelectCollection<ICollection<KeyValuePair<K,V>>, KeyValuePair<K,V>, TResult> Select<K, V, TResult>(this Dictionary<K, V> list, Func<KeyValuePair<K,V>, TResult> selector)
+		{
+			return new SelectCollection<ICollection<KeyValuePair<K,V>>, KeyValuePair<K,V>, TResult>(list, selector);
+		}
+		public static SelectList<T[], T, TResult> Select<T, TResult>(this T[] list, Func<T, TResult> selector)
+		{
+			return new SelectList<T[], T, TResult>(list, selector);
 		}
 
 		/// <summary>Returns a reversed view of a read-only list.</summary>

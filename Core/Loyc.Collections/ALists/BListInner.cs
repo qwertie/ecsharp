@@ -100,7 +100,7 @@ namespace Loyc.Collections.Impl
 			if (op.Mode != AListOperation.Retrieve)
 			{
 				AutoClone(ref _children[i].Node, this, tob);
-				if (op.Mode >= AListOperation.Add && _children[i].Node.IsFullLeaf)
+				if (op.Mode >= AListOperation.__AddThreshold && _children[i].Node.IsFullLeaf)
 				{
 					TryToShiftAnItemToSiblingOfLeaf(i, tob);
 					// Binary search result might now be off-by-1

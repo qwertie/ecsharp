@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -428,28 +428,31 @@ namespace Loyc.Collections
 	/// the dictionary.</summary>
 	/// <remarks>All the "add" operations are deliberately listed last, so that
 	/// <see cref="AListBase{K,T}.DoSingleOperation"/> can use a greater-than 
-	/// operator to figure out whether an item may be added or not.</remarks>
+	/// operator to figure out whether an item may be added or not. The numeric
+	/// values 0 through 3 are based on <see cref="DictEditMode"/>.</remarks>
 	public enum AListOperation
 	{
+		/// <summary>Remove the item with the specified key if present.</summary>
+		Remove = -1,
 		/// <summary>Default operation. The item with the specified key will be 
 		/// retrieved. The tree will not be modified.</summary>
 		Retrieve = 0,
 		/// <summary>Replace an existing item/key if present, or do nothing if 
 		/// there is no matching item/key.</summary>
 		ReplaceIfPresent = 1,
-		/// <summary>Remove the item with the specified key if present.</summary>
-		Remove = 2,
-		/// <summary>A new item will be added unconditionally, without affecting 
-		/// existing elements, in no particular order with respect to existing
-		/// items that have the same key.</summary>
-		Add = 3,
+		/// <summary>Lowest-numbered "add" command. For internal use only.</summary>
+		__AddThreshold = 2,
+		/// <summary>A new item will be added if its key doesn't match an existing
+		/// element. If the item already exists, it is not replaced.</summary>
+		AddIfNotPresent = 2,
 		/// <summary>A new item will replace an item that has the same key. If the 
 		/// collection already contains multiple instances of the item/key, the 
 		/// instance to be replaced is undefined.</summary>
-		AddOrReplace = 4,
-		/// <summary>A new item will be added if its key doesn't match an existing
-		/// element. If the item already exists, it is not replaced.</summary>
-		AddIfNotPresent = 5,
+		AddOrReplace = 3,
+		/// <summary>A new item will be added unconditionally, without affecting 
+		/// existing elements, in no particular order with respect to existing
+		/// items that have the same key.</summary>
+		Add = 5,
 		/// <summary>The item will be added if its key is not already present, but
 		/// <see cref="KeyAlreadyExistsException"/> or <see cref="InvalidOperationException"/> 
 		/// will be thrown if the new item is equal to an existing element. If this 

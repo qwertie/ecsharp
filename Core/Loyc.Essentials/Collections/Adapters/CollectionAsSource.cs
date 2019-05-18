@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created: 4/10/2011
  */
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	public static partial class LCExt
+	public static partial class EnumerableExt
 	{
 		/// <summary>Treats any ICollection{T} object to IReadOnlyCollection{T}.</summary>
 		/// <remarks>This method is named "AsReadOnly" and not "ToReadOnly" because,

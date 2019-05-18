@@ -1,4 +1,4 @@
-﻿// Came from Loyc. Licence: LGPL
+// Came from Loyc. Licence: LGPL
 namespace Loyc.Collections.Impl
 {
 	using System;
@@ -26,7 +26,8 @@ namespace Loyc.Collections.Impl
 	/// Passing this structure by value is dangerous because changes to a copy 
 	/// of the structure may or may not be reflected in the original list. It's
 	/// best not to pass it around at all, but if you must pass it, pass it by
-	/// reference.
+	/// reference. Avoid using extension methods on this struct because an 
+	/// extension method will receive a copy of the struct.
 	/// <para/>
 	/// Also, do not use the default contructor. Always specify an initial 
 	/// capacity or copy InternalList.Empty so that _array gets a value. 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -159,6 +159,8 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _set.GetEnumerator(); }
 		//int ICount.Count { get { throw new NotSupportedException(); } }
 		int IReadOnlyCollection<T>.Count { get { return _set.Count; } }
+
+		void ICollectionSource<T>.CopyTo(T[] array, int arrayIndex) { _set.CopyTo(array, arrayIndex); }
 	}
 
 	[TestFixture]

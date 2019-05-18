@@ -31,6 +31,15 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>SelectListSource.out.cs</LastGenOutput>
     </None>
+    <Compile Update="Collections\HelperClasses\SelectCollection.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SelectCollection.ecs</DependentUpon>
+    </Compile>
+    <None Update="Collections\HelperClasses\SelectCollection.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SelectCollection.out.cs</LastGenOutput>
+    </None>
     <Compile Update="Utilities\GRange.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

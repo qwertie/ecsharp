@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,10 +73,8 @@ namespace Loyc.Collections.Tests
 			ExpectSet(imm, P(1, 1), P(2, 2), P(3, 3));
 
 			object value = "value";
-			Assert.That(!map.GetAndRemove("nonexistant!", ref value));
-			Assert.AreEqual("value", value);
-			Assert.That(map.GetAndRemove("X", ref value));
-			Assert.AreEqual(null, value);
+			Assert.That(!map.GetAndRemove("nonexistant!").HasValue);
+			Assert.AreEqual(map.GetAndRemove("X").Or("not found"), null);
 			Assert.That(map.GetAndRemove(ref p0));
 			Assert.AreEqual("zero", p0.Value);
 			p0 = P(0, "not removed");

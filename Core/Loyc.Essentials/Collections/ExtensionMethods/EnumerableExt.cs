@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,9 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// Additional extension methods for <see cref="IEnumerable{T}"/>, beyond what LINQ provides.
+	/// Additional extension methods for <see cref="IEnumerable{T}"/>,
+	/// <see cref="IReadOnlyCollection{T}"/>, and <see cref="ICollection{T}"/>,
+	/// beyond what LINQ provides.
 	/// </summary>
 	/// <remarks>
 	/// The methods include <see cref="WithIndexes{T}"/>, which pairs each item of 
@@ -17,7 +19,7 @@ namespace Loyc.Collections
 	/// which finds the item such that some associated value is minimized (in contrast 
 	/// to LINQ's Min(), which just returns the minimum value itself.) And there's more.
 	/// </remarks>
-	public static class EnumerableExt
+	public static partial class EnumerableExt
 	{
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{

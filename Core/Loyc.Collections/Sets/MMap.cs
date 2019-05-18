@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,19 +26,13 @@ namespace Loyc.Collections
 	/// <li>You can convert a mutable <see cref="MMap{K,V}"/> into an immutable
 	/// <see cref="Map{K,V}"/>, a read-only dictionary that does not change when 
 	/// you change the original MMap.</li>
-	/// <li>This class has an <see cref="AddRange"/> method.</li>
-	/// <li>This class has some bonus features: <see cref="MapOrMMap{K, V}.TryGetValue(K, V)"/>
-	/// returns a default value if the key is not present; <see cref="AddIfNotPresent"/>
-	/// only adds a pair if the collection does not already contain the key;
-	/// <see cref="AddOrFind"/> can retrieve the current value and change it to
-	/// a new value at the same time; and <see cref="GetAndRemove"/> can get a
-	/// value while it is being deleted.</li>
+	/// <li>This class has bonus methods defined by <see cref="IDictionaryEx{K, V}"/>.</li>
 	/// <li>The persistent map operations <see cref="Union"/>, 
 	/// <see cref="Intersect"/>, <see cref="Except"/> and <see cref="Xor"/> 
 	/// combine two dictionaries to create a new dictionary, without modifying 
-	/// either of the original dictionaries. Equally interesting, the methods
-	/// <see cref="With"/> and <see cref="Without"/> create a new dictionary
-	/// with a single item added or removed.</li>
+	/// either of the original dictionaries.</li>
+	/// <li>The methods <see cref="With"/> and <see cref="Without"/> create a new 
+	/// dictionary with a single item added or removed.</li>
 	/// </ul>
 	/// The documentation of <see cref="InternalSet{T}"/> describes how the data 
 	/// structure works.
@@ -46,7 +40,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MMap<K, V> : MapOrMMap<K, V>, IDictionary<K, V>, ICollection<KeyValuePair<K, V>>, ICloneable<MMap<K, V>>, IAddRange<KeyValuePair<K, V>>, ISetOperations<KeyValuePair<K, V>, MapOrMMap<K, V>, MMap<K, V>>
+	public class MMap<K, V> : MapOrMMap<K, V>, IDictionaryEx<K, V>, ICollection<KeyValuePair<K, V>>, ICloneable<MMap<K, V>>, IAddRange<KeyValuePair<K, V>>, ISetOperations<KeyValuePair<K, V>, MapOrMMap<K, V>, MMap<K, V>>
 	{
 		public MMap() : base() { }
 		/// <summary>Creates an empty map with the specified key comparer.</summary>
@@ -63,7 +57,7 @@ namespace Loyc.Collections
 		{
 			Add(new KeyValuePair<K,V>(key,value));
 		}
-		public new ICollection<K> Keys
+		public new KeyCollection<K, V> Keys
 		{
 			get { return new KeyCollection<K, V>(this); }
 		}
@@ -72,7 +66,7 @@ namespace Loyc.Collections
 			var kvp = new KeyValuePair<K, V>(key, default(V));
 			return GetAndRemove(ref kvp);
 		}
-		public new ICollection<V> Values
+		public new ValueCollection<K, V> Values
 		{
 			get { return new ValueCollection<K, V>(this); }
 		}
@@ -85,7 +79,12 @@ namespace Loyc.Collections
 					_count++;
 			}
 		}
-		// public V this[K key, V defaultValue] inherited from base class
+		// public V this[K key, V defaultValue] inherited from base class.
+		// IReadOnlyDictionary.Keys and IReadOnlyDictionary.Values are also inherited.
+		ICollection<K> IDictionary<K, V>.Keys => Keys;
+		ICollection<V> IDictionary<K, V>.Values => Values;
+		ICollection<K> IDictionaryEx<K, V>.Keys => Keys;
+		ICollection<V> IDictionaryEx<K, V>.Values => Values;
 
 		#endregion
 
@@ -134,6 +133,7 @@ namespace Loyc.Collections
 		{
 			return new MMap<K, V>(_set.CloneFreeze(), _keyComparer, _count);
 		}
+		IDictionaryEx<K, V> ICloneable<IDictionaryEx<K, V>>.Clone() => Clone();
 
 		/// <summary>Merges the contents of the specified map into this map.</summary>
 		/// <param name="replaceIfPresent">If true, values in the other collection
@@ -148,12 +148,12 @@ namespace Loyc.Collections
 		}
 		void IAddRange<KeyValuePair<K, V>>.AddRange(IEnumerable<KeyValuePair<K, V>> data) { AddRange(data, true); }
 		void IAddRange<KeyValuePair<K, V>>.AddRange(IReadOnlyCollection<KeyValuePair<K, V>> data) { AddRange(data, true); }
-		
+
 		/// <summary>Merges the contents of the specified sequence into this map.</summary>
 		/// <param name="replaceIfPresent">If true, values in the other collection
 		/// replace values in this one. If false, the existing pairs in this map
 		/// are not overwritten.</param>
-		/// <returns>The number of items that were added.</returns>
+		/// <returns>The number of new pairs added, whose keys didn't already exist.</returns>
 		/// <remarks>Duplicates are allowed in the source data. If 
 		/// <c>replaceIfPresent</c> is true, later values take priority over 
 		/// earlier values, otherwise earlier values take priority.</remarks>
@@ -164,18 +164,32 @@ namespace Loyc.Collections
 			return added;
 		}
 
-		/// <summary>Adds an item to the map if the key is not present. If the 
-		/// key is already present, this method has no effect.</summary>
-		/// <returns>True if the pair was added, false if not.</returns>
-		public bool AddIfNotPresent(K key, V value)
+		public int AddRange(IEnumerable<KeyValuePair<K, V>> data, DictEditMode mode)
 		{
-			var kvp = new KeyValuePair<K, V>(key, value);
-			return AddOrFind(ref kvp, false);
+			if ((mode & DictEditMode.AddIfNotPresent) != 0) {
+				int added = _set.UnionWith(data, Comparer, (mode & DictEditMode.ReplaceIfPresent) != 0);
+				_count += added;
+				return added;
+			} else
+				return DictionaryExt.AddRange(this, data, mode);
 		}
 
-		/// <summary>Adds a pair to the map if the key is not present, retrieves 
-		/// the existing key-value pair if the key is present, and optionally
-		/// replaces the existing pair with a new pair.</summary>
+		/// <inheritdoc cref="IDictionaryEx{K,V}.GetAndEdit"/>
+		public bool GetAndEdit(ref K key, ref V value, DictEditMode mode)
+		{
+			if ((mode & DictEditMode.AddIfNotPresent) == 0 && !ContainsKey(key))
+				return false;
+			var pair = new KeyValuePair<K, V>(key, value);
+			bool result = !AddOrFind(ref pair, (mode & DictEditMode.ReplaceIfPresent) != 0);
+			key = pair.Key;
+			value = pair.Value;
+			return result;
+		}
+
+		// TODO: make private (must alter tests)
+		/// <summary>For internal use. Adds a pair to the map if the key is not 
+		/// present, retrieves the existing key-value pair if the key is present, 
+		/// and optionally replaces the existing pair with a new pair.</summary>
 		/// <param name="pair">When calling this method, pair.Key specifies the
 		/// key that you want to search for in the map. If the key is not found
 		/// then the pair is added to the map; if the key is found, the pair is
@@ -200,18 +214,17 @@ namespace Loyc.Collections
 		/// <summary>Gets the value associated with the specified key, then
 		/// removes the pair with that key from the dictionary.</summary>
 		/// <param name="key">Key to search for.</param>
-		/// <param name="valueRemoved">The value that was removed. If the key 
-		/// is not found, the value of this parameter is left unchanged.</param>
-		/// <returns>True if a pair was removed, false if not.</returns>
-		public bool GetAndRemove(K key, ref V valueRemoved)
+		/// <returns>The value that was removed. If the key is not found, 
+		/// the result has no value (<see cref="Maybe{V}.HasValue"/> is false).</returns>
+		/// <remarks>This method shall not throw when the key is null.</remarks>
+		public Maybe<V> GetAndRemove(K key)
 		{
 			var kvp = new KeyValuePair<K, V>(key, default(V));
 			if (_set.Remove(ref kvp, Comparer)) {
 				_count--;
-				valueRemoved = kvp.Value;
-				return true;
+				return kvp.Value;
 			}
-			return false;
+			return default(Maybe<V>);
 		}
 
 		/// <summary>Gets the pair associated with <c>pair.Key</c>, then

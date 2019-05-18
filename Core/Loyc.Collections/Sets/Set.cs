@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +26,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public struct Set<T> : ISetImm<T>, ISetImm<T, Set<T>>, ICollection<T>, IEquatable<Set<T>> //, ICount
+	public struct Set<T> : ISetImm<T>, ISetImm<T, Set<T>>, ICollectionAndReadOnly<T>, IEquatable<Set<T>> //, ICount
 	{
 		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;

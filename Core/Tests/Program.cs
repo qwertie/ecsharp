@@ -90,6 +90,7 @@ namespace Loyc.Tests
 
 		public static int Loyc_Essentials()
 		{
+
 			return MiniTest.RunTests.RunMany(
 				new ListExtTests(),
 				new UStringTests(),
@@ -103,6 +104,8 @@ namespace Loyc.Tests
 				new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }),
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }),
+				SelectDictionaryFromKeysTests.TestObjects[0],
+				SelectDictionaryFromKeysTests.TestObjects[1],
 				new GTests(),
 				new PrintHelpersTests());
 		}

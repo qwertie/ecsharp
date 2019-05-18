@@ -1,4 +1,4 @@
-// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.6.8.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,6 +13,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	// *** Reminder: DO NOT MODIFY generated code ***
 	/// <summary>
 	/// Helper class: provides a modified view of an IList by transforming each element 
 	/// on-demand. Objects of this type are returned from 
@@ -20,23 +21,23 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	public class SelectList<T, TResult> : ListSourceBase<TResult> {
-		protected IList<T> _list;
+	public class SelectList<ListT, T, TResult>
+	 : ListSourceBase<TResult> where ListT: IList<T> {
+		protected ListT _list;
 		protected Func<T, TResult> _selector;
-	
-		public SelectList(IList<T> list, Func<T, TResult> selector)
-		{ _list = list; _selector = selector; }
-	
-		public IList<T> OriginalList { get {
-				return _list;
-			} }
+		public SelectList(ListT list, Func<T, TResult> selector) {
+			_list = list;
+			_selector = selector;
+			if (_list == null || _selector == null)
+				throw new ArgumentNullException();
+		}
 	
 		new public TResult this[int index]
 		{
 			get { return _selector(_list[index]); }
 		}
 	
-		public sealed override TResult TryGet(int index, out bool fail)
+		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
 				return _selector(_list[index]);
@@ -57,27 +58,26 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	public class SelectListSource<T, TResult> : ListSourceBase<TResult> {
-		protected IListSource<T> _list;
+	public class SelectReadOnlyList<ListT, T, TResult>
+	 : ListSourceBase<TResult> where ListT: IReadOnlyList<T> {
+		protected ListT _list;
 		protected Func<T, TResult> _selector;
-	
-		public SelectListSource(IListSource<T> list, Func<T, TResult> selector)
-		{ _list = list; _selector = selector; }
-	
-		public IListSource<T> OriginalList { get {
-				return _list;
-			} }
+		public SelectReadOnlyList(ListT list, Func<T, TResult> selector) {
+			_list = list;
+			_selector = selector;
+			if (_list == null || _selector == null)
+				throw new ArgumentNullException();
+		}
 	
 		new public TResult this[int index]
 		{
 			get { return _selector(_list[index]); }
 		}
 	
-		public sealed override TResult TryGet(int index, out bool fail)
+		public override TResult TryGet(int index, out bool fail)
 		{
-			T t = _list.TryGet(index, out fail);
-			if (!fail)
-				return _selector(t);
+			if (!(fail = ((uint) index >= (uint) _list.Count)))
+				return _selector(_list[index]);
 			else
 				return default(TResult);
 		}
@@ -85,6 +85,27 @@ namespace Loyc.Collections
 		public sealed override int Count
 		{
 			get { return _list.Count; }
+		}
+	}
+
+	/// <summary>
+	/// Helper class: provides a modified view of an IListSource by transforming each element 
+	/// on-demand. Objects of this type are returned from 
+	/// <see cref="LinqToLists.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
+	/// </summary>
+	/// <typeparam name="T">input type</typeparam>
+	/// <typeparam name="TResult">output type</typeparam>
+	public class SelectListSource<ListT, T, TResult>
+	 : SelectReadOnlyList<ListT, T, TResult> where ListT: IListSource<T> {
+		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
+	
+		public override TResult TryGet(int index, out bool fail)
+		{
+			T t = _list.TryGet(index, out fail);
+			if (!fail)
+				return _selector(t);
+			else
+				return default(TResult);
 		}
 	}
 }

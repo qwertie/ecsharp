@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ namespace Loyc.Collections.Impl
 	/// <remarks>Modified version of source: datavault project. License: Apache License 2.0.</remarks>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(PREFIX + "DictionaryDebugView`2" + SUFFIX)]
-    public abstract class BaseDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
+    public abstract class DictionaryBase<TKey, TValue> : IDictionaryAndReadOnly<TKey, TValue>
     {
         private const string PREFIX = "System.Collections.Generic.Mscorlib_";
         private const string SUFFIX = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
@@ -23,6 +23,9 @@ namespace Loyc.Collections.Impl
         public abstract bool Remove(TKey key);
         public abstract bool TryGetValue(TKey key, out TValue value);
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
+        /// <summary>Implementation of the setter for this[].</summary>
+        /// <remarks>The setter alone (without the getter) is not allowed to be virtual 
+        /// in C# so a separate method is required.</remarks>
         protected abstract void SetValue(TKey key, TValue value);
 
         public bool IsReadOnly

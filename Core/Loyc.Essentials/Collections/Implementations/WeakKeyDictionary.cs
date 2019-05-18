@@ -1,4 +1,4 @@
-﻿using Loyc.Collections.Impl;
+using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +8,9 @@ namespace Loyc.Collections
 {
 	/// <summary>A dictionary with weak keys.</summary>
 	/// <remarks>
-	/// Source: datavault project. License: Apache License 2.0
+	/// Original source: datavault project. License: Apache License 2.0
 	/// </remarks>
-    public sealed class WeakKeyDictionary<TKey, TValue> : BaseDictionary<TKey, TValue>
+    public sealed class WeakKeyDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
         where TKey : class
     {
         // All keys actually have type WeakKeyReference<TKey>; the key type is 
@@ -33,11 +33,12 @@ namespace Loyc.Collections
             this.comparer = new WeakKeyComparer<TKey>(comparer);
             this.dictionary = new Dictionary<object, TValue>(capacity, this.comparer);
         }
-
-        // WARNING: The count returned here may include entries for which
-        // key value objects have already been garbage collected. 
-        // Call RemoveCollectedEntries to weed out collected
-        // entries and update the count accordingly.
+        
+        /// <summary>Number of items in the collection.</summary>
+        /// <remarks>WARNING: The count returned here may include entries for which
+        /// key value objects have already been garbage collected. Call 
+        /// RemoveCollectedEntries to weed out collected entries and update the count 
+        /// accordingly.</remarks>
         public override int Count
         {
             get { return this.dictionary.Count; }
