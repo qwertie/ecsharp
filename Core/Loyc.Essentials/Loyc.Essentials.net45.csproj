@@ -162,7 +162,7 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs"/>
+    <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToLists.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -184,7 +184,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SelectCollection.ecs</DependentUpon>
     </Compile>
+    <Compile Include="Collections\Interfaces\Disambiguation interfaces.cs" />
+    <Compile Include="Collections\Interfaces\Extended interfaces.cs" />
     <Compile Include="Collections\Interfaces\ICollectionSource.cs" />
+    <Compile Include="Collections\Interfaces\Other interfaces.cs" />
     <Compile Include="Compatibility\Contract.Assert.cs" />
     <Compile Include="Compatibility\Enum.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
@@ -257,7 +260,6 @@
     <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
     <Compile Include="Collections\Interfaces\INotifyListChanging.cs" />
     <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
-    <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Compatibility\IReadOnlyCollections.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
