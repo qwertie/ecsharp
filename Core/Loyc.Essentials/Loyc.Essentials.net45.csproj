@@ -44,7 +44,7 @@
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DEBUG;DotNet4,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
     <OutputPath>..\Bin\Release.NET4\</OutputPath>

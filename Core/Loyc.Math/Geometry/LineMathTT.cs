@@ -1,4 +1,4 @@
-﻿
+
 
 
 
@@ -34,6 +34,12 @@ namespace Loyc.Geometry
 
 	public static partial class LineMath
 	{
+		/// <inheritdoc cref="ProjectOnto(Point, LineSegment, LineType, out int?)"/>
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		{
+			int? _;
+			return ProjectOnto(p, seg, type, out _);
+		}
 		/// <summary>Performs projection, which finds the point on a line segment 
 		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
@@ -52,11 +58,6 @@ namespace Loyc.Geometry
 		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
 		/// See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
-		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
-		{
-			int? _;
-			return ProjectOnto(p, seg, type, out _);
-		}
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;
@@ -99,6 +100,12 @@ namespace Loyc.Geometry
 			return ProjectOnto(p, seg, LineType.Segment);
 		}
 
+		/// <inheritdoc cref="GetFractionAlong(Point, LineSegment, LineType, out int?)"/>
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		{
+			int? _;
+			return GetFractionAlong(p, seg, type, out _);
+		}
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
 		/// fraction where 0 represents the start of the line and 1 represents the 
 		/// end of the line.</summary>
@@ -111,11 +118,6 @@ namespace Loyc.Geometry
 		/// <returns>The fraction of p along seg, as explained already. If seg is
 		/// zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
-		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
-		{
-			int? _;
-			return GetFractionAlong(p, seg, type, out _);
-		}
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;
@@ -452,6 +454,12 @@ namespace Loyc.Geometry
 
 	public static partial class LineMath
 	{
+		/// <inheritdoc cref="ProjectOnto(Point, LineSegment, LineType, out int?)"/>
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		{
+			int? _;
+			return ProjectOnto(p, seg, type, out _);
+		}
 		/// <summary>Performs projection, which finds the point on a line segment 
 		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
@@ -470,11 +478,6 @@ namespace Loyc.Geometry
 		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
 		/// See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
-		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
-		{
-			int? _;
-			return ProjectOnto(p, seg, type, out _);
-		}
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;
@@ -517,6 +520,12 @@ namespace Loyc.Geometry
 			return ProjectOnto(p, seg, LineType.Segment);
 		}
 
+		/// <inheritdoc cref="GetFractionAlong(Point, LineSegment, LineType, out int?)"/>
+		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		{
+			int? _;
+			return GetFractionAlong(p, seg, type, out _);
+		}
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
 		/// fraction where 0 represents the start of the line and 1 represents the 
 		/// end of the line.</summary>
@@ -529,11 +538,6 @@ namespace Loyc.Geometry
 		/// <returns>The fraction of p along seg, as explained already. If seg is
 		/// zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
-		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
-		{
-			int? _;
-			return GetFractionAlong(p, seg, type, out _);
-		}
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;

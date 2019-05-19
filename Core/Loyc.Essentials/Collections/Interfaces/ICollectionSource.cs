@@ -44,7 +44,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Extension methods for ICollection, IReadOnlyCollection and ICollectionSource.</summary>
-	public static partial class CollectionExt
+	public static partial class LCExt
 	{
 		/// <summary>Converts the collection to an array.</summary>
 		public static T[] ToArray<T>(this ICollectionSource<T> list)

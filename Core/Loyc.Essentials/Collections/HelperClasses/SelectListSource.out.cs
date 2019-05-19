@@ -21,6 +21,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	public class SelectList<ListT, T, TResult>
 	 : ListSourceBase<TResult> where ListT: IList<T> {
 		protected ListT _list;
@@ -58,6 +59,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	public class SelectReadOnlyList<ListT, T, TResult>
 	 : ListSourceBase<TResult> where ListT: IReadOnlyList<T> {
 		protected ListT _list;
@@ -95,6 +97,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	public class SelectListSource<ListT, T, TResult>
 	 : SelectReadOnlyList<ListT, T, TResult> where ListT: IListSource<T> {
 		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }

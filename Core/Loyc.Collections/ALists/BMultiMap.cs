@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
@@ -322,7 +322,20 @@ namespace Loyc.Collections
 		#endregion
 
 		#region FindLowerBound, FindUpperBound
-		
+
+		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
+		public int FindLowerBound(K key)
+		{
+			bool found;
+			V value;
+			return FindLowerBound(ref key, out value, out found);
+		}
+		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
+		public int FindLowerBound(K key, out bool found)
+		{
+			V value;
+			return FindLowerBound(ref key, out value, out found);
+		}
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
 		/// <param name="key">The key to find.</param>
 		/// <param name="value">The first value associated with the specified key,
@@ -331,23 +344,11 @@ namespace Loyc.Collections
 		/// <returns>The index of the item that was found, or of the next greater
 		/// item, or Count if the given key is greater than the keys of all items 
 		/// in the list.</returns>
-		public int FindLowerBound(K key)
-		{
-			bool found;
-			V value;
-			return FindLowerBound(ref key, out value, out found);
-		}
-		/// <inheritdoc cref="FindLowerBound(K)"/>
-		public int FindLowerBound(K key, out bool found)
-		{
-			V value;
-			return FindLowerBound(ref key, out value, out found);
-		}
-		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(K key, out V value, out bool found)
 		{
 			return FindLowerBound(ref key, out value, out found);
 		}
+		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
 		public int FindLowerBound(ref K key, out V value, out bool found)
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();

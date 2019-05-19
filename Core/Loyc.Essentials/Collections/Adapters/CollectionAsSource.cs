@@ -22,7 +22,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Adapter: a read-only wrapper that implements ICollection(T) and IReadOnlyCollection(T), 
-	/// returned from <see cref="LCExt.AsReadOnly{T}"/>.</summary>
+	/// returned from <see cref="EnumerableExt.AsReadOnly{T}"/>.</summary>
 	[Serializable]
 	public sealed class CollectionAsReadOnly<T> : WrapperBase<ICollection<T>>, ICollectionAndReadOnly<T>
 	{

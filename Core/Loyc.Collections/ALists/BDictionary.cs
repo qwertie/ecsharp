@@ -190,6 +190,12 @@ namespace Loyc.Collections
 
 		#region FindLowerBound, FindUpperBound, IndexOf(key)
 
+		/// <inheritdoc cref="FindLowerBound(K, out bool)"/>
+		public int FindLowerBound(K key)
+		{
+			bool found;
+			return FindLowerBound(key, out found);
+		}
 		/// <summary>Finds the lowest index of an item with a key that is equal to 
 		/// or greater than the specified key.</summary>
 		/// <param name="key">The key to find. If passed by reference, when this 
@@ -201,12 +207,6 @@ namespace Loyc.Collections
 		/// <returns>The index of the item that was found, or of the next
 		/// greater item, or Count if the given item is greater than all items 
 		/// in the list.</returns>
-		public int FindLowerBound(K key)
-		{
-			bool found;
-			return FindLowerBound(key, out found);
-		}
-		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(K key, out bool found)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
@@ -215,13 +215,13 @@ namespace Loyc.Collections
 			found = op.Found;
 			return (int)op.BaseIndex;
 		}
-		/// <inheritdoc cref="FindLowerBound(K)"/>
+		/// <inheritdoc cref="FindLowerBound(K, out bool)"/>
 		public int FindLowerBound(ref K key)
 		{
 			bool found;
 			return FindLowerBound(ref key, out found);
 		}
-		/// <inheritdoc cref="FindLowerBound(K)"/>
+		/// <inheritdoc cref="FindLowerBound(K, out bool)"/>
 		public int FindLowerBound(ref K key, out bool found)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
@@ -439,87 +439,86 @@ namespace Loyc.Collections
 			return Maybe<V>.NoValue;
 		}
 
-		public bool GetAndEdit(ref KeyValuePair<K, V> pair, DictEditMode mode)
+		public bool GetAndEdit(ref K key, ref V value, DictEditMode mode)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
 			op.Mode = (AListOperation)((int)mode & 3);
-			op.Item = pair;
+			op.Item = new KeyValuePair<K, V>(key, value);
 			DoSingleOperation(ref op);
-			if (op.Found)
-				pair = op.Item;
-			return op.Found;
+			if (op.Found) {
+				key = op.Item.Key;
+				value = op.Item.Value;
+				return true;
+			} else
+				return false;
 		}
 
-		/// <inheritdoc cref="AddIfNotPresent(K,V)"/>
-		[Obsolete("Please use another overload")]
+		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
 		public bool AddIfNotPresent(K key, ref V value)
 		{
 			return AddIfNotPresent(ref key, ref value);
 		}
-		/// <inheritdoc cref="AddIfNotPresent(K,V)"/>
-		[Obsolete("Please use another overload")]
-		public bool AddIfNotPresent(ref K key, ref V value)
-		{
-			var kvp = new KeyValuePair<K, V>(key, value);
-			if (GetAndEdit(ref kvp, DictEditMode.AddIfNotPresent)) {
-				value = kvp.Value;
-				key = kvp.Key;
-				return false;
-			}
-			return true;
-		}
 		/// <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
 		/// <returns>True if the pair was added, false if it was retrieved.</returns>
+		public bool AddIfNotPresent(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
+		}
+		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
 		public bool AddIfNotPresent(ref KeyValuePair<K, V> pair)
 		{
-			return !GetAndEdit(ref pair, DictEditMode.AddIfNotPresent);
+			K k = pair.Key;
+			V v = pair.Value;
+			return !GetAndEdit(ref k, ref v, DictEditMode.AddIfNotPresent);
 		}
 
+		[Obsolete("Please use SetAndGet")]
+		public bool SetAndGetOldValue(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
+		}
 		/// <summary>Associates the specified value with the specified key, while getting the old value if one exists.</summary>
 		/// <param name="key">Key to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old key instance.</param>
 		/// <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</param>
 		/// <returns>True if the new pair was added, false if it was replaced.</returns>
-		[Obsolete("Please use another overload")]
+		/// <inheritdoc cref="SetAndGetOldValue(ref K, ref V)"/>
+		public bool SetAndGet(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
+		}
+		[Obsolete("Please use SetAndGet extension method")]
 		public bool SetAndGetOldValue(K key, ref V value)
 		{
 			return SetAndGetOldValue(ref key, ref value);
 		}
-
-		/// <inheritdoc cref="SetAndGetOldValue(K,ref V)"/>
-		[Obsolete("Please use another overload")]
-		public bool SetAndGetOldValue(ref K key, ref V value)
-		{
-			var pair = new KeyValuePair<K, V>(key, value);
-			return SetAndGetOldValue(ref pair);
-		}
-
-		/// <inheritdoc cref="SetAndGetOldValue(K,ref V)"/>
+		[Obsolete("Please use SetAndGet extension method")]
 		public bool SetAndGetOldValue(ref KeyValuePair<K,V> pair)
 		{
-			return !GetAndEdit(ref pair, DictEditMode.AddOrReplace);
+			K k = pair.Key;
+			V v = pair.Value;
+			return !GetAndEdit(ref k, ref v, DictEditMode.AddOrReplace);
 		}
 
-		// TODO: remove
-		public bool ReplaceIfPresent(K key, V value) => DictionaryExt.ReplaceIfPresent(this, key, value);
-
-		/// <summary>Replaces the value associated with a specified key, if it already exists in the dictionary.</summary>
-		/// <param name="pair">Key-value pair to replace an existing one. If a matching key existed, this method changes this parameter to the old pair.</param>
-		/// <returns>True if the key was found and the pair was replaced, false if it was not found.</returns>
-		/// <remarks>This method has no effect if the key was not already present.</remarks>
-		public bool ReplaceIfPresent(ref KeyValuePair<K,V> pair) => GetAndEdit(ref pair, DictEditMode.ReplaceIfPresent);
-
-		/// <inheritdoc cref="ReplaceIfPresent(K,V)"/>
-		[Obsolete("Please use another overload")]
+		[Obsolete("Please use another overload or the SwapIfPresent extension method")]
+		public bool ReplaceIfPresent(ref KeyValuePair<K, V> pair)
+		{
+			K key = pair.Key;
+			V value = pair.Value;
+			return GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent);
+		}
+		[Obsolete("Please use another overload or the SwapIfPresent extension method")]
 		public bool ReplaceIfPresent(K key, ref V value)
 		{
-			return ReplaceIfPresent(ref key, ref value);
+			return GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent);
 		}
-		/// <inheritdoc cref="ReplaceIfPresent(K,V)"/>
-		[Obsolete("Please use another overload")]
+		/// <summary>Replaces the value associated with a specified key, if it already exists in the dictionary.</summary>
+		/// <param name="key">Key to find. If a matching key existed, this method changes this parameter to the old stored key.</param>
+		/// <param name="value">Value to associate with the key. On exit, this is changed to the old value or left unchanged if the key was not found.</param>
+		/// <returns>True if the key was found and the pair was replaced, false if it was not found.</returns>
+		/// <remarks>This method has no effect if the key was not already present.</remarks>
 		public bool ReplaceIfPresent(ref K key, ref V value)
 		{
-			var pair = new KeyValuePair<K, V>(key, value);
-			return ReplaceIfPresent(ref pair);
+			return GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent);
 		}
 
 		#endregion

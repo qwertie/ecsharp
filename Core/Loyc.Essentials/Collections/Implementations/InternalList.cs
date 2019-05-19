@@ -112,6 +112,8 @@ namespace Loyc.Collections.Impl
 			Capacity = InternalList.NextLargerSize(_array.Length);
 		}
 
+		/// <inheritdoc cref="Resize(int, bool)"/>
+		public void Resize(int newSize) { Resize(newSize, true); }
 		/// <summary>Makes the list larger or smaller, depending on whether 
 		/// <c>newSize</c> is larger or smaller than <see cref="Count"/>.</summary>
 		/// <param name="allowReduceCapacity">If this is true, and the new size is 
@@ -121,8 +123,6 @@ namespace Loyc.Collections.Impl
 		/// <param name="newSize">New value of <see cref="Count"/>. If the Count
 		/// increases, copies of default(T) are added to the end of the the list; 
 		/// otherwise items are removed from the end of the list.</param>
-		public void Resize(int newSize) { Resize(newSize, true); }
-		/// <inheritdoc cref="Resize(int)"/>
 		public void Resize(int newSize, bool allowReduceCapacity)
 		{
 			if (newSize > _count)

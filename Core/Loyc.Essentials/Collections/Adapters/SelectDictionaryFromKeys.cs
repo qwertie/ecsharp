@@ -53,7 +53,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>An adapter that converts a collection of keys to an IReadOnlyDictionary.
-	/// Used by <see cref="AsReadOnlyDictionary"/>based on a function that can obtain a value for a given key.</summary>
+	/// Used by <see cref="EnumerableExt.AsReadOnlyDictionary"/>based on a function that can obtain a value for a given key.</summary>
 	/// <typeparam name="K">Key type</typeparam>
 	/// <typeparam name="V">Value type</typeparam>
 	public class SelectDictionaryFromKeys<K, V> : IReadOnlyDictionary<K, V>
