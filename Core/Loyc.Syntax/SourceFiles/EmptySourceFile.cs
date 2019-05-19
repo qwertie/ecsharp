@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Collections;
@@ -28,7 +28,7 @@ namespace Loyc.Syntax
 
 		public ICharSource Text
 		{
-			get { return StringSlice.Empty; }
+			get { return UString.Empty; }
 		}
 
 		public SourcePos IndexToLine(int index)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,8 @@ namespace Loyc.Collections
 	/// <para/>
 	/// This is the standard interface for lexers to use as a source of 
 	/// characters; is it defined in Loyc.Essentials rather than Loyc.Syntax
-	/// so that <see cref="UString"/> and <see cref="StringSlice"/> can 
-	/// implement it.
+	/// so that <see cref="UString"/> can implement it, and because it might
+	/// be useful in other contexts.
 	/// <para/>
 	/// This interface was created to read characters more efficiently. 
 	/// Although a lexer could read characters one-at-a-time from 
@@ -25,9 +25,9 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Slice() allows the lexer to request small pieces of the file that
 	/// it can read without dynamic dispatch. Typically a lexer will be
-	/// derived from Loyc.Syntax.Lexing.BaseLexer, which requests rather 
+	/// derived from Loyc.Syntax.Lexing.BaseLexer, which requests somewhat
 	/// small chunks; the ICharSource implementation is is free to read 
-	/// larger blocks at once, since the return type, <see cref="StringSlice"/>,
+	/// larger blocks at once, since the return type, <see cref="UString"/>,
 	/// can be a slice of a larger string.
 	/// <para/>
 	/// This interface provides good efficiency when reading from strings, 
@@ -59,6 +59,6 @@ namespace Loyc.Collections
 		/// <param name="startIndex">Index of first character to return. If startIndex >= Count, an empty string is returned.</param>
 		/// <param name="length">Number of characters desired.</param>
 		/// <exception cref="ArgumentException">Thrown if startIndex or length are negative.</exception>
-		new StringSlice Slice(int startIndex, int length);
+		new UString Slice(int startIndex, int length);
 	}
 }

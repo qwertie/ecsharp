@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +15,8 @@ namespace Loyc
 	/// "Unicode", as in UCS-4, as opposed to a normal string that is UTF-16.</summary>
 	/// <remarks>
 	/// UString is a slice type: it represents either an entire string, or a region
-	/// of characters in a string. .NET strings are converted implicitly to UString.
+	/// of code units in a string. .NET strings are converted implicitly to UString.
+	/// (it's like Memory{char}, but predates it by a few years.)
 	/// <para/>
 	/// It has been suggested that Java and .NET's reliance on 16-bit "unicode" 
 	/// characters was a mistake, because it turned out that 16 bits was not enough 
@@ -27,25 +28,17 @@ namespace Loyc
 	/// it is useful to have a bidirectional iterator that scans characters one
 	/// codepoint at a time. UString provides that functionality for .NET, and
 	/// the nice thing about UString is that it's portable to UTF-8 environments.
-	/// That is, by using UString, your code is portable to a UTF-8 environment
-	/// that uses an equivalent implementation of UString for UTF-8. Eventually 
-	/// I want Loyc to target native environments, where UTF-8 is common, and 
-	/// UString can provide a common data type for both UTF-8 and UTF-16 
-	/// environments.
+	/// That is, by using UString, your code will be portable to a UTF-8 
+	/// environment that uses an equivalent implementation of UString for UTF-8. 
+	/// Eventually I want Loyc to target native environments, where UTF-8 is 
+	/// common, and UString can provide a common data type for both UTF-8 and 
+	/// UTF-16 environments.
 	/// <para/>
 	/// UString is a bidirectional range of "uchar", which is an alias for int
 	/// (uchar means "Unicode" or "UCS-4", rather than "unsigned").
 	/// <para/>
-	/// The difference between StringSlice and UString is that StringSlice is a
-	/// random-access range of char, while UString is a bidirectional range of
-	/// uchar (int). Since UString implements <see cref="IListSource{Char}"/>,
-	/// it requires <see cref="StringSlice"/> in order to support the Slice method.
-	/// <para/>
 	/// UString has a <see cref="DecodeAt(int)"/> method that tries to decode
 	/// a UTF character to UCS at a particular index.
-	/// <para/>
-	/// Since UString and StringSlice are just slightly different views of the 
-	/// same data, you can implicitly cast between them.
 	/// <para/>
 	/// Unfortunately, it's not possible for UString to compare equal to its 
 	/// equivalent string, for two reasons: (1) System.String.Equals cannot be
@@ -55,10 +48,10 @@ namespace Loyc
 	/// changes between versions of the .NET framework and even between 32- and 
 	/// 64-bit builds.)
 	/// <para/>
-	/// TODO: add Right, Normalize, EndsWith, FindLast, ReplaceAll, etc.
+	/// TODO: add Normalize, FindLast, ReplaceAll, etc.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()} (Length = {Count})")]
-	public struct UString : IListSource<char>, ICharSource, IBRange<uchar>, ICloneable<UString>, IEquatable<UString>
+	public struct UString : IListSource<char>, ICharSource, IRange<char>, IBRange<uchar>, ICloneable<UString>, IEquatable<UString>
 	{
 		public static readonly UString Null = default(UString);
 		public static readonly UString Empty = new UString("");
@@ -176,12 +169,39 @@ namespace Loyc
 			return default(uchar);
 		}
 
+		char IFRange<char>.PopFirst(out bool fail)
+		{
+			if (_count != 0)
+			{
+				fail = false;
+				_count--;
+				return _str[_start++];
+			}
+			fail = true;
+			return default(char);
+		}
+		char IBRange<char>.PopLast(out bool fail)
+		{
+			if (_count != 0)
+			{
+				fail = false;
+				_count--;
+				return _str[_start + _count];
+			}
+			fail = true;
+			return default(char);
+		}
+		char IFRange<char>.First => this[0];
+		char IBRange<char>.Last => this[_count - 1];
 		IFRange<uchar>  ICloneable<IFRange<uchar>>.Clone() { return Clone(); }
 		IBRange<uchar>  ICloneable<IBRange<uchar>>.Clone() { return Clone(); }
+		IFRange<char>   ICloneable<IFRange<char>>.Clone() { return Clone(); }
+		IBRange<char>   ICloneable<IBRange<char>>.Clone() { return Clone(); }
+		IRange<char>    ICloneable<IRange<char>>.Clone()  { return Clone(); }
 		public UString Clone() { return this; }
 
 		IEnumerator<uchar> IEnumerable<uchar>.GetEnumerator() { return GetEnumerator(); }
-		IEnumerator<char> IEnumerable<char>.GetEnumerator() { return ((StringSlice)this).GetEnumerator(); }
+		IEnumerator<char> IEnumerable<char>.GetEnumerator() { return new RangeEnumerator<UString,char>(this); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public RangeEnumerator<UString,uchar> GetEnumerator()
 		{
@@ -271,9 +291,20 @@ namespace Loyc
 		}
 
 		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
-		public StringSlice Slice(int start, int count = int.MaxValue)
+		public UString Slice(int start, int count = int.MaxValue)
 		{
-			return ((StringSlice)this).Slice(start, count);
+			// if either parameter is below zero...
+			if ((start | count) < 0) {
+				if (start < 0)
+					throw new ArgumentOutOfRangeException("start", start, "The start index was below zero.");
+				count = 0;
+			}
+			Debug.Assert(_start <= _str.Length);
+			if (start > _count)
+				start = _count;
+			if (count > _count - start)
+				count = _count - start;
+			return new UString(_start + start, count, _str); // private constructor
 		}
 
 		#region GetHashCode, Equals, ToString

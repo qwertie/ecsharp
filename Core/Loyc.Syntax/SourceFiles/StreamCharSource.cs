@@ -1,4 +1,4 @@
-﻿namespace Loyc.Syntax
+namespace Loyc.Syntax
 {
 	using System;
 	using System.Collections.Generic;
@@ -91,11 +91,11 @@
 		protected const int DefaultBufSize = 2048 + MaxSeqSize - 1;
 		protected const int MaxSeqSize = 8;
 
-		public new StringSlice Slice(int startIndex, int length)
+		public new UString Slice(int startIndex, int length)
 		{
 			CheckParam.IsNotNegative("startIndex", startIndex);
 			if (length <= 0)
-				return new StringSlice("", 0, length);
+				return new UString("", 0, length);
 
 			StringBuilder sb = new StringBuilder(Math.Min(length, 1024));
 			for (int i = startIndex; i < startIndex + length; i++) {
