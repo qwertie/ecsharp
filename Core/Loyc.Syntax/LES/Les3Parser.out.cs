@@ -80,9 +80,9 @@ namespace Loyc.Syntax.Les
 			// Line 86: (TopExpr)?
 			switch ((TT) LA0) {
 			case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
-			case TT.Id: case TT.Keyword: case TT.LBrace: case TT.LBrack:
-			case TT.Literal: case TT.LParen: case TT.NormalOp: case TT.Not:
-			case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
+			case TT.Colon: case TT.Id: case TT.Keyword: case TT.LBrace:
+			case TT.LBrack: case TT.Literal: case TT.LParen: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
 				e = TopExpr();
 				break;
 			}
@@ -159,9 +159,9 @@ namespace Loyc.Syntax.Les
 			// Line 112: (TopExpr)?
 			switch ((TT) LA0) {
 			case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
-			case TT.Id: case TT.Keyword: case TT.LBrace: case TT.LBrack:
-			case TT.Literal: case TT.LParen: case TT.NormalOp: case TT.Not:
-			case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
+			case TT.Colon: case TT.Id: case TT.Keyword: case TT.LBrace:
+			case TT.LBrack: case TT.Literal: case TT.LParen: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
 				e = TopExpr();
 				break;
 			}
@@ -194,6 +194,7 @@ namespace Loyc.Syntax.Les
 				yield return e ?? MissingExpr(end, afterToken: true);
 			}
 		}
+		static readonly HashSet<int> TopExpr_set0 = NewSet((int) EOF, (int) TT.Assignment, (int) TT.At, (int) TT.BQId, (int) TT.BQOperator, (int) TT.Colon, (int) TT.Comma, (int) TT.Id, (int) TT.Keyword, (int) TT.LBrace, (int) TT.LBrack, (int) TT.Literal, (int) TT.LParen, (int) TT.Newline, (int) TT.NormalOp, (int) TT.Not, (int) TT.PrefixOp, (int) TT.PreOrSufOp, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.SingleQuoteOp);
 	
 		protected LNode TopExpr()
 		{
@@ -205,20 +206,20 @@ namespace Loyc.Syntax.Les
 			int startIndex = LT0.StartIndex;
 			// line 125
 			var attrs = new VList<LNode>();
-			// Line 127: (TT.At (TT.At | Particle (&!{IsSpaceBefore($LI)} CallArgs)?) greedy(~(EOF|TT.LBrace|TT.Newline) => {..})? NewlinesOpt)*
+			// Line 127: (TT.At (TT.At | Particle greedy(&!{IsSpaceBefore($LI)} CallArgs)?) greedy(~(EOF|TT.LBrace|TT.Newline) => {..})? NewlinesOpt)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.At) {
 					Skip();
 					// line 127
 					CheckForSpace(false, "Unexpected space after `@`");
-					// Line 128: (TT.At | Particle (&!{IsSpaceBefore($LI)} CallArgs)?)
+					// Line 128: (TT.At | Particle greedy(&!{IsSpaceBefore($LI)} CallArgs)?)
 					la0 = (TT) LA0;
 					if (la0 == TT.At)
 						Skip();
 					else {
 						var attr = Particle(inAttribute: true);
-						// Line 130: (&!{IsSpaceBefore($LI)} CallArgs)?
+						// Line 130: greedy(&!{IsSpaceBefore($LI)} CallArgs)?
 						la0 = (TT) LA0;
 						if (la0 == TT.LParen) {
 							if (!IsSpaceBefore(0))
@@ -238,10 +239,10 @@ namespace Loyc.Syntax.Les
 			}
 			// Line 136: (Expr greedy(TT.Colon (EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen) => )?)
 			switch ((TT) LA0) {
-			case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Id:
-			case TT.Keyword: case TT.LBrace: case TT.LBrack: case TT.Literal:
-			case TT.LParen: case TT.NormalOp: case TT.Not: case TT.PrefixOp:
-			case TT.PreOrSufOp: case TT.SingleQuoteOp:
+			case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Colon:
+			case TT.Id: case TT.Keyword: case TT.LBrace: case TT.LBrack:
+			case TT.Literal: case TT.LParen: case TT.NormalOp: case TT.Not:
+			case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
 				{
 					e = Expr(Precedence.MinValue);
 					// Line 138: greedy(TT.Colon (EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen) => )?
@@ -260,26 +261,18 @@ namespace Loyc.Syntax.Les
 					MatchExcept();
 					// Line 142: nongreedy(~(EOF))*
 					for (;;) {
-						switch ((TT) LA0) {
-						case EOF: case TT.Assignment: case TT.At: case TT.BQId:
-						case TT.BQOperator: case TT.Comma: case TT.Id: case TT.Keyword:
-						case TT.LBrace: case TT.LBrack: case TT.Literal: case TT.LParen:
-						case TT.Newline: case TT.NormalOp: case TT.Not: case TT.PrefixOp:
-						case TT.PreOrSufOp: case TT.RBrace: case TT.RBrack: case TT.RParen:
-						case TT.Semicolon: case TT.SingleQuoteOp:
-							goto stop;
-						default:
-							Skip();
+						la0 = (TT) LA0;
+						if (TopExpr_set0.Contains((int) la0))
 							break;
-						}
+						else
+							Skip();
 					}
-				stop:;
 					// Line 143: (TopExpr | (EOF|TT.Comma|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen|TT.Semicolon) => {..})
 					switch ((TT) LA0) {
 					case TT.Assignment: case TT.At: case TT.BQId: case TT.BQOperator:
-					case TT.Id: case TT.Keyword: case TT.LBrace: case TT.LBrack:
-					case TT.Literal: case TT.LParen: case TT.NormalOp: case TT.Not:
-					case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
+					case TT.Colon: case TT.Id: case TT.Keyword: case TT.LBrace:
+					case TT.LBrack: case TT.Literal: case TT.LParen: case TT.NormalOp:
+					case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp: case TT.SingleQuoteOp:
 						e = TopExpr();
 						break;
 					default:
@@ -537,10 +530,10 @@ namespace Loyc.Syntax.Les
 			LNode e = default(LNode);
 			Token op = default(Token);
 			LNode result = default(LNode);
-			// Line 233: ((TT.Assignment|TT.BQOperator|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr / Particle)
+			// Line 233: ((TT.Assignment|TT.BQOperator|TT.Colon|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr / Particle)
 			switch ((TT) LA0) {
-			case TT.Assignment: case TT.BQOperator: case TT.NormalOp: case TT.Not:
-			case TT.PrefixOp: case TT.PreOrSufOp:
+			case TT.Assignment: case TT.BQOperator: case TT.Colon: case TT.NormalOp:
+			case TT.Not: case TT.PrefixOp: case TT.PreOrSufOp:
 				{
 					op = MatchAny();
 					e = Expr(PrefixPrecedenceOf(op));

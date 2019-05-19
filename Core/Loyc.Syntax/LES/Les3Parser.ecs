@@ -127,7 +127,7 @@ partial class Les3Parser
 			"@" {CheckForSpace(false, "Unexpected space after `@`");}
 			(	"@" 
 			|	attr:=Particle[inAttribute: true]
-				(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
+				greedy(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
 				{attrs.Add(attr);}
 			)
 			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
@@ -230,7 +230,7 @@ partial class Les3Parser
 
 	PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
-			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
+			op:(TT.NormalOp|"!"|":"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
 			e:Expr[PrefixPrecedenceOf(op)]
 			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
 		/	result:Particle
