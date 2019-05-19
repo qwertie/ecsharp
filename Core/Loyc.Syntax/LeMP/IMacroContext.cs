@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc;
@@ -200,12 +200,14 @@ namespace LeMP
 		/// <remarks>
 		/// <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
 		/// #namedArg(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
-		/// This function recognizes both forms.
+		/// This function recognizes both forms. It also recognizes `option1 ::= v1` syntax which
+		/// is the preferred way of specifying named arguments in LES.
 		/// </remarks>
 		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(VList<LNode> optionList)
 		{
+			Symbol lesNamedArg = (Symbol)"'<~";
 			foreach (var option in optionList) {
-				if ((option.Calls(CodeSymbols.NamedArg, 2) || option.Calls(CodeSymbols.Colon, 2)) && option.Args[0].IsId)
+				if ((option.ArgCount == 2 && option.Name.IsOneOf(CodeSymbols.NamedArg, CodeSymbols.Colon, lesNamedArg)) && option.Args[0].IsId)
 				{
 					LNode key = option.Args[0];
 					LNode value = option.Args.Last;
@@ -217,23 +219,5 @@ namespace LeMP
 					yield return new KeyValuePair<LNode, LNode>(option, null);
 			}
 		}
-	}
-
-	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
-	public class MacroInfo : LexicalMacroAttribute
-	{
-		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
-		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro)
-			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 ? a.Names : new[] { macro.Method.Name })
-		{
-			CheckParam.IsNotNull("macro", macro);
-			Namespace = @namespace;
-			Macro = macro;
-			Mode = a.Mode;
-		}
-		public Symbol Namespace { get; private set; }
-		public LexicalMacro Macro { get; private set; }
-
-		public static Comparison<MacroInfo> CompareDescendingByPriority = (a, b) => b.Priority.CompareTo(a.Priority);
 	}
 }

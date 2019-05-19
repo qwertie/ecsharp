@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -86,9 +86,9 @@ namespace LeMP
 		{
 			_parent = parent;
 			_macros = parent.Macros.Clone();
-			foreach (var mi in MacroProcessor.GetMacros(this.GetType(), null, _sink, this))
+			foreach (var mi in MacroInfo.GetMacros(this.GetType(), _sink, GSymbol.Empty, this))
 				MacroProcessor.AddMacro(_macros, mi);
-			_macroNamespaces = new MSet<Symbol>(_macros.SelectMany(ms => ms.Value).Select(mi => mi.Namespace).Where(ns => ns != null));
+			_macroNamespaces = new MSet<Symbol>(_macros.SelectMany(ms => ms.Value).SelectMany(mi => mi.Namespaces).Where(ns => ns != null));
 			_rootMacros = _macros.Clone();
 			_rootScopedProperties = parent.DefaultScopedProperties.Clone();
 		}
@@ -98,11 +98,11 @@ namespace LeMP
 		MacroProcessor _parent;
 		IMessageSink _sink { get { return _parent.Sink; } }
 		int MaxExpansions { get { return _parent.MaxExpansions; } }
-		MMap<Symbol, VList<MacroInfo>> _macros;
+		MMap<Symbol, InternalList<InternalMacroInfo>> _macros;
 		MSet<Symbol> _macroNamespaces; // A list of namespaces that contain macros
 		MMap<object, object> _rootScopedProperties;
 		// macros defined from the beginning (not including e.g. macros added with `define`)
-		MMap<Symbol, VList<MacroInfo>> _rootMacros;
+		MMap<Symbol, InternalList<InternalMacroInfo>> _rootMacros;
 		
 		// Statistics
 		public int MacrosInvoked { get; set; }
@@ -154,7 +154,7 @@ namespace LeMP
 		}
 		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
-			using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Default)) {
+			using (ParsingService.SetDefault(io.InputLang ?? ParsingService.Default)) {
 				try {
 					string dir = Path.GetDirectoryName(io.FileName);
 					if (!string.IsNullOrEmpty(dir))
@@ -242,12 +242,12 @@ namespace LeMP
 
 		class Scope : ICloneable<Scope>, IMacroContext
 		{
-			public Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, VList<MacroInfo>> macros, MacroProcessorTask task)
+			public Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, InternalList<InternalMacroInfo>> macros, MacroProcessorTask task)
 				{ OpenNamespaces = openNamespaces; _scopedProperties = scopedProperties; _macros = macros; _task = task; _modified = false; }
 			public MSet<Symbol> OpenNamespaces;
 			MacroProcessorTask _task;
 			MMap<object, object> _scopedProperties;
-			internal MMap<Symbol, VList<MacroInfo>> _macros;
+			internal MMap<Symbol, InternalList<InternalMacroInfo>> _macros;
 			bool _modified; // copy-on-write behavior occurs when this is false
 				
 			public void BeforeModify()
@@ -323,7 +323,15 @@ namespace LeMP
 				return Sink.IsEnabled(type);
 			}
 
-			public IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get { return _macros; } }
+			public IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros =>
+				_macros.Keys.AsReadOnly().AsReadOnlyDictionary<Symbol, VList<MacroInfo>>(k => {
+					if (_macros.TryGetValue(k, out var infos)) {
+						return new VList<MacroInfo>(infos.SelectMany(
+							info => info.Namespaces,
+							(info, ns) => new MacroInfo(ns, info.Attr, info.Macro)));
+					}
+					return NoValue.Value;
+				});
 
 			public int NextTempCounter { get { return MacroProcessor.NextTempCounter; } }
 			public int IncrementTempCounter() { return MacroProcessor.IncrementTempCounter(); }
@@ -354,7 +362,7 @@ namespace LeMP
 
 			// Optimization: these lists are re-used on each call to ApplyMacros,
 			// to avoid allocating unnecessary garbage.
-			public List<MacroInfo> FoundMacros = new List<MacroInfo>();
+			public List<InternalMacroInfo> FoundMacros = new List<InternalMacroInfo>();
 			public MessageHolder MessageHolder = new MessageHolder();
 			public InternalList<MacroResult> Results = InternalList<MacroResult>.Empty;
 
@@ -471,17 +479,20 @@ namespace LeMP
 
 		#region Find macros by name: GetApplicableMacros
 
-		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found, bool isIdentifier)
+		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<InternalMacroInfo> found, bool isIdentifier)
 		{
-			VList<MacroInfo> candidates;
-			if (_curScope._macros.TryGetValue(name, out candidates)) {
+			if (_curScope._macros.TryGetValue(name, out var candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
-					if (openNamespaces.Contains(info.Namespace) || info.Namespace == null) {
-						if (!isIdentifier || (info.Mode & MacroMode.MatchIdentifier) != 0) {
-							count++;
-							found.Add(info);
-						}
+					if (!isIdentifier || (info.Attr.Mode & MacroMode.MatchIdentifier) != 0)
+					{
+						foreach (var ns in info.Namespaces)
+							if (openNamespaces.Contains(ns) || ns == null)
+								goto available;
+						continue;
+					 available:
+						count++;
+						found.Add(info);
 					}
 				}
 				return count;
@@ -728,7 +739,7 @@ namespace LeMP
 			return resultNode;
 		}
 
-		private void GetApplicableMacros(LNode curNode, List<MacroInfo> foundMacros)
+		private void GetApplicableMacros(LNode curNode, List<InternalMacroInfo> foundMacros)
 		{
 			LNode target;
 			if (curNode.HasSimpleHead()) {
@@ -747,16 +758,16 @@ namespace LeMP
 			var foundMacros = s.FoundMacros;
 			// if any of the macros use a priority flag, group by priority.
 			if (foundMacros.Count > 1) {
-				var p = foundMacros[0].Priority;
+				var p = foundMacros[0].Attr.Priority;
 				for (int x = 1; x < foundMacros.Count; x++) {
-					if (foundMacros[x].Priority != p) {
+					if (foundMacros[x].Attr.Priority != p) {
 						// need to make an independent list because _s.foundMacros may be cleared and re-used for descendant nodes
-						foundMacros = new List<MacroInfo>(foundMacros);
-						foundMacros.Sort(MacroInfo.CompareDescendingByPriority); // descending by priority
+						foundMacros = new List<InternalMacroInfo>(foundMacros);
+						foundMacros.Sort(InternalMacroInfo.CompareDescendingByPriority); // descending by priority
 						for (int i = 0, j; i < foundMacros.Count; i = j) {
-							p = foundMacros[i].Priority;
+							p = foundMacros[i].Attr.Priority;
 							for (j = i + 1; j < foundMacros.Count; j++)
-								if (foundMacros[j].Priority != p)
+								if (foundMacros[j].Attr.Priority != p)
 									break;
 							var newNode = ApplyMacrosFound2(s, foundMacros.Slice(i, j - i));
 							if (newNode != null)
@@ -769,7 +780,7 @@ namespace LeMP
 			return ApplyMacrosFound2(s, foundMacros.Slice(0));
 		}
 
-		private MacroResult? ApplyMacrosFound2(CurNodeState s, ListSlice<MacroInfo> foundMacros)
+		private MacroResult? ApplyMacrosFound2(CurNodeState s, ListSlice<InternalMacroInfo> foundMacros)
 		{
 			s.BeforeApplyMacros();
 			LNode input = s.Input;
@@ -842,7 +853,7 @@ namespace LeMP
 
 		struct MacroResult
 		{
-			public MacroResult(MacroInfo macro, LNode newNode, ListSlice<LogMessage> msgs, bool dropRemaining)
+			public MacroResult(InternalMacroInfo macro, LNode newNode, ListSlice<LogMessage> msgs, bool dropRemaining)
 			{
 				Macro = macro; NewNode = newNode; Msgs = msgs; DropRemainingNodes = dropRemaining;
 			}
@@ -850,7 +861,7 @@ namespace LeMP
 			{
 				Macro = null; NewNode = lNode; Msgs = ListSlice<LogMessage>.Empty; DropRemainingNodes = false;
 			}
-			public MacroInfo Macro; 
+			public InternalMacroInfo Macro; 
 			public LNode NewNode;
 			public ListSlice<LogMessage> Msgs;
 			public bool DropRemainingNodes; // delete rest of nodes in current Args/Attrs list
