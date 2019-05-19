@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -368,7 +368,7 @@ namespace LeMP
 			return null;
 		}
 		
-		[LexicalMacro("A := B", "Deprecated. Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
+		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

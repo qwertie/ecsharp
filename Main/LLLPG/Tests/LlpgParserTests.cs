@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -99,7 +99,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TestStage1Core(text, expected);
 			if (tryECSharp)
-				using (ParsingService.PushCurrent(Ecs.EcsLanguageService.Value))
+				using (ParsingService.SetDefault(Ecs.EcsLanguageService.Value))
 					TestStage1Core(text, expected);
 		}
 		void TestStage1Core(string text, LNode expected)

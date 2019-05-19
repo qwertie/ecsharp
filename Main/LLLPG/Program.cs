@@ -36,7 +36,6 @@ namespace Loyc.LLParserGenerator
 					if (c.Files.Count == 0)
 						ConsoleMessageSink.Value.Warning(null, "No files specified, stopping.");
 					else {
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 						c.AddMacros(typeof(LeMP.StandardMacros).Assembly);
@@ -63,11 +62,10 @@ namespace Loyc.LLParserGenerator
 			c.MaxExpansions = maxExpand;
 			c.AddMacros(Assembly.GetExecutingAssembly());
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 			c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
-			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Default))
+			using (ParsingService.SetDefault(inputLang ?? ParsingService.Default))
 			using (LNode.SetPrinter(Ecs.EcsLanguageService.Value))
 				c.Run();
 			return c.Output.ToString();

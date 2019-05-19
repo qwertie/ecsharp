@@ -16,7 +16,7 @@ namespace Loyc.Syntax.Les
 			return "Loyc Expression Syntax v3.0";
 		}
 
-		static readonly string[] _fileExtensions = new[] { "les3", "was" };
+		static readonly string[] _fileExtensions = new[] { "les3" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
 		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)

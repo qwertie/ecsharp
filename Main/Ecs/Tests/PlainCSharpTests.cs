@@ -718,12 +718,17 @@ namespace Loyc.Ecs.Tests
 			Expr("x is Foo<T> a", F.Call(S.Is, x, F.Var(F.Of(Foo, T), a)));
 		}
 
-		[Test]
+		[Test(Fails = "Not implemented")]
 		public void CSharp7TupleTypes()
 		{
+			Stmt("(int, float) x;", F.Call(S.Var, F.Of(S.Tuple, S.Int32, S.Single), x));
+			Expr("(int, float) x",  F.Call(S.Var, F.Of(S.Tuple, S.Int32, S.Single), x));
+			Stmt("(int x, int) Foo;", F.Call(S.Var, F.Of(_(S.Tuple), F.Var(F.Int32, x), F.Int32), Foo));
+			Stmt("(int, float) Foo() {}", F.Fn(F.Of(S.Tuple, S.Int32, S.Single), Foo, F.List(), F.Braces()));
+			Stmt("(int, float) Foo {}", F.Property(F.Of(S.Tuple, S.Int32, S.Single), Foo, F.Braces()));
 		}
 
-		[Test]
+		[Test(Fails = "Not implemented")]
 		public void CSharp7OtherFeatures()
 		{
 		}

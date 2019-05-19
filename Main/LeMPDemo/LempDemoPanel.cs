@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -160,10 +160,9 @@ namespace TextEditor
 			{
 				VList<LNode> results = io.Output;
 
-				Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", NewlineString,
+				Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", io.OutOptions.NewlineString,
 					io.FileName, typeof(Compiler).Assembly.GetName().Version.ToString());
-				var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
-				io.OutPrinter.Print(results, Output, Sink, ParsingMode.File, opts);
+				io.OutPrinter.Print(results, Output, Sink, ParsingMode.File, io.OutOptions);
 			}
 		}
 

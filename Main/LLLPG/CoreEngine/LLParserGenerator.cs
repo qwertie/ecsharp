@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -1159,11 +1159,11 @@ namespace Loyc.LLParserGenerator
 				var cases = arms[i].Cases;
 				for (int c = 0; c < cases.Count; c++)
 				{
-					var pair = new KeyValuePair<GrammarPos,KthSet>(cases[c].Position, arms[i]);
-					if (!positionMap.AddOrFind(ref pair, false) && pair.Value != arms[i]) {
+					var existing = positionMap.AddOrGetExisting(cases[c].Position, arms[i]);
+					if (existing.HasValue && existing.Value != arms[i]) {
 						// Key was already present for a different arm--ambiguity detected!
 						// Record this ambiguity by setting value to null.
-						positionMap[pair.Key] = null;
+						positionMap[cases[c].Position] = null;
 					}
 				}
 			}

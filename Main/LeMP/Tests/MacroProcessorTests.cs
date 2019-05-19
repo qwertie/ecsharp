@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -107,13 +107,12 @@ namespace LeMP
 			
 		public StringBuilder Output;
 		public VList<LNode> Results;
-			
+
 		protected override void WriteOutput(InputOutput io)
 		{
 			Results = io.Output;
 			Output = new StringBuilder();
-			var opts = new LNodePrinterOptions { IndentString = IndentString, NewlineString = NewlineString };
-			LNode.Printer.Print(Results, Output, Sink, null, opts);
+			io.OutPrinter.Print(Results, Output, Sink, null, io.OutOptions);
 		}
 
 		#region static Test(), StripExtraWhitespace() methods

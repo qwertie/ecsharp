@@ -26,7 +26,8 @@ namespace LeMP
 	/// This class helps you process command-line options (see <see cref="ProcessArguments(IList{string}, bool, bool, IList{string})"/>), 
 	/// complete <see cref="InputOutput"/> objects based on those options (see 
 	/// <see cref="CompleteInputOutputOptions"/>), and add macros from Assemblies 
-	/// (<see cref="AddMacros"/> and <see cref="AddStdMacros"/>). 
+	/// (<see cref="AddMacros"/> and <see cref="AddStdMacros"/>). When everything
+	/// is set up, call <see cref="Run()"/>.
 	/// </remarks>
 	public class Compiler
 	{
@@ -435,8 +436,6 @@ namespace LeMP
 		public TimeSpan AbortTimeout { get { return MacroProcessor.AbortTimeout; } set { MacroProcessor.AbortTimeout = value; } }
 		public bool Verbose { get { return Sink.IsEnabled(Severity.Verbose); } }
 		public bool Parallel = true;
-		public string IndentString = "\t";
-		public string NewlineString = "\n";
 		public MacroProcessor MacroProcessor; // the core LeMP engine
 		public IParsingService InLang;  // null to choose by extension or use ParsingService.Current
 		public bool PreserveComments = true; // whether to preserve comments by default, if supported by input and output lang
@@ -486,7 +485,7 @@ namespace LeMP
 				file.OutPrinter = outLang ?? LNode.Printer;
 			}
 			if (file.OutOptions == null)
-                file.OutOptions = OutOptions;
+				file.OutOptions = OutOptions;
 			if (file.PreserveComments == null)
 				file.PreserveComments = PreserveComments;
 			if (file.ParsingMode == null)
@@ -544,11 +543,7 @@ namespace LeMP
 
 			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
-				var options = new LNodePrinterOptions {
-					IndentString = IndentString,
-					NewlineString = NewlineString
-				};
-				var str = io.OutPrinter.Print(io.Output, Sink, null, options);
+				var str = io.OutPrinter.Print(io.Output, Sink, null, io.OutOptions);
 				writer.Write(str);
 			}
 		}

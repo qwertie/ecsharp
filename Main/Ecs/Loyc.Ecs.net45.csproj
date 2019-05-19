@@ -66,7 +66,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591,1573,1587</NoWarn>
     <DocumentationFile>..\..\Bin\Release.NET4\Loyc.Ecs.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>

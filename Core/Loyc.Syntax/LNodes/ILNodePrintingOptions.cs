@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,7 +56,7 @@ namespace Loyc.Syntax
 		/// <remarks>
 		/// If this option is null, the printer should use its default indent string.
 		/// <para/>
-		/// Indentation-sensitive languages should treat an empty string the same as null.
+		/// Indentation-sensitive languages should treat an empty string as one space or tab.
 		/// </remarks>
 		string IndentString { get; }
 		

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using System.IO;
 namespace Loyc.Syntax.Les
 {
 	/// <summary>Base class for the helper classes of <see cref="Les2Printer"/>
-	/// and <see cref="Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
+	/// and <see cref="Loyc.Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
 	/// EcsNodePrinterWriter. See <see cref="INodePrinterWriter"/>.</summary>
 	public abstract class DefaultNodePrinterWriter : NodePrinterWriterBase
 	{

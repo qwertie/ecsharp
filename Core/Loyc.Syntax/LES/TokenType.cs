@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,11 +19,11 @@ namespace Loyc.Syntax.Les
 		Shebang    = TokenKind.Comment + 255,
 		Id         = TokenKind.Id,
 		BQId       = TokenKind.Id + 1, // LESv3 only
-		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
+		Literal    = TokenKind.Literal, // true, false, null, "string", 12345
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
-		PreOrSufOp = TokenKind.Operator + 1,  // ++, --
+		PreOrSufOp = TokenKind.Operator + 1,  // ++, --, !!
 		PrefixOp   = TokenKind.Operator + 2,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)

@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections
+namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
