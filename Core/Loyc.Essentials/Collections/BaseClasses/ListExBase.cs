@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
@@ -48,10 +48,6 @@ namespace Loyc.Collections.Impl
 			return false;
 		}
 
-		public int RemoveAll(Predicate<T> match)
-		{
-			return ListExt.RemoveAll(this, match);
-		}
 		public void AddRange(IEnumerable<T> e)
 		{
 			InsertRange(Count, e);
@@ -75,6 +71,10 @@ namespace Loyc.Collections.Impl
 				ListExt.InsertRange(this, index, items2);
 			else
 				ListExt.InsertRange(this, index, items.Buffered());
+		}
+		public virtual void CopyTo(T[] array, int arrayIndex)
+		{
+			LCInterfaces.CopyTo(this, array, arrayIndex);
 		}
 	}
 }

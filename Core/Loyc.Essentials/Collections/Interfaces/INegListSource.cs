@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -143,15 +143,8 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// This interface allows negative indexes, unlike <see cref="IAutoSizeArray{T}"/>.
 	/// </remarks>
-	public interface INegAutoSizeArray<T> : INegArray<T>
+	public interface INegAutoSizeArray<T> : INegArray<T>, IOptimize
 	{
-		/// <summary>Optimizes the data structure to consume less memory or storage space.</summary>
-		/// <remarks>
-		/// A simple auto-sizing array can implement this method by examining the
-		/// elements with the most positive and most negative indexes, and removing
-		/// any that are equal to default(T).
-		/// </remarks>
-		void Optimize();
 	}
 
 	/// <summary>Represents a Deque that supports negative indexes. In this kind of

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Loyc.Math;
@@ -279,10 +279,6 @@ namespace Loyc.Collections
 		public void AddRange(IEnumerable<T> list)
 		{
 			ListExt.AddRange(this, list);
-		}
-		public int RemoveAll(Predicate<T> match)
-		{
-			return ListExt.RemoveAll(this, match);
 		}
 
 		#endregion

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/10/2011
@@ -119,6 +119,10 @@ namespace Loyc.Collections
 			throw new ReadOnlyException();
 		}
 		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+		{
+			LCInterfaces.CopyTo(this, array, arrayIndex);
+		}
+		void ICollectionSource<T>.CopyTo(T[] array, int arrayIndex)
 		{
 			LCInterfaces.CopyTo(this, array, arrayIndex);
 		}

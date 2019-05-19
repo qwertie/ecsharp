@@ -252,6 +252,7 @@
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
     <Compile Include="Collections\Implementations\WeakValueDictionary.cs" />
     <Compile Include="Collections\Interfaces\ICount.cs" />
+    <Compile Include="Collections\Interfaces\IDictionaryEx.cs" />
     <Compile Include="Collections\Interfaces\IListSource.cs" />
     <Compile Include="Collections\Interfaces\INegListSource.cs" />
     <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />

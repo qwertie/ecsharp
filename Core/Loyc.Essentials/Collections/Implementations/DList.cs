@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections
+namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
@@ -167,10 +167,6 @@
 		{
 			if ((uint)index > (uint)_dlist.Count || (uint)(index + amount) > (uint)_dlist.Count)
 				throw new IndexOutOfRangeException(Localize.Localized("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
-		}
-		public int RemoveAll(Predicate<T> condition)
-		{
-			return ListExt.RemoveAll(this, condition);
 		}
 
 		public T this[int index]

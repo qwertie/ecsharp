@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
@@ -97,5 +97,10 @@ namespace Loyc.Collections.Impl
 		}
 
 		#endregion
+
+		void ICollectionSource<T>.CopyTo(T[] array, int arrayIndex)
+		{
+			ListExt.CopyTo(this, array, arrayIndex);
+		}
 	}
 }
