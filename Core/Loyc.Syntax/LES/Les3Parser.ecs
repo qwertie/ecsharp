@@ -84,6 +84,7 @@ partial class Les3Parser
 	public ExprList[ref TokenType endMarker, VList<LNode> list = default(VList<LNode>), bool isBracedBlock = false] returns [VList<LNode> result] :
 		NewlinesOpt
 		(e:TopExpr)?
+		ErrorTokensOpt
 		[	( &{isBracedBlock} {Error(0, "Unexpected closing bracket");} (")"|"]") )?
 			end:(","|"\n"|";")
 			{CheckEndMarker(ref endMarker, ref end);}
@@ -297,7 +298,6 @@ partial class Les3Parser
 	////////////////////////////////////////////////////////////////////////////
 
 	KeywordExpression returns [LNode result] @init {var args = new VList<LNode>();} :
-		
 		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 

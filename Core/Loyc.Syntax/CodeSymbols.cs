@@ -36,6 +36,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol GE = GSymbol.Get("'>=");    //!< ">=" Greater-than-or-equal-to operator
 		public static readonly Symbol LT = GSymbol.Get("'<");     //!< "<"  Less-than operator
 		public static readonly Symbol LE = GSymbol.Get("'<=");    //!< "<=" Less-than-or-equal-to operator
+		public static readonly Symbol Matches = GSymbol.Get("'=~");    //!< "==" Equality test operator
 		public static readonly Symbol Shr = GSymbol.Get("'>>");   //!< ">>" Right-shift operator
 		public static readonly Symbol Shl = GSymbol.Get("'<<");   //!< "<<" Left-shift operator
 		public static readonly Symbol Not = GSymbol.Get("'!");    //!< "!"  Logical 'not' operator

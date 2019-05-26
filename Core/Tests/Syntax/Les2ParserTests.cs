@@ -75,11 +75,10 @@ namespace Loyc.Syntax.Les
 			var msgs = Test(Mode.Expr, 1, "x & Foo == 0",   F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
 			ExpectMessageContains(msgs, "'==' is not allowed in this context");
 			Test(Mode.Expr, 0, "x >> 1 == a",    F.Call(S.Eq, F.Call(S.Shr, x, one), a));
-			// FIXME: No error printed because our algorithm for detecting mixing is flawed
+			// TODO: FIX: No error printed because parser's method of detecting mixing is flawed
 			//Test(Mode.Expr, 1, "x >> a + 1",   F.Call(S.Add, F.Call(S.Shr, x, a), one));
 			Test(Mode.Expr, 1, "1 + x >> a",     F.Call(S.Add, one, F.Call(S.Shr, x, a)));
 			Test(Mode.Expr, 0, "x >> a**1",      F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
-			Test(Mode.Expr, 0, "x `Foo` a..b",   F.Call(Foo, x, F.Call(S.DotDot, a, b)));
 			Test(Mode.Expr, 1, "x `Foo` a*b",    F.Call(Foo, x, F.Call(S.Mul, a, b)));
 			Test(Mode.Stmt, 0, "x `Foo` a**b;",  F.Call(Foo, x, F.Call(S.Exp, a, b)));
 			Test(Mode.Expr, 0, "x `Foo` 1 == a", F.Call(S.Eq, F.Call(Foo, x, one), a));

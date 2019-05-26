@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -90,13 +90,24 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void RangeOps()
+		{
+			Exact("a >= b .. c;",   F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a >= b ..< c;",  F.Call(S.GE, a, F.Call("'..<", b, c)));
+			Exact("a + b ... c;",   F.Call(S.DotDotDot, F.Call(S.Add, a, b), c));
+			Exact("a .< b + c;",    F.Call("'.<", a, F.Call(S.Add, b, c)));
+			Stmt(".. a + b == c;",  F.Call(S.Eq, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("x >> a .. b;",   F.Call(S.DotDot, F.Call(S.Shr, x, a), b));
+			Exact("a.b!!.c .?. 1;", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
+		}
+
+		[Test]
 		public void BinaryOps()
 		{
 			Exact("x + 1;",        F.Call(S.Add, x, one));
 			Exact("a + b + 1;",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("x * 2 + 1;",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Exact("a = b = 0;",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
-			Exact("a >= b..c;",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Exact("a == b && c != 0;", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
 			Exact("(a ? b : c);",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Exact("a ?? b <= c;",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
@@ -107,7 +118,6 @@ namespace Loyc.Syntax.Les
 			
 			// Custom ops
 			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!.c.?.1;",   F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c;",   F.Call("'*+", F.Call("'+/", a, b), c));
 		}
 
@@ -132,9 +142,9 @@ namespace Loyc.Syntax.Les
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
-			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
-			Stmt("..a + b && c;", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Stmt("> a = %b;", F.Call(S.GT, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Stmt(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
+			Stmt(".a**b;", F.Call(S.Exp, F.Call(S.Dot, a), b));
 		}
 
 		[Test]

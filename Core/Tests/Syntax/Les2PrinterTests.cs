@@ -57,16 +57,16 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("x & @'==(Foo, 0);", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
 			Exact("@'&(x, Foo) == 0;", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
-			Exact("x >> 1 == a;", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
+			Exact("x >> 1 == a;",    F.Call(S.Eq, F.Call(S.Shr, x, one), a));
 			Exact("x >> @'+(a, 1);", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
 			Exact("@'>>(x, a) + 1;", F.Call(S.Add, F.Call(S.Shr, x, a), one));
-			Exact("x >> a**1;", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
-			Exact("x `Foo` a..b;", F.Call(Foo, x, F.Call(S.DotDot, a, b)).SetStyle(NodeStyle.Operator));
-			Exact("x `Foo` @'*(a, b);", F.Call(Foo, x, F.Call(S.Mul, a, b))    .SetStyle(NodeStyle.Operator));
-			Exact("x `Foo` a**b;", F.Call(Foo, x, F.Call(S.Exp, a, b))        .SetStyle(NodeStyle.Operator));
+			Exact("x >> a**1;",      F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
+			//Exact("x `Foo` a .. b;", F.Call(S.DotDot, F.Call(Foo, x, a).SetStyle(NodeStyle.Operator), b));
+			Exact("x `Foo` @'*(a, b);", F.Call(Foo, x, F.Call(S.Mul, a, b)).SetStyle(NodeStyle.Operator));
+			Exact("x `Foo` a**b;",   F.Call(Foo, x, F.Call(S.Exp, a, b))   .SetStyle(NodeStyle.Operator));
 			Exact("x `Foo` 1 == a;", F.Call(S.Eq, F.Call(Foo, x, one).SetStyle(NodeStyle.Operator), a));
 			Exact(".. @'&(a, b) && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact("..a & b && c;", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+			Exact(".. a & b && c;",   F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)

@@ -44,7 +44,7 @@ namespace Loyc.Syntax.Les
 			return FindPrecedence(pair.A, op, pair.B, cacheWordOp, les3InfixOp);
 		}
 
-		// Maps from Symbol to Precedence, paired with a default precedece for \word operators
+		// Maps from Symbol to Precedence, paired with a default precedece for unrecognized operators
 		protected Pair<MMap<object, Precedence>, Precedence>[] _precedenceMap = new Pair<MMap<object, Precedence>, Precedence>[4];
 		protected Pair<MMap<object, Precedence>, Precedence> this[OperatorShape s]
 		{
@@ -59,23 +59,28 @@ namespace Loyc.Syntax.Les
 		protected static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
 			new MMap<object, Precedence>() {
 				{ S.Substitute,  P.Substitute  }, // $
-				{ S.Dot,         P.Substitute  }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
+				{ S.Dot,         P.Substitute  }, // . (LES2 only)
 				{ S.Colon,       P.Substitute  }, // :
 				{ S.NotBits,     P.Prefix      }, // ~
 				{ S.Not,         P.Prefix      }, // !
-				{ S.Mod,         P.Prefix      }, // %
 				{ S.XorBits,     P.Prefix      }, // ^
 				{ S._AddressOf,  P.Prefix      }, // &
 				{ S._Dereference,P.Prefix      }, // *
 				{ S._UnaryPlus,  P.Prefix      }, // +
 				{ S._Negate,     P.Prefix      }, // -
-				{ S.DotDot,      P.PrefixDots  }, // ..
-				{ S.OrBits,      P.PrefixOr    }, // |
+				{ S.Mod,         P.Prefix      }, // %
 				{ S.Div,         P.Prefix      }, // /
-				//{ S.LT,          P.Reserved    }, // <
-				//{ S.GT,          P.Reserved    }, // >
-				//{ S.QuestionMark,P.Reserved    }, // ?
-				//{ S.Assign,      P.Reserved    }, // =
+				{ S.DotDot,      P.RangePrefix }, // ..
+				{ (Symbol)"'.<", P.RangePrefix }, // .<
+				{ (Symbol)"'~>", P.SquigglyPrefix }, // ~>
+				{ (Symbol)"'<~", P.SquigglyPrefix }, // <~
+				{ (Symbol)"'->", P.ArrowPrefix }, // ->
+				{ (Symbol)"'<-", P.ArrowPrefix }, // <-
+				{ (Symbol)"':>", P.ColonArrowPrefix }, // :>
+				{ (Symbol)"'<:", P.ColonArrowPrefix }, // <:
+				{ S.GT,          P.LambdaPrefix }, // > and =>
+				{ (Symbol)"'|>", P.TrianglePrefix }, // |>
+				{ (Symbol)"'<|", P.TrianglePrefix }, // <|
 			}.AsImmutable();
 
 		protected static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
@@ -94,38 +99,39 @@ namespace Loyc.Syntax.Les
 				{ S.NullDot,     P.NullDot    }, // ?.
 				{ S.ColonColon,  P.NullDot    }, // ::
 				{ S.Exp,         P.Power      }, // **
+				{ S.DotDot,      P.Range      }, // ..
+				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
 				{ S.Mul,         P.Multiply   }, // *
 				{ S.Div,         P.Multiply   }, // /
 				{ S.Mod,         P.Multiply   }, // %
-				//{ S.Backslash,   P.Multiply   }, // \  (no longer supported)
 				{ S.Shr,         P.Shift      }, // >>
 				{ S.Shl,         P.Shift      }, // <<
 				{ S.Add,         P.Add        }, // +
 				{ S.Sub,         P.Add        }, // -
-				{ S._RightArrow, P.Arrow      }, // ->
-				{ S.LeftArrow,   P.Arrow      }, // <-
-				{ S.AndBits,     P.AndBitsLESv2 }, // &
-				{ S.OrBits,      P.OrBitsLESv2 }, // |
-				{ S.XorBits,     P.OrBitsLESv2 }, // ^
+				{ S.NotBits,     P.Squiggly   }, // ~
+				{ (Symbol)"'~>", P.Squiggly   }, // ~>
+				{ S.AndBits,     P.AndBitsLES2 }, // &
+				{ S.OrBits,      P.OrBitsLES2 }, // |
+				{ S.XorBits,     P.OrBitsLES2 }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
-				{ S.DotDot,      P.Range      }, // ..
-				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
 				{ S.GT,          P.Compare    }, // >
 				{ S.LT,          P.Compare    }, // <
 				{ S.LE,          P.Compare    }, // <=
 				{ S.GE,          P.Compare    }, // >=
 				{ S.Eq,          P.Compare    }, // ==
 				{ S.Neq,         P.Compare    }, // !=
+				{ S._RightArrow, P.Arrow      }, // ->
+				{ S.LeftArrow,   P.Arrow      }, // <-
 				{ S.And,         P.And        }, // &&
 				{ S.Or,          P.Or         }, // ||
 				{ S.Xor,         P.Or         }, // ^^
 				{ S.QuestionMark,P.IfElse     }, // ?
 				{ S.Colon,       P.IfElse     }, // :
+				{ (Symbol)"':>", P.IfElse     }, // :> (so <: and :> have the same precedence as :)
 				{ S.Assign,      P.Assign     }, // =
 				{ S.Lambda,      P.Lambda     }, // =>
 				{ (Symbol)"'|>", P.Triangle   }, // |>
 				{ (Symbol)"'<|", P.Triangle   }, // <|
-				{ S.NotBits,     P.Other      }, // ~
 			}.AsImmutable();
 		
 		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp, bool les3InfixOp = false)
@@ -315,6 +321,7 @@ namespace Loyc.Syntax.Les
 			this[OperatorShape.Infix].Item1[S.AndBits] = LesPrecedence.AndBits;
 			this[OperatorShape.Infix].Item1[S.OrBits] = LesPrecedence.OrBits;
 			this[OperatorShape.Infix].Item1[S.XorBits] = LesPrecedence.OrBits;
+			this[OperatorShape.Prefix].Item1.Remove(S.Dot); // No prefix dot operator in LES3
 		}
 	}
 }

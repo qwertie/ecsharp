@@ -1489,11 +1489,11 @@ namespace Loyc.Syntax.Les
 		/// <summary>The printer avoids printing spaces around infix (binary) 
 		/// operators that have the specified precedence or higher.</summary>
 		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 
 		/// <summary>The printer avoids printing spaces after prefix operators 
 		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 
 		/// <summary>Although the LES3 printer is not designed to insert line breaks
 		/// mid-expression or to keep lines under a certain length, this option can 

@@ -186,7 +186,6 @@ namespace Loyc.Syntax.Les
 			Exact("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Exact("a + b + 1",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("a = b = 0",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
-			Exact("a >= b..c",    F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Exact("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
 			Exact("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Exact("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
@@ -195,13 +194,12 @@ namespace Loyc.Syntax.Les
 			Exact("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			Exact(@"a!.b**2",     F.Call(S.Exp, F.Call((Symbol)"'!.", a, b), two));
 			Exact("a.b::x.c",     F.Dot(F.Call(S.ColonColon, F.Dot(a, b), x), c));
-			Exact("a <- b <- c",  F.Call(S.LeftArrow, a, F.Call(S.LeftArrow, b, c)));
-			Exact("a -> a * b",   F.Call(S._RightArrow, a, F.Call(S.Mul, a, b)));
-			Exact("c && a <- b > 1", F.Call(S.And, c, F.Call(S.LeftArrow, a, F.Call(S.GT, b, one))));
-			
+			Exact("a ~ b =~ c",   F.Call(S.Matches, F.Call(S._Concat, a, b), c));
+			Exact("a + b ~ c",    F.Call(S._Concat, F.Call(S.Add, a, b), c));
+
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!.c.?. 1",  F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
+			Exact("a.b!!.c?. 1",  F.Call("'?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c",   F.Call("'*+", F.Call("'+/", a, b), c));
 
 			// See also Les3ParserTests.ImmiscibilityErrors
@@ -232,16 +230,31 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void InvalidPrefixOperators()
+		{
+			Test(Mode.Expr, 1, "? Foo", F.Call("'?", Foo));
+			Test(Mode.Expr, 1, "< Foo", F.Call("'<", Foo));
+			Test(Mode.Expr, 1, "= Foo", F.Call("'=", Foo));
+			// Invalid prefix operators will be parsed with default precedence (LesPrecedence.Other)
+			Test(Mode.Expr, 1, "= a = b", F.Call(S.Assign, F.Call(S.Assign, a), b));
+			Test(Mode.Expr, 1, "| a**b", F.Call(S.OrBits, F.Call(S.Exp, a, b)));
+			Test(Mode.Expr, 1, "? a ?? b", F.Call(S.NullCoalesce, F.Call(S.QuestionMark, a), b));
+
+			// This currently produces two errors:
+			// Error: Operator `'|` cannot be used as a prefix operator
+			// Error: Operator "'*" cannot be mixed with the infix operator to its left.Add parentheses to clarify the code's meaning
+			Test(Mode.Expr, 2, "?? a + b", F.Call(S.Add, F.Call(S.NullCoalesce, a), b));
+			// Need parens to even check the error, or the parser treats the dot as whitespace
+			Test(Mode.Expr, 1, "(. a)", F.Tuple());
+		}
+
+		[Test]
 		public void InvalidOperators()
 		{
-			// Not usable as prefix operators: ? = > <
-			Exact("Foo(`'?`(x), `'>`(a), `'<`(b), `'=`(c))",
+			// Not usable as prefix operators: ? = < (however, > is now a prefix operator)
+			Exact("Foo(`'?`(x), > a, `'<`(b), `'=`(c))",
 				F.Call(Foo, Op(F.Call("'?", x)), Op(F.Call("'>", a)),
 				            Op(F.Call("'<", b)), Op(F.Call("'=", c))));
-			Test(Mode.Expr, 1, "?Foo", Op(F.Call("'?", Foo)));
-			Test(Mode.Expr, 1, ">Foo", Op(F.Call("'>", Foo)));
-			Test(Mode.Expr, 1, "<Foo", Op(F.Call("'<", Foo)));
-			Test(Mode.Expr, 1, "=Foo", Op(F.Call("'=", Foo)));
 			
 			// Derived operators of ? = > < can't be prefix operators either
 			Exact("Foo(`'??`(x), `'>=`(a), `'<=`(b), `'==`(c))",
@@ -294,16 +307,44 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void PrecedenceChecks()
 		{
+			Exact("a::b.c?.x!.Foo", F.Call(S.NullDot, F.Call(S.Dot, F.Call(S.ColonColon, a, b), c), F.Call("'!.", x, Foo)));
+			Exact("a**b**c", F.Call("'**", a, F.Call("'**", b, c)));
+			Exact("x + a * b * c", F.Call(S.Add, x, F.Call("'*", F.Call("'*", a, b), c)));
+			Exact("x > a >= b == c", F.Call(S.Eq, F.Call(S.GE, F.Call(S.GT, x, a), b), c));
+			Exact("x && a || b ^^ c", F.Call("'^^", F.Call(S.Or, F.Call(S.And, x, a), b), c));
 			Exact("a | b ^ c | x", F.Call("'|", F.Call("'^", F.Call("'|", a, b), c), x));
+			Exact("a & b | c ^ x", F.Call("'^", F.Call("'|", F.Call("'&", a, b), c), x));
+		}
+		[Test]
+		public void PrecedenceChecks_ArrowOps()
+		{
+			Exact("a <- b <- c",         F.Call(S.LeftArrow, a, F.Call(S.LeftArrow, b, c)));
+			Exact("a -> a * b",          F.Call(S._RightArrow, a, F.Call(S.Mul, a, b)));
+			Exact("c && a <- b > 1",     F.Call(S.And, c, F.Call(S.LeftArrow, a, F.Call(S.GT, b, one))));
 			Exact("a | b -> b | c -> x", F.Call("'->", F.Call(S.OrBits, a, b), F.Call("'->", F.Call(S.OrBits, b, c), x)));
-			Exact("a <- b && b <- c", F.Call(S.And, F.Call("'<-", a, b), F.Call("'<-", b, c)));
-			Exact("a <- b so b <- c", F.Call("'so", F.Call("'<-", a, b), F.Call("'<-", b, c)));
+			Exact("a <- b && b <- c",    F.Call(S.And, F.Call("'<-", a, b), F.Call("'<-", b, c)));
+			Exact("a <- b so b <- c",    F.Call("'so", F.Call("'<-", a, b), F.Call("'<-", b, c)));
 			Exact("a loves b |> b loves c", F.Call("'|>", Op(F.Call("'loves", a, b)), Op(F.Call("'loves", b, c))));
 			Exact("a <| b <| c |> b |> a", F.Call("'|>", F.Call("'|>", F.Call("'<|", F.Call("'<|", a, b), c), b), a));
-			Exact("a..b * b.<*>.c", F.Call(S.Mul, F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
-			Exact("a..b * b.<*>.c", F.Call(S.Mul, F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
-			Exact("a..<b + b...c", F.Call(S.Add, F.Call("'..<", a, b), F.Call("'...", b, c)));
-			Exact("a..b.c...x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
+			//Exact("a >< b keyword c >|< x", F.Call("'><", a, F.Call("'keyword", b, F.Call("'>|<", c, x))));
+			Exact("a <~ b foo~ c ~> x",  F.Call("'~>", F.Call("'foo~", F.Call("'<~", a, b), c), x));
+			Exact("a <~ b != c ~> x",    F.Call(S.Neq, F.Call("'<~", a, b), F.Call("'~>", c, x)));
+			Exact("a : b :> c <: x",     F.Call(S.Colon, a, F.Call("':>", b, F.Call("'<:", c, x))));
+			Exact("a ~> b -> c <~ x",    F.Call("'->", F.Call("'~>", a, b), F.Call("'<~", c, x)));
+			Exact("a -> b :> c <- x",    F.Call("':>", F.Call("'->", a, b), F.Call("'<-", c, x)));
+			Exact("a :> b => c <: x",    F.Call("':>", a, F.Call("'=>", b, F.Call("'<:", c, x))));
+			Exact("a ~~> b |> c <~~ x",  F.Call("'|>", F.Call("'~~>", a, b), F.Call("'<~~", c, x)));
+		}
+		[Test]
+		public void PrecedenceChecks_RangeOps()
+		{
+			Exact("a >= b .. c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a .. b.c ... x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
+			Exact("a ..< b ?? b ... c", F.Call("'??", F.Call("'..<", a, b), F.Call("'...", b, c)));
+			Exact("a ..< b + c ... x", F.Call("'...", F.Call("'..<", a, F.Call(S.Add, b, c)), x));
+			Exact("a .. b ~ b .<*>. c", F.Call("'~", F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
+			Exact(".. a + b && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("a.b!!.c .?. 1", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 		}
 
 		[Test]
@@ -315,12 +356,24 @@ namespace Loyc.Syntax.Les
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
-			Exact("| a = %b", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
-			Exact("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Exact("=> a = %b", F.Call(S.Lambda, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
 			Exact("/x", F.Call(S.Div, x));
 			Exact(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
 			Exact(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
+			Exact("> Foo", Op(F.Call(S.GT, Foo)));
+			Exact("=> a && b", F.Call(S.Lambda, F.Call(S.And, a, b)));
+		}
+
+		[Test]
+		public void PrefixColon()
+		{
+			// It's unclear whether the colon should have ultra-high precedence,
+			// as in Ruby, or ultra-low precedence as the binary : operator does.
+			// So... I arbitrarily picked Ruby.
+			Exact(@":Foo", F.Call(S.Colon, Foo));
+			Exact(@":Foo + 1", F.Call(S.Add, F.Call(S.Colon, Foo), one));
+			Exact(@"1 + ::Foo::x", F.Call(S.Add, one, F.Call(S.ColonColon, F.Call(S.ColonColon, Foo), x)));
 		}
 
 		[Test]
@@ -339,6 +392,9 @@ namespace Loyc.Syntax.Les
 			Exact(@"a. -b.c",      F.Dot(a, F.Call(S.Sub, F.Dot(b, c))));
 			// TODO: rethink keyword parsing (parser sees .c as keyword)
 			//Exact(@"a.(@@ -b).c",     F.Dot(a, F.Call(S.Sub, b), c));
+
+			Exact(@"a * => b && c", F.Call(S.Mul, a, F.Call(S.Lambda, F.Call(S.And, b, c))));
+			Exact(@"a * -> b == c", F.Call(S.Mul, a, F.Call("'->", F.Call(S.Eq, b, c))));
 		}
 
 		[Test]
