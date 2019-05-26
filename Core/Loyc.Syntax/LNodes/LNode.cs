@@ -969,6 +969,7 @@ namespace Loyc.Syntax
 		/// <param name="binaryOpName">Binary operator to use when the nodes are not null.</param>
 		/// <returns>If either node1 or node2 is null, this method returns the other node
 		/// (node1 ?? node2), otherwise the nodes are joined with the specified operator.</returns>
+		/// <seealso cref="FlattenBinaryOpSeq"/>
 		public static LNode MergeBinary(LNode node1, LNode node2, Symbol binaryOpName)
 		{
 			if (node1 == null) return node2;
@@ -979,6 +980,42 @@ namespace Loyc.Syntax
 				r1 = new SourceRange(r1.Source, start, System.Math.Max(r1.EndIndex, r2.EndIndex) - start);
 			}
 			return Call(binaryOpName, new VList<LNode>(node1, node2), r1);
+		}
+
+		/// <summary>Converts a sequence of the same operator (e.g. `x+y+z`) to a list (e.g. x, y, z).</summary>
+		/// <param name="expr">An expression that may or may not call the operator.</param>
+		/// <param name="opName">The operator to recognize.</param>
+		/// <param name="rightAssociative">Whether the operator is right associative. 
+		/// If this is null then either or both associativities will work (e.g. 
+		/// <c>(a*b)*(c*d)</c> is flattened to a,b,c,d).</param>
+		/// <returns>A list of subexpressions with the operator removed. If <c>expr</c> 
+		/// does not call the specified binary operator, the list contains a single item 
+		/// which is the original expression.</returns>
+		/// <remarks>This is the reverse operation of <see cref="MergeBinary"/>.</remarks>
+		public static List<LNode> FlattenBinaryOpSeq(LNode expr, Symbol opName, bool? rightAssociative = null)
+		{
+			var list = new List<LNode>();
+			FlattenBinaryOpSeqCore(list, expr, opName, rightAssociative);
+			return list;
+		}
+		static void FlattenBinaryOpSeqCore(List<LNode> list, LNode expr, Symbol opName, bool? rightAssociative = null)
+		{
+			while (expr.Calls(opName, 2))
+			{
+				var args = expr.Args;
+				if (rightAssociative == true) {
+					list.Add(args[0]);
+				} else { // may be left associative
+					FlattenBinaryOpSeqCore(list, args[0], opName, rightAssociative);
+				}
+				if (rightAssociative == false) {
+					list.Add(args[1]);
+					return;
+				} else { // may be right associative
+					expr = args[1];
+				}
+			}
+			list.Add(expr);
 		}
 
 		public CallNode WithSplicedArgs(int index, LNode from, Symbol listName)
