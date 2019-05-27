@@ -104,20 +104,20 @@ struct EmailAddress
             else
                src.Reset(email, "", 0, false);
          }
-         UsernameChars(src) ('.' UsernameChars(src))*
+         UsernameChars ('.' UsernameChars)*
          { int at = src.InputPosition; }
-         '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF
+         '@' DomainCharSeq ('.' DomainCharSeq)* EOF
          {
             UString userName = email.Substring(0, at);
             UString domain = email.Substring(at + 1);
             return new EmailAddress(userName, domain);
          }
       }
-      static rule UsernameChars(LexerSource<UString> src) @{
+      static rule UsernameChars() @{
          ('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
          '*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
       };
-      static rule DomainCharSeq(LexerSource<UString> src) @{
+      static rule DomainCharSeq() @{
                ('a'..'z'|'A'..'Z'|'0'..'9')
          [ '-'? ('a'..'z'|'A'..'Z'|'0'..'9') ]*
       };
