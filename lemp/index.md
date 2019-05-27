@@ -12,111 +12,116 @@ LeMP is an open-source LISP-style macro processor for C#, comparable to [sweet.j
 ~~~csharp
 public static partial class ExtensionMethods
 {
-	define GenerateInRangeMethods($Num)
-	{
-		/// Returns true if `num` is between `lo` and `hi`.
-		public static bool IsInRange(this $Num num, $Num lo, $Num hi)
-			=> num >= lo && num <= hi;
-		/// Returns `num` clamped to the range `min` and `max`.
-		public static $Num PutInRange(this $Num n, $Num min, $Num max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-	}
+  define GenerateInRangeMethods($Num)
+  {
+    // Returns true if num in range lo..hi
+    public static bool IsInRange
+      (this $Num num, $Num lo, $Num hi)
+      => num >= lo && num <= hi;
+    public static $Num PutInRange
+      (this $Num n, $Num min, $Num max)
+    {
+      if (n < min)
+        return min;
+      if (n > max)
+        return max;
+      return n;
+    }
+  }
 
-	GenerateInRangeMethods(int);
-	GenerateInRangeMethods(long);
-	GenerateInRangeMethods(double);
+  GenerateInRangeMethods(int);
+  GenerateInRangeMethods(long);
+  GenerateInRangeMethods(double);
 }
 ~~~
 
 ~~~csharp
+// Generated from Untitled.ecs by LeMP 2.6.4.0.
 public static partial class ExtensionMethods
 {
-	/// Returns true if `num` is between `lo` and `hi`.
-	public static bool IsInRange(this int num, int lo, int hi) => 
-	num >= lo && num <= hi;
-	/// Returns `num` clamped to the range `min` and `max`.
-	public static int PutInRange(this int n, int min, int max)
-	{
-		if (n < min)
-			return min;
-		if (n > max)
-			return max;
-		return n;
-	}
-	/// Returns true if `num` is between `lo` and `hi`.
-	public static bool IsInRange(this long num, long lo, long hi) => 
-	num >= lo && num <= hi;
-	/// Returns `num` clamped to the range `min` and `max`.
-	public static long PutInRange(this long n, long min, long max)
-	{
-		if (n < min)
-			return min;
-		if (n > max)
-			return max;
-		return n;
-	}
-	/// Returns true if `num` is between `lo` and `hi`.
-	public static bool IsInRange(this double num, double lo, double hi) => 
-	num >= lo && num <= hi;
-	/// Returns `num` clamped to the range `min` and `max`.
-	public static double PutInRange(this double n, double min, double max)
-	{
-		if (n < min)
-			return min;
-		if (n > max)
-			return max;
-		return n;
-	}
+  // Returns true if num in range lo..hi
+  public static bool IsInRange
+    (this int num, int lo, int hi) => 
+    num >= lo && num <= hi;
+  public static int PutInRange
+    (this int n, int min, int max)
+  {
+    if (n < min)
+      return min;
+    if (n > max)
+      return max;
+    return n;
+  }
+  // Returns true if num in range lo..hi
+  public static bool IsInRange
+    (this long num, long lo, long hi) => 
+    num >= lo && num <= hi;
+  public static long PutInRange
+    (this long n, long min, long max)
+  {
+    if (n < min)
+      return min;
+    if (n > max)
+      return max;
+    return n;
+  }
+  // Returns true if num in range lo..hi
+  public static bool IsInRange
+    (this double num, double lo, double hi) => 
+    num >= lo && num <= hi;
+  public static double PutInRange
+    (this double n, double min, double max)
+  {
+    if (n < min)
+      return min;
+    if (n > max)
+      return max;
+    return n;
+  }
 }
 ~~~
 </div>
 
-LeMP helps you solve the **repetition-of-boilerplate** problem, and it allows you to transform code at compile-time in arbitrary ways. For example, the biggest macro that comes packaged with LeMP is a parser generator called LLLPG. This example defines `EmailAddress.Parse`, which parses an email address into `UserName` and `Domain` parts:
+LeMP helps you solve the **repetition-of-boilerplate** problem, and it allows you to transform code at compile-time in arbitrary ways. For example, the biggest macro that comes packaged with LeMP is a parser generator called LLLPG. This example defines `EmailAddress.Parse()`, which parses an email address into `UserName` and `Domain` parts:
 
 ~~~csharp
 #importMacros(Loyc.LLPG);
 
 struct EmailAddress
 {
-	public EmailAddress(public UString UserName, public UString Domain) {}
-	public override string ToString() { return UserName + "@" + Domain; }
+   public EmailAddress(public UString UserName, public UString Domain) {}
+   public override string ToString() { return UserName + "@" + Domain; }
 
-	LLLPG (lexer(inputSource: src, inputClass: LexerSource)) {
-		// LexerSource provides the runtime APIs that LLLPG uses. This is
-		// static to avoid reallocating the helper object for each address.
-		[ThreadStatic] static LexerSource<UString> src;
-	
-		public static rule EmailAddress Parse(UString email) @{
-			{
-				if (src == null)
-					src = new LexerSource<UString>(email, "", 0, false);
-				else
-					src.Reset(email, "", 0, false);
-			}
-			UsernameChars(src) ('.' UsernameChars(src))*
-			{ int at = src.InputPosition; }
-			'@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF
-			{
-				UString userName = email.Substring(0, at);
-				UString domain = email.Substring(at + 1);
-				return new EmailAddress(userName, domain);
-			}
-		}
-		static rule UsernameChars(LexerSource<UString> src) @{
-			('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
-			'*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
-		};
-		static rule DomainCharSeq(LexerSource<UString> src) @{
-				   ('a'..'z'|'A'..'Z'|'0'..'9')
-			[ '-'? ('a'..'z'|'A'..'Z'|'0'..'9') ]*
-		};
-	}
+   LLLPG (lexer(inputSource: src, inputClass: LexerSource)) {
+      // LexerSource provides the runtime APIs that LLLPG uses. This is
+      // static to avoid reallocating the helper object for each address.
+      [ThreadStatic] static LexerSource<UString> src;
+   
+      public static rule EmailAddress Parse(UString email) @{
+         {
+            if (src == null)
+               src = new LexerSource<UString>(email, "", 0, false);
+            else
+               src.Reset(email, "", 0, false);
+         }
+         UsernameChars(src) ('.' UsernameChars(src))*
+         { int at = src.InputPosition; }
+         '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF
+         {
+            UString userName = email.Substring(0, at);
+            UString domain = email.Substring(at + 1);
+            return new EmailAddress(userName, domain);
+         }
+      }
+      static rule UsernameChars(LexerSource<UString> src) @{
+         ('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
+         '*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
+      };
+      static rule DomainCharSeq(LexerSource<UString> src) @{
+               ('a'..'z'|'A'..'Z'|'0'..'9')
+         [ '-'? ('a'..'z'|'A'..'Z'|'0'..'9') ]*
+      };
+   }
 }
 ~~~
 
