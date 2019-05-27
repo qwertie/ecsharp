@@ -2,22 +2,125 @@
 title: "LeMP Home Page"
 layout: page
 tagline: "the Lexical Macro Processor for C#"
-toc: true
+toc: false
 ---
 ## Introduction ##
 
-LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, the occasional use of LeMP — a preprocessor built on a parser called Enhanced C# — might make you more productive. 
+LeMP is an open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Install it in Visual Studio to help you write boilerplate.
 
-Design patterns are a valuable conceptual tool for developers, but some of them - especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern) - arguably demonstrate that the language being used isn't powerful enough. When used in conventional languages, many design patterns can _only_ work by convention and _cannot_ be encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).
+<div class='sbs' markdown='1'>
+~~~csharp
+public static partial class ExtensionMethods
+{
+	define GenerateInRangeMethods($Num)
+	{
+		/// Returns true if `num` is between `lo` and `hi`.
+		public static bool IsInRange(this $Num num, $Num lo, $Num hi)
+			=> num >= lo && num <= hi;
+		/// Returns `num` clamped to the range `min` and `max`.
+		public static $Num PutInRange(this $Num n, $Num min, $Num max)
+		{
+			if (n < min)
+				return min;
+			if (n > max)
+				return max;
+			return n;
+		}
+	}
+
+	GenerateInRangeMethods(int);
+	GenerateInRangeMethods(long);
+	GenerateInRangeMethods(double);
+}
+~~~
+
+~~~csharp
+public static partial class ExtensionMethods
+{
+	/// Returns true if `num` is between `lo` and `hi`.
+	public static bool IsInRange(this int num, int lo, int hi) => 
+	num >= lo && num <= hi;
+	/// Returns `num` clamped to the range `min` and `max`.
+	public static int PutInRange(this int n, int min, int max)
+	{
+		if (n < min)
+			return min;
+		if (n > max)
+			return max;
+		return n;
+	}
+	/// Returns true if `num` is between `lo` and `hi`.
+	public static bool IsInRange(this long num, long lo, long hi) => 
+	num >= lo && num <= hi;
+	/// Returns `num` clamped to the range `min` and `max`.
+	public static long PutInRange(this long n, long min, long max)
+	{
+		if (n < min)
+			return min;
+		if (n > max)
+			return max;
+		return n;
+	}
+	/// Returns true if `num` is between `lo` and `hi`.
+	public static bool IsInRange(this double num, double lo, double hi) => 
+	num >= lo && num <= hi;
+	/// Returns `num` clamped to the range `min` and `max`.
+	public static double PutInRange(this double n, double min, double max)
+	{
+		if (n < min)
+			return min;
+		if (n > max)
+			return max;
+		return n;
+	}
+}
+~~~
+</div>
+
+LeMP helps you solve the **repetition-of-boilerplate** problem, and it allows you to transform code at compile-time in arbitrary ways. For example, the biggest macro that comes packaged with LeMP is a parser generator called LLLPG. This example defines `EmailAddress.Parse`, which parses an email address into `UserName` and `Domain` parts:
+
+~~~csharp
+#importMacros(Loyc.LLPG);
+
+struct EmailAddress
+{
+	public EmailAddress(public UString UserName, public UString Domain) {}
+	public override string ToString() { return UserName + "@" + Domain; }
+
+	LLLPG (lexer(inputSource: src, inputClass: LexerSource)) {
+		// LexerSource provides the runtime APIs that LLLPG uses. This is
+		// static to avoid reallocating the helper object for each address.
+		[ThreadStatic] static LexerSource<UString> src;
+	
+		public static rule EmailAddress Parse(UString email) @{
+			{
+				if (src == null)
+					src = new LexerSource<UString>(email, "", 0, false);
+				else
+					src.Reset(email, "", 0, false);
+			}
+			UsernameChars(src) ('.' UsernameChars(src))*
+			{ int at = src.InputPosition; }
+			'@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF
+			{
+				UString userName = email.Substring(0, at);
+				UString domain = email.Substring(at + 1);
+				return new EmailAddress(userName, domain);
+			}
+		}
+		static rule UsernameChars(LexerSource<UString> src) @{
+			('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
+			'*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
+		};
+		static rule DomainCharSeq(LexerSource<UString> src) @{
+				   ('a'..'z'|'A'..'Z'|'0'..'9')
+			[ '-'? ('a'..'z'|'A'..'Z'|'0'..'9') ]*
+		};
+	}
+}
+~~~
 
 <div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
-
-A LISP-style macro processor helps you solve the **repetition-of-boilerplate** problem, and it also provides a framework in which you can run sophisticated algorithms at compile-time (for example, have a look at [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), just one of many macros included with LeMP.)
-
-Examples
---------
-
-It's not just design patterns. Any code pattern that involves unnecessary repetition is a sign of weakness in your programming language.
 
 ### Example: using ###
 
