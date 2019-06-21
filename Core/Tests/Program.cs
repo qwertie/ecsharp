@@ -92,6 +92,7 @@ namespace Loyc.Tests
 		{
 
 			return MiniTest.RunTests.RunMany(
+				new BaisTests(),
 				new ListExtTests(),
 				new UStringTests(),
 				new StringExtTests(),

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -392,5 +392,26 @@ namespace Loyc
 		#endregion
 
 		#endregion
+
+		public static int DecodeBase64Digit(char digit, string digit62 = "+-.~", string digit63 = "/_,")
+		{
+			if (digit >= 'A' && digit <= 'Z') return digit - 'A';
+			if (digit >= 'a' && digit <= 'z') return digit + (26 - 'a');
+			if (digit >= '0' && digit <= '9') return digit + (52 - '0');
+			if (digit62.IndexOf(digit) > -1)  return 62;
+			if (digit63.IndexOf(digit) > -1)  return 63;
+			return -1;
+		}
+
+		public static char EncodeBase64Digit(int digit, char digit62 = '+', char digit63 = '/')
+		{
+			digit &= 63;
+			if (digit < 52)
+				return (char)(digit < 26 ? digit + 'A' : digit + ('a' - 26));
+			else if (digit < 62)
+				return (char)(digit + ('0' - 52));
+			else
+				return digit == 62 ? digit62 : digit63;
+		}
 	}
 }

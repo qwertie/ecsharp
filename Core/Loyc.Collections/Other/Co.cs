@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,13 +45,13 @@ namespace Loyc.Utilities
 	/// <code>
 	/// public IEnumerator&lt;string> GetEnumerator()
 	/// {
-	/// 	return CoGetEnumerator().Unwrap();
+	/// 	return GetCoEnumerator().Unwrap();
 	/// }
-	/// public IEnumerator&lt;Co&lt;string>> CoGetEnumerator()
+	/// public IEnumerator&lt;Co&lt;string>> GetCoEnumerator()
 	/// {
-	/// 	yield return LeftChild.All();
+	/// 	yield return LeftChild.GetCoEnumerator().All();
 	/// 	yield return Value;
-	/// 	yield return RightChild.All();
+	/// 	yield return RightChild.GetCoEnumerator().All();
 	/// }
 	/// </code>
 	/// Simple, right? String is automatically converted to Co{string} so that you 

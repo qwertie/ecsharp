@@ -169,6 +169,19 @@ namespace Loyc
 			return default(uchar);
 		}
 
+		public Maybe<uchar> TryPopFirst()
+		{
+			bool fail;
+			uchar next = PopFirst(out fail);
+			return fail ? default(Maybe<uchar>) : next;
+		}
+		public Maybe<uchar> TryPopLast()
+		{
+			bool fail;
+			uchar next = PopLast(out fail);
+			return fail ? default(Maybe<uchar>) : next;
+		}
+
 		char IFRange<char>.PopFirst(out bool fail)
 		{
 			if (_count != 0)

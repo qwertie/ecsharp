@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,14 +13,17 @@ namespace Loyc
 		// used by Loyc.Syntax, which doesn't reference Loyc.Math and so can't use Range.
 		// Since these are extension methods, hopefully few will notice that they moved.
 
-		replace GenerateInRangeMethods($Num)
+		define GenerateInRangeMethods($Num)
 		{
+			/// <summary>Returns true if `num` is between `lo` and `hi`, excluding `hi` but not `lo`.</summary>
 			public static bool IsInRangeExcludeHi(this $Num num, $Num lo, $Num hi) { 
 				return num >= lo && num < hi;
 			}
+			/// <summary>Returns true if `num` is between `lo` and `hi`.</summary>
 			public static bool IsInRange(this $Num num, $Num lo, $Num hi) { 
 				return num >= lo && num <= hi;
 			}
+			/// <summary>Returns `num` clamped to the range `min` and `max`.</summary>
 			public static $Num PutInRange(this $Num n, $Num min, $Num max)
 			{
 				if (n < min)

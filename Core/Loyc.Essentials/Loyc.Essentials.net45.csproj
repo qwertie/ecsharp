@@ -263,6 +263,7 @@
     <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
     <Compile Include="Compatibility\IReadOnlyCollections.cs" />
     <Compile Include="Compatibility\Serializable.cs" />
+    <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\Exceptions.cs" />
     <Compile Include="Utilities\G.cs" />
     <Compile Include="Geometry\IPoint.cs" />

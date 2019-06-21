@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,9 @@ namespace Loyc
 		/// If 'c' was not found in 's', the pair (s, null) is returned.</returns>
 		public static Pair<UString, UString> SplitAt(this string s, char delimiter) { return ((UString)s).SplitAt(delimiter); }
 		public static Pair<UString, UString> SplitAt(this string s, string delimiter) { return ((UString)s).SplitAt(delimiter); }
-		
+
+		public static bool Contains(this string s, char c) { return s.IndexOf(c) > -1; }
+
 		/// <summary>Returns the rightmost 'count' characters of 's', or s itself if count > s.Length.</summary>
 		public static string Right(this string s, int count)
 		{

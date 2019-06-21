@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Collections
 {
@@ -33,37 +34,35 @@ namespace Loyc.Collections
 			}
 			return count;
 		}
-		public static T PopFirst<R, T>(ref R range, T defaultValue) where R : IFRange<T>
-		{
-			bool fail;
-			T next = range.PopFirst(out fail);
-			if (!fail)
-				return next;
-			else
-				return defaultValue;
-		}
 		public static T PopFirst<R,T>(ref R range) where R:IFRange<T>
 		{
-			bool fail;
-			T next = range.PopFirst(out fail);
-			if (fail) throw new EmptySequenceException();
-			return next;
+			T next = range.PopFirst(out bool fail);
+			return fail ? throw new EmptySequenceException() : next;
 		}
-		public static T PopLast<R, T>(ref R range, T defaultValue) where R : IBRange<T>
+		public static Maybe<T> TryPopFirst<R, T>(ref R range) where R : IFRange<T>
 		{
-			bool fail;
-			T next = range.PopLast(out fail);
-			if (!fail)
-				return next;
-			else
-				return defaultValue;
+			T next = range.PopFirst(out bool fail);
+			return fail ? default(Maybe<T>) : next;
+		}
+		public static bool TryPopFirst<R, T>(ref R range, out T item) where R : IFRange<T>
+		{
+			item = range.PopFirst(out bool fail);
+			return !fail;
 		}
 		public static T PopLast<R, T>(ref R range) where R : IBRange<T>
 		{
-			bool fail;
-			T next = range.PopLast(out fail);
-			if (fail) throw new EmptySequenceException();
-			return next;
+			T next = range.PopLast(out bool fail);
+			return fail ? throw new EmptySequenceException() : next;
+		}
+		public static Maybe<T> TryPopLast<R, T>(ref R range) where R : IBRange<T>
+		{
+			T next = range.PopLast(out bool fail);
+			return fail ? default(Maybe<T>) : next;
+		}
+		public static bool TryPopLast<R, T>(ref R range, out T item) where R : IBRange<T>
+		{
+			item = range.PopLast(out bool fail);
+			return !fail;
 		}
 
 		public static bool Contains<R,T>(this R range, IRangeEx<R,T> other) where R : IRangeEx<R,T>, ICloneable<R>
