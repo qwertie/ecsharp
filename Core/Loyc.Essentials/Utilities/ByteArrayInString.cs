@@ -29,17 +29,17 @@ namespace Loyc
 	/// <para/>
 	/// For example:
 	/// <pre>
-	///   //                    C   a    t       \n  E        A   B   C,  D
+	///   //                    C   a    t       \n  E        A   B   C   D
 	///   var b = new byte[] { 67, 97, 116, 128, 10, 69, 255, 65, 66, 67, 68 };
-	///   Assert.AreEqual(ByteArrayInString.Convert(b), "Cat\b`@iE~p!ABC");
+	///   Assert.AreEqual(ByteArrayInString.Convert(b), "Cat\b`@iE?tEB!CD");
 	/// </pre>
 	/// A byte sequence such as 128, 10, 69, 255 can be encoded in base 64 as 
 	/// illustrated:
 	/// <pre>
 	///              ---128---    ---10----    ---69----  ---255---  
-	///   Bytes:     1000 0000    0000 1010    0100 0101  1111 1111  01000001 01000010
-	///   Base 64:   100000   000000   101001    000101   111111   110100 000101
-	///   Encoded: 01100000 01000000 01101001  01000101 01111111 01110000 01000101
+	///   Bytes:     1000 0000    0000 1010    0100 0101  1111 1111  
+	///   Base 64:   100000   000000   101001    000101   111111   110000
+	///   Encoded: 01100000 01000000 01101001  01000101 01111111 01110000
 	///            ---96--- ---64--- --105---  ---69--- --127--- --112---
 	///               `        @        i         E        ~        p
 	/// </pre>
@@ -53,62 +53,12 @@ namespace Loyc
 	/// When viewing BAIS strings, another thing to keep in mind is that 
 	/// runs of zeroes ('\0') will tend to appear as runs of `@` characters 
 	/// in the base 64 encoding, although a single zero is not always enough 
-	/// to make a `@` appear. Runs of 255 will tend to appear as runs of `~`.
+	/// to make a `@` appear. Runs of 255 will tend to appear as runs of `?`.
 	/// <para/>
 	/// There are many ways to encode a given byte array as BAIS.
 	/// </remarks>
 	public static class ByteArrayInString
 	{
-		/// <summary>Decodes a BAIS string back to a byte array.</summary>
-		/// <param name="s">String to decode.</param>
-		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
-		/// if you need a true array).</returns>
-		public static ArraySlice<byte> Convert(string s)
-		{
-			byte[] b = Encoding.UTF8.GetBytes(s);
-			for (int i = 0; i < s.Length - 1; ++i) {
-				if (b[i] == '\b') {
-					int iOut = i++;
-
-					for (;;) {
-						byte cur;
-						if (i >= b.Length || (uint)((cur = b[i]) - 63) > 63)
-							throw new FormatException("String cannot be interpreted as a byte array".Localized());
-						int digit = (cur - 64) & 63;
-						int zeros = 16 - 6; // number of 0 bits on right side of accum
-						int accum = digit << zeros;
-
-						while (++i < b.Length)
-						{
-							if ((uint)((cur = b[i]) - 63) > 63)
-								break;
-							digit = (cur - 64) & 63;
-							zeros -= 6;
-							accum |= digit << zeros;
-							if (zeros <= 8)
-							{
-								b[iOut++] = (byte)(accum >> 8);
-								accum <<= 8;
-								zeros += 8;
-							}
-						}
-
-						if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
-							throw new FormatException("String cannot be interpreted as byte array".Localized());
-						i++;
-
-						// Start taking bytes verbatim
-						while (i < b.Length && b[i] != '\b')
-							b[iOut++] = b[i++];
-						if (i >= b.Length)
-							return b.Slice(0, iOut);
-						i++;
-					}
-				}
-			}
-			return b;
-		}
-
 		/// <summary>Encodes a byte array to a string with BAIS encoding, which preserves 
 		/// runs of ASCII characters unchanged.</summary>
 		/// <param name="allowControlChars">If true, control characters under 32 are 
@@ -120,9 +70,9 @@ namespace Loyc
 		/// bytes are encountered, they are encoded as described in the description of
 		/// this class.
 		/// <para/>
-		/// For simplicity, this method's base-64 encoding always encodes groups of three 
-		/// bytes as four characters if possible. This decision may unfortunately cut off 
-		/// the beginning of some ASCII runs.
+		/// For simplicity, this method's base-64 encoding always encodes groups of 
+		/// three bytes if possible (as four characters). This decision may 
+		/// unfortunately cut off the beginning of some ASCII runs.
 		/// </remarks>
 		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true)
 		{
@@ -168,11 +118,66 @@ namespace Loyc
 			}
 			return sb.ToString();
 		}
-		public static int DecodeBase64Digit(char digit)
-			=> (uint)(digit - 63) <= 63 ? (digit - 64) & 63 : -1;
-		public static char EncodeBase64Digit(int digit)
-			=> (char)((digit + 1 & 63) + 63);
+
 		static bool IsAscii(byte b, bool allowControlChars)
 			=> b < 127 && (b >= 32 || (allowControlChars && b != '\b'));
+
+		/// <summary>Decodes a BAIS string back to a byte array.</summary>
+		/// <param name="s">String to decode.</param>
+		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
+		/// if you need a true array).</returns>
+		public static ArraySlice<byte> Convert(string s)
+		{
+			byte[] b = Encoding.UTF8.GetBytes(s);
+			for (int i = 0; i < s.Length - 1; ++i)
+			{
+				if (b[i] == '\b')
+				{
+					int iOut = i++;
+
+					for (; ; )
+					{
+						byte cur;
+						if (i >= b.Length || (uint)((cur = b[i]) - 63) > 63)
+							throw new FormatException("String cannot be interpreted as a byte array".Localized());
+						int digit = (cur - 64) & 63;
+						int zeros = 16 - 6; // number of 0 bits on right side of accum
+						int accum = digit << zeros;
+
+						while (++i < b.Length)
+						{
+							if ((uint)((cur = b[i]) - 63) > 63)
+								break;
+							digit = (cur - 64) & 63;
+							zeros -= 6;
+							accum |= digit << zeros;
+							if (zeros <= 8)
+							{
+								b[iOut++] = (byte)(accum >> 8);
+								accum <<= 8;
+								zeros += 8;
+							}
+						}
+
+						if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
+							throw new FormatException("String cannot be interpreted as byte array".Localized());
+						i++;
+
+						// Start taking bytes verbatim
+						while (i < b.Length && b[i] != '\b')
+							b[iOut++] = b[i++];
+						if (i >= b.Length)
+							return b.Slice(0, iOut);
+						i++;
+					}
+				}
+			}
+			return b;
+		}
+
+		public static char EncodeBase64Digit(int digit)
+			=> (char)((digit + 1 & 63) + 63);
+		public static int DecodeBase64Digit(char digit)
+			=> (uint)(digit - 63) <= 63 ? (digit - 64) & 63 : -1;
 	}
 }
