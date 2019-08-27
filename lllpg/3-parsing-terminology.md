@@ -1,7 +1,7 @@
 ---
 title: "3. Parsing terminology"
 layout: article
-date: 30 May 2016
+date: 30 May 2016 (edited Aug 2019)
 toc: true
 ---
 
@@ -57,14 +57,14 @@ In addition, some grammar representations do not allow loops, or even optional i
 
 A "language" is a different concept than a "grammar". A _grammar_ represents some kind of language, but generally there are many possible grammars that could represent the same language. The word "language" refers to the set of sentences that are considered valid; two different grammars represent the same _language_ if they accept and reject the same inputs (or, looking at the matter in reverse, if you can generate the same set of "sentences" from both grammars). For example, the following four rules all represent a list of digits:
 
-    rule Digits1 @[ '0'..'9'+ ];
-    rule Digits2 @[ '0'..'9'* '0'..'9' ];
-    rule Digits3 @[ '0'..'9' | Digits3 '0'..'9' ];
-    rule Digits4 @[ ('0'..'9'+)* ];
+    rule Digits1 @{ '0'..'9'+ };
+    rule Digits2 @{ '0'..'9'* '0'..'9' };
+    rule Digits3 @{ '0'..'9' | Digits3 '0'..'9' };
+    rule Digits4 @{ ('0'..'9'+)* };
 
 If we consider each rule to be a separate grammar, the four grammars all represent the same language (a list of digits). But the grammars are of different types: `Digits1` is an LL(1) grammar, `Digits2` is LL(2), `Digits3` is LALR(1), and I don't know what the heck to call `Digits4` (it's highly ambiguous, and weird). Since LLLPG is an LL(k) parser generator, it supports the first two grammars, but can't handle the other two; it will print warnings about "ambiguity" for `Digits3` and `Digits4`, then generate code that doesn't work properly. Actually, while `Digits4` is truly ambiguous, `Digits3` is actually unambiguous. However, `Digits3` **is** "ambiguous in LL(k)", meaning that it is ambiguous from the top-down LL(k) perspective (which is LLLPG's perspective).
 
-The word _nullable_ means "can match nothing". For example, `@[ '0'..'9'* ]` is nullable because it successfully "matches" an input like "hello, world" by doing nothing; but `@[ '0'..'9'+ ]` is not nullable, and will only match something that starts with at least one digit.
+The word _nullable_ means "can match nothing". For example, `'0'..'9'*` is nullable because it successfully "matches" an input like "hello, world" by doing nothing; but `'0'..'9'+` is not nullable, and will only match something that starts with at least one digit.
 
 ## LL(k) versus the competition
 
@@ -78,7 +78,7 @@ LL(k) parsers, both generated and hand-written, are very popular. Personally, I 
 
 Of course, I should also mention regular expressions, which probably the most popular parsing tool of all. However, while you can use regular expressions for simple parsing tasks, they are worthless for "full-scale" parsing, such as parsing an entire source file. The reason for this is that regular expressions do not support recursion; for example, the following rule is impossible to represent with a regular expression:
 
-    rule PairsOfParens @[ '(' PairsOfParens? ')' ];
+    rule PairsOfParens @{ '(' PairsOfParens? ')' };
 
 Because of this limitation, I don't think of regexes as a "serious" parsing tool.
 
@@ -88,20 +88,20 @@ As I was saying, the main difference between LL(k) and its closest cousin, the P
 
 "Prediction" means figuring out which branch to take before it is taken. In a "plain" LL(k) parser (without and-predicates), the parser makes a decision and "never looks back". For example, when parsing the following LL(1) grammar:
 
-    public rule Tokens @[ Token* ];
-    public rule Token  @[ Float | Id | ' ' ];
-    token Float        @[ '0'..'9'* '.' '0'..'9'+ ];
-    token Id           @[ IdStart IdCont* ];
-    rule  IdStart      @[ 'a'..'z' | 'A'..'Z' | '_' ];
-    rule  IdCont       @[ IdStart | '0'..'9' ];
+    public rule Tokens @{ Token* };
+    public rule Token  @{ Float | Id | ' ' };
+    token Float        @{ '0'..'9'* '.' '0'..'9'+ };
+    token Id           @{ IdStart IdCont* };
+    rule  IdStart      @{ 'a'..'z' | 'A'..'Z' | '_' };
+    rule  IdCont       @{ IdStart | '0'..'9' };
 
 The `Token` method will get the next input character (known as `LA0` or lookahead zero), check if it is a digit or '.', and call `Float` if so or `Id` (or consume a space) otherwise. If the input is something like "42", which does not match the definition of `Float`, the problem will be detected by the `Float` method, not by `Token`, and the parser cannot back up and try something else. If you add a new `Int` rule:
 
     ...
-    public rule Token @[ Float | Int | Id ];
-    token Float       @[ '0'..'9'* '.' '0'..'9'+ ];
-    token Int         @[ '0'..'9'+ ];
-    token Id          @[ IdStart IdCont* ];
+    public rule Token @{ Float | Int | Id };
+    token Float       @{ '0'..'9'* '.' '0'..'9'+ };
+    token Int         @{ '0'..'9'+ };
+    token Id          @{ IdStart IdCont* };
     ...
 
 Now you have a problem, because the parser potentially requires infinite  lookahead to distinguish between `Float` and `Int`. By default, LLLPG uses LL(2), meaning it allows at most two characters of lookahead.  With two characters of lookahead, it is possible to tell that input like  "1.5" is `Float`, but it is not possible to tell whether "42" is a `Float` or  an `Int` without looking at the third character. Thus, this grammar is  ambiguous in LL(2), even though it is unambiguous when you have infinite  lookahead. The parser will handle single-digit integers fine, but given a two-digit integer it will call `Float` and then produce an error because the expected '.' was missing.
@@ -110,22 +110,22 @@ A PEG parser does not have this problem; it will "try out" `Float` first and if 
 
 Although LLLPG is designed to parse LL(k) grammars, it handles ambiguity similarly to a PEG: if `A|B` is ambiguous, the parser will choose A by default because it came first, but it will also warn you about the ambiguity.
 
-Since the number of leading digits is unlimited, LLLPG will consider this grammar ambiguous no matter how high your maximum lookahead `k` (as  in LL(k)) is. You can resolve the conflict by combining F`loat` and `Int` into a single rule:
+Since the number of leading digits is unlimited, LLLPG will consider this grammar ambiguous no matter how high your maximum lookahead `k` (as  in LL(k)) is. You can resolve the conflict by combining `Float` and `Int` into a single rule:
 
-    public rule Tokens @[ Token* ];
-    public rule Token  @[ Number | Id ];
-    token Number       @[ '.' '0'..'9'+
-                        | '0'..'9'+ ('.' '0'..'9'+)? ];
-    token Id           @[ IdStart IdCont* ];
+    public rule Tokens @{ Token* };
+    public rule Token  @{ Number | Id };
+    token Number       @{ '.' '0'..'9'+
+                        | '0'..'9'+ ('.' '0'..'9'+)? };
+    token Id           @{ IdStart IdCont* };
     ...
 
 Unfortunately, it's a little tricky sometimes to merge rules correctly. In this case, the problem is that `Int` always starts with a digit but `Float` does not. My solution here was to separate out the case of "no leading digits" into a separate "alternative" from the "has leading digits" case. There are a few other solutions you could use, which I'll discuss later in this article.
 
 I mentioned that PEGs can combine lexing and parsing in a single grammar  because they effectively support unlimited lookahead. To demonstrate why  LL(k) parsers usually can't combine lexing and parsing, imagine that you  want to parse a program that supports variable assignments like `x = 0` and function calls like `x(0)`, something like this:
 
-    rule Expr    @[ Assign | Call | ... ];
-    rule Assign  @[ Id Equals Expr ];
-    rule Call    @[ Id LParen ArgList ];
+    rule Expr    @{ Assign | Call | ... };
+    rule Assign  @{ Id Equals Expr };
+    rule Call    @{ Id LParen ArgList };
     rule ArgList ...
     ...
 
@@ -168,23 +168,23 @@ Here are some key points about the three classes of parser generators.
 
 ### PEGs ###
 
-* New! (formalized in 2004)
+* Relatively new (formalized in 2004)
 * Unlimited lookahead
 * "No ambiguity" (wink, wink) - or rather, any ambiguity is simply ignored, "first rule wins"
 * Supports zero-width assertions as a standard feature
 * Grammars are _composable_. It is easier to merge different PEG parsers than different LL/LR parsers.
 * Performance characteristics are not well-documented (as far as I've seen), but my intuition tells me to expect a naive memoization-based PEG parser generator to produce generally slow parsers. That said, I think all three parser types offer roughly O(N) performance to parse a file of size N.
-* High memory requirements due to memoization (or, when not using memoization, the risk of exponential time complexity). Note: recently I saw a paper about a new feature to deal with this issue, called the "[cut operator](http://www.ialab.cs.tsukuba.ac.jp/~mizusima/publications/paste513-mizushima.pdf)", although it is not currently supported by most PEG parser generators.
+* High memory requirements due to memoization (or, when not using memoization, the risk of exponential time complexity). Note: I saw a paper about a new feature to deal with this issue, called the "[cut operator](http://www.ialab.cs.tsukuba.ac.jp/~mizusima/publications/paste513-mizushima.pdf)", although it is not currently supported by most PEG parser generators.
 * It's non-obvious how to support "custom actions". Although a rule may parse successfully, its caller can fail (and often does), so I guess any work that a rule performs must be transactional, i.e. it must be possible to undo the action.
 * Supports unified grammars: a parser and lexer in a single grammar. However, I question the assumption that just because you _can_ combine the lexer and parser into a single grammar, you _should_. In typical PEG grammars the parser is "polluted" with lexical concerns, especially skipping whitespace. It's not bad once you get used to it, but I actually think a multi-stage PEG (with separate PEG lexer and PEG grammar) would be the best approach sometimes, except that most PEG parser generators do not support it.
 
 ### Regular expressions ###
 
-* Very short, but often very cryptic, syntax.
+* Very short syntax, but often very cryptic.
 * Matches characters directly; not usable for token-based parsing.
 * Incapable of parsing languages of any significant size, because they do not support recursion or multiple "rules".
 * Most regex libraries have special shorthand directives like `\b` that usually require more code to express when using a parser generator.
-* Regexes are traditionally interpreted, but may be compiled. Although regexes do a kind of parsing, regex engines are not called "parser generators" even if they generate code.
+* Regexes are traditionally interpreted, but modern engines get better speed by doing a compilation process, often at runtime. Although regexes do a kind of parsing, regex engines are not called "parser generators" even if they generate code.
 * Regexes are closely related to [DFA](http://en.wikipedia.org/wiki/Deterministic_finite_automaton)s and [NFA](http://en.wikipedia.org/wiki/Nondeterministic_finite_automaton)s.
 
 Next up
