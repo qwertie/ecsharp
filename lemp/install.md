@@ -74,7 +74,7 @@ But on other platforms you'll typically run it with [mono](http://www.mono-proje
 
     mono ./LeMP.exe your-source-code.ecs
 
-LeMP also has a built-in editor to help you play with it. This editor is started from the command line with `LeMP.exe --editor`:
+LeMP also has a built-in editor to help you play with it - just run `LeMPDemo.exe`.
 
 ![](lemp-editor.png)
 
