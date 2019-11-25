@@ -99,6 +99,15 @@
       <DependentUpon>OnReturn.ecs</DependentUpon>
     </Compile>
     <Compile Include="Prelude.Les.cs" />
+    <None Include="Prelude.Les3.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Prelude.Les3.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Prelude.Les3.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Prelude.Les3.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplaceMacro.cs" />
     <None Include="AssertMacro.ecs">

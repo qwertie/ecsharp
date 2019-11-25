@@ -1,4 +1,4 @@
-// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.6.8.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -71,15 +71,17 @@ namespace Loyc.Syntax.Les {
 				e = TopExpr();
 				break;
 			}
-			// Line 59: ((TT.Comma|TT.Semicolon) ( / TopExpr))*
+			// Line 59: ((TT.Comma|TT.Semicolon) ({..} / TopExpr))*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
 					e = e ?? MissingExpr(end);
+					// line 61
 					list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));
+					// line 62
 					CheckEndMarker(ref endMarker, ref end);
-					// Line 63: ( / TopExpr)
+					// Line 63: ({..} / TopExpr)
 					switch ((TT) LA0) {
 					case EOF: case TT.Comma: case TT.RBrace: case TT.RBrack:
 					case TT.RParen: case TT.Semicolon:
@@ -93,9 +95,11 @@ namespace Loyc.Syntax.Les {
 				} else
 					break;
 			}
+			// line 65
 			if ((e != null || end.Type() == TT.Comma)) {
 				list.Add(e ?? MissingExpr(end));
 			}
+			// line 66
 			return list;
 		}
 	
@@ -112,16 +116,18 @@ namespace Loyc.Syntax.Les {
 			la0 = (TT) LA0;
 			if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon) { } else
 				e = TopExpr();
-			// Line 71: ((TT.Comma|TT.Semicolon) ( / TopExpr))*
+			// Line 71: ((TT.Comma|TT.Semicolon) ({..} / TopExpr))*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
 					e = e ?? MissingExpr(end);
+					// line 73
 					yield
 					return e.WithRange(e.Range.StartIndex, end.EndIndex);
+					// line 74
 					CheckEndMarker(ref endMarker.Value, ref end);
-					// Line 75: ( / TopExpr)
+					// Line 75: ({..} / TopExpr)
 					la0 = (TT) LA0;
 					if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon)
 						// line 75
@@ -195,7 +201,7 @@ namespace Loyc.Syntax.Les {
 								case TT.Literal: case TT.LParen: case TT.SpaceLParen:
 									{
 										// line 105
-										if (((TT) LA0 == TT.LParen)) {
+										if ((((TT) LA0) == TT.LParen)) {
 											var loc = args[args.Count - 2, args.Last].Range.End;
 											Error(0, "Expected a space before '(' (possibly missing ';' or ',' at {0})", loc);
 										}
@@ -218,9 +224,11 @@ namespace Loyc.Syntax.Les {
 				e = Expr(StartStmt);
 				break;
 			}
+			// line 114
 			if ((attrStart < e.Range.StartIndex)) {
 				e = e.WithRange(attrStart, e.Range.EndIndex);
 			}
+			// line 115
 			return e.PlusAttrsBefore(attrs);
 		}
 	
@@ -448,7 +456,7 @@ namespace Loyc.Syntax.Les {
 					var endMarker = default(TT);
 					o = MatchAny();
 					// line 207
-					var hasAttrList = (TT) LA0 == TT.LBrack || (TT) LA0 == TT.At;
+					var hasAttrList = ((TT) LA0) == TT.LBrack || ((TT) LA0) == TT.At;
 					var list = ExprList(ref endMarker);
 					c = Match((int) TT.RParen);
 					// line 210
@@ -483,6 +491,7 @@ namespace Loyc.Syntax.Les {
 			TT la1;
 			TokenTree got_TokenTree = default(TokenTree);
 			TokenTree result = default(TokenTree);
+			// line 231
 			result = new TokenTree(SourceFile);
 			// Line 233: nongreedy((TT.LBrace|TT.LBrack|TT.LParen|TT.SpaceLParen) TokenTree (TT.RBrace|TT.RBrack|TT.RParen) / ~(EOF))*
 			for (;;) {

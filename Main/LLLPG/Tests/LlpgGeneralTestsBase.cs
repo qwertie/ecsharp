@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,10 +20,9 @@ namespace Loyc.LLParserGenerator
 	{
 		protected class TestCompiler : LeMP.TestCompiler
 		{
-			public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
-				: base(sink, text, fileName)
+			public TestCompiler(IMessageSink sink, ICharSource text, params string[] preOpenedNamespaces)
+				: base(sink, text, preOpenedNamespaces)
 			{
-				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 				MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 				MacroProcessor.AbortTimeout = TimeSpan.Zero;
 				AddMacros(Assembly.GetExecutingAssembly());
@@ -41,9 +40,9 @@ namespace Loyc.LLParserGenerator
 		}
 		protected void Test(string input, string expected, IMessageSink sink = null, IParsingService parser = null)
 		{
-			using (ParsingService.PushCurrent(parser ?? Les2LanguageService.Value))
+			using (ParsingService.SetDefault(parser ?? Les2LanguageService.Value))
 			using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter)) {
-				var c = new TestCompiler(sink ?? _sink, new UString(input));
+				var c = new TestCompiler(sink ?? _sink, new UString(input), "LeMP.Prelude.Les");
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}

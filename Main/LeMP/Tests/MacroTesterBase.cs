@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,11 +65,14 @@ namespace LeMP.Tests
 		{
 			var lemp = new MacroProcessor(MessageSink.Default, typeof(LeMP.Prelude.BuiltinMacros));
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
+			lemp.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-			if (inLang.FileExtensions.Any(e => e == "les"))
+			if (inLang.FileExtensions.Any(e => e == "les2"))
 				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+			if (inLang.FileExtensions.Any(e => e == "les3"))
+				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les3"));
 			lemp.MaxExpansions = maxExpand;
 			return lemp;
 		}

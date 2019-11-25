@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
@@ -6,7 +6,8 @@ namespace Loyc.Threading
 {
 	/// <summary>
 	/// Designed to be used in a "using" statement to temporarily alter a 
-	/// <see cref="ThreadLocalVariable{T}"/> or <see cref="Holder{T}"/>.
+	/// <see cref="ThreadLocalVariable{T}"/> or <see cref="Holder{T}"/>
+	/// or something else implementing <see cref="IHasMutableValue{T}"/>.
 	/// </summary>
 	public struct SavedValue<T> : IDisposable
 	{

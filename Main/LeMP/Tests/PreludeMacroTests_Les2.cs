@@ -1,20 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Loyc;
+using Loyc.Ecs;
 using Loyc.MiniTest;
+using Loyc.Syntax;
+using Loyc.Syntax.Les;
 
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class PreludeMacroTests
+	public class PreludeMacroTests_Les2
 	{
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
 
-		private void Test(string input, string output, int maxExpand = 0xFFFF)
+		private void Test(string input, string output, int maxExpand = 0xFFFF, bool suppressWarnings = false)
 		{
-			TestCompiler.Test(input, output, _sink, maxExpand, false);
+			_sink.MinSeverity = suppressWarnings ? Severity.DebugDetail : Severity.ErrorDetail;
+			using (LNode.SetPrinter(EcsLanguageService.Value))
+			using (ParsingService.SetDefault(Les2LanguageService.Value))
+				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.Prelude.Les");
 		}
 
 		[Test]
@@ -59,17 +63,17 @@ namespace LeMP.Tests
 			     "try { Blah; Blah; Blah; } finally { Cleanup(); }");
 			Test("try { } catch  Exception  { } catch { } finally { Cleanup(); };",
 			     "try { } catch (Exception) { } catch { } finally { Cleanup(); }");
-			Test("readonly x::int = 5;",
-			     "readonly int x = 5;");
-			Test("const x::int = 5;",
-			     "const int x = 5;");
 			Test("using A = B;",
 				 "using A = B;");
 		}
 
 		[Test]
-		public void DataTypes()
+		public void VarDeclarationsAndDataTypes()
 		{
+			Test("x::Foo",
+			     "Foo x;");
+			Test("(x; y)::Foo",
+			     "Foo x, y;");
 			Test("var(a::byte, b::sbyte, c::short, d::ushort);",
 			     "byte a; sbyte b; short c; ushort d;");
 			Test("var(a::int, b::uint, c::long, d::ulong);",
@@ -92,6 +96,10 @@ namespace LeMP.Tests
 			     "int[,] nums;");
 			Test("nums::List!int;",
 			     "List<int> nums;");
+			Test("readonly x::int = 5;",
+				 "readonly int x = 5;");
+			Test("const x::int = 5;",
+				 "const int x = 5;");
 		}
 
 		[Test]
@@ -103,8 +111,8 @@ namespace LeMP.Tests
 			     "var zero = default(int);");
 			Test("x = c ? a : b;",
 			     "x = c ? a : b;");
-			Test("a : b;",
-			     "#namedArg(a, b);");
+			Test("a : b; x <~ y;",
+				 "#namedArg(a, b); #namedArg(x, y);");
 		}
 
 		[Test]

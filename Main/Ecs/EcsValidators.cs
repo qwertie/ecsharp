@@ -257,10 +257,13 @@ namespace Loyc.Ecs
 			LNode retType, name, args, body, initialValue;
 			return IsPropertyDefinition(n, out retType, out name, out args, out body, out initialValue, p);
 		}
-		
+
 		/// <summary>Returns true iff the given node has a valid syntax tree for 
 		/// a property definition, and gets the component parts of the definition.</summary>
-		/// <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+		/// <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal 
+		/// body, otherwise it's a getter-only body (e.g. int Foo => 42). Indexer 
+		/// properties can have an argument list, e.g. <c>T Foo[int x] { get; }</c>
+		/// would have a syntax tree like <c>#property(T, Foo, #(#var(#int32, x)), { get; })</c>.</remarks>
 		public static bool IsPropertyDefinition(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, out LNode initialValue, Pedantics p = Pedantics.Lax)
 		{
 			var argCount = n.ArgCount;

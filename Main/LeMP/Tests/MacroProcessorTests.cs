@@ -21,7 +21,7 @@ namespace LeMP.Tests
 		{
 			return node.WithName(S.Splice);
 		}
-		[LexicalMacro("priorityTest(x, y)", "Change first argument to 'hi'", 
+		[LexicalMacro("priorityTest(x, y)", "Change first argument to 'hi'",
 			"priorityTest", "priorityTestPCB", Mode = MacroMode.PriorityOverride | MacroMode.Passive)]
 		public static LNode priorityTestHi(LNode node, IMessageSink sink)
 		{
@@ -55,7 +55,7 @@ namespace LeMP.Tests
 		{
 			// Test the direct way to register a macro
 			context1.RegisterMacro(
-				new MacroInfo(null, outerNode[0].Name.Name, 
+				new MacroInfo(null, outerNode[0].Name.Name,
 					(node, context2) =>
 					{
 						return node.WithTarget(outerNode[1]);
@@ -68,7 +68,7 @@ namespace LeMP.Tests
 		{
 			// Test the indirect way to register a macro
 			return LNode.Call((Symbol)"#registerMacro", LNode.List(LNode.Literal(
-				new MacroInfo(null, outerNode[0].Name.Name, 
+				new MacroInfo(null, outerNode[0].Name.Name,
 					(node, context2) =>
 					{
 						return node.WithTarget(outerNode[1]);
@@ -88,23 +88,51 @@ namespace LeMP.Tests
 			return LNode.Id("tommy");
 		}
 	}
+
+	namespace A
+	{
+		[ContainsMacros]
+		public class AliasTest
+		{
+			[LexicalMacro("", "", "uppercasemacro", "UpperCaseMacro", Mode = MacroMode.MatchIdentifier)]
+			public static LNode uppercasemacro(LNode node, IMacroContext context)
+			{
+				return node.IsId ? LNode.Id("UPPERCASE") : null;
+			}
+		}
+	}
+	namespace B
+	{
+		[ContainsMacros]
+		public class AliasTest
+		{
+			public static List<MacroInfo> Aliases()
+			{
+				return MacroInfo.GetMacros(typeof(A.AliasTest), null, (Symbol)"LeMP.Tests.B").ToList();
+			}
+		}
+	}
 }
 namespace LeMP
 {
 	/// <summary>A simple version of Compiler that takes a single input and produces 
-	/// a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
+	/// a StringBuilder. Pre-opens LeMP.Prelude namespaces.</summary>
 	public class TestCompiler : Compiler
 	{
-		public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
-			: base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(text, fileName) }) 
+		public TestCompiler(IMessageSink sink, ICharSource text, params string[] preOpenedNamespaces)
+			: base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(text, "TEST") })
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.TestMacros));
-			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+			MacroProcessor.AddMacros(typeof(LeMP.Tests.A.AliasTest));
+			MacroProcessor.AddMacros(typeof(LeMP.Tests.B.AliasTest));
+			MacroProcessor.PreOpenedNamespaces.Add((Symbol)"LeMP.Prelude");
+			foreach (var ns in preOpenedNamespaces)
+				MacroProcessor.PreOpenedNamespaces.Add((Symbol)ns);
 		}
-			
+
 		public StringBuilder Output;
 		public VList<LNode> Results;
 
@@ -117,19 +145,15 @@ namespace LeMP
 
 		#region static Test(), StripExtraWhitespace() methods
 
-		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
+		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, params string[] preOpenedNamespaces)
 		{
-			ILNodePrinter printer = plainCS ? EcsLanguageService.WithPlainCSharpPrinter : EcsLanguageService.Value;
-			using (LNode.SetPrinter(printer))
-			{
-				var c = new TestCompiler(sink, new UString(input), "");
-				c.MaxExpansions = maxExpand;
-				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
-				c.Run();
-				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
-			}
+			var c = new TestCompiler(sink, new UString(input), preOpenedNamespaces);
+			c.MaxExpansions = maxExpand;
+			c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
+			c.Run();
+			Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
 		}
-		
+
 		static readonly string[] CommentPrefix = new[] { "//" };
 		/// <summary>Strips whitespace and single-line comments from a string.
 		/// Helps test whether two blocks of code are "sufficiently equal".</summary>
@@ -138,12 +162,15 @@ namespace LeMP
 			commentPrefixes = commentPrefixes ?? CommentPrefix;
 			StringBuilder sb = new StringBuilder();
 			char prev_c = '\0';
-			for (int i = 0; i < a.Length; i++) {
+			for (int i = 0; i < a.Length; i++)
+			{
 				char c = a[i];
 
 				var slice = a.Slice(i);
-				for (int cp = 0; cp < commentPrefixes.Length; cp++) {
-					if (slice.StartsWith(commentPrefixes[cp])) {
+				for (int cp = 0; cp < commentPrefixes.Length; cp++)
+				{
+					if (slice.StartsWith(commentPrefixes[cp]))
+					{
 						do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
 						break;
 					}
@@ -223,14 +250,14 @@ namespace LeMP
 			Test("import_macros LeMP.Tests; A(splice(x), splice(y, z)); B(splice(x, y), splice(z))",
 				"A(x, y, z); B(x, y, z);");
 			Test("{{ import LeMP.Tests; splice(x); }}; splice(x);",
-			     "{{ using LeMP.Tests; x; }} splice(x);");
+				 "{{ using LeMP.Tests; x; }} splice(x);");
 		}
 
 		[Test]
 		public void PriorityTest()
 		{
 			Test("import_macros LeMP.Tests; priorityTest(0, 1);",
-			                               "priorityTest(1, hi);");
+										   "priorityTest(1, hi);");
 			Test("{ import_macros LeMP.Tests; foo0(); priorityTest(0, 2); foo(); }",
 				 "{                           foo0(); priorityTest(2, hi); foo(); }");
 			Test("{ import_macros LeMP.Tests; priorityTest(0, x::int = 3); foo(); }",
@@ -243,22 +270,22 @@ namespace LeMP
 		public void SpliceTheBrace()
 		{
 			Test("import_macros LeMP.Tests; f(x); braceTheRest; g(y); h(z);",
-			     "f(x); { g(y); h(z); }");
+				 "f(x); { g(y); h(z); }");
 			// Test that MacroProcessorTask properly includes stuff outside 
 			// the #splice in the RemainingNodes list.
 			Test("import_macros LeMP.Tests; f(x); #splice(braceTheRest; g(y)); h(z);",
-			     "f(x); { g(y); h(z); }");
+				 "f(x); { g(y); h(z); }");
 			Test("import_macros LeMP.Tests; f(x);  splice(braceTheRest; g(y)); h(z);",
-			     "f(x); { g(y); h(z); }");
+				 "f(x); { g(y); h(z); }");
 			Test("import_macros LeMP.Tests; splice(f(x); braceTheRest); g(y); h(z);",
-			     "f(x); { g(y); h(z); }");
+				 "f(x); { g(y); h(z); }");
 		}
 
 		[Test]
 		public void RegisterMacros()
 		{
 			Test("import_macros LeMP.Tests; replaceTarget(John, Steve); John(John(1));",
-			     "Steve(Steve(1));");
+				 "Steve(Steve(1));");
 			// Make sure that scoping works
 			Test("{ import_macros LeMP.Tests; Hi(1); replaceTarget(Hi, Hello); { Hi(2); overrideTarget(Hi, Bye); Hi(3); }; Hi(4); }",
 				 "{ Hi(1); { Hello(2); Bye(3); } Hello(4); }");
@@ -268,14 +295,26 @@ namespace LeMP
 		public void MatchIdentifierTest()
 		{
 			Test("import_macros LeMP.Tests; bob(); tom();", "bobby; tommy;");
-			Test("import_macros LeMP.Tests; bob; tom;",     "bob; tommy;");
+			Test("import_macros LeMP.Tests; bob; tom;", "bob; tommy;");
+		}
+
+		[Test]
+		public void MacroAliasedAcrossNamespaces()
+		{
+			Test("#importMacros(LeMP.Tests.A); uppercasemacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.A); UpperCaseMacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.B); uppercasemacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.B); UpperCaseMacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.A); import_macros LeMP.Tests.B; uppercasemacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.A); import_macros LeMP.Tests.B; UpperCaseMacro;", "UPPERCASE;");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{
-			TestCompiler.Test(input, output, _sink, maxExpand);
+			using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.Prelude.Les");
 		}
 	}
 }
