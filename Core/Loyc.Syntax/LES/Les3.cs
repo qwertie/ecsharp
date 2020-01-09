@@ -464,7 +464,7 @@ namespace Loyc.Syntax.Les
 		internal static readonly HashSet<Symbol> ContinuatorOps = new HashSet<Symbol> {
 			(Symbol)"#else",  (Symbol)"#elsif",  (Symbol)"#elseif",
 			(Symbol)"#catch", (Symbol)"#except", (Symbol)"#finally",
-			(Symbol)"#while", (Symbol)"#until",
+			(Symbol)"#while", (Symbol)"#until",  (Symbol)"#initially",
 			(Symbol)"#plus",  (Symbol)"#using",
 		};
 
