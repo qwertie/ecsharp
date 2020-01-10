@@ -116,8 +116,11 @@ namespace Loyc.Tests
 				// Test with small node sizes as well as the standard node size,
 				// including the minimum size of 3 (the most problematic size).
 				new AListTests(false, seed, 8, 8),
+				new AListTests(false, seed, 3, 3),
+				new BListTests(false, seed, 8, 8),
 				new BListTests(false, seed, 3, 3),
 				new BDictionaryTests(false, seed, 6, 6),
+				new SparseAListTests(false, seed, 3, 3),
 				new SparseAListTests(false, seed, 10, 10),
 				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
 				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),

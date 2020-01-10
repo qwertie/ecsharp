@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -256,7 +256,7 @@ namespace Loyc.Collections.Impl
 		/// <summary>Maximum number of slots in this node</summary>
 		protected ushort _maxNodeSize;
 		/// <summary>Whether the node is knowingly cloned an therefore frozen.</summary>
-		protected bool _isFrozen;
+		protected volatile bool _isFrozen;
 		/// <summary>Number of children, if this is an inner node.</summary>
 		/// <remarks>
 		/// Since <see cref="AListLeaf{T}"/> uses DListInternal, a separate item

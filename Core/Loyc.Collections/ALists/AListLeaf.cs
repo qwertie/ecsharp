@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Impl
 {
 	using System;
 	using System.Collections.Generic;
@@ -179,14 +179,15 @@
 			}
 			else
 			{
-				// Split node in half in the middle
-				int divAt = _list.Count >> 1;
+				// If user seems to be adding items at the end, split at the end so that
+				// nodes _efficiently_ end up full; otherwise split down the middle.
+				int divAt = (int)index == _list.Count ? _list.Count : (_list.Count >> 1);
 				var left = new AListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt));
 				var right = new AListLeaf<T>(_maxNodeSize, _list.CopySection(divAt, _list.Count - divAt));
 				
 				// Note: don't pass tob to left.Insert() or right.Insert() because 
 				// parent node will send required notifications to tob instead.
-				if (index <= divAt)
+				if (index < divAt)
 					left.Insert(index, item, out splitRight, null);
 				else
 					right.Insert(index - (uint)divAt, item, out splitRight, null);

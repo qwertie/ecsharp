@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -242,6 +242,104 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(sizeChange, 920);
 			Assert.AreEqual(sizeChange, -sizeChangeTemp);
 			Assert.AreEqual(list.GetImmutableCount(), 0);
+		}
+
+		[Test]
+		public void ExpectThatBulkInputFillsNodesEagerly()
+		{
+			var list = InitialBulkAddTest(8, 1);
+			var root = ((AListInner<int>)list._root);
+			Assert.AreEqual(2, root.LocalCount);
+			Assert.AreEqual(8, root._children[1].Index);
+			Assert.AreEqual(1, root._children[1].Node.LocalCount);
+
+			var list2 = new AList<int>(8, 8) { 9, 99, 10, 11, 12, 13, 14, 99 };
+			list2.Insert(1, 99); // split root leaf node
+			Assert.AreEqual(9, list2.Count);
+			root = (AListInner<int>)list2._root;
+			Assert.IsFalse(root._children[1].Node.IsUndersized);
+			list2.RemoveAt(1);
+			list2.RemoveAt(1);
+			list2.RemoveAt(list2.Count - 1);
+			Assert.AreEqual(6, list2.Count);
+			Assert.AreEqual(2, list2._root.LocalCount);
+			list.Append(list2, true);
+			root = (AListInner<int>)list._root;
+			Assert.AreEqual(0, list2.Count);
+			Assert.AreEqual(4, list._root.LocalCount);
+			Assert.AreEqual(1, root._children[1].Node.LocalCount); // undersize
+			Assert.AreEqual(8, root._children[1].Index);
+
+			ExpectList(list, Enumerable.Range(0, 15));
+			list.RemoveAt(8);
+			ExpectList(list, 0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14);
+
+			// Try a similar test, this time cloning list2 and using the standard size
+			list = InitialBulkAddTest(_maxLeafSize, 1);
+			list2 = InitialBulkAddTest(_maxLeafSize, 1, _maxLeafSize+1);
+			var scglist = Enumerable.Range(0, (_maxLeafSize + 1) * 2).ToList();
+			list.Append(list2);
+			ExpectList(list, scglist);
+
+			// The second half of the list will be frozen
+			if (_maxLeafSize >= 4)
+			{
+				root = (AListInner<int>)list._root;
+				Assert.IsTrue(root._children[1].Node.IsUndersized);
+				Assert.AreEqual(_maxLeafSize, root._children[1].Index);
+				Assert.IsFalse(root._children[1].Node.IsFrozen);
+				Assert.IsTrue(root._children[2].Node.IsFrozen);
+				Assert.IsTrue(root._children[3].Node.IsUndersized);
+			}
+
+			RemoveFromBoth(list, scglist, _maxLeafSize);
+			ExpectList(list, scglist);
+
+			// Finally let's just make something 3 levels high... 
+			// currently it'll be split down the middle (balanced) 
+			// except that the final leaf is undersize
+			list = InitialBulkAddTest(_maxLeafSize, _maxLeafSize);
+			ExpectList(list, Enumerable.Range(0, _maxLeafSize * _maxLeafSize + 1));
+			Assert.AreEqual(3, list.TreeHeight);
+			root = (AListInner<int>)list._root;
+			Assert.AreEqual(_maxLeafSize * ((_maxLeafSize + 1) >> 1), root._children[1].Index);
+			Assert.AreEqual(1, ((AListInner<int>)root._children[1].Node)._children[_maxLeafSize/2].Node.LocalCount);
+		}
+
+		AList<int> InitialBulkAddTest(int nodeSize, int leavesToFill, int firstChild = 0)
+		{
+			// Example: nodeSize=6, leavesToFill=2 => add 13 items 
+			// and expect two 6-item nodes and a 1-item node.
+			var list = new AList<int>(nodeSize, nodeSize);
+			list.AddRange(Enumerable.Range(firstChild, nodeSize * leavesToFill + 1));
+			var inner = (AListInner<int>)list._root;
+			int iLast = inner.LocalCount - 1;
+			if (leavesToFill < nodeSize)
+			{
+				Assert.AreEqual(leavesToFill + 1, inner.LocalCount);
+				Assert.AreEqual(nodeSize * leavesToFill, inner._children[iLast].Index);
+			}
+
+			AssertLastChildContainsOneItem();
+			void AssertLastChildContainsOneItem()
+			{
+				var lastChild = inner._children[iLast].Node;
+				while (!lastChild.IsLeaf)
+					lastChild = ((AListInner<int>)lastChild)._children[lastChild.LocalCount - 1].Node;
+				Assert.AreEqual(1, lastChild.LocalCount);
+			}
+
+			// Removing the last element may reduce the tree to one level;
+			// adding it back restores the situation to how it was before
+			list.RemoveAt(list.Count - 1);
+			if (leavesToFill == 1)
+				Assert.That(list._root.IsLeaf);
+			list.Add(firstChild + list.Count);
+			Assert.That(!list._root.IsLeaf);
+			inner = (AListInner<int>)list._root;
+			AssertLastChildContainsOneItem();
+
+			return list;
 		}
 	}
 }

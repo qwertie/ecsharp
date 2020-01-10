@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Impl
 {
 	using System;
 	using System.Collections.Generic;
@@ -16,7 +16,7 @@
 
 		[Serializable]
 		[DebuggerDisplay("Index = {Index}, Node = {Node}")]
-		protected struct Entry
+		protected internal struct Entry
 		{
 			// Normally this is the base index of the items in Node (the first entry 
 			// uses Index differently; see documentation of _children)
@@ -29,7 +29,7 @@
 		/// <remarks>
 		/// *** TODO ***: don't increase _children size by 4. Increase it exponentially
 		/// </remarks>
-		protected Entry[] _children;
+		protected internal Entry[] _children;
 
 		#region Constructors
 
