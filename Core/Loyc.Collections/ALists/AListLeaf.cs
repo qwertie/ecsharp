@@ -11,14 +11,14 @@ namespace Loyc.Collections.Impl
 	{
 		public const int DefaultMaxNodeSize = 64;
 
-		protected InternalDList<T> _list = InternalDList<T>.Empty;
+		protected InternalList<T> _list = InternalList<T>.Empty;
 
 		public AListLeaf(ushort maxNodeSize)
 		{
 			Debug.Assert(maxNodeSize >= 3);
 			_maxNodeSize = maxNodeSize;
 		}
-		protected AListLeaf(ushort maxNodeSize, InternalDList<T> list) : this(maxNodeSize)
+		protected AListLeaf(ushort maxNodeSize, InternalList<T> list) : this(maxNodeSize)
 		{
 			_list = list;
 		}
@@ -71,7 +71,7 @@ namespace Loyc.Collections.Impl
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
 				return 0;
 			T item = left._list.Last;
-			#if true // InternalDList
+			#if false // InternalDList
 			_list.PushFirst(item);
 			left._list.PopLast(1);
 			#else // InternalList
@@ -106,7 +106,8 @@ namespace Loyc.Collections.Impl
 		{
 			Debug.Assert(!_isFrozen);
 
-			if (tob != null) tob.RemovingItems(_list, (int)index, (int)count, this, false);
+			if (tob != null) 
+				tob.RemovingItems(new InternalDList<T>(_list.InternalArray, _list.Count), (int)index, (int)count, this, false);
 			_list.RemoveRange((int)index, (int)count);
 			return IsUndersized;
 		}
@@ -148,7 +149,7 @@ namespace Loyc.Collections.Impl
 	internal class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
-		protected AListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
+		protected AListLeaf(ushort maxNodeSize, InternalList<T> list) : base(maxNodeSize, list) { }
 		public AListLeaf(AListLeaf<T> frozen) : base(frozen) { }
 
 		public override AListNode<int, T> DetachedClone()
@@ -208,12 +209,18 @@ namespace Loyc.Collections.Impl
 			if (leftHere > 1)
 			{
 				int amtToIns = Math.Min(leftHere, leftIns);
-				_list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
-				var slice = source.Slice(sourceIndex, amtToIns);
-				_list.InsertRange(adjustedIndex, slice);
-				sourceIndex += amtToIns;
+				var list = _list;
+				list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
+				
+				list.InsertRangeHelper(adjustedIndex, amtToIns);
+				int sourceIndex2 = sourceIndex, i = adjustedIndex;
+				while (i < adjustedIndex + amtToIns)
+					list[i++] = source[sourceIndex2++];
+				
+				_list = list;
 				splitRight = null;
-				if (tob != null) tob.AddingItems(slice, this, false);
+				if (tob != null) tob.AddingItems(source.Slice(sourceIndex, amtToIns), this, false);
+				sourceIndex = sourceIndex2;
 				return null;
 			}
 			else

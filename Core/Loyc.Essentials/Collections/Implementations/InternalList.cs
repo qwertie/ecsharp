@@ -1,4 +1,4 @@
-﻿// Came from Loyc. Licence: LGPL
+// Came from Loyc. Licence: LGPL
 namespace Loyc.Collections.Impl
 {
 	using System;
@@ -177,10 +177,14 @@ namespace Loyc.Collections.Impl
 		{
 			InsertRange(index, items, items.Count);
 		}
+		public void InsertRangeHelper(int index, int spaceNeeded)
+		{
+			_array = InternalList.InsertRangeHelper(index, spaceNeeded, _array, _count);
+			_count += spaceNeeded;
+		}
 		private void InsertRange(int index, IEnumerable<T> items, int count)
 		{
-			_array = InternalList.InsertRangeHelper(index, count, _array, _count);
-			_count += count;
+			InsertRangeHelper(index, count);
 			
 			int stop = index + count;
 			foreach (var item in items)
@@ -362,8 +366,7 @@ namespace Loyc.Collections.Impl
 			RemoveAt(i);
 			return true;
 		}
-		System.Collections.IEnumerator
-				System.Collections.IEnumerable.GetEnumerator()
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
 		}
@@ -372,6 +375,7 @@ namespace Loyc.Collections.Impl
 			for (int i = 0; i < Count; i++)
 				yield return this[i];
 		}
+
 		public T[] InternalArray
 		{
 			[DebuggerStepThrough]
