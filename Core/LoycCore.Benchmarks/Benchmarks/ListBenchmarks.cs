@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -168,14 +168,22 @@ namespace Benchmark
 			return Benchmarker.DiscardResult;
 		}
 
-		[Benchmark("Insert at end", Trials=5)]
+		[Benchmark("Insert at end", Trials = 10)]
 		public object InsertSequentially(Benchmarker b)
 		{
+			var list2 = new DList<long>();
+			for (int i = 0; i < StdIterations; i++)
+				list2.Add(i);
 			b.Run("List", () =>
 			{
 				var list = MakeList(new List<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
+			});
+			b.Run("List.AddRange", () =>
+			{
+				var list = MakeList(new List<long>(), b);
+				list.AddRange(list2);
 			});
 			b.Run("InternalList", () =>
 			{
@@ -195,8 +203,60 @@ namespace Benchmark
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
+			b.Run("AList.AddRange", () =>
+			{
+				var list = MakeList(new AList<long>(), b);
+				list.AddRange(list2);
+			});
 			return Benchmarker.DiscardResult;
 		}
+
+		[Benchmark("Change random elements", Trials = 10)]
+		public object ChangeRandom(Benchmarker b)
+		{
+			b.Run("List", () =>
+			{
+				var list = MakeList(new List<long>(), b);
+				int maxIndex = list.Count - 1;
+				for (int iter = 0; iter < StdIterations; iter++) {
+					int i = _r.Next(maxIndex);
+					list[i++] = iter;
+					list[i] = iter;
+				}
+			});
+			b.Run("InternalList", () =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b);
+				int maxIndex = list.Count - 1;
+				for (int iter = 0; iter < StdIterations; iter++) {
+					int i = _r.Next(maxIndex);
+					list[i++] = iter;
+					list[i] = iter;
+				}
+			});
+			b.Run("DList", () =>
+			{
+				var list = MakeList(new DList<long>(), b);
+				int maxIndex = list.Count - 1;
+				for (int iter = 0; iter < StdIterations; iter++) {
+					int i = _r.Next(maxIndex);
+					list[i++] = iter;
+					list[i] = iter;
+				}
+			});
+			b.Run("AList", () =>
+			{
+				var list = MakeList(new AList<long>(), b);
+				int maxIndex = list.Count - 1;
+				for (int iter = 0; iter < StdIterations; iter++) {
+					int i = _r.Next(maxIndex);
+					list[i++] = iter;
+					list[i] = iter;
+				}
+			});
+			return Benchmarker.DiscardResult;
+		}
+
 
 		// Make a list of size _count for a benchmark. The listmaking time is excluded from the total time.
 		private List MakeList<List>(List list, Benchmarker b, bool new_r = true) where List : IList<long>

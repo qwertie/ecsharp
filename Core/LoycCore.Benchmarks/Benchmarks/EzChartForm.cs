@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using System;
 using System.Collections.Concurrent;
@@ -125,6 +125,7 @@ namespace Benchmark
 		void UpdateGraphs()
 		{
 			// Create/update models
+			Graphs.Clear(); // avoid random exceptions in OxyPlot (it hates when PlotModels change - better to create new models)
 			foreach (var pair in GraphData) {
 				var graph = Graphs.GetOrAdd(pair.Key, graphId => { 
 					var m = new PlotModel { Title = graphId.ToString() };
