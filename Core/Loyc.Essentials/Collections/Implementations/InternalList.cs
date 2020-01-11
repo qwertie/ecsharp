@@ -372,8 +372,7 @@ namespace Loyc.Collections.Impl
 		}
 		public IEnumerator<T> GetEnumerator()
 		{
-			for (int i = 0; i < Count; i++)
-				yield return this[i];
+			return new InternalList.Enumerator<T>(_array, 0, _count);
 		}
 
 		public T[] InternalArray
@@ -854,6 +853,36 @@ namespace Loyc.Collections.Impl
 				if (!a[i].Equals(b[i]))
 					return false;
 			return true;
+		}
+
+		public struct Enumerator<T> : IEnumerator<T>
+		{
+			private T[] _array;
+			private int _startAt, _index, _stopAt;
+			private T _current;
+
+			public Enumerator(T[] array, int startAt, int stopAt)
+			{
+				_array = array;
+				_startAt = startAt;
+				_stopAt = stopAt;
+				_index = _startAt - 1;
+				_current = default(T);
+			}
+			public bool MoveNext()
+			{
+				int i = _index + 1;
+				if (i < _stopAt)
+				{
+					_current = _array[_index = i];
+					return true;
+				}
+				return false;
+			}
+			public T Current => _current;
+			object System.Collections.IEnumerator.Current => Current;
+			public void Dispose() { }
+			public void Reset() => _index = _startAt - 1;
 		}
 	}
 }

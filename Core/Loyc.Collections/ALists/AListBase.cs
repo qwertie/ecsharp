@@ -762,103 +762,117 @@
 
 			protected internal T MoveNext(ref bool ended)
 			{
-				// "if (_currentIndex >= LastIndex - 1)" is wrong, in case _currentIndex==uint.MaxValue
-				if (_currentIndex + 1 >= LastIndex)
+				// "if (_currentIndex < LastIndex - 1)" is wrong if (int)_currentIndex == -1
+				if (_currentIndex + 1 < LastIndex)
 				{
-					if (_currentIndex + 1 == LastIndex)
-					{
-						// Advance one past the end
-						_currentIndex++;
-						_leafIndex++;
-					}
-					goto end;
+					if (++_leafIndex >= _leaf.TotalCount)
+						MoveToNextNode();
+					++_currentIndex;
+					return _leaf[(uint)_leafIndex];
 				}
-
-				if (++_leafIndex >= _leaf.TotalCount)
+				else
 				{
-					if (_expectedVersion != _self._version)
-						throw new EnumerationException();
-					if (_self._freezeMode == FrozenForConcurrency)
-						throw new ConcurrentModificationException();
-					Debug.Assert(_currentIndex < LastIndex);
-
-					var stack = _stack;
-					int s;
-					try {
-						s = stack.Length - 1;
-						while (++stack[s].Item2 >= stack[s].Item1.LocalCount)
-							--s;
-					} catch {
-						throw new InvalidStateException();
-					}
-					while (++s < stack.Length)
-					{
-						var child = (AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2);
-						stack[s] = Pair.Create(child, 0);
-					}
-
-					var tos = stack[stack.Length - 1];
-					_leaf = tos.Item1.Child(tos.Item2);
-					Debug.Assert(_leaf.IsLeaf);
-					_leafIndex = 0;
-					Debug.Assert(_leaf.LocalCount > 0);
+					ended = true;
+					return MoveNextAtEnd();
 				}
-				++_currentIndex;
-				return _leaf[(uint)_leafIndex];
-
-			end:
-				ended = true;
+			}
+			private T MoveNextAtEnd()
+			{
+				if (_currentIndex + 1 == LastIndex)
+				{
+					// Advance one past the end
+					_currentIndex++;
+					_leafIndex++;
+				}
 				return default(T);
+			}
+			private void MoveToNextNode()
+			{
+				if (_expectedVersion != _self._version)
+					throw new EnumerationException();
+				if (_self._freezeMode == FrozenForConcurrency)
+					throw new ConcurrentModificationException();
+				Debug.Assert(_currentIndex < LastIndex);
+
+				var stack = _stack;
+				int s;
+				try {
+					s = stack.Length - 1;
+					while (++stack[s].Item2 >= stack[s].Item1.LocalCount)
+						--s;
+				}
+				catch {
+					throw new InvalidStateException();
+				}
+				while (++s < stack.Length) {
+					var child = (AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2);
+					stack[s] = Pair.Create(child, 0);
+				}
+
+				var tos = stack[stack.Length - 1];
+				_leaf = tos.Item1.Child(tos.Item2);
+				Debug.Assert(_leaf.IsLeaf);
+				_leafIndex = 0;
+				Debug.Assert(_leaf.LocalCount > 0);
 			}
 
 			protected internal T MovePrevious(ref bool ended)
 			{
-				// "if (_currentIndex <= FirstIndex)" is wrong, in case _currentIndex==uint.MaxValue
-				if (_currentIndex + 1 <= FirstIndex + 1)
+				// "if (_currentIndex > FirstIndex)" is wrong, in case (int)_currentIndex == -1
+				if (_currentIndex + 1 > FirstIndex + 1)
 				{
-					if (_currentIndex == FirstIndex)
-					{
-						// Advance one past the beginning
-						_currentIndex--;
-						_leafIndex--;
-					}
-					goto end;
+					if (--_leafIndex < 0)
+						MoveToPreviousNode();
+					--_currentIndex;
+					return _leaf[(uint)_leafIndex];
 				}
-
-				if (--_leafIndex < 0)
+				else
 				{
-					if (_expectedVersion != _self._version)
-						throw new EnumerationException();
-					if (_self._freezeMode == FrozenForConcurrency)
-						throw new ConcurrentModificationException();
-
-					var stack = _stack;
-					int s;
-					try {
-						s = stack.Length - 1;
-						while (--stack[s].Item2 < 0)
-							--s;
-					} catch {
-						throw new InvalidStateException();
-					}
-					while (++s < stack.Length)
-					{
-						var child = (AListInnerBase<K, T>)stack[s - 1].Item1.Child(stack[s - 1].Item2);
-						stack[s] = Pair.Create(child, child.LocalCount - 1);
-					}
-
-					var tos = stack[stack.Length - 1];
-					_leaf = tos.Item1.Child(tos.Item2);
-					Debug.Assert(_leaf.IsLeaf);
-					_leafIndex = (int)_leaf.TotalCount-1;
-					Debug.Assert(_leaf.TotalCount > 0);
+					ended = true;
+					return MovePreviousAtEnd();
 				}
-				--_currentIndex;
-				return _leaf[(uint)_leafIndex];
-
-			end:
-				ended = true;
+			}
+			private T MovePreviousAtEnd()
+			{
+				if (_currentIndex == FirstIndex)
+				{
+					// Advance one past the beginning
+					_currentIndex--;
+					_leafIndex--;
+				}
 				return default(T);
+			}
+			private void MoveToPreviousNode()
+			{
+				if (_expectedVersion != _self._version)
+					throw new EnumerationException();
+				if (_self._freezeMode == FrozenForConcurrency)
+					throw new ConcurrentModificationException();
+
+				var stack = _stack;
+				int s;
+				try
+				{
+					s = stack.Length - 1;
+					while (--stack[s].Item2 < 0)
+						--s;
+				}
+				catch
+				{
+					throw new InvalidStateException();
+				}
+
+				while (++s < stack.Length)
+				{
+					var child = (AListInnerBase<K, T>) stack[s - 1].Item1.Child(stack[s - 1].Item2);
+					stack[s] = Pair.Create(child, child.LocalCount - 1);
+				}
+
+				var tos = stack[stack.Length - 1];
+				_leaf = tos.Item1.Child(tos.Item2);
+				Debug.Assert(_leaf.IsLeaf);
+				_leafIndex = (int) _leaf.TotalCount - 1;
+				Debug.Assert(_leaf.TotalCount > 0);
 			}
 
 			#region IEnumerator<T> (bonus: includes a setter for Current)

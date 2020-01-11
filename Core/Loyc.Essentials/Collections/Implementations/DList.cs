@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections
+namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
@@ -271,9 +271,9 @@
 		{
 			return _dlist.GetEnumerator();
 		}
-		public IEnumerator<T> GetEnumerator()
+		public InternalDList<T>.Enumerator GetEnumerator()
 		{
-			return _dlist.GetEnumerator();
+			return _dlist.GetEnumerator(this);
 		}
 
 		#region IDeque<T>

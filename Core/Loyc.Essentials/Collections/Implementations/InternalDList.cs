@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/12/2011
@@ -759,25 +759,19 @@ namespace Loyc.Collections.Impl
 
 		#region GetEnumerator
 
-		IEnumerator<T> IEnumerable<T>.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-		public IEnumerator<T> GetEnumerator() { return new Enumerator(this, null); }
-		public IEnumerator<T> GetEnumerator(DList<T> wrapper) { return new Enumerator(this, wrapper); }
+		public Enumerator GetEnumerator() { return new Enumerator(this, null); }
+		public Enumerator GetEnumerator(DList<T> wrapper) { return new Enumerator(this, wrapper); }
 
-		class Enumerator : IEnumerator<T>
+		public class Enumerator : IEnumerator<T>
 		{
 			static readonly DList<T> NoWrapper = new DList<T>();
 
 			int size1, stop, stop2, i, oldCount;
 			T[] array;
-			DList<T> wrapper;
+			DList<T> _wrapper;
 			T _current;
 			
 			internal Enumerator(InternalDList<T> list, DList<T> wrapper)
@@ -788,12 +782,24 @@ namespace Loyc.Collections.Impl
 				stop2 = list._count - size1;
 				array = list._array;
 				wrapper = wrapper ?? NoWrapper;
-				this.wrapper = wrapper;
+				this._wrapper = wrapper;
 				oldCount = wrapper.Count;
 			}
 
 			public bool MoveNext()
 			{
+				if (i < stop && _wrapper.Count == oldCount)
+				{
+					_current = array[i++];
+					return true;
+				}
+				return MoveNext_AtErrorOrStop();
+			}
+			bool MoveNext_AtErrorOrStop()
+			{
+				if (_wrapper.Count != oldCount)
+					throw new EnumerationException();
+
 				while (i >= stop) {
 					if (stop == stop2) {
 						_current = default(T);
@@ -802,10 +808,6 @@ namespace Loyc.Collections.Impl
 					stop = stop2;
 					i = 0;
 				}
-				
-				if (wrapper.Count != oldCount)
-					throw new EnumerationException();
-
 				_current = array[i++];
 				return true;
 			}
