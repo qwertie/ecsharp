@@ -469,7 +469,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(Math.Max(from, to) + amount <= array.Length);
 			Debug.Assert(to < from || to >= from + amount);
 
-			if (amount < 16) {
+			if (amount < 8) {
 				int stop = to + amount;
 				while (to < stop)
 					array[to++] = array[from++];

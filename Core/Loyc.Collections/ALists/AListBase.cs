@@ -183,7 +183,7 @@
 			_maxLeafSize = AListLeaf<K, T>.DefaultMaxNodeSize;
 			_maxInnerSize = AListInnerBase<K, T>.DefaultMaxNodeSize;
 		}
-		protected AListBase(int maxLeafSize) : this(maxLeafSize, AListInnerBase<K, T>.DefaultMaxNodeSize)
+		protected AListBase(int maxNodeSize) : this(maxNodeSize, maxNodeSize)
 		{
 		}
 		protected AListBase(int maxLeafSize, int maxInnerSize)

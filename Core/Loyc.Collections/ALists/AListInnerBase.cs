@@ -12,7 +12,7 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public abstract class AListInnerBase<K, T> : AListNode<K, T>
 	{
-		public const int DefaultMaxNodeSize = 32;
+		public const int DefaultMaxNodeSize = 64;
 
 		[Serializable]
 		[DebuggerDisplay("Index = {Index}, Node = {Node}")]

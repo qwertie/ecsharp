@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -632,7 +632,7 @@ namespace Loyc.Collections
 		#region Constructors
 
 		public AListBase() { }
-		public AListBase(int maxLeafSize) : base(maxLeafSize) { }
+		public AListBase(int maxNodeSize) : base(maxNodeSize) { }
 		public AListBase(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AListBase(AListBase<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
 		protected AListBase(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }

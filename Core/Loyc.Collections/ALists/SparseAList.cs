@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,7 +36,7 @@ namespace Loyc.Collections
 		public SparseAList(IEnumerable<T> items) { InsertRange(0, items); }
 		public SparseAList(IListSource<T> items) { InsertRange(0, items); }
 		public SparseAList(ISparseListSource<T> items) { InsertRange(0, items); }
-		public SparseAList(int maxLeafSize) : base(maxLeafSize) { }
+		public SparseAList(int maxNodeSize) : base(maxNodeSize) { }
 		public SparseAList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public SparseAList(SparseAList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
 		protected SparseAList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
