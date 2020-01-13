@@ -148,7 +148,7 @@ namespace Benchmark
 		private void UpdateGraph(PlotModel model, MSet<EzDataPoint> points)
 		{
 			model.Series.Clear();
-			var allSeries = new BMultiMap<string, EzDataPoint>();
+			var allSeries = new BMultiMap<string, EzDataPoint>((a, b) => string.CompareOrdinal(a, b));
 			foreach (var dp in points)
 				allSeries.Add(dp.Series, dp);
 

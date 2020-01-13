@@ -18,6 +18,10 @@ namespace Benchmark
 	{
 		IAdd<EzDataPoint> _graph;
 		Predicate<EzDataPoint> _where;
+		
+		public bool TestALists = true;
+		public bool TestDLists = true;
+		public bool TestOther = true;
 
 		void Add(EzDataPoint dp)
 		{
@@ -111,7 +115,7 @@ namespace Benchmark
 						// Make a second version of the "@ random indexes" graphs for small lists
 						if (dp.GraphId.ToString().Contains("random index") && (double)dp.Parameter < 10000) {
 							dp = dp.Clone();
-							dp.GraphId = dp.GraphId.ToString() + " "; // extra space just to change the graph ID
+							dp.GraphId = dp.GraphId.ToString() + "\u200B"; // zero-width space just to change the graph ID
 							Add(dp);
 						}
 					}
@@ -119,8 +123,6 @@ namespace Benchmark
 			},
 			string.Format("{0,8}: ", listCount), true);
 			Console.CursorTop = end;
-
-
 		}
 
 		const int StdIterations = 100000; // Number of random insert/remove ops to perform
@@ -135,34 +137,34 @@ namespace Benchmark
 				for (int i = 0; i < StdIterations; i++) {
 					int c = list.Count;
 					list.Insert(_r.Next(c + 1), i);
-					if (c >= _count + 5) list.RemoveRange(list.Count - 10, 10);
+					if (c >= _count + 10) list.RemoveRange(list.Count - 20, 20);
 				}
 			});
-			b.Run("InternalList", () =>
+			b.Run("InternalList", TestOther, () =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b);
 				for (int i = 0; i < StdIterations; i++) {
 					int c = list.Count;
 					list.Insert(_r.Next(c + 1), i);
-					if (c >= _count + 5) list.RemoveRange(list.Count - 10, 10);
+					if (c >= _count + 10) list.RemoveRange(list.Count - 20, 20);
 				}
 			});
-			b.Run("DList", () =>
+			b.Run("DList", TestDLists, () =>
 			{
 				var list = MakeList(new DList<long>(), b);
 				for (int i = 0; i < StdIterations; i++) {
 					int c = list.Count;
 					list.Insert(_r.Next(c + 1), i);
-					if (c >= _count + 5) list.RemoveRange(list.Count - 10, 10);
+					if (c >= _count + 10) list.RemoveRange(list.Count - 20, 20);
 				}
 			});
-			b.Run("AList", () =>
+			b.Run("AList", TestALists, () =>
 			{
 				var list = MakeList(new AList<long>(), b);
 				for (int i = 0; i < StdIterations; i++) {
 					int c = list.Count;
 					list.Insert(_r.Next(c + 1), i);
-					if (c >= _count + 5) list.RemoveRange(list.Count - 10, 10);
+					if (c >= _count + 10) list.RemoveRange(list.Count - 20, 20);
 				}
 			});
 			return Benchmarker.DiscardResult;
@@ -180,30 +182,32 @@ namespace Benchmark
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
-			b.Run("List.AddRange", () =>
+			// \u200B (zero-width space) changes the sort order so that colors
+			// on the graph are consistent between different graphs
+			b.Run("\u200BList.AddRange", () =>
 			{
 				var list = MakeList(new List<long>(), b);
 				list.AddRange(list2);
 			});
-			b.Run("InternalList", () =>
+			b.Run("InternalList", TestOther, () =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
-			b.Run("DList", () =>
+			b.Run("DList", TestDLists, () =>
 			{
 				var list = MakeList(new DList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
-			b.Run("AList", () =>
+			b.Run("AList", TestALists, () =>
 			{
 				var list = MakeList(new AList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
-			b.Run("AList.AddRange", () =>
+			b.Run("\u200BAList.AddRange", TestALists, () =>
 			{
 				var list = MakeList(new AList<long>(), b);
 				list.AddRange(list2);
@@ -224,7 +228,7 @@ namespace Benchmark
 					list[i] = iter;
 				}
 			});
-			b.Run("InternalList", () =>
+			b.Run("InternalList", TestOther, () =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b);
 				int maxIndex = list.Count - 1;
@@ -234,7 +238,7 @@ namespace Benchmark
 					list[i] = iter;
 				}
 			});
-			b.Run("DList", () =>
+			b.Run("DList", TestDLists, () =>
 			{
 				var list = MakeList(new DList<long>(), b);
 				int maxIndex = list.Count - 1;
@@ -244,7 +248,7 @@ namespace Benchmark
 					list[i] = iter;
 				}
 			});
-			b.Run("AList", () =>
+			b.Run("AList", TestALists, () =>
 			{
 				var list = MakeList(new AList<long>(), b);
 				int maxIndex = list.Count - 1;
@@ -283,7 +287,7 @@ namespace Benchmark
 					if (c <= _count - 5) list.AddRange(more);
 				}
 			});
-			b.Run("InternalList", () =>
+			b.Run("InternalList", TestOther, () =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b);
 				for (int i = 0; i < StdIterations; i++) {
@@ -292,7 +296,7 @@ namespace Benchmark
 					if (c <= _count - 5) list.AddRange((IList<long>)more);
 				}
 			});
-			b.Run("DList", () =>
+			b.Run("DList", TestDLists, () =>
 			{
 				var list = MakeList(new DList<long>(), b);
 				for (int i = 0; i < StdIterations; i++) {
@@ -301,7 +305,7 @@ namespace Benchmark
 					if (c <= _count - 5) list.AddRange((ICollection<long>)more);
 				}
 			});
-			b.Run("AList", () =>
+			b.Run("AList", TestALists, () =>
 			{
 				var list = MakeList(new AList<long>(), b);
 				for (int i = 0; i < StdIterations; i++) {
@@ -332,7 +336,7 @@ namespace Benchmark
 				}
 				return "Sum: " + sum;
 			});
-			b.Run("InternalList", b_ =>
+			b.Run("InternalList", TestOther, b_ =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b_);
 				long sum = 0;
@@ -343,7 +347,7 @@ namespace Benchmark
 				}
 				return "Sum: " + sum;
 			});
-			b.Run("DList", b_ =>
+			b.Run("DList", TestDLists, b_ =>
 			{
 				var list = MakeList(new DList<long>(), b_);
 				long sum = 0;
@@ -354,7 +358,7 @@ namespace Benchmark
 				}
 				return "Sum: " + sum;
 			});
-			b.Run("InternalDList", b_ =>
+			b.Run("\u200BInternalDList", TestDLists, b_ =>
 			{
 				b_.PauseTimer();
 				var list = InternalDList<long>.Empty;
@@ -371,7 +375,7 @@ namespace Benchmark
 				}
 				return "Sum: " + sum;
 			});
-			b.Run("AList", b_ =>
+			b.Run("AList", TestALists, b_ =>
 			{
 				var list = MakeList(new AList<long>(), b_);
 				long sum = 0;
@@ -401,7 +405,7 @@ namespace Benchmark
 					avg = list.Average();
 				return "Avg: " + avg;
 			});
-			b.Run("InternalList", b_ =>
+			b.Run("InternalList", TestOther, b_ =>
 			{
 				var list = MakeList(InternalList<long>.Empty, b_);
 				double avg = 0;
@@ -409,7 +413,7 @@ namespace Benchmark
 					avg = list.Average();
 				return "Avg: " + avg;
 			});
-			b.Run("DList", b_ =>
+			b.Run("DList", TestDLists, b_ =>
 			{
 				var list = MakeList(new DList<long>(), b_);
 				double avg = 0;
@@ -417,7 +421,7 @@ namespace Benchmark
 					avg = list.Average();
 				return "Avg: " + avg;
 			});
-			b.Run("AList", b_ =>
+			b.Run("AList", TestALists, b_ =>
 			{
 				var list = MakeList(new AList<long>(), b_);
 				double avg = 0;
@@ -442,7 +446,7 @@ namespace Benchmark
 						list.Remove(k);
 				}
 			});
-			b.Run("BDictionary", () =>
+			b.Run("BDictionary", TestALists, () =>
 			{
 				var list = MakeDict(new BDictionary<long, int>(), b, out max);
 				for (int i = 0; i < StdIterations; i++) {
@@ -474,7 +478,7 @@ namespace Benchmark
 						list.Remove(k);
 				}
 			});
-			b.Run("MMap", () =>
+			b.Run("MMap", TestOther, () =>
 			{
 				var list = MakeDict(new MMap<long, int>(), b, out max);
 				for (int i = 0; i < StdIterations; i++) {

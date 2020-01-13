@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -78,9 +78,7 @@ namespace Benchmark
 		/// <summary>One-based trial number (0 when not running a [Benchmark] method)</summary>
 		public int CurrentTrialNumber { get; private set; }
 
-		// BTW: SortedList is very slow for insert/delete; you should usually use
-		// SortedDictionary instead, but it is missing from the Compact Framework.
-		protected SortedList<string, BenchmarkStatistic> _results = new SortedList<string, BenchmarkStatistic>();
+		protected IDictionary<string, BenchmarkStatistic> _results = new Dictionary<string, BenchmarkStatistic>();
 		public IEnumerable<KeyValuePair<string, BenchmarkStatistic>> Results
 		{
 			get { return _results; }
@@ -100,6 +98,8 @@ namespace Benchmark
 		EzStopwatch _currentTimer;
 		int _nestingDepth = 0;
 
+		public int Run(string name, bool condition, Action code) { return condition ? Run(name, 0, code) : -1; }
+		public int Run(string name, bool condition, Func<Benchmarker, object> code, int loopTimes = 1) { return condition ? Run(name, 0, code, loopTimes) : -1; }
 		public int Run(string name, Action code) { return Run(name, 0, code); }
 		public int Run(string name, Func<Benchmarker, object> code, int loopTimes = 1) { return Run(name, 0, code, loopTimes); }
 		public int Run(string name, int minMillisec, Action code)

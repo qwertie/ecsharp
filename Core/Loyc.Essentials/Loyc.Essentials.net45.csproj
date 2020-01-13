@@ -54,6 +54,7 @@
     <DefineConstants>TRACE;DotNet4,CSharp4</DefineConstants>
     <NoWarn>1591, 1573, 0419</NoWarn>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Essentials.xml</DocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
@@ -137,6 +138,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
