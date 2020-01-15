@@ -252,14 +252,23 @@ namespace Loyc.Collections
 			DoSparseOperation(ref op);
 		}
 
+		public void AddSpace(int count = 1) => InsertSpace(Count, count);
+
 		public void InsertSpace(int index, int count = 1)
 		{
-			CheckParam.IsNotNegative("count", count);
-			//CheckParam.IsInRange("index", index, 0, Count); checked by DoSparseOperation
-			AutoThrow();
-			var newCount = checked(Count + count);
-			var op = new AListSparseOperation<T>((uint)index, true, true, count, _observer);
-			DoSparseOperation(ref op);
+			if (count > 0)
+			{
+				//CheckParam.IsInRange("index", index, 0, Count); checked by DoSparseOperation
+				AutoThrow();
+				var newCount = checked(Count + count);
+				var op = new AListSparseOperation<T>((uint) index, true, true, count, _observer);
+				DoSparseOperation(ref op);
+			}
+			else
+			{
+				CheckParam.IsNotNegative("count", count);
+				CheckParam.IsInRange("index", index, 0, Count);
+			}
 		}
 
 		public bool IsSet(int index)

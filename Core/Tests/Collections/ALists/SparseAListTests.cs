@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -230,7 +230,7 @@ namespace Loyc.Collections.Tests
 				int i2 = i1 + MathEx.Square(_r.Next(50)) + 1; // e.g. 100
 				int i3 = i2 + _r.Next(2500);                  // e.g. 1000
 
-				SparseAList<int> list = new SparseAList<int>();
+				SparseAList<int> list = new SparseAList<int>(_maxLeafSize, _maxInnerSize);
 				list.ClearSpace(0, i1);
 				Assert.AreEqual(i1, list.Count);
 				Assert.AreEqual(0, list.GetRealItemCount());
@@ -353,6 +353,17 @@ namespace Loyc.Collections.Tests
 			i = null;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 777);
 			Assert.AreEqual(i.Value, int.MaxValue - 1);
+		}
+
+		[Test]
+		public void LeafCapacityLimitIsRespected()
+		{
+			var list = new SparseAList<int>(_maxLeafSize, _maxInnerSize);
+
+			for (int i = 0; i < 100 + _maxLeafSize * _maxInnerSize; i++)
+				list.Insert(_r.Next(list.Count + 1), i);
+
+			VerifyLeafCapacityLimitIsRespected(list, _maxLeafSize);
 		}
 	}
 }

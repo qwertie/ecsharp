@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Loyc.Collections.Impl
 {
 	using System;
@@ -182,25 +184,34 @@ namespace Loyc.Collections.Impl
 				--i;
 			return i;
 		}
-
-		protected void PrepareToInsert(int i, IAListTreeObserver<K, T> tob)
+		
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
+		protected bool PrepareToInsert(int i, IAListTreeObserver<K, T> tob)
 		{
 			AutoClone(ref _children[i].Node, this, tob);
 
-			if (_children[i].Node.IsFullLeaf)
-				TryToShiftAnItemToSiblingOfLeaf(i, tob);
+			if (_children[i].Node.IsFullLeaf) {
+				TryToShiftItemsToSiblings(i, tob);
+				return false;
+			}
+			return true;
 		}
-		protected void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> tob)
+		protected void TryToShiftItemsToSiblings(int i, IAListTreeObserver<K, T> tob)
 		{
-			AListNode<K, T> childL, childR;
-			
-			// Check the left sibling
-			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, tob) != 0)
-				_children[i].Index++;
-			// Check the right sibling
-			else if (i + 1 < _children.Length &&
-				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, tob) != 0)
-				_children[i + 1].Index--;
+			Debug.Assert(_children[i].Node.CapacityLeft == 0);
+			// Pick a sibling to transfer items to. Don't bother unless we can move at least two.
+			int leftCap = i > 0 ? _children[i - 1].Node.CapacityLeft : 0;
+			int rightCap = i + 1 < LocalCount ? _children[i + 1].Node.CapacityLeft : 0;
+			uint totalMoved;
+			if (leftCap > rightCap && leftCap >= 2) {
+				totalMoved = _children[i - 1].Node.TakeFromRight(_children[i].Node, (leftCap >> 1) + 1, tob);
+				_children[i].Index += totalMoved;
+			} else if (rightCap >= 2) {
+				totalMoved = _children[i + 1].Node.TakeFromLeft(_children[i].Node, (rightCap >> 1) + 1, tob);
+				_children[i + 1].Index -= totalMoved;
+			}
 		}
 
 		/// <summary>Inserts a slot after _children[i], increasing _childCount and 
@@ -458,60 +469,39 @@ namespace Loyc.Collections.Impl
 				return IsUndersized;
 			}
 			else if (leftCap + rightCap >= node.LocalCount)
-			{	// The siblings have enough capacity that we can data from 'node' 
-				// into its siblings
-				int oldRightCap = rightCap;
-				uint rightAdjustment = 0, a;
-				while (node.LocalCount > 0)
-					if (leftCap >= rightCap) {
-						Verify(left.TakeFromRight(node, tob) != 0);
-						leftCap--;
-					} else {
-						Verify((a = right.TakeFromLeft(node, tob)) != 0);
-						rightAdjustment += a;
-						rightCap--;
-					}
-				if (node.TotalCount > 0) {
-					Debug.Assert(node is SparseAListLeaf<T>);
-					// Bug fix: in case of a sparse leaf it is possible to have LocalCount==0 
-					// but TotalCount>0. In that case leftCap and rightCap could both be zero.
-					// Originally this case was handled within SparseAListLeaf.TakeFromLeft/Right, 
-					// but this method must also be aware of this case because it's possible that 
-					// LocalCount==0 when this method starts, so the loop is skipped.
-					if (left != null)
-						left.TakeFromRight(node, tob);
-					else
-						rightAdjustment += right.TakeFromLeft(node, tob);
-				}
-					
-				if (rightAdjustment != 0) // if rightAdjustment==0, _children[i+1] might not exist
-					_children[i+1].Index -= rightAdjustment;
+			{	// There's enough capacity to move all items from `node` into its siblings.
+				// Move items in such a way that the left and right nodes have equal size if possible.
+				int dif = leftCap - rightCap;
+				int itemsToMoveLeft = dif + ((node.LocalCount - dif) >> 1);
 
+				if (left != null && itemsToMoveLeft >= 0)
+					left.TakeFromRight(node, Math.Min(itemsToMoveLeft, node.LocalCount), tob);
+				if (node.TotalCount > 0) {
+					uint rightAdjustment = right.TakeFromLeft(node, node.LocalCount, tob);
+					_children[i+1].Index -= rightAdjustment;
+				}
+
+				Debug.Assert(node.LocalCount == 0);
+				// Sparse leaves can have empty space without any items, but TakeFromLeft/Right takes all space
+				Debug.Assert(node.TotalCount == 0);
+					
 				if (tob != null) tob.NodeRemoved(node, this);
 				LLDelete(i, false);
 				return IsUndersized;
 			}
 			else
-			{	// Transfer an element from the fullest sibling so that 'node'
-				// is no longer undersized.
-				if (left == null)
-					leftCap = int.MaxValue;
-				if (right == null)
-					rightCap = int.MaxValue;
-				do {
-					if (leftCap < rightCap) {
-						Debug.Assert(i > 0);
-						uint amt = node.TakeFromLeft(left, tob);
-						leftCap++;
-						Debug.Assert(amt > 0);
-						_children[i].Index -= amt;
-					} else {
-						uint amt = node.TakeFromRight(right, tob);
-						rightCap++;
-						Debug.Assert(amt > 0);
-						_children[i+1].Index += amt;
-					}
-				} while (node.IsUndersized);
+			{	// Try to transfer element(s) from sibling(s) so that 'node' is no longer undersized.
+				int targetSize = ((left?.LocalCount ?? 0) + (right?.LocalCount ?? 0) + node.LocalCount + 2) / 3;
+				if (left != null && targetSize < left.LocalCount)
+				{
+					uint spaceMoved = node.TakeFromLeft(left, left.LocalCount - targetSize, tob);
+					_children[i].Index -= spaceMoved;
+				}
+				if (right != null && targetSize < right.LocalCount)
+				{
+					uint spaceMoved = node.TakeFromRight(right, right.LocalCount - targetSize, tob);
+					_children[i + 1].Index += spaceMoved;
+				}
 				return false;
 			}
 		}
@@ -538,39 +528,53 @@ namespace Loyc.Collections.Impl
 			return false;
 		}
 
-		internal override uint TakeFromRight(AListNode<K, T> sibling, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
 		{
+			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
+
 			var right = (AListInnerBase<K, T>)sibling;
-			if (IsFrozen || right.IsFrozen)
+			if (_isFrozen || right._isFrozen)
 				return 0;
-			uint oldTotal = TotalCount;
-			int oldLocal = LocalCount;
-			var child = right.Child(0);
-			LLInsert(oldLocal, child, 0);
-			Debug.Assert(oldLocal > 0);
-			Debug.Assert(child.TotalCount > 0);
-			_children[oldLocal].Index = oldTotal;
-			right.LLDelete(0, true);
-			AssertValid();
-			right.AssertValid();
-			if (tob != null) tob.NodeMoved(child, right, this);
-			return child.TotalCount;
+
+			uint totalCountMoved = 0;
+			for (int i = 0; i < localsToMove; i++)
+			{
+				uint oldTotal = TotalCount;
+				int oldLocal = LocalCount;
+				var child = right.Child(0);
+				LLInsert(oldLocal, child, 0);
+				Debug.Assert(oldLocal > 0);
+				Debug.Assert(child.TotalCount > 0);
+				_children[oldLocal].Index = oldTotal;
+				right.LLDelete(0, true);
+				AssertValid();
+				right.AssertValid();
+				if (tob != null) tob.NodeMoved(child, right, this);
+				totalCountMoved += child.TotalCount;
+			}
+			return totalCountMoved;
 		}
 
-		internal override uint TakeFromLeft(AListNode<K, T> sibling, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInnerBase<K, T>)sibling;
 			if (IsFrozen || left.IsFrozen)
 				return 0;
-			var child = left.Child(left.LocalCount - 1);
-			LLInsert(0, child, child.TotalCount);
-			Debug.Assert(child.TotalCount > 0);
-			left.LLDelete(left.LocalCount - 1, false);
-			AssertValid();
-			left.AssertValid();
-			if (tob != null) tob.NodeMoved(child, left, this);
-			return child.TotalCount;
+
+			uint totalCountMoved = 0;
+			for (int i = 0; i < localsToMove; i++)
+			{
+				var child = left.Child(left.LocalCount - 1);
+				LLInsert(0, child, child.TotalCount);
+				Debug.Assert(child.TotalCount > 0);
+				left.LLDelete(left.LocalCount - 1, false);
+				AssertValid();
+				left.AssertValid();
+				if (tob != null) tob.NodeMoved(child, left, this);
+				totalCountMoved += child.TotalCount;
+			}
+			return totalCountMoved;
 		}
 
 		public override void Freeze()
@@ -614,5 +618,8 @@ namespace Loyc.Collections.Impl
 				ic += Child(i).GetImmutableCount(excludeSparse);
 			return ic;
 		}
+
+		internal override IEnumerable<AListNode<K, T>> Leaves => Children.SelectMany(child => child.Leaves);
+		internal override IEnumerable<AListNode<K, T>> Children => _children.Select(e => e.Node).WhereNotNull();
 	}
 }

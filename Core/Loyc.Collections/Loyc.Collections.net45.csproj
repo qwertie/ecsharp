@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-      <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
+    <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Collections</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET4</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -96,7 +96,7 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE;DotNet4</DefineConstants>
+    <DefineConstants>TRACE;DotNet45</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Collections.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591, 1573, 0419</NoWarn>

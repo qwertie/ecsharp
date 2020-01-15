@@ -11,7 +11,7 @@ namespace Loyc.Collections.Impl
 	{
 		public const int DefaultMaxNodeSize = 64;
 
-		protected InternalList<T> _list = InternalList<T>.Empty;
+		protected internal InternalList<T> _list = InternalList<T>.Empty;
 
 		public AListLeaf(ushort maxNodeSize)
 		{
@@ -53,34 +53,35 @@ namespace Loyc.Collections.Impl
 			_list[(int)index] = item;
 		}
 
-		internal override uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
 		{
-			var right = (AListLeaf<K, T>)rightSibling;
-			if (IsFullLeaf || _isFrozen || right._isFrozen)
+			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
+			var right = (AListLeaf<K, T>)sibling;
+			if (_isFrozen || right._isFrozen)
 				return 0;
-			T item = right._list.First;
-			_list.Add(item);
-			right._list.RemoveAt(0);
-			if (tob != null) tob.ItemMoved(item, right, this);
-			return 1;
+			
+			EnsureCapacity(localsToMove);
+			_list.AddRange(right._list.Slice(0, localsToMove));
+			right._list.RemoveRange(0, localsToMove);
+			if (tob != null)
+				tob.ItemsMoved(_list, _list.Count - localsToMove, localsToMove, right, this);
+			return (uint)localsToMove;
 		}
 
-		internal override uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
 		{
-			var left = (AListLeaf<K, T>)leftSibling;
-			if (IsFullLeaf || _isFrozen || left._isFrozen)
+			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
+			var left = (AListLeaf<K, T>)sibling;
+			if (_isFrozen || left._isFrozen)
 				return 0;
-			T item = left._list.Last;
-			#if false // InternalDList
-			_list.PushFirst(item);
-			left._list.PopLast(1);
-			#else // InternalList
-			_list.Insert(0, item);
-			left._list.RemoveAt(left._list.Count-1);
-			#endif
-
-			if (tob != null) tob.ItemMoved(item, left, this);
-			return 1;
+			
+			EnsureCapacity(localsToMove);
+			int leftStart = left._list.Count - localsToMove;
+			_list.InsertRange(0, left._list.Slice(leftStart, localsToMove));
+			left._list.RemoveRange(leftStart, localsToMove);
+			if (tob != null) 
+				tob.ItemsMoved(_list, 0, localsToMove, left, this);
+			return (uint)localsToMove;
 		}
 
 		public override T GetLastItem()
@@ -107,7 +108,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(!_isFrozen);
 
 			if (tob != null) 
-				tob.RemovingItems(new InternalDList<T>(_list.InternalArray, _list.Count), (int)index, (int)count, this, false);
+				tob.ItemsRemoved(_list, (int)index, (int)count, this);
 			_list.RemoveRange((int)index, (int)count);
 			return IsUndersized;
 		}
@@ -138,6 +139,24 @@ namespace Loyc.Collections.Impl
 		public override uint GetImmutableCount(bool _)
 		{
 			return IsFrozen ? (uint)LocalCount : 0;
+		}
+
+		protected void EnsureCapacity(int amountToInsert)
+		{
+			Debug.Assert(amountToInsert >= 0);
+			int newSize = _list.Count + amountToInsert;
+			if (newSize > _list.Capacity)
+			{
+				int maxCapacity = (newSize << 1) + 2, capacity;
+				if (newSize <= _maxNodeSize) {
+					for (capacity = _maxNodeSize; capacity > maxCapacity; capacity >>= 1) { }
+				} else {
+					capacity = newSize;
+					Debug.Assert(false);
+				}
+				var newArray = InternalList.CopyToNewArray(_list.InternalArray, _list.Count, capacity);
+				_list = new InternalList<T>(newArray, _list.Count);
+			}
 		}
 	}
 
@@ -172,7 +191,7 @@ namespace Loyc.Collections.Impl
 
 			if (_list.Count < _maxNodeSize)
 			{
-				_list.AutoRaiseCapacity(1, _maxNodeSize);
+				EnsureCapacity(1);
 				_list.Insert((int)index, item);
 				splitRight = null;
 				if (tob != null) tob.ItemAdded(item, this);
@@ -210,7 +229,7 @@ namespace Loyc.Collections.Impl
 			{
 				int amtToIns = Math.Min(leftHere, leftIns);
 				var list = _list;
-				list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
+				EnsureCapacity(amtToIns);
 				
 				list.InsertRangeHelper(adjustedIndex, amtToIns);
 				int sourceIndex2 = sourceIndex, i = adjustedIndex;
@@ -219,7 +238,7 @@ namespace Loyc.Collections.Impl
 				
 				_list = list;
 				splitRight = null;
-				if (tob != null) tob.AddingItems(source.Slice(sourceIndex, amtToIns), this, false);
+				if (tob != null) tob.ItemsAdded(source.Slice(sourceIndex, amtToIns), this);
 				sourceIndex = sourceIndex2;
 				return null;
 			}

@@ -323,9 +323,9 @@ namespace Loyc.Collections.Tests
 			AssertLastChildContainsOneItem();
 			void AssertLastChildContainsOneItem()
 			{
-				var lastChild = inner._children[iLast].Node;
+				var lastChild = inner.Children.Last();
 				while (!lastChild.IsLeaf)
-					lastChild = ((AListInner<int>)lastChild)._children[lastChild.LocalCount - 1].Node;
+					lastChild = lastChild.Children.Last();
 				Assert.AreEqual(1, lastChild.LocalCount);
 			}
 
@@ -340,6 +340,17 @@ namespace Loyc.Collections.Tests
 			AssertLastChildContainsOneItem();
 
 			return list;
+		}
+
+		[Test]
+		public void LeafCapacityLimitIsRespected()
+		{
+			var list = new AList<int>(_maxLeafSize, _maxInnerSize);
+
+			for (int i = 0; i < 100 + _maxLeafSize * _maxInnerSize; i++)
+				list.Insert(_r.Next(list.Count + 1), i);
+
+			VerifyLeafCapacityLimitIsRespected(list, _maxLeafSize);
 		}
 	}
 }

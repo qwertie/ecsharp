@@ -102,9 +102,14 @@ namespace Loyc.Collections.Impl
 				AutoClone(ref _children[i].Node, this, tob);
 				if (op.Mode >= AListOperation.Add && _children[i].Node.IsFullLeaf)
 				{
-					TryToShiftAnItemToSiblingOfLeaf(i, tob);
-					// Binary search result might now be off-by-1
-					i = BinarySearchK(op.Key, op.CompareKeys);
+					if (!PrepareToInsert(i, tob))
+					{	// Items have been shifted out of _children[i] (to the left or right)
+						if (i < _highestKey.Length)
+							_highestKey[i] = GetHighestKey(_children[i].Node);
+						if (i > 0)
+							_highestKey[i - 1] = GetHighestKey(_children[i - 1].Node);
+						i = BinarySearchK(op.Key, op.CompareKeys);
+					}
 				}
 			}
 			AssertValid();
@@ -172,25 +177,6 @@ namespace Loyc.Collections.Impl
 			AssertValid();
 
 			return amUndersized;
-		}
-
-		protected new void TryToShiftAnItemToSiblingOfLeaf(int i, IAListTreeObserver<K, T> tob)
-		{
-			AListNode<K, T> childL, childR;
-
-			// Check the left sibling
-			if (i > 0 && (childL = _children[i - 1].Node).TakeFromRight(_children[i].Node, tob) != 0)
-			{
-				_children[i].Index++;
-				_highestKey[i - 1] = GetHighestKey(_children[i - 1].Node);
-			}
-			// Check the right sibling
-			else if (i + 1 < _children.Length &&
-				(childR = _children[i + 1].Node) != null && childR.TakeFromLeft(_children[i].Node, tob) != 0)
-			{
-				_children[i + 1].Index--;
-				_highestKey[i] = GetHighestKey(_children[i].Node);
-			}
 		}
 
 		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)

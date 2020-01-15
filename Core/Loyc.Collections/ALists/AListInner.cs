@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,14 +54,8 @@ namespace Loyc.Collections.Impl
 
 			// Choose a child node [i] = entry {child, baseIndex} in which to insert the item(s)
 			int i = BinarySearchI(index);
-			if (i != 0 && _children[i].Index == index)
-			{
-				// Check whether one slot left is a better insertion location
-				if (_children[i - 1].Node.LocalCount < _children[i].Node.LocalCount)
-					--i;
-			}
-
-			PrepareToInsert(i, tob);
+			if (!PrepareToInsert(i, tob))
+				i = BinarySearchI(index);
 			e = _children[i];
 			return i;
 		}

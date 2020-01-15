@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Collections.Impl
 {
@@ -182,17 +183,19 @@ namespace Loyc.Collections.Impl
 		/// </remarks>
 		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob);
 
-		/// <summary>Takes an element from a right sibling.</summary>
-		/// <returns>Returns the number of elements moved on success (1 if a leaf 
-		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
-		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, IAListTreeObserver<K, T> tob);
+		/// <summary>Moves item(s) from a right sibling into this node.</summary>
+		/// <param name="localsToMove">Number of local items to be moved.</param>
+		/// <returns>Returns the number of indexes moved on success (localsToMove
+		/// if a leaf node, TotalCount of the child moved otherwise), or 0 if
+		/// either or both nodes are frozen.</returns>
+		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, int localsToMove, IAListTreeObserver<K, T> tob);
 		
-		/// <summary>Takes an element from a left sibling.</summary>
-		/// <returns>Returns the number of elements moved on success (1 if a leaf 
-		/// node, TotalCount of the child moved otherwise), or 0 if either (1) 
-		/// IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
-		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, IAListTreeObserver<K, T> tob);
+		/// <summary>Moves item(s) from a left sibling into this node.</summary>
+		/// <param name="localsToMove">Number of local items to be moved.</param>
+		/// <returns>Returns the number of indexes moved on success (localsToMove
+		/// if a leaf node, TotalCount of the child moved otherwise), or 0 if
+		/// either or both nodes are frozen.</returns>
+		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, int localsToMove, IAListTreeObserver<K, T> tob);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
@@ -287,6 +290,10 @@ namespace Loyc.Collections.Impl
 		
 		/// <summary>For sparse lists: counts the number of non-sparse items.</summary>
 		public virtual uint GetRealItemCount() { return TotalCount; }
+
+		/// <summary>For testing and debugging only.</summary>
+		internal virtual IEnumerable<AListNode<K, T>> Leaves => new[] { this };
+		internal virtual IEnumerable<AListNode<K, T>> Children => InternalList<AListNode<K, T>>.EmptyArray;
 	}
 
 	/// <summary>This structure is passed from the collection class (AList, BList 

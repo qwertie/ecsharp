@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections
+namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,6 +6,7 @@
 	using System.Text;
 	using System.Collections.Specialized;
 	using System.Diagnostics;
+	using System.Runtime.CompilerServices;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
 	using System.ComponentModel;

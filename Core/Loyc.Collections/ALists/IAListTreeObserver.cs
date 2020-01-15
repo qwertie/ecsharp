@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -141,17 +141,21 @@ namespace Loyc.Collections.Impl
 			self.RootChanged(null, true);
 		}
 
-		internal static void AddingItems<K, T>(this IAListTreeObserver<K, T> self, IListSource<T> list, AListLeaf<K, T> parent, bool isMoving)
+		internal static void ItemsAdded<K, T>(this IAListTreeObserver<K, T> self, IListSource<T> list, AListLeaf<K, T> parent)
 		{
 			for (int i = 0; i < list.Count; i++)
 				self.ItemAdded(list[i], parent);
 		}
-		internal static void RemovingItems<K, T>(this IAListTreeObserver<K, T> self, InternalDList<T> list, int index, int count, AListLeaf<K, T> parent, bool isMoving)
+		internal static void ItemsRemoved<K, T>(this IAListTreeObserver<K, T> self, InternalList<T> list, int index, int count, AListLeaf<K, T> parent)
 		{
 			for (int i = index; i < index + count; i++)
 				self.ItemRemoved(list[i], parent);
 		}
-
+		internal static void ItemsMoved<K, T>(this IAListTreeObserver<K, T> self, InternalList<T> list, int index, int count, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
+		{
+			for (int i = index; i < index + count; i++)
+				self.ItemMoved(list[i], oldParent, newParent);
+		}
 		internal static void ItemMoved<K, T>(this IAListTreeObserver<K, T> self, T item, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
 		{
 			self.ItemRemoved(item, oldParent);

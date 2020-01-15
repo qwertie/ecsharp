@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
@@ -547,6 +547,17 @@ namespace Loyc.Collections.Tests
 			ExpectList(alist, list, false);
 			AddToBoth(alist, list, 10, 10);
 			ExpectList(alist, list, true);
+		}
+
+		protected void VerifyLeafCapacityLimitIsRespected<K>(AListBase<K,T> list, int maxLeafSize)
+		{
+			foreach (var leaf in list._root.Leaves)
+			{
+				if (leaf is SparseAListLeaf<T>)
+					Assert.LessOrEqual(((SparseAListLeaf<T>)(object)leaf)._list.Capacity, maxLeafSize);
+				else
+					Assert.LessOrEqual(((AListLeaf<K,T>)leaf)._list.Capacity, maxLeafSize);
+			}
 		}
 	}
 
