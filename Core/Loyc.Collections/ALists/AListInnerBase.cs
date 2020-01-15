@@ -138,10 +138,33 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		public override bool IsLeaf
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override bool IsLeaf => false;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public sealed override bool IsFullLeaf => false;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override bool IsUndersized => (_childCount << 1) < _maxNodeSize;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public sealed override int LocalCount => _childCount;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected int MaxNodeSize
 		{
-			get { return false; }
+			get { return _maxNodeSize; }
+			set { _maxNodeSize = (byte)value; }
 		}
+
+		public sealed override uint TotalCount
+		{
+			get {
+				int lc = _childCount;
+				if (lc == 0)
+					return 0;
+				Entry e = _children[lc - 1];
+				return e.Index + e.Node.TotalCount;
+			}
+		}
+
+
 
 		private void InitEmpties(int at)
 		{
@@ -304,41 +327,8 @@ namespace Loyc.Collections.Impl
 			return _children[i].Node;
 		}
 
-		public sealed override int LocalCount
-		{
-			get {
-				return (byte)_childCount;
-			}
-		}
-
 		protected const int MaxMaxNodeSize = 0xFF;
 		protected const uint FrozenBit = 0x8000;
-
-		protected int MaxNodeSize
-		{
-			get { return _maxNodeSize; }
-			set { _maxNodeSize = (byte)value; }
-		}
-
-		public sealed override uint TotalCount
-		{
-			get {
-				int lc = LocalCount;
-				if (lc == 0)
-					return 0;
-				Entry e = _children[lc - 1];
-				return e.Index + e.Node.TotalCount;
-			}
-		}
-
-		public sealed override bool IsFullLeaf
-		{
-			get { return false; }
-		}
-		public override bool IsUndersized
-		{
-			get { return (_childCount << 1) < _maxNodeSize; }
-		}
 
 		public override T this[uint index]
 		{

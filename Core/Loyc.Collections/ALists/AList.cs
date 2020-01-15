@@ -169,7 +169,7 @@ namespace Loyc.Collections
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item)));
 
 			try {
-				_freezeMode = FrozenForConcurrency;
+				_freezeMode = FreezeMode.FrozenForConcurrency;
 				if (_root == null || _root.IsFrozen)
 					AutoCreateOrCloneRoot();
 
@@ -183,7 +183,7 @@ namespace Loyc.Collections
 				++_count;
 				CheckPoint();
 			} finally {
-				_freezeMode = NotFrozen;
+				_freezeMode = FreezeMode.NotFrozen;
 			}
 		}
 
@@ -225,7 +225,7 @@ namespace Loyc.Collections
 				return ((AListBase<int, T>)this)[index];
 			}
 			set {
-				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
+				if ((_freezeMode & (FreezeMode)1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
 					AutoThrow();
 				if ((uint)index >= (uint)Count)
 					throw new IndexOutOfRangeException();
@@ -237,9 +237,9 @@ namespace Loyc.Collections
 		{
 			if (_freezeMode != 0)
 			{
-				if (_freezeMode == FrozenForConcurrency)
+				if (_freezeMode == FreezeMode.FrozenForConcurrency)
 					AutoThrow();
-				if (_freezeMode == Frozen)
+				if (_freezeMode == FreezeMode.Frozen)
 					return false;
 			}
 			if ((uint)index >= (uint)Count)
@@ -681,7 +681,7 @@ namespace Loyc.Collections
 			if (_listChanging != null)
 				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, itemsCount, items));
 
-			_freezeMode = FrozenForConcurrency;
+			_freezeMode = FreezeMode.FrozenForConcurrency;
 			AutoCreateOrCloneRoot();
 		}
 
@@ -689,7 +689,7 @@ namespace Loyc.Collections
 		{
 			if (amountInserted != 0)
 				++_version;
-			_freezeMode = NotFrozen;
+			_freezeMode = FreezeMode.NotFrozen;
 			checked { _count += (uint)amountInserted; };
 			CheckPoint();
 		}
@@ -781,21 +781,22 @@ namespace Loyc.Collections
 		{
 			return cov_RemoveSection(start, count);
 		}
-		bool ICollection<T>.IsReadOnly
-		{
-			get { return IsFrozen; }
-		}
+		
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		bool ICollection<T>.IsReadOnly => IsFrozen;
 
 		public new ListSlice<T> Slice(int start, int length)
 		{
 			return new ListSlice<T>(this, start, length);
 		}
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		new public T First
 		{
 			get { return this[0]; }
 			set { this[0] = value; }
 		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		new public T Last
 		{
 			get { return base.Last; }

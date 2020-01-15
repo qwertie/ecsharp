@@ -58,27 +58,20 @@ namespace Loyc.Collections.Impl
 				return default(T);
 		}
 
-		public override uint TotalCount
-		{
-			get { return _totalCount; }
-		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override uint TotalCount => _totalCount;
 
-		public override int LocalCount
-		{
-			get { return _list.Count; }
-		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override int LocalCount => _list.Count;
 
-		public override bool IsFullLeaf
-		{
-			get { return _list.Count >= _maxNodeSize; }
-		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override bool IsFullLeaf => _list.Count >= _maxNodeSize;
 
-		public override bool IsUndersized
-		{
-			get { return _list.Count * 3 <= _maxNodeSize; }
-		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override bool IsUndersized => _list.Count * 3 <= _maxNodeSize;
 
 		static Func<Entry, uint, int> _binarySearchComp = (e, i) => e.Offset.CompareTo(i);
+
 		private bool BinarySearch(uint index, out int i)
 		{
 			// TODO: optimize by writing specialized binary search method

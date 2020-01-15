@@ -48,6 +48,7 @@ namespace Loyc.Collections.Impl
 		public static readonly T[] EmptyArray = new T[0];
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
 		private T[] _array;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int _count;
 
 		public InternalList(int capacity)
@@ -75,6 +76,7 @@ namespace Loyc.Collections.Impl
 			set { Resize(value); }
 		}
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsEmpty
 		{
 			[DebuggerStepThrough]
@@ -85,6 +87,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>Changing this property requires O(Count) time and temporary 
 		/// space. Attempting to set the capacity lower than Count has no effect.
 		/// </remarks>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public int Capacity
 		{
 			[DebuggerStepThrough]
@@ -95,6 +98,28 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public T First
+		{
+			get { return _array[0]; }
+			set { _array[0] = value; }
+		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public T Last
+		{
+			get {
+				return _array[_count - 1];
+			}
+			set {
+				_array[_count - 1] = value;
+			}
+		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public T[] InternalArray
+		{
+			[DebuggerStepThrough]
+			get { return _array; }
+		}
 
 		public void AutoRaiseCapacity(int more, int capacityLimit)
 		{
@@ -276,20 +301,6 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		public T First
-		{
-			get { return _array[0]; }
-			set { _array[0] = value; }
-		}
-		public T Last
-		{
-			get {
-				return _array[_count - 1];
-			}
-			set {
-				_array[_count - 1] = value;
-			}
-		}
 		public void Pop()
 		{
 			_array[_count - 1] = default(T);
@@ -361,10 +372,10 @@ namespace Loyc.Collections.Impl
 		{
 			Array.Copy(_array, 0, array, arrayIndex, _count);
 		}
-		public bool IsReadOnly
-		{
-			get { return false; }
-		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		bool ICollection<T>.IsReadOnly => false;
+		
 		public bool Remove(T item)
 		{
 			int i = IndexOf(item);
@@ -380,12 +391,6 @@ namespace Loyc.Collections.Impl
 		public IEnumerator<T> GetEnumerator()
 		{
 			return new InternalList.Enumerator<T>(_array, 0, _count);
-		}
-
-		public T[] InternalArray
-		{
-			[DebuggerStepThrough]
-			get { return _array; }
 		}
 
 		#endregion

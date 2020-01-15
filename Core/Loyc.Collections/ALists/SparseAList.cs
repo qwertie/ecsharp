@@ -59,7 +59,7 @@ namespace Loyc.Collections
 		internal void DoSparseOperation(ref AListSparseOperation<T> op)
 		{
 			uint index = op.AbsoluteIndex;
-			Debug.Assert((_freezeMode & 1) == 0);
+			Debug.Assert((_freezeMode & (FreezeMode)1) == 0);
 			if ((uint)index > (uint)_count)
 				throw new ArgumentOutOfRangeException("index");
 
@@ -211,7 +211,7 @@ namespace Loyc.Collections
 				return ((AListBase<int, T>)this)[index];
 			}
 			set {
-				if ((_freezeMode & 1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
+				if ((_freezeMode & (FreezeMode)1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
 					AutoThrow();
 				var op = new AListSparseOperation<T>((uint)index, false, false, 1, _observer) { Item = value };
 				DoSparseOperation(ref op);
@@ -222,9 +222,9 @@ namespace Loyc.Collections
 		{
 			if (_freezeMode != 0)
 			{
-				if (_freezeMode == FrozenForConcurrency)
+				if (_freezeMode == FreezeMode.FrozenForConcurrency)
 					AutoThrow();
-				if (_freezeMode == Frozen)
+				if (_freezeMode == FreezeMode.Frozen)
 					return false;
 			}
 			if ((uint)index >= (uint)Count)
@@ -312,7 +312,7 @@ namespace Loyc.Collections
 
 		public override int IndexOf(T item)
 		{
-			if (_freezeMode == FrozenForConcurrency)
+			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				AutoThrow();
 			if (_root == null)
 				return -1;

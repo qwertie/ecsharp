@@ -171,6 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ALists\AList.cd" />
+    <None Include="ALists\AListNodes.cd" />
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>

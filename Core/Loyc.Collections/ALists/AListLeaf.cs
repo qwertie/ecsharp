@@ -30,19 +30,18 @@ namespace Loyc.Collections.Impl
 			_isFrozen = false;
 		}
 
-		public override bool IsLeaf
-		{
-			get { return true; }
-		}
-		public sealed override int LocalCount
-		{
-			get { return _list.Count; }
-		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public override bool IsLeaf => true;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public sealed override int LocalCount => _list.Count;
+		public override uint TotalCount => (uint)_list.Count;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public sealed override bool IsFullLeaf => _list.Count >= _maxNodeSize;
+		public override bool IsUndersized => _list.Count * 3 <= _maxNodeSize;
+		public override int CapacityLeft => _maxNodeSize - LocalCount;
 
-		public override T this[uint index]
-		{
-			get { return _list[(int)index]; }
-		}
+		public override T this[uint index] => _list[(int)index];
+
 		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
@@ -89,20 +88,6 @@ namespace Loyc.Collections.Impl
 			return _list.Last;
 		}
 
-		public override uint TotalCount
-		{
-			get { return (uint)_list.Count; }
-		}
-
-		public sealed override bool IsFullLeaf
-		{
-			get { return _list.Count >= _maxNodeSize; }
-		}
-		public override bool IsUndersized
-		{
-			get { return _list.Count * 3 <= _maxNodeSize; }
-		}
-
 		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
 		{
 			Debug.Assert(!_isFrozen);
@@ -117,8 +102,6 @@ namespace Loyc.Collections.Impl
 		{
 			_isFrozen = true;
 		}
-
-		public override int CapacityLeft { get { return _maxNodeSize - LocalCount; } }
 
 		//public Iterator<T> GetIterator(int start, int subcount)
 		//{

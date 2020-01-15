@@ -54,6 +54,7 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public abstract class AListNode<K, T>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public abstract bool IsLeaf { get; }
 
 		/// <summary>Inserts an item at the specified index. This method can only
@@ -156,8 +157,10 @@ namespace Loyc.Collections.Impl
 		/// <summary>Gets the total number of (T) items in this node and all children</summary>
 		public abstract uint TotalCount { get; }
 		/// <summary>Gets the number of items (slots) used this node only.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public abstract int LocalCount { get; }
 		/// <summary>Returns true if the node is full and is a leaf node.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public abstract bool IsFullLeaf { get; }
 		/// <summary>Returns true if the node is undersized, meaning it would 
 		/// prefer to have more immediate children.</summary>
@@ -204,6 +207,7 @@ namespace Loyc.Collections.Impl
 		/// frozen, but not actually marked as frozen until the parent is cloned.
 		/// This allows instantaneous cloning, since only the root node is marked 
 		/// frozen in the beginning.</remarks>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsFrozen { get { return _isFrozen; } }
 		public abstract void Freeze();
 
@@ -292,7 +296,9 @@ namespace Loyc.Collections.Impl
 		public virtual uint GetRealItemCount() { return TotalCount; }
 
 		/// <summary>For testing and debugging only.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		internal virtual IEnumerable<AListNode<K, T>> Leaves => new[] { this };
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		internal virtual IEnumerable<AListNode<K, T>> Children => InternalList<AListNode<K, T>>.EmptyArray;
 	}
 

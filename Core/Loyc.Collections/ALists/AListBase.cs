@@ -149,16 +149,22 @@ namespace Loyc.Collections
 		protected internal ListChangingHandler<T> _listChanging; // Delegate for ListChanging
 		protected internal AListNode<K, T> _root;
 		protected internal IAListTreeObserver<K, T> _observer;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected uint _count;
 		protected ushort _version;
 		protected ushort _maxLeafSize;
 		protected byte _maxInnerSize;
 		protected byte _treeHeight; // 0=empty, 1=leaf only
-		protected byte _freezeMode = NotFrozen;
-		protected const byte NotFrozen = 0;
-		protected const byte Frozen = 1;
-		protected const byte FrozenForListChanging = 2;
-		protected const byte FrozenForConcurrency = 3;
+		protected FreezeMode _freezeMode = FreezeMode.NotFrozen;
+
+		[Flags]
+		protected internal enum FreezeMode : byte
+		{
+			NotFrozen = 0,
+			Frozen = 1,
+			FrozenForListChanging = 2,
+			FrozenForConcurrency = 3
+		}
 
 		/// <summary>Event for learning about changes in progress on a list.</summary>
 		public virtual event ListChangingHandler<T> ListChanging
@@ -174,6 +180,32 @@ namespace Loyc.Collections
 		[EditorBrowsable(EditorBrowsableState.Never)] // hide from IntelliSense
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // redundant
 		public byte TreeHeight { get { return _treeHeight; } }
+
+		public int Count => (int)_count;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public bool IsEmpty => _count == 0;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public T First => this[0];
+		
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public T Last
+		{
+			get {
+				if (_root == null)
+					throw new ArgumentOutOfRangeException("index");
+				if (_freezeMode == FreezeMode.FrozenForConcurrency)
+					ThrowFrozen();
+				return _root.GetLastItem();
+			}
+		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public bool IsFrozen => _freezeMode == FreezeMode.Frozen;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public AListReverseView<K, T> ReverseView => new AListReverseView<K, T>(this);
 
 		#endregion
 
@@ -207,7 +239,7 @@ namespace Loyc.Collections
 		/// <remarks>This constructor leaves the new clone unfrozen.</remarks>
 		protected AListBase(AListBase<K, T> items, bool keepListChangingHandlers)
 		{
-			if (items._freezeMode == FrozenForConcurrency)
+			if (items._freezeMode == FreezeMode.FrozenForConcurrency)
 				items.ThrowFrozen(); // cannot clone concurrently!
 			if ((_root = items._root) != null)
 				_root.Freeze();
@@ -267,28 +299,28 @@ namespace Loyc.Collections
 		#endif
 		protected void AutoThrow()
 		{
-			if (_freezeMode != NotFrozen) ThrowFrozen();
+			if (_freezeMode != FreezeMode.NotFrozen) ThrowFrozen();
 		}
 		private void ThrowFrozen()
 		{
 			string name = GetType().NameWithGenericArgs();
-			if (_freezeMode == FrozenForListChanging)
+			if (_freezeMode == FreezeMode.FrozenForListChanging)
 				throw new InvalidOperationException(Localize.Localized("Cannot insert or remove items in {0} during a ListChanging event.", name));
-			else if (_freezeMode == FrozenForConcurrency)
+			else if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				throw new ConcurrentModificationException(Localize.Localized("{0} was accessed concurrently while being modified.", name));
-			else if (_freezeMode == Frozen)
+			else if (_freezeMode == FreezeMode.Frozen)
 				throw new ReadOnlyException(Localize.Localized("Cannot modify {0} when it is frozen.", name));
 			else
 				throw new InvalidStateException();
 		}
 		protected internal void CallListChanging(ListChangeInfo<T> listChangeInfo)
 		{
-			Debug.Assert(_freezeMode == NotFrozen || _freezeMode == FrozenForConcurrency);
+			Debug.Assert(_freezeMode == FreezeMode.NotFrozen || _freezeMode == FreezeMode.FrozenForConcurrency);
 			if (_listChanging != null)
 			{
 				// Freeze the list during ListChanging
 				var old = _freezeMode;
-				_freezeMode = FrozenForListChanging;
+				_freezeMode = FreezeMode.FrozenForListChanging;
 				try {
 					_listChanging(this, listChangeInfo);
 				} finally {
@@ -400,7 +432,7 @@ namespace Loyc.Collections
 			AutoThrow();
 			int sizeChange;
 			try {
-				_freezeMode = FrozenForConcurrency;
+				_freezeMode = FreezeMode.FrozenForConcurrency;
 				if (_root == null) {
 					if (op.Mode == AListOperation.Remove || op.Mode == AListOperation.ReplaceIfPresent)
 						return 0; // avoid creating unnecessary root 
@@ -429,7 +461,7 @@ namespace Loyc.Collections
 				_count += (uint)sizeChange;
 				CheckPoint();
 			} finally {
-				_freezeMode = NotFrozen;
+				_freezeMode = FreezeMode.NotFrozen;
 			}
 			return sizeChange;
 		}
@@ -451,7 +483,7 @@ namespace Loyc.Collections
 			Debug.Assert(op.BaseIndex == 0 && !op.Found && op.AggregateChanged == 0);
 			if (_root == null)
 				return;
-			if (_freezeMode == FrozenForConcurrency)
+			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			op.List = this;
 			AListNode<K, T> splitLeft, splitRight;			
@@ -490,7 +522,7 @@ namespace Loyc.Collections
 
 			try
 			{
-				_freezeMode = FrozenForConcurrency;
+				_freezeMode = FreezeMode.FrozenForConcurrency;
 
 				if (_root.IsFrozen)
 					AutoCreateOrCloneRoot();
@@ -504,7 +536,7 @@ namespace Loyc.Collections
 			}
 			finally
 			{
-				_freezeMode = NotFrozen;
+				_freezeMode = FreezeMode.NotFrozen;
 			}
 		}
 		
@@ -513,7 +545,7 @@ namespace Loyc.Collections
 		/// <returns>The number of elements removed from the list.</returns>
 		public int RemoveAll(Predicate<T> match)
 		{
-			if (_freezeMode == FrozenForConcurrency)
+			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			// This is not among the most efficient methods... but it'll do
 			// TODO: Find a way to support this in an enumerator,
@@ -555,7 +587,7 @@ namespace Loyc.Collections
 		}
 		private void JustClear()
 		{
-			_freezeMode = FrozenForConcurrency;
+			_freezeMode = FreezeMode.FrozenForConcurrency;
 			try {
 				_count = 0;
 				_root = null;
@@ -564,7 +596,7 @@ namespace Loyc.Collections
 					_observer.Clear();
 			} finally {
 				_version++;
-				_freezeMode = NotFrozen;
+				_freezeMode = FreezeMode.NotFrozen;
 			}
 		}
 
@@ -608,15 +640,6 @@ namespace Loyc.Collections
 			LCInterfaces.CopyTo(this, array, arrayIndex);
 		}
 
-		public int Count
-		{
-			get { return (int)_count; }
-		}
-		public bool IsEmpty
-		{
-			get { return _count == 0; }
-		}
-
 		#endregion
 
 		#region GetEnumerator methods
@@ -645,11 +668,6 @@ namespace Loyc.Collections
 				return NewEnumerator(stop, start, stop);
 			else
 				return NewEnumerator(start - 1, start, stop);
-		}
-
-		public AListReverseView<K, T> ReverseView
-		{
-			get { return new AListReverseView<K, T>(this); }
 		}
 
 		public class Enumerator : IBinumerator<T>
@@ -791,7 +809,7 @@ namespace Loyc.Collections
 			{
 				if (_expectedVersion != _self._version)
 					throw new EnumerationException();
-				if (_self._freezeMode == FrozenForConcurrency)
+				if (_self._freezeMode == FreezeMode.FrozenForConcurrency)
 					throw new ConcurrentModificationException();
 				Debug.Assert(_currentIndex < LastIndex);
 
@@ -847,7 +865,7 @@ namespace Loyc.Collections
 			{
 				if (_expectedVersion != _self._version)
 					throw new EnumerationException();
-				if (_self._freezeMode == FrozenForConcurrency)
+				if (_self._freezeMode == FreezeMode.FrozenForConcurrency)
 					throw new ConcurrentModificationException();
 
 				var stack = _stack;
@@ -898,7 +916,7 @@ namespace Loyc.Collections
 			{
 				if (_expectedVersion != _self._version)
 					throw new EnumerationException();
-				if (_self._freezeMode == FrozenForConcurrency)
+				if (_self._freezeMode == FreezeMode.FrozenForConcurrency)
 					throw new ConcurrentModificationException();
 
 				PrepareToStart();
@@ -970,7 +988,7 @@ namespace Loyc.Collections
 		public T this[int index]
 		{
 			get {
-				if (_freezeMode == FrozenForConcurrency)
+				if (_freezeMode == FreezeMode.FrozenForConcurrency)
 					ThrowFrozen();
 				if ((uint)index >= (uint)Count)
 					throw new ArgumentOutOfRangeException("index");
@@ -980,7 +998,7 @@ namespace Loyc.Collections
 
 		public T TryGet(int index, out bool fail)
 		{
-			if (_freezeMode == FrozenForConcurrency)
+			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			fail = false;
 			if ((uint)index < (uint)_count)
@@ -991,7 +1009,7 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice, First, Last
+		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice
 
 		/// <summary>Prevents further changes to the list.</summary>
 		/// <remarks>
@@ -1007,13 +1025,9 @@ namespace Loyc.Collections
 		/// </remarks>
 		public virtual void Freeze()
 		{
-			if (_freezeMode > Frozen)
+			if (_freezeMode > FreezeMode.Frozen)
 				ThrowFrozen();
-			_freezeMode = Frozen;
-		}
-		public bool IsFrozen
-		{
-			get { return _freezeMode == Frozen; }
+			_freezeMode = FreezeMode.Frozen;
 		}
 
 		/// <summary>Together with the <see cref="AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T})"/>
@@ -1056,7 +1070,7 @@ namespace Loyc.Collections
 
 			Debug.Assert(_freezeMode == 0 && other._freezeMode == 0);
 
-			_freezeMode = other._freezeMode = FrozenForConcurrency;
+			_freezeMode = other._freezeMode = FreezeMode.FrozenForConcurrency;
 			try {
 				if (swapObservers) {
 					G.Swap(ref _listChanging, ref other._listChanging);
@@ -1070,7 +1084,7 @@ namespace Loyc.Collections
 			}
 			finally
 			{
-				_freezeMode = other._freezeMode = NotFrozen;
+				_freezeMode = other._freezeMode = FreezeMode.NotFrozen;
 			}
 		}
 
@@ -1078,21 +1092,6 @@ namespace Loyc.Collections
 		public Slice_<T> Slice(int start, int length)
 		{
 			return new Slice_<T>(this, start, length);
-		}
-
-		public T First
-		{
-			get { return this[0]; }
-		}
-		public T Last
-		{
-			get {
-				if (_root == null)
-					throw new ArgumentOutOfRangeException("index");
-				if (_freezeMode == FrozenForConcurrency)
-					ThrowFrozen();
-				return _root.GetLastItem();
-			}
 		}
 
 		/// <summary>Diagnostic method. Returns the number of elements of the list
@@ -1125,7 +1124,7 @@ namespace Loyc.Collections
 		public virtual bool AddObserver(IAListTreeObserver<K, T> observer)
 		{
 			AutoThrow();
-			_freezeMode = FrozenForConcurrency;
+			_freezeMode = FreezeMode.FrozenForConcurrency;
 			try {
 				if (_observer == null) {
 					observer.DoAttach(_root, this);
@@ -1142,7 +1141,7 @@ namespace Loyc.Collections
 					return false;
 				}
 			} finally {
-				_freezeMode = NotFrozen;
+				_freezeMode = FreezeMode.NotFrozen;
 			}
 		}
 
@@ -1150,7 +1149,7 @@ namespace Loyc.Collections
 		/// <returns>True if the observer was removed, false if it was not attached.</returns>
 		public virtual bool RemoveObserver(IAListTreeObserver<K, T> observer)
 		{
-			if (_freezeMode == FrozenForConcurrency)
+			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			
 			if (_observer == observer)

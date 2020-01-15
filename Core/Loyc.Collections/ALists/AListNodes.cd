@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Comment CommentText="Implementation detail: one of these is sent from the collection class (AList, BList, etc.) to the tree (AListNode classes); it holds info used to run a command like &quot;add or replace item&quot;, &quot;add if not present&quot; or &quot;remove item&quot;.">
+    <Position X="4.781" Y="6.26" Height="1.021" Width="2.94" />
+  </Comment>
+  <Comment CommentText="Inner nodes know the index of the first item of each child.">
+    <Position X="1.66" Y="2.499" Height="0.646" Width="1.335" />
+  </Comment>
+  <Comment CommentText="These node classes (hidden from end-users) store the data. BListInner&lt;T&gt; nodes are &quot;internal&quot; nodes that have only child nodes, no T instances of their own (the base class AListInnerBase&lt;K,T&gt; contains most of the code). Leaf nodes (BListLeaf&lt;T&gt; and its base) contain the actual data. A short BList or BDictionary will have one leaf and no inner nodes.">
+    <Position X="2.573" Y="0.5" Height="0.979" Width="4.596" />
+  </Comment>
+  <Comment CommentText="Used to communicate info about a command to insert items or empty space, or to change a slot, in a sparse list.">
+    <Position X="4.802" Y="7.742" Height="0.667" Width="2.597" />
+  </Comment>
+  <Class Name="Loyc.Collections.Impl.AListNode&lt;K, T&gt;">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Members>
+      <Field Name="_childCount" Hidden="true" />
+      <Method Name="AutoClone" Hidden="true" />
+      <Method Name="CallListChanging" Hidden="true" />
+      <Property Name="CapacityLeft" Hidden="true" />
+      <Property Name="Children" Hidden="true" />
+      <Method Name="Clone" Hidden="true" />
+      <Method Name="CopySection" Hidden="true" />
+      <Method Name="DetachedClone" Hidden="true" />
+      <Method Name="DoSingleOperation" Hidden="true" />
+      <Method Name="DoSparseOperation" Hidden="true" />
+      <Method Name="Freeze" Hidden="true" />
+      <Method Name="GetImmutableCount" Hidden="true" />
+      <Method Name="GetLastItem" Hidden="true" />
+      <Method Name="GetObserver" Hidden="true" />
+      <Method Name="GetRealItemCount" Hidden="true" />
+      <Method Name="HasListChanging" Hidden="true" />
+      <Method Name="Insert" Hidden="true" />
+      <Method Name="InsertRange" Hidden="true" />
+      <Property Name="IsFrozen" Hidden="true" />
+      <Property Name="IsFullLeaf" Hidden="true" />
+      <Property Name="IsLeaf" Hidden="true" />
+      <Property Name="IsUndersized" Hidden="true" />
+      <Property Name="Leaves" Hidden="true" />
+      <Property Name="LocalCount" Hidden="true" />
+      <Method Name="RemoveAt" Hidden="true" />
+      <Method Name="SetAt" Hidden="true" />
+      <Method Name="SparseGetNearest" Hidden="true" />
+      <Method Name="TakeFromLeft" Hidden="true" />
+      <Method Name="TakeFromRight" Hidden="true" />
+      <Property Name="this" Hidden="true" />
+      <Property Name="TotalCount" Hidden="true" />
+      <Method Name="Verify" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>YGgFAEQiAAAABRQACAAGEAgIAAFAYQAACAIAAAAAMBI=</HashCode>
+      <FileName>ALists\AListNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;">
+    <Position X="0.5" Y="2.25" Width="2.25" />
+    <Members>
+      <Method Name="AdjustIndexesAfter" Hidden="true" />
+      <Method Name="AListInnerBase" Hidden="true" />
+      <Method Name="AssertValid" Hidden="true" />
+      <Method Name="AutoEnlargeChildren" Hidden="true" />
+      <Method Name="AutoSplit" Hidden="true" />
+      <Method Name="BaseIndexOf" Hidden="true" />
+      <Method Name="BinarySearchI" Hidden="true" />
+      <Property Name="CapacityLeft" Hidden="true" />
+      <Method Name="Child" Hidden="true" />
+      <Method Name="ChildIndexOffset" Hidden="true" />
+      <Property Name="Children" Hidden="true" />
+      <Field Name="DefaultMaxNodeSize" Hidden="true" />
+      <Method Name="Freeze" Hidden="true" />
+      <Field Name="FrozenBit" Hidden="true" />
+      <Method Name="GetImmutableCount" Hidden="true" />
+      <Method Name="GetLastItem" Hidden="true" />
+      <Method Name="HandleChildCloned" Hidden="true" />
+      <Method Name="HandleChildSplit" Hidden="true" />
+      <Method Name="HandleUndersized" Hidden="true" />
+      <Method Name="HandleUndersizedOrAggregateChanged" Hidden="true" />
+      <Method Name="IndexOf" Hidden="true" />
+      <Method Name="InitEmpties" Hidden="true" />
+      <Property Name="IsFullLeaf" Hidden="true" />
+      <Property Name="IsLeaf" Hidden="true" />
+      <Property Name="IsUndersized" Hidden="true" />
+      <Property Name="Leaves" Hidden="true" />
+      <Method Name="LLDelete" Hidden="true" />
+      <Method Name="LLInsert" Hidden="true" />
+      <Property Name="LocalCount" Hidden="true" />
+      <Method Name="MarkChildrenFrozen" Hidden="true" />
+      <Field Name="MaxMaxNodeSize" Hidden="true" />
+      <Property Name="MaxNodeSize" Hidden="true" />
+      <Method Name="PrepareToInsert" Hidden="true" />
+      <Method Name="RemoveAt" Hidden="true" />
+      <Method Name="SetAt" Hidden="true" />
+      <Method Name="SplitAt" Hidden="true" />
+      <Method Name="TakeFromLeft" Hidden="true" />
+      <Method Name="TakeFromRight" Hidden="true" />
+      <Property Name="this" Hidden="true" />
+      <Property Name="TotalCount" Hidden="true" />
+      <Method Name="TryToShiftItemsToSiblings" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;.Entry">
+        <TypeIdentifier>
+          <NewMemberFileName>Collections\Implementations\AListInnerBase.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <InheritanceLine Type="Loyc.Collections.Impl.AListNode&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.125" Y="1.796" />
+        <Point X="1.125" Y="2.25" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>bEAUAEQCAAQABMRCCAAEGwAAAIUAwQAACAQBAAEQJAI=</HashCode>
+      <FileName>ALists\AListInnerBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.AListLeaf&lt;K, T&gt;">
+    <Position X="3.25" Y="2.5" Width="2" />
+    <Members>
+      <Method Name="AListLeaf" Hidden="true" />
+      <Property Name="CapacityLeft" Hidden="true" />
+      <Field Name="DefaultMaxNodeSize" Hidden="true" />
+      <Method Name="EnsureCapacity" Hidden="true" />
+      <Method Name="Freeze" Hidden="true" />
+      <Method Name="GetImmutableCount" Hidden="true" />
+      <Method Name="GetLastItem" Hidden="true" />
+      <Method Name="IndexOf" Hidden="true" />
+      <Property Name="IsFullLeaf" Hidden="true" />
+      <Property Name="IsLeaf" Hidden="true" />
+      <Property Name="IsUndersized" Hidden="true" />
+      <Property Name="LocalCount" Hidden="true" />
+      <Method Name="RemoveAt" Hidden="true" />
+      <Method Name="SetAt" Hidden="true" />
+      <Method Name="Sort" Hidden="true" />
+      <Method Name="TakeFromLeft" Hidden="true" />
+      <Method Name="TakeFromRight" Hidden="true" />
+      <Property Name="this" Hidden="true" />
+      <Property Name="TotalCount" Hidden="true" />
+    </Members>
+    <InheritanceLine Type="Loyc.Collections.Impl.AListNode&lt;K, T&gt;" ManuallyRouted="true">
+      <Path>
+        <Point X="1.5" Y="1.796" />
+        <Point X="1.5" Y="2.411" />
+        <Point X="4.25" Y="2.411" />
+        <Point X="4.25" Y="2.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>IEAEAAQiAAAABAQACAAQEAAAAAAAQQAASAAAAAAAJAI=</HashCode>
+      <FileName>ALists\AListLeaf.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.BListInner&lt;K, T&gt;">
+    <Position X="0.5" Y="5.5" Width="1.75" />
+    <Members>
+      <Method Name="AssertValid" Hidden="true" />
+      <Method Name="BinarySearchK" Hidden="true" />
+      <Method Name="BListInner" Hidden="true" />
+      <Method Name="DoSingleOperation" Hidden="true" />
+      <Method Name="GetHighestKey" Hidden="true" />
+      <Method Name="GetHighestKeys" Hidden="true" />
+      <Method Name="GetKey" Hidden="true" />
+      <Method Name="HandleChildSplit" Hidden="true" />
+      <Method Name="HandleUndersized" Hidden="true" />
+      <Method Name="HandleUndersizedOrAggregateChanged" Hidden="true" />
+      <Method Name="LLDelete" Hidden="true" />
+      <Method Name="LLInsert" Hidden="true" />
+    </Members>
+    <InheritanceLine Type="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;" FixedFromPoint="true">
+      <Path>
+        <Point X="1.375" Y="5.198" />
+        <Point X="1.375" Y="5.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAABAEAgABAAAAACCAAACQQAAAAAAAAAAAQIAAAABAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.AListLeaf&lt;T&gt;" Collapsed="true">
+    <Position X="3" Y="4.25" Width="1.5" />
+    <InheritanceLine Type="Loyc.Collections.Impl.AListLeaf&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4" Y="3.733" />
+        <Point X="4" Y="4.25" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>ACAAAEQAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ALists\AListLeaf.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.BListLeaf&lt;K, T&gt;" Collapsed="true">
+    <Position X="4" Y="5" Width="1.5" />
+    <InheritanceLine Type="Loyc.Collections.Impl.AListLeaf&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.812" Y="3.733" />
+        <Point X="4.812" Y="5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAABAAQAAAAAABAAAAAAAEAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>ALists\BListLeaf.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.BDictionaryInner&lt;K, V&gt;" Collapsed="true">
+    <Position X="2.25" Y="7.5" Width="2.25" />
+    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.625" Y="6.733" />
+        <Point X="1.625" Y="7.125" />
+        <Point X="2.75" Y="7.125" />
+        <Point X="2.75" Y="7.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAABAAAAAAAAQAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.BListInner&lt;T&gt;" Collapsed="true">
+    <Position X="0.5" Y="7.5" Width="1.5" />
+    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.25" Y="6.733" />
+        <Point X="1.25" Y="7.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAABAAAAAAAAQAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>ALists\BListInner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loyc.Collections.Impl.SparseAListLeaf&lt;T&gt;">
+    <Position X="5.75" Y="2.5" Width="2" />
+    <Members>
+      <Field Name="_binarySearchComp" Hidden="true" />
+      <Method Name="AdjustOffsetsStartingAt" Hidden="true" />
+      <Method Name="BinarySearch" Hidden="true" />
+      <Property Name="CapacityLeft" Hidden="true" />
+      <Method Name="CopySection" Hidden="true" />
+      <Method Name="DetachedClone" Hidden="true" />
+      <Method Name="DoInsert" Hidden="true" />
+      <Method Name="DoReplace" Hidden="true" />
+      <Method Name="DoSparseOperation" Hidden="true" />
+      <Method Name="Freeze" Hidden="true" />
+      <Method Name="GetImmutableCount" Hidden="true" />
+      <Method Name="GetLastItem" Hidden="true" />
+      <Method Name="GetRealItemCount" Hidden="true" />
+      <Method Name="GetSectionRange" Hidden="true" />
+      <Method Name="Insert" Hidden="true" />
+      <Method Name="InsertRange" Hidden="true" />
+      <Method Name="InsertSpace" Hidden="true" />
+      <Property Name="IsFullLeaf" Hidden="true" />
+      <Property Name="IsLeaf" Hidden="true" />
+      <Property Name="IsUndersized" Hidden="true" />
+      <Property Name="LocalCount" Hidden="true" />
+      <Method Name="RemoveAt" Hidden="true" />
+      <Method Name="ReplaceSingleItem" Hidden="true" />
+      <Method Name="SetAt" Hidden="true" />
+      <Method Name="SparseAListLeaf" Hidden="true" />
+      <Method Name="SparseGetNearest" Hidden="true" />
+      <Method Name="SplitLeaf" Hidden="true" />
+      <Method Name="TakeFromLeft" Hidden="true" />
+      <Method Name="TakeFromRight" Hidden="true" />
+      <Property Name="this" Hidden="true" />
+      <Property Name="TotalCount" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="Loyc.Collections.Impl.SparseAListLeaf&lt;T&gt;.Entry">
+        <Members>
+          <Method Name="Entry" Hidden="true" />
+        </Members>
+        <TypeIdentifier>
+          <NewMemberFileName>ALists\SparseAListLeaf.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <InheritanceLine Type="Loyc.Collections.Impl.AListNode&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true">
+      <Path>
+        <Point X="1.75" Y="1.796" />
+        <Point X="1.75" Y="2.307" />
+        <Point X="6.75" Y="2.307" />
+        <Point X="6.75" Y="2.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>YGAEAEQKAEgEBBQACAACEAAAAIBAQwgASAAAQEAAIAY=</HashCode>
+      <FileName>ALists\SparseAListLeaf.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Loyc.Collections.Impl.AListSingleOperation&lt;K, T&gt;" Collapsed="true">
+    <Position X="4.75" Y="6" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAIAAAAQBAGAAAAAEAARAAAAAAAQAAAAAgAI=</HashCode>
+      <FileName>ALists\AListNode.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Loyc.Collections.Impl.AListSparseOperation&lt;T&gt;" Collapsed="true">
+    <Position X="4.75" Y="7.5" Width="3" />
+    <Members>
+      <Method Name="AListSparseOperation" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAgAAAAAQKAAAAAgEgAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>ALists\AListNode.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

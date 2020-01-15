@@ -170,7 +170,7 @@ namespace Benchmark
 			return Benchmarker.DiscardResult;
 		}
 
-		[Benchmark("Insert at end", Trials = 10)]
+		[Benchmark("Insert at end", Trials = 20)]
 		public object InsertSequentially(Benchmarker b)
 		{
 			var list2 = new DList<long>();
@@ -457,7 +457,7 @@ namespace Benchmark
 				}
 			});
 			// don't waste time running multiple trials for large SortedList
-			if (_count < 10000 || b.CurrentTrialNumber == 1)
+			if (_count <= 333333 && (_count < 10000 || b.CurrentTrialNumber == 1))
 				b.Run("SortedList", () =>
 				{
 					var list = MakeDict(new SortedList<long, int>(), b, out max);
