@@ -373,7 +373,7 @@ namespace Loyc.Syntax.Lexing
 		public IEnumerator<Token> GetEnumerator()
 		{
 			var c = Children;
-			return c == null ? EmptyEnumerator<Token>.Value : c.GetEnumerator();
+			return c == null ? EmptyEnumerator<Token>.Value : (IEnumerator<Token>)c.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
