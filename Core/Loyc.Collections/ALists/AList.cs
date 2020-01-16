@@ -222,7 +222,10 @@ namespace Loyc.Collections
 		public sealed override T this[int index]
 		{
 			get {
-				return ((AListBase<int, T>)this)[index];
+				// This benchmarks as slightly faster than `return _root[index]` when the root
+				// is a leaf (AListLeaf<T> is sealed); effect on deeper trees is negligible.
+				var leaf = _root as AListLeaf<T>;
+				return leaf != null ? leaf._list[index] : ((AListInner<T>)_root)[(uint)index];
 			}
 			set {
 				if ((_freezeMode & (FreezeMode)1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging

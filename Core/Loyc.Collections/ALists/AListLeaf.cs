@@ -151,10 +151,10 @@ namespace Loyc.Collections.Impl
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	internal class AListLeaf<T> : AListLeaf<int, T>
+	internal sealed class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
-		protected AListLeaf(ushort maxNodeSize, InternalList<T> list) : base(maxNodeSize, list) { }
+		AListLeaf(ushort maxNodeSize, InternalList<T> list) : base(maxNodeSize, list) { }
 		public AListLeaf(AListLeaf<T> frozen) : base(frozen) { }
 
 		public override AListNode<int, T> DetachedClone()
