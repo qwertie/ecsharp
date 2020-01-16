@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
@@ -428,7 +428,10 @@ namespace Loyc.Collections
 			else
 				return -1;
 		}
- 
+
+		public override long CountSizeInBytes(int sizeOfElement, int sizeOfKey = 8) =>
+			base.CountSizeInBytes(sizeOfElement) + IntPtr.Size * 2;
+		
 		#endregion
 
 		#region IReadOnlyDictionary<K, Values> members

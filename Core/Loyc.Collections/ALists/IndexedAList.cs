@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -119,5 +119,8 @@ namespace Loyc.Collections
 			if (_indexer != null)
 				_indexer.VerifyCorrectness();
 		}
+
+		public override long CountSizeInBytes(int sizeOfElement, int sizeOfKey = 8) =>
+			base.CountSizeInBytes(sizeOfElement + sizeOfKey) + IntPtr.Size + (_indexer?.CountMemory(sizeOfElement) ?? 0);
 	}
 }

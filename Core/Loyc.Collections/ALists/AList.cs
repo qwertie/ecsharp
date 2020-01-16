@@ -636,7 +636,27 @@ namespace Loyc.Collections
 		public AListBase(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AListBase(AListBase<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
 		protected AListBase(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
-		
+
+		#endregion
+
+		#region Properties
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		new public T First
+		{
+			get { return this[0]; }
+			set { this[0] = value; }
+		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		new public T Last
+		{
+			get { return base.Last; }
+			set { this[Count - 1] = value; }
+		}
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		bool ICollection<T>.IsReadOnly => IsFrozen;
+
 		#endregion
 
 		#region General supporting protected methods
@@ -781,26 +801,10 @@ namespace Loyc.Collections
 		{
 			return cov_RemoveSection(start, count);
 		}
-		
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		bool ICollection<T>.IsReadOnly => IsFrozen;
 
 		public new ListSlice<T> Slice(int start, int length)
 		{
 			return new ListSlice<T>(this, start, length);
-		}
-
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		new public T First
-		{
-			get { return this[0]; }
-			set { this[0] = value; }
-		}
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		new public T Last
-		{
-			get { return base.Last; }
-			set { this[Count - 1] = value; }
 		}
 
 		#region Combine: helper method for Append, Prepend

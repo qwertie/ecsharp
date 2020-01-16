@@ -44,6 +44,9 @@ namespace Loyc.Collections.Impl
 		/// <summary>Stores the highest key that applies to the node with the same index.</summary>
 		protected K[] _highestKey;
 
+		public override long CountSizeInBytes(int sizeOfT, int sizeOfK) =>
+			base.CountSizeInBytes(sizeOfT, sizeOfK) + 4 * IntPtr.Size + _highestKey.Length * sizeOfK;
+
 		private void GetHighestKeys()
 		{
 			_highestKey = new K[_children.Length - 1];

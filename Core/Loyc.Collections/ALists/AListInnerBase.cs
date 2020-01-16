@@ -33,6 +33,15 @@ namespace Loyc.Collections.Impl
 		/// </remarks>
 		protected internal Entry[] _children;
 
+		public override long CountSizeInBytes(int sizeOfT, int sizeOfK)
+		{	// This object header + the _children reference + array object header = 6 words.
+			// Assume that Entry is padded to 16 bytes on 64-bit systems.
+			long size = 6 * IntPtr.Size + _children.Length * (IntPtr.Size * 2);
+			for (int i = 0; i < _children.Length; i++)
+				size += _children[i].Node?.CountSizeInBytes(sizeOfT, sizeOfK) ?? 0;
+			return size;
+		}
+
 		#region Constructors
 
 		protected AListInnerBase(AListInnerBase<K, T> frozen)

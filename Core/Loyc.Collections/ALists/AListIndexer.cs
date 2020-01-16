@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -320,6 +320,11 @@ namespace Loyc.Collections.Impl
 				}
 			}
 		}
+
+		/// <summary>Counts memory used by the index itself (not including the AList nodes)</summary>
+		public long CountMemory(int sizeOfElement) =>
+			IntPtr.Size * 5 + _items.CountSizeInBytes(sizeOfElement + IntPtr.Size) + 
+			                 (_nodes?.CountSizeInBytes(IntPtr.Size * 2) ?? 0);
 	}
 
 

@@ -7,54 +7,53 @@
     <Position X="5.054" Y="1.01" Height="0.469" Width="1.408" />
   </Comment>
   <Class Name="Loyc.Collections.BList&lt;T&gt;" Collapsed="true">
-    <Position X="3" Y="5.25" Width="1.75" />
-    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+    <Position X="3" Y="5.5" Width="1.75" />
+    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" ManuallyRouted="true" FixedToPoint="true">
       <Path>
-        <Point X="2.865" Y="4.103" />
-        <Point X="2.865" Y="4.729" />
-        <Point X="3.375" Y="4.729" />
-        <Point X="3.375" Y="5.25" />
+        <Point X="2" Y="4.362" />
+        <Point X="2" Y="4.582" />
+        <Point X="3.312" Y="4.582" />
+        <Point X="3.312" Y="5.5" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AEIQEAQAAAgAAAEABAAABgQAaAAAAggAIEAIAIAUABA=</HashCode>
+      <HashCode>AEIQEAQAAAgAAQEABAAABgQAaAAAAggAIEAIAIAUABA=</HashCode>
       <FileName>ALists\BList.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.53" />
   </Class>
   <Class Name="Loyc.Collections.BDictionary&lt;K, V&gt;" Collapsed="true">
-    <Position X="4.25" Y="3.5" Width="2.25" />
-    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+    <Position X="4.25" Y="3.75" Width="2.25" />
+    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="3.125" Y="4.103" />
-        <Point X="3.125" Y="4.294" />
-        <Point X="3.896" Y="4.294" />
-        <Point X="3.896" Y="3.359" />
-        <Point X="4.375" Y="3.359" />
-        <Point X="4.375" Y="3.5" />
+        <Point X="3.5" Y="3.78" />
+        <Point X="3.875" Y="3.78" />
+        <Point X="3.875" Y="3.375" />
+        <Point X="4.375" Y="3.375" />
+        <Point X="4.375" Y="3.75" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>CEIBEAQgAAgESAAADAAIBAQSQABAAA0AAMAgAICUABA=</HashCode>
+      <HashCode>CEIBEAQgAAgESQAADAAIBAQSQABAAA0AAMAgAICUABA=</HashCode>
       <FileName>ALists\BDictionary.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.204" />
   </Class>
   <Class Name="Loyc.Collections.BMultiMap&lt;K, V&gt;" Collapsed="true">
-    <Position X="4.5" Y="7" Width="1.75" />
+    <Position X="4.5" Y="7.25" Width="1.75" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <InheritanceLine Type="Loyc.Collections.BList&lt;T&gt;" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="4.438" Y="5.941" />
-        <Point X="4.438" Y="6.375" />
-        <Point X="4.75" Y="6.375" />
-        <Point X="4.75" Y="7" />
+        <Point X="4.438" Y="6.191" />
+        <Point X="4.438" Y="6.625" />
+        <Point X="4.75" Y="6.625" />
+        <Point X="4.75" Y="7.25" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>CAIIAAAAAAEEQAAoLAACBAgQAEAACgQAIFAggACAAAA=</HashCode>
+      <HashCode>CAIIAAAAAAEEQQAoLAACBAgQAEAACgQAIFAggACAAAA=</HashCode>
       <FileName>ALists\BMultiMap.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.371" />
@@ -67,6 +66,7 @@
       <Method Name="AutoCreateOrCloneRoot" Hidden="true" />
       <Method Name="AutoSplit" Hidden="true" />
       <Method Name="AutoThrow" Hidden="true" />
+      <Property Name="BaseClassSizeInBytes" Hidden="true" />
       <Method Name="CallListChanging" Hidden="true" />
       <Method Name="CheckPoint" Hidden="true" />
       <Method Name="Clear" Hidden="true" />
@@ -74,6 +74,7 @@
       <Method Name="CopySectionHelper" Hidden="true" />
       <Method Name="CopyTo" Hidden="true" />
       <Property Name="Count" Hidden="true" />
+      <Method Name="CountSizeInBytes" Hidden="true" />
       <Method Name="DoSingleOperation" Hidden="true" />
       <Property Name="First" Hidden="true" />
       <Method Name="Freeze" Hidden="true" />
@@ -132,11 +133,11 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Loyc.Collections.AList&lt;T&gt;" Collapsed="true">
-    <Position X="0.5" Y="6.75" Width="1.5" />
+    <Position X="0.5" Y="7" Width="1.5" />
     <InheritanceLine Type="Loyc.Collections.AListBase&lt;T&gt;" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="0.812" Y="5.691" />
-        <Point X="0.812" Y="6.75" />
+        <Point X="0.812" Y="5.941" />
+        <Point X="0.812" Y="7" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -146,11 +147,11 @@
     <Lollipop Position="0.49" />
   </Class>
   <Class Name="Loyc.Collections.AListBase&lt;T&gt;" Collapsed="true">
-    <Position X="0.5" Y="5" Width="1.5" />
-    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+    <Position X="0.5" Y="5.25" Width="1.5" />
+    <InheritanceLine Type="Loyc.Collections.AListBase&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="0.812" Y="4.103" />
-        <Point X="0.812" Y="5" />
+        <Point X="0.812" Y="4.362" />
+        <Point X="0.812" Y="5.25" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -160,13 +161,13 @@
     <Lollipop Position="0.465" />
   </Class>
   <Class Name="Loyc.Collections.SparseAList&lt;T&gt;" Collapsed="true">
-    <Position X="2.5" Y="7" Width="1.5" />
+    <Position X="2.5" Y="7.25" Width="1.5" />
     <InheritanceLine Type="Loyc.Collections.AListBase&lt;T&gt;" FixedToPoint="true">
       <Path>
-        <Point X="1.25" Y="5.691" />
-        <Point X="1.25" Y="6.066" />
-        <Point X="2.688" Y="6.066" />
-        <Point X="2.688" Y="7" />
+        <Point X="1.25" Y="5.941" />
+        <Point X="1.25" Y="6.316" />
+        <Point X="2.688" Y="6.316" />
+        <Point X="2.688" Y="7.25" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -176,7 +177,7 @@
     <Lollipop Position="0.329" />
   </Class>
   <Class Name="Loyc.Collections.IndexedAList&lt;T&gt;">
-    <Position X="0.5" Y="7.75" Width="1.5" />
+    <Position X="0.5" Y="8" Width="1.5" />
     <Members>
       <Method Name="CreateIndex" Hidden="true" />
       <Method Name="IndexedAList" Hidden="true" />
@@ -189,12 +190,12 @@
     </Compartments>
     <InheritanceLine Type="Loyc.Collections.AList&lt;T&gt;" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="0.812" Y="7.441" />
-        <Point X="0.812" Y="7.75" />
+        <Point X="0.812" Y="7.691" />
+        <Point X="0.812" Y="8" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AEAAAAAAAAQAAAAAABAAAAAgAAAAAAAABAAAAAIAAAA=</HashCode>
+      <HashCode>AEAAAAAAAAQAAQAAABAAAAAgAAAAAAAABAAAAAIAAAA=</HashCode>
       <FileName>ALists\IndexedAList.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -202,9 +203,9 @@
     </ShowAsAssociation>
   </Class>
   <Class Name="Loyc.Collections.Impl.AListIndexer&lt;K, T&gt;" Collapsed="true">
-    <Position X="3" Y="8.25" Width="1.75" />
+    <Position X="3" Y="8.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AACAABEAIAQQQgIAgAAAAAAEAJAggAAAoAABECIgAAI=</HashCode>
+      <HashCode>AICAABEAIAQQQgIAgAAAAAAEAJAggAAAoAABECIgAAI=</HashCode>
       <FileName>ALists\AListIndexer.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.158" />

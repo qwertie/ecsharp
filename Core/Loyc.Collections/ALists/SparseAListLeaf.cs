@@ -28,6 +28,10 @@ namespace Loyc.Collections.Impl
 		protected internal InternalList<Entry> _list;
 		protected uint _totalCount;
 
+		public override long CountSizeInBytes(int sizeOfT, int sizeOfK) =>
+			// We don't know the alignment of Entry; optimistically assume 4.
+			5 * IntPtr.Size + (LocalCount == 0 ? 0 : 3 * IntPtr.Size + (sizeOfT + 4) * _list.Capacity);
+
 		public SparseAListLeaf(ushort maxNodeSize) : this(maxNodeSize, InternalList<Entry>.Empty, 0) { }
 		private SparseAListLeaf(ushort maxNodeSize, InternalList<Entry> list, uint totalCount)
 		{

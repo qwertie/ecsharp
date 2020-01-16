@@ -13,6 +13,9 @@ namespace Loyc.Collections.Impl
 
 		protected internal InternalList<T> _list = InternalList<T>.Empty;
 
+		public override long CountSizeInBytes(int sizeOfT, int sizeOfK) =>
+			4 * IntPtr.Size + (LocalCount == 0 ? 0 : 3 * IntPtr.Size + sizeOfT * _list.Capacity);
+
 		public AListLeaf(ushort maxNodeSize)
 		{
 			Debug.Assert(maxNodeSize >= 3);

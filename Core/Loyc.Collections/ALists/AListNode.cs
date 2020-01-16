@@ -300,6 +300,14 @@ namespace Loyc.Collections.Impl
 		internal virtual IEnumerable<AListNode<K, T>> Leaves => new[] { this };
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		internal virtual IEnumerable<AListNode<K, T>> Children => InternalList<AListNode<K, T>>.EmptyArray;
+
+		/// <summary>Tallies the memory use of the current node and all child nodes,
+		/// with the assumption that each object has a header size of two words (e.g.
+		/// <c>class Foo {}</c> has a size of 16 bytes per Foo object in a 64-bit
+		/// process), and arrays have a header size of three words.</summary>
+		/// <param name="sizeOfT">The size to attribute to a slot of type T</param>
+		/// <param name="sizeOfK">The size to attribute to a slot of type K</param>
+		public abstract long CountSizeInBytes(int sizeOfT, int sizeOfK);
 	}
 
 	/// <summary>This structure is passed from the collection class (AList, BList 

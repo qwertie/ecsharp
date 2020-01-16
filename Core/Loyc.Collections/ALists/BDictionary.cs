@@ -1,4 +1,4 @@
-﻿namespace Loyc.Collections
+namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
@@ -516,8 +516,9 @@
 			return op.Found;
 		}
 
+		public override long CountSizeInBytes(int sizeOfPair, int sizeOfKey = 8) =>
+			base.CountSizeInBytes(sizeOfPair) + IntPtr.Size;
+
 		#endregion
-
-
 	}
 }

@@ -22,6 +22,7 @@
       <Property Name="Children" Hidden="true" />
       <Method Name="Clone" Hidden="true" />
       <Method Name="CopySection" Hidden="true" />
+      <Method Name="CountSizeInBytes" Hidden="true" />
       <Method Name="DetachedClone" Hidden="true" />
       <Method Name="DoSingleOperation" Hidden="true" />
       <Method Name="DoSparseOperation" Hidden="true" />
@@ -67,6 +68,7 @@
       <Method Name="Child" Hidden="true" />
       <Method Name="ChildIndexOffset" Hidden="true" />
       <Property Name="Children" Hidden="true" />
+      <Method Name="CountSizeInBytes" Hidden="true" />
       <Field Name="DefaultMaxNodeSize" Hidden="true" />
       <Method Name="Freeze" Hidden="true" />
       <Field Name="FrozenBit" Hidden="true" />
@@ -117,7 +119,7 @@
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>bEAUAEQCAAQABMRCCAAEGwAAAIUAwQAACAQBAAEQJAI=</HashCode>
+      <HashCode>bEAUAEQCAAQABcRCCAAEGwAAAIUAwQAACAQBAAEQJAI=</HashCode>
       <FileName>ALists\AListInnerBase.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -126,6 +128,7 @@
     <Members>
       <Method Name="AListLeaf" Hidden="true" />
       <Property Name="CapacityLeft" Hidden="true" />
+      <Method Name="CountSizeInBytes" Hidden="true" />
       <Field Name="DefaultMaxNodeSize" Hidden="true" />
       <Method Name="EnsureCapacity" Hidden="true" />
       <Method Name="Freeze" Hidden="true" />
@@ -147,22 +150,23 @@
     <InheritanceLine Type="Loyc.Collections.Impl.AListNode&lt;K, T&gt;" ManuallyRouted="true">
       <Path>
         <Point X="1.5" Y="1.796" />
-        <Point X="1.5" Y="2.411" />
-        <Point X="4.25" Y="2.411" />
+        <Point X="1.5" Y="2.129" />
+        <Point X="4.25" Y="2.129" />
         <Point X="4.25" Y="2.5" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>IEAEAAQiAAAABAQACAAQEAAAAAAAQQAASAAAAAAAJAI=</HashCode>
+      <HashCode>IEAEAAQiAAAABQQACAAQEAAAAAAAQQAASAAAAAAAJAI=</HashCode>
       <FileName>ALists\AListLeaf.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Loyc.Collections.Impl.BListInner&lt;K, T&gt;">
-    <Position X="0.5" Y="5.5" Width="1.75" />
+    <Position X="0.5" Y="5.75" Width="1.75" />
     <Members>
       <Method Name="AssertValid" Hidden="true" />
       <Method Name="BinarySearchK" Hidden="true" />
       <Method Name="BListInner" Hidden="true" />
+      <Method Name="CountSizeInBytes" Hidden="true" />
       <Method Name="DoSingleOperation" Hidden="true" />
       <Method Name="GetHighestKey" Hidden="true" />
       <Method Name="GetHighestKeys" Hidden="true" />
@@ -176,11 +180,11 @@
     <InheritanceLine Type="Loyc.Collections.Impl.AListInnerBase&lt;K, T&gt;" FixedFromPoint="true">
       <Path>
         <Point X="1.375" Y="5.198" />
-        <Point X="1.375" Y="5.5" />
+        <Point X="1.375" Y="5.75" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AAABAEAgABAAAAACCAAACQQAAAAAAAAAAAQIAAAABAA=</HashCode>
+      <HashCode>AAABAEAgABAAAQACCAAACQQAAAAAAAAAAAQIAAAABAA=</HashCode>
       <FileName>ALists\BListInner.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -212,11 +216,11 @@
   </Class>
   <Class Name="Loyc.Collections.Impl.BDictionaryInner&lt;K, V&gt;" Collapsed="true">
     <Position X="2.25" Y="7.5" Width="2.25" />
-    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
+    <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="1.625" Y="6.733" />
-        <Point X="1.625" Y="7.125" />
-        <Point X="2.75" Y="7.125" />
+        <Point X="1.625" Y="6.983" />
+        <Point X="1.625" Y="7.356" />
+        <Point X="2.75" Y="7.356" />
         <Point X="2.75" Y="7.5" />
       </Path>
     </InheritanceLine>
@@ -229,7 +233,7 @@
     <Position X="0.5" Y="7.5" Width="1.5" />
     <InheritanceLine Type="Loyc.Collections.Impl.BListInner&lt;K, T&gt;" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="1.25" Y="6.733" />
+        <Point X="1.25" Y="6.983" />
         <Point X="1.25" Y="7.5" />
       </Path>
     </InheritanceLine>
@@ -289,13 +293,13 @@
     <InheritanceLine Type="Loyc.Collections.Impl.AListNode&lt;K, T&gt;" ManuallyRouted="true" FixedFromPoint="true">
       <Path>
         <Point X="1.75" Y="1.796" />
-        <Point X="1.75" Y="2.307" />
-        <Point X="6.75" Y="2.307" />
+        <Point X="1.75" Y="1.952" />
+        <Point X="6.75" Y="1.952" />
         <Point X="6.75" Y="2.5" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>YGAEAEQKAEgEBBQACAACEAAAAIBAQwgASAAAQEAAIAY=</HashCode>
+      <HashCode>YGAEAEQKAEgEBRQACAACEAAAAIBAQwgASAAAQEAAIAY=</HashCode>
       <FileName>ALists\SparseAListLeaf.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -308,9 +312,6 @@
   </Struct>
   <Struct Name="Loyc.Collections.Impl.AListSparseOperation&lt;T&gt;" Collapsed="true">
     <Position X="4.75" Y="7.5" Width="3" />
-    <Members>
-      <Method Name="AListSparseOperation" Hidden="true" />
-    </Members>
     <TypeIdentifier>
       <HashCode>AAAAAAgAAgAAAAAQKAAAAAgEgAAAAAAIAAAAAAAAAAA=</HashCode>
       <FileName>ALists\AListNode.cs</FileName>

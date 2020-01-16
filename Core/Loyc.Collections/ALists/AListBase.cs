@@ -194,7 +194,7 @@ namespace Loyc.Collections
 		{
 			get {
 				if (_root == null)
-					throw new ArgumentOutOfRangeException("index");
+					ThrowIndexOutOfRange();
 				if (_freezeMode == FreezeMode.FrozenForConcurrency)
 					ThrowFrozen();
 				return _root.GetLastItem();
@@ -988,13 +988,16 @@ namespace Loyc.Collections
 		public T this[int index]
 		{
 			get {
+				// The benchmark says the cost of this check is negligible
 				if (_freezeMode == FreezeMode.FrozenForConcurrency)
 					ThrowFrozen();
 				if ((uint)index >= (uint)Count)
-					throw new ArgumentOutOfRangeException("index");
+					ThrowIndexOutOfRange();
 				return _root[(uint)index];
 			}
 		}
+
+		protected void ThrowIndexOutOfRange() => throw new ArgumentOutOfRangeException("index");
 
 		public T TryGet(int index, out bool fail)
 		{
@@ -1009,7 +1012,7 @@ namespace Loyc.Collections
 
 		#endregion
 
-		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice
+		#region Bonus features: Freeze, Clone, RemoveSectionHelper, CopySectionHelper, SwapHelper, Slice, CountSizeInBytes
 
 		/// <summary>Prevents further changes to the list.</summary>
 		/// <remarks>
@@ -1103,6 +1106,26 @@ namespace Loyc.Collections
 		{
 			return _root == null ? 0 : (int)_root.GetImmutableCount(false);
 		}
+
+		protected int BaseClassSizeInBytes => IntPtr.Size * 5 + (IntPtr.Size <= 4 ? 12 : 16);
+
+		/// <summary>Tallies the memory use, in bytes, of the entire list including
+		/// this object, the root node, all child nodes, and all arrays.</summary>
+		/// <param name="sizeOfElement">The size in bytes of a slot of type T</param>
+		/// <param name="sizeOfKey">The size in bytes of a key slot. This parameter
+		/// only has an effect in <see cref="BDictionary{K, V}"/>. In sorted types,
+		/// T is the combined size of the key and value, while K is the size of the
+		/// key by itself. But in <see cref="BMultiMap{K, V}"/>, <see cref="BList{T}"/>,
+		/// the key type is T, so this parameter is ignored. Notably, in BMultiMap,
+		/// a key-value <i>pair</i> is considered to be the key type.</param>
+		/// <returns>Number of bytes of heap used.</returns>
+		/// <remarks>
+		/// If T (or K) is a class, the element (or key) size that you pass in should
+		/// be IntPtr.Size. Do not include memory used by the class objects themselves,
+		/// because unused slots are counted in the total.
+		/// </remarks>
+		public virtual long CountSizeInBytes(int sizeOfElement, int sizeOfKey = 8) =>
+			BaseClassSizeInBytes + (_root?.CountSizeInBytes(sizeOfElement, sizeOfKey) ?? 0);
 
 		#endregion
 
