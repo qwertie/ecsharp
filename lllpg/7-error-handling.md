@@ -258,8 +258,8 @@ In this example I've written a custom error message in [Esperanto](http://en.wik
         else if (la0 == EOF)
           break;
         else {
-          MatchExcept();
           Error("Anticipita 'A' aŭ B ĉi tie");
+          MatchExcept();
         }
       }
     }
@@ -270,11 +270,11 @@ Notice that I used `_` inside the `error` branch to skip the invalid terminal. T
 One more thing that I think I should mention about error handling is the `Check()` function, which is used to check that an `&and` predicate matches. Previously you've seen an and-predicate that makes a prediction decision, as in:
 
 ~~~csharp
-    token Number @[
+    token Number @{
         {dot::bool=false;}
         ('.' {dot=true;})?
         '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-    ];
+    };
 ~~~
 
 In this case `'.' '0'..'9'+` will only be matched if `!dot`:
@@ -295,11 +295,11 @@ In this case `'.' '0'..'9'+` will only be matched if `!dot`:
 The code only turns out this way because the follow set of Number is `_*`, as explained in the next article where I talk about the difference between `token` and `rule`. Due to the follow set, LLLPG assumes `Number` might be followed by `'.'` so `!dot` must be included in the prediction decision. But if `Number` is a normal `rule` (and the follow set of `Number` does not include `'.'`):
 
 ~~~csharp
-    rule Number @[
+    rule Number @{
         {dot::bool=false;}
         ('.' {dot=true;})?
         '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-    ];
+    };
 ~~~
 
 Then the generated code is different:
