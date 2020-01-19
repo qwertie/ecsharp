@@ -1,13 +1,13 @@
 ---
 title: "LLLPG Home Page"
 layout: page
-tagline: "The LL(k) Parser Generator for Coders"
+tagline: "The Best Way to Make Parsers by Hand"
 commentIssueId: 35
 ---
 
 ![Logo](lllpg-logo.png)
 
-LLLPG is a recursive-decent LL(k) parser generator for C# that generates efficient code and integrates with Visual Studio. Parsers written with LLLPG include [Enhanced C#](https://github.com/loycnet/ecsharp/tree/master/Main/Ecs/Parser) and [LES](https://github.com/loycnet/ecsharp/tree/master/Core/Loyc.Syntax/LES). Help wanted to add additional output languages.
+LLLPG is a recursive-decent LL(k) parser generator for C# that integrates with Visual Studio and generates efficient code, similar to what you would write by hand. Parsers written with LLLPG include [Enhanced C#](https://github.com/loycnet/ecsharp/tree/master/Main/Ecs/Parser) and [LES](https://github.com/loycnet/ecsharp/tree/master/Core/Loyc.Syntax/LES). Help wanted to add additional output languages.
 
 Learn it!
 ---------

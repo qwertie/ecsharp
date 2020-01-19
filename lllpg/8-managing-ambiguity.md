@@ -106,24 +106,24 @@ A lexer separates a text document into a sequence of tokens, so it could be writ
 
 	LLLPG(lexer)
 	{
-		public rule List<Tok> Start @[
-			{List<Token> ts;} ts+=Token* EOF {return ts;}
-		];
+		public rule List<Tok> Start @{
+			{var ts = new List<Tok>();} ts+=Token* EOF {return ts;}
+		};
 		token Tok Token() {
-			// BTW: Instead of writing a @[...] block with {...} actions inside,
-			// LLLPG lets you write a {...} block with @[...] blocks inside. But 
-			// currently the @[...] blocks must be at the top level of the method,
+			// BTW: Instead of writing a @{...} block with {...} actions inside,
+			// LLLPG lets you write a {...} block with @{...} blocks inside. But 
+			// currently the @{...} blocks must be at the top level of the method,
 			// not nested inside anything else such as a try {...} region.
 			Token t;
-			@[ t=Spaces | t=Id | t=Int | t=Op ];
+			@{ t=Spaces | t=Id | t=Int | t=Op };
 			return t;
 		}
-		token Tok Spaces @[ (' '|'\t')+      {return new Token(...);} ];
-		token Tok Id     @[ ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')+
-		                                     {return new Token(...);} ];
-		token Tok Int    @[ ('0'..'9')+      {return new Token(...);} ];
-		token Tok Op     @[ op:=('+'|'-'|'*'|'/'|'=')+  
-		                                     {return new Token(...);} ];
+		token Tok Spaces @{ (' '|'\t')+      {return new Token(...);} };
+		token Tok Id     @{ ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')+
+		                                     {return new Token(...);} };
+		token Tok Int    @{ ('0'..'9')+      {return new Token(...);} };
+		token Tok Op     @{ op:=('+'|'-'|'*'|'/'|'=')+  
+		                                     {return new Token(...);} };
 	}
 
 The thing is, any lexer grammar that follows this pattern is ambiguous! Because of the loop in `Start`, an identifier like "`ab3`" could theoretically be parsed in four different ways: as a single Id "`ab3`", as two Ids "`a`" "`b3`", as two tokens "`ab`" "`3`", or as three tokens "`a`" "`b`" "`3`".
@@ -136,31 +136,37 @@ So if all the rules are written using `rule` rather than `token`, LLLPG will rep
 
 LLLPG detects the ambiguity while looking at the _follow set_ of each rule, which it does while analyzing the loops. Since `Token` appears in a loop, `Id` can theoretically be followed by another `Id`, or by `Num`, so the location where an `Id` or `Num` or `Spaces` loop should _stop_ is ambiguous.
 
-I created `token` mode to avoid warnings like this and the potentially complex analysis that produces them. `token` replaces the follow set of a rule with `_*` (i.e. anything), and then suppresses the inevitable ambiguity warning (because a decision between _* and anything else always ambiguous.) The mode is called `token` since it is useful in the context of a lexer, but occasionally it is useful in parsers too.
+I created `token` mode to avoid warnings like this and the potentially complex analysis that produces them. `token` replaces the follow set of a rule with `_*` (which means "anything"), and then it suppresses the inevitable ambiguity warning (because a decision between `_*` and anything else always ambiguous.) The mode is called `token` because it should be used on rules that describe tokens, but occasionally it is useful in other contexts (so you can use it in a parser if it turns out that you want LLLPG to ignore the rule's follow set).
 
-By convention, when I write a lexer, I mark the top-level token rules with `token`, and I use `rule` for the sub-rules that are called by `token`s.
+When I write a lexer, I mark the top-level token rules with `token`, and I use `rule` for the sub-rules that are called by `token`s.
 
 Managing ambiguity, part 2: LLLPG's missing feature
 ---------------------------------------------------
 
 In certain ambiguous cases, notably those in which some alternatives are prefixes of others, some parser generators (including ANTLR) have the ability to select the _longest match_ automatically. LLLPG does not have this ability, and you'll notice this problem when writing rules for operators:
 
-	token CompareOp() @[ '>' | '<' | '=' | ">=" | "<=" ];
-	
+~~~csharp
+token CompareOp() @{ '>' | '<' | '=' | ">=" | "<=" };
+~~~
+
 The output is:
 
 - Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 2) are ambiguous for input such as «>=» ([>], [=])
 - Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 3) are ambiguous for input such as «<=» ([<], [=])
 - Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Branches 2, 3 are unreachable.
 
-        void CompareOp()
-        {
-          MatchRange('<', '>');
-        }
+~~~csharp
+    void CompareOp()
+    {
+        MatchRange('<', '>');
+    }
+~~~
 
-Please excuse the strange numbering scheme in the error message: LLLPG actually interprets `'>' | '<' | '=' | ">=" | "<="` as `('>' | '<' | '=') | ">=" | "<="`, with the three single characters unified into a set, and it turns out that `('>' | '<' | '=')` is equivalent to `'<'..'>'`, which explains where `MatchRange('<', '>')` comes from.
+Please excuse the strange numbering scheme in the error message: LLLPG actually interprets `'>' | '<' | '=' | ">=" | "<="` as `('>' | '<' | '=') | ">=" | "<="`, unifying the three single characters into a set as an optimization, and it turns out that `('>' | '<' | '=')` is equivalent to `'<'..'>'`, which explains where `MatchRange('<', '>')` comes from.
 
-What's going on here? Well, if the input is '`<=`', '`<`' matches just as well as '`<=`', and because it is listed first, LLLPG gives it higher priority. So '`<=`' is unreachable because '`<`' takes priority, and '`>=`' is unreachable because '`>`' takes priority. This is easily fixed by always listing longer operators first:
+What's going on here? Well, if the input is '`<=`' then '`<`' matches just as well as '`<=`', as far as LLLPG is concerned. And because it is listed first, LLLPG gives it higher priority. So '`<=`' is unreachable because '`<`' takes priority, and '`>=`' is unreachable because '`>`' takes priority.
+
+You can easily fix this by always listing longer operators first:
 
 	token CompareOp() @[ ">=" | "<=" | '>' | '<' | '=' ];
 
@@ -179,47 +185,47 @@ Managing ambiguity, part 3: the slash operator
 
 The slash operator suppresses the ambiguity warning between two or more alternatives. The warnings you saw for
 
-	token CompareOp() @[ ">=" | "<=" | '>' | '<' | '=' ];
+	token CompareOp() @{ ">=" | "<=" | '>' | '<' | '=' };
 
 can be suppressed by switching '`|`'s to '`/`'s:
 
-	token CompareOp() @[ ">=" / "<=" / '>' / '<' | '=' ];
+	token CompareOp() @{ ">=" / "<=" / '>' / '<' | '=' };
 
 '`/`' is transitive, so in this example, the ambiguity between `">="` and `'>'` is suppressed and likewise between `"<="` and `'<'`. Note that the following will _not_ suppress the warnings:
 
-	token CompareOp() @[ ">=" / "<=" | '>' / '<' | '=' ];
+	token CompareOp() @{ ">=" / "<=" | '>' / '<' | '=' };
 
 (Footnote: in fact this would have suppressed the warnings in earlier versions of LLLPG, but the logic has changed. I will describe only the new rules.)
 
 Earlier I said that LLLPG "doesn't care much about parenthesis", so that, for instance,
 
-	rule Foo @[ ["AB" | "A" | "CD" | "C"]*     ];
+	rule Foo @{ ["AB" | "A" | "CD" | "C"]*     };
 
 is equivalent to 
 
-	rule Foo @[ [("AB" | "A") | ("CD" | "C")]* ];
+	rule Foo @{ [("AB" | "A") | ("CD" | "C")]* };
 
 That's true, but as of version 1.1.0 it will now pay attention to the relationship between the slash operator and parenthesis. In
 
-	token CompareOp() @[ ">=" / "<=" | '>' / '<' | '=' ];
+	token CompareOp() @{ ">=" / "<=" | '>' / '<' | '=' };
 
 LLLPG is instructed to suppress warnings between `">=" / "<="` and `'>' / '<'`, but that's all. '`/`' has higher precedence than '`|`', so this is equivalent to 
 
-	token CompareOp() @[ (">=" / "<=") | ('>' / '<') | '=' ];
+	token CompareOp() @{ (">=" / "<=") | ('>' / '<') | '=' };
 
 And the '`|`' operator causes warnings between the two groups (`">=" / "<="` and `'>' / '<'`) to be permitted. If you write 
 
-	token CompareOp() @[ ">=" | "<=" / '>' | '<' | '=' ];
+	token CompareOp() @{ ">=" | "<=" / '>' | '<' | '=' };
 
 no warnings are suppressed either, but if you now add parenthesis:
 
-	token CompareOp() @[ (">=" | "<=") / ('>' | '<') | '=' ];
+	token CompareOp() @{ (">=" | "<=") / ('>' | '<') | '=' };
 
 then the warnings are suppressed, because there is now a slash separating `">="` / `'>'` and `"<="` / `'<'`.
 
-You may remember from <a href="http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2">Part 2</a> that slash is the alt-separator in PEGs. In LLLPG, the slash operator works similarly, but quite the same (in fact, `/` always yields the same code as `|`.) Here's an example where a PEG would parse differently from LLLPG:
+You may remember from [Section 3](3-parsing-terminology.md) that slash is the alt-separator in PEGs. In LLLPG, the slash operator works similarly, but not quite the same. In fact, `/` always yields the same code as `|`. Here's an example where a PEG would parse differently from LLLPG:
 
-    rule abc @[ ('a' / 'a' 'b') 'c' ];
+    rule abc @{ ('a' / 'a' 'b') 'c' };
 
 In a PEG (correct me if I'm wrong), the first branch always takes priority and the second branch is unreachable. If the input is `abc`, a PEG will not backtrack and try the `'a' 'b'` branch because the first branch was matched successfully. An LL(k) parser generator, however, performs prediction on the first `k` characters, even if those characters come after the set of alternatives under consideration, which means the `'c'` influences code generation, producing the following code (by default):
 
@@ -246,12 +252,12 @@ means that if the input matches both a non-exit branch and an exit branch, the
 non-exit branch should be taken. A typical greedy example is this rule for an
 "if" statement:
 
-      private rule IfStmt @[ 
+      private rule IfStmt @{ 
         "if" "(" Expr ")" Stmt greedy("else" Stmt)?
-      ];
-      private rule Stmt @[ 
+      };
+      private rule Stmt @{ 
         IfStmt | OtherStmt | Expr ";" | ...
-      ];
+      };
   
 In this case, it is possible that the "if" statement is nested inside another
 "if" statement. Given that the input could be something like
@@ -266,7 +272,7 @@ because the else clause could be paired with the first "if" or the second one.
 The "greedy" modifier, which must always be paired with a loop or option
 operator (`* + ?`) means "in case of ambiguity with the exit branch, do not exit
 and do not print a warning." Since greedy behavior is the default, the greedy
-modifier's only purpose is to suppress the warning.  
+modifier's only purpose is to suppress the warning.
 
 Now, you might logically think that changing '`greedy`' to '`nongreedy`' would
 cause the '`else`' to match with the outer '`if`' statement rather than the inner
@@ -290,18 +296,17 @@ another way, LLLPG behaves as if `IfStmt` is _always_ called from inside another
 LLLPG to behave any other way; how is the `IfStmt()` method supposed to know
 call stack of other rules that called it?  
   
-By the way, I have the impression that the formal way of describing this
-limitation of LLLPG's behavior is to say that LLLPG supports only ["strong"
-LL(k) grammars](http://slkpg.byethost7.com/llkparse.html), not "general" LL(k)
-grammars (this is true even when you use `FullLLk(true)`).  
+By the way, the formal way of describing this limitation of LLLPG's behavior is 
+to say that LLLPG supports only ["strong" LL(k) grammars](http://slkpg.byethost7.com/llkparse.html), 
+not "general" LL(k) grammars (this is true even when you use `FullLLk(true)`).  
   
 So at the end of a rule, LLLPG makes decisions based on all possible contexts
 of that rule, rather than the actual context. Consequently, `nongreedy` is not
 as useful as it could be. However, `nongreedy` still has its uses. Good
 examples include strings and comments:
 
-      token TQString @[ "'''" (nongreedy(_))* "'''" ];
-      token MLComment @[ "/*" (nongreedy(MLComment / _))* "*/" ];
+      token TQString @{ "'''" (nongreedy(_))* "'''" };
+      token MLComment @{ "/*" (nongreedy(MLComment / _))* "*/" };
 
 This introduces the single underscore `_`, which matches any single terminal
 (not including EOF).  
@@ -325,7 +330,7 @@ string like `'''one''two'''` will be parsed incorrectly, because two quotes,
 not three, will cause the loop to exit. The reason is that the default maximum
 lookahead is 2, so two quotes are enough to make LLLPG decide to exit the loop
 (and then the third `Match('\'')` in the generated code will fail). To fix
-this, simply add a `[k(3)]` attribute to the rule. No warning was printed
+this, simply add an `[LL(3)]` attribute to the rule. No warning was printed
 because half the purpose of `nongreedy` is to suppress warnings; after all,
 mixing `(_)*` with anything else is inherently ambiguous and will frequently
 cause a warning that you must suppress.
@@ -387,7 +392,7 @@ higher priority than `~('\r'|'\n')` but lower priority than `&{nested>0}
 Unfortunately, LLLPG does not support this notation. Maybe in a future
 version. Here's what I did instead:
 
-      public token MLCommentLine(ref nested::int)::bool @[ 
+      public token MLCommentLine(ref nested::int)::bool @{
         (greedy
           ( &{nested>0} "*/" {nested--;}
           / "/*" {nested++;}
@@ -395,7 +400,7 @@ version. Here's what I did instead:
           / '*' (&!'/')
           ))*
         (Newline {return false;} | "*/" {return true;})
-       ];
+       };
 
 Here, I switched back to a greedy loop and added `'*'` as its own branch with an
 extra check to make sure `'*'` is not followed by `'/'`. If the test `&!'/'`
@@ -403,14 +408,14 @@ succeeds, the new fourth branch matches the `'*'` character (but not the
 character afterward); otherwise the loop exits. I could have also written it
 like this, with only three branches:
 
-      public token MLCommentLine(ref nested::int)::bool @[ 
+      public token MLCommentLine(ref nested::int)::bool @{ 
         (greedy
           ( &{nested>0} "*/" {nested--;}
           / "/*" {nested++;}
           / (&!"*/") ~('\r'|'\n')
           ))*
         (Newline {return false;} | "*/" {return true;})
-      ];
+      };
 
 However, this version is slower, because LLLPG will actually run the `&!"*/"`
 test on every character within the comment.  
@@ -418,20 +423,20 @@ test on every character within the comment.
 Here's one more example using nongreedy:
 
     // Parsing a comma-separated value file (.csv)
-    public rule CSVFile @[ Line* ];
-    rule Line           @[ Field greedy(',' Field)* (Newline | EOF) ];
-    rule Newline        @[ ('\r' '\n'?) | '\n' ];
-    rule Field          @[ nongreedy(_)*
-                         | '"' ('"' '"' | nongreedy(~('\n'|'\r'))* '"' ];
+    public rule CSVFile @{ Line* };
+    rule Line           @{ Field greedy(',' Field)* (Newline | EOF) };
+    rule Newline        @{ ('\r' '\n'?) | '\n' };
+    rule Field          @{ nongreedy(_)*
+                         | '"' ('"' '"' | nongreedy(~('\n'|'\r'))* '"' };
 
 This grammar describes a file filled with fields separated by commas (plus I
-introduced the EOF symbol, so that no Newline is required at the end of the
+introduced the `EOF` symbol, so that no `Newline` is required at the end of the
 last line). Notice that `Field` has the loop `nongreedy(_)*`. How does LLLPG
 know to when to break out of the loop? Because it computes the "follow set" or
-"return address" of each rule. In this case, 'Field' can be followed by
+"return address" of each rule. In this case, `Field` can be followed by
 `','|'\n'|'\r'|EOF`, so the loop will break as soon as one of these characters
-is encountered. This is different than the `IfStmt` example above in an
-important respect: `Field` always has the same follow set. Even though `Field`
+is encountered. This is different than the `IfStmt` example above in one
+important way: `Field` always has the same follow set. Even though `Field`
 is called from two different places, the follow set is the same in both
 locations: `','|'\n'|'\r'|EOF`. So `nongreedy` works reliably in this example
 because it makes no difference which context `Field` was called from.

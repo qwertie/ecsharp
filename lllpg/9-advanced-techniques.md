@@ -1,11 +1,11 @@
 ---
 title: "9. Advanced techniques"
 layout: article
-date: 30 May 2016
+date: 30 May 2016 (updated Jan 2020)
 toc: true
 ---
 
-If you read this entire article, I guess you'll become an LLLPG master, ready to parse any language your boss throws at you.
+If you read this entire article, you can become an LLLPG master, ready to parse any language your boss throws at you.
 
 `inline` and `extern` rules
 ---------------------------
@@ -14,16 +14,17 @@ LLLPG 1.3 supports "inline" rules, which are rules that are inserted verbatim at
 
     LLLPG(lexer);
     
-    inline extern rule IdStartChar @[ 'a'..'z'|'A'..'Z'|'_' ];
-    inline extern rule IdContChar @[ IdStartChar|'0'..'9' ];
-    rule Identifier @[ IdStartChar IdContChar* ];
+    inline extern rule IdStartChar @{ 'a'..'z'|'A'..'Z'|'_' };
+    inline extern rule IdContChar @{ IdStartChar|'0'..'9' };
+    rule Identifier @{ IdStartChar IdContChar* };
 
 This produces only a single method as output (`Identifier`), the contents of `IdStartChar` and `IdContChar` having been inlined. 
 
 Meanwhile, the `extern` modifier suppresses code generation for a rule (in this case `IdStartChar` and `IdContChar`). Otherwise, those methods would exist but they wouldn't be called.
 
-Currently, inlining is only allowed on rules that have no arguments and no return value. Inlining is "unsanitary", too; for example, the `inline rule` could contain code that refers to local variables that only exist in the location where inlining occurs. This is not recommended:
+Currently, inlining is only allowed on rules that have no arguments and no return value. Inlining is "unsanitary", too; for example, the `inline rule` could contain code that refers to local variables that only exist in the location where inlining occurs. This is definitely not recommended:
 
+~~~csharp
     /// Input
     rule Foo @{ digit:'0'..'9' Unsanitary };
     inline rule Unsanitary @{ {Console.WriteLine(digit);} };
@@ -38,6 +39,7 @@ Currently, inlining is only allowed on rules that have no arguments and no retur
     {
         Console.WriteLine(digit);
     }
+~~~
 
 How to avoid memory allocation in a lexer
 -----------------------------------------
@@ -46,6 +48,7 @@ Now I will demonstrate how LLLPG can be used when you want to minimize memory al
 
 The following example parses email addresses without allocating _any_ memory, beyond a single `LexerSource`, which is allocated only once per thread:
 
+~~~csharp
     struct EmailAddress
     {
       public EmailAddress(string userName, string domain) 
@@ -69,24 +72,25 @@ The following example parses email addresses without allocating _any_ memory, be
           else
             src.Reset(email, "", 0, false); // re-use old object
           
-          @[ UsernameChars(src) ('.' UsernameChars(src))* ];
+          @{ UsernameChars(src) ('.' UsernameChars(src))* };
           int at = src.InputPosition;
           UString userName = email.Substring(0, at);
           
-          @[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+          @{ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF };
           UString domain = email.Substring(at + 1);
           return new EmailAddress(userName, domain);
         }
-        static rule UsernameChars(LexerSource<UString> src) @[
+        static rule UsernameChars(LexerSource<UString> src) @{
           ('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
           '*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
-        ];
-        static rule DomainCharSeq(LexerSource<UString> src) @[
+        };
+        static rule DomainCharSeq(LexerSource<UString> src) @{
                  ('a'..'z'|'A'..'Z'|'0'..'9')
           ( '-'? ('a'..'z'|'A'..'Z'|'0'..'9') )*
-        ];
+        };
       }
     }
+~~~
 
 This example demonstrates that you can pass the `LexerSource` between rules as a parameter, although it's actually redundant here, and the `src` parameters could be safely removed.
 
@@ -101,9 +105,10 @@ Keyword parsing
 ---------------
 
 Suppose that we have a language with keywords like `for`, `foreach`, `while`, `if`,  `do`, and `function`. We could write code like this (assuming you've defined an `enum TT` filled with token types):
-    
+
+~~~csharp 
     [k(9)]
-    private token TT IdOrKeyword @[
+    private token TT IdOrKeyword @{
           "do"        {return TT.Do;      }
         / "if"        {return TT.If;      }
         / "for"       {return TT.For;     }
@@ -111,33 +116,35 @@ Suppose that we have a language with keywords like `for`, `foreach`, `while`, `i
         / "while"     {return TT.While;   }
         / "function"  {return TT.Function;}
         / Identifier  {return TT.Id;      } 
-    ];
+    };
     
-    public token ScanNextToken() @[
+    public token ScanNextToken() @{
           Spaces        { return TT.Spaces; } 
         / t:IdOrKeyword
         / t:Operator
         / t:Literal
         / ...
         { return t; }
-    ];
+    };
+~~~
 
 This example uses `[k(9)]` to increase the lookahead to 9 (longer than any of the keywords) only inside this rule. Unfortunately, this won't quite work the way you want it to. There are two problems with this example:
 
 1. The `foreach` branch is unreachable, since it will be detected as the keyword `for` followed by `each`.
-2. Words like "form", "ifone", and "functionality" will be parsed as a keyword followed by an `Identifier`.
+2. Words like "form", "ifx", and "functionality" will be parsed as a keyword followed by an `Identifier`.
 
 You can solve the first problem by moving the `foreach` branch above the `for` branch, to give it higher priority.
 
 You can solve the second problem by using a gate (`=>`) or zero-width predicate (`&(...)`) to ensure that the keyword is _not_ followed by some other character, like a letter or digit, that would imply it is not a keyword. The generated code will be more efficient if you use a gate instead of a predicate, so my standard solution looks like this:
 
-    [k(/*k must be larger than the longest keyword*/)]
+~~~csharp
+    [LL(/*length of the longest keyword + 1*/)]
     private token IdOrKeyword @
-        [ "first_keyword"  EndId {/* custom action for this keyword */}
+        { "first_keyword"  EndId {/* custom action for this keyword */}
         / "second_keyword" EndId {/* custom action for this keyword */}
         / "third_keyword"  EndId {/* custom action for this keyword */}
         / Identifier             {/* custom action for normal identifier */}
-        ];
+        };
      
     // If a keyword is followed by a letter or number then it is NOT a keyword.
     // So this rule is used to cause LLLPG to verify that there is no letter or
@@ -145,17 +152,20 @@ You can solve the second problem by using a gate (`=>`) or zero-width predicate 
     // internalized to IdOrKeyword, and `extern` suppresses generating the empty 
     // method that would be created for this rule.
     extern inline token EndId @{ (~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | EOF) => };
+~~~
 
 Actually there is a third problem. Due to limitations of LLLPG, if you have a large number of keywords, LLLPG may take a long time to analyze your grammar. Part of the problem is that `IdOrKeyword` is analyzed more than once: it is analyzed in isolation, and then it is "comparatively analyzed" when generating the code for `ScanNextToken`, as LLLPG must figure out when to call `IdOrKeyword` and when to call some other rule. So you can get a speedup by using a gate to "hide" the `IdOrKeyword` during the anaylsis of `ScanNextToken`, like this:
 
-    public token ScanNextToken() @[
+~~~csharp
+    public token ScanNextToken() @{
           Spaces        { return TT.Spaces; } 
         / (Id => t:IdOrKeyword)
         / t:Operator
         / t:Literal
         / ...
         { return t; }
-    ];
+    };
+~~~
 
 The gate `Id => t:IdOrKeyword` simplifies analysis by saying "if it looks like an identifier, call `IdOrKeyword()` - ignore all the differences between the various branches inside `IdOrKeyword()`".
 
@@ -164,74 +174,96 @@ Collapsing precedence levels into a single rule
 
 One of the traditional disadvantages of LL(k) parsing is the need for a separate rule for each precedence level when parsing expressions. Consider this **fully operational** example which parses an expression into a Loyc tree:
 
-    class ExprParser : BaseParserForList<StringToken, string>
-    {
-        public ExprParser(string input) 
-            : this(input.Split(' ').Select(word => 
-                   new StringToken { Type=word }).ToList()) {}
-        public ExprParser(IList<StringToken> tokens, ISourceFile file = null) 
-            : base(tokens, default(StringToken), file ?? EmptySourceFile.Unknown) 
-            { F = new LNodeFactory(SourceFile); }
-        
-        protected override string ToString(string tokType) { return tokType; }
-        
-        LNodeFactory F;
-        LNode Op(LNode lhs, StringToken op, LNode rhs) { 
-            return F.Call((Symbol)op.Type, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
-        }
+~~~csharp
+// To make this compile, ensure your project has NuGet references to 
+// `Loyc.Syntax.dll`, `Loyc.Collections.dll` & `Loyc.Essentials.dll`
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
 
-        LLLPG(parser(laType: string, terminalType: StringToken));
+struct StringToken : ISimpleToken<string>
+{
+    public string Type { get; set; }
+    public object Value { get { return Type; } }
+    public int StartIndex { get; set; }
+}
 
-        public rule LNode Expr() @[
-            result:Expr1 [ "=" r:=Expr
-                           { $result = Op($result, $"=", r); } ]?
-        ];
-        rule LNode Expr1() @[
-            result:Expr2 ( op:=("&&"|"||") r:=Expr2
-                           { $result = Op($result, op, r); } )*
-        ];
-        rule LNode Expr2() @[
-            result:Expr3 ( op:=(">"|"<"|">="|"<="|"=="|"!=") r:=Expr3
-                           { $result = Op($result, op, r); } )*
-        ];
-        rule LNode Expr3() @[
-            result:Expr4 ( op:=("+"|"-") r:=Expr4 
-                           { $result = Op($result, op, r); } )*
-        ];
-        rule LNode Expr4() @[
-            result:PrefixExpr ( op:=("*"|"/"|">>"|"<<") r:=PrefixExpr
-                           { $result = Op($result, op, r); } )*
-        ];
-        rule LNode PrefixExpr() @[
-            ( "-" r:=PrefixExpr { $result = F.Call((Symbol)"-", r, 
-                                            $"-".StartIndex, r.Range.EndIndex); }
-            / result:PrimaryExpr )
-        ];
-        rule LNode PrimaryExpr() @[
-            result:Atom
-            (	"(" Expr ")" { $result = F.Call($result, $Expr, $result.Range.StartIndex); }
-            |	"." rhs:Atom { $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
-            )*
-        ];
-        rule LNode Atom() @[
-            "(" result:Expr ")" { $result = F.InParens($result); }
-        /	_ { 
-                double n; 
-                $result = double.TryParse($_.Type, out n) 
-                        ? F.Literal(n) : F.Id($_.Type);
-            }
-        ];
+class ExprParser : BaseParserForList<StringToken, string>
+{
+    public ExprParser(string input) 
+        : this(input.Split(' ').Select(word => 
+               new StringToken { Type=word }).ToList()) {}
+    public ExprParser(IList<StringToken> tokens, ISourceFile file = null) 
+        : base(tokens, default(StringToken), file ?? EmptySourceFile.Unknown) 
+        { F = new LNodeFactory(SourceFile); }
+    
+    protected override string ToString(string tokType) { return tokType; }
+    
+    LNodeFactory F;
+    LNode Op(LNode lhs, StringToken op, LNode rhs) { 
+        return F.Call((Symbol)op.Type, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
     }
 
-I designed this example to work without a lexer (I really don't recommend this approach, but it keeps the example short). It will accept tokens separated by spaces, so you can test it with code like this:
+    LLLPG(parser(laType: string, terminalType: StringToken));
 
+    public rule LNode Expr() @[
+        result:Expr1 [ "=" r:=Expr
+                       { $result = Op($result, $"=", r); } ]?
+    ];
+    rule LNode Expr1() @[
+        result:Expr2 ( op:=("&&"|"||") r:=Expr2
+                       { $result = Op($result, op, r); } )*
+    ];
+    rule LNode Expr2() @[
+        result:Expr3 ( op:=(">"|"<"|">="|"<="|"=="|"!=") r:=Expr3
+                       { $result = Op($result, op, r); } )*
+    ];
+    rule LNode Expr3() @[
+        result:Expr4 ( op:=("+"|"-") r:=Expr4 
+                       { $result = Op($result, op, r); } )*
+    ];
+    rule LNode Expr4() @[
+        result:PrefixExpr ( op:=("*"|"/"|">>"|"<<") r:=PrefixExpr
+                       { $result = Op($result, op, r); } )*
+    ];
+    rule LNode PrefixExpr() @[
+        ( "-" r:=PrefixExpr { $result = F.Call((Symbol)"-", r, 
+                                        $"-".StartIndex, r.Range.EndIndex); }
+        / result:PrimaryExpr )
+    ];
+    rule LNode PrimaryExpr() @[
+        result:Atom
+        (	"(" Expr ")" { $result = F.Call($result, $Expr, $result.Range.StartIndex); }
+        |	"." rhs:Atom { $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
+        )*
+    ];
+    rule LNode Atom() @[
+        "(" result:Expr ")" { $result = F.InParens($result); }
+    /	_ { 
+            double n; 
+            $result = double.TryParse($_.Type, out n) 
+                    ? F.Literal(n) : F.Id($_.Type);
+        }
+    ];
+}
+~~~
+
+I designed this example to work without a lexer (I don't recommend this approach for real-life applications, but it keeps the example short). It will accept tokens separated by spaces, so you can test it with code like this:
+
+~~~csharp
     Console.WriteLine(new ExprParser("x . Foo ( 0 ) * ( 7.5 + 2.5 ) > 100").Expr());
+~~~
 
 To make it compile, it just needs a few `using`s and a definition for `StringToken` (see below).
 
 Notice that in the middle of the parser there's a series of `Expr` rules: `Expr1`, `Expr2`, `Expr3` and `Expr4`. In a parser for a "real" language there might be several more. And notice that even when parsing a simple expression like "`42`", the same call stack will alway occur: `Expr`, `Expr1`, `Expr2`, `Expr3`, `Expr4`, `PrefixExpr`, `PrimaryExpr`, `Atom`. That's inefficient. It is straightforward, though, to collapse all the "infix" operators (`ExprN`) into a single rule. This involves an integer that represents the current "precedence floor", and a semantic predicate `&{...}`:
 
-    public rule LNode Expr(int prec = 0) @[
+~~~csharp
+    public rule LNode Expr(int prec = 0) @{
         result:PrefixExpr
         greedy // to suppress ambiguity warning
         (   // Remember to add [Local] when your predicate uses a local variable
@@ -252,13 +284,14 @@ Notice that in the middle of the parser there's a series of `Expr` rules: `Expr1
             op:=("*"|"/"|">>"|"<<") r:=Expr(50)
             { $result = Op($result, op, r); }
         )*
-    ];
+    };
+~~~
 
 Here I've multiplied my precedence levels by 10, to make it easy to add more precedence levels in the future (in between the existing ones).
 
 How does it work? Lower values of `prec` represent lower precedence levels, with 0 representing the outermost expression. After matching an operator with a certain precedence level, `Expr` calls itself with a raised "precedence floor", in which low-precedence operators will no longer match, but high-precedence operators still match.
 
-Let's work through the expression "`- 6 * 5 > 4 - 3 - 2`". At first, `Expr(0)` is called, and `PrefixExpr` matches `-6`. At this point, any infix operator can be matched. After matching `*`, `Expr(50)` is called, which matches `5` and then returns (as it cannot match `>`), and `Expr(0)` calls `Op` to create an [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) that represents the subexpression `-6 * 5`. Next, `>` is matched, so `Expr(30)` is called.
+Let's work through the expression "`- 6 * 5 > 4 - 3 - 2`". At first, `Expr(0)` is called, and `PrefixExpr` matches `-6`. At this point, any infix operator can be matched. After matching `*`, `Expr(50)` is called, which matches `5` and then returns (it cannot match `>` because `prec < 30` is false). Next, `Expr(0)` calls `Op` to create an [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) that represents the subexpression `-6 * 5`. Next, `>` is matched, so `Expr(30)` is called.
 
 `Expr(30)` matches `4`, and then it sees `-` so it checks whether `prec < 40`. This is true, so it calls `Expr(40)`. `Expr(40)` matches `3` and then it sees the second `-`. This time `prec < 40` is _false_ so it returns. `Expr(30)` calls `Op` to create the subexpression `4.0 - 3.0`.
 
@@ -271,7 +304,8 @@ Notice the difference between left-associative and right-associative operators:
 
 With some extra effort, you could, for maximum efficiency, merge the `PrefixExpr` and `PrimaryExpr` rules into `Expr` also:
 
-    public rule LNode Expr(int prec = 0) @[
+~~~csharp
+    public rule LNode Expr(int prec = 0) @{
         ( "-" r:=Expr(50) { $result = F.Call((Symbol)"-", r, 
                                       $"-".StartIndex, r.Range.EndIndex); }
         / result:Atom )
@@ -297,28 +331,12 @@ With some extra effort, you could, for maximum efficiency, merge the `PrefixExpr
         |   "." rhs:Atom // PrimaryExpr
             { $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
         )*
-    ];
+    };
+~~~
 
 Here you can think of `PrimaryExpr` as having a precedence level of 60, but since `prec` never goes that high, there's no need to include a predicate like `&{[Local] prec < 60}` on the last two branches.
 
 It's even possible to merge the last rule, `Atom`, into this rule, but let's not get carried away.
-
-To make this example compile, add the following code above `ExprParser` and ensure your project has references to `Loyc.Syntax.dll`, `Loyc.Collections.dll` & `Loyc.Essentials.dll`:
-
-    using System;
-    using System.Linq;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using Loyc;
-    using Loyc.Syntax;
-    using Loyc.Syntax.Lexing;
-
-    struct StringToken : ISimpleToken<string>
-    {
-        public string Type { get; set; }
-        public object Value { get { return Type; } }
-        public int StartIndex { get; set; }
-    }
 
 Compiler errors in syntactic predicates (scanners/recognizers)
 --------------------------------------------------------------
@@ -353,19 +371,21 @@ Why would you want to do this? There are a couple of reasons:
 
 The preprocessing step itself is simple; you can either use the existing [`TokensToTree`](https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/TokensToTree.cs) class (if your lexer implements [ILexer](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html) and produces [Token](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html) structures), or copy and modify the existing code. (In hindsight I think it would have been better to make the closing bracket a child of the opening bracket, because currently LLLPG tends to give error messages about "EOF" when it's not really EOF, it's just the end of a stream of child tokens.)
 
-So how do you use LLLPG with a token tree? Well, LLLPG doesn't directly support token trees, so it will see only the sequence of tokens at the current "level" of the tree, e.g. `w  =  (  )  *  z  >>  (  )  ;`. For example, consider the [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) parser. Normally you invoke it with code like `LesLanguageService.Value.Parse("code")`, but you could construct the full parsing pipeline manually, like this:
+So how do you use LLLPG with a token tree? Well, LLLPG doesn't directly support token trees, so it will see only the sequence of tokens at the current "level" of the tree, e.g. `w  =  (  )  *  z  >>  (  )  ;`. For example, consider the [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) parser. Normally you invoke it with code like `Les2LanguageService.Value.Parse("code")`, but you could construct the full parsing pipeline manually, like this:
 
     var input = (UString)"{ w = (x + y) * z >> (-1); };";
     var errOut = new ConsoleMessageSink();
-    var lexer = new LesLexer(input, "", errOut);
+    var lexer = new Les2Lexer(input, "", errOut);
     var tree = new TokensToTree(lexer, true); // <= Convert tokens to tree!
-    var parser = new LesParser(tree.Buffered(), lexer.SourceFile, errOut);
+    var parser = new Les2Parser(tree.Buffered(), lexer.SourceFile, errOut);
     var results = parser.ParseStmtsLazy().Buffered();
 
-Initially the `LesParser` starts at the "top level" of the token tree, and in this example, it sees just two tokens, two braces. In my parser I use two helper functions to navigate into (`Down`) and out of (`Up`) the child trees:
+Initially the `Les2Parser` starts at the "top level" of the token tree, and in this example, it sees just two tokens: two braces. In my parser I use two helper functions to navigate into (`Down`) and out of (`Up`) the child trees:
 
+~~~csharp
     Stack<Pair<IList<Token>, int>> _parents;
 
+    // switch parsing context into child tokens inside brackets/braces
     protected bool Down(IList<Token> children)
     {
         if (children != null) {
@@ -378,6 +398,7 @@ Initially the `LesParser` starts at the "top level" of the token tree, and in th
         }
         return false;
     }
+    // return to the parent context (opposite of Down())
     protected void Up()
     {
         Debug.Assert(_parents.Count > 0);
@@ -385,6 +406,7 @@ Initially the `LesParser` starts at the "top level" of the token tree, and in th
         _tokenList = pair.A;
         InputPosition = pair.B;
     }
+~~~
 
 (After writing this, I decided to add these methods to [`BaseParserForList`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html) so that you call them from your own parsers if you want.)
 
@@ -407,7 +429,7 @@ For example, `ParseBraces` looks like this - it calls `Down`, invokes `StmtList`
         return F.Braces(list.ToRVList(), t.StartIndex, endIndex);
     }
 
-The LES parser, of course, produces [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees), which in turn use `RVList`s, which are described in [their own separate article](http://www.codeproject.com/Articles/26171/VList-data-structures-in-C); this function uses `RWList`, a mutable version of `RVList`.
+The LES parser, of course, produces [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees), which in turn use `VList`s, which are described in [their own separate article](http://www.codeproject.com/Articles/26171/VList-data-structures-in-C); this function uses `WList`, a mutable version of `VList`.
 
 How to parse indentation-sensitive languages
 --------------------------------------------
@@ -443,30 +465,32 @@ By far the easiest way to handle this kind of language is to insert a preprocess
 1. Use `BaseILexer<CharSrc, Token>` as the base class of your lexer instead of `BaseLexer<CharSrc>` or `BaseLexer`. This will implement the `ILexer<Token>` interface for you, which is required by `IndentTokenGenerator`. As with `BaseLexer`, you're required to call `AfterNewline()` after reading each newline from the file (see [BaseILexer's documentation](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) for details)
 2. If you use the standard `Token` type (`Loyc.Syntax.Lexing.Token`), you can wrap your lexer in an `IndentTokenGenerator`, like this:
 
-        /// given class YourLexerClass : BaseILexer<ICharSource,Token> { ... }
-        var lexer = new YourLexerClass(input);
-        /// IndentTokenGenerator needs a list of tokens that trigger indent tokens 
-        /// to be generated, e.g. Colon in Python-like languages.
-        var triggers = new[] { (int)YourTokenType.Colon };
-        var wrapr = new IndentTokenGenerator(lexer, triggers, 
-            new Token((int)YourTokenType.Semicolon, 0, 0, null))
-        {
-            /// This property specifies triggers that only have an effect when
-            /// they appear at the end of a line (they are ignored elsewhere)
-            EolIndentTriggers = triggers, 
-            /// Tokens that represent indentation and unindent
-            IndentToken = new Token((int)YourTokenType.Indent, 0, 0, null),
-            DedentToken = new Token((int)YourTokenType.Dedent, 0, 0, null),
-        };
-        /// LCExt.Buffered() is an extension method that lazily converts an 
-        /// IEnumerator<T> or IEnumerator<T> to a list (I've used it because
-        /// BaseILexer is an enumerator, so ToList() can't be used directly)
-        List<Token> tokens = wrapr.Buffered().ToList();
-        var parser = new YourParserClass(tokens);
-    
-    See the [documentation of `IndentTokenGenerator`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
+~~~csharp
+    /// given class YourLexerClass : BaseILexer<ICharSource,Token> { ... }
+    var lexer = new YourLexerClass(input);
+    /// IndentTokenGenerator needs a list of tokens that trigger indent tokens 
+    /// to be generated, e.g. Colon in Python-like languages.
+    var triggers = new[] { (int)YourTokenType.Colon };
+    var wrapr = new IndentTokenGenerator(lexer, triggers, 
+        new Token((int)YourTokenType.Semicolon, 0, 0, null))
+    {
+        /// This property specifies triggers that only have an effect when
+        /// they appear at the end of a line (they are ignored elsewhere)
+        EolIndentTriggers = triggers, 
+        /// Tokens that represent indentation and unindent
+        IndentToken = new Token((int)YourTokenType.Indent, 0, 0, null),
+        DedentToken = new Token((int)YourTokenType.Dedent, 0, 0, null),
+    };
+    /// LCExt.Buffered() is an extension method that lazily converts an 
+    /// IEnumerator<T> or IEnumerator<T> to a list (I've used it because
+    /// BaseILexer is an enumerator, so ToList() can't be used directly)
+    List<Token> tokens = wrapr.Buffered().ToList();
+    var parser = new YourParserClass(tokens);
+~~~
 
-    If you're not using the standard `Token` type, you can use [`IndentTokenGenerator<Tok>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
+See the [documentation of `IndentTokenGenerator`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
+
+If you're not using the standard `Token` type, you can use [`IndentTokenGenerator<Tok>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
 
 Shortening your code with LeMP
 ------------------------------
@@ -478,6 +502,6 @@ The new `unroll` and `replace` macros, in particular, are useful for eliminating
 The End
 -------
 
-I hope you enjoyed this article series and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback, and a job on the C# compiler team (well, it's been 30 months... I'm still waiting for a call!)
+I hope you enjoyed this article series and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback, and a job on the C# compiler team (well, it's been 6 years... I'm still waiting for a call!)
 
 For the complete list of LLLPG articles & pages, visit the [home page](http://ecsharp.net/lllpg). To give feedback, post a comment [here](https://github.com/qwertie/ecsharp/issues/35) or an issue [here](https://github.com/qwertie/ecsharp/issues).

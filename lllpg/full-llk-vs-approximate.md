@@ -8,7 +8,7 @@ First, the short version: try adding `[FullLLk(true)]` to your grammar if you su
 
 Now, it's a bit difficult to explain how LLLPG generates a prediction tree without invoking all sorts of math-speak that, if you are like me, would make your head hurt. It is easier to explain with examples. Let's start simple:
 
-	rule Comparison @[ '>' '=' | '<' '=' | '=' '=' | '>' | '<' ];
+	rule Comparison @{ '>' '=' | '<' '=' | '=' '=' | '>' | '<' };
 
 	void Comparison()
 	{
@@ -47,7 +47,7 @@ Note: the generated code is correct, although this example is unusual because ar
 
 Here's another example:
 
-    rule ABCD @[ (A B | C D) {} | A D ];
+    rule ABCD @{ (A B | C D) {} | A D };
 
     void ABCD()
     {
@@ -85,9 +85,9 @@ I didn't realize it at first, but LLLPG's technique doesn't support all LL(k) gr
 	LLLPG (lexer)
 	{
 		[LL(3)]
-		token Token    @[ Number | Operator | ' ' ];
-		token Operator @[ '+'|'-'|'*'|'/'|'.' ];
-		token Number   @[ '-'? '.'? '0'..'9'+ ];
+		token Token    @{ Number | Operator | ' ' };
+		token Operator @{ '+'|'-'|'*'|'/'|'.' };
+		token Number   @{ '-'? '.'? '0'..'9'+ };
 	}
 
 After (correctly) warning that `Alternatives (1, 2) are ambiguous for input such as «'-' '.' 0» ([\-.], [.0-9], ~())`, LLLPG generates this slightly incorrect code for `Token`:
@@ -133,7 +133,7 @@ To choose this code, LLLPG
 Now, why is the generated code wrong? It's wrong in the case of the input string "`-. `", which should match `Operator` but instead matches `Number`. To fix this, I added a finer-grained analysis that is enabled by the `[FullLLk]` option.
 
 	[LL(3)] [FullLLk]
-	token Token    @[ Number | Operator | ' ' ];
+	token Token    @{ Number | Operator | ' ' };
 
 This analysis realizes that, due to the relatively complex substructure of `Number`, it should split `'-'` and `'.'` into two separate cases. 
 

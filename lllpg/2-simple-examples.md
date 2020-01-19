@@ -8,7 +8,8 @@ toc: true
 Here's a simple "scanner" in LLLPG - it's a scanner, in the sense that it scans the input and detects errors but doesn't produce any output:
 
 ~~~csharp
-  LLLPG (lexer) {
+  LLLPG (lexer)
+  {
       public rule Integer @{ Digit+ };
       public rule Digit @{ '0'..'9' };
   };
@@ -17,13 +18,14 @@ Here's a simple "scanner" in LLLPG - it's a scanner, in the sense that it scans 
 Here I used the original property-like notation for the rules. In LLLPG 1.7.5, an ANTLR-style notation was added, which looks like this:
 
 ~~~csharp
-  LLLPG (lexer) @{
+  LLLPG (lexer)
+  @{
       public Digit : '0'..'9';
       public Integer : Digit+;
   };
 ~~~
 
-Either way, the output is:
+Most of this manual uses the first style. Either way, the output looks like this:
 
 ~~~csharp
   public void Digit()
@@ -46,7 +48,7 @@ Either way, the output is:
 
 That's it! So here's some relevant facts to learn at this point:
 
-* First of all, to keep this example simple and brief I didn't bother with any "`using`" statements, and I didn't wrap this code in a `namespace` or a `class`. LLLPG (or more precisely, the LeMP preprocessor) doesn't care; the output reflects the input, so the output will likewise not have any "`using`" statements and won't be wrapped in a `class` or a `namespace` either. Garbage in, garbage out. If you want the output to be wrapped in a class declaration, you have to wrap the input in a class declaration.
+* "LA" means "lookahead". LLLPG expects a property called `LA0` to exist that returns the current input character; it also expects an `LA(int k)` method for other lookahead values.
 
 * The grammar must be wrapped in an `LLLPG` block. Use "`LLLPG (lexer)`" for a lexer and "`LLLPG (parser)`" for a parser. The difference between the two is the treatment of _terminals_ (characters or tokens):
     * Lexer mode understands only integer and character input, but is optimized for this input. It does not accept named constants, only literal numbers and characters, because it can't tell which number a name might refer to (**Edit**: there is now an `alias` statement for naming constants). This mode assumes -1 means EOF (end-of-file). Note that lookahead variables have type `int`, not `char`, because `char` cannot hold -1, the representation of EOF. Luckily, C# doesn't really mind (`char` converts to `int` implicitly, although not the other way around).
@@ -54,15 +56,15 @@ That's it! So here's some relevant facts to learn at this point:
 
 * Each rule gets converted into a method with the same name. Attributes on the rule, such as `public` or `unsafe` (why are you using unsafe in a parser, smarty pants?) are transferred to the output. Rules support a few attributes, such as `[FullLLk]`, that are understood by LLLPG itself and stripped out of the output. The `private` attribute is slightly special; it enables an optimization called prematch analysis that non-private rules don't get.
 
-* LLLPG expects a property called `LA0` to exist that returns the current input character; it also expects an `LA(int k)` method for other lookahead values.
-
-* The `lexer` mode expects a method called `MatchRange()` to exist (and both modes expect a series of `Match()` methods for matching particular characters or tokens). This method's job is to test whether the input character matches the specified range, and to emit an error message if not. On mismatch, you can throw an exception, print a message, or whatever suits you. On success, `MatchRange()` should return the consumed character so that you can store it in a variable if you want. A runtime library is provided that includes all these methods.
+* The `lexer` mode expects a method called `MatchRange()` to exist (and both modes expect a series of `Match()` methods for matching particular characters or tokens). `MatchRange` must test whether the input character matches the specified range, and to emit an error message if not. On mismatch, you can throw an exception, print a message, or whatever suits you. On success, `MatchRange()` should return the consumed character so that you can store it in a variable if you want. A runtime library is provided (Loyc.Syntax.dll) that includes all the required methods including `MatchRange`.
 
 * The `+` operator means "one or more of these". `Digit+` is exactly equivalent to `Digit Digit*`; the `*` means "zero or more of these", and the `*` operator is translated into a for-loop, as you can see in the output (as you probably know, `for (;;)` means "loop indefinitely"; it's equivalent to `while (true)`.)
 
 * This example also demonstrates the main characteristic of LL(k) parsers: prediction. The `if (la0 >= '0' && la0 <= '9')` statement is performing a task called "prediction", which means, it is deciding which branch to take (`Digit`? or exit the loop?). It must reach across rules to do this: each rule requires an analysis of every other rule it calls, in addition to analysis inside the rule itself. In this case, `Integer` must be intimately familiar with the contents of `Digit`. Which is kind of romantic, when you think about it. Or not.
 
-* The body of the rule is enclosed in `@{...};` - or the entire grammar, when using ANTLR-style syntax. Why not just plain braces or something else? Because LLLPG is embedded inside another programming language, and it cannot change the syntax of the host language. The construct "`public rule Foo @{...};`" is actually parsed by EC# as a property declaration, except with `@{...}` instead of the usual `{...}`. The `@{...}` is something called a **token literal**, which is a list of tokens (actually a _tree_, which matches pairs of `( ) { } [ ]`). The EC# parser gathers up all the tokens and stores them for later. After the entire source file is parsed, the macro processor gives LLLPG a chance to receive the token tree and transform it into something else. LLLPG it runs its _own independent parser_ to process the token tree. Finally, it replaces the `LLLPG` block with normal C# code that it generated. I'll explain this process in more detail later.
+* The body of the rule is enclosed in `@{...};` (or the entire grammar, when using ANTLR-style syntax). Why not just plain braces or something else? Because LLLPG is embedded inside another programming language, and it cannot change the syntax of the host language. The construct "`public rule Foo @{...};`" is actually parsed by EC# as a property declaration, except with `@{...}` instead of the usual `{...}`. The `@{...}` is something called a **token literal**, which is a list of tokens (actually a _tree_, which matches pairs of `( ) { } [ ]`). The EC# parser gathers up all the tokens and stores them for later. After the entire source file is parsed, the macro processor gives LLLPG a chance to receive the token tree and transform it into something else. LLLPG it runs its _own independent parser_ to process the token tree. Finally, it replaces the `LLLPG` block with normal C# code that it generated. I'll explain this process in more detail later.
+
+* To keep this example simple and brief I didn't bother with any "`using`" statements, and I didn't wrap this code in a `namespace` or a `class`. LLLPG (or more precisely, the LeMP preprocessor) doesn't care; the output reflects the input, so the output will likewise not have any "`using`" statements and won't be wrapped in a `class` or a `namespace` either. Garbage in, garbage out. If you want the output to be wrapped in a class declaration, you have to wrap the input in a class declaration.
 
 A simple lexer
 --------------
