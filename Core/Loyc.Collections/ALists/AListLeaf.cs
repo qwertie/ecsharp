@@ -5,9 +5,19 @@ namespace Loyc.Collections.Impl
 	using System.Linq;
 	using System.Diagnostics;
 
+	public abstract class AListLeafBase<K, T> : AListNode<K, T>, IReadOnlyList<T>
+	{
+		public abstract int IndexOf(T item, int startIndex);
+		
+		int IReadOnlyCollection<T>.Count => (int)TotalCount;
+		T IReadOnlyList<T>.this[int index] => this[(uint)index];
+		public abstract IEnumerator<T> GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
 	/// <summary>Internal implementation class. Shared code of non-sparse AList leaf nodes.</summary>
 	[Serializable]
-	public abstract class AListLeaf<K, T> : AListNode<K, T>
+	public abstract class AListLeaf<K, T> : AListLeafBase<K, T>
 	{
 		public const int DefaultMaxNodeSize = 64;
 
@@ -117,7 +127,7 @@ namespace Loyc.Collections.Impl
 			_list.Sort(start, subcount, comp);
 		}
 
-		public int IndexOf(T item, int startIndex)
+		public sealed override int IndexOf(T item, int startIndex)
 		{
 			return _list.IndexOf(item, startIndex);
 		}
@@ -144,6 +154,8 @@ namespace Loyc.Collections.Impl
 				_list = new InternalList<T>(newArray, _list.Count);
 			}
 		}
+		
+		public override IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
 	}
 
 	/// <summary>

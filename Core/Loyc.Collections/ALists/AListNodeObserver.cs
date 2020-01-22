@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,25 +54,26 @@ namespace Loyc.Collections
 
 			#region IAListTreeObserver members
 
-			public void Attach(AListBase<K, T> list, Action<bool> populate)
+			public bool? Attach(AListBase<K, T> list)
 			{
 				throw new InvalidOperationException(); // should not be called
 			}
-			public void Detach()
+			public void Detach(AListBase<K, T> list, AListNode<K, T> root)
 			{
 				throw new NotImplementedException(); // should not be called
 			}
 
-			public void RootChanged(AListNode<K, T> newRoot, bool clear)
+			public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
 			{
+				Debug.Assert(_list == list);
 				_root = newRoot;
 				try {
 					for (int i = 0; i < _observers.Count; i++)
-						_observers[i].RootChanged(newRoot, clear);
+						_observers[i].RootChanged(list, newRoot, clear);
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void ItemAdded(T item, AListLeaf<K, T> parent)
+			public void ItemAdded(T item, AListLeafBase<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
@@ -80,7 +81,7 @@ namespace Loyc.Collections
 				} catch(Exception e) { IllegalException(e); }
 			}
 
-			public void ItemRemoved(T item, AListLeaf<K, T> parent)
+			public void ItemRemoved(T item, AListLeafBase<K, T> parent)
 			{
 				try {
 					for (int i = 0; i < _observers.Count; i++)
@@ -143,7 +144,7 @@ namespace Loyc.Collections
 					if (observer == _observers[i])
 						return false;
 			
-				observer.DoAttach(_root, _list);
+				observer.DoAttach(_list, _root);
 				_observers.Add(observer);
 				return true;
 			}
@@ -153,7 +154,7 @@ namespace Loyc.Collections
  				int i = _observers.IndexOf(observer);
 				if (i <= -1)
 					return false;
-				_observers[i].Detach();
+				_observers[i].Detach(_list, _root);
 				_observers.RemoveAt(i);
 				return true;
 			}

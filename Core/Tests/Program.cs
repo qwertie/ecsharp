@@ -23,6 +23,8 @@ namespace Loyc.Tests
 {
 	public class RunCoreTests
 	{
+		static int _seed = Environment.TickCount;
+
 		public static readonly VList<Pair<string, Func<int>>> Menu = new VList<Pair<string, Func<int>>>()
 		{
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
@@ -108,20 +110,19 @@ namespace Loyc.Tests
 		}
 		public static int Loyc_Collections()
 		{
-			int seed = 237588399;
 			return MiniTest.RunTests.RunMany(
-				new HeapTests(seed),
+				new HeapTests(_seed),
 				new SimpleCacheTests(),
 				new InvertibleSetTests(),
 				// Test with small node sizes as well as the standard node size,
 				// including the minimum size of 3 (the most problematic size).
-				new AListTests(false, seed, 8, 8),
-				new AListTests(false, seed, 3, 3),
-				new BListTests(false, seed, 8, 8),
-				new BListTests(false, seed, 3, 3),
-				new BDictionaryTests(false, seed, 6, 6),
-				new SparseAListTests(false, seed, 3, 3),
-				new SparseAListTests(false, seed, 9, 9),
+				new AListTests(false, _seed, 8, 8),
+				new AListTests(false, _seed, 3, 3),
+				new BListTests(false, _seed, 8, 8),
+				new BListTests(false, _seed, 3, 3),
+				new BDictionaryTests(false, _seed, 6, 6),
+				new SparseAListTests(false, _seed, 3, 3),
+				new SparseAListTests(false, _seed, 9, 9),
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
 				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),
@@ -135,7 +136,7 @@ namespace Loyc.Tests
 				new VListTests(),
 				new FVListTests(),
 				new MapTests(),
-				new SparseAListTests(true, seed, 8, 4),
+				new SparseAListTests(true, _seed, 8, 4),
 				new SparseAListTests(),
 				new AListTests(),
 				new BListTests(),
@@ -177,6 +178,8 @@ namespace Loyc.Tests
 		public static int Loyc_Utilities()
 		{
 			return MiniTest.RunTests.RunMany(
+				new AListSummaryTrackerTests(_seed),
+				new BDictionarySummaryTrackerTests(_seed),
 				new Loyc.LLParserGenerator.IntSetTests(),
 				new TagsInWListTests(),
 				new UGTests(),

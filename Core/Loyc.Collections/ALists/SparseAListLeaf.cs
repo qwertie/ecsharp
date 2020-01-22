@@ -16,7 +16,7 @@ namespace Loyc.Collections.Impl
 	/// only if the entire list consists of empty space and there is only a single 
 	/// node.</remarks>
 	[Serializable]
-	public class SparseAListLeaf<T> : AListNode<int, T>
+	public class SparseAListLeaf<T> : AListLeafBase<int, T>
 	{
 		[DebuggerDisplay("Offset = {Offset}, Item = {Item}")]
 		protected internal struct Entry
@@ -426,5 +426,13 @@ namespace Loyc.Collections.Impl
 		}
 
 		public override uint GetRealItemCount() { return (uint)LocalCount; }
+
+		public override int IndexOf(T item, int startIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		// This skips over the spaces and so might not be the right approach, but this is rarely used
+		public override IEnumerator<T> GetEnumerator() => _list.Select(e => e.Item).GetEnumerator();
 	}
 }

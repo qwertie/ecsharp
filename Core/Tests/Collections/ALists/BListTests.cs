@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,47 +8,37 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Collections.Tests
 {
-	[TestFixture]
-	public class BListTests : AListTestBase<BList<int>, int>
+	public class BListTestHelpers : AListTestHelpersBase<BList<int>, int>
 	{
-		int _maxInnerSize, _maxLeafSize;
-
-		public BListTests() : this(true) { }
-		public BListTests(bool testExceptions) : this(testExceptions, Environment.TickCount, BListLeaf<int,int>.DefaultMaxNodeSize, BListInner<int,int>.DefaultMaxNodeSize) { }
-		public BListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) 
-			: base(testExceptions, randomSeed)
-		{
-			_maxInnerSize = maxInnerSize;
-			_maxLeafSize = maxLeafSize;
-		}
+		public BListTestHelpers(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 
 		#region Implementations of abstract methods
 
-		protected override BList<int> NewList()
+		public override BList<int> NewList()
 		{
-			return new BList<int>(_maxLeafSize, _maxInnerSize);
+			return new BList<int>(MaxLeafSize, MaxInnerSize);
 		}
-		protected override int AddToBoth(BList<int> blist, List<int> list, int item, int preferredIndex)
+		public override int AddToBoth(BList<int> blist, List<int> list, int item, int preferredIndex)
 		{
 			int i = Add(blist, item, preferredIndex);
 			list.Insert(i, item);
 			return i;
 		}
-		protected override int Add(BList<int> blist, int item, int preferredIndex)
+		public override int Add(BList<int> blist, int item, int preferredIndex)
 		{
 			int i = blist.FindLowerBound(item);
 			blist.Add(item);
 			return i;
 		}
-		protected override BList<int> CopySection(BList<int> blist, int start, int subcount)
+		public override BList<int> CopySection(BList<int> blist, int start, int subcount)
 		{
 			return blist.CopySection(start, subcount);
 		}
-		protected override BList<int> RemoveSection(BList<int> blist, int start, int subcount)
+		public override BList<int> RemoveSection(BList<int> blist, int start, int subcount)
 		{
 			return blist.RemoveSection(start, subcount);
 		}
-		protected override bool RemoveFromBoth(BList<int> blist, List<int> list, int item)
+		public override bool RemoveFromBoth(BList<int> blist, List<int> list, int item)
 		{
 			int i = blist.IndexOf(item);
 			if (i == -1)
@@ -57,12 +47,21 @@ namespace Loyc.Collections.Tests
 			list.RemoveAt(i);
 			return true;
 		}
-		protected override int GetKey(int item)
+		public override int GetKey(int item)
 		{
 			return item;
 		}
 
 		#endregion
+	}
+
+	[TestFixture]
+	public class BListTests : AListBaseTests<BList<int>, int>
+	{
+		public BListTests() : this(true) { }
+		public BListTests(bool testExceptions) : this(testExceptions, Environment.TickCount, BListLeaf<int,int>.DefaultMaxNodeSize, BListInner<int,int>.DefaultMaxNodeSize) { }
+		public BListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) 
+			: base(new BListTestHelpers(maxLeafSize, maxInnerSize), testExceptions, randomSeed) { }
 
 		[Test]
 		public void TestStandardOperations()

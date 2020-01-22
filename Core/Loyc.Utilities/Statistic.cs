@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,6 +64,20 @@ namespace Loyc.Utilities
 		public Statistic Clone()
 		{
 			return (Statistic)MemberwiseClone();
+		}
+		public static Statistic Merge(params Statistic[] data)
+		{
+			if (data.Length == 0)
+				return new Statistic();
+			Statistic total = data[0].Clone();
+			for (int i = 1; i < data.Length; i++) {
+				total.Min = System.Math.Min(total.Min, data[i].Min);
+				total.Max = System.Math.Max(total.Min, data[i].Min);
+				total.SumTotal += data[i].SumTotal;
+				total.SumOfSquares += data[i].SumOfSquares;
+				checked { total.Count += data[i].Count; }
+			}
+			return total;
 		}
 	};
 }

@@ -41,7 +41,7 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public class AListIndexer<K, T> : IAListTreeObserver<K, T>
 	{
-		BMultiMap<T, AListLeaf<K, T>> _items;
+		BMultiMap<T, AListLeafBase<K, T>> _items;
 		BMultiMap<AListNode<K,T>, AListInnerBase<K, T>> _nodes;
 		AListNode<K, T> _root;
 
@@ -65,12 +65,12 @@ namespace Loyc.Collections.Impl
 
 		protected static Func<T, T, int>                                       CompareTHashCodes = CompareHashCodes<T>;
 		protected static Func<AListNode<K, T>,      AListNode<K, T>,      int> CompareNodeHashCodes = CompareHashCodes<AListNode<K, T>>;
-		protected static Func<AListLeaf<K, T>,      AListLeaf<K, T>,      int> CompareLeafHashCodes = CompareHashCodes<AListNode<K, T>>;
+		protected static Func<AListLeafBase<K, T>,  AListLeafBase<K, T>,  int> CompareLeafHashCodes = CompareHashCodes<AListNode<K, T>>;
 		protected static Func<AListInnerBase<K, T>, AListInnerBase<K, T>, int> CompareInnerHashCodes = CompareHashCodes<AListInnerBase<K, T>>;
 
 		public AListIndexer()
 		{
-			_items = new BMultiMap<T, AListLeaf<K, T>>(CompareTHashCodes, CompareLeafHashCodes);
+			_items = new BMultiMap<T, AListLeafBase<K, T>>(CompareTHashCodes, CompareLeafHashCodes);
 		}
 
 		void BadState()
@@ -82,15 +82,10 @@ namespace Loyc.Collections.Impl
 			throw new InvalidStateException(msg);
 		}
 
-		public void Attach(AListBase<K, T> list, Action<bool> populate)
-		{
-			populate(true);
-		}
-		public void Detach()
-		{
-			RootChanged(null, true);
-		}
-		public void RootChanged(AListNode<K, T> newRoot, bool clear)
+		public bool? Attach(AListBase<K, T> list) => true;
+		public void Detach(AListBase<K,T> list, AListNode<K, T> root) => RootChanged(list, null, true);
+
+		public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
 		{
 			if (newRoot == null)
 			{
@@ -102,13 +97,13 @@ namespace Loyc.Collections.Impl
 			_root = newRoot;
 		}
 		
-		public void ItemAdded(T item, AListLeaf<K, T> parent)
+		public void ItemAdded(T item, AListLeafBase<K, T> parent)
 		{
-			_items.Add(new KeyValuePair<T,AListLeaf<K,T>>(item, parent));
+			_items.Add(new KeyValuePair<T,AListLeafBase<K,T>>(item, parent));
 		}
-		public void ItemRemoved(T item, AListLeaf<K, T> parent)
+		public void ItemRemoved(T item, AListLeafBase<K, T> parent)
 		{
-			int index = _items.IndexOfExact(new KeyValuePair<T, AListLeaf<K, T>>(item, parent));
+			int index = _items.IndexOfExact(new KeyValuePair<T, AListLeafBase<K, T>>(item, parent));
 			if (index <= -1) BadState();
 			_items.RemoveAt(index);
 		}
@@ -132,7 +127,7 @@ namespace Loyc.Collections.Impl
 				for (int i = 0; i < inner.LocalCount; i++)
 					NodeRemoved(inner.Child(i), inner);
 			else {
-				var leaf = (AListLeaf<K, T>)node;
+				var leaf = (AListLeafBase<K, T>)node;
 				for (int i = 0; i < leaf.LocalCount; i++)
 					ItemRemoved(leaf[(uint)i], leaf);
 			}
@@ -144,7 +139,7 @@ namespace Loyc.Collections.Impl
 				for (int i = 0; i < inner.LocalCount; i++)
 					NodeAdded(inner.Child(i), inner);
 			else {
-				var leaf = (AListLeaf<K, T>)node;
+				var leaf = (AListLeafBase<K, T>)node;
 				for (int i = 0; i < leaf.LocalCount; i++)
 					ItemAdded(leaf[(uint)i], leaf);
 			}
@@ -176,7 +171,7 @@ namespace Loyc.Collections.Impl
 		/// </remarks>
 		public int IndexOfAny(T item)
 		{
-			AListLeaf<K, T> leaf;
+			AListLeafBase<K, T> leaf;
 			bool found;
 
 			_items.FindLowerBoundExact(ref item, out leaf, out found);
@@ -187,7 +182,7 @@ namespace Loyc.Collections.Impl
 
 		public List<int> IndexesOf(T item)
 		{
-			AListLeaf<K, T> leaf;
+			AListLeafBase<K, T> leaf;
 			bool found;
 			int i = _items.FindLowerBoundExact(ref item, out leaf, out found);
 			if (!found)
@@ -197,7 +192,7 @@ namespace Loyc.Collections.Impl
 			list.Add(ReconstructIndex(item, leaf));
 
 			object searchFor = item;
-			KeyValuePair<T,AListLeaf<K,T>> kvp;
+			KeyValuePair<T,AListLeafBase<K,T>> kvp;
 			for(;;) {
 				i++;
 				if (i >= _items.Count)
@@ -215,7 +210,7 @@ namespace Loyc.Collections.Impl
 		/// <summary>Given an item and a leaf that is known to contain a copy of 
 		/// the item, this method returns the index of the item in the tree as 
 		/// a whole. Requires O(M )</summary>
-		protected int ReconstructIndex(T item, AListLeaf<K, T> leaf)
+		protected int ReconstructIndex(T item, AListLeafBase<K, T> leaf)
 		{
 			AListInnerBase<K, T> inner;
 			AListNode<K, T> node;
@@ -288,7 +283,7 @@ namespace Loyc.Collections.Impl
 						AddError(ref e, "Outdated record: inner {0:X} no longer contains node {1:X}.", parent.GetHashCode() & 0xFFFF, child.GetHashCode() & 0xFFFF);
 					if (parent != _root && _nodes.IndexOfExact(parent) <= -1)
 						AddError(ref e, "Inner {0:X} has no known parent but is not the root.", parent.GetHashCode() & 0xFFFF);
-					var leaf = child as AListLeaf<K, T>;
+					var leaf = child as AListLeafBase<K, T>;
 					if (leaf != null)
 						for (uint i = 0; i < leaf.LocalCount; i++)
 							if (_items.IndexOfExact(leaf[i]) <= -1)
@@ -326,207 +321,4 @@ namespace Loyc.Collections.Impl
 			IntPtr.Size * 5 + _items.CountSizeInBytes(sizeOfElement + IntPtr.Size) + 
 			                 (_nodes?.CountSizeInBytes(IntPtr.Size * 2) ?? 0);
 	}
-
-
-	/*
-	public abstract class AListIndexerBase<T> : AListTreeObserverMgr<T, T>
-	{
-		public AListIndexerBase(AList<T> list, AListNode<T, T> root) : base(list, root, null) { }
-
-		/// <summary>
-		/// Used for sanity checks. Count should equal the number of items in the 
-		/// tree, unless the root node is a leaf, in which case this class can return 
-		/// 0 and refuse to keep track of any items.
-		/// </summary>
-		public abstract uint Count { get; }
-
-		public abstract Iterator<AListLeaf<T, T>> PotentialLeavesFor(T item);
-		public abstract AListInnerBase<T, T> FindParent(AListNode<T, T> child, out uint baseIndex);
-
-		public uint FindBaseIndex(AListLeaf<T, T> leaf)
-		{
-			uint total = 0, baseIndex;
-			AListNode<T, T> node = leaf, prev = leaf;
-			for (node = leaf; (node = FindParent(node, out baseIndex)) != null; prev = node)
-				total += baseIndex;
-			Debug.Assert(prev == _root);
-			return total;
-		}
-		public int IndexOf(T item)
-		{
-			AListLeaf<T, T> leaf;
-			var leaves = PotentialLeavesFor(item);
-			while (leaves.MoveNext(out leaf))
-			{
-				int subI = leaf.IndexOf(item, 0);
-				if (subI != -1)
-				{
-					uint baseI = FindBaseIndex(leaf);
-					return (int)baseI + subI;
-				}
-			}
-			return -1;
-		}
-		public IEnumerator<uint> IndexesOf(T item, uint minIndex, uint maxIndex)
-		{
-			AListLeaf<T, T> leaf;
-			var leaves = PotentialLeavesFor(item);
-			while (leaves.MoveNext(out leaf))
-			{
-				int subI = leaf.IndexOf(item, 0);
-				if (subI != -1)
-				{
-					uint baseI = FindBaseIndex(leaf);
-					if (baseI + leaf.LocalCount < minIndex || baseI > maxIndex)
-						continue; // leaf node is out of desired range
-					do
-					{
-						uint index = baseI + (uint)subI;
-						if (index >= minIndex && index <= maxIndex)
-							yield return index;
-					} while ((subI = leaf.IndexOf(item, subI + 1)) != -1);
-				}
-			}
-		}
-	}
-
-	public class AListIndexer<T> : AListIndexerBase<T>, IAListTreeObserver<T, T>
-	{
-		KeylessHashtable<AListLeaf<T, T>> _items;
-		Dictionary<AListNode<T, T>, AListInnerBase<T, T>> _nodes;
-
-		public AListIndexer(AListNode<T, T> root) : base(root) { Attach(root); }
-
-		protected static void Verify(bool condition) { System.Diagnostics.Debug.Assert(condition); }
-
-		/// <summary>Builds an index, given a tree root and the number of items in 
-		/// the tree. Also sets <see cref="Root"/> to the given root node.</summary>
-		/// <remarks>
-		/// This must be the first method called after construction. It can be called
-		/// again later to rebuild the index, if the tree has been rearranged (e.g. 
-		/// sorted). The root is normally an inner node, because if the tree contains 
-		/// only a leaf node then this class offers no performance benefit and should
-		/// not be used.
-		/// </remarks>
-		public void Attach(AListNode<T, T> root)
-		{
-			uint count = 0;
-			if (root != null)
-			{
-				count = root.TotalCount;
-				if ((int)count < 0)
-					throw new NotSupportedException("Indexing is not supported for AList with over 2.1 billion items");
-			}
-			_root = root;
-			BuildIndex((int)(count + (count >> 1)));
-		}
-		private void BuildIndex(int capacity)
-		{
-			var root2 = _root as AListInnerBase<T, T>;
-
-			if (root2 != null)
-			{
-				_items = KeylessHashtable<AListLeaf<T, T>>.New(capacity);
-				_nodes = new Dictionary<AListNode<T, T>, AListInnerBase<T, T>>();
-				BuildIndexHelper(root2);
-			}
-			else
-			{
-				_items = null;
-				_nodes = null;
-			}
-		}
-		private void BuildIndexHelper(AListInnerBase<T, T> inner)
-		{
-			for (int i = 0; i < inner.LocalCount; i++)
-			{
-				var child = inner.Child(i);
-				NodeAdded(child, inner, false);
-				var child2 = child as AListInnerBase<T, T>;
-				if (child2 != null)
-					BuildIndexHelper(child2);
-				else
-					BuildIndexHelper((AListLeaf<T>)child);
-			}
-		}
-		private void BuildIndexHelper(AListLeaf<T> leaf)
-		{
-			bool ended = false;
-			var it = leaf.GetIterator(0, leaf.LocalCount);
-			for (; ; )
-			{
-				var item = it(ref ended);
-				if (ended) break;
-				ItemAdded(item, leaf, false);
-			}
-		}
-
-		public new void ItemAdded(T item, AListLeaf<T, T> parent, bool isMoving)
-		{
-			if (_items != null)
-			{
-				if (_items.Count >= _items.Capacity)
-					Attach(_root);
-				if (item == null)
-					_items.Add((uint)0, parent);
-				else
-					_items.Add(item, parent);
-			}
-			base.ItemAdded(item, parent, isMoving);
-		}
-
-		public new void ItemRemoved(T item, AListLeaf<T, T> parent, bool isMoving)
-		{
-			if (_items != null)
-				Verify(_items.Remove(item, parent));
-			base.ItemRemoved(item, parent, isMoving);
-		}
-
-		public new void NodeAdded(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
-		{
-			if (_nodes != null)
-				_nodes.Add(child, parent);
-			base.NodeAdded(child, parent, isMoving);
-		}
-
-		public new void NodeRemoved(AListNode<T, T> child, AListInnerBase<T, T> parent, bool isMoving)
-		{
-			if (_nodes != null)
-				Verify(_nodes.Remove(child));
-			base.NodeRemoved(child, parent, isMoving);
-		}
-
-		public override uint Count { get { return _items == null ? 0 : (uint)_items.Count; } }
-
-		public override Iterator<AListLeaf<T, T>> PotentialLeavesFor(T item)
-		{
-			if (_items != null)
-			{
-				if (item != null)
-					return _items.Find(item);
-				else
-					return _items.Find((uint)0);
-			}
-			else if (_root != null)
-				return Iterator.Single((AListLeaf<T>)Root);
-			else
-				return Iterator.Empty<AListLeaf<T>>();
-		}
-
-		public override AListInnerBase<T, T> FindParent(AListNode<T, T> child, out uint baseIndex)
-		{
-			if (_nodes != null)
-			{
-				AListInnerBase<T, T> parent;
-				if (_nodes.TryGetValue(child, out parent))
-				{
-					baseIndex = parent.BaseIndexOf(child);
-					return parent;
-				}
-			}
-			Debug.Assert(child == _root);
-			baseIndex = 0;
-			return null;
-		}
-	}*/
 }

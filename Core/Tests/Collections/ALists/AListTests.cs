@@ -8,48 +8,34 @@ using Loyc.MiniTest;
 
 namespace Loyc.Collections.Tests
 {
-	public abstract class AListTests<AList> : AListTestBase<AList, int> where AList : AListBase<int>, ICloneable<AList>
+	public class AListTestHelpers : AListTestHelpersBase<AList<int>>
 	{
-		protected int _maxInnerSize, _maxLeafSize;
-
-		public AListTests(bool testExceptions) : this(testExceptions, Environment.TickCount, AListLeaf<int>.DefaultMaxNodeSize, AListInner<int>.DefaultMaxNodeSize) { }
-		public AListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
-			: base(testExceptions, randomSeed)
-		{
-			_maxInnerSize = maxInnerSize;
-			_maxLeafSize = maxLeafSize;
-		}
+		public AListTestHelpers(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 
 		#region Implementations of abstract methods
 
-		protected override int AddToBoth(AList alist, List<int> list, int item, int preferredIndex)
+		public override AList<int> NewList()
 		{
-			alist.Insert(preferredIndex, item);
-			list.Insert(preferredIndex, item);
-			return preferredIndex;
+			return new AList<int>(MaxLeafSize, MaxInnerSize);
 		}
-		protected override int Add(AList alist, int item, int preferredIndex)
+		public override AList<int> CopySection(AList<int> alist, int start, int subcount)
 		{
-			alist.Insert(preferredIndex, item);
-			return preferredIndex;
+			return alist.CopySection(start, subcount);
 		}
-		protected override bool RemoveFromBoth(AList alist, List<int> list, int item)
+		public override AList<int> RemoveSection(AList<int> alist, int start, int subcount)
 		{
-			int i = alist.IndexOf(item);
-			if (i == -1) {
-				Assert.IsFalse(alist.Remove(item));
-				return false;
-			}
-			Assert.IsTrue(alist.Remove(item));
-			list.RemoveAt(i);
-			return true;
-		}
-		protected override int GetKey(int item)
-		{
-			return item;
+			return alist.RemoveSection(start, subcount);
 		}
 
 		#endregion
+	}
+
+	public abstract class AListTests<AList> : AListBaseTests<AList, int> where AList : AListBase<int>, ICloneable<AList>
+	{
+		public AListTests(AListTestHelpersBase<AList> helpers, bool testExceptions)
+			: this(helpers, testExceptions, Environment.TickCount) { }
+		public AListTests(AListTestHelpersBase<AList> helpers, bool testExceptions, int randomSeed)
+			: base(helpers, testExceptions, randomSeed) { }
 
 		[Test]
 		public void TestSetter()
@@ -96,25 +82,10 @@ namespace Loyc.Collections.Tests
 	public class AListTests : AListTests<AList<int>>
 	{
 		public AListTests() : this(true) { }
-		public AListTests(bool testExceptions) : base(testExceptions) { }
-		public AListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) : base(testExceptions, randomSeed, maxLeafSize, maxInnerSize) { }
-
-		#region Implementations of abstract methods
-
-		protected override AList<int> NewList()
-		{
-			return new AList<int>(_maxLeafSize, _maxInnerSize);
-		}
-		protected override AList<int> CopySection(AList<int> alist, int start, int subcount)
-		{
-			return alist.CopySection(start, subcount);
-		}
-		protected override AList<int> RemoveSection(AList<int> alist, int start, int subcount)
-		{
-			return alist.RemoveSection(start, subcount);
-		}
-
-		#endregion
+		public AListTests(bool testExceptions) 
+			: this(testExceptions, Environment.TickCount, AListLeaf<int>.DefaultMaxNodeSize, AListInner<int>.DefaultMaxNodeSize) { }
+		public AListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) 
+			: base(new AListTestHelpers(maxLeafSize, maxInnerSize), testExceptions, randomSeed) { }
 
 		// Note: we don't need to test Sort. It's tested already by ListRangeTests<AList<int>>
 
@@ -191,7 +162,7 @@ namespace Loyc.Collections.Tests
 
 		AList<int> NewList(int start, int count, ListChangingHandler<int> observer)
 		{
-			var list = new AList<int>(_maxLeafSize, _maxInnerSize);
+			var list = new AList<int>(Helpers.MaxLeafSize, Helpers.MaxInnerSize);
 			for (int i = 0; i < count; i++)
 				list.Add(start + i);
 			if (observer != null)

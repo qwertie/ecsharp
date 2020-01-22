@@ -335,11 +335,11 @@ namespace Loyc.Collections
 				_root = NewRootLeaf();
 				_treeHeight = 1;
 				if (_observer != null)
-					_observer.RootChanged(_root, false);
+					_observer.RootChanged(this, _root, false);
 			} else if (_root.IsFrozen) {
 				AListNode<K,T>.AutoClone(ref _root, null, _observer);
 				if (_observer != null)
-					_observer.RootChanged(_root, false);
+					_observer.RootChanged(this, _root, false);
 			}
 		}
 		protected void AutoSplit(AListNode<K, T> splitLeft, AListNode<K, T> splitRight)
@@ -351,7 +351,7 @@ namespace Loyc.Collections
 				var oldRoot = _root;
 				HandleChangedOrUndersizedRoot(splitLeft);
 				if (_observer != null && _root != oldRoot)
-					_observer.RootChanged(_root, false);
+					_observer.RootChanged(this, _root, false);
 			}
 			else
 			{
@@ -359,7 +359,7 @@ namespace Loyc.Collections
 				_root = SplitRoot(splitLeft, splitRight);
 				_treeHeight++;
 				if (_observer != null)
-					_observer.HandleRootSplit(oldRoot, splitLeft, splitRight, (AListInnerBase<K,T>)_root);
+					_observer.HandleRootSplit(this, oldRoot, splitLeft, splitRight, (AListInnerBase<K,T>)_root);
 			}
 		}
 		protected void HandleChangedOrUndersizedRoot(AListNode<K, T> result)
@@ -373,14 +373,14 @@ namespace Loyc.Collections
 					_root = null;
 					_treeHeight = 0;
 					if (_observer != null)
-						_observer.RootChanged(_root, false);
+						_observer.RootChanged(this, _root, false);
 					return;
 				} else if (_root is AListInnerBase<K, T>) {
 					var inner = (AListInnerBase<K, T>)_root;
 					_root = inner.Child(0);
 					checked { _treeHeight--; }
 					if (_observer != null)
-						_observer.HandleRootUnsplit(inner, _root);
+						_observer.HandleRootUnsplit(this, inner, _root);
 					Debug.Assert((_treeHeight == 1) == _root.IsLeaf);
 				} else
 					return; // leaf with 1 item. Leave it alone.
@@ -593,7 +593,7 @@ namespace Loyc.Collections
 				_root = null;
 				_treeHeight = 0;
 				if (_observer != null)
-					_observer.Clear();
+					_observer.Clear(this);
 			} finally {
 				_version++;
 				_freezeMode = FreezeMode.NotFrozen;
@@ -1150,7 +1150,7 @@ namespace Loyc.Collections
 			_freezeMode = FreezeMode.FrozenForConcurrency;
 			try {
 				if (_observer == null) {
-					observer.DoAttach(_root, this);
+					observer.DoAttach(this, _root);
 					_observer = observer;
 					return true;
 				} else if (_observer is ObserverMgr)
@@ -1177,7 +1177,7 @@ namespace Loyc.Collections
 			
 			if (_observer == observer)
 			{
-				observer.Detach();
+				observer.Detach(this, _root);
 				_observer = null;
 				return true;
 			} 

@@ -41,26 +41,28 @@ namespace Loyc.Collections.Impl
 	{
 		/// <summary>Called when the observer is being attached to an AList.</summary>
 		/// <param name="list">The list that the observer is being attached to.</param>
-		/// <param name="populate">The observer can invoke this delegate to cause 
-		/// notifications to be sent about all the nodes in the tree through a
-		/// depth-first search that calls <see cref="AddAll"/> for each node in
-		/// the tree. When calling this delegate, use a parameter of True if you 
-		/// want AddAll to be called for children before parents (roughly, leaves 
-		/// first). Use False if you want AddAll to be called for inner nodes 
-		/// before their children. populate() also calls <see cref="RootChanged"/>()
-		/// before scanning the tree.
-		/// </param>
+		/// <returns>Return true or false to cause notifications to be sent about
+		/// all the nodes in the tree, via a depth-first search that calls 
+		/// <see cref="AddAll"/> for each node in the tree. Return true if you 
+		/// want AddAll to be called for children before their parents (roughly, 
+		/// leaves first). Use False if you want AddAll to be called for inner nodes 
+		/// before their children. If you return null, no notifications are sent
+		/// except for <see cref="RootChanged"/> which will be called unconditionally.
+		/// </returns>
 		/// <remarks>
 		/// If Attach() throws an exception, <see cref="AListBase{K,T}"/> will
 		/// cancel the AddObserver() operation and it will not catch the exception.
 		/// </remarks>
-		void Attach(AListBase<K,T> list, Action<bool> populate);
+		bool? Attach(AListBase<K,T> list);
 		
-		/// <summary>Called when the observer is being detached from an AList.</summary>
-		void Detach();
+		/// <summary>Called when the observer is being detached from an AList.
+		/// Detach(), unlike Attach(), is not paired with a call to RootChanged.</summary>
+		/// <param name="list">List that is being detached.</param>
+		/// <param name="root">Root node that is being detached.</param>
+		void Detach(AListBase<K,T> list, AListNode<K, T> root);
 		
 		/// <summary>Called when the root of the tree changes, or when the
-		/// list is cleared.</summary>
+		/// list is cleared. Also called after Attach(), but not after Detach().</summary>
 		/// <param name="clear">true if the root is changing due to a Clear() 
 		/// operation. If this parameter is true, the observer should clear its
 		/// own state. If this parameter is false but newRoot is null, it means
@@ -68,16 +70,17 @@ namespace Loyc.Collections.Impl
 		/// by calling Clear() on the list). In that case, if the observer still 
 		/// believes that any items exist in leaf nodes, it means that there is 
 		/// a bookkeeping error somewhere.</param>
+		/// <param name="list">The list that changed.</param>
 		/// <param name="newRoot">The new root (null if the tree is cleared).</param>
-		void RootChanged(AListNode<K, T> newRoot, bool clear);
+		void RootChanged(AListBase<K,T> list, AListNode<K, T> root, bool clear);
 		
 		/// <summary>Called when an item is added to a leaf node.</summary>
 		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
-		void ItemAdded(T item, AListLeaf<K, T> parent);
+		void ItemAdded(T item, AListLeafBase<K, T> parent);
 		
 		/// <summary>Called when an item is removed from a leaf node.</summary>
 		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
-		void ItemRemoved(T item, AListLeaf<K, T> parent);
+		void ItemRemoved(T item, AListLeafBase<K, T> parent);
 		
 		/// <summary>Called when a child node is added to an inner node.</summary>
 		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
@@ -88,7 +91,9 @@ namespace Loyc.Collections.Impl
 		void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent);
 		
 		/// <summary>Called when all children are being removed from a node (leaf 
-		/// or inner). Notifications are not sent for individual children.</summary>
+		/// or inner) because the node is being split (AddAll will be called 
+		/// afterward for the two replacement nodes). Notifications are not sent 
+		/// for individual children.</summary>
 		void RemoveAll(AListNode<K, T> node);
 		
 		/// <summary>Called when all children are being added to a node (leaf 
@@ -112,14 +117,12 @@ namespace Loyc.Collections.Impl
 	/// <summary>Helper methods for <see cref="IAListTreeObserver{K,T}"/>.</summary>
 	public static class AListTreeObserverExt
 	{
-		internal static void DoAttach<K, T>(this IAListTreeObserver<K, T> observer, AListNode<K, T> root, AListBase<K, T> list)
+		internal static void DoAttach<K, T>(this IAListTreeObserver<K, T> observer, AListBase<K, T> list, AListNode<K, T> root)
 		{
-			observer.Attach(list, childrenFirst =>
-			{
-				observer.RootChanged(root, false);
-				if (root != null)
-					AddAllRecursively(observer, childrenFirst, root);
-			});
+			var childrenFirst = observer.Attach(list);
+			observer.RootChanged(list, root, false);
+			if (childrenFirst != null && root != null)
+				AddAllRecursively(observer, childrenFirst.Value, root);
 		}
 
 		private static void AddAllRecursively<K, T>(IAListTreeObserver<K, T> observer, bool childrenFirst, AListNode<K, T> node)
@@ -136,9 +139,9 @@ namespace Loyc.Collections.Impl
 				observer.AddAll(node);
 		}
 
-		internal static void Clear<K, T>(this IAListTreeObserver<K, T> self)
+		internal static void Clear<K, T>(this IAListTreeObserver<K, T> self, AListBase<K, T> list)
 		{
-			self.RootChanged(null, true);
+			self.RootChanged(list, null, true);
 		}
 
 		internal static void ItemsAdded<K, T>(this IAListTreeObserver<K, T> self, IListSource<T> list, AListLeaf<K, T> parent)
@@ -167,19 +170,19 @@ namespace Loyc.Collections.Impl
 			self.NodeAdded(child, newParent);
 		}
 
-		internal static void HandleRootSplit<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldRoot, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> newRoot)
+		internal static void HandleRootSplit<K, T>(this IAListTreeObserver<K, T> self, AListBase<K, T> list, AListNode<K, T> oldRoot, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> newRoot)
 		{
 			self.HandleNodeReplaced(oldRoot, newLeft, newRight);
 			self.NodeAdded(newLeft, newRoot);
 			self.NodeAdded(newRight, newRoot);
-			self.RootChanged(newRoot, false);
+			self.RootChanged(list, newRoot, false);
 		}
 
-		internal static void HandleRootUnsplit<K, T>(this IAListTreeObserver<K, T> self, AListInnerBase<K, T> oldRoot, AListNode<K, T> newRoot)
+		internal static void HandleRootUnsplit<K, T>(this IAListTreeObserver<K, T> self, AListBase<K, T> list, AListInnerBase<K, T> oldRoot, AListNode<K, T> newRoot)
 		{
 			Debug.Assert(oldRoot.LocalCount == 0 || (oldRoot.LocalCount == 1 && oldRoot.Child(0) == newRoot));
 			self.NodeRemoved(newRoot, oldRoot);
-			self.RootChanged(newRoot, false);
+			self.RootChanged(list, newRoot, false);
 		}
 
 		internal static void HandleChildReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> parent)

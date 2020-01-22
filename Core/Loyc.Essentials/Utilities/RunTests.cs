@@ -102,7 +102,7 @@ namespace Loyc.MiniTest
 			if (info.IsPublic) {
 				// this lets us know if a method is a valid [Test] method
 				object[] attrs = info.GetCustomAttributes(true);
-				return attrs.FirstOrDefault(attr => attr.GetType().Name == "TestAttribute");
+				return attrs.FirstOrDefault(attr => attr.GetType().Name == nameof(TestAttribute));
 			}
 			return null;
 		}
@@ -123,13 +123,13 @@ namespace Loyc.MiniTest
 		private static MethodInfo GetSetup(MethodInfo[] methods)
 		{
 			// Gets the setup method - returns null if there is none
-			return GetMethodWithAttribute(methods, "SetUpAttribute");
+			return GetMethodWithAttribute(methods, nameof(SetUpAttribute));
 		}
 
 		private static MethodInfo GetTeardown(MethodInfo[] methods)
 		{
 			// Gets the teardown method - returns null if there is none
-			return GetMethodWithAttribute(methods, "TearDownAttribute");
+			return GetMethodWithAttribute(methods, nameof(TearDownAttribute));
 		}
 	}
 }

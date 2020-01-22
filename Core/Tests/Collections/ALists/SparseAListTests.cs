@@ -3,46 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Loyc.Collections.Impl;
 using Loyc.Math;
 using Loyc.MiniTest;
 
 namespace Loyc.Collections.Tests
 {
-	[TestFixture]
-	public class SparseAListTests : AListTests<SparseAList<int>>
+	public class SparseAListTestHelpers : AListTestHelpersBase<SparseAList<int>>
 	{
-		public SparseAListTests() : this(true) { }
-		public SparseAListTests(bool testExceptions) : base(testExceptions) { }
-		public SparseAListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize) : base(testExceptions, randomSeed, maxLeafSize, maxInnerSize) { }
+		internal Random _r = new Random();
 
-		[Test(Fails = "Tree observers are not implemented (and are broken) in SparseALists")]
-		public override void SimpleObserverTests1() 
-			{ if (_testExceptions) Fail("Support for tree observers is not implemented."); }
-		public override void SimpleObserverTests2() {}
-		public override void ObserveRemoveSection() {}
-
+		public SparseAListTestHelpers(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
+		
 		#region Implementations of abstract methods
 
-		protected override SparseAList<int> NewList()
-		{
-			return new SparseAList<int>(_maxLeafSize, _maxInnerSize);
-		}
-		protected override SparseAList<int> CopySection(SparseAList<int> alist, int start, int subcount)
-		{
-			return alist.CopySection(start, subcount);
-		}
-		protected override SparseAList<int> RemoveSection(SparseAList<int> alist, int start, int subcount)
-		{
-			return alist.RemoveSection(start, subcount);
-		}
-
-		#endregion
-
-		protected override SparseAList<int> NewList(int initialCount, out List<int> list)
+		public override SparseAList<int> NewList(int initialCount, out List<int> list)
 		{
 			return NewList(initialCount, _r.Next(initialCount + 1), out list);
 		}
-		protected SparseAList<int> NewList(int initialCount, int realCount, out List<int> list)
+		public SparseAList<int> NewList(int initialCount, int realCount, out List<int> list)
 		{
 			Debug.Assert(realCount <= initialCount);
 			SparseAList<int> alist = NewList();
@@ -62,6 +41,45 @@ namespace Loyc.Collections.Tests
 
 			return alist;
 		}
+		public override SparseAList<int> NewList()
+		{
+			return new SparseAList<int>(MaxLeafSize, MaxInnerSize);
+		}
+		public override SparseAList<int> CopySection(SparseAList<int> alist, int start, int subcount)
+		{
+			return alist.CopySection(start, subcount);
+		}
+		public override SparseAList<int> RemoveSection(SparseAList<int> alist, int start, int subcount)
+		{
+			return alist.RemoveSection(start, subcount);
+		}
+
+		#endregion
+	}
+
+	[TestFixture]
+	public class SparseAListTests : AListTests<SparseAList<int>>
+	{
+		public new SparseAListTestHelpers Helpers => (SparseAListTestHelpers)base.Helpers;
+
+		public SparseAListTests() : this(true) { }
+		public SparseAListTests(bool testExceptions)
+			: this(testExceptions, Environment.TickCount, AListLeaf<int>.DefaultMaxNodeSize, AListInner<int>.DefaultMaxNodeSize) { }
+		public SparseAListTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
+			: base(new SparseAListTestHelpers(maxLeafSize, maxInnerSize), testExceptions, randomSeed) { }
+
+		[SetUp]
+		public new void SetUp()
+		{
+			base.SetUp();
+			Helpers._r = _r;
+		}
+
+		[Test(Fails = "Tree observers are not implemented (and are broken) in SparseALists")]
+		public override void SimpleObserverTests1() 
+			{ if (_testExceptions) Fail("Support for tree observers is not implemented."); }
+		public override void SimpleObserverTests2() {}
+		public override void ObserveRemoveSection() {}
 
 		[Test]
 		public void TestSwap()
@@ -98,19 +116,19 @@ namespace Loyc.Collections.Tests
 			List<int>[] lists = new List<int>[13];
 			SparseAList<int>[] alists = new SparseAList<int>[]
 			{
-				NewList(0, 0, out lists[0]),
-				NewList(2, 1, out lists[1]),
-				NewList(6, 5, out lists[2]),
-				NewList(10, 5, out lists[3]),
-				NewList(15, 11, out lists[4]),
-				NewList(30, 11, out lists[5]),
-				NewList(30, 20, out lists[6]),
-				NewList(60, 20, out lists[7]),
-				NewList(50, 32, out lists[8]),
-				NewList(100, 32, out lists[9]),
-				NewList(80, 53, out lists[10]),
-				NewList(150, 53, out lists[11]),
-				NewList(150, 100, out lists[12]),
+				Helpers.NewList(0, 0, out lists[0]),
+				Helpers.NewList(2, 1, out lists[1]),
+				Helpers.NewList(6, 5, out lists[2]),
+				Helpers.NewList(10, 5, out lists[3]),
+				Helpers.NewList(15, 11, out lists[4]),
+				Helpers.NewList(30, 11, out lists[5]),
+				Helpers.NewList(30, 20, out lists[6]),
+				Helpers.NewList(60, 20, out lists[7]),
+				Helpers.NewList(50, 32, out lists[8]),
+				Helpers.NewList(100, 32, out lists[9]),
+				Helpers.NewList(80, 53, out lists[10]),
+				Helpers.NewList(150, 53, out lists[11]),
+				Helpers.NewList(150, 100, out lists[12]),
 			};
 			Assert.AreEqual(alists.Length, lists.Length);
 

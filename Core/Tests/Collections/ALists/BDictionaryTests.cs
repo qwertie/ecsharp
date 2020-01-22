@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,31 +9,20 @@ namespace Loyc.Collections.Tests
 {
 	using IntPair = KeyValuePair<int, int>;
 
-	[TestFixture]
-	public class BDictionaryTests : AListTestBase<BDictionary<int,int>, IntPair>
+	public class BDictionaryTestHelpers : AListTestHelpersBase<BDictionary<int, int>, IntPair>
 	{
-		int _maxInnerSize, _maxLeafSize;
-
-		public BDictionaryTests() : this(true) { }
-		public BDictionaryTests(bool testExceptions) 
-			: this(testExceptions, Environment.TickCount, AListLeaf<int,int>.DefaultMaxNodeSize, AListInnerBase<int,int>.DefaultMaxNodeSize) { }
-		public BDictionaryTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
-			: base(testExceptions, randomSeed)
-		{
-			_maxInnerSize = maxInnerSize;
-			_maxLeafSize = maxLeafSize;
-		}
+		public BDictionaryTestHelpers(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 
 		#region Implementations of abstract methods
 
-		protected override BDictionary<int,int> NewList()
+		public override BDictionary<int,int> NewList()
 		{
-			return new BDictionary<int,int>(_maxLeafSize, _maxInnerSize);
+			return new BDictionary<int,int>(MaxLeafSize, MaxInnerSize);
 		}
 		
 		int _nextValue = 0;
 
-		protected override int AddToBoth(BDictionary<int, int> blist, List<IntPair> list, int key, int preferredIndex)
+		public override int AddToBoth(BDictionary<int, int> blist, List<IntPair> list, int key, int preferredIndex)
 		{
 			int i = blist.FindLowerBound(key);
 			int value = _nextValue++;
@@ -41,22 +30,22 @@ namespace Loyc.Collections.Tests
 			list.Insert(i, new KeyValuePair<int,int>(key, value));
 			return i;
 		}
-		protected override int Add(BDictionary<int, int> blist, int key, int preferredIndex)
+		public override int Add(BDictionary<int, int> blist, int key, int preferredIndex)
 		{
 			int i = blist.FindLowerBound(key);
 			int value = _nextValue++;
 			blist.Add(key, value);
 			return i;
 		}
-		protected override BDictionary<int, int> CopySection(BDictionary<int, int> blist, int start, int subcount)
+		public override BDictionary<int, int> CopySection(BDictionary<int, int> blist, int start, int subcount)
 		{
 			return blist.CopySection(start, subcount);
 		}
-		protected override BDictionary<int,int> RemoveSection(BDictionary<int,int> blist, int start, int subcount)
+		public override BDictionary<int,int> RemoveSection(BDictionary<int,int> blist, int start, int subcount)
 		{
 			return blist.RemoveSection(start, subcount);
 		}
-		protected override bool RemoveFromBoth(BDictionary<int, int> blist, List<IntPair> list, int item)
+		public override bool RemoveFromBoth(BDictionary<int, int> blist, List<IntPair> list, int item)
 		{
 			int i = blist.IndexOf(item);
 			if (i == -1)
@@ -65,12 +54,22 @@ namespace Loyc.Collections.Tests
 			list.RemoveAt(i);
 			return true;
 		}
-		protected override int GetKey(IntPair item)
+		public override int GetKey(IntPair item)
 		{
 			return item.Key;
 		}
 
 		#endregion
+	}
+
+	[TestFixture]
+	public class BDictionaryTests : AListBaseTests<BDictionary<int,int>, IntPair>
+	{
+		public BDictionaryTests() : this(true) { }
+		public BDictionaryTests(bool testExceptions) 
+			: this(testExceptions, Environment.TickCount, BListLeaf<int,IntPair>.DefaultMaxNodeSize, BListInner<int,IntPair>.DefaultMaxNodeSize) { }
+		public BDictionaryTests(bool testExceptions, int randomSeed, int maxLeafSize, int maxInnerSize)
+			: base(new BDictionaryTestHelpers(maxLeafSize, maxInnerSize), testExceptions, randomSeed) { }
 
 		IntPair Pair(int key, int value) { return new IntPair(key, value); }
 

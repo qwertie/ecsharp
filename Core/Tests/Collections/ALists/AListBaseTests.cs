@@ -1,88 +1,56 @@
+using Loyc.Collections.Impl;
+using Loyc.MiniTest;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.ComponentModel;
-using Loyc.MiniTest;
-using Loyc.Math;
-using Loyc.Collections.Impl;
+using System.Threading.Tasks;
 
 namespace Loyc.Collections.Tests
 {
+	using Loyc.Math;
 	using System;
 
-	/// <summary>
-	/// Contains tests common to AList, BList and BDictionary.
-	/// </summary>
 	public abstract class AListTestBase<AList, T> : TestHelpers where AList : AListBase<int, T>, ICloneable<AList>
+	{
+		protected AListTestHelpersBase<AList, T> Helpers { get; set; }
+
+		protected AListTestBase(AListTestHelpersBase<AList, T> helpers) { Helpers = helpers; }
+
+		protected AList NewList() => Helpers.NewList();
+		protected int AddToBoth(AList alist, List<T> list, int item, int preferredIndex) => Helpers.AddToBoth(alist, list, item, preferredIndex);
+		protected int Add(AList alist, int item, int preferredIndex) => Helpers.Add(alist, item, preferredIndex);
+		protected AList CopySection(AList alist, int start, int subcount) => Helpers.CopySection(alist, start, subcount);
+		protected AList RemoveSection(AList alist, int start, int subcount) => Helpers.RemoveSection(alist, start, subcount);
+		protected bool RemoveFromBoth(AList alist, List<T> list, int item) => Helpers.RemoveFromBoth(alist, list, item);
+		protected void RemoveAtInBoth(AList alist, List<T> list, int index) => Helpers.RemoveAtInBoth(alist, list, index);
+		protected int GetKey(T item) => Helpers.GetKey(item);
+		protected AList NewList(int initialCount, out List<T> list) => Helpers.NewList(initialCount, out list);
+		protected int _maxLeafSize => Helpers.MaxLeafSize;
+		protected int _maxInnerSize => Helpers.MaxInnerSize;
+	}
+
+	/// <summary>
+	/// Contains tests common to AList, BList, BDictionary, and SparseAList.
+	/// </summary>
+	public class AListBaseTests<AList, T> : AListTestBase<AList, T> where AList : AListBase<int, T>, ICloneable<AList>
 	{
 		protected int _randomSeed;
 		protected Random _r;
 		protected bool _testExceptions;
 
-		public AListTestBase(bool testExceptions, int randomSeed)
+		public AListBaseTests(AListTestHelpersBase<AList, T> helpers, bool testExceptions, int randomSeed) : base(helpers)
 		{
 			_testExceptions = testExceptions;
 			_randomSeed = randomSeed;
 		}
+
 		[SetUp]
 		public void SetUp()
 		{
 			_r = new Random(_randomSeed);
 		}
 		
-		protected abstract AList NewList();
-		
-		/// <summary>Adds an item to an AList and then to a List at the same place.</summary>
-		/// <param name="preferredIndex">Index to use if alist is an AList. 
-		/// If it is a B+ tree then the item is always added in sorted order.</param>
-		protected abstract int AddToBoth(AList alist, List<T> list, int item, int preferredIndex);
-
-		/// <summary>Adds an item to an AList.</summary>
-		protected abstract int Add(AList alist, int item, int preferredIndex);
-
-		protected abstract AList CopySection(AList alist, int start, int subcount);
-
-		protected abstract AList RemoveSection(AList alist, int start, int subcount);
-
-		protected abstract bool RemoveFromBoth(AList alist, List<T> list, int item);
-		
-		/// <summary>Remove an item from an AList and then from a List at the same location.</summary>
-		protected void RemoveAtInBoth(AList alist, List<T> list, int index)
-		{
-			Assert.AreEqual(list.Count, alist.Count);
-			Debug.Assert(index < list.Count);
-			alist.RemoveAt(index);
-			list.RemoveAt(index);
-		}
-
-		protected abstract int GetKey(T item);
-
-		protected virtual AList NewList(int initialCount, out List<T> list)
-		{
-			AList alist = NewList();
-			list = new List<T>();
-
-			// Make a list from 0..initialCount-1
-			// Add the items in such a way that we end up with a sorted list 
-			// whether it is an AList or a B+ tree, but don't simply add the
-			// items in order because we want to give the tree more chances 
-			// to malfunction during the test :)
-			int middle = Math.Max(initialCount * 2 / 3, 1);
-			for (int i = middle; i < initialCount; i++)
-				AddToBoth(alist, list, i, i - middle);
-			ExpectList(alist, list, true);
-
-			for (int i = 1; i < middle; i++)
-				AddToBoth(alist, list, i, i - 1);
-			if (initialCount > 0)
-				AddToBoth(alist, list, 0, 0);
-			ExpectList(alist, list, true);
-			return alist;
-		}
-
-
 		[Test]
 		public void NewListTest() // just to make sure it doesn't crash
 		{
@@ -568,19 +536,22 @@ namespace Loyc.Collections.Tests
 		AListBase<K, T> _list;
 		AListNode<K, T> _root;
 
-		public void Attach(AListBase<K, T> list, Action<bool> populate)
+		public bool? Attach(AListBase<K, T> list)
 		{
 			Assert.That(_list == null && _root == null);
 			_list = list;
-			populate(true);
+			return true;
 		}
-		public void Detach()
+		public void Detach(AListBase<K, T> list, AListNode<K, T> root)
 		{
-			RootChanged(null, true);
+			Assert.ReferenceEquals(list, _list);
+			Assert.ReferenceEquals(root, _root);
+			RootChanged(_list, null, true);
 			_list = null;
 		}
-		public void RootChanged(AListNode<K, T> newRoot, bool clear)
+		public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
 		{
+			Assert.ReferenceEquals(list, _list);
 			if (clear)
 			{
 				ItemCount = NodeCount = 0;
@@ -593,11 +564,11 @@ namespace Loyc.Collections.Tests
 			_root = newRoot;
 		}
 		
-		public void ItemAdded(T item, AListLeaf<K, T> parent)
+		public void ItemAdded(T item, AListLeafBase<K, T> parent)
 		{
 			ItemCount++;
 		}
-		public void ItemRemoved(T item, AListLeaf<K, T> parent)
+		public void ItemRemoved(T item, AListLeafBase<K, T> parent)
 		{
 			ItemCount--;
 		}
