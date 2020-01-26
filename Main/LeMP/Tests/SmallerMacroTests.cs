@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -147,10 +147,10 @@ namespace LeMP.Tests
 			// Combine ?. with #ecs macro (#useSequenceExpressions)
 			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = B?.c.d; }",
-			          "void F() { var B_"+n+" = B; a = (([#trivia_isTmpVar] B_"+n+") != null ? B_"+n+".c.d : null); }");
+			          "void F() { var B_"+n+" = B; a = (([@`%isTmpVar`] B_"+n+") != null ? B_"+n+".c.d : null); }");
 			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = A.B?.c.d; }",
-			         "void F() { var tmp_"+n+" = A.B; a = (([#trivia_isTmpVar] tmp_"+n+") != null ? tmp_"+n+".c.d : null); }");
+			         "void F() { var tmp_"+n+" = A.B; a = (([@`%isTmpVar`] tmp_" + n+") != null ? tmp_"+n+".c.d : null); }");
 		}
 
 		[Test]

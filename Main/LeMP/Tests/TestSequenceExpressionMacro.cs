@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -117,12 +117,12 @@ namespace LeMP.Tests
 				static double nine = nine_initializer();
 				static double nine_initializer() {
 					var three = Math.Sqrt(9);
-					return ([#trivia_isTmpVar] three) * three;
+					return ([@`%isTmpVar`] three) * three;
 				}
 				Pair<Symbol,Symbol> p = p_initializer();
 				static Pair<Symbol,Symbol> p_initializer() {
 					var str = ""foo""(->Symbol);
-					return Pair.Create([#trivia_isTmpVar] str, str);
+					return Pair.Create([@`%isTmpVar`] str, str);
 				}
 				");
 		}

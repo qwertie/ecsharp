@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -2094,7 +2094,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// NOTE: oddity here. In order for an empty branch to work, one must use
 			// Expr() rather than Stmt() because Stmt() is represented as an "empty 
-			// statement" (S.Missing) with a [#trivia_rawTextBefore] attached. LLLPG 
+			// statement" (S.Missing) with a %rawTextBefore attribute attached. LLLPG 
 			// sees this as an empty statement that it can eliminate, whereas Expr() 
 			// is stored as a #rawText node which is not mistaken for an empty stmt.
 			Rule BinaryOpt = Rule("BinaryOpt", 

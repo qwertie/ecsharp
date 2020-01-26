@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -117,13 +117,13 @@ namespace Loyc.Syntax
 			return new StdLiteralNode(t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
-		/// <summary>Creates a trivia node named <c>"#trivia_" + suffix</c> with the 
+		/// <summary>Creates a trivia node named <c>"%" + suffix</c> with the 
 		/// specified Value attached.</summary>
-		/// <remarks>This method only adds the prefix <c>#trivia_</c> if it is not 
+		/// <remarks>This method only adds the prefix <c>%</c> if it is not 
 		/// already present in the 'suffix' argument.</remarks>
 		public LNode Trivia(string suffix, object value)
 		{
-			string name = suffix.StartsWith("#trivia_") ? suffix : "#trivia_" + suffix;
+			string name = suffix.StartsWith("%") ? suffix : "%" + suffix;
 			return LNode.Trivia(GSymbol.Get(name), value, new SourceRange(_file));
 		}
 		/// <summary>Creates a trivia node with the specified Value attached.</summary>

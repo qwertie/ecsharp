@@ -482,7 +482,7 @@ namespace Loyc.Ecs.Tests
 			Expr("#delegate(void, Foo!([#where(#class, x)] T), #([] T x))", stmt);
 			stmt = Attr(@public, @new, partialWA, F.Fn(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
-			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #fn(string, Foo, #([] int x))", stmt);
+			Expr("[#public, #new, [@`%wordAttribute`] #partial] #fn(string, Foo, #([] int x))", stmt);
 			stmt = F.Fn(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x) {\n  x * x\n}", stmt);
 			Expr("#fn(int, Foo, #([] int x), {\n  x * x\n})", stmt);

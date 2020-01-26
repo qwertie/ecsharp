@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,17 +54,17 @@ namespace Loyc.Syntax
 			), 0, 71);
 			// Expected results
 			var expected = Les2LanguageService.Value.Parse(
-				@"@[#trivia_SLComment("" Leading Comment 1""),
-				  #trivia_MLComment("" Leading Comment 2 ""),
-				  #trivia_newline,
-				  #trivia_MLComment("" Leading Comment 3 ""),
-				  #trivia_trailing(
-				    #trivia_SLComment("" Trailing Comment 1""),
-				    #trivia_MLComment("" Trailing Comment 2 ""),
-				    #trivia_newline)] 
+				@"@[@%SLComment("" Leading Comment 1""),
+				  @%MLComment("" Leading Comment 2 ""),
+				  @%newline,
+				  @%MLComment("" Leading Comment 3 ""),
+				  @%trailing(
+				    @%SLComment("" Trailing Comment 1""),
+				    @%MLComment("" Trailing Comment 2 ""),
+				    @%newline)] 
 				x = y;
 				y = z;
-				@[#trivia_appendStatement] TheEnd();", preserveComments: false);
+				@[@%appendStatement] TheEnd();", preserveComments: false);
 
 			var injector = new StandardTriviaInjector(trivia, F.File, (int)TT.Newline, "/*", "*/", "//");
 			{

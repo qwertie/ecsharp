@@ -32,7 +32,7 @@ namespace LeMP.Tests
 		}
 		protected void TestCs(string input, string outputCs, int maxExpand = 0xFFFF)
 		{
-			// This is used mainly to avoid printing [#trivia_isTmpVar] when testing sequence expressions
+			// This is used mainly to avoid printing @[@%isTmpVar] when testing sequence expressions
 			Test(input, EcsLanguageService.Value, outputCs, EcsLanguageService.WithPlainCSharpPrinter, maxExpand);
 		}
 		protected void TestBoth(string inputLes, string inputEcs, string outputEcs, int maxExpand = 0xFFFF)

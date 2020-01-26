@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.5.0.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.6.8.5
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -76,13 +76,13 @@ namespace LeMP
 			// not necessary to create a temporary variable to hold a copy of 
 			// earlier parts of the outer expression, because the sequence has no
 			// potentially-relevant side effects.
-			static readonly LNode _trivia_pure = LNode.Id("#trivia_pure");
+			static readonly LNode _trivia_pure = LNode.Id("%pure");
 		
 			// This is an internal signal that it is not necessary to create a temporary 
 			// variable to hold a copy of a value because that value is already a copy. 
 			// e.g. this prevents an extra temporary from being created for `C` in
 			// `A.B[C::c] = D::d` (otherwise `D::d` would cause `c` to get copied to a temporary.)
-			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
+			static readonly LNode _trivia_isTmpVar = LNode.Id("%isTmpVar");
 		
 			public IMacroContext Context;
 			public EliminateRunSequences(IMacroContext context) {

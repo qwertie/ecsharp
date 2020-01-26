@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +20,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// Please note that language-specific printing styles can be denoted by 
 	/// attaching special attributes recognized by the printer for that language.
-	/// These attributes should have Names starting with the string "#trivia_";
+	/// These attributes should have Names starting with the % character;
 	/// printers are programmed to ignore trivia attributes that they do not
 	/// understand.</remarks>
 	[Flags]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,7 +38,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CommentTriviaPrinterTest()
 		{
-			// Test #trivia_spaces, which the parser/injector never produces:
+			// Test %spaces, which the parser/injector never produces:
 			var stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSpaces, "\t\t"), F.Trivia(S.TriviaSLComment, "ax")), x);
 			Stmt("//bx\nx;\t\t//ax", stmt);
 			Expr("//bx\nx\t//ax",    stmt, p => p.OmitSpaceTrivia = true);

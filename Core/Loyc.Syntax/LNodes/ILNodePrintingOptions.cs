@@ -15,7 +15,7 @@ namespace Loyc.Syntax
 		/// or not parentheses were present in the Loyc tree being printed.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * `+`(a, b)</c> (LESv3 notation)
 		/// will be printed <c>x * (a + b)</c>, which is a slightly different tree 
-		/// (the parenthesis add the trivia attribute #trivia_inParens.)</remarks>
+		/// (the parenthesis add the trivia attribute %inParens.)</remarks>
 		bool AllowChangeParentheses { get; }
 
 		/// <summary>When this flag is set, comment trivia attributes are suppressed

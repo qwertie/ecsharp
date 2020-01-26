@@ -325,57 +325,59 @@ namespace Loyc.Syntax
 			// (C comma operator: all arguments are evaluated and the result of the expression is the value of the last argument. This is equivalent to the way we tentatively define #)
 
 		// Trivia
-		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
-		public static readonly Symbol TriviaInParens = GSymbol.Get("#trivia_inParens");                     //!< "#trivia_inParens" an attribute attached to an expression that has parenthesis around it.
-		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");         //!< "#trivia_macroAttribute" an attribute attached to a EC# statement that uses a macro-style call, e.g. foo {...} <=> [#trivia_macroAttribute] foo({...});
-		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");         //!< obsolete
-		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword"); //!< "#trivia_useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([#trivia_useOperatorKeyword]@`+`)(a, b)
-		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");   //!< "#trivia_forwardedProperty" e.g. get ==> _x; <=> [#trivia_forwardedProperty] get(@`==>`(_x));
-		public static readonly Symbol TriviaRawText = GSymbol.Get("#trivia_rawText");                 //!< #trivia_rawText("stuff") - Arbitrary text to be emitted unchanged, e.g. `[#trivia_rawText("cue!")] q;` is printed as `cue!q;`.
-		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< #trivia_C#RawText("stuff") - Raw text that is only printed by the C# printer (not the printer for other languages)
-		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("#trivia_C#PPRawText");         //!< #trivia_C#PPRawText("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
+		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("%commaSeparated");
+		public static readonly Symbol TriviaInParens = GSymbol.Get("%inParens");                     //!< "%inParens" an attribute attached to an expression that has parenthesis around it.
+		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("%macroAttribute");         //!< "%macroAttribute" an attribute attached to a EC# statement that uses a macro-style call, e.g. foo {...} <=> [%macroAttribute] foo({...});
+		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("%doubleVerbatim");         //!< obsolete
+		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("%useOperatorKeyword"); //!< "%useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([`%useOperatorKeyword`]`'+`)(a, b)
+		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("%forwardedProperty");   //!< "%forwardedProperty" e.g. get ==> _x; <=> [`%forwardedProperty`] get(`'==>`(_x));
+		public static readonly Symbol TriviaRawText = GSymbol.Get("%rawText");                 //!< "%rawText" - Arbitrary text to be emitted unchanged, e.g. `[`%rawText`("cue!")] q;` is printed as `cue!q;`.
+		public static readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
+		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
+		
+  [Obsolete]
+		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("%rawTextBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");     //!< "#trivia_rawTextBefore"
-		[Obsolete]
-		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("#trivia_rawTextAfter");       //!< "#trivia_rawTextAfter"
+		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("%rawTextAfter");
 		// The following 6 kinds of trivia, which specify "Before" or "After" in their name,
 		// are deprecated in favor of trivia that is determined to be before or after
-		// based on its placement: trailing trivia is placed within a call to #trivia_trailing, 
+		// based on its placement: trailing trivia is placed within a call to %trailing, 
 		// while leading trivia is placed directly in the node's attribute list. For example,
-		// `[#trivia_MLComment("L"), #trivia_trailing(#trivia_SLComment("T")] f();` means
+		// `[%MLComment("L"), %trailing(%SLComment("T")] f();` means
 		// `/*L*/ f(); //T`.
 		[Obsolete]
-		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("#trivia_SLCommentBefore"); //!< "#trivia_SLCommentBefore"
+		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("%SLCommentBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("#trivia_MLCommentBefore"); //!< "#trivia_MLCommentBefore"
+		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("%MLCommentBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("#trivia_SLCommentAfter");   //!< "#trivia_SLCommentAfter"
+		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("%SLCommentAfter");
 		[Obsolete]
-		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("#trivia_MLCommentAfter");   //!< "#trivia_MLCommentAfter"
+		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("%MLCommentAfter");
 		[Obsolete]
-		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("#trivia_spaceBefore");         //!< "#trivia_spaceBefore"
+		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("%spaceBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("#trivia_spaceAfter");           //!< "#trivia_spaceAfter"
-		/// "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
-		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("#trivia_wordAttribute");
-		public static readonly Symbol TriviaDummyNode = GSymbol.Get("#trivia_dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
+		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("%spaceAfter");
+
+		/// "%wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
+		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("%wordAttribute");
+		public static readonly Symbol TriviaDummyNode = GSymbol.Get("%dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
 		[Obsolete]
-		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("#trivia_beginTrailingTrivia"); //!< "#trivia_SLCommentBefore"
-		public static readonly Symbol TriviaSLComment = GSymbol.Get("#trivia_SLComment"); //!< "#trivia_SLCommentBefore"
-		public static readonly Symbol TriviaMLComment = GSymbol.Get("#trivia_MLComment"); //!< "#trivia_MLCommentBefore"
-		public static readonly Symbol TriviaNewline = GSymbol.Get("#trivia_newline");
-		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("#trivia_appendStatement"); //!< Suppresses the newline that ordinarily appears before each statement in a braced block
-		public static readonly Symbol TriviaSpaces = GSymbol.Get("#trivia_spaces");
-		public static readonly Symbol TriviaTrailing = GSymbol.Get("#trivia_trailing");
-		public static readonly Symbol TriviaRegion = GSymbol.Get("#trivia_region");       //!< Region begin marker: #region Title <=> #trivia_region(" Title");
-		public static readonly Symbol TriviaEndRegion = GSymbol.Get("#trivia_endRegion"); //!< Region end marker: #endregion End <=> #trivia_endregion(" End");
+		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("%beginTrailingTrivia");
+		public static readonly Symbol TriviaSLComment = GSymbol.Get("%SLComment"); //!< "%SLComment", e.g. @`%SLComment`(" Text")
+		public static readonly Symbol TriviaMLComment = GSymbol.Get("%MLComment"); //!< "%MLComment", e.g. @`%MLComment`(" Text")
+		public static readonly Symbol TriviaNewline = GSymbol.Get("%newline");
+		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("%appendStatement"); //!< Suppresses the newline that ordinarily appears before each statement in a braced block
+		public static readonly Symbol TriviaSpaces = GSymbol.Get("%spaces");
+		public static readonly Symbol TriviaTrailing = GSymbol.Get("%trailing");
+		public static readonly Symbol TriviaRegion = GSymbol.Get("%region");       //!< "%region" - Region begin marker: #region Title <=> `%region`(" Title");
+		public static readonly Symbol TriviaEndRegion = GSymbol.Get("%endRegion"); //!< "%endRegion" - Region end marker: #endregion End <=> `%endregion`(" End");
 
 		/// #rawText must be a call with a single literal argument. The Value of
 		/// the argument is converted to a string and printed out by EcsNodePrinter 
 		/// without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
 		public static readonly Symbol CsRawText = GSymbol.Get("#C#RawText");
-		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< Preprocessor raw text: always printed on separate line
+		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< "#C#PPRawText" - Preprocessor raw text: always printed on separate line
 
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

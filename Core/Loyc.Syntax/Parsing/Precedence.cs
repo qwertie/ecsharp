@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -98,7 +98,7 @@ namespace Loyc.Syntax
 	/// precedence. It starts with a known parse tree and then has to figure out 
 	/// how to output something that the parser will reconstruct into the original
 	/// tree. This is more difficult if perfect round-tripping is required: parentheses
-	/// are encoded in the Loyc tree as a #trivia_inParens attribute, so if perfect
+	/// are encoded in the Loyc tree as a <c>%inParens</c> attribute, so if perfect
 	/// round-tripping is desired, the printer cannot simply put everything in parens 
 	/// "just to be safe".
 	/// <para/>

@@ -424,8 +424,8 @@ namespace Loyc.Ecs
 				for (int i = (skipFirstStmt ? 1 : 0), c = braces.ArgCount; i < c; i++) {
 					var stmt = braces.Args[i];
 					// Bug fix: check if '\n' was just written to avoid a space before 'g' in
-					// [#trivia_trailing(#trivia_newline)] f();
-					// [#trivia_appendStatement] g();
+					// @`%trailing`(`%newline`) f();
+					// @`%appendStatement` g();
 					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt) || !Newline(NewlineOpt.Default)) {
 						if (_out.LastCharWritten != '\n')
 							Space(SpaceOpt.Default);

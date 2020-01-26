@@ -146,7 +146,7 @@ namespace Loyc.Syntax.Les
 		//   with braces, a semicolon is required after the first statement to avoid
 		//   the possibility that the braces will be parsed as part of the keyword
 		//   expression (alternative: begin the second statement with @@).
-		// - #trivia_newline must be ignored in some cases because a newline in 
+		// - %newline must be ignored in some cases because a newline in 
 		//   certain places will inadvertantly end the current statement early.
 		//   Also, single-line comments sometimes cannot end with a newline and
 		//   must use two backslashes to end the comment instead: \\
@@ -1449,7 +1449,7 @@ namespace Loyc.Syntax.Les
 		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
 		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute #trivia_inParens.)</remarks>
+		/// add the trivia attribute %inParens.)</remarks>
 		public bool AllowExtraParenthesis {
 			get { return base.AllowChangeParentheses; }
 			set { base.AllowChangeParentheses = value; }

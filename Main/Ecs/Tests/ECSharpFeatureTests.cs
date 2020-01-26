@@ -311,11 +311,11 @@ namespace Loyc.Ecs.Tests
 			args[3] = F.Call(S.DoWhile, ChildStmt(F.Call(a)), OnNewLine(c));
 			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo, [#trivia_wordAttribute] #foo] public using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
+			Stmt("[Foo, [@`%wordAttribute`] #foo] public using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
 			args[3] = F.Call(S.For, F.List(a), b, F.List(c), ChildStmt(x));
 			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
-			Stmt("[Foo, [#trivia_wordAttribute] #foo] public {\n  a();\n}", Attr(args), Mode.PrinterTest);
+			Stmt("[Foo, [@`%wordAttribute`] #foo] public {\n  a();\n}", Attr(args), Mode.PrinterTest);
 			args[1] = fooKW;
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));

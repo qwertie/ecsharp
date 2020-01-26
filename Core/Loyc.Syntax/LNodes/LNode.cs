@@ -137,7 +137,7 @@ namespace Loyc.Syntax
 	/// the Target is not a symbol, the call has no name.)
 	/// <para/>
 	/// An expression in parenthesis is now represented by a call with the
-	/// #trivia_inParens attribute; use <see cref="LNodeExt.IsParenthesizedExpr"/> to 
+	/// %inParens attribute; use <see cref="LNodeExt.IsParenthesizedExpr"/> to 
 	/// detect the parentheses.
 	/// <para/>
 	/// The problems that motivated a redesign are described at
@@ -434,8 +434,8 @@ namespace Loyc.Syntax
 		/// <remarks>
 		/// The Style is an 8-bit value that acts as a hint to the node printer about 
 		/// how the node should be printed. Custom display styles that do not fit in 
-		/// the Style property can be expressed with special attributes that have a
-		/// <see cref="Name"/> starting with "#trivia_". ("#trivia" attributes, which
+		/// the Style property can be expressed with special "trivia" attributes that 
+		/// have a <see cref="Name"/> starting with <c>%</c>. (trivia attributes, which
 		/// are also used to store comments in the syntax tree, are not printed like
 		/// normal attributes and are normally ignored if the node printer does not 
 		/// specifically recognize them.)

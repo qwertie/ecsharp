@@ -1098,10 +1098,10 @@ namespace Loyc.Ecs
 		}
 		void PrintCurrentType()
 		{
-			// TODO: add test case of array type with #trivia_inParens attr
+			// TODO: add test case of array type with %inParens attr
 			// TODO: add test case of array type with other trivia in default(), typeof(), ret val, field type
 			// TODO: add test case of array type with nontrivia attributes
-			// TODO: add test case of method name with #trivia_inParens attr
+			// TODO: add test case of method name with %inParens attr
 			// TODO: add test case of method name with nontrivia attributes
 
 			bool allowPointer = (_flags & Ambiguity.AllowPointer) != 0;

@@ -56,9 +56,9 @@ namespace Loyc.Ecs
 	/// source code locations and the <see cref="LNode.Style"/> are, in 
 	/// general, lost, although the printer can faithfully reproduce some (not 
 	/// all) <see cref="NodeStyle"/>s (this caveat applies equally to LES). Also, 
-	/// any attribute whose Name starts with "#trivia_" may be dropped, because 
-	/// these attributes are considered extensions of the NodeStyle. However, the 
-	/// style indicated by the #trivia_* attribute will be used if the printer 
+	/// any attribute whose Name starts with the trivia marker % may be dropped, 
+	/// because these attributes are considered extensions of the NodeStyle. 
+	/// However, the style indicated by the % attribute will be used if the printer 
 	/// recognizes it.
 	/// <para/>
 	/// For round-tripping to work, there are a couple of restrictions on the 
@@ -988,7 +988,7 @@ namespace Loyc.Ecs
 			_out.Write(name.Name, true);
 		}
 
-		static readonly Symbol _Verbatim = GSymbol.Get("#trivia_verbatim");
+		static readonly Symbol _Verbatim = GSymbol.Get("%verbatim");
 
 		private void PrintString(string text, char quoteType, Symbol verbatim, bool includeAtSign = false)
 		{
@@ -1201,8 +1201,8 @@ namespace Loyc.Ecs
 	{
 		/// <summary>Default value of EcsNodePrinter.NewlineOptions</summary>
 		/// <remarks>Oct 2016: Some defaults have been turned off because newlines can 
-		/// now be added with #trivia_newline, and turning on some NewlineOpts currently
-		/// causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline
+		/// now be added with %newline, and turning on some NewlineOpts currently
+		/// causes double newlines (i.e. a blank line) when the LNode uses %newline
 		/// at the same time.</remarks>
 		Default = Minimal | //BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes |
 			AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr |

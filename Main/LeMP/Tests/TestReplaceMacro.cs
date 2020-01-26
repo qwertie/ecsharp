@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -58,7 +58,7 @@ namespace LeMP.Tests
 		public void TestReplace_match_attributes()
 		{
 			// [foo] a([attr] Foo) `MatchesPattern` 
-			// [#trivia_, bar] a([$attr] $foo)
+			// [`%`, bar] a([$attr] $foo)
 			
 			// ([foo] F([x] X, [y] Y, [a1(...), a2(...)] Z) `MatchesPattern`
 			//        F(X, $Y, $(params P), [$A, a1($(params args))] $Z)) == false cuz [x] is unmatched
