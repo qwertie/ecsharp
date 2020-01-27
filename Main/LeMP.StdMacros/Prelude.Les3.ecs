@@ -423,7 +423,7 @@ namespace LeMP.Les3.To.CSharp
 			return null;
 		}
 
-		[LexicalMacro(@"arg <~ value", "Represents a named argument.", "'<~")]
+		[LexicalMacro(@"arg <: value", "Represents a named argument.", "'<:")]
 		public static LNode NamedArg(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 2 && node.Args[0].IsId)

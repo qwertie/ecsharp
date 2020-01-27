@@ -520,7 +520,7 @@ namespace LeMP
 			return openFiles;
 		}
 
-		public bool AddMacros(Assembly assembly)
+		public int AddMacros(Assembly assembly)
 		{
 			return MacroProcessor.AddMacros(assembly);
 		}

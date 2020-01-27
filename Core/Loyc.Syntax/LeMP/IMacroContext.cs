@@ -205,7 +205,7 @@ namespace LeMP
 		/// </remarks>
 		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(VList<LNode> optionList)
 		{
-			Symbol lesNamedArg = (Symbol)"'<~";
+			Symbol lesNamedArg = (Symbol)"'<:";
 			foreach (var option in optionList) {
 				if ((option.ArgCount == 2 && option.Name.IsOneOf(CodeSymbols.NamedArg, CodeSymbols.Colon, lesNamedArg)) && option.Args[0].IsId)
 				{

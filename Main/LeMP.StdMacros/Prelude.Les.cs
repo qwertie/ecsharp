@@ -689,12 +689,12 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"arg <~ value", "Represents a named argument.", "':", "'<~")]
+		[LexicalMacro(@"arg<: value", "Represents a named argument.", "':", "'<:")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[0].IsId) {
 				if (node.Name == S.Colon)
-					sink.Write(Severity.Warning, node, "Use of `:` for named arguments is deprecated. Use `<~` instead.");
+					sink.Write(Severity.Warning, node, "Use of `:` for named arguments is deprecated. Use `<:` instead.");
 				return node.WithName(S.NamedArg);
 			}
 			return null;
