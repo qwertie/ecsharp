@@ -135,31 +135,31 @@ namespace LeMP
 
 		#region Adding macros from types (AddMacros())
 
-		public bool AddMacros(Type type)
+		public int AddMacros(Type type)
 		{
-			bool any = false;
+			int found = 0;
 			foreach (var info in LeMP.MacroInfo.GetMacros(type, _sink)) {
-				any = true;
+				found++;
 				AddMacro(_macros, info);
 			}
-			return any;
+			return found;
 		}
 
-		public bool AddMacros(Assembly assembly, bool writeToSink = true)
+		public int AddMacros(Assembly assembly, bool writeToSink = true)
 		{
-			bool any = false;
+			int found = 0;
 			foreach (Type type in assembly.GetExportedTypes()) {
 				if (!type.IsGenericTypeDefinition &&
 					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
 				{
 					if (writeToSink && Sink.IsEnabled(Severity.Verbose))
 						Sink.Write(Severity.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
-					any = AddMacros(type) || any;
+					found += AddMacros(type);
 				}
 			}
-			if (!any && writeToSink)
+			if (found == 0 && writeToSink)
 				Sink.Warning(assembly, "No macros found");
-			return any;
+			return found;
 		}
 
 		internal static void AddMacro(MMap<Symbol, InternalList<InternalMacroInfo>> macros, LeMP.MacroInfo newMacro)
