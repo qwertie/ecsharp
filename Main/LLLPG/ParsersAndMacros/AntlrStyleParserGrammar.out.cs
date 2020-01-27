@@ -201,11 +201,8 @@ namespace Loyc.LLParserGenerator
 					Error(0, "Expected ':' or '::=' to begin the rule");
 					// Line 126: greedy(TT.Assignment)?
 					la0 = (TT) LA0;
-					if (la0 == TT.Assignment) {
-						la1 = (TT) LA(1);
-						if (la1 != (TT) EOF)
-							Skip();
-					}
+					if (la0 == TT.Assignment)
+						Skip();
 				}
 				gExpr = GrammarExpr();
 				Match((int) TT.Semicolon);

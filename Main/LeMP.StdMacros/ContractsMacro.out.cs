@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -39,7 +39,7 @@ namespace LeMP
 		// across multiple macros. Really we should think of a new and fancy 
 		// macroprocessor design, but right now the important thing is to provide 
 		// VALUE TO USERS. They'll never pay me, but if I'm lucky they'll use LeMP.
-		[LexicalMacro("notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + 
+		[LexicalMacro(@"notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + 
 		"[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; " + 
 		"[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}", 
 		"Generates Contract checks in a method.\n\n" + 
@@ -87,7 +87,7 @@ namespace LeMP
 	
 		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
 	
-		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + 
+		[LexicalMacro(@"([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + 
 		"([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", 
 		"Generates Contract checks in a lambda function. See the documentation of " + 
 		"ContractsOnMethod for more information about the contract attributes.", 
@@ -124,7 +124,7 @@ namespace LeMP
 	
 		static readonly LNode Id_value = LNode.Id(CodeSymbols.value);
 	
-		[LexicalMacro("notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + 
+		[LexicalMacro(@"notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + 
 		"T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + 
 		"[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", 
 		"Generates contract checks in a property. You can apply contract attributes to " + 

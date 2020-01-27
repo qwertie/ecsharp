@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.4.0.0
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -22,7 +22,7 @@ namespace LeMP
 		static readonly Symbol __alt = (Symbol) "#alt";
 		static readonly Symbol _alt = (Symbol) "alt";
 	
-		[LexicalMacro("e.g. alt class Pair<A,B> { alt this(A Item1, B Item2); }", 
+		[LexicalMacro(@"e.g. alt class Pair<A,B> { alt this(A Item1, B Item2); }", 
 		"Expands a short description of an 'algebraic data type' into a set of classes with a common base class. " 
 		+ "All data members are read-only, and for each member (e.g. Item1 and Item2 above), " 
 		+ "a With() method is generated to let users create modified versions.", 

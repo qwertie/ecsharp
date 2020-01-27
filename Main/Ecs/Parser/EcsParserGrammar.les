@@ -33,7 +33,7 @@ namespace Loyc.Ecs.Parser
 
 	@[partial] class EcsParser
 	{
-		@[LL(2), Verbosity(1), AddCsLineDirectives(@false)]
+		@[LL(2), FullLLk(false), Verbosity(1), AddCsLineDirectives(@false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
 
@@ -696,7 +696,7 @@ namespace Loyc.Ecs.Parser
 			|	&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
-				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex);}
+				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
@@ -724,7 +724,7 @@ namespace Loyc.Ecs.Parser
 			{argList.Add(target);}
 			// EC# allows an argument list for recursive deconstruction
 			[ "(" ")" {argList.Add(F.List(ExprListInside($"(", allowUnassignedVarDecl: true), $"(".StartIndex, $")".EndIndex));} ]?
-			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex);}
+			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex, NodeStyle.Operator);}
 		};
 
 		// An expression that can start with attributes [...], attribute keywords 

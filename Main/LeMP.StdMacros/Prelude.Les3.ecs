@@ -238,7 +238,6 @@ namespace LeMP.Les3.To.CSharp
 				case $_($name `':` $type, { $(..content); }),
 				     $_($name `':` $type, { $(..content); }, #initially($init)):
 					LNode args = GetArgList(ref name);
-					LNode getter = null, setter = null;
 					var newBody = LNode.List();
 					foreach (var part_ in content) {
 						LNode part = part_;

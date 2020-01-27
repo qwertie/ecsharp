@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.5.2.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -84,7 +84,7 @@ namespace Loyc.Syntax.Les
 				case '\\':
 					{
 						la1 = LA(1);
-						if (la1 == -1 || la1 == '\\')
+						if (la1 == '\\')
 							goto stop;
 						else
 							Skip();
@@ -119,7 +119,7 @@ namespace Loyc.Syntax.Les
 				case '*':
 					{
 						la1 = LA(1);
-						if (la1 == -1 || la1 == '/')
+						if (la1 == '/')
 							goto stop;
 						else
 							Skip();
@@ -466,13 +466,11 @@ namespace Loyc.Syntax.Les
 							la1 = LA(1);
 							if (la1 == '"') {
 								la2 = LA(2);
-								if (la2 == -1 || la2 == '"')
+								if (la2 == '"')
 									goto stop;
 								else
 									Skip();
-							} else if (la1 == -1)
-								goto stop;
-							else
+							} else
 								Skip();
 						}
 						break;
@@ -504,13 +502,11 @@ namespace Loyc.Syntax.Les
 							la1 = LA(1);
 							if (la1 == '\'') {
 								la2 = LA(2);
-								if (la2 == -1 || la2 == '\'')
+								if (la2 == '\'')
 									goto stop2;
 								else
 									Skip();
-							} else if (la1 == -1)
-								goto stop2;
-							else
+							} else
 								Skip();
 						}
 						break;
@@ -1196,13 +1192,11 @@ namespace Loyc.Syntax.Les
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
-							if (la2 == -1 || la2 == '"')
+							if (la2 == '"')
 								goto stop;
 							else
 								Skip();
-						} else if (la1 == -1)
-							goto stop;
-						else
+						} else
 							Skip();
 					}
 					break;
@@ -1242,13 +1236,11 @@ namespace Loyc.Syntax.Les
 						la1 = LA(1);
 						if (la1 == '\'') {
 							la2 = LA(2);
-							if (la2 == -1 || la2 == '\'')
+							if (la2 == '\'')
 								goto stop;
 							else
 								Skip();
-						} else if (la1 == -1)
-							goto stop;
-						else
+						} else
 							Skip();
 					}
 					break;
@@ -1289,10 +1281,8 @@ namespace Loyc.Syntax.Les
 							Skip();
 							// line 233
 							nested--;
-						} else if (la1 != -1)
+						} else
 							goto match4;
-						else
-							break;
 					} else {
 						la1 = LA(1);
 						if (la1 == '*')
@@ -1302,10 +1292,8 @@ namespace Loyc.Syntax.Les
 								goto match4;
 							else
 								break;
-						} else if (la1 != -1)
+						} else
 							goto match4;
-						else
-							break;
 					}
 				} else if (la0 == '/') {
 					la1 = LA(1);

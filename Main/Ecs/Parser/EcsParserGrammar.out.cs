@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.6.2.0
+// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -2289,8 +2289,8 @@ namespace Loyc.Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -2312,8 +2312,8 @@ namespace Loyc.Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match4;
@@ -2368,7 +2368,7 @@ namespace Loyc.Ecs.Parser
 									var op = MatchAny();
 									var rhs = DataType(true);
 									// line 699
-									e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex);
+									e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);
 								}
 								break;
 							default:
@@ -2465,7 +2465,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 			// line 727
-			return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex);
+			return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex, NodeStyle.Operator);
 		}
 	
 	
@@ -4456,8 +4456,8 @@ namespace Loyc.Ecs.Parser
 			// Line 1771: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
-				if (isArray) {
-					if (Down(0) && Up(HasNoSemicolons())) {
+				if (Down(0) && Up(HasNoSemicolons())) {
+					if (isArray) {
 						var lb = MatchAny();
 						var rb = Match((int) TT.RBrace);
 						// line 1775

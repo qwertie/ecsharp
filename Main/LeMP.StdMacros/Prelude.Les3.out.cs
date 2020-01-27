@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.6.8.0
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -240,7 +240,6 @@ namespace LeMP.Les3.To.CSharp
 				VList<LNode> content;
 				if (node.Args.Count == 2 && (tmp_12 = node.Args[0]) != null && tmp_12.Calls(CodeSymbols.Colon, 2) && (name = tmp_12.Args[0]) != null && (type = tmp_12.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true || node.Args.Count == 3 && (tmp_13 = node.Args[0]) != null && tmp_13.Calls(CodeSymbols.Colon, 2) && (name = tmp_13.Args[0]) != null && (type = tmp_13.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true && node.Args[2].Calls((Symbol) "#initially", 1) && (init = node.Args[2].Args[0]) != null) {
 					LNode args = GetArgList(ref name);
-					LNode getter = null, setter = null;
 					var newBody = LNode.List();
 					foreach (var part_ in content) {
 						LNode part = part_;
