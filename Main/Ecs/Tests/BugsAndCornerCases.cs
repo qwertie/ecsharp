@@ -162,10 +162,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo:",                 F.Call(S.Label, Foo));
 			LNode Foo_a = F.Call(S.NamedArg, Foo, a);
 			Expr("Foo: a",               Foo_a);
-			Stmt("#namedArg(Foo, a);",   Foo_a);
-			Expr("#namedArg(Foo(x), a)", F.Call(S.NamedArg, F.Call(Foo, x), a));
+			Stmt("@`'::=`(Foo, a);",     Foo_a);
+			Expr("@`'::=`(Foo(x), a)",   F.Call(S.NamedArg, F.Call(Foo, x), a));
 			Expr("b + (Foo: a)",         F.Call(S.Add, b, F.InParens(Foo_a)));
-			Expr("b + #namedArg(Foo, a)",F.Call(S.Add, b, Foo_a));
+			Expr("b + @`'::=`(Foo, a)", F.Call(S.Add, b, Foo_a));
 			// Ambiguity between multiplication and pointer declarations:
 			// - multiplication at stmt level => prefix notation, except in #result or when lhs is not a complex identifier
 			// - pointer declaration inside expr => generic, not pointer, notation

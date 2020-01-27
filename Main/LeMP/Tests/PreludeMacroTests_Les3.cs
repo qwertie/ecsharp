@@ -140,7 +140,7 @@ namespace LeMP.Tests
 			Test("x = c ? a : b;",
 				 "x = c ? a : b;");
 			Test("a <: b;",
-				 "#namedArg(a, b);");
+				 "@`'::=`(a, b);");
 		}
 
 		[Test]

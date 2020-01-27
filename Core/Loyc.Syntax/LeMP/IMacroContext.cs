@@ -198,10 +198,8 @@ namespace LeMP
 		/// or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
 		/// If the format of a given node is invalid, this function yields <c>(node, null)</c>.</summary>
 		/// <remarks>
-		/// <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
-		/// #namedArg(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
-		/// This function recognizes both forms. It also recognizes `option1 ::= v1` syntax which
-		/// is the preferred way of specifying named arguments in LES.
+		/// <c>option1: v1, option2: v2</c> is parsed into <c>@`'::=`(option1, v1), 
+		/// @`'::=`(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
 		/// </remarks>
 		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(VList<LNode> optionList)
 		{

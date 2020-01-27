@@ -159,11 +159,11 @@ namespace Loyc.Ecs
 		#endregion
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
-		/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
+		/// <summary>Context: beginning of statement (Named argument operator not supported, allow multiple #var decl)</summary>
 		internal static readonly Precedence StartStmt      = new Precedence(MinPrec);
 		/// <summary>Context: beginning of expression (#var must have initial value)</summary>
 		internal static readonly Precedence StartExpr      = new Precedence(MinPrec+1);
-		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
+		/// <summary>Context: middle of expression, top level (#var and named arguments not supported)</summary>
 		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
 		void PrintExpr(LNode n)
