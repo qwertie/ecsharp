@@ -58,13 +58,13 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>When this flag is false, an error branch is still generated
 		/// on a particular loop if requested with <see cref="Alts.ErrorBranch"/>.</remarks>
 		public bool NoDefaultArm = false;
-		
-		/// <summary>Enables full LL(k) instead of "partly approximate" lookahead.</summary>
+
+		/// <summary>Whether to use full LL(k) or "partly approximate" lookahead.</summary>
 		/// <remarks>
-		/// LLLPG's standard disambiguation mode is similar to the "linear 
+		/// LLLPG's original disambiguation mode was similar to the "linear 
 		/// approximate" lookahead present in the ANTLR v2 parser generator.
-		/// The original linear approximate lookahead fails to predict the 
-		/// following case correctly:
+		/// However, ANTLR's linear approximate lookahead failed to predict 
+		/// the following case correctly:
 		/// <code>
 		///     Foo  @{ ('a' 'b' | 'c' 'd') ';' 
 		///           | 'a' 'd'             ';' };
@@ -90,18 +90,13 @@ namespace Loyc.LLParserGenerator
 		/// a warning that "Branch 2 is unreachable".
 		/// <para/>
 		/// To fix this, LLLPG must figure out that it should split the LA(0) test 
-		/// into two separate "if" clauses. I've figured out how to do this, but
-		/// the new code is experimental, it creates subtly different results than 
-		/// standard prediction, which causes the test suite to fail, it sometimes 
-		/// uses too many branches that are not merged properly, I suspect it
-		/// might be substantially slower at code generation in some cases, and
-		/// finally I am worried that it will make the generated code much larger
-		/// sometimes (although I have not actually found or seen such a case).
-		/// <para/>
-		/// So, full LL(k) is disabled by default, but you can enable it if you
-		/// encounter a problem like this.
+		/// into two separate "if" clauses. I've figured out how to do this, and
+		/// after using it for some time I'm fairly confident that it works 
+		/// correctly, so I have enabled it by default as of v2.7.0.0. Full LL(k) 
+		/// creates subtly different results than the original prediction method, 
+		/// and overall runtime may be significantly faster or slower.
 		/// </remarks>
-		public bool FullLLk = false;
+		public bool FullLLk = true;
 
 		/// <summary>Gets or sets the verbosity level. Verbose output can help
 		/// you debug grammars that don't produce the expected code.</summary>
