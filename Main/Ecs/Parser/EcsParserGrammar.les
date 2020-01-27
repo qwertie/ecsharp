@@ -692,7 +692,7 @@ namespace Loyc.Ecs.Parser
 				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=TT.Is
 				e=IsPattern(e, op)
-				// 'as' or 'using' cast (special case: #usingCast instead of #using)
+				// 'as' or 'using' cast (special case: 'using instead of #using)
 			|	&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)

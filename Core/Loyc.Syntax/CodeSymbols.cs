@@ -217,7 +217,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
 		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {this.x = 0;}) <=> Foo() {this.x = 0;)
 		public static readonly Symbol Forward = GSymbol.Get("'==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
-		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
+		public static readonly Symbol UsingCast = GSymbol.Get("'using");  //!< @`'using`(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}
 		public static readonly Symbol IsLegal = GSymbol.Get("'isLegal");     //!< TODO
 		public static readonly Symbol Result = GSymbol.Get("#result");       //!< #result(expr) indicates that expr was missing a semicolon, which
