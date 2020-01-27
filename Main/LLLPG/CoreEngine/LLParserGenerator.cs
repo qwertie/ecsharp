@@ -876,7 +876,7 @@ namespace Loyc.LLParserGenerator
 
 			var result = new KthSet[previous.Count];
 			for (int i = 0; i < previous.Count; i++)
-				result[i] = ComputeNextSet(previous[i], previous[i].Alt == ExitAlt);
+				result[i] = ComputeNextSet(previous[i], addEOF: false);
 			return result;
 		}
 

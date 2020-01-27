@@ -1504,28 +1504,22 @@ namespace Loyc.LLParserGenerator
 			}", @"
 				object Expr(Precedence context)
 				{
-					string la1;
+					//string la1;
 					Precedence prec;
 					var result = Match(Id, Number);
 					for (;;) {
 						switch (LA0) {
-						case ""-"":
-						case ""*"":
-						case ""/"":
-						case ""+"":
-						case ""<"":
-						case ""="":
-						case ""=="":
-						case "">"":
+						case ""-"": case ""*"": case ""/"": case ""+"":
+						case ""<"": case ""="": case ""=="": case "">"":
 							{
 								if (context.CanParse(prec = GetInfixPrecedence(LA(0)))) {
-									la1 = LA(1);
-									if (la1 == Id || la1 == Number) {
+									//la1 = LA(1);
+									//if (la1 == Id || la1 == Number) {
 										var op = MatchAny();
 										var rhs = Expr(prec);
 										result = NewOperatorNode(result, op, rhs);
-									} else
-										goto stop;
+									//} else
+									//	goto stop;
 								} else
 									goto stop;
 							}
@@ -1577,7 +1571,7 @@ namespace Loyc.LLParserGenerator
 				@"private void PrimaryExpr()
 				{
 					string la0;
-					Skip();
+					Match(TT.Id);
 					for (;;) {
 						la0 = LA0;
 						if (la0 == ""<"") {
@@ -1596,17 +1590,17 @@ namespace Loyc.LLParserGenerator
 				static readonly HashSet<string> Expr_set0 = NewSet(""-"", ""*"", ""/"", ""+"", ""<"", ""<=,>="", ""==,!="", "">"");
 				private void Expr()
 				{
-					string la0, la1;
+					string la0;//, la1;
 					var e = PrefixExpr();
 					for (;;) {
 						la0 = LA0;
 						if (Expr_set0.Contains(la0)) {
-							la1 = LA(1);
-							if (la1 == TT.Id) {
+							//la1 = LA(1);
+							//if (la1 == TT.Id) {
 								Skip();
 								Expr();
-							} else
-								break;
+							//} else
+							//	break;
 						} else
 							break;
 					}

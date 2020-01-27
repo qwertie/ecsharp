@@ -457,6 +457,7 @@ namespace Loyc.LLParserGenerator
 		public void FullLL2()
 		{
 			// FullLL2 @{ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' };
+			_pg.FullLLk = false;
 			Rule Nope = Rule("FullLL2", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
 
@@ -480,7 +481,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}");
 
-			// Try again with experimental Full LL(k)
+			// Try again with Full LL(k)
 			_pg.FullLLk = true;
 			_expectingOutput = false;
 			result = _pg.Run(_file);
@@ -859,7 +860,7 @@ namespace Loyc.LLParserGenerator
 							la0 = LA0;
 							if (la0 == '*') {
 								la1 = LA(1);
-								if (la1 == -1 || la1 == '/')
+								if (la1 == '/')
 									break;
 								else
 									Skip();
@@ -1362,6 +1363,8 @@ namespace Loyc.LLParserGenerator
 								Match('x');
 							}
 							break;
+						case 'B':
+							goto match2;
 						case 'b': {
 								la1 = LA(1);
 								if (la1 == 'a')
@@ -1371,8 +1374,6 @@ namespace Loyc.LLParserGenerator
 								else
 									goto match2;
 							}
-						case 'B':
-							goto match2;
 						case -1:
 						case '.':
 							goto stop;
@@ -1413,6 +1414,8 @@ namespace Loyc.LLParserGenerator
 								Match('x');
 							}
 							break;
+						case 'B':
+							goto match2;
 						case 'b': {
 								la1 = LA(1);
 								if (la1 == 'a')
@@ -1420,8 +1423,6 @@ namespace Loyc.LLParserGenerator
 								else
 									goto match3;
 							}
-						case 'B':
-							goto match2;
 						case -1:
 						case '.':
 							goto stop;
@@ -1601,13 +1602,15 @@ namespace Loyc.LLParserGenerator
 								SimpleStmt();
 						} else if (la0 == @@break || la0 == @@continue)
 							TrivialStmt();
+						else if (la0 == @@goto)
+							SimpleStmt();
 						else if (la0 == @@using) {
 							la1 = LA(1);
 							if (la1 == @@Id || la1 == @@Number)
 								SimpleStmt();
 							else
 								BlockStmt2();
-						} else if (la0 == @@goto || la0 == @@throw)
+						} else if (la0 == @@throw)
 							SimpleStmt();
 						else if (la0 == @@checked || la0 == @@do || la0 == @@try || la0 == @@unchecked)
 							BlockStmt1();
@@ -1872,11 +1875,59 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred2()
 		{
-			// public rule Tokens   @{ (&Int => Int / Float / Id)* };
-			// private token Float  @{ '0'..'9'* '.' '0'..'9'+ };
-			// private token Int    @{ '0'..'9'+ };
-			// private token Id     @{ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* };
+			SynPred2(false);
+		}
+		[Test(Fails = "It's complicated, see comments")]
+		public void Bug_2020_01_SynPred2_OldVersion()
+		{
+			// This began to fail after enabling FullLLk, due to a design flaw
+			// in LLLPG. A simpler version of these rules that demonstrates the
+			// problem would be this:
+			//     public rule Tokens  @{ (&Binary _ => Binary / '0'..'9'+)* };
+			//     private rule Binary @{ ('0'|'1')+ };
+			// The code generated for the '0'..'9'* loop looks like this:
+			//   for (;;) {
+			//   	la0 = LA0;
+			//   	if (la0 >= '0' && la0 <= '9') {
+			//   		if (Try_Scan_Binary(0)) {
+			//   			la1 = LA(1);
+			//   			if (la1 >= '0' && la1 <= '9')
+			//   				Skip();
+			//   			else if (la1 != -1) {
+			//   				if (Try_Scan_Binary(1))
+			//   					Skip();
+			//   				else
+			//   					break;
+			//   			} else
+			//   				Skip();
+			//   		} else
+			//   			Skip();
+			//   	} else
+			//   		break;
+			//   }
+			// As you can see, if LA0 is '0'..'9' and &Binary matches at LA0
+			// and if LA1 is NOT EOF nor '0'..'9' and &Binary does NOT match LA1
+			// then the loop breaks early, which shouldn't happen. The cause is 
+			// subtle...
+			//   1. At LA1, the exit alt (-1) matches anything (_) since it 
+			//      already passed the syn-pred &Binary, but for the loop alt 
+			//      (0) the only legal input at LA1 is `EOF | '0'..'9' | &Binary _`
+			//   2. Since LA1 is NOT EOF | '0'..'9' and &Binary does NOT match,
+			//      LLLPG concludes that alt 0 is untenable and removes it from
+			//      the list of possibilities.
+			// This is essentially an error condition, but one that occurs before
+			// the prediction tree has been "infilled" with invalid inputs.
+			// Perhaps some fundamental redesign is needed to fix this.
+			SynPred2(true);
+		}
+		public void SynPred2(bool fullLLk)
+		{
+			// public rule Tokens   @{ (&Int _ => Int / Float / Id)* };
+			// private rule Float  @{ '0'..'9'* '.' '0'..'9'+ };
+			// private rule Int    @{ '0'..'9'+ };
+			// private rule Id     @{ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* };
 			Rule Float, Int, Id;
+			_pg.FullLLk = fullLLk;
 			_pg.AddRule(Float = Rule("Float", Star(Set("[0-9]")) + '.' + Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Int = Rule("Int", Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Id = Rule("Id", Set("[a-zA-Z_]") + Star(Set("[0-9a-zA-Z_]"), true), Private));
@@ -1960,6 +2011,8 @@ namespace Loyc.LLParserGenerator
 							else
 								Float();
 						} else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z') {
+							// Tokens calls Try_Scan_Int when la0 is [a-zA-Z_], because 
+							// LLLPG does not understand the content of an and-predicate.
 							if (Try_Scan_Int(0))
 								Int();
 							else
@@ -2033,14 +2086,14 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void IfElseAmbig()
 		{
-			//private token IfStmt @{ 
+			//private rule IfStmt @{ 
 			//	// "if" "(" Expr ")" Stmt ("else" Stmt)?
 			//	TT.If TT.LParen Expr TT.RParen Stmt (TT.Else Stmt)?
 			//};
-			//private token Stmt @{
+			//private rule Stmt @{
 			//	IfStmt | Expr TT.Semicolon
 			//};
-			//private token Expr @{
+			//private rule Expr @{
 			//	Id | Literal
 			//};
 			Rule Expr = Rule("Expr", Sym("Id") | Sym("Literal"));
@@ -2051,12 +2104,12 @@ namespace Loyc.LLParserGenerator
 
 			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("TT"), false) { CastLA = false };
 			_pg.AddRules(IfStmt, Stmt, Expr);
-			ExpectOutput();
+
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"{
 				public void IfStmt()
 				{
-					TT la0, la1;
+					TT la0;//, la1;
 					Match(@@If);
 					Match(@@LParen);
 					Expr();
@@ -2064,11 +2117,11 @@ namespace Loyc.LLParserGenerator
 					Stmt();
 					la0 = LA0;
 					if (la0 == @@Else) {
-						la1 = LA(1);
-						if (la1 == @@Id || la1 == @@If || la1 == @@Literal) {
+						//la1 = LA(1);
+						//if (la1 == @@Id || la1 == @@If || la1 == @@Literal) {
 							Skip();
 							Stmt();
-						}
+						//}
 					}
 				}
 				public void Stmt()

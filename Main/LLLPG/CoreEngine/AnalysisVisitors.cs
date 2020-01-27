@@ -1,4 +1,4 @@
-﻿//
+//
 // Visitors:
 //   PredictionAnalysisVisitor
 //   PrematchAnalysisVisitor
@@ -161,11 +161,11 @@ namespace Loyc.LLParserGenerator
 			private PredictionTreeOrAlt ComputeNestedPredictionTree(List<KthSet> prevSets)
 			{
 				Debug.Assert(prevSets.Count > 0);
-				int lookahead = prevSets[0].LA;
+				int lookahead = prevSets[0].LA + 1;
 				
 				if (prevSets.Count == 1)
 					return (PredictionTreeOrAlt) prevSets[0].Alt;
-				else if (lookahead + 1 >= _k) {
+				else if (lookahead >= _k) {
 					var @default = LLPG.AmbiguityDetected(prevSets, _currentAlts);
 					return (PredictionTreeOrAlt) @default.Alt;
 				}
@@ -196,11 +196,6 @@ namespace Loyc.LLParserGenerator
 				// Without this method, prediction would think that the sequence 
 				// 'a' 'd' could match the first alt because it fails to discard the
 				// second nested alt ('d' 'd') after matching 'a'.
-				//
-				// LL(k) prediction still doesn't work perfectly in all cases. For
-				// example, this case is predicted incorrectly:
-				// 
-				// ( ('a' 'b' | 'b' 'a') 'c' | ('b' 'b' | 'a' 'a') 'c' )
 				for (int i = 0; i < thisBranch.Count; i++)
 					thisBranch[i] = NarrowDownToSet(thisBranch[i], set);
 			}
@@ -214,8 +209,7 @@ namespace Loyc.LLParserGenerator
 					if (cases[i].Set.IsEmptySet)
 						cases.RemoveAt(i);
 				}
-				kthSet.UpdateSet(kthSet.Set.ContainsEOF);
-				Debug.Assert(cases.Count > 0 || set.ContainsEOF);
+				kthSet.UpdateSet(false);
 				return kthSet;
 			}
 
