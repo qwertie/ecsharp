@@ -83,9 +83,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol NewAttribute = GSymbol.Get("#new");  //!< "#new": public new void Foo() {} <=> [#public, #new] #fn(#void, Foo, #(), {})
 		public static readonly Symbol Out = GSymbol.Get("#out");           //!< "#out": out x <=> [#out] x
 		public static readonly Symbol Ref = GSymbol.Get("#ref");           //!< "#ref": ref int x <=> [#ref] #var(#int, x)
-		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");     //!< "#sizeof" sizeof(int) <=> #sizeof(int)
-		public static readonly Symbol Typeof = GSymbol.Get("#typeof");     //!< "#typeof" typeof(Foo) <=> #typeof(Foo),
-		                                                                   //!<           typeof<foo> <=> @'of(#typeof, foo)
+		public static readonly Symbol Sizeof = GSymbol.Get("'sizeof");     //!< "'sizeof" sizeof(int) <=> @'sizeof(int)
+		public static readonly Symbol Typeof = GSymbol.Get("'typeof");     //!< "'typeof" typeof(Foo) <=> @'typeof(Foo),
+		                                                                   //!<           typeof<foo> <=> @'of(@'typeof, foo)
 		public static readonly Symbol As = GSymbol.Get("'as");             //!< "'as":   @'as(x,string) <=> x as string <=> x(as string)
 		public static readonly Symbol Is = GSymbol.Get("'is");             //!< "'is":   @'is(x,string) <=> x is string, @'is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("'cast");         //!< "'cast": @'cast(x,int) <=> (int)x <=> x(-> int)
