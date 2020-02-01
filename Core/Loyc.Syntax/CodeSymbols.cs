@@ -67,7 +67,7 @@ namespace Loyc.Syntax
 		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
 		///     <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
-		/// For a time, #tuple was used for this purpose; the problem is that a
+		/// For a time, 'tuple was used for this purpose; the problem is that a
 		/// find-and-replace operation intended to find run-time tuples could 
 		/// accidentally match one of these lists. So I decided to dedicate # 
 		/// for use inside special constructs; its meaning depends on context.
@@ -87,7 +87,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Typeof = GSymbol.Get("#typeof");     //!< "#typeof" typeof(Foo) <=> #typeof(Foo),
 																		   //!<           typeof<foo> <=> @'of(#typeof, foo)
 		public static readonly Symbol As = GSymbol.Get("#as");             //!< "#as":   #as(x,string) <=> x as string <=> x(as string)
-		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string, #is(x,#var(Foo,v),#tuple(y,z)) <=> x is Foo v(y, z)
+		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string, #is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("#cast");         //!< "#cast": #cast(x,int) <=> (int)x <=> x(-> int)
 		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
 		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
@@ -147,7 +147,7 @@ namespace Loyc.Syntax
 		// Other definitions
 		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       //!< e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
-		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, #tuple()); <=> delegate int Foo();
+		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, @'tuple()); <=> delegate int Foo();
 		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, @``, { get; }) <=> int Foo { get; }
 
 		// Misc
@@ -212,7 +212,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol DotDot = GSymbol.Get("'..");        //!< ".." Binary range operator (exclusive)
 		public static readonly Symbol DotDotDot = GSymbol.Get("'...");    //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol DotDotLT = GSymbol.Get("'..<");     //!< "..<" Swift uses this instead of ".."
-		public static readonly Symbol Tuple = GSymbol.Get("#tuple");      //!< "#tuple": (1, "a") <=> #tuple(1, "a")
+		public static readonly Symbol Tuple = GSymbol.Get("'tuple");      //!< "'tuple": (1, "a") <=> @'tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}

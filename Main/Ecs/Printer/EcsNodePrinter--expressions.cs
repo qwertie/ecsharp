@@ -528,7 +528,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintListOperator(Precedence precedence)
 		{
-			// Handles #tuple and {} braces.
+			// Handles 'tuple and '{} braces.
 			int argCount = _n.ArgCount;
 			Symbol name = _name;
 			Debug.Assert(_n.IsCall);
