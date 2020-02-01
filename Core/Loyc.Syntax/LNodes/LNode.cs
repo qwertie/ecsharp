@@ -22,183 +22,18 @@ namespace Loyc.Syntax
 	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
 	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
 	/// (represented as <c>@'of(f, x)</c>), braced blocks of statements (represented as
-	/// <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
-	/// are represented as a call with one argument and <c>null</c> as the <see cref="Target"/>.</li>
+	/// <c>@`'{}`(stmt1, stmt2, ...)</c>), and so on.</li>
 	/// </ul>
+	/// See http://loyc.net/loyc-trees to learn more about the Loyc tree concept.
+	/// <para/>
 	/// This class provides access to all properties of all three types of nodes,
 	/// in order to make this class easier to access from plain C#, and to avoid
-	/// unnecessary downcasting in some cases.
+	/// unnecessary downcasting in some cases. In fact, you never need to use the
+	/// derived classes; you can think of them simply as a way of optimizing the
+	/// implementation.
 	/// <para/>
-	/// Loyc nodes are always immutable, except for the 8-bit <see cref="Style"/> 
-	/// property which normally affects printing only.
-	/// <para/>
-	/// <h3>Background information</h3>
-	/// <para/>
-	/// EC# (enhanced C#) is intended to be the starting point of the Loyc 
-	/// (Language of your choice) project, which will be a family of programming
-	/// languages that will share a common representation for the syntax tree and 
-	/// other compiler-related data structures.
-	/// <para/>
-	/// Just as LLVM assembly has emerged as a nearly universal standard 
-	/// intermediate representation for back-ends, Loyc nodes are intended to be a 
-	/// universal intermediate representation for syntax trees, and Loyc will 
-	/// (eventually) include a generic set of tools for semantic analysis so that
-	/// it provides a generic representation for front-ends.
-	/// <para/>
-	/// EC#, then, will be the first language to use the Loyc syntax tree 
-	/// representation, known as the "Loyc tree" for short. Most syntax trees are 
-	/// very strongly typed, with separate data types for, say, variable 
-	/// declarations, binary operators, method calls, method declarations, unary 
-	/// operators, and so forth. Loyc, however, defines only three types of Nodes,
-	/// and this one class provides access to all the parts of a node. There are 
-	/// several reasons for this design:
-	/// <ul>
-	/// <li>Simplicity. Many compilers have thousands of lines of code dedicated 
-	///   to the AST (abstract syntax tree) data structure itself, because each 
-	///   kind of AST node has its own class.</li>
-	/// <li>Serializability. Loyc nodes can always be serialized to a plain text 
-	///   "prefix tree" and deserialized back to objects, even by programs that 
-	///   are not designed to handle the language that the tree represents*. This 
-	///   makes it easy to visualize syntax trees or exchange them between 
-	///   programs.</li>
-	/// <li>Extensibility. Loyc nodes can represent any language imaginable, and
-	///   they are suitable for embedded DSLs (domain-specific languages). Since 
-	///   nodes do not enforce a particular structure, they can be used in 
-	///   different ways than originally envisioned. For example, most languages 
-	///   only have "+" as a binary operator, that is, with two arguments. If  
-	///   Loyc had a separate class for each AST, there would probably be a 
-	///   PlusOperator class derived from BinaryOperator, or something, with 
-	///   properties "Left" and "Right". But since there is only one node class, 
-	///   a "+" operator with three arguments is always possible; this is denoted 
-	///   by #+(a, b, c) in EC# source code.</li>
-	/// </ul>
-	///   * Currently, the only supported languages for plain-text Loyc trees are 
-	///     LES and EC# (either normal EC# or prefix-tree notation).
-	/// <para/>
-	/// Loyc trees are comparable to LISP trees, except that "attributes" and
-	/// position information are added to the tree, and the concept of a "list" 
-	/// is replaced with the concept of a "call", which I feel is a more 
-	/// intuitive notion in most programming languages that are not LISP.
-	/// <para/>
-	/// Loyc's representation is both an blessing and a curse. The advantage is 
-	/// that Loyc nodes can be used for almost any purpose, perhaps even 
-	/// representing data instead of code in some cases. However, there is no 
-	/// guarantee that a given AST follows the structure prescribed by a particular 
-	/// programming language, unless a special validation step is performed after 
-	/// parsing. In this way, Loyc trees are similar to XML trees, only simpler.
-	/// <para/>
-	/// Another major disadvantage is that it is more difficult to interpret a 
-	/// syntax tree correctly: you have to remember that a method definition has 
-	/// the structure <c>#fn(return_type, name, args, body)</c>, so if "node" is 
-	/// a method definition then <c>node.Args[2]</c> represents the argument 
-	/// list, for example. In contrast, most compilers have an AST class called 
-	/// <c>MethodDefinition</c> or something, that provides properties such as 
-	/// Name and ReturnType. If EC# is ever done, however, aliases could help 
-	/// avoid this problem by providing a more friendly veneer over the raw nodes.
-	/// <para/>
-	/// For optimization purposes, the node class is a class hierarchy, but most 
-	/// users should only use this class.
-	/// <para/>
-	/// <see cref="LNode"/>s are "persistent" in the comp-sci sense, which 
-	/// means that they are immutable, that a subtree can be shared among 
-	/// multiple syntax trees, and that nodes do not know their own parents, 
-	/// which allows a single node to exist at multiple locations in a syntax tree.
-	/// This makes manipulation of trees convenient, as there is no need to 
-	/// "detach" a node from one place, or duplicate it, before it can be inserted 
-	/// in another place.
+	/// Loyc nodes are always immutable.
 	///
-	/// <h3>The reimplementation</h3>
-	/// 
-	/// This implementation has been redesigned (in Subversion, the last version
-	/// based on the old design is revision 289.) The core concept is the same as 
-	/// described in my blog at
-	/// http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html
-	/// except that the concept of a "Head" has mostly been eliminated, although
-	/// you might see it occasionally because it still has a meaning. The "head"
-	/// of a node refers either to the Name of a symbol, the Value of a literal,
-	/// or the Target of a call (i.e. the name of the method being called, which
-	/// could be an arbitrarily complex node). In the original implementation, it 
-	/// was also possible to have a complex head (a head that is itself a node) 
-	/// even when the node was not a call; this situation was used to represent
-	/// an expression in parenthesis.
-	/// <para/>
-	/// This didn't quite feel right, so I changed it. Now, only calls can be
-	/// "complex", and the head of a call (the method being called) is called 
-	/// the Target.
-	/// <para/>
-	/// In the new version, there are explicitly three types of nodes: symbols, 
-	/// literals, and calls. There is no longer a Head property, instead there 
-	/// are three separate properties for the three kinds of heads, <see 
-	/// cref="Name"/> (a Symbol), <see cref="Value"/> (an Object), and <see 
-	/// cref="Target"/> (an LNode). Only call nodes have a Target, and only 
-	/// literal nodes have a Value. Identifier nodes have a Name, but I thought 
-	/// it would be useful for some call nodes to also have a Name, which is 
-	/// defined as the name of the Target if the Target is an identifier (if 
-	/// the Target is not a symbol, the call has no name.)
-	/// <para/>
-	/// An expression in parenthesis is now represented by a call with the
-	/// %inParens attribute; use <see cref="LNodeExt.IsParenthesizedExpr"/> to 
-	/// detect the parentheses.
-	/// <para/>
-	/// The problems that motivated a redesign are described at
-	/// http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html
-	/// <para/>
-	/// One very common use of mutable nodes is building lists of statements, e.g. 
-	/// you might create an empty braced block or an empty loop and then add 
-	/// statements to the body of the block or loop. To do this without mutable 
-	/// nodes, create a mutable <see cref="WList{LNode}"/> instead and add 
-	/// statements there; once the list is finished, create the braced block or
-	/// loop afterward. The new design stores arguments and attributes in 
-	/// <see cref="VList{LNode}"/> objects; you can instantly convert your WList 
-	/// to a VList by calling <see cref="WListBase{LNode}.ToVList()"/>.
-	/// <para/>
-	/// During the redesign I've decided on some small changes to the representation
-	/// of certain expressions in EC#.
-	/// <ul>
-	/// <li>The '.' operator is now treated more like a normal binary operator; 
-	///     <c>a.b.c</c> is now represented <c>@.(@.(a, b), c)</c> rather than 
-	///     <c>@.(a, b, c)</c> mainly because it's easier that way, and because the 
-	///     second representation doesn't buy anything significant other than a 
-	///     need for special-casing.</li>
-	/// <li><c>int x = 0</c> will now be represented <c>#var(int, x = 0)</c>
-	///     rather than <c>#var(int, x(0))</c>. I chose the latter representation 
-	///     initially because it is slightly more convenient, because you can 
-	///     always learn the name of the declared variable by calling 
-	///     <c>var.Args[1].Name</c>. However, I decided that it was more important
-	///     for the syntax tree to be predictable, with obvious connections between
-	///     normal and prefix notations. Since I decided that <c>alias X = Y;</c> 
-	///     was to be represented <c>#alias(X = Y, #())</c>, it made sense for the 
-	///     syntax tree of a variable declaration to also resemble its C# syntax. 
-	///     There's another small reason: C++ has both styles <c>Foo x(y)</c> and 
-	///     <c>Foo x = y</c>; if Loyc were to ever support C++, it would make sense 
-	///     to use <c>#var(Foo, x(y))</c> and <c>#var(Foo, x = y)</c> for these two 
-	///     cases, and I believe C#'s variable declarations are semantically closer 
-	///     to the latter. (Note: another possibility was #var(int, x) = 0, but I 
-	///     decided this wasn't an improvement, it would just shift the pain around.)</li>
-	/// <li>A constructor argument list is required on <i>all</i> types using the 'new
-	///     operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
-	///     on int[], i.e. <c>@'new(@'of(@`'[]`,int)(), x)</c>; this rule makes the 
-	///     different kinds of new expressions easier to interpret by making them 
-	///     consistent with each other.</li>
-	/// <li>A missing syntax element is now represented by the empty identifier 
-	///     instead of the identifier #missing.</li>
-	/// <li>I've decided to adopt the "in-expression" generics syntax from Nemerle 
-	///     and the binary ! from D as unambiguous alternatives to angle brackets: 
-	///     List.[int] and List!int mean List&lt;int> and the printer will use 
-	///     one of these in cases where angle brackets are ambiguous.</li>
-	/// <li>By popular demand, constructors will be written this(...) instead
-	///     of new(...), since both D and Nemerle use the latter notation.</li>
-	/// <li>The \ and $ characters have been changed; @@S now denotes a symbol S,
-	///     $S now denotes a substitution, and \S doesn't mean anything.
-	///     Originally EC# was designed just as an extension of C#, so \ made 
-	///     sense as a substitution operator for string interpolation because it 
-	///     doesn't hurt backward compatibility: "Loaded '\(filename)' successfully". 
-	///     But now that my focus has shifted to multi-language interoperability, 
-	///     $ makes more sense, as it is used for string interpolation in at least 
-	///     five other languages and it makes sense to use the same character for 
-	///     both string substitution and code substitution.</li>
-	/// </ul>
-	/// 
 	/// <h3>Important properties</h3>
 	/// 
 	/// The main properties of a node are
@@ -220,38 +55,7 @@ namespace Loyc.Syntax
 	///    distinguish it from decimal literals such as 16. Custom display styles 
 	///    that do not fit in the Style property can be expressed with attributes.</li>
 	/// </ol>
-	/// <para/>
-	/// The argument and attribute lists cannot be null, since they have type 
-	/// <see cref="VList{Node}"/> which is a struct.
-	/// <para/>
-	/// <c>LNode</c> implements <see cref="INegListSource{T}"/>, so you can loop 
-	/// through all children of the node like this:
-	/// <code>
-	/// for (int i = node.Min; i &lt;= node.Max; i++) {
-	///     LNode child = node[i];
-	/// }
-	/// </code>
-	/// You can also use <c>foreach</c>. The children are numbered like this:
-	/// <ul>
-	/// <li>if i is less than -1, node[i] refers to an attribute. Specifically, node[i] 
-	/// means node.Attrs[i + node.Attrs.Count + 1] in that case.</li>
-	/// <li>node[-1] refers to <c>Target</c> (but throws if there is no target)</li>
-	/// <li>Non-negative values are indexes of Args, e.g. node[i] means node.Args[i].</li>
-	/// </ul>
-	/// LNode also provides <c>Select(child => result)</c> and <c>ReplaceRecursive(child => result)</c>
-	/// methods which allows you to transform all children (Atrrs, Target and Args).
-	/// Currently there is no <c>Where(child => bool)</c> method because it is not
-	/// possible to remove the <see cref="Target"/> of an LNode (you can still use
-	/// standard LINQ Where(), of course, but the result is not an LNode).
-	/// 
-	/// <h3>Note</h3>
-	/// 
-	/// The argument and attribute lists should never contain null nodes. Any code 
-	/// that puts nulls in <see cref="Args"/> or <see cref="Attrs"/> is buggy. 
-	/// However, we can't ensure nulls are not placed into <see cref="VList{T}"/> 
-	/// since it's a general-purpose data type, not specialized for LNode. There is
-	/// code to ensure nulls are not placed in Args and Attrs (<see cref="NoNulls"/>),
-	/// but only in debug builds, since null-checking is fairly expensive.
+	/// To learn more about working with LNode, see http://loyc.net/loyc-trees/dotnet.html
 	/// </remarks>
 	public abstract class LNode : ILNode, ICloneable<LNode>, IEquatable<LNode>, IHasLocation, IHasValue<object>, INegListSource<LNode>
 	{
