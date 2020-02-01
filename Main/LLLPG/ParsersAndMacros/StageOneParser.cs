@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -148,10 +148,10 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _ColonSet = GSymbol.Get("':=");
 		static readonly Symbol _AddColon = GSymbol.Get("'+:");
 		static readonly Symbol _AndNot = GSymbol.Get("'&!");
-		static readonly Symbol _SufStar = GSymbol.Get("'*suf");
-		static readonly Symbol _SufPlus = GSymbol.Get("'+suf");
-		static readonly Symbol _SufOpt = GSymbol.Get("'?suf");
-		static readonly Symbol _SufBang = GSymbol.Get("'!suf");
+		static readonly Symbol _SufStar = GSymbol.Get("'suf*");
+		static readonly Symbol _SufPlus = GSymbol.Get("'suf+");
+		static readonly Symbol _SufOpt = GSymbol.Get("'suf?");
+		static readonly Symbol _SufBang = GSymbol.Get("'suf!");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");

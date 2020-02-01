@@ -525,7 +525,7 @@ namespace Loyc.Syntax.Les
 						if (prefix != _number)
 							PrintIdCore(prefix, startToken: false, forceQuote: firstCh.IsOneOf('e', 'E'));
 						return;
-					} else if (prefix.Name == "@@" && Les3PrecedenceMap.IsExtendedOperator(text, "")) {
+					} else if (prefix.Name == "@@" && Les3PrecedenceMap.IsExtendedOperatorToken(text)) {
 						WriteToken("@@", kind, Chars.At, Chars.IdAndPunc);
 						SB.Append(text);
 						return;
@@ -873,8 +873,6 @@ namespace Loyc.Syntax.Les
 
 		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
 		{
-			// Peek ahead to decide whether to terminate with semicolon or newline 
-			// because trailing trivia (comments) appear after the semicolon, if any
 			bool anyNewlines = false;
 			if (args.Count > 0) {
 				var next = args[0];
@@ -908,12 +906,19 @@ namespace Loyc.Syntax.Les
 			if (name.Length <= 1 || name[0] != '\'')
 				return false;
 			int i;
-			for (i = 1; i < name.Length; i++)
-				if (!IsOpPrefixChar(name[i]))
+			for (i = 1; ;) {
+				if (!IsComboOpPrefixChar(name[i]))
 					break;
-			return EndsAsNaturalOperator(name, i);
+				if (++i == name.Length)
+					return true;
+			}
+			var opToken = name.Slice(i);
+			if (!Les3PrecedenceMap.IsNaturalOperatorToken(opToken))
+				return false;
+			TokenType tt = Les3Lexer.GetOperatorTokenType(opToken);
+			return tt != TokenType.PreOrSufOp && tt != TokenType.PrefixOp;
 		}
-		public static bool IsOpPrefixChar(char c) => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
+		public static bool IsComboOpPrefixChar(char c) => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
 
 		/// <summary>Returns true if the given name can be printed as a prefix operator in LESv3.</summary>
 		private static bool CanBePrefixOperator(string name)
@@ -921,20 +926,13 @@ namespace Loyc.Syntax.Les
 			if (name.Length <= 1 || name[0] != '\'')
 				return false; // optimized path
 
-			int i = name[1] == '$' ? 2 : 1;
-			return EndsAsNaturalOperator(name, i);
-		}
-
-		private static bool EndsAsNaturalOperator(string name, int i)
-		{
-			for (; (uint)i < (uint)name.Length; i++)
-			{
-				if (name[i] == '/' && name.TryGet(i + 1, '\0').IsOneOf('/', '*'))
-  					return false; // "//" or "/*" - note: parse accepts an operator like "*/*" but we avoid printing it
-				if (!Les3PrecedenceMap.IsOpChar(name[i]))
-					return false;
+			int i = 1;
+			if (name[1] == '$') {
+				i = 2;
+				if (name.Length == 2)
+					return true;
 			}
-			return true;
+			return Les3PrecedenceMap.IsNaturalOperatorToken(name.Slice(i));
 		}
 
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
@@ -943,7 +941,7 @@ namespace Loyc.Syntax.Les
 		{
 			// Check if this operator is allowed here. For example, if operator '+ 
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
-			// allowed without parentheses. Also, unary extended ops (e.g. 'foo) 
+			// allowed without parentheses. Also, unary word operators (e.g. 'foo) 
 			// are not supported.
 			Precedence prec = Les3PrecedenceMap.Default.Find(shape, opName, cacheWordOp: true, les3InfixOp: shape == OperatorShape.Infix);
 			if (shape == OperatorShape.Infix) {

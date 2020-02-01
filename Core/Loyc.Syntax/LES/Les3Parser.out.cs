@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 
 	partial class Les3Parser {
-		static readonly Symbol sy__apos_colonsuf = (Symbol) "':suf", sy__apos_lpar_rpar = (Symbol) "'()";
+		static readonly Symbol sy__apossuf_colon = (Symbol) "'suf:", sy__apos_lpar_rpar = (Symbol) "'()";
 		#pragma warning disable 162, 642
 	
 		protected new const TT EOF = TT.EOF;
@@ -251,7 +251,7 @@ namespace Loyc.Syntax.Les
 					if (la0 == TT.Colon) {
 						lit_colon = MatchAny();
 						// line 140
-						e = F.Call(sy__apos_colonsuf, e, e.Range.StartIndex, lit_colon.EndIndex, lit_colon.StartIndex, lit_colon.EndIndex);
+						e = F.Call(sy__apossuf_colon, e, e.Range.StartIndex, lit_colon.EndIndex, lit_colon.StartIndex, lit_colon.EndIndex);
 					}
 				}
 				break;

@@ -137,7 +137,7 @@ partial class Les3Parser
 		(	e:Expr[Precedence.MinValue]
 			greedy(
 				":" (("\n"|")"|"]"|"}"|EOF) =>)
-				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
+				{e = F.Call(@@`'suf:`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
 			)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 

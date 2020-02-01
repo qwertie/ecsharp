@@ -45,8 +45,8 @@ namespace Loyc.Syntax.Les
 			Stmt(@"a `'>s` b;",  AsOperator(F.Call(_("'>s"), a, b)));
 			Stmt(@"a `'/*` b;",  AsOperator(F.Call(_("'/*"), a, b)));
 			Stmt(@"a `'//` b;",  AsOperator(F.Call(_("'//"), a, b)));
-			Stmt(@"a `'++suf` b;", AsOperator(F.Call(_("'++suf"), a, b)));
-			Stmt(@"`'++suf` b;",   AsOperator(F.Call(_("'++suf"), b)));
+			Stmt(@"a `'_++` b;", AsOperator(F.Call(S.PostInc, a, b)));
+			Stmt(@"`'_++` b;",   AsOperator(F.Call(S.PostInc, b)));
 			Stmt(@"`'/\\` b;",     AsOperator(F.Call(_("'/\\"), b)));
 			Stmt(@"a `':` b();",   AsOperator(F.Call(S.Colon, a, F.Call(b))));
 			Stmt(@"if @a++(b);",  AsStyle(NodeStyle.Special, F.Call(_("if"), AsOperator(F.Call(_("a++"), F.Call(b))))));

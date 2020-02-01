@@ -777,7 +777,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence)
 		{
-			// Handles one of:  ?  _[]  ?[]  suf++  suf--
+			// Handles one of:  ?  suf[]  ?[]  suf++  suf--
 			int argCount = _n.ArgCount;
 			Symbol name = _name;
 			if (argCount < 1)
@@ -790,7 +790,7 @@ namespace Loyc.Ecs
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.Args[0];
 			if (name == S.IndexBracks) {
-				// Careful: a[] means @'of(@`[]`, a) in a type context, @`_[]`(a) otherwise
+				// Careful: a[] means @'of(@`[]`, a) in a type context, @`suf[]`(a) otherwise
 				int minArgs = (_flags & Ambiguity.TypeContext) != 0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;

@@ -270,11 +270,17 @@ namespace Loyc.Syntax.Les
 			// "Prefix combo operator"
 			Exact("`'ref==`(x)", Op(F.Call("'ref==", x)));
 			// "Suffix combo operator"
-			Exact("`'suf+suf`(x)", Op(F.Call("'suf+suf", x)));
+			Exact("`'sufsuf+`(x)", Op(F.Call("'sufsuf+", x)));
+			Exact("`'sufsuf++`(x)", Op(F.Call("'sufsuf++", x)));
+			// "Binary suffix combo operator"
+			Exact("`'foo++`(a, b)", Op(F.Call("'foo++", a, b)));
+			// "Binary prefix operator"
+			Exact("`'$*`(a, b)", Op(F.Call("'$*", a, b)));
+			Exact("`'$`(a, b)", Op(F.Call("'$", a, b)));
 			// "Binary suffix operator"
-			Exact("`'++suf`(a, b)", Op(F.Call("'++suf", a, b)));
-			// Invalid combo operator
-			Exact(@"`'>s`(a, b)",  Op(F.Call(_("'>s"), a, b)));
+			Exact("`'suf++`(a, b)", Op(F.Call("'suf++", a, b)));
+			// "Backwards combo operator"
+			Exact("`'>s`(a, b)",    Op(F.Call(_("'>s"), a, b)));
 
 			// Single-quoted binary operators no longer exist
 			Test(Mode.Expr, 1, "a 'x b", a);
@@ -407,11 +413,11 @@ namespace Loyc.Syntax.Les
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a.b --", F.Call(@"'--suf", F.Call(S.Dot, a, b)));
-			Stmt(@"a + b -<>-", F.Call(S.Add, a, F.Call(@"'-<>-suf", b)));
-			// Ensure printer isn't confused by "suf" suffix which also appears on suffix operators
-			Exact(@"do_suf(x)", F.Call(@"do_suf", x).SetBaseStyle(NodeStyle.Operator));
-			Exact(@"`'do_suf`(x)", F.Call(@"'do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Stmt(@"a.b --", F.Call(S.PostDec, F.Call(S.Dot, a, b)));
+			Stmt(@"a + b -<>-", F.Call(S.Add, a, F.Call(@"'suf-<>-", b)));
+			// Ensure printer isn't confused by "suf" prefix which also appears on suffix operators
+			Exact(@"suffer(x)", F.Call(@"suffer", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"`'suffer`(x)", F.Call(@"'suffer", x).SetBaseStyle(NodeStyle.Operator));
 			Exact(@"a!! !!", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
 			Exact(@"!!a!!", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
 		}
@@ -693,7 +699,7 @@ namespace Loyc.Syntax.Les
 		{
 			// Parens attributes on operator targets
 			Exact("(`'-`)(x)",      Op(F.Call(F.InParens(F.Id(S.Sub)), x)));
-			Exact("(`'++suf`)(x)",  Op(F.Call(F.InParens(F.Id(S.PostInc)), x)));
+			Exact("(`'suf++`)(x)",  Op(F.Call(F.InParens(F.Id(S.PostInc)), x)));
 			Exact("(`'+`)(a, b)",   Op(F.Call(F.InParens(F.Id(S.Add)), a, b)));
 			Exact("(`.foo`)(a, b)", Op(F.Call(F.InParens(F.Id(".foo")), a, b)));
 		}

@@ -31,13 +31,13 @@ namespace Loyc.Ecs.Tests
 			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'_[]`(static x, a);",  @"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'suf[]`(static x, a);",@"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`'+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`'+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`'?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`'?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`'++`([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'++suf`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'suf++`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",       @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",   @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
@@ -50,9 +50,9 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrintWrongArityOperators()
 		{
-			Expr("@`'_[]`()",        F.Call(S.IndexBracks));
-			Expr("@`'++suf`(a, b)",  F.Call(S.PostInc, a, b));
-			Expr("@`'--suf`()",      F.Call(S.PostDec));
+			Expr("@`'suf[]`()",      F.Call(S.IndexBracks));
+			Expr("@`'suf++`(a, b)",  F.Call(S.PostInc, a, b));
+			Expr("@`'suf--`()",      F.Call(S.PostDec));
 			Expr("@`'.`()", F.Call(S.Dot));
 			Expr("@`'*`()", F.Call(S.Mul));
 			Stmt("#break;",          _(S.Break));
@@ -159,17 +159,17 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrinterBreakingAttributes()
 		{
-			Stmt("@`'.`([Foo] a, b).c;",   F.Dot(Attr(Foo, a), b, c));
-			Stmt("@`'.`(a, [Foo] b).c;",   F.Dot(a, Attr(Foo, b), c));
-			Stmt("@`'.`(a.b, [Foo] c);",   F.Dot(a, b, Attr(Foo, c)));
-			Stmt("@`'.`([Foo] a, b, c);",  F.Call(S.Dot, Attr(Foo, a), b, c));
-			Stmt("@`'.`(a, b, [Foo] c);",  F.Call(S.Dot, a, b, Attr(Foo, c)));
-			Expr("@`'+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
-			Expr("@`'+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
-			Expr("@`'_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
-			Expr("@`'?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
-			Expr("@`'?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
-			Expr("@`'?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
+			Stmt("@`'.`([Foo] a, b).c;",  F.Dot(Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, [Foo] b).c;",  F.Dot(a, Attr(Foo, b), c));
+			Stmt("@`'.`(a.b, [Foo] c);",  F.Dot(a, b, Attr(Foo, c)));
+			Stmt("@`'.`([Foo] a, b, c);", F.Call(S.Dot, Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, b, [Foo] c);", F.Call(S.Dot, a, b, Attr(Foo, c)));
+			Expr("@`'+`([Foo] a, b)",     F.Call(S.Add, Attr(Foo, a), b));
+			Expr("@`'+`(a, [Foo] b)",     F.Call(S.Add, a, Attr(Foo, b)));
+			Expr("@`'suf[]`([Foo] a, b)", F.Call(S.IndexBracks, Attr(Foo, a), b));
+			Expr("@`'?`([Foo] c, a, b)",  F.Call(S.QuestionMark, Attr(Foo, c), a, b));
+			Expr("@`'?`(c, [Foo] a, b)",  F.Call(S.QuestionMark, c, Attr(Foo, a), b));
+			Expr("@`'?`(c, a, [Foo] b)",  F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
 		}
 
 		[Test]

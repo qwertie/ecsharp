@@ -152,11 +152,11 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("a++;", F.Call(S.PostInc, a));
 			Exact("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a.b --;", F.Call(@"'--suf", F.Call(S.Dot, a, b)));
-			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'-<>-suf", b)));
-			// Ensure printer isn't confused by "suf" suffix which also appears on suffix operators
-			Exact(@"`do_suf` x;",  F.Call(@"do_suf", x).SetBaseStyle(NodeStyle.Operator));
-			Exact(@"`'do_suf` x;", F.Call(@"'do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Stmt(@"a.b --;", F.Call(S.PostDec, F.Call(S.Dot, a, b)));
+			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'suf-<>-", b)));
+			// Ensure printer isn't confused by "suf" prefix which also appears on suffix operators
+			Exact(@"`'suffer` x;", F.Call(@"'suffer", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"`'suffer` x;", F.Call(@"'suffer", x).SetBaseStyle(NodeStyle.Operator));
 			Exact(@"a!! !!;", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
 			Exact(@"!!a!!;", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
 		}

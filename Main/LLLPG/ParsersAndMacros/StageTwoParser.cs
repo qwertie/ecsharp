@@ -50,9 +50,9 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Gate = S.Lambda;
 		static readonly Symbol _EqGate = GSymbol.Get("'<=>");
 		static readonly Symbol _AddColon = GSymbol.Get("'+:");
-		static readonly Symbol _Star = GSymbol.Get("'*suf");
-		static readonly Symbol _Plus = GSymbol.Get("'+suf");
-		static readonly Symbol _Opt = GSymbol.Get("'?suf");
+		static readonly Symbol _Star = GSymbol.Get("'suf*");
+		static readonly Symbol _Plus = GSymbol.Get("'suf+");
+		static readonly Symbol _Opt = GSymbol.Get("'suf?");
 		static readonly Symbol _And = S.AndBits;
 		static readonly Symbol _AndNot = GSymbol.Get("'&!");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");

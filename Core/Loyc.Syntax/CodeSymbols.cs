@@ -24,8 +24,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Negate = GSymbol.Get("'-"); //!< Alias for Sub. Infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("'++"); //!< "++" Unary prefix increment
 		public static readonly Symbol PreDec = GSymbol.Get("'--"); //!< "--" Unary prefix decrement
-		public static readonly Symbol PostInc = GSymbol.Get("'++suf"); //!< "suf++" Unary suffix increment
-		public static readonly Symbol PostDec = GSymbol.Get("'--suf"); //!< "suf--" Unary suffix decrement
+		public static readonly Symbol PostInc = GSymbol.Get("'suf++"); //!< "suf++" Unary suffix increment
+		public static readonly Symbol PostDec = GSymbol.Get("'suf--"); //!< "suf--" Unary suffix decrement
 		public static readonly Symbol Mod = GSymbol.Get("'%");    //!< "%"  Remainder operator
 		public static readonly Symbol And = GSymbol.Get("'&&");   //!< "&&" Logical short-circuit 'and' operator
 		public static readonly Symbol Or = GSymbol.Get("'||");    //!< "||" Logical short-circuit 'or' operator
@@ -50,8 +50,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol XorBits = GSymbol.Get("'^");    //!< "^" Bitwise exclusive-or operator
 		
 		public static readonly Symbol Braces = GSymbol.Get("'{}"); //!< "{}" Creates a scope.
-		public static readonly Symbol IndexBracks = GSymbol.Get("'_[]"); //!< "_[]" indexing operator
-		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> @'of(@`[]`, Foo)
+		public static readonly Symbol IndexBracks = GSymbol.Get("'suf[]"); //!< "'suf[]" indexing operator
+																		   //!< foo[1, A] <=> @`'suf[]`(foo, 1, A), but in a type context, Foo[] <=> @'of(@`[]`, Foo)
 		public static readonly Symbol Array = GSymbol.Get("'[]");  //!< Used for list/array literals. Not used for attributes.
 		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`#[]`)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("'[,]"); //!< int[,] <=> @'of(@`#[,]`, int)
@@ -173,12 +173,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)
 		public static readonly Symbol Backslash = GSymbol.Get(@"'\");      //!< "\" operator
 		[Obsolete("Use PreBangBang or SufBangBang")]
-		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "!!" operator
-		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "!!" operator
-		public static readonly Symbol SufBangBang = GSymbol.Get(@"'!!suf"); //!< "!!" operator
-		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "!!." operator
+		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "'!!" operator
+		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "'!!" operator
+		public static readonly Symbol SufBangBang = GSymbol.Get(@"'suf!!"); //!< "'suf!!" operator
+		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "'!!." operator
 		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
-		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "<-" operator
+		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "'<-" operator
 		public static readonly Symbol SingleQuote = GSymbol.Get("'");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 		public static readonly Symbol Parens = GSymbol.Get("'()");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 

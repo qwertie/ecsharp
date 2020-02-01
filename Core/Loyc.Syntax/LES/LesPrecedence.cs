@@ -229,8 +229,8 @@ namespace Loyc.Syntax.Les
 	/// start with a single quote in LES <b>do</b> start with a single quote
 	/// in the final output (e.g. <c>2 + 2</c> is equivalent to <c>2 '+ 2</c>).
 	/// There is an exception: While prefix ++ and -- are named <c>'++</c> and 
-	/// <c>'--</c>, the suffix versions are named <c>'++suf</c> and 
-	/// <c>'--suf</c> in the output tree. For LESv2 operators surrounded by 
+	/// <c>'--</c>, the suffix versions are named <c>'suf++</c> and 
+	/// <c>'suf--</c> in the output tree. For LESv2 operators surrounded by 
 	/// `backquotes`, the backquotes are not included in the output tree (e.g.
 	/// <c>`sqrt` x</c> is equivalent to <c>sqrt(x)</c>).
 	/// </remarks>
