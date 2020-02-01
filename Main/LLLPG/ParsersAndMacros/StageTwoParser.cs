@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -58,7 +58,7 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
-		static readonly Symbol _Default2 = GSymbol.Get("#default");
+		static readonly Symbol _Default2 = GSymbol.Get("'default");
 		static readonly Symbol _Inline = GSymbol.Get("inline");
 		static readonly Symbol _Inline2 = GSymbol.Get("#inline");
 		static readonly Symbol _NoInline = GSymbol.Get("noinline");
