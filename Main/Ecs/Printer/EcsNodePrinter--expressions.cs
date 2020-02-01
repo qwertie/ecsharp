@@ -192,7 +192,7 @@ namespace Loyc.Ecs
 				{
 					// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
 					// notation or most other operators without parens.
-					// #of and '$ are notable exceptions, and we must not wrap them 
+					// @'of and '$ are notable exceptions, and we must not wrap them 
 					// in parentheses in case they appear in a type context:
 					if (_n.CallsMin(S.Of, 1))
 						if (AutoPrintOfOperator(EcsPrecedence.Of))
@@ -790,7 +790,7 @@ namespace Loyc.Ecs
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.Args[0];
 			if (name == S.IndexBracks) {
-				// Careful: a[] means #of(@`[]`, a) in a type context, @`_[]`(a) otherwise
+				// Careful: a[] means @'of(@`[]`, a) in a type context, @`_[]`(a) otherwise
 				int minArgs = (_flags & Ambiguity.TypeContext) != 0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;

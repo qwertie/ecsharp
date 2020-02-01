@@ -35,7 +35,7 @@ namespace LeMP
 
 		static IEnumerable<LNode> GetNamespaces(LNode multiName) {
 			matchCode(multiName) {
-				case @`'.`($(.._)), #of($(.._)):
+				case @`'.`($(.._)), @'of($(.._)):
 					// ignore complex identifier
 				case $outerNamespace($(..args)):
 					// Allow Namespace { stuff; } as alternate notation; just ignore the braces

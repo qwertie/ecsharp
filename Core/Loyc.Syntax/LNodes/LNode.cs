@@ -21,7 +21,7 @@ namespace Loyc.Syntax
 	/// <li>A <see cref="LiteralNode"/> is a literal constant, such as 123 or "hello"</li>
 	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
 	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
-	/// (represented as <c>#of(f, x)</c>), braced blocks of statements (represented as
+	/// (represented as <c>@'of(f, x)</c>), braced blocks of statements (represented as
 	/// <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
 	/// are represented as a call with one argument and <c>null</c> as the <see cref="Target"/>.</li>
 	/// </ul>

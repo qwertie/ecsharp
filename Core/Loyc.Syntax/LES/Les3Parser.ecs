@@ -176,7 +176,7 @@ partial class Les3Parser
 				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:TT.PreOrSufOp
 				{e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
-			|	// ! operator (generic #of)
+			|	// ! operator (generic 'of)
 				&{[Local] context.CanParse(P.Of)}
 				"!"
 				{var args = new VList<LNode> { e }; int endIndex;}

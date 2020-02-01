@@ -26,7 +26,7 @@ namespace Loyc.Syntax.Les
 		PreOrSufOp = TokenKind.Operator + 1,  // ++, --, !!
 		PrefixOp   = TokenKind.Operator + 2,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
-		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
+		Not        = TokenKind.Operator + 6, // !, special because it's used for 'of: A!(B,C) => @'of(A, B, C)
 		Colon      = TokenKind.Operator + 8, // LESv3 only, where : is a special line suffix
 		SingleQuoteOp = TokenKind.Operator + 9, // LESv3 only
 		BQOperator = TokenKind.Operator + 255, // No longer used in LESv3; `foo` is redefined as an identifier

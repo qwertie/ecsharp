@@ -129,7 +129,7 @@ namespace Loyc.Ecs.Parser
 		//    (A<B,C>)   // generics list
 		//    (A<B,C>D)  // context-dependent
 		// 4. Brackets. Is "Foo[]" a data type, or an indexer with no args?
-		//    (Foo[]) x; // data type: #of(@`'[]`, Foo)
+		//    (Foo[]) x; // data type: @'of(@`'[]`, Foo)
 		//    (Foo[]).x; // indexer:   @`'[]`(Foo)
 		// 5. Does "?" make a nullable type or a conditional operator?
 		//    Foo<B> ? x = null;     // nullable type
@@ -535,7 +535,7 @@ namespace Loyc.Ecs.Parser
 		private LNode MethodBodyOrForward() { LNode _; return MethodBodyOrForward(false, out _); }
 		bool IsArrayType(LNode type)
 		{
-			// Detect an array type, which has the form #of(@`'[,]`, Type)
+			// Detect an array type, which has the form @'of(@`'[,]`, Type)
 			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
 		}
 	

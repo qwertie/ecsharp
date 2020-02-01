@@ -127,10 +127,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Foo] a.b.c;",         Attr(Foo, F.Dot(a, b, c)));
 			Stmt("[Foo] a<b, c>;",       Attr(Foo, F.Of(a, b, c)));
 			Stmt("[Foo] a = b;",         Attr(Foo, F.Assign(a, b)));
-			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
+			Stmt("@'of([Foo] a, b, c);",  F.Of(Attr(Foo, a), b, c));
 			Stmt("a!(b, [Foo] c);",       F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b, Foo + c);",       F.Of(a, b, F.Call(S.Add, Foo, c)));
-			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
+			Stmt("@'of(Foo<a>, b);",      F.Of(F.Of(Foo, a), b));
 			Stmt("public a;",             F.Attr(@public, a));
 			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
 			Stmt("public #foo;",          F.Attr(@public, fooKW));

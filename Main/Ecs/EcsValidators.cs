@@ -409,29 +409,29 @@ namespace Loyc.Ecs
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
-			// 3. An #of expr a<b,...>, where 'a' is (1) or (2) and each arg 'b' is a 
+			// 3. An 'of expr a<b,...>, where 'a' is (1) or (2) and each arg 'b' is a 
 			//    complex identifier (if printing in C# style)
 			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
 			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
 			//    do not count as complex identifiers. Note that a.b<c> is 
-			//    structured @`'.`(a, #of(b, c)), not #of(@`'.`(a, b), c). A dotted
+			//    structured @`'.`(a, @'of(b, c)), not #of(@`'.`(a, b), c). A dotted
 			//    expression that starts with a dot, such as .a.b, is structured
 			//    (.a).b rather than .(a.b), as unary . has precedence as high as $.
 			// 
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
 			// 
-			// Foo*      <=> #of(@*, Foo)
-			// Foo[]     <=> #of(@`[]`, Foo)
-			// Foo[,]    <=> #of(#`[,]`, Foo)
-			// Foo?      <=> #of(@?, Foo)
+			// Foo*      <=> @'of(@*, Foo)
+			// Foo[]     <=> @'of(@`[]`, Foo)
+			// Foo[,]    <=> @'of(#`[,]`, Foo)
+			// Foo?      <=> @'of(@?, Foo)
 			//
-			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
+			// Note that we can't just use @'of(Nullable, Foo) for Foo? because it
 			// doesn't work if System is not imported. It's reasonable to allow '? 
 			// instead of global::System.Nullable, since we have special symbols 
 			// for types like #int32 anyway.
 			// 
-			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, #of(b, c)), #of(d, e)), f).
+			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, @'of(b, c)), #of(d, e)), f).
 			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n, p) : HasPAttrsOrParens(n, p)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
@@ -737,7 +737,7 @@ namespace Loyc.Ecs
 			if (name == null)
 				return null;
 			// global::Foo<int>.Bar<T> is structured (global::(Foo<int>)).(Bar<T>)
-			// so if `'.` or `'::` get second arg, then if #of, get first arg.
+			// so if `'.` or `'::` get second arg, then if @'of, get first arg.
 			if (name.CallsMin(S.Dot, 1) || name.Calls(S.ColonColon, 2))
 				name = name.Args.Last;
 			if (name.CallsMin(S.Of, 1))

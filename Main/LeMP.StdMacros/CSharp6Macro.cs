@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -62,12 +62,12 @@ namespace LeMP.CSharp6
 			// Essentially, we must increase the precedence of ?. to convert it to a normal dot.
 			// This often requires multiple stages, as in:
 			//     (a.b) ?. (c().d<x>)    ==> (a.b ?. c().d)<x>      ==> (a.b ?. c)().d<x>      ==> a.b.c().d<x>
-			//     (a.b) ?. #of(c().d, x) ==> #of((a.b) ?. c().d, x) ==> #of((a.b ?. c)().d, x) ==> #of(a.b.c().d, x)
+			//     (a.b) ?. @'of(c().d, x) ==> @'of((a.b) ?. c().d, x) ==> @'of((a.b ?. c)().d, x) ==> @'of(a.b.c().d, x)
 			// The cases to be handled are...
 			//     x ?. y         <=>  x ?. y             ==>  x.y               (1)
 			//     x ?. "foo"     <=>  x ?. "foo"         ==>  x."Foo"           (1)
 			//     x ?. ++y       <=>  x ?. @`++`(y)      ==>  x.(++y)           (1)
-			//     x ?. y<a, b>   <=>  x ?. #of(y, a, b)  ==>  #of(x.y, a, b)    (2)
+			//     x ?. y<a, b>   <=>  x ?. @'of(y, a, b)  ==>  #of(x.y, a, b)    (2)
 			//     x ?. y[a, b]   <=>  x ?. @`[]`(y, a, b)==>  @`[]`(x.y, a, b)  (2)
 			//     x ?. y.z       <=>  x ?. @.(y, z)      ==>  #.(x?.y, z)       (2)
 			//     x ?. y::z      <=>  x ?. @`::`(y, z)   ==>  #::(x?.y, z)      (2)
@@ -79,7 +79,7 @@ namespace LeMP.CSharp6
 			//     x ?. y(a, b)   <=>  x ?. y(a, b)       ==>  x.y(a, b)         (3: default case)
 			// The following groups are handled essentially the same way:
 			// 1. Ids, Literals and prefix operators (+ - ++ -- ! ~ new)
-			// 2. #of, @`[]`, @`.`, @`::`, @`:::`, @`=:`, @`->`, #cast, @`suf++`, @`suf--`
+			// 2. @'of, @`[]`, @`.`, @`::`, @`:::`, @`=:`, @`->`, #cast, @`suf++`, @`suf--`
 			// 3. All other calls
 			var c = suffix.ArgCount;
 			var name = suffix.Name;

@@ -162,7 +162,7 @@ namespace Loyc.Ecs.Tests
 			Expr("Foo[x]",           F.Call(S.IndexBracks, Foo, x));
 			Expr("Foo[a, b]",        F.Call(S.IndexBracks, Foo, a, b));
 			Expr("Foo[a - 1]",       F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)));
-			Expr("Foo[]",            F.Call(S.IndexBracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
+			Expr("Foo[]",            F.Call(S.IndexBracks, Foo)); // "Foo[]" means @'of(#`[]`, Foo) only in a type context
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x as Foo",         F.Call(S.As, x, Foo));
 			Expr("x is Foo",         F.Call(S.Is, x, Foo));

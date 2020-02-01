@@ -130,17 +130,17 @@ namespace Loyc.Ecs.Tests
 			CheckIsComplexIdentifier(true, F.Dot(F.Dot(a, b), c));         // a.b.c       == @`'.`(@`'.`(a, b), c) ==> true
 			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == @`'.`(@`'.`(a, b), c) ==> true
 			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // @`'.`(a, b.c)
-			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
-			CheckIsComplexIdentifier(true, F.Of(_(S.Array), a));           // a[]         == #of(@`[]`,a)      ==> true
-			CheckIsComplexIdentifier(true, F.Dot(a, F.Of(b, F.Dot(c,x)))); // a.b<c.x>    == #of(@.(a,b),@.(c,x)) ==> true
-			CheckIsComplexIdentifier(false, F.Of(F.Dot(a,b),F.Dot(c,x)));  // #of(@`'.`(a,b), @`'.`(c,x))      ==> false
-			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == @.(a,b)(x)        ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,F.Of(b,c)), c)); // a.b<c>(x)   == #of(@.(a,b),c)(x) ==> true for target
-			CheckIsComplexIdentifier(false, F.Call(F.Of(F.Dot(a,b),c), c)); // #of(a.b, c)(c)                  ==> false
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
-			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (@`'.`(a,b))(x)   ==> false
-			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
+			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == @'of(a,b)          ==> true
+			CheckIsComplexIdentifier(true, F.Of(_(S.Array), a));           // a[]         == @'of(@`[]`,a)      ==> true
+			CheckIsComplexIdentifier(true, F.Dot(a, F.Of(b, F.Dot(c,x)))); // a.b<c.x>    == @'of(@'.(a,b),@'.(c,x)) ==> true
+			CheckIsComplexIdentifier(false, F.Of(F.Dot(a,b),F.Dot(c,x)));  // @'of(@`'.`(a,b), @`'.`(c,x))      ==> false
+			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                              ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == @.(a,b)(x)         ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,F.Of(b,c)), c)); // a.b<c>(x)   == @'of(@'.(a,b),c)(x)==> true for target
+			CheckIsComplexIdentifier(false, F.Call(F.Of(F.Dot(a,b),c), c)); // @'of(a.b, c)(c)                   ==> false
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                            ==> false
+			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (@`'.`(a,b))(x)    ==> false
+			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // @'of(a<b>,c) == @'of(@'of(a,b),c) ==> false
 		}
 
 		[Test]

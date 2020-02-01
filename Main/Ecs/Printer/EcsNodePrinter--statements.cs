@@ -313,7 +313,7 @@ namespace Loyc.Ecs
 
 		private void PrintWhereClauses(LNode name)
 		{
-			// Example: #of(Foo, [#where(#class, IEnumerable)] T)
+			// Example: @'of(Foo, [#where(#class, IEnumerable)] T)
 			//          represents Foo<T> where T: class, IEnumerable
 			if (!name.Calls(S.Of))
 				return;

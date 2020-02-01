@@ -43,7 +43,7 @@ namespace Loyc.Ecs.Tests
 			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo<a>, [#foo] b, c = 1);",@"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Assign(c, one)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo!(static a), b);",      @"Foo<a> b;",        F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);",  @"Foo<a> b;",        F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(@'of(static Foo, a), b);",  @"Foo<a> b;",       F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
 			Option(Mode.PrinterTest,         @"([Foo] a)(x);",          @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
 		}
 

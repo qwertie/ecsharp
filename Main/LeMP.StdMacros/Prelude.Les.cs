@@ -176,7 +176,7 @@ namespace LeMP.Prelude.Les
 		}
 		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
 		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
-		// form X!Y!Z, i.e. #of(#of(...), ...) is not allowed. $Substitution is allowed.
+		// form X!Y!Z, i.e. @'of(@'of(...), ...) is not allowed. $Substitution is allowed.
 		public static bool IsComplexId(LNode id, bool allowOf = true)
 		{
 			if (id.IsCall) {
@@ -705,8 +705,8 @@ namespace LeMP.Prelude.Les
 		static readonly Symbol _ptr = GSymbol.Get("ptr");
 
 		[LexicalMacro("array!Type; opt!Type; ptr!Type", 
-			"array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", 
-			"#of", Mode = MacroMode.Normal | MacroMode.Passive)]
+			"array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.",
+			"'of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode of(LNode node, IMessageSink sink)
 		{
 			LNode kind;

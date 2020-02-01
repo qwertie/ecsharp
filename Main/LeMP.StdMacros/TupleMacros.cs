@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,7 +70,7 @@ namespace LeMP
 		}
 
 		[LexicalMacro("#<x, y, ...>", "Represents a tuple type",
-			"#of", Mode = MacroMode.Normal | MacroMode.Passive)]
+			"'of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode TupleType(LNode node, IMacroContext context)
 		{
 			var stem = node.Args[0, F.Missing];

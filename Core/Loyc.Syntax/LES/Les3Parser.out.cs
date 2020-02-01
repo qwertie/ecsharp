@@ -337,8 +337,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Id:
 						{
-							if (CanParse(context, 0, out prec)) {
-								if (!IsContinuator(LT(0).Value))
+							if (!IsContinuator(LT(0).Value)) {
+								if (CanParse(context, 0, out prec))
 									goto match2;
 								else
 									goto stop;
