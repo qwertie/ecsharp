@@ -73,13 +73,13 @@ namespace LeMP.CSharp6
 			//     x ?. y::z      <=>  x ?. @`::`(y, z)   ==>  #::(x?.y, z)      (2)
 			//     x ?. y:::z     <=>  x ?. @`:::`(y, z)  ==>  #:::(x?.y, z)     (2)
 			//     x ?. y->z      <=>  x ?. @`->`(y, z)   ==>  #->(x?.y, z)      (2)
-			//     x ?. y(->z)    <=>  x ?. #cast(y, z)   ==>  #cast(x?.y, z)    (2)
+			//     x ?. y(->z)    <=>  x ?. @'cast(y, z)  ==>  @'cast(x?.y, z)    (2)
 			//     x ?. y++       <=>  x ?. @`suf++`(y)   ==>  @`suf++`(x?.y)    (2)
 			//     x ?. y ?. z    <=>  x ?. @`?.`(y, z)   ==>  @`?.`(x.y, z)       
 			//     x ?. y(a, b)   <=>  x ?. y(a, b)       ==>  x.y(a, b)         (3: default case)
 			// The following groups are handled essentially the same way:
 			// 1. Ids, Literals and prefix operators (+ - ++ -- ! ~ new)
-			// 2. @'of, @`[]`, @`.`, @`::`, @`:::`, @`=:`, @`->`, #cast, @`suf++`, @`suf--`
+			// 2. @'of, @`[]`, @`.`, @`::`, @`:::`, @`=:`, @`->`, @'cast, @`suf++`, @`suf--`
 			// 3. All other calls
 			var c = suffix.ArgCount;
 			var name = suffix.Name;

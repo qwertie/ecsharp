@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CastAmbiguity()
 		{
-			// Bug 2015/08: (Foo).x was parsed as #cast(Foo, .x)
+			// Bug 2015/08: (Foo).x was parsed as @'cast(Foo, .x)
 			Stmt("(Foo).x;", F.Dot(F.InParens(Foo), x));
 			Stmt("(Foo) - x;", F.Call(S.Sub, F.InParens(Foo), x));
 			Stmt("(Foo) + x;", F.Call(S.Add, F.InParens(Foo), x));

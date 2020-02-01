@@ -521,7 +521,7 @@ namespace Loyc.Ecs.Tests
 			Expr("static #fn(bool, operator==, #([] T a, [] T b), { })", stmt);
 			stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a) { }", stmt);
-			Expr("static implicit #fn(T, operator`#cast`, #([] Foo a), { })", stmt);
+			Expr("static implicit #fn(T, operator`'cast`, #([] Foo a), { })", stmt);
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Fn(Attr(Foo, F.Bool),

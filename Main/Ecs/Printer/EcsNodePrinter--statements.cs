@@ -510,7 +510,7 @@ namespace Loyc.Ecs
 				}
 			}
 
-			// A cast operator with the structure: #fn(Foo, operator`#cast`, #(...))
+			// A cast operator with the structure: #fn(Foo, [@`%useOperatorKeyword`] @'cast, #(...))
 			// can be printed in a special format: operator Foo(...);
 			// Note: operator bool is a cast operator but operator true/false are not
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);

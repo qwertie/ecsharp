@@ -801,9 +801,14 @@ namespace LeMP
 				try {
 					Scope scope = AutoInitScope();
 					MacrosInvoked++;
+					
 					// CALL THE MACRO!
 					output = macro.Macro(macroInput, scope);
-					if (output != null) { accepted++; acceptedIndex = i; }
+					
+					if (output != null) {
+						accepted++;
+						acceptedIndex = i;
+					}
 				} catch (ThreadAbortException e) {
 					_sink.Write(Severity.Error, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
 					_sink.Write(Severity.ErrorDetail, input, e.StackTrace);

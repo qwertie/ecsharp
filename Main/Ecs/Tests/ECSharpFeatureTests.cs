@@ -485,8 +485,8 @@ namespace Loyc.Ecs.Tests
 			stmt = Attr(@static, _(S.Explicit),
 			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
 			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
-			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
-			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #([] Bar<T> b))", stmt);
+			Stmt(@"static explicit Foo<T> operator`'cast`<$T>(Bar<T> b);", stmt);
+			Expr(@"static explicit #fn(Foo<T>, operator`'cast`<$T>, #([] Bar<T> b))", stmt);
 			stmt = F.Fn(F.Bool, Attr(trivia_operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
 			Stmt("bool operator`when`(Foo a, Foo b) { }", stmt);
 			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), { })", stmt);

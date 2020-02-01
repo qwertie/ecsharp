@@ -604,15 +604,15 @@ namespace Loyc.Ecs
 
 		/// <summary>Checks whether an expression is a valid "is" test (pattern-
 		/// matching expression) such as "x is Foo", "x is Foo y" or "x is Foo y(z)".</summary>
-		/// <remarks>The format of a valid "is" test is <c>#is(subject, type_or_vardecl, extraArgsList)</c>.
-		/// For example <c>a is Foo</c> would be <c>#is(a, Foo)</c> and
-		/// <c>a is Foo b(c, d)</c> would be <c>#is(a, #var(Foo, b), #(c, d))</c>.
+		/// <remarks>The format of a valid "is" test is <c>@'is(subject, type_or_vardecl, extraArgsList)</c>.
+		/// For example <c>a is Foo</c> would be <c>@'is(a, Foo)</c> and
+		/// <c>a is Foo b(c, d)</c> would be <c>@'is(a, #var(Foo, b), #(c, d))</c>.
 		/// Unary "is" expressions like <c>is Foo</c> are stored as binary expressions 
-		/// with an empty identifier as the left-hand side: <c>#is(@``, Foo)</c>.
+		/// with an empty identifier as the left-hand side: <c>@'is(@``, Foo)</c>.
 		/// </remarks>
 		public static bool IsIsTest(LNode n, out LNode subject, out LNode targetType, out LNode targetVarName, out LNode extraArgs, Pedantics p = Pedantics.Lax)
 		{
-			// `x is Foo<T> y (e1, e2)` parses to #is(x, #var(Foo<T>, y), e1, e2)
+			// `x is Foo<T> y (e1, e2)` parses to @'is(x, #var(Foo<T>, y), e1, e2)
 			subject = targetType = targetVarName = extraArgs = null;
 			if (!n.CallsMin(S.Is, 2))
 				return false;

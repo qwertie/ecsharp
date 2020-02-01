@@ -24,9 +24,9 @@ namespace Loyc.Ecs
 			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
 		});
 
-		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary( 
+		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary(
 			// This is a list of unary prefix operators only. Does not include the
-			// binary prefix operator "#cast" or the unary suffix operators ++ and --.
+			// binary prefix operator 'cast or the unary suffix operators ++ and --.
 			// Although @`.` can be a prefix operator, it is not included in this list
 			// because it needs special treatment because its precedence is higher
 			// than EP.Primary (i.e. above prefix notation). Therefore, it's printed

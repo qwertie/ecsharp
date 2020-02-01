@@ -654,7 +654,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "'cast", "'->")]
+		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "'->")]
 		public static LNode castOperator(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -662,7 +662,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "as", "'as")]
+		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "as")]
 		public static LNode @as(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -670,7 +670,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).", "is", "'is")]
+		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).", "is")]
 		public static LNode @is(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
