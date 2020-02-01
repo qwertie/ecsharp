@@ -869,7 +869,7 @@ namespace Loyc.Ecs
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
-					return node.Name != S.New || style >= AttrStyle.IsDefinition;
+					return node.Name != S.NewAttribute || style >= AttrStyle.IsDefinition;
 				else
 					return style >= AttrStyle.AllowWordAttrs && (node.Name == S.This || 
 						!CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));

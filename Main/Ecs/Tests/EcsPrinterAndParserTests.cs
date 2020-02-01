@@ -34,7 +34,7 @@ namespace Loyc.Ecs.Tests
 		protected LNode @public = F.Id(S.Public), @static = F.Id(S.Static);
 		protected LNode fooKW = F.Id("#foo"), fooWA = F.Attr(F.Id(S.TriviaWordAttribute), F.Id("#foo"));
 		protected LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
-		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
+		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.NewAttribute);
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), _await = F.Id("await");
 		protected LNode trivia_appendStatement = F.Id(S.TriviaAppendStatement);

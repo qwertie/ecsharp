@@ -163,7 +163,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("goto case [Foo] 1;", F.Call(S.GotoCase, Attr(Foo, one)));
 			Expr("new Foo(x) { [a] b = c }",
 										  F.Call(S.New, F.Call(Foo, x), Attr(a, F.Assign(b, c))));
-			Option(Mode.PrintBothParseFirst, "#new([#foo] Foo(x), a);", "new Foo(x) { a };",
+			Option(Mode.PrintBothParseFirst, "@'new([#foo] Foo(x), a);", "new Foo(x) { a };",
 										  F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
 		}
 

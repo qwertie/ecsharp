@@ -79,7 +79,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>
 		public static readonly Symbol Dot = GSymbol.Get("'.");             //!< "." binary dot operator, e.g. string.Join
 		public static readonly Symbol NamedArg = GSymbol.Get("'::=");      //!< "'::=" Named argument e.g. `'::=`(x, 0) <=> x: 0
-		public static readonly Symbol New = GSymbol.Get("#new");           //!< "#new": new Foo(x) { a } <=> #new(Foo(x), a);  new[] { ... } <=> #new(@`[]`(), ...)
+		public static readonly Symbol New = GSymbol.Get("'new");           //!< "'new": new Foo(x) { a } <=> @`'new`(Foo(x), a);  new[] { ... } <=> @`'new`(@`[]`(), ...)
+		public static readonly Symbol NewAttribute = GSymbol.Get("#new");  //!< "#new": public new void Foo() {} <=> [#public, #new] #fn(#void, Foo, #(), {})
 		public static readonly Symbol Out = GSymbol.Get("#out");           //!< "#out": out x <=> [#out] x
 		public static readonly Symbol Ref = GSymbol.Get("#ref");           //!< "#ref": ref int x <=> [#ref] #var(#int, x)
 		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");     //!< "#sizeof" sizeof(int) <=> #sizeof(int)

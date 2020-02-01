@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -55,10 +55,10 @@ namespace Loyc.Ecs.Tests
 			Expr("@`'--suf`()",      F.Call(S.PostDec));
 			Expr("@`'.`()", F.Call(S.Dot));
 			Expr("@`'*`()", F.Call(S.Mul));
-			Stmt("#break;",            _(S.Break));
-			Stmt("#continue;",         _(S.Continue));
-			Stmt("#return;",           _(S.Return));
-			Stmt("#throw;",            _(S.Throw));
+			Stmt("#break;",          _(S.Break));
+			Stmt("#continue;",       _(S.Continue));
+			Stmt("#return;",         _(S.Return));
+			Stmt("#throw;",          _(S.Throw));
 		}
 
 		public void PrinterRevertsToPrefixNotation()
@@ -210,14 +210,14 @@ namespace Loyc.Ecs.Tests
 		public void UnprintableOperatorNew()
 		{
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));      // new Foo() { a } would also be ok
-			Expr("#new([x] Foo(), a)",    F.Call(S.New, Attr(x, F.Call(Foo)), a));
-			Expr("#new(([x] Foo)(), a)",  F.Call(S.New, F.Call(Attr(x, Foo)), a), Mode.PrinterTest);
-			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
-			Expr("#new(Foo)",             F.Call(S.New, Foo));
-			Expr("new @`'+`(a, b)",        F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
-			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
-			Expr("#new",                  F.Id(S.New));
-			Expr("#new()",                F.Call(S.New));
+			Expr("@'new([x] Foo(), a)",   F.Call(S.New, Attr(x, F.Call(Foo)), a));
+			Expr("@'new(([x] Foo)(), a)", F.Call(S.New, F.Call(Attr(x, Foo)), a), Mode.PrinterTest);
+			Expr("@'new(Foo, a)",         F.Call(S.New, Foo, a));
+			Expr("@'new(Foo)",            F.Call(S.New, Foo));
+			Expr("new @`'+`(a, b)",       F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
+			Expr("@'new(Foo()(), a)",     F.Call(S.New, F.Call(F.Call(Foo)), a));
+			Expr("@'new",                 F.Id(S.New));
+			Expr("@'new()",               F.Call(S.New));
 			Expr("new { }",               F.Call(S.New, F.Missing));
 			Expr("new { a = 1 }",         F.Call(S.New, F.Missing, F.Call(S.Assign, a, one)));
 		}

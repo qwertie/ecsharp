@@ -86,7 +86,7 @@ namespace Loyc.Ecs
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
-			// ?  []  suf++  suf--  #of  .  #isLegal  #new
+			// ?  []  suf++  suf--  'of  .  'isLegal  'new
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
 			P(S.IndexBracks, EP.Primary), // a[]
 			P(S.NullIndexBracks, EP.Primary), // a?[] (C# 6 feature)
@@ -625,15 +625,15 @@ namespace Loyc.Ecs
 			var consArgs = cons.Args;
 
 			// There are two basic uses of new: for objects, and for arrays.
-			// In all cases, #new has 1 arg plus optional initializer arguments,
+			// In all cases, 'new has 1 arg plus optional initializer arguments,
 			// and there's always a list of "constructor args" even if it is empty 
 			// (exception: new {...}).
-			// 1. Init an object: 1a. new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
-			//                    1b. new { ... }             <=> #new(@``, ...)
-			// 2. Init an array:  2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(@`[]`, int)(), ...)
-			//                    2b. new[,] { ... }.         <=> #new(@`[,]`(), ...)
-			//                    2c. new int[10,10] { ... }, <=> #new(#of(@`[,]`, int)(10,10), ...)
-			//                    2d. new int[10][] { ... },  <=> #new(#of(@`[]`, #of(@`[]`, int))(10), ...)
+			// 1. Init an object: 1a. new Foo<Bar>() { ... }  <=> @'new(@`'of`(Foo, Bar)(...), ...)
+			//                    1b. new { ... }             <=> @'new(@``, ...)
+			// 2. Init an array:  2a. new int[] { ... },      <=> @'new(int[](), ...) <=> @'new(@`'of`(@`'[]`, int)(), ...)
+			//                    2b. new[,] { ... }.         <=> @'new(@`'[,]`(), ...)
+			//                    2c. new int[10,10] { ... }, <=> @'new(@`'of`(@`'[,]`, int)(10,10), ...)
+			//                    2d. new int[10][] { ... },  <=> @'new(@`'of`(@`'[]`, @`'of`(@`'[]`, int))(10), ...)
 			if (HasPAttrs(cons))
 				return false;
 			if (type == null ? !cons.IsIdNamed(S.Missing) : HasPAttrs(type) || !IsComplexIdentifier(type))

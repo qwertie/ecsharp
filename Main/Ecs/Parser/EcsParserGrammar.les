@@ -441,7 +441,7 @@ namespace Loyc.Ecs.Parser
 				var list = VList!LNode.Empty;
 			}
 			op:=TT.New
-			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
+			(	// new [] { ... }  <=>  @'new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
 				lb:="[" rb:="]" 
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
@@ -451,21 +451,21 @@ namespace Loyc.Ecs.Parser
 					AppendInitializersInside(lb, ref list);
 					endIndex = rb.EndIndex;
 				}
-			|	// new { ... }  <=>  #new(@``, ...)
+			|	// new { ... }  <=>  @'new(@``, ...)
 				lb:="{" rb:="}"
 				{
 					list.Add(F.Missing);
 					AppendInitializersInside(lb, ref list);
 					endIndex = rb.EndIndex;
 				}
-			|	// new Type(...)             <=> #new(Type(...))
-				// new Type(...) { ... }     <=> #new(Type(...), ...)
-				// new Type { ... }          <=> #new(Type(), ...)
-				// new Type[10] { ... }      <=> #new(#of(@`[]`, Type)(10), ...)
-				// new Type[10][]            <=> #new(#of(@`[]`, #of(@`'[]`, Type))(10))
+			|	// new Type(...)             <=> @'new(Type(...))
+				// new Type(...) { ... }     <=> @'new(Type(...), ...)
+				// new Type { ... }          <=> @'new(Type(), ...)
+				// new Type[10] { ... }      <=> @'new(#of(@`'[]`, Type)(10), ...)
+				// new Type[10][]            <=> @'new(#of(@`'[]`, @`'of`(@`'[]`, Type))(10))
 				type:=DataType(false, out majorDimension)
-				(	// new Type(...)         <=> #new(Type(...))
-					// new Type(...) { ... } <=> #new(Type(...), ...)
+				(	// new Type(...)         <=> @'new(Type(...))
+					// new Type(...) { ... } <=> @'new(Type(...), ...)
 					lp:="(" rp:=")"
 					{
 						if (majorDimension != null) {
@@ -480,9 +480,9 @@ namespace Loyc.Ecs.Parser
 							endIndex = rb.EndIndex;
 						}
 					)?
-				/	// new Type { ... }      <=> #new(Type(), ...)
-					// new Type[10] { ... }  <=> #new(#of(@`[]`, Type)(10), ...)
-					// new Type[10][]        <=> #new(#of(@`[]`, #of(@`[]`, Type))(10))
+				/	// new Type { ... }      <=> `@'new`(Type(), ...)
+					// new Type[10] { ... }  <=> `@'new`(@`'of`(@`'[]`, Type)(10), ...)
+					// new Type[10][]        <=> `@'new`(@`'of`(@`'[]`, #of(@`[]`, Type))(10))
 					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
 					( lb="{" rb="}" {haveBraces = true;} )?
 					{
@@ -1196,8 +1196,10 @@ namespace Loyc.Ecs.Parser
 			for (; oldPosition < InputPosition; oldPosition++) {
 				word::Token = _tokens[oldPosition];
 				wordAttr::LNode;
-				if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.New) {
+				if word.Kind == TokenKind.AttrKeyword {
 					wordAttr = F.Id(word);
+				} else if (word.Type() == TT.New) {
+					wordAttr = F.Id(S.NewAttribute);
 				} else {
 					wordAttr = F.Attr(_triviaWordAttribute, F.Id("#" + word.Value.ToString(), word.StartIndex, word.EndIndex));
 				};
