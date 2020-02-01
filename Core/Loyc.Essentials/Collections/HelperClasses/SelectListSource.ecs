@@ -45,6 +45,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	GenerateSelectClass(SelectList, IList<T>);
 	
 	/// <summary>
@@ -54,6 +55,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	GenerateSelectClass(SelectReadOnlyList, IReadOnlyList<T>);
 
 	/// <summary>
@@ -63,6 +65,7 @@ namespace Loyc.Collections
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	public class SelectListSource<ListT, T, TResult> : SelectReadOnlyList<ListT, T, TResult>
 		where ListT : IListSource<T>
 	{

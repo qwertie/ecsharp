@@ -362,7 +362,7 @@ namespace LeMP
 				// In LES let's accept ``PropName `is` (Type `with` (subpatterns))`` instead.
 				LNode subpatterns = null;
 				matchCode(pattern) {
-					case @'is($lhs, $type), #is($lhs, $type, $(ref subpatterns)), $lhs `is` $type, $lhs `'is` $type:
+					case @'is($lhs, $type), @'is($lhs, $type, $(ref subpatterns)), $lhs `is` $type, $lhs `'is` $type:
 						if (subpatterns == null) {
 							// Check for syntax for LES with `with`
 							matchCode(type) {

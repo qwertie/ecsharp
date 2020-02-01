@@ -101,7 +101,7 @@ namespace LeMP
 		}
 	
 		static bool IsCaseLabel(LNode @case) {
-			if (@case.Calls(CodeSymbols.Case) || @case.Calls(CodeSymbols.Label, 1) && @case.Args[0].IsIdNamed((Symbol) CodeSymbols.Default)) return true;
+			if (@case.Calls(CodeSymbols.Case) || @case.Calls(CodeSymbols.Label, 1) && @case.Args[0].IsIdNamed((Symbol) "'default")) return true;
 			return false;
 		}
 	
@@ -373,7 +373,7 @@ namespace LeMP
 				LNode subpatterns = null;
 				{
 					LNode lhs, type;
-					if (pattern.Calls((Symbol) "'is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls((Symbol) "'is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
+					if (pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
 						if (subpatterns == null) {
 							if (type.Calls((Symbol) "with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null || type.Calls((Symbol) "'with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null) { }
 						}

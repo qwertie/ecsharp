@@ -43,7 +43,7 @@ namespace LeMP
 			{
 				LNode outerNamespace;
 				VList<LNode> args;
-				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls((Symbol) "'of")) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
+				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
 					args = multiName.Args;
 					// Allow Namespace { stuff; } as alternate notation; just ignore the braces
 					if (args.Count == 1 && args[0].Calls(S.Braces))

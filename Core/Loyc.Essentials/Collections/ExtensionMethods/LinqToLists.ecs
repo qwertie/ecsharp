@@ -11,9 +11,9 @@ namespace Loyc.Collections
 	/// </summary><remarks>
 	/// Helpful article: http://core.loyc.net/essentials/linq-to-lists.html
 	/// <para/>
-	/// For example, the <see cref="Enumerable.Last()"/> extension 
+	/// For example, the <see cref="Enumerable.Last{T}"/> extension 
 	/// method scans the entire list before returning the last item, while 
-	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
+	/// <see cref="Last{T}(IReadOnlyList{T})"/> and <see cref="Last{T}(IList{T})"/> simply
 	/// return the last item directly.
 	/// </remarks>
 	public static partial class LinqToLists
