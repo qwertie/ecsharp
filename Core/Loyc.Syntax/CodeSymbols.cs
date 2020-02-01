@@ -129,7 +129,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol Unchecked = GSymbol.Get("#unchecked"); //!< e.g. #unchecked({ stmt; }); <=> unchecked { stmt; }
 		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x = &y), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
-		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
+		[Obsolete]
+		public static readonly Symbol Switch = GSymbol.Get("#switch");       
+		public static readonly Symbol SwitchStmt = GSymbol.Get("#switch");   //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
+		public static readonly Symbol SwitchExpr = GSymbol.Get("'switch");   //!< e.g. @'switch(x, { ... }); <=> x switch { ... }
 		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, @``, {...})); <=> try {...} catch {...}
 		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...})
 		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement: #finally({...})

@@ -85,7 +85,7 @@ namespace Loyc.Ecs
 					break;
 				case 2:
 					if (childIndex == 0 ? n == S.DoWhile :
-						n == S.If || n == S.While || n == S.UsingStmt || n == S.Lock || n == S.Switch || n == S.Fixed)
+						n == S.If || n == S.While || n == S.UsingStmt || n == S.Lock || n == S.SwitchStmt || n == S.Fixed)
 						return true;
 					break;
 				case 3:
@@ -507,13 +507,13 @@ namespace Loyc.Ecs
 		internal static Symbol TwoArgBlockStmtType(LNode _n, Pedantics p)
 		{
 			// S.Do:                     #doWhile(stmt, expr)
-			// S.Switch:                 #switch(expr, @`{}`(...))
+			// S.SwitchStmt:             #switch(expr, @`{}`(...))
 			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
 			var argCount = _n.ArgCount;
 			if (argCount != 2)
 				return null;
 			var name = _n.Name;
-			if (name == S.Switch)
+			if (name == S.SwitchStmt)
 				return CallsWPAIH(_n.Args[1], S.Braces, p) ? name : null;
 			else if (name == S.DoWhile)
 				return name;

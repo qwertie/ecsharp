@@ -144,7 +144,7 @@ namespace LeMP
 				var r2 = NextStatementMayBeReachable(stmt.Args[2]);
 				return r1 || r2;
 			}
-			else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
+			else if (stmt.CallsMin(S.SwitchStmt, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
 			{
 				// for a switch statement, assume it exits normally if a break 
 				// statement is the last statement of any of the cases, or if

@@ -4091,7 +4091,7 @@ namespace Loyc.Ecs.Parser
 												#line 317 "EcsLexerGrammar.les"
 												_type = TT.Switch;
 												#line 317 "EcsLexerGrammar.les"
-												_value = S.Switch;
+												_value = S.SwitchStmt;
 												#line default
 											} else
 												Id();

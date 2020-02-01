@@ -270,7 +270,7 @@ namespace Loyc.Ecs.Tests
 		public void BlockStmts()
 		{
 			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock,
-			// S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
+			// S.SwitchStmt, S.Try, S.Unchecked, S.UsingStmt, S.While
 			Stmt("if (Foo)\n  a();",                    F.Call(S.If, Foo, ChildStmt(F.Call(a))));
 			Stmt("if (Foo)\n  a();\nelse\n  b();",      F.Call(S.If, Foo, ChildStmt(F.Call(a)), ChildStmt(F.Call(b))));
 			var ifStmt = F.Call(S.If, Foo, ChildStmt(F.Result(a)), ChildStmt(F.Result(b)));
@@ -364,7 +364,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void Switch()
 		{
-			var stmt = F.Call(S.Switch, x, F.Braces(
+			var stmt = F.Call(S.SwitchStmt, x, F.Braces(
 				F.Call(S.Case, F.Literal(1)),
 				F.Call(S.Case, F.Literal(2)),
 				F.Call(S.GotoCase, F.Literal(3)),

@@ -604,7 +604,7 @@ namespace Loyc.Ecs.Tests
 		{
 			var tree =
 				F.Call(S.Assign, Foo, F.Call(S.Add,
-					F.Call(S.Switch, x, F.Braces(
+					F.Call(S.SwitchStmt, x, F.Braces(
 						F.Call(S.Case, a), one,
 						F.Call(S.Label, F.Id(S.Default)), zero)),
 					one));

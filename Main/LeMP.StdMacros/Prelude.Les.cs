@@ -459,7 +459,7 @@ namespace LeMP.Prelude.Les
 			"Chooses one of several code paths based on the specified 'Value'.")]
 		public static LNode @switch(LNode node, IMessageSink sink)
 		{
-			return TranslateCall(node, S.Switch);
+			return TranslateCall(node, S.SwitchStmt);
 		}
 
 		[LexicalMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)", Mode = MacroMode.MatchIdentifier)]

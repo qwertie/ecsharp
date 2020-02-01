@@ -225,7 +225,7 @@ namespace Loyc.Ecs
 						do {
 							if (AutoPrintOperator())
 								break;
-							if (style == NodeStyle.Special || _name == S.Switch)
+							if (style == NodeStyle.Special || _name == S.SwitchStmt)
 								if (AutoPrintMacroBlockCall(true))
 									break;
 							PrintPurePrefixNotation(skipAttrs: true);

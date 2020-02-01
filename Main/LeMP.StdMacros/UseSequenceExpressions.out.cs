@@ -197,7 +197,7 @@ namespace LeMP
 					VList<LNode> attrs, incs, inits;
 					if (stmt.Calls(CodeSymbols.Braces))
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
-					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.Switch, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
+					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.SwitchStmt, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
 						return ProcessBlockCallStmt(stmt, 1);
 					else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fixed, 2) && (init = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
 						init = EliminateSequenceExpressionsInExecStmt(init);

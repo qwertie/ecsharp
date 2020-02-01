@@ -46,7 +46,7 @@ namespace Loyc.Ecs
 		});
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
-			S.DoWhile, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			S.DoWhile, S.Fixed, S.Lock, S.SwitchStmt, S.UsingStmt, S.While
 		});
 		static readonly HashSet<Symbol> OtherBlockStmts = new HashSet<Symbol>(new[] {
 			S.If, S.Checked, S.For, S.ForEach, S.If, S.Try, S.Unchecked
@@ -180,7 +180,7 @@ namespace Loyc.Ecs
 			}
 			else // argCount > 1
 			{
-				bool isSwitch = _name == S.Switch;
+				bool isSwitch = _name == S.SwitchStmt;
 				if (!isSwitch && (_n.BaseStyle == NodeStyle.PrefixNotation || _o.AvoidMacroSyntax))
 					return false;
 
@@ -772,7 +772,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintTwoArgBlockStmt()
 		{
-			// S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			// S.Do, S.Fixed, S.Lock, S.SwitchStmt, S.UsingStmt, S.While
 			var type = EcsValidators.TwoArgBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;

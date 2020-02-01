@@ -314,7 +314,7 @@ namespace Loyc.Ecs.Parser
 			/ "static"     (EndId=>{_type=TT.AttrKeyword; _value = S.Static;})
 			/ "string"     (EndId=>{_type=TT.TypeKeyword; _value = S.String;})
 			/ "struct"     (EndId=>{_type=TT.Struct;      _value = S.Struct;})
-			/ "switch"     (EndId=>{_type=TT.Switch;      _value = S.Switch;})
+			/ "switch"     (EndId=>{_type=TT.Switch;      _value = S.SwitchStmt;})
 			/ "this"       (EndId=>{_type=TT.This;        _value = S.This;})
 			/ "throw"      (EndId=>{_type=TT.Throw;       _value = S.Throw;})
 			/ "true"       (EndId=>{_type=TT.Literal;     _value = G.BoxedTrue;})

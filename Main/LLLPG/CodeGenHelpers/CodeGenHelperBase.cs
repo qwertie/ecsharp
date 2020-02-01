@@ -370,7 +370,7 @@ namespace Loyc.LLParserGenerator
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 
-			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToVList()));
+			return F.Call(S.SwitchStmt, (LNode)laVar, F.Braces(stmts.ToVList()));
 		}
 		private void AddSwitchHandler(LNode branch, WList<LNode> stmts)
 		{
