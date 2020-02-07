@@ -406,9 +406,13 @@ namespace Loyc.Ecs.Parser
 			|	t:=(TT.Checked | TT.Unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
-			|	t:=(TT.Typeof | TT.Default | TT.Sizeof)
+			|	t:=(TT.Typeof | TT.Sizeof)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+			|	t:=TT.Default
+				(   args:="(" rp:=")"
+				    {r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+				/   {r = F.Id(t);})
 			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args, false, true)), F.Braces(StmtListInside(block), block.StartIndex, rb.EndIndex), 
 				            t.StartIndex, rb.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.OldStyle);}

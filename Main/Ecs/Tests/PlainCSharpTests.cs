@@ -91,6 +91,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a++ + a--",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
 			Expr("a ? b : c",           F.Call(S.QuestionMark, a, b, c));
 			Expr("a is Foo ? a as Foo : b", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
+			Expr("a == null ? default : b", F.Call(S.QuestionMark, F.Call(S.Eq, a, F.Literal(null)), _(S.Default), b));
 		}
 
 		[Test]
@@ -178,6 +179,7 @@ namespace Loyc.Ecs.Tests
 
 			Expr("default(Foo)",          F.Call(S.Default, Foo));
 			Expr("default(int)",          F.Call(S.Default, F.Int32));
+			Expr("default",               _(S.Default));
 			Expr("typeof(Foo)",           F.Call(S.Typeof, Foo));
 			Expr("typeof(int)",           F.Call(S.Typeof, F.Int32));
 			Expr("typeof(Foo<int>)",      F.Call(S.Typeof, F.Call(S.Of, Foo, F.Int32)));

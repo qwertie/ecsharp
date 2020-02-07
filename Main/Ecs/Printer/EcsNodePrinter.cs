@@ -940,7 +940,7 @@ namespace Loyc.Ecs
 
 			// Check if this is a 'normal' identifier and not a keyword:
 			char first = name.Name.TryGet(0, '\0');
-			if (first == '#' && !inSymbol) {
+			if (first < 40 && !inSymbol) {
 				// Check for keywords like #this and #int32 that should be printed without '#'
 				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
 					_out.Write("this", true);
@@ -948,6 +948,10 @@ namespace Loyc.Ecs
 				}
 				if (name == S.Base) {
 					_out.Write("base", true);
+					return;
+				}
+				if (name == S.Default) {
+					_out.Write("default", true);
 					return;
 				}
 				string keyword;
