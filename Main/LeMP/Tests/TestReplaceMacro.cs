@@ -100,13 +100,17 @@ namespace LeMP.Tests
 		}
 
 		[Test]
-		public void TestReplaceFn()
+		public void TestDefineFn()
 		{
 			TestEcs(@"replace NL() { Console.WriteLine(); } NL(); NL();",
+					@"Console.WriteLine(); Console.WriteLine();");
+			TestLes(@"define WL() { Console.WriteLine(); }; WL(); WL();",
 					@"Console.WriteLine(); Console.WriteLine();");
 			TestEcs(@"define Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
 					@"void F(int arg) {} void G(int arg) {} void F(List<int> arg) {} void G(List<int> arg) {}");
 			TestEcs(@"define WL($format, $(..args)) => Console.WriteLine($format, $(..args)); WL(1, 2, 3);",
+					@"Console.WriteLine(1, 2, 3);");
+			TestLes(@"define WL($format, $(..args)) { Console.WriteLine($format, $(..args)); }; WL(1, 2, 3);",
 					@"Console.WriteLine(1, 2, 3);");
 			TestEcs(@"[Passive] define operator=(Foo[$index], $value) => Foo.SetAt($index, $value); x = Foo[y] = z;",
 					@"x = Foo.SetAt(y, z);");
