@@ -341,7 +341,7 @@ namespace Loyc.Syntax.Les {
 				// line 163
 				e = MarkCall(F.Call(e, list, e.Range.StartIndex, c.EndIndex));
 				if ((endMarker == TT.Semicolon)) {
-					e.Style = NodeStyle.Statement | NodeStyle.Alternate;
+					e.Style = NodeStyle.StatementBlock | NodeStyle.Alternate;
 				}
 			} else {
 				// line 167
@@ -438,7 +438,7 @@ namespace Loyc.Syntax.Les {
 					var list = StmtList();
 					c = Match((int) TT.RBrace);
 					// line 202
-					result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);
+					result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.StatementBlock);
 				}
 				break;
 			case TT.LBrack:

@@ -186,7 +186,7 @@ namespace Loyc.Syntax.Les
 			Exact("x * 2 + 1",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
 			Exact("a + b + 1",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("a = b = 0",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
-			Exact("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
+			Exact("a == b && c != 0", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.NotEq, c, zero)));
 			Exact("(a ? b : c)",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Exact("a ?? b <= c",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
 			Exact("a - b / c**2", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
@@ -334,7 +334,7 @@ namespace Loyc.Syntax.Les
 			Exact("a <| b <| c |> b |> a", F.Call("'|>", F.Call("'|>", F.Call("'<|", F.Call("'<|", a, b), c), b), a));
 			//Exact("a >< b keyword c >|< x", F.Call("'><", a, F.Call("'keyword", b, F.Call("'>|<", c, x))));
 			Exact("a <~ b foo~ c ~> x",  F.Call("'~>", F.Call("'foo~", F.Call("'<~", a, b), c), x));
-			Exact("a <~ b != c ~> x",    F.Call(S.Neq, F.Call("'<~", a, b), F.Call("'~>", c, x)));
+			Exact("a <~ b != c ~> x",    F.Call(S.NotEq, F.Call("'<~", a, b), F.Call("'~>", c, x)));
 			Exact("a : b :> c <: x",     F.Call(S.Colon, a, F.Call("':>", b, F.Call("'<:", c, x))));
 			Exact("a ~> b -> c <~ x",    F.Call("'->", F.Call("'~>", a, b), F.Call("'<~", c, x)));
 			Exact("a -> b :> c <- x",    F.Call("':>", F.Call("'->", a, b), F.Call("'<-", c, x)));

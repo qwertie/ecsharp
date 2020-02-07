@@ -89,7 +89,7 @@ namespace LeMP
 							// needed. They are added just in case the handler declares a 
 							// variable and a different handler declares another variable 
 							// by the same name, which is illegal unless we add braces.
-							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.Statement));
+							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.StatementBlock));
 							if (next_i < contents.Count)
 								context.Sink.Error(contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}

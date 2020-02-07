@@ -40,13 +40,13 @@ namespace LeMP.CSharp6
 			LNode condition, thenExpr;
 			if (StandardMacros.LooksLikeSimpleValue(leftSide))
 			{
-				condition = F.Call(S.Neq, leftSide, F.@null);
+				condition = F.Call(S.NotEq, leftSide, F.@null);
 				thenExpr = ConvertToNormalDot(leftSide, rightSide);
 			}
 			else
 			{
 				LNode tempVar = F.Id(StandardMacros.NextTempName(context, leftSide));
-				condition = F.Call(S.Neq, F.Var(F.Missing, tempVar, leftSide), F.@null);
+				condition = F.Call(S.NotEq, F.Var(F.Missing, tempVar, leftSide), F.@null);
 				thenExpr = ConvertToNormalDot(tempVar, rightSide);
 			}
 			return F.InParens(F.Call(S.QuestionMark, condition, thenExpr, F.Null));

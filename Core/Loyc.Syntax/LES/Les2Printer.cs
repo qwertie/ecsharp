@@ -209,7 +209,7 @@ namespace Loyc.Syntax.Les
 			var name = node.Name;
 			if ((name == S.Array || name == S.Braces) && node.IsCall() && !HasPAttrs(node.Target)) {
 				if (name == S.Array) {
-					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "[", ']', node.Target);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "[", ']', node.Target);
 					return true;
 				} else if (name == S.Braces) {
 					PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', node.Target);
@@ -263,7 +263,7 @@ namespace Loyc.Syntax.Les
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
 					Print(node.Target, LesPrecedence.Primary.LeftContext(context), "(");
-					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "", ')', null);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "", ')', null);
 					break;
 			}
 		}

@@ -64,7 +64,7 @@ namespace Loyc.Ecs
 			P(S.LE, EP.Compare),       P(S.GE, EP.Compare),
 			P(S.LT, EP.Compare),       P(S.GT, EP.Compare),
 			P(S.Is, EP.IsAsUsing),     P(S.As, EP.IsAsUsing),   P(S.UsingCast, EP.IsAsUsing),
-			P(S.Eq, EP.Equals),        P(S.Neq, EP.Equals),     P(S.In, EP.Equals),
+			P(S.Eq, EP.Equals),        P(S.NotEq, EP.Equals),     P(S.In, EP.Equals),
 			P(S.AndBits, EP.AndBits),  P(S.XorBits, EP.XorBits),  P(S.OrBits, EP.OrBits), 
 			P(S.And, EP.And),          P(S.Or, EP.Or),            P(S.Xor, EP.Or),
 			P(S.Assign, EP.Assign),    P(S.MulAssign, EP.Assign),      P(S.DivAssign, EP.Assign),
@@ -554,7 +554,7 @@ namespace Loyc.Ecs
 				// Code quote operator has been REMOVED from EC#, in favor of #quote(...), at least for now.
 				//Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
 				//_out.Write(name == S.CodeQuote ? "@" : "@@", false);
-				braceMode = _n.BaseStyle == NodeStyle.Statement && (_flags & Ambiguity.NoBracedBlock) == 0;
+				braceMode = _n.BaseStyle == NodeStyle.StatementBlock && (_flags & Ambiguity.NoBracedBlock) == 0;
 				_flags = 0;
 			}
 

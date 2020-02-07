@@ -1,6 +1,8 @@
+using Loyc.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace Loyc.Syntax
@@ -38,7 +40,8 @@ namespace Loyc.Syntax
 		/// located.</summary>
 		/// <remarks>Used to mark braced blocks. In LES, marks a call in which ';'
 		/// is used as the argument separator.</remarks>
-		Statement = 2,
+		StatementBlock = 2,
+		[Obsolete("This was renamed to StatementBlock")] Statement = 2,
 		/// <summary>A language-specific special notation should be used for this
 		/// node. In LESv3, the parser puts this style on block call nodes (e.g. 
 		/// <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
@@ -81,20 +84,19 @@ namespace Loyc.Syntax
 		/// style for X => Y; it forces parens and braces as a side-effect.</summary>
 		Alternate = 16,
 		
-		/// <summary>Injected trivia (see <see cref="AbstractTriviaInjector{Trivia}"/>) 
-		/// will have this bit set.</summary>
-		InjectedTrivia = 32,
+		/// <summary>Reserved for use by specific compilers/languages.</summary>
+		InternalFlag = 32,
 
 		/// <summary>Indicates that the there is no comment or newline trivia associated
 		/// with the children of this node, and therefore when printing this node,
 		/// automatic newlines can be suppressed.</summary>
 		OneLiner = 64,
 
-		/// <summary>Indicates that some part of a compiler has seen the node and 
-		/// done something with it.</summary>
+		/// <summary>Indicates that some part of a compiler, or a macro, has seen 
+		/// the node and done something with it.</summary>
 		/// <remarks>The motivation for this flag relates to compilers that allow 
-		/// user-defined attributes for plug-ins that add functionality. For 
-		/// example, internationalization plug-in might notice a language marker:
+		/// user-defined attributes for plug-ins or macros that add functionality. 
+		/// For example, internationalization plug-in might notice a language marker:
 		/// <code>
 		///    MessageBox.Show([en] "Hello, World!");
 		/// </code>
@@ -107,10 +109,10 @@ namespace Loyc.Syntax
 		/// <para/>
 		/// Remember that the same node can theoretically appear in multiple
 		/// places in a syntax tree, which typically happens when a statement or
-		/// expression is duplicated by a macro, without being changed. Remember 
-		/// that when a style is changed on such a node, the change is visible at 
-		/// all locations where the same node is used. However, style flags are
-		/// not synchronized between copies of a node.
+		/// expression is duplicated by a macro, without being changed. When a 
+		/// style is changed on such a node, the change is visible at all locations 
+		/// where the same node is used. However, style flags are not synchronized 
+		/// between copies of a node.
 		/// </remarks>
 		Handled = 128,
 	}

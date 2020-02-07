@@ -159,11 +159,11 @@ namespace LeMP.Les3.To.CSharp
 						LNode set = ToCSharpGetOrSet(setExpr, sy_set);
 						LNode body;
 						if (setExpr == null)
-							body = LNode.Call(CodeSymbols.Braces, LNode.List(get)).SetStyle(NodeStyle.Statement);
+							body = LNode.Call(CodeSymbols.Braces, LNode.List(get)).SetStyle(NodeStyle.StatementBlock);
 						else if (getExpr == null)
-							body = LNode.Call(CodeSymbols.Braces, LNode.List(set)).SetStyle(NodeStyle.Statement);
+							body = LNode.Call(CodeSymbols.Braces, LNode.List(set)).SetStyle(NodeStyle.StatementBlock);
 						else
-							body = LNode.Call(CodeSymbols.Braces, LNode.List(get, set)).SetStyle(NodeStyle.Statement);
+							body = LNode.Call(CodeSymbols.Braces, LNode.List(get, set)).SetStyle(NodeStyle.StatementBlock);
 					
 						// Detect indexer (e.g. this[index: int])
 						LNode args = LNode.Missing;

@@ -216,7 +216,7 @@ namespace Loyc.Ecs.Parser
 		/ "=="  { _type = TT.EqNeq; _value = S.Eq; }
 		/ "=>"  { _type = TT.LambdaArrow; _value = S.Lambda; }
 		/ "="   { _type = TT.Set; _value = S.Assign; }
-		| "!="  { _type = TT.EqNeq; _value = S.Neq; }
+		| "!="  { _type = TT.EqNeq; _value = S.NotEq; }
 		/ "!"   { _type = TT.Not; _value = S.Not; }
 		| "~="  { _type = TT.CompoundSet; _value = S.ConcatAssign; }
 		/ "~"   { _type = TT.NotBits; _value = S.NotBits; }

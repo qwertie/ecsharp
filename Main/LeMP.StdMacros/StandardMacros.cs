@@ -325,7 +325,7 @@ namespace LeMP
 							return F.True;
 						else
 							return ReduceBooleanExpr(node[1]);
-					if (n == S.Eq || n == S.Neq) {
+					if (n == S.Eq || n == S.NotEq) {
 						var rhs = ReduceBooleanExpr(node[1]);
 						if (rhs.Value is bool)
 							if ((((bool)lhs.Value) == ((bool)rhs.Value)) == (n == S.Eq))

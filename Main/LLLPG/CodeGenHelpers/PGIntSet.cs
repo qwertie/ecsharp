@@ -192,7 +192,7 @@ namespace Loyc.LLParserGenerator
 					if (result == null)
 						return F.@true;
 					if (result.Calls(S.Eq))
-						result = result.WithTarget(S.Neq);
+						result = result.WithTarget(S.NotEq);
 					else
 						result = F.Call(S.Not, F.InParens(result));
 				}

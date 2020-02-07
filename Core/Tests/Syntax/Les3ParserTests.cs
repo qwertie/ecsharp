@@ -19,7 +19,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 0, "a & b | c;",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), c));
 			Test(Mode.Expr, 1, "x & Foo == 0;", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
 			Test(Mode.Expr, 1, "0 == x & Foo;", F.Call(S.Eq, zero, F.Call(S.AndBits, x, Foo)));
-			Test(Mode.Expr, 1, "x | 1 != 1",    F.Call(S.Neq, F.Call(S.OrBits, x, one), one));
+			Test(Mode.Expr, 1, "x | 1 != 1",    F.Call(S.NotEq, F.Call(S.OrBits, x, one), one));
 			Test(Mode.Expr, 1, "x ^ a >= 1",    F.Call(S.GE, F.Call(S.XorBits, x, a), one));
 			Test(Mode.Expr, 1, "x >> a + 1;",   F.Call(S.Add, F.Call(S.Shr, x, a), one));
 			Test(Mode.Expr, 1, "x << 1 - 1",    F.Call(S.Sub, F.Call(S.Shl, x, one), one));

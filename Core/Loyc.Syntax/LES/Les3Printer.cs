@@ -753,7 +753,7 @@ namespace Loyc.Syntax.Les
 			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Operator:
-				case NodeStyle.Statement:
+				case NodeStyle.StatementBlock:
 				case NodeStyle.Default:
 					// Figure out if this node can be treated as an operator and if 
 					// so, whether it's a suffix operator.

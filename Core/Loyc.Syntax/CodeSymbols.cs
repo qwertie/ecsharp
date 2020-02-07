@@ -11,6 +11,18 @@ namespace Loyc.Syntax
 	/// A list of common symbols that have special meaning somewhere in Loyc or EC#:
 	/// operators, built-in data types, keywords, trivia, etc.
 	/// </summary>
+	/// <remarks>
+	/// Code that can use symbol forms directly, such as "'!=", tends to be very compact.
+	/// The symbols in this class tend to be abbreviated in order to make usages of this 
+	/// class more compact (e.g. <see cref="NotEq"/> is short like its corresponding 
+	/// symbol "'!="). In C# one can access these symbols more easily with 
+	/// <c>using static Loyc.Syntax.CodeSymbols</c> or with
+	/// <c>using S = Loyc.Syntax.CodeSymbols</c> as the Loyc codebase does.
+	/// <para/>
+	/// Some symbols have an alternate name that starts with an underscore. For example,
+	/// <c>_Negate</c> represents the unary minus operator, but in fact it is the same
+	/// symbol as the subtraction operator <c>Sub</c>, <c>'-</c>.
+	/// </remarks>
 	public partial class CodeSymbols
 	{
 		// Plain C# operators (node names)
@@ -31,6 +43,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Or = GSymbol.Get("'||");    //!< "||" Logical short-circuit 'or' operator
 		public static readonly Symbol Xor = GSymbol.Get("'^^");   //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
 		public static readonly Symbol Eq = GSymbol.Get("'==");    //!< "==" Equality test operator
+		public static readonly Symbol NotEq = GSymbol.Get("'!="); //!< "!=" Inequality test operator
+		[Obsolete("Use NotEq instead")]
 		public static readonly Symbol Neq = GSymbol.Get("'!=");   //!< "!=" Inequality test operator
 		public static readonly Symbol GT = GSymbol.Get("'>");     //!< ">"  Greater-than operator
 		public static readonly Symbol GE = GSymbol.Get("'>=");    //!< ">=" Greater-than-or-equal-to operator

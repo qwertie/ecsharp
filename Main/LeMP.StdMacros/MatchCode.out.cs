@@ -209,7 +209,7 @@ namespace LeMP
 							AddVar(nodeVar, isParams, errAt: pattern);
 						if (!isParams) {
 							var assignment = LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(nodeVar), candidate)).SetStyle(NodeStyle.Operator);
-							Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(assignment.PlusAttrs(LNode.List(LNode.InParensTrivia)), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
+							Tests.Add(LNode.Call(CodeSymbols.NotEq, LNode.List(assignment.PlusAttrs(LNode.List(LNode.InParensTrivia)), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 							Tests.Add(condition);
 						}
 					}
@@ -267,7 +267,7 @@ namespace LeMP
 					var targetTmp = NextTempName(Context);
 					var targetTmpId = F.Id(targetTmp);
 					AddVar(targetTmp, false, errAt: candidate);
-					Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(targetTmpId, candidate)).SetStyle(NodeStyle.Operator), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
+					Tests.Add(LNode.Call(CodeSymbols.NotEq, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(targetTmpId, candidate)).SetStyle(NodeStyle.Operator), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 					return targetTmpId;
 				} else {
 					return candidate;

@@ -63,7 +63,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a * b / c % 2",    F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
 			Expr("a >= b && a <= c", F.Call(S.And, F.Call(S.GE, a, b), F.Call(S.LE, a, c)));
 			Expr("a > b || a < c",   F.Call(S.Or, F.Call(S.GT, a, b), F.Call(S.LT, a, c)));
-			Expr("a == b ^^ a != c", F.Call(S.Xor, F.Call(S.Eq, a, b), F.Call(S.Neq, a, c)));
+			Expr("a == b ^^ a != c", F.Call(S.Xor, F.Call(S.Eq, a, b), F.Call(S.NotEq, a, c)));
 			Expr("a & b | c ^ 1",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), F.Call(S.XorBits, c, one)));
 			Expr("a = b ?? c",       F.Call(S.Assign, a, F.Call(S.NullCoalesce, b, c)));
 			Expr("a >>= b <<= c",    F.Call(S.ShrAssign, a, F.Call(S.ShlAssign, b, c)));
@@ -525,9 +525,9 @@ namespace Loyc.Ecs.Tests
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Fn(Attr(Foo, F.Bool),
-			             Attr(trivia_operator, _(S.Neq)),
+			             Attr(trivia_operator, _(S.NotEq)),
 			             F.List(F.Vars(T, a), F.Vars(T, b)),
-			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
+			             F.Braces(F.Result(F.Call(S.NotEq, F.Dot(a, x), F.Dot(b, x))))));
 			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b) {\n  a.x != b.x\n}", stmt);
 
 		}
@@ -537,7 +537,7 @@ namespace Loyc.Ecs.Tests
 		{
 			LNode stmt = Attr(F.Public, @static, 
 				F.Fn(F.Bool, Attr(trivia_operator, F.True), F.List(F.Var(Foo, x)), F.Braces(
-					F.Call(S.Return, F.Call(S.Neq, x, F.Null)))));
+					F.Call(S.Return, F.Call(S.NotEq, x, F.Null)))));
 			Stmt("public static bool operator true(Foo x) {\n  return x != null;\n}", stmt);
 			stmt = F.Fn(F.Bool, Attr(trivia_operator, F.False), F.List(F.Var(Foo, x)), F.Braces(
 					F.Call(S.Return, F.Call(S.Eq, x, F.Null)))).WithAttrs(stmt.Attrs);

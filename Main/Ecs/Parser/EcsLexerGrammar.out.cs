@@ -1500,7 +1500,7 @@ namespace Loyc.Ecs.Parser
 							#line 219 "EcsLexerGrammar.les"
 							_type = TT.EqNeq;
 							#line 219 "EcsLexerGrammar.les"
-							_value = S.Neq;
+							_value = S.NotEq;
 							#line default
 						} else {
 							Skip();

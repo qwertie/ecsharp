@@ -831,7 +831,7 @@ namespace Loyc.Syntax.Les
 			stmts = ExprList(ref endMarker, isBracedBlock: true);
 			lit_rcub = Match((int) TT.RBrace);
 			// line 331
-			return F.Call(S.Braces, stmts, lit_lcub.StartIndex, lit_rcub.EndIndex, lit_lcub.StartIndex, lit_lcub.EndIndex).SetStyle(NodeStyle.Statement);
+			return F.Call(S.Braces, stmts, lit_lcub.StartIndex, lit_rcub.EndIndex, lit_lcub.StartIndex, lit_lcub.EndIndex).SetStyle(NodeStyle.StatementBlock);
 		}
 	
 		Token ContinuatorKeyword()
