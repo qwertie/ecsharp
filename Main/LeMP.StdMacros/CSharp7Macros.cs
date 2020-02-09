@@ -6,12 +6,21 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
-using Loyc.Math;
+using Loyc.Ecs;
 
-namespace LeMP
+namespace LeMP.CSharp7.To.OlderVersions
 {
-	public partial class StandardMacros
+	[ContainsMacros]
+	public class TupleMacros
 	{
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
+
+		static LNode Reject(IMessageSink sink, LNode at, string msg)
+		{
+			sink.Write(Severity.Error, at, msg);
+			return null;
+		}
+
 		static readonly Symbol TupleMakers = (Symbol)"StandardMacros.TupleMakers";
 		static readonly Symbol DefaultTupleMaker = (Symbol)"StandardMacros.DefaultTupleMaker";
 		static readonly LNode id_Tuple = LNode.Id("Tuple"), Tuple_Create = LNode.Call(S.Dot, new VList<LNode>(id_Tuple, LNode.Id("Create")));
@@ -69,12 +78,13 @@ namespace LeMP
 			return F.Call(S.Splice);
 		}
 
-		[LexicalMacro("#<x, y, ...>", "Represents a tuple type",
+		[LexicalMacro("#<x, y, ...>", "Represents a Tuple type. Obsolete: use C# 7 tuple syntax instead.",
 			"'of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode TupleType(LNode node, IMacroContext context)
 		{
 			var stem = node.Args[0, F.Missing];
-			if (stem.IsId && (stem.Name == S.AltList || stem.Name == S.Tuple)) {
+			if (stem.IsId && (stem.Name == S.AltList || stem.Name == S.Tuple))
+			{
 				var tupleMakers = MaybeInitTupleMakers(context.ScopedProperties);
 				
 				var bareType = tupleMakers.TryGet(node.Args.Count - 1, new Pair<LNode, LNode>()).A;
@@ -116,7 +126,7 @@ namespace LeMP
 				var rhs = a[1];
 				
 				// Avoid evaluating rhs more than once, if it doesn't look like a simple variable
-				rhs = MaybeAddTempVarDecl(context, rhs, output);
+				rhs = StandardMacros.MaybeAddTempVarDecl(context, rhs, output);
 
 				for (int i = 0; i < tuple.Count; i++) {
 					var itemi = F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))));

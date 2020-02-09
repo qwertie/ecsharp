@@ -85,7 +85,7 @@ namespace Loyc.Ecs
 		Precedence _context;
 		Ambiguity _flags;
 		INodePrinterWriter _out;
-		Symbol _spaceName; // for detecting constructor ambiguity
+		Symbol _spaceName; // for detecting constructor ambiguity (= S.Fn inside functions)
 		IMessageSink _errors;
 
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
@@ -387,7 +387,9 @@ namespace Loyc.Ecs
 			/// <summary>The current statement is the last one in the enclosing 
 			/// block, so #result can be represented by omitting a semicolon.</summary>
 			FinalStmt = 0x0010,
-			/// <summary>An expression is being printed in a context where a type is expected.</summary>
+			/// <summary>The "expression" being printed is a type, or part of a type,
+			/// which may have special printing rules (e.g. consider <c>Foo?[]</c>, 
+			/// <c>List&lt;(X,Y)></c>.</summary>
 			TypeContext = 0x0020,
 			/// <summary>The expression being printed is a complex identifier that
 			/// may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
@@ -650,10 +652,13 @@ namespace Loyc.Ecs
 			bool mayNeedParens  = !_context.RangeEquals(StartExpr) && !beginningOfStmt;
 			bool dropMostAttrs = false;
 			if (_o.DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
-				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
-				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
-					dropMostAttrs = true;
-			} else if (mayNeedParens && Flagged(Ambiguity.NoParentheses))
+				if (!beginningOfStmt || _spaceName == S.Fn) {
+					// Careful: don't drop attributes from things that look like macro calls
+					if (!(beginningOfStmt && _n.ArgCount > 0 && _n.Args.Last.Calls(S.Braces)))
+						dropMostAttrs = true;
+				}
+			}
+			else if (mayNeedParens && Flagged(Ambiguity.NoParentheses))
 				dropMostAttrs = true; // e.g. this happens for a method's return type
 
 			int parenCount = 0;
@@ -743,7 +748,7 @@ namespace Loyc.Ecs
 				} else if (!dropMostAttrs || name == S.Yield) {
 					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 					Debug.Assert(attr.HasSpecialName);
-					PrintSimpleIdent(GSymbol.Get(name.Name.Substring(1)), 0, false);
+					PrintSimpleIdent(GSymbol.Get(name.Name.Substring(1)), 0);
 				}
 
 				Space(SpaceOpt.Default);
@@ -893,20 +898,17 @@ namespace Loyc.Ecs
 				_staticStringBuilder.Length = 0; // Clear() is new in .NET 4
 			}
 		}
-		public static string PrintId(Symbol name, bool useOperatorKeyword = false)
+
+		public enum IdPrintMode { Normal, Symbol, Operator, Verbatim };
+
+		public static string PrintId(Symbol name, IdPrintMode mode = IdPrintMode.Normal)
 		{
 			InitStaticInstance();
-			_staticPrinter.PrintSimpleIdent(name, 0, false, useOperatorKeyword);
+			_staticPrinter.PrintSimpleIdent(name, 0, mode);
 			return _staticStringBuilder.ToString();
 		}
 
-		public static string PrintSymbolLiteral(Symbol name)
-		{
-			InitStaticInstance();
-			_staticStringBuilder.Append("@@");
-			_staticPrinter.PrintSimpleIdent(name, 0, true);
-			return _staticStringBuilder.ToString();
-		}
+		public static string PrintSymbolLiteral(Symbol name) => PrintId(name, IdPrintMode.Symbol);
 
 		public static string PrintLiteral(object value, NodeStyle style)
 		{
@@ -924,9 +926,9 @@ namespace Loyc.Ecs
 			return _staticStringBuilder.ToString();
 		}
 
-		private void PrintSimpleIdent(Symbol name, Ambiguity flags, bool inSymbol = false, bool useOperatorKeyword = false)
+		private void PrintSimpleIdent(Symbol name, Ambiguity flags, IdPrintMode mode = IdPrintMode.Normal)
 		{
-			if (useOperatorKeyword)
+			if (mode == IdPrintMode.Operator)
 			{
 				_out.Write("operator", true);
 				Space(SpaceOpt.AfterOperatorKeyword);
@@ -940,8 +942,8 @@ namespace Loyc.Ecs
 
 			// Check if this is a 'normal' identifier and not a keyword:
 			char first = name.Name.TryGet(0, '\0');
-			if (first < 40 && !inSymbol) {
-				// Check for keywords like #this and #int32 that should be printed without '#'
+			if (first < 40 && mode == IdPrintMode.Normal)
+			{	// Check for keywords like #this and #int32 that should be printed without '#'
 				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
 					_out.Write("this", true);
 					return;
@@ -961,13 +963,19 @@ namespace Loyc.Ecs
 				}
 			}
 
-			if (_o.PreferPlainCSharp && !inSymbol) {
+			if (mode == IdPrintMode.Symbol)
+			{
+				_out.Write("@@", false);
+			}
+			else if (_o.PreferPlainCSharp)
+			{
 				if (!EcsValidators.IsPlainCsIdentifier(name.Name))
 					name = (Symbol)EcsValidators.SanitizeIdentifier(name.Name);
 			}
 
-			if (name.Name == "") {
-				_out.Write(inSymbol ? "``" : "@``", true);
+			if (name.Name == "")
+			{
+				_out.Write(mode == IdPrintMode.Symbol ? "``" : "@``", true);
 				return;
 			}
 
@@ -977,7 +985,7 @@ namespace Loyc.Ecs
 				char c = name.Name[i];
 				if (!EcsValidators.IsIdentContChar(c)) {
 					// Backquote required for this identifier.
-					if (!inSymbol)
+					if (mode != IdPrintMode.Symbol)
 						_out.Write("@", false);
 					PrintString(name.Name, '`', null, true);
 					return;
@@ -985,8 +993,9 @@ namespace Loyc.Ecs
 			}
 			
 			// Print @ if needed, then the identifier
-			if (!inSymbol) {
-				if (!EcsValidators.IsIdentStartChar(first) || PreprocessorCollisions.Contains(name) || CsKeywords.Contains(name) || name == Var || name == Def)
+			if (mode != IdPrintMode.Symbol)
+			{
+				if (mode == IdPrintMode.Verbatim || !EcsValidators.IsIdentStartChar(first) || PreprocessorCollisions.Contains(name) || CsKeywords.Contains(name))
 					_out.Write("@", false);
 			}
 			_out.Write(name.Name, true);
@@ -1042,8 +1051,7 @@ namespace Loyc.Ecs
 				np.PrintString(n.Value.ToString(), '"', v, true);
 			}),
 			P<Symbol> (np => {
-				np._out.Write("@@", false);
-				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
+				np.PrintSimpleIdent((Symbol)np._n.Value, 0, IdPrintMode.Symbol);
 			}),
 			P<TokenTree> (np => {
 				np._out.Write("@{", true);
@@ -1148,11 +1156,12 @@ namespace Loyc.Ecs
 			// #fn([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
 		// For internal use
 		DisallowDotted = 8, // inside right-hand side of dot
+		DisallowColonColon = 16, // inside right-hand side of `::`
 		InOf = 32,          // inside <...>
 		// hmm
 		AllowAnyExprInOf = 64,
-		// Allows in out, e.g. Foo<in A, out B, c>, but requires type params 
-		// to be simple (e.g. Foo<A.B, C<D>> is illegal)
+		// Allows in out, e.g. IFoo<in A, out B, c>, but requires type params 
+		// to be simple (e.g. IFoo<A.B, C<D>> is illegal)
 		NameDefinition = 128,
 		// allows parentheses around the outside of the complex identifier.
 		AllowParensAround = 256,
@@ -1315,11 +1324,12 @@ namespace Loyc.Ecs
 		/// </remarks>
 		public bool AllowExtraBraceForIfElseAmbig { get; set; }
 
-		/// <summary>Suppresses printing of all attributes that are not on 
-		/// declaration or definition statements (such as classes, methods and 
-		/// variable declarations at statement level). Also, avoids prefix notation 
-		/// when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
-		/// can be printed "a+b" instead.</summary>
+		/// <summary>Suppresses printing of attributes inside methods and inside
+		/// subexpressions, except on declaration or definition statements where
+		/// attributes are normally allowed (such as classes, methods and generic
+		/// type parameters). This option also avoids prefix notation when the 
+		/// attributes would have required it, e.g. <c>@+([Foo] a, b)</c> can be 
+		/// printed "a + b" instead.</summary>
 		public bool DropNonDeclarationAttributes { get; set; }
 
 		/// <summary>When an argument to a method or macro has an empty name (@``),

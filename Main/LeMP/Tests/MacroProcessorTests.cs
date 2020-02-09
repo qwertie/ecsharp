@@ -211,7 +211,7 @@ namespace LeMP
 			Test("{ x::Foo; y::int; }",
 				"{ Foo x; @int y; }", 1);
 			Test("@[static] fn Main()::void { var x::int = `default` int; }",
-				"[@static] @void Main() { @var(x::@int = @default(@int)); }", 1);
+				"[@static] @void Main() { var(x::@int = @default(@int)); }", 1);
 			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { @int x = @default(@int); }", 2);
 			Test("@[static] fn Main()::void { var x::int = `default` int; }",

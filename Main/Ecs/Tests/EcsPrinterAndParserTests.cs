@@ -70,11 +70,17 @@ namespace Loyc.Ecs.Tests
 		// Allows a particular test to exclude the printer or the parser
 		[Flags]
 		protected enum Mode {
-			PrinterTest = 1, ParserTest = 2, Both = 3,
-			Expression = 4,
-			PrintBothParseFirst = 8, // for Option()
+			PrinterTest = 1, // Avoids parsing
+			ParserTest = 2,  // Avoids printing
+			Both = 3,        // Print & Parse (normal)
+			Expression = 4,  // Expression mode flag (no semicolon, definitions not supported)
+			// for Option(): print/parse the first string with default settings, but expect 
+			// the printer to produce the second string after the configuration is applied
+			PrintBothParseFirst = 8,
+			// A parse error is expected and should be ignored (fails if no error occurs)
 			ExpectAndDropParserError = 16,
-			IgnoreTrivia = 32, // Remove trivia when parsing
+			// Remove trivia when parsing
+			IgnoreTrivia = 32,
 		};
 
 		// The tests were originally designed for printer tests, so they take
@@ -100,11 +106,11 @@ namespace Loyc.Ecs.Tests
 			Stmt(after, code, configure, (mode & Mode.PrintBothParseFirst) != 0 ? Mode.PrinterTest : mode);
 		}
 
-		protected LNode Attr(LNode attr, LNode node)
+		protected static LNode Attr(LNode attr, LNode node)
 		{
 			return node.WithAttrs(node.Attrs.Insert(0, attr));
 		}
-		protected LNode Attr(params LNode[] attrsAndNode)
+		protected static LNode Attr(params LNode[] attrsAndNode)
 		{
 			LNode node = attrsAndNode[attrsAndNode.Length - 1];
 			var attrs = node.Attrs;

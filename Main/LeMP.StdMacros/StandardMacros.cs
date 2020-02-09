@@ -14,7 +14,7 @@ namespace LeMP
 {
 	/// <summary>
 	/// Standard macros, such as unroll() and replace() that can work in all Loyc languages.
-	/// Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+	/// Also includes macros designed to convert EC#-only features to C# (e.g. quick::binding).
 	/// </summary>
 	[ContainsMacros]
 	public partial class StandardMacros
@@ -52,7 +52,7 @@ namespace LeMP
 		// declaration in `output` of a temporary variable to hold the value. 
 		// If `value` looks simple (according to LooksLikeSimpleValue), this 
 		// fn returns value and leaves output unchanged.
-		protected static LNode MaybeAddTempVarDecl(IMacroContext ctx, LNode value, WList<LNode> output)
+		protected internal static LNode MaybeAddTempVarDecl(IMacroContext ctx, LNode value, WList<LNode> output)
 		{
 			if (!LooksLikeSimpleValue(value)) {
 				LNode tmpId;

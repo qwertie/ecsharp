@@ -202,7 +202,7 @@ namespace Loyc.Ecs.Parser
 		// but in "A B<x>()" it is a return type. The same difficulty exists
 		// in case of alternate generics specifiers such as "A B!(x)" and types
 		// with suffixes, like "A int?*".
-		// 
+		//
 		// Note: DetectStatementCategory() is allowed to (mis)categorize "this int x" as an
 		// IdStmt, so extension method parameters can't have word attributes.
 		StmtCat DetectStatementCategory(out int wordAttrCount, DetectionMode mode)
@@ -225,6 +225,8 @@ namespace Loyc.Ecs.Parser
 						if (la1 != TT.QuestionMark && la1 != TT.LT && la1 != TT.Mul && la1 != TT.Power) { 
 							return StmtCat.IdStmt;
 						}
+					} else if (la1k == TokenKind.LParen && LA(3) == TT.Semicolon) {
+						return StmtCat.IdStmt; // Method();
 					}
 				}
 
@@ -247,17 +249,17 @@ namespace Loyc.Ecs.Parser
 			int consecutiveWords = InputPosition - wordsStartAt;
 			if (LA0 == TT.TypeKeyword)
 			{
-				// We can treat this as if it were one additional identifier, 
+				// The rest of this method expects this to be treated as if it were an extra word, 
 				// although it cannot be treated as a word attribute.
 				InputPosition++;
 				consecutiveWords++;
 			}
 			else if (LA0 == TT.Substitute)
 			{
-				// We can treat this as if it were one additional identifier, 
+				// The rest of this method expects this to be treated as if it were an extra word, 
 				// although it cannot be treated as a word attribute.
 				var la1 = LA(1);
-				if ((LA(1) == TT.LParen && LA(2) == TT.RParen))
+				if (LA(1) == TT.LParen && LA(2) == TT.RParen)
 				{
 					InputPosition += 3;
 				}
@@ -304,12 +306,9 @@ namespace Loyc.Ecs.Parser
 					}
 				}
 			}
-			else if (consecutiveWords == 0)
+			else if (consecutiveWords == 0 && !haveNew && LA0 != TT.LParen)
 			{
-				if (!haveNew)
-				{
-					return StmtCat.OtherStmt;
-				}
+				return StmtCat.OtherStmt;
 			}
 
 			// At this point we know it's not a "keyword statement" or "this constructor",
@@ -342,7 +341,8 @@ namespace Loyc.Ecs.Parser
 				return StmtCat.MethodOrPropOrVar;
 			}
 
-			// Worst case: need arbitrary lookahead to detect var/property/method
+			// At this point we're sure there are no word attributes, but it's the
+			// hardest case: we need arbitrary lookahead to detect var/property/method
 			InputPosition = wordsStartAt;
 			using (new SavePosition(this, 0))
 			{

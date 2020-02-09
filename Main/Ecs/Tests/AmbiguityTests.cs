@@ -114,7 +114,7 @@ namespace Loyc.Ecs.Tests
 			                                          F.Dot(F.Call(Foo), x))));
 			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
 			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
-			Stmt("class Foo {\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
+			Stmt("class Foo {\n  Foo();\n}",     F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
 			Stmt("class Foo {\n  Foo() {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
 			Stmt("class Foo {\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                     F.Call(S.Constructor, F.Missing, IFoo, F.List()))));

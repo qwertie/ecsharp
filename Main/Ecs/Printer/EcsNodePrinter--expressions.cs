@@ -204,7 +204,7 @@ namespace Loyc.Ecs
 					if (_o.AllowChangeParentheses || _context.Left > EP.Primary.Left) {
 						PrintWithinParens(ParenFor.Grouping, _n);
 						return;
-					} else
+					} else if (!_o.DropNonDeclarationAttributes)
 						_flags |= Ambiguity.ForceAttributeList;
 				}
 
@@ -214,10 +214,12 @@ namespace Loyc.Ecs
 				else {
 					int inParens;
 					if (IsVariableDecl(false, true)) {
-						if (!Flagged(Ambiguity.AllowUnassignedVarDecl) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
-							_flags |= Ambiguity.ForceAttributeList;
-						else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
-							_flags |= Ambiguity.ForceAttributeList;
+						if (!_o.DropNonDeclarationAttributes) {
+							if (!Flagged(Ambiguity.AllowUnassignedVarDecl | Ambiguity.TypeContext) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
+								_flags |= Ambiguity.ForceAttributeList;
+							else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
+								_flags |= Ambiguity.ForceAttributeList;
+						}
 						inParens = PrintAttrs(AttrStyle.IsDefinition);
 						PrintVariableDecl(false);
 					} else {
@@ -501,7 +503,7 @@ namespace Loyc.Ecs
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintIsOperator(Precedence precedence)
-		{   // C# 7 syntax: `x is Y y`  EC# syntax: `x is Y y (optional_subexprs)`
+		{	// C# 7 syntax: `x is Y y`  EC# syntax: `x is Y y (optional_subexprs)`
 			LNode subject, targetType, targetVarName, tuple;
 			if (!EcsValidators.IsIsTest(_n, out subject, out targetType, out targetVarName, out tuple, Pedantics))
 				return false;
@@ -513,7 +515,7 @@ namespace Loyc.Ecs
 
 			PrintExpr(subject, precedence.LeftContext(_context));
 			_out.Write("is ", true);
-			PrintType(targetType, EP.Primary);
+			PrintType(targetType, EP.NullDot);
 			if (targetVarName != null) {
 				_out.Space();
 				PrintExpr(targetVarName, EP.Primary, Ambiguity.InDefinitionName);
@@ -532,7 +534,7 @@ namespace Loyc.Ecs
 			int argCount = _n.ArgCount;
 			Symbol name = _name;
 			Debug.Assert(_n.IsCall);
-			
+
 			bool? braceMode;
 			if (name == S.Tuple) {
 				braceMode = false;
@@ -551,14 +553,10 @@ namespace Loyc.Ecs
 				braceMode = null; // initializer mode
 			} else {
 				Debug.Assert(false);
-				// Code quote operator has been REMOVED from EC#, in favor of #quote(...), at least for now.
-				//Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
-				//_out.Write(name == S.CodeQuote ? "@" : "@@", false);
 				braceMode = _n.BaseStyle == NodeStyle.StatementBlock && (_flags & Ambiguity.NoBracedBlock) == 0;
 				_flags = 0;
 			}
 
-			int c = _n.ArgCount;
 			if (braceMode ?? true)
 			{
 				PrintBracedBlock(_n, NewlineOpt.BeforeOpenBraceInExpr, 
@@ -567,12 +565,12 @@ namespace Loyc.Ecs
 			else
 			{
 				WriteOpenParen(ParenFor.Grouping);
-				for (int i = 0; i < c; i++)
+				for (int i = 0; i < argCount; i++)
 				{
 					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
 					PrintExpr(_n.Args[i], StartExpr, _flags);
 				}
-				if (name == S.Tuple && c == 1)
+				if (name == S.Tuple && argCount == 1)
 					_out.Write(',', true);
 				WriteCloseParen(ParenFor.Grouping);
 			}
@@ -964,8 +962,14 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else
-				PrintSimpleIdent(_name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
+			else {
+				var mode = IdPrintMode.Normal;
+				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null)
+					mode = IdPrintMode.Operator;
+				if (_n.BaseStyle == NodeStyle.VerbatimId)
+					mode = IdPrintMode.Verbatim;
+				PrintSimpleIdent(_name, _flags, mode);
+			}
 		}
 
 		private void PrintVariableDecl(bool printAttrs, LNode skipClause = null)
@@ -1114,7 +1118,8 @@ namespace Loyc.Ecs
 			{
 				G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 
-				if (S.IsArrayKeyword(stk)) {
+				if (S.IsArrayKeyword(stk))
+				{
 					// We do something very strange in case of arrays of arrays:
 					// the order of the square brackets must be reversed when 
 					// arrays are nested. For example, an array of two-dimensional 
@@ -1129,11 +1134,18 @@ namespace Loyc.Ecs
 
 					PrintType(innerType, EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
 
-					for (int i = 0; i < stack.Count; i++) {
+					for (int i = 0; i < stack.Count; i++)
+					{
 						Debug.Assert(stack[i].Name.StartsWith("'"));
 						_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
 					}
-				} else {
+				}
+				else if (stk == S.Tuple)
+				{
+					PrintTupleType();
+				}
+				else
+				{
 					PrintType(_n.Args[1], EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
 					_out.Write(stk == S._Pointer ? '*' : '?', true);
 				}
@@ -1147,16 +1159,41 @@ namespace Loyc.Ecs
 			}
 		}
 
+		void PrintTupleType()
+		{
+			Debug.Assert(_n.CallsMin(S.Of, 1) && _n[0].IsIdNamed(S.Tuple));
+			Debug.Assert((_flags & Ambiguity.TypeContext) != 0);
+
+			WriteOpenParen(ParenFor.Grouping);
+			int i = 1;
+			for (int c = _n.ArgCount; i < c; i++)
+			{
+				if (i > 1) WriteThenSpace(',', SpaceOpt.AfterComma);
+				LNode arg = _n.Args[i];
+				if (arg.Calls(S.Var))
+					PrintExpr(arg, StartExpr, _flags);
+				else
+					PrintType(arg, StartExpr, _flags);
+			}
+			if (i == 2)
+				_out.Write(',', true);
+			WriteCloseParen(ParenFor.Grouping);
+		}
+
 		Symbol SpecialTypeKind(LNode n)
 		{
 			// detects when notation for special types applies: Foo[], Foo*, Foo?
 			// assumes IsComplexIdentifier() is already known to be true
 			LNode first;
-			if (n.Calls(S.Of, 2) && (first = n.Args[0]).IsId) {
+			if (n.CallsMin(S.Of, 1) && (first = n.Args[0]).IsId) {
 				var kind = first.Name;
-				if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
-					return kind;
-				if (kind == S._Pointer && ((_flags & Ambiguity.AllowPointer) != 0 || _context.Left == StartStmt.Left))
+				if (n.ArgCount == 2) {
+					if (S.IsArrayKeyword(kind) || kind == S.QuestionMark)
+						return kind;
+					if (kind == S._Pointer && ((_flags & Ambiguity.AllowPointer) != 0 || _context.Left == StartStmt.Left))
+						return kind;
+				}
+				if (kind == S.Tuple)
 					return kind;
 			}
 			return null;

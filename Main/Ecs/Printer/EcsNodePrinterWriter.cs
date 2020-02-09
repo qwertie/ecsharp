@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,8 @@ namespace Loyc.Ecs
 		public EcsNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
 		public EcsNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }
 
+		char _lastStartCh; // character at beginning of previous token
+
 		protected override void StartToken(char nextCh)
 		{
 			if (_newlinePending)
@@ -20,15 +22,25 @@ namespace Loyc.Ecs
 			if ((EcsValidators.IsIdentContChar(_lastCh) || _lastCh == '#')
 				&& (EcsValidators.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
-			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+') 
-			      || (_lastCh == '-' && nextCh == '-')
-			      || (_lastCh == '.' && (nextCh == '.' || char.IsDigit(nextCh)))
-			      || (_lastCh == '/' && nextCh == '*'))
+			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+')
+				  || (_lastCh == '-' && nextCh == '-')
+				  || (_lastCh == '.' && (nextCh == '.' || char.IsDigit(nextCh)))
+				  || (_lastCh == '/' && nextCh == '*'))
 				_out.Write(' ');
+			else if (_lastStartCh == '@' && _lastCh != '`' && nextCh > ' ' && nextCh != '(' && nextCh != '[')
+				_out.Write(' ');
+
+			_lastStartCh = nextCh;
 		}
 
 		public override void BeginStatement()
 		{
+		}
+
+		public override void Reset()
+		{
+			base.Reset();
+			_lastStartCh = '\0';
 		}
 	}
 }

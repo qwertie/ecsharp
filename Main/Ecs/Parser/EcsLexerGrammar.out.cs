@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.6.8.5
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -165,7 +165,7 @@ namespace Loyc.Ecs.Parser
 				case '*':
 					{
 						la1 = LA(1);
-						if (la1 == '/')
+						if (la1 == -1 || la1 == '/')
 							goto stop;
 						else
 							Skip();
@@ -702,11 +702,13 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
-							if (la2 == '"')
+							if (la2 == -1 || la2 == '"')
 								break;
 							else
 								Skip();
-						} else
+						} else if (la1 == -1)
+							break;
+						else
 							Skip();
 					} else if (la0 == -1)
 						break;
@@ -730,11 +732,13 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '\'') {
 							la2 = LA(2);
-							if (la2 == '\'')
+							if (la2 == -1 || la2 == '\'')
 								break;
 							else
 								Skip();
-						} else
+						} else if (la1 == -1)
+							break;
+						else
 							Skip();
 					} else if (la0 == -1)
 						break;
@@ -1175,6 +1179,8 @@ namespace Loyc.Ecs.Parser
 					isBQ = FancyId();
 				#line 179 "EcsLexerGrammar.les"
 				skipAt = 1;
+				#line 179 "EcsLexerGrammar.les"
+				_style = NodeStyle.VerbatimId;
 				#line default
 			} else
 				NormalId();

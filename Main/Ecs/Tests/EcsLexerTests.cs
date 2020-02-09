@@ -42,20 +42,29 @@ namespace Loyc.Ecs.Tests
 		public void TestIdentifiers()
 		{
 			Case("abc_123/_0",   A(TT.Id, TT.DivMod, TT.Id),         _("abc_123"), _("'/"), _("_0"));
-			Case("is@is",        A(TT.Is, TT.Id),                   S.Is, _("is"));
+			Case("is@is",        A(TT.Is, TT.Id),                    S.Is, _("is"));
+			Case("A Z@3",        A(TT.Id, TT.Id, TT.Id),             _("A"), _("Z"), _("3"));
 			Case(@"\u0041\U00000062\u0063", A(TT.Id),                _("Abc"));
 			Case("No#error",     A(TT.Id),                           _("No#error"));
-			Case("@#error!@fail",A(TT.Id, TT.Id),                    _("#error!"), _("fail"));
+			Case("@#error!@fail",A(TT.Id, TT.Not, TT.Id),            _("#error"), _("'!"), _("fail"));
 			Case("#love!foods",  A(TT.Id, TT.Not, TT.Id),            _("#love"), _("'!"), _("foods"));
 			Case("#@food:@yum",  A(TT.Id, TT.Id, TT.Colon, TT.Id),   _("#"), _("food"), _("':"), _("yum"));
 			Case(@"#()\",        A(TT.Id, TT.LParen, TT.RParen, TT.Backslash), _("#"), null, null, _("'\\"));
-			Case(@"@#\@$_$@==>", A(TT.Id, TT.Id, TT.Id),             _(@"#\"), _("$_$"), _("==>"));
-			Case("@`{}`[@>>=]",  A(TT.Id, TT.LBrack, TT.Id, TT.RBrack), _("{}"), null, _(">>="), null);
+			Case(@"@#\u0035@':@",A(TT.Id, TT.Id, TT.At),             _(@"#5"), _("':"), _("'@"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Id),                    _("won't"), _("prime'"));
 			Case(@"@`\``@#`hi!`",A(TT.Id, TT.Id, TT.BQString),       _("`"), _("#"), _("hi!"));
 			Case(@"@'()",        A(TT.Id, TT.LParen, TT.RParen),     _("'"),  null, null);
 			Case(@"@''@{}",      A(TT.Id, TT.At, TT.LBrace, TT.RBrace), _("''"), _("'@"), null, null);
+			Case(@"@#\ X",       A(TT.Id, TT.Backslash, TT.Id),      _(@"#"), _("'\\"), _("X"));
+		}
+
+		public void TestUnquotedPunctuationIdentifiers()
+		{
+			Case("@#error!@fail", A(TT.Id, TT.Not, TT.Id), _("#error"), _("'!"), _("fail"));
+			Case("@'error!@fail", A(TT.Id, TT.Id), _("'error!"), _("fail"));
+			Case(@"@#\@$_$@==>",  A(TT.Id, TT.Id, TT.Id), _(@"#\"), _("$_$"), _("==>"));
+			Case("@`{}`[@>>=]",   A(TT.Id, TT.LBrack, TT.Id, TT.RBrack), _("{}"), null, _(">>="), null);
 		}
 
 		[Test]

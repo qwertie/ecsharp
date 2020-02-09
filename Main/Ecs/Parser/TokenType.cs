@@ -1,14 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc;
+using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
 using System.Diagnostics;
 
 namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
-	using Loyc;
 
 	public enum TokenType
 	{
@@ -183,7 +184,9 @@ namespace Loyc.Ecs.Parser
 				case TT.Id:
 				case TT.ContextualKeyword:
 				case TT.LinqKeyword:
-					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
+					var mode = (t.Style & NodeStyle.Operator) != 0 ? EcsNodePrinter.IdPrintMode.Operator : 
+					           (t.Style & NodeStyle.VerbatimId) != 0 ? EcsNodePrinter.IdPrintMode.Verbatim : EcsNodePrinter.IdPrintMode.Normal;
+					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty, mode);
 				case TT.Base: return "base";
 				case TT.This: return "this";
 				case TT.Literal:

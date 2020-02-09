@@ -136,8 +136,33 @@ namespace Loyc.Ecs.Parser
 
 		@[recognizer(fn Scan_DataType(afterAsOrIs::bool = false))]
 		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @{
-			result:ComplexId()
+			(result:ComplexId() | result:TupleType())
 			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
+		};
+		@[private]
+		rule TupleType()::LNode @{
+			// My first inclination was to allow a liberalized syntax so that, for example,
+			// `(X, Y++) Foo()` would be understood as a method returning a tuple "type". 
+			// But to correctly detect that `(X, Y++)(Foo)` is a call rather than a cast,
+			// we need to scan accurately here for a list of things that look like types.
+			&{@[Hoist] Down($LI) && Up(Scan_TupleTypeList() && LA0 == EOF)}
+			"(" ")"
+			{
+				Down($"("); 
+				var typeList = Up(TupleTypeList());
+				return F.Of(S.Tuple, typeList, $"(".StartIndex, $")".EndIndex);
+			}
+		};
+		@[recognizer(fn Scan_TupleTypeList())]
+		rule TupleTypeList()::VList!LNode @{
+			{var items = LNode.List();}
+			items+=TupleTypeItem ","
+			(items+=TupleTypeItem ("," items+=TupleTypeItem)*)?
+			{return items;}
+		};
+		rule TupleTypeItem()::LNode @{
+			result:DataType 
+			(id:=IdAtom {result = F.Var(result, id, null, result.Range.StartIndex, id.Range.EndIndex);})?
 		};
 		
 		// Complex identifier, e.g. Foo.Bar or Foo<x, y>
@@ -241,7 +266,7 @@ namespace Loyc.Ecs.Parser
 
 		// `this` with optional <type arguments>
 		token ComplexThisDecl(allowed::bool)::LNode @{
-			{if (!allowed) {Error("'this' is not allowed in this location.");};}
+			{if (!allowed) {Error("'this' is not allowed at this location.");};}
 			t:=TT.This    {$result = F.Id(t);}
 			TParams(true, ref result)?
 		};
@@ -520,15 +545,6 @@ namespace Loyc.Ecs.Parser
 			var type = DataType();
 			Match(EOF -> int);
 			return Up(type);
-		};
-
-		@[private] rule ExprInParensAuto::LNode @{
-			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
-			"(" ")" =>
-			(	&(ExprInParens(true) ("="|"=>"))
-				r:=ExprInParens(true)  {return r;}
-			/	r:=ExprInParens(false) {return r;}
-			)
 		};
 
 		@[private] rule TokenLiteral()::LNode @{
@@ -873,9 +889,19 @@ namespace Loyc.Ecs.Parser
 			rng::SourceRange;
 			name::Symbol = type.Name;
 			if (name == _var) && type.IsId
-				&& (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@' {
+				&& (type.BaseStyle & NodeStyle.VerbatimId) == 0
+			{	// the old test was: (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@'
 				type = type.WithName(S.Missing);
 			}; 
+		};
+
+		@[private] rule ExprInParensAuto::LNode @{
+			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
+			"(" ")" =>
+			(	&(ExprInParens(true) ("="|"=>"))
+				r:=ExprInParens(true)  {return r;}
+			/	r:=ExprInParens(false) {return r;}
+			)
 		};
 
 		@[private] rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
@@ -892,6 +918,7 @@ namespace Loyc.Ecs.Parser
 		rule InParens_ExprOrTuple(allowUnassignedVarDecl::bool, startIndex::int, endIndex::int)::LNode @
 		{	// We're parsing a token tree so EOF could represent ")" or "]" or "}"
 			EOF =>
+			// Treat empty parens as an empty tuple
 			{return F.Tuple(VList!LNode.Empty, startIndex, endIndex);}
 		/	{var hasAttrList = LA0 == TT.LBrack;}
 			e:=ExprStart(allowUnassignedVarDecl)

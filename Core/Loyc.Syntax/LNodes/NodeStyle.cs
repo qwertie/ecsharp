@@ -64,6 +64,13 @@ namespace Loyc.Syntax
 		/// base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
 		BaseStyleMask = 7,
 
+		/// <summary>Indicates that an identifier was marked in the standard way 
+		/// used to indicate that it contained special characters or matched a 
+		/// keyword (e.g. @int in C#)</summary>
+		/// <remarks>Indicates the presence of the marking (e.g. @ sigil in C#) 
+		/// regardless of whether the marking is necessary. Node printers must
+		/// ensure their output is valid even when this style is not present.</remarks>
+		VerbatimId = 4,
 		/// <summary>Used for a binary (base-2) literal like 0b11111.</summary>
 		BinaryLiteral = 5,
 		/// <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>

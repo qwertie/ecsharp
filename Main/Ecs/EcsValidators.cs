@@ -409,14 +409,16 @@ namespace Loyc.Ecs
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
-			// 3. An 'of expr a<b,...>, where 'a' is (1) or (2) and each arg 'b' is a 
-			//    complex identifier (if printing in C# style)
-			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
+			// 3. An 'of' expression a<b,...>, where 'a' is (1) or (2) and each arg 'b' 
+			//    is a complex identifier (if printing in C# style)
+			// 4. A dotted expression (a.b), where 'a' is a complex identifier and 'b' 
 			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
 			//    do not count as complex identifiers. Note that a.b<c> is 
 			//    structured @`'.`(a, @'of(b, c)), not #of(@`'.`(a, b), c). A dotted
 			//    expression that starts with a dot, such as .a.b, is structured
 			//    (.a).b rather than .(a.b), as unary . has precedence as high as $.
+			// 5. A scope-resolution expression (a::b), where 'a' is (1) or (2) and
+			//    'b' does not contain another scope-resolution operator.
 			// 
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
@@ -451,22 +453,40 @@ namespace Loyc.Ecs
 					return false;
 				if ((f & ICI.AllowAnyExprInOf) != 0)
 					return true;
-
 				ICI childFlags = ICI.InOf;
 				if ((f & ICI.NameDefinition) != 0)
+				{
 					childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted);
+				}
 				for (int i = 1; i < n.ArgCount; i++)
-					if (!IsComplexIdentifier(n.Args[i], childFlags, p))
+				{
+					var childArg = n.Args[i];
+					if (!IsComplexIdentifier(childArg, childFlags, p))
+					{
+						if (baseName.IsIdNamed(S.Tuple) && (childFlags & ICI.NameDefinition) == 0)
+						{   // If part of a tuple type isn't a valid complex Id, 
+							// it must be an unassigned variable declaration
+							if (childArg.Calls(S.Var, 2) &&
+								IsComplexIdentifier(childArg.Args[0], childFlags, p) &&
+								IsSimpleIdentifier(childArg.Args[1], p))
+								continue;
+						}
 						return false;
+					}
+				}
 				return true;
 			}
-			if (CallsWPAIH(n, S.Dot, p) && n.ArgCount == 2 && (f & ICI.DisallowDotted) == 0) {
-				LNode lhs = args[0], rhs = args.Last;
-				// right-hand argument must be simple
-				var rhsFlags = ICI.DisallowDotted;
-				if (!IsComplexIdentifier(args.Last, rhsFlags, p))
+			if (CallsWPAIH(n, S.Dot, 2, p) && (f & ICI.DisallowDotted) == 0) {
+				// right-hand argument must be simple or be an "of<expression>"
+				if (!IsComplexIdentifier(args.Last, ICI.DisallowDotted|ICI.DisallowColonColon, p))
 					return false;
 				return IsComplexIdentifier(args[0], ICI.Default, p);
+			}
+			if (CallsWPAIH(n, S.ColonColon, 2, p) && (f & ICI.DisallowColonColon) == 0) {
+				// left-hand argument must be simple
+				if (!IsSimpleIdentifier(args[0], p))
+					return false;
+				return IsComplexIdentifier(args.Last, ICI.DisallowColonColon, p);
 			}
 			return false;
 		}

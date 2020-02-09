@@ -73,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ContractsMacro.ecs</DependentUpon>
     </Compile>
+    <Compile Include="CSharp7Macros.cs" />
     <Compile Include="DeconstructMacro.cs" />
     <Compile Include="FluentMacro.cs" />
     <Compile Include="ForwardingMacro.cs" />
@@ -91,7 +92,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="CSharp6Macro.cs" />
+    <Compile Include="CSharp6Macros.cs" />
     <Compile Include="OnFinallyThrowCatch.cs" />
     <Compile Include="OnReturn.out.cs">
       <AutoGen>True</AutoGen>
@@ -131,7 +132,6 @@
     <Compile Include="StandardMacros.cs" />
     <Compile Include="StaticMatchCodeMacro.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
-    <Compile Include="TupleMacros.cs" />
     <Compile Include="UnrollMacro.cs" />
     <Compile Include="UseSequenceExpressions.out.cs">
       <AutoGen>True</AutoGen>

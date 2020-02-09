@@ -160,10 +160,10 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void StaticMethods()
 		{
-			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));
-			AreEqual("normal_id",        EcsNodePrinter.PrintId(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+",        EcsNodePrinter.PrintId(S.Add, true));
-			AreEqual("operator`frack!`", EcsNodePrinter.PrintId(GSymbol.Get("frack!"), true));
+			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), EcsNodePrinter.IdPrintMode.Normal));
+			AreEqual("normal_id",        EcsNodePrinter.PrintId(GSymbol.Get("normal_id"), EcsNodePrinter.IdPrintMode.Normal));
+			AreEqual("operator+",        EcsNodePrinter.PrintId(S.Add, EcsNodePrinter.IdPrintMode.Operator));
+			AreEqual("operator`frack!`", EcsNodePrinter.PrintId(GSymbol.Get("frack!"), EcsNodePrinter.IdPrintMode.Operator));
 			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}

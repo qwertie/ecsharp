@@ -176,7 +176,7 @@ namespace Loyc.Ecs.Parser
 			{skipAt::int = 0;}
 			(	default NormalId 
 			|	HashId 
-			|	'@' (NormalId / isBQ=FancyId) {skipAt=1;} )
+			|	'@' (NormalId / isBQ=FancyId) {skipAt=1; _style = NodeStyle.VerbatimId;} )
 			{ParseIdValue(skipAt, isBQ);}
 		};
 		@[private] rule LettersOrPunc @{ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''

@@ -8,7 +8,7 @@ using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
 
-namespace LeMP.CSharp6
+namespace LeMP.CSharp6.To.OlderVersions
 {
 	[ContainsMacros]
 	public class CSharp6Macros
