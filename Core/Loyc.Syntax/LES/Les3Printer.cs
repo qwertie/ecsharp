@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Globalization;
 using Loyc;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Syntax.Impl;
 using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;

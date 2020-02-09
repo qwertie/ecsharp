@@ -5,6 +5,7 @@ using System.Text;
 using Loyc.Utilities;
 using System.Diagnostics;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Syntax.Lexing;
 

@@ -11,6 +11,7 @@ namespace Loyc.Syntax
 	using Loyc.Syntax;
 	using Loyc.Collections;
 	using Loyc.Collections.Impl;
+	using Loyc.Collections.MutableListExtensionMethods;
 	using Loyc.Syntax.Les;
 
 	/// <summary>
@@ -168,7 +169,7 @@ namespace Loyc.Syntax
 
 		private int GetBlockIndex(int charIndex)
 		{
-			int i = ListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
+			int i = IListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
 				new Pair<int, uint>(charIndex, 0),
 				delegate(Pair<int, uint> a, Pair<int, uint> b) { return a.A.CompareTo(b.A); });
 			if (i < 0)

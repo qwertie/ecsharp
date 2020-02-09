@@ -9,9 +9,10 @@ namespace Loyc.Collections
 	/// <summary>A variation of IReadOnlyCollection that provides the Contains() and 
 	/// CopyTo() methods from ICollection.</summary>
 	/// <remarks>
-	/// Implementing this interface suggests that the collection supports accelerated
-	/// membership tests (int O(1) or O(log(Count)) time), since you would only need to
-	/// implement IReadOnlyCollection if it doesn't.
+	/// Implementing this interface suggests that the collection may support accelerated
+	/// membership tests (int O(1) or O(log(Count)) time), because if it doesn't, the 
+	/// collection only needs to implement IReadOnlyCollection (relying on extension
+	/// methods for Contains() and CopyTo()).
 	/// <para/>
 	/// The name of this collection fits a pattern: just as IListSource is a variation on
 	/// IReadOnlyList with additional functionality, this interface is a variation on
@@ -43,7 +44,6 @@ namespace Loyc.Collections
 		void CopyTo(T[] array, int arrayIndex);
 	}
 
-	/// <summary>Extension methods for ICollection, IReadOnlyCollection and ICollectionSource.</summary>
 	public static partial class LCExt
 	{
 		/// <summary>Converts the collection to an array.</summary>

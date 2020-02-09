@@ -1,5 +1,6 @@
 using Loyc.Collections.Impl;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;

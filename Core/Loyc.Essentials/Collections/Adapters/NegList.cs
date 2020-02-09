@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/12/2011
@@ -8,8 +8,10 @@
  */
 using System;
 using System.Collections.Generic;
+using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.MutableListExtensionMethods
 {
 	public static partial class LCExt
 	{
@@ -24,7 +26,10 @@ namespace Loyc.Collections
 			return new NegList<T>(list, zeroOffset);
 		}
 	}
+}
 
+namespace Loyc.Collections
+{
 	/// <summary>
 	/// Adapter: provides a view of an <see cref="IList{T}"/> in which the Count is the same, but the 
 	/// minimum index is not necessarily zero. Returned from <see cref="LCExt.AsNegList{T}(IList{T},int)"/>.

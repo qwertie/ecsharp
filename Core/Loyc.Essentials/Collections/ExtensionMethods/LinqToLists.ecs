@@ -203,6 +203,11 @@ namespace Loyc.Collections
 		public static ReversedList<T> Reverse<T>(this IList<T> list) => new ReversedList<T>(list);
 		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list) => new ReversedList<T>(list);
 
+		public static bool SequenceEqual<TSource>(this IReadOnlyCollection<TSource> first, IReadOnlyCollection<TSource> second)
+		{
+			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
+		}
+
 		// TODO: interface-preserving version of this
 		//     Projects each element of a sequence into a new form by incorporating the element's index.
 		//   source:
@@ -245,6 +250,11 @@ namespace Loyc.Collections.MutableListExtensionMethods
 			var array = new T[c.Count];
 			c.CopyTo(array, 0);
 			return array;
+		}
+
+		public static bool SequenceEqual<TSource>(this IList<TSource> first, IList<TSource> second)
+		{
+			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
 		}
 
 		#region Disambiguating methods (for collections that support them)
@@ -291,6 +301,11 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		public static ListSlice<T> SkipNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
 			return SkipNowWhile((IList<T>)list, predicate);
+		}
+
+		public static bool SequenceEqual<TSource>(this IListAndListSource<TSource> first, IListAndListSource<TSource> second)
+		{
+			return ((IList<TSource>)first).Count == ((IList<TSource>)second).Count && Enumerable.SequenceEqual(first, second);
 		}
 
 		#endregion

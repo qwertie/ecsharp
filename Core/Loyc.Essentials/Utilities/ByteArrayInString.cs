@@ -1,4 +1,5 @@
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using System;
 using System.Collections.Generic;
 using System.Text;

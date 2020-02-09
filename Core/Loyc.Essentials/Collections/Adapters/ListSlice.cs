@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Loyc.Math;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.MutableListExtensionMethods
 {
-	public static partial class LCExt
+	public static partial class IListExt
 	{
 		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length = int.MaxValue)
 		{
@@ -15,16 +15,11 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(list, start, length);
 		}
-		//public static ListSlice<T> Slice<T>(this IList<T> list, NumRange<int,MathI> range)
-		//{
-		//	return new ListSlice<T>(list, range.Lo, range.Count);
-		//}
-		//public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, NumRange<int,MathI> range)
-		//{
-		//	return new ListSlice<T>(list, range.Lo, range.Count);
-		//}
 	}
+}
 
+namespace Loyc.Collections
+{
 	/// <summary>
 	/// Adapter: a wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="ListExt.Slice{T}"/>

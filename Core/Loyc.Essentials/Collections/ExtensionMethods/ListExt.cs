@@ -27,55 +27,6 @@ namespace Loyc.Collections
 	{
 		#region Binary Search (http://www.loyc.net/2014/dotnet-annoyances.html)
 
-		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>
-		{
-			return BinarySearch<T>(list, value, G.ToComparison<T>());
-		}
-		public static int BinarySearch<T>(this IList<T> list, T value, IComparer<T> pred)
-		{
-			return BinarySearch<T>(list, value, G.ToComparison(pred));
-		}
-		public static int BinarySearch<T>(this IList<T> list, T find, Comparison<T> compare)
-		{
-			int low = 0, high = list.Count - 1;
-			int invert = -1;
-
-			while (low <= high)
-			{
-				int mid = low + ((high - low) >> 1);
-				int c = compare(list[mid], find);
-				if (c < 0)
-					low = mid + 1;
-				else {
-					high = mid - 1;
-					if (c == 0)
-						invert = 0;
-				}
-			}
-			return low ^ invert;
-		}
-		public static int BinarySearch2<T, K>(this IList<T> list, K find, Func<T, K, int> compare, bool lowerBound = true)
-		{
-			int low = 0, high = list.Count - 1;
-			int invert = -1;
-
-			while (low <= high)
-			{
-				int mid = low + ((high - low) >> 1);
-				int c = compare(list[mid], find);
-				if (c < 0)
-					low = mid + 1;
-				else {
-					high = mid - 1;
-					if (c == 0) {
-						if (!lowerBound) return mid;
-						invert = 0;
-					}
-				}
-			}
-			return low ^ invert;
-		}
-
 		public static int BinarySearch<T>(this IReadOnlyList<T> list, T value) where T : IComparable<T>
 		{
 			return BinarySearch<T>(list, value, G.ToComparison<T>());
@@ -175,25 +126,14 @@ namespace Loyc.Collections
 				return list[index];
 			return Maybe<T>.NoValue;
 		}
-		public static T TryGet<T>(this IList<T> list, int index, T defaultValue)
-		{
-			if ((uint)index < (uint)list.Count)
-				return list[index];
-			return defaultValue;
-		}
-		public static Maybe<T> TryGet<T>(this IList<T> list, int index)
-		{
-			if ((uint)index < (uint)list.Count)
-				return list[index];
-			return Maybe<T>.NoValue;
-		}
+
 		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue)
 		{
-			return ((IList<T>)list).TryGet(index, defaultValue);
+			return ((IListSource<T>)list).TryGet(index, defaultValue);
 		}
 		public static Maybe<T> TryGet<T>(this IListAndListSource<T> list, int index)
 		{
-			return ((IList<T>)list).TryGet(index);
+			return ((IListSource<T>)list).TryGet(index);
 		}
 		public static T TryGet<T>(this IReadOnlyList<T> list, int index, T defaultValue)
 		{
@@ -603,17 +543,6 @@ namespace Loyc.Collections
 			list[j] = tmp;
 		}
 
-		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
-		{
-			return LCInterfaces.LastIndexWhere(list.AsListSource(), pred);
-		}
-		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
-		{
-			return LCInterfaces.LastIndexWhere(list, pred);
-		}
-
 		static Random _r = new Random();
 		public static void Randomize<T>(this IList<T> list)
 		{
@@ -627,25 +556,12 @@ namespace Loyc.Collections
 				G.Swap(ref list[i], ref list[_r.Next(list.Length)]);
 		}
 		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
-		public static T[] Randomized<T>(this IList<T> list)
+		public static T[] Randomized<T>(this IReadOnlyList<T> list)
 		{
 			T[] copy = new T[list.Count];
 			list.CopyTo(copy, 0);
 			Randomize(copy);
 			return copy;
-		}
-		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
-		public static T[] Randomized<T>(this IListSource<T> list)
-		{
-			T[] copy = new T[list.Count];
-			list.CopyTo(copy, 0);
-			Randomize(copy);
-			return copy;
-		}
-		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
-		public static T[] Randomized<T>(this IListAndListSource<T> list)
-		{
-			return ((IList<T>)list).Randomized();
 		}
 
 		/// <summary>Maps an array to another array of the same length.</summary>
@@ -656,20 +572,6 @@ namespace Loyc.Collections
 			R[] result = new R[input.Length];
 			for (int i = 0; i < result.Length; i++)
 				result[i] = selector(input[i]);
-			return result;
-		}
-
-		/// <summary>Maps a list to an array of the same length.</summary>
-		public static R[] SelectArray<T, R>(this ICollection<T> input, Func<T,R> selector)
-		{
-			if (input == null)
-				return null;
-			R[] result = new R[input.Count];
-			var e = input.GetEnumerator();
-			for (int i = 0; i < result.Length; i++) {
-				e.MoveNext();
-				result[i] = selector(e.Current);
-			}
 			return result;
 		}
 
@@ -763,18 +665,113 @@ namespace Loyc.Collections
  			for (int i = c - 1; i >= index; i--)
 				list[i + spaceNeeded] = list[i];
 		}
+	}
+}
 
-		public static bool SequenceEqual<TSource>(this IList<TSource> first, IList<TSource> second)
+namespace Loyc.Collections.MutableListExtensionMethods
+{
+	/// <summary>Extension methods and helper methods for <see cref="IList{T}"/>.
+	/// </summary>
+	/// <remarks>
+	/// Extension methods that only apply to Loyc's new interfaces, or adapt a 
+	/// list to those interfaces, will go in <see cref="LCExt"/> instead.
+	/// <para/>
+	/// The source code for adapter extension methods such as the Slice() method for 
+	/// arrays, which returns an <see cref="ArraySlice{T}"/> adapter, is now 
+	/// placed in the source file for each adapter class (e.g. ArraySlice.cs)
+	/// to make it easier to create custom versions of Loyc.Essentials with parts 
+	/// removed.
+	/// </remarks>
+	public static partial class IListExt
+	{
+		public static T TryGet<T>(this IList<T> list, int index, T defaultValue)
 		{
-			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
+			if ((uint)index < (uint)list.Count)
+				return list[index];
+			return defaultValue;
 		}
-		public static bool SequenceEqual<TSource>(this IReadOnlyCollection<TSource> first, IReadOnlyCollection<TSource> second)
+		public static Maybe<T> TryGet<T>(this IList<T> list, int index)
 		{
-			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
+			if ((uint)index < (uint)list.Count)
+				return list[index];
+			return Maybe<T>.NoValue;
 		}
-		public static bool SequenceEqual<TSource>(this IListAndListSource<TSource> first, IListAndListSource<TSource> second)
+
+		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>
 		{
-			return ((IList<TSource>)first).Count == ((IList<TSource>)second).Count && Enumerable.SequenceEqual(first, second);
+			return BinarySearch<T>(list, value, G.ToComparison<T>());
+		}
+		public static int BinarySearch<T>(this IList<T> list, T value, IComparer<T> pred)
+		{
+			return BinarySearch<T>(list, value, G.ToComparison(pred));
+		}
+		public static int BinarySearch<T>(this IList<T> list, T find, Comparison<T> compare)
+		{
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else
+				{
+					high = mid - 1;
+					if (c == 0)
+						invert = 0;
+				}
+			}
+			return low ^ invert;
+		}
+		public static int BinarySearch2<T, K>(this IList<T> list, K find, Func<T, K, int> compare, bool lowerBound = true)
+		{
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else
+				{
+					high = mid - 1;
+					if (c == 0)
+					{
+						if (!lowerBound) return mid;
+						invert = 0;
+					}
+				}
+			}
+			return low ^ invert;
+		}
+
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.LastIndexWhere(list.AsListSource(), pred);
+		}
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		public static int LastIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
+		{
+			return LCInterfaces.LastIndexWhere(list, pred);
+		}
+
+		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+		public static T[] Randomized<T>(this IList<T> list)
+		{
+			T[] copy = new T[list.Count];
+			list.CopyTo(copy, 0);
+			ListExt.Randomize(copy);
+			return copy;
+		}
+		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+		public static T[] Randomized<T>(this IListAndListSource<T> list)
+		{
+			return ((IList<T>)list).Randomized();
 		}
 	}
 }

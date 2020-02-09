@@ -1,4 +1,4 @@
-﻿// Namespace documentation picked up by Doxygen
+// Namespace documentation picked up by Doxygen
 // Also includes NS documentation for Loyc.Syntax and Loyc.Utilities
 
 /*! \mainpage Loyc
@@ -48,6 +48,29 @@ namespace Loyc
 		/// <see cref="Loyc.Collections.Impl.ListExBase{T}"/>, <see cref="Loyc.Collections.Impl.ListSourceBase{T}"/>, etc.)
 		/// Also contains the AList and CPTrie node classes, which perhaps should not be <c>public</c>...</summary>
 		namespace Impl { }
+
+		/// <summary>Contains extension methods for <see cref="ICollection{T}"/> and <see cref="IList{T}"/> 
+		/// that are possibly ambiguous when included in the same namespace as extension methods 
+		/// for <see cref="IReadOnlyCollection{T}"/> and <see cref="IReadOnlyList{T}"/>.</summary>
+		/// <remarks>
+		/// This namespace exists because of Microsoft's decision to define no relationship
+		/// between <see cref="IReadOnlyCollection{T}"/>/<see cref="IReadOnlyList{T}"/>
+		/// on the one hand and <see cref="ICollection{T}"/>/<see cref="IList{T}"/> on the other.
+		/// If one extension method accepts <c>IReadOnlyList</c> and another accepts <c>List</c>
+		/// then both methods become unusable on a class that implements both, such as 
+		/// <see cref="List{T}"/>. For Loyc's own collections this problem is solved by 
+		/// implementing an interface like <see cref="IListAndReadOnly{T}"/> and a 
+		/// corresponding extension method that accepts that interface, but this solution can't
+		/// help with <see cref="List{T}"/> or T[].
+		/// <para/>
+		/// Therefore, this namespace was created for the sole purpose of holding the 
+		/// incompatible extension methods.
+		/// <para/>
+		/// This does not contain <i>all</i> extension methods for mutable lists. 
+		/// Specifically, it does not include extension methods that <i>don't</i> apply to 
+		/// read-only collections.
+		/// </remarks>
+		namespace MutableListExtensionMethods { }
 	}
 
 	/// <summary>Important interfaces of newer .NET versions than the version 

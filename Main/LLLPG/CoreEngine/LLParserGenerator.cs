@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;
 using Loyc.Syntax;

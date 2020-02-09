@@ -8,6 +8,7 @@ using System.Reflection;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Syntax;
 using Loyc.Threading;
 

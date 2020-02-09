@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Reflection;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Math;
 using Loyc;
 

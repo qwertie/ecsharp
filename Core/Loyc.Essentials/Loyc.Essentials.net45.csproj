@@ -168,7 +168,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
-    <Compile Include="Collections\ExtensionMethods\SetExt.cs" />
+    <Compile Include="Collections\ExtensionMethods\CollectionExt.cs" />
     <Compile Include="Collections\HelperClasses\ReverseComparer.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.out.cs">
       <AutoGen>True</AutoGen>

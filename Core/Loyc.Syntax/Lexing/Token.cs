@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Threading;
