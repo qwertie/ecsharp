@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.6.8.5
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -165,7 +165,7 @@ namespace Loyc.Ecs.Parser
 				case '*':
 					{
 						la1 = LA(1);
-						if (la1 == -1 || la1 == '/')
+						if (la1 == '/')
 							goto stop;
 						else
 							Skip();
@@ -702,13 +702,11 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
-							if (la2 == -1 || la2 == '"')
+							if (la2 == '"')
 								break;
 							else
 								Skip();
-						} else if (la1 == -1)
-							break;
-						else
+						} else
 							Skip();
 					} else if (la0 == -1)
 						break;
@@ -732,13 +730,11 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == '\'') {
 							la2 = LA(2);
-							if (la2 == -1 || la2 == '\'')
+							if (la2 == '\'')
 								break;
 							else
 								Skip();
-						} else if (la1 == -1)
-							break;
-						else
+						} else
 							Skip();
 					} else if (la0 == -1)
 						break;
@@ -910,22 +906,17 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 		}
+		static readonly HashSet<int> NormalId_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z');
 	
 		private void NormalId()
 		{
 			int la0;
 			// Line 156: (IdStartChar | IdUniLetter)
 			la0 = LA0;
-			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
+			if (NormalId_set0.Contains(la0))
 				IdStartChar();
 			else
 				IdUniLetter();
-			IdContChars();
-		}
-	
-		private void HashId()
-		{
-			Skip();
 			IdContChars();
 		}
 	
@@ -941,15 +932,15 @@ namespace Loyc.Ecs.Parser
 		bool FancyId()
 		{
 			int la0, la1, la2, la3, la4, la5, la6, la7, la8;
-			// Line 162: (BQStringN | (IdUniLetter / LettersOrPunc) (IdUniLetter / LettersOrPunc)*)
+			// Line 161: (BQStringN | (IdUniLetter / LettersOrPunc) (IdUniLetter / LettersOrPunc)*)
 			la0 = LA0;
 			if (la0 == '`') {
 				BQStringN();
-				#line 162 "EcsLexerGrammar.les"
+				#line 161 "EcsLexerGrammar.les"
 				return true;
 				#line default
 			} else {
-				// Line 163: (IdUniLetter / LettersOrPunc)
+				// Line 162: (IdUniLetter / LettersOrPunc)
 				la0 = LA0;
 				if (la0 >= 128 && la0 <= 65278)
 					IdUniLetter();
@@ -1007,7 +998,7 @@ namespace Loyc.Ecs.Parser
 						LettersOrPunc();
 				} else
 					LettersOrPunc();
-				// Line 163: (IdUniLetter / LettersOrPunc)*
+				// Line 162: (IdUniLetter / LettersOrPunc)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 >= 128 && la0 <= 65278)
@@ -1069,26 +1060,26 @@ namespace Loyc.Ecs.Parser
 					else
 						break;
 				}
-				#line 163 "EcsLexerGrammar.les"
+				#line 162 "EcsLexerGrammar.les"
 				return false;
 				#line default
 			}
 		}
 	
-		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', '', '﻾');
+		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z', '', '﻾');
 	
 		private void Symbol()
 		{
 			int la0, la1;
-			#line 167 "EcsLexerGrammar.les"
+			#line 166 "EcsLexerGrammar.les"
 			_parseNeeded = _verbatim = false;
 			#line default
-			#line 168 "EcsLexerGrammar.les"
+			#line 167 "EcsLexerGrammar.les"
 			bool isBQ = false;
 			#line default
 			Skip();
 			Skip();
-			// Line 169: (NormalId / FancyId)
+			// Line 168: (NormalId / FancyId)
 			la0 = LA0;
 			if (Symbol_set0.Contains(la0))
 				NormalId();
@@ -1100,34 +1091,29 @@ namespace Loyc.Ecs.Parser
 					isBQ = FancyId();
 			} else
 				isBQ = FancyId();
-			#line 170 "EcsLexerGrammar.les"
+			#line 169 "EcsLexerGrammar.les"
 			ParseSymbolValue(isBQ);
 			#line default
 		}
-		static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', '\\', '\\', '_', '_', 'a', 'z', '', '﻾');
 	
 		private // detect completeness of \uABCD
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5, la6;
-			#line 174 "EcsLexerGrammar.les"
+			#line 173 "EcsLexerGrammar.les"
 			_parseNeeded = _verbatim = false;
 			#line default
-			#line 175 "EcsLexerGrammar.les"
+			#line 174 "EcsLexerGrammar.les"
 			bool isBQ = false;
 			#line default
-			#line 176 "EcsLexerGrammar.les"
+			#line 175 "EcsLexerGrammar.les"
 			int skipAt = 0;
 			#line default
-			// Line 177: ( default NormalId | HashId | [@] (NormalId / FancyId) )
+			// Line 176: ([@] (NormalId / FancyId) | default NormalId)
 			la0 = LA0;
-			if (Id_set0.Contains(la0))
-				NormalId();
-			else if (la0 == '#')
-				HashId();
-			else if (la0 == '@') {
+			if (la0 == '@') {
 				Skip();
-				// Line 179: (NormalId / FancyId)
+				// Line 176: (NormalId / FancyId)
 				la0 = LA0;
 				if (Symbol_set0.Contains(la0))
 					NormalId();
@@ -1177,14 +1163,14 @@ namespace Loyc.Ecs.Parser
 						isBQ = FancyId();
 				} else
 					isBQ = FancyId();
-				#line 179 "EcsLexerGrammar.les"
+				#line 176 "EcsLexerGrammar.les"
 				skipAt = 1;
-				#line 179 "EcsLexerGrammar.les"
+				#line 176 "EcsLexerGrammar.les"
 				_style = NodeStyle.VerbatimId;
 				#line default
 			} else
 				NormalId();
-			#line 180 "EcsLexerGrammar.les"
+			#line 178 "EcsLexerGrammar.les"
 			ParseIdValue(skipAt, isBQ);
 			#line default
 		}
@@ -1200,9 +1186,9 @@ namespace Loyc.Ecs.Parser
 		private void Comma()
 		{
 			Skip();
-			#line 187 "EcsLexerGrammar.les"
+			#line 185 "EcsLexerGrammar.les"
 			_type = TT.Comma;
-			#line 187 "EcsLexerGrammar.les"
+			#line 185 "EcsLexerGrammar.les"
 			_value = S.Comma;
 			#line default
 		}
@@ -1210,9 +1196,9 @@ namespace Loyc.Ecs.Parser
 		private void Semicolon()
 		{
 			Skip();
-			#line 188 "EcsLexerGrammar.les"
+			#line 186 "EcsLexerGrammar.les"
 			_type = TT.Semicolon;
-			#line 188 "EcsLexerGrammar.les"
+			#line 186 "EcsLexerGrammar.les"
 			_value = S.Semicolon;
 			#line default
 		}
@@ -1220,9 +1206,9 @@ namespace Loyc.Ecs.Parser
 		private void At()
 		{
 			Skip();
-			#line 189 "EcsLexerGrammar.les"
+			#line 187 "EcsLexerGrammar.les"
 			_type = TT.At;
-			#line 189 "EcsLexerGrammar.les"
+			#line 187 "EcsLexerGrammar.les"
 			_value = S.AtSign;
 			#line default
 		}
@@ -1231,7 +1217,7 @@ namespace Loyc.Ecs.Parser
 		private void Operator()
 		{
 			int la1, la2;
-			// Line 192: ( ((((((((((((([.] [.] [.] / [.] [.] [<] / [.] [.] / [.]) | ([>] [>] [=] / [>] [=] / [>] / [<] [<] [=] / [<] [=] / [<])) | ([&] [&] / [&] [=] / [&])) | ([|] [|] / [|] [=] / [|])) | ([\^] [\^] / [\^] [=] / [\^])) | ([:] [=] / [=] [:] / [:] [:] / [:] / [=] [=] [>] / [=] [=] / [=] [>] / [=])) | ([!] [=] / [!])) | ([~] [=] / [~])) | ([*] [*] [=] / [*] [*] / [*] [=] / [*])) | ([/] [=] / [/])) | ([%] [=] / [%])) | ([+] [=] / [+] [+] / [+])) | ([\-] [>] / [\-] [=] / [\-] [\-] / [\-])) | ([?] [?] [=] / [?] [?] / [?] [.] / [?]) | [$] | [\\] )
+			// Line 190: ( ((((((((((((([.] [.] [.] / [.] [.] [<] / [.] [.] / [.]) | ([>] [>] [=] / [>] [=] / [>] / [<] [<] [=] / [<] [=] / [<])) | ([&] [&] / [&] [=] / [&])) | ([|] [|] / [|] [=] / [|])) | ([\^] [\^] / [\^] [=] / [\^])) | ([:] [=] / [=] [:] / [:] [:] / [:] / [=] [=] [>] / [=] [=] / [=] [>] / [=])) | ([!] [=] / [!])) | ([~] [=] / [~])) | ([*] [*] [=] / [*] [*] / [*] [=] / [*])) | ([/] [=] / [/])) | ([%] [=] / [%])) | ([+] [=] / [+] [+] / [+])) | ([\-] [>] / [\-] [=] / [\-] [\-] / [\-])) | ([?] [?] [=] / [?] [?] / [?] [.] / [?]) | [$] | [\\] )
 			do {
 				switch (LA0) {
 				case '.':
@@ -1243,34 +1229,34 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 192 "EcsLexerGrammar.les"
+								#line 190 "EcsLexerGrammar.les"
 								_type = TT.DotDot;
-								#line 192 "EcsLexerGrammar.les"
+								#line 190 "EcsLexerGrammar.les"
 								_value = S.DotDotDot;
 								#line default
 							} else if (la2 == '<') {
 								Skip();
 								Skip();
 								Skip();
-								#line 193 "EcsLexerGrammar.les"
+								#line 191 "EcsLexerGrammar.les"
 								_type = TT.DotDot;
-								#line 193 "EcsLexerGrammar.les"
+								#line 191 "EcsLexerGrammar.les"
 								_value = S.DotDot;
 								#line default
 							} else {
 								Skip();
 								Skip();
-								#line 194 "EcsLexerGrammar.les"
+								#line 192 "EcsLexerGrammar.les"
 								_type = TT.DotDot;
-								#line 194 "EcsLexerGrammar.les"
+								#line 192 "EcsLexerGrammar.les"
 								_value = S.DotDot;
 								#line default
 							}
 						} else {
 							Skip();
-							#line 195 "EcsLexerGrammar.les"
+							#line 193 "EcsLexerGrammar.les"
 							_type = TT.Dot;
-							#line 195 "EcsLexerGrammar.les"
+							#line 193 "EcsLexerGrammar.les"
 							_value = S.Dot;
 							#line default
 						}
@@ -1285,9 +1271,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 196 "EcsLexerGrammar.les"
+								#line 194 "EcsLexerGrammar.les"
 								_type = TT.CompoundSet;
-								#line 196 "EcsLexerGrammar.les"
+								#line 194 "EcsLexerGrammar.les"
 								_value = S.ShrAssign;
 								#line default
 							} else
@@ -1295,9 +1281,9 @@ namespace Loyc.Ecs.Parser
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 197 "EcsLexerGrammar.les"
+							#line 195 "EcsLexerGrammar.les"
 							_type = TT.LEGE;
-							#line 197 "EcsLexerGrammar.les"
+							#line 195 "EcsLexerGrammar.les"
 							_value = S.GE;
 							#line default
 						} else
@@ -1313,9 +1299,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 199 "EcsLexerGrammar.les"
+								#line 197 "EcsLexerGrammar.les"
 								_type = TT.CompoundSet;
-								#line 199 "EcsLexerGrammar.les"
+								#line 197 "EcsLexerGrammar.les"
 								_value = S.ShlAssign;
 								#line default
 							} else
@@ -1323,9 +1309,9 @@ namespace Loyc.Ecs.Parser
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 200 "EcsLexerGrammar.les"
+							#line 198 "EcsLexerGrammar.les"
 							_type = TT.LEGE;
-							#line 200 "EcsLexerGrammar.les"
+							#line 198 "EcsLexerGrammar.les"
 							_value = S.LE;
 							#line default
 						} else
@@ -1338,24 +1324,24 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '&') {
 							Skip();
 							Skip();
-							#line 202 "EcsLexerGrammar.les"
+							#line 200 "EcsLexerGrammar.les"
 							_type = TT.And;
-							#line 202 "EcsLexerGrammar.les"
+							#line 200 "EcsLexerGrammar.les"
 							_value = S.And;
 							#line default
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 203 "EcsLexerGrammar.les"
+							#line 201 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 203 "EcsLexerGrammar.les"
+							#line 201 "EcsLexerGrammar.les"
 							_value = S.AndBitsAssign;
 							#line default
 						} else {
 							Skip();
-							#line 204 "EcsLexerGrammar.les"
+							#line 202 "EcsLexerGrammar.les"
 							_type = TT.AndBits;
-							#line 204 "EcsLexerGrammar.les"
+							#line 202 "EcsLexerGrammar.les"
 							_value = S.AndBits;
 							#line default
 						}
@@ -1367,24 +1353,24 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '|') {
 							Skip();
 							Skip();
-							#line 205 "EcsLexerGrammar.les"
+							#line 203 "EcsLexerGrammar.les"
 							_type = TT.OrXor;
-							#line 205 "EcsLexerGrammar.les"
+							#line 203 "EcsLexerGrammar.les"
 							_value = S.Or;
 							#line default
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 206 "EcsLexerGrammar.les"
+							#line 204 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 206 "EcsLexerGrammar.les"
+							#line 204 "EcsLexerGrammar.les"
 							_value = S.OrBitsAssign;
 							#line default
 						} else {
 							Skip();
-							#line 207 "EcsLexerGrammar.les"
+							#line 205 "EcsLexerGrammar.les"
 							_type = TT.OrBits;
-							#line 207 "EcsLexerGrammar.les"
+							#line 205 "EcsLexerGrammar.les"
 							_value = S.OrBits;
 							#line default
 						}
@@ -1396,24 +1382,24 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '^') {
 							Skip();
 							Skip();
-							#line 208 "EcsLexerGrammar.les"
+							#line 206 "EcsLexerGrammar.les"
 							_type = TT.OrXor;
-							#line 208 "EcsLexerGrammar.les"
+							#line 206 "EcsLexerGrammar.les"
 							_value = S.Xor;
 							#line default
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 209 "EcsLexerGrammar.les"
+							#line 207 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 209 "EcsLexerGrammar.les"
+							#line 207 "EcsLexerGrammar.les"
 							_value = S.XorBitsAssign;
 							#line default
 						} else {
 							Skip();
-							#line 210 "EcsLexerGrammar.les"
+							#line 208 "EcsLexerGrammar.les"
 							_type = TT.XorBits;
-							#line 210 "EcsLexerGrammar.les"
+							#line 208 "EcsLexerGrammar.les"
 							_value = S.XorBits;
 							#line default
 						}
@@ -1425,24 +1411,24 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 211 "EcsLexerGrammar.les"
+							#line 209 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 211 "EcsLexerGrammar.les"
+							#line 209 "EcsLexerGrammar.les"
 							_value = S.QuickBindAssign;
 							#line default
 						} else if (la1 == ':') {
 							Skip();
 							Skip();
-							#line 213 "EcsLexerGrammar.les"
+							#line 211 "EcsLexerGrammar.les"
 							_type = TT.ColonColon;
-							#line 213 "EcsLexerGrammar.les"
+							#line 211 "EcsLexerGrammar.les"
 							_value = S.ColonColon;
 							#line default
 						} else {
 							Skip();
-							#line 214 "EcsLexerGrammar.les"
+							#line 212 "EcsLexerGrammar.les"
 							_type = TT.Colon;
-							#line 214 "EcsLexerGrammar.les"
+							#line 212 "EcsLexerGrammar.les"
 							_value = S.Colon;
 							#line default
 						}
@@ -1454,9 +1440,9 @@ namespace Loyc.Ecs.Parser
 						if (la1 == ':') {
 							Skip();
 							Skip();
-							#line 212 "EcsLexerGrammar.les"
+							#line 210 "EcsLexerGrammar.les"
 							_type = TT.QuickBind;
-							#line 212 "EcsLexerGrammar.les"
+							#line 210 "EcsLexerGrammar.les"
 							_value = S.QuickBind;
 							#line default
 						} else if (la1 == '=') {
@@ -1465,33 +1451,33 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 215 "EcsLexerGrammar.les"
+								#line 213 "EcsLexerGrammar.les"
 								_type = TT.Forward;
-								#line 215 "EcsLexerGrammar.les"
+								#line 213 "EcsLexerGrammar.les"
 								_value = S.Forward;
 								#line default
 							} else {
 								Skip();
 								Skip();
-								#line 216 "EcsLexerGrammar.les"
+								#line 214 "EcsLexerGrammar.les"
 								_type = TT.EqNeq;
-								#line 216 "EcsLexerGrammar.les"
+								#line 214 "EcsLexerGrammar.les"
 								_value = S.Eq;
 								#line default
 							}
 						} else if (la1 == '>') {
 							Skip();
 							Skip();
-							#line 217 "EcsLexerGrammar.les"
+							#line 215 "EcsLexerGrammar.les"
 							_type = TT.LambdaArrow;
-							#line 217 "EcsLexerGrammar.les"
+							#line 215 "EcsLexerGrammar.les"
 							_value = S.Lambda;
 							#line default
 						} else {
 							Skip();
-							#line 218 "EcsLexerGrammar.les"
+							#line 216 "EcsLexerGrammar.les"
 							_type = TT.Set;
-							#line 218 "EcsLexerGrammar.les"
+							#line 216 "EcsLexerGrammar.les"
 							_value = S.Assign;
 							#line default
 						}
@@ -1503,16 +1489,16 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 219 "EcsLexerGrammar.les"
+							#line 217 "EcsLexerGrammar.les"
 							_type = TT.EqNeq;
-							#line 219 "EcsLexerGrammar.les"
+							#line 217 "EcsLexerGrammar.les"
 							_value = S.NotEq;
 							#line default
 						} else {
 							Skip();
-							#line 220 "EcsLexerGrammar.les"
+							#line 218 "EcsLexerGrammar.les"
 							_type = TT.Not;
-							#line 220 "EcsLexerGrammar.les"
+							#line 218 "EcsLexerGrammar.les"
 							_value = S.Not;
 							#line default
 						}
@@ -1524,16 +1510,16 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 221 "EcsLexerGrammar.les"
+							#line 219 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 221 "EcsLexerGrammar.les"
+							#line 219 "EcsLexerGrammar.les"
 							_value = S.ConcatAssign;
 							#line default
 						} else {
 							Skip();
-							#line 222 "EcsLexerGrammar.les"
+							#line 220 "EcsLexerGrammar.les"
 							_type = TT.NotBits;
-							#line 222 "EcsLexerGrammar.les"
+							#line 220 "EcsLexerGrammar.les"
 							_value = S.NotBits;
 							#line default
 						}
@@ -1548,33 +1534,33 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 223 "EcsLexerGrammar.les"
+								#line 221 "EcsLexerGrammar.les"
 								_type = TT.CompoundSet;
-								#line 223 "EcsLexerGrammar.les"
+								#line 221 "EcsLexerGrammar.les"
 								_value = S.ExpAssign;
 								#line default
 							} else {
 								Skip();
 								Skip();
-								#line 224 "EcsLexerGrammar.les"
+								#line 222 "EcsLexerGrammar.les"
 								_type = TT.Power;
-								#line 224 "EcsLexerGrammar.les"
+								#line 222 "EcsLexerGrammar.les"
 								_value = S.Exp;
 								#line default
 							}
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 225 "EcsLexerGrammar.les"
+							#line 223 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 225 "EcsLexerGrammar.les"
+							#line 223 "EcsLexerGrammar.les"
 							_value = S.MulAssign;
 							#line default
 						} else {
 							Skip();
-							#line 226 "EcsLexerGrammar.les"
+							#line 224 "EcsLexerGrammar.les"
 							_type = TT.Mul;
-							#line 226 "EcsLexerGrammar.les"
+							#line 224 "EcsLexerGrammar.les"
 							_value = S.Mul;
 							#line default
 						}
@@ -1586,16 +1572,16 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 227 "EcsLexerGrammar.les"
+							#line 225 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 227 "EcsLexerGrammar.les"
+							#line 225 "EcsLexerGrammar.les"
 							_value = S.DivAssign;
 							#line default
 						} else {
 							Skip();
-							#line 228 "EcsLexerGrammar.les"
+							#line 226 "EcsLexerGrammar.les"
 							_type = TT.DivMod;
-							#line 228 "EcsLexerGrammar.les"
+							#line 226 "EcsLexerGrammar.les"
 							_value = S.Div;
 							#line default
 						}
@@ -1607,16 +1593,16 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 229 "EcsLexerGrammar.les"
+							#line 227 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 229 "EcsLexerGrammar.les"
+							#line 227 "EcsLexerGrammar.les"
 							_value = S.ModAssign;
 							#line default
 						} else {
 							Skip();
-							#line 230 "EcsLexerGrammar.les"
+							#line 228 "EcsLexerGrammar.les"
 							_type = TT.DivMod;
-							#line 230 "EcsLexerGrammar.les"
+							#line 228 "EcsLexerGrammar.les"
 							_value = S.Mod;
 							#line default
 						}
@@ -1628,24 +1614,24 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 231 "EcsLexerGrammar.les"
+							#line 229 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 231 "EcsLexerGrammar.les"
+							#line 229 "EcsLexerGrammar.les"
 							_value = S.AddAssign;
 							#line default
 						} else if (la1 == '+') {
 							Skip();
 							Skip();
-							#line 232 "EcsLexerGrammar.les"
+							#line 230 "EcsLexerGrammar.les"
 							_type = TT.IncDec;
-							#line 232 "EcsLexerGrammar.les"
+							#line 230 "EcsLexerGrammar.les"
 							_value = S.PreInc;
 							#line default
 						} else {
 							Skip();
-							#line 233 "EcsLexerGrammar.les"
+							#line 231 "EcsLexerGrammar.les"
 							_type = TT.Add;
-							#line 233 "EcsLexerGrammar.les"
+							#line 231 "EcsLexerGrammar.les"
 							_value = S.Add;
 							#line default
 						}
@@ -1657,32 +1643,32 @@ namespace Loyc.Ecs.Parser
 						if (la1 == '>') {
 							Skip();
 							Skip();
-							#line 234 "EcsLexerGrammar.les"
+							#line 232 "EcsLexerGrammar.les"
 							_type = TT.PtrArrow;
-							#line 234 "EcsLexerGrammar.les"
+							#line 232 "EcsLexerGrammar.les"
 							_value = S.PtrArrow;
 							#line default
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
-							#line 235 "EcsLexerGrammar.les"
+							#line 233 "EcsLexerGrammar.les"
 							_type = TT.CompoundSet;
-							#line 235 "EcsLexerGrammar.les"
+							#line 233 "EcsLexerGrammar.les"
 							_value = S.SubAssign;
 							#line default
 						} else if (la1 == '-') {
 							Skip();
 							Skip();
-							#line 236 "EcsLexerGrammar.les"
+							#line 234 "EcsLexerGrammar.les"
 							_type = TT.IncDec;
-							#line 236 "EcsLexerGrammar.les"
+							#line 234 "EcsLexerGrammar.les"
 							_value = S.PreDec;
 							#line default
 						} else {
 							Skip();
-							#line 237 "EcsLexerGrammar.les"
+							#line 235 "EcsLexerGrammar.les"
 							_type = TT.Sub;
-							#line 237 "EcsLexerGrammar.les"
+							#line 235 "EcsLexerGrammar.les"
 							_value = S.Sub;
 							#line default
 						}
@@ -1697,33 +1683,33 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 238 "EcsLexerGrammar.les"
+								#line 236 "EcsLexerGrammar.les"
 								_type = TT.CompoundSet;
-								#line 238 "EcsLexerGrammar.les"
+								#line 236 "EcsLexerGrammar.les"
 								_value = S.NullCoalesceAssign;
 								#line default
 							} else {
 								Skip();
 								Skip();
-								#line 239 "EcsLexerGrammar.les"
+								#line 237 "EcsLexerGrammar.les"
 								_type = TT.NullCoalesce;
-								#line 239 "EcsLexerGrammar.les"
+								#line 237 "EcsLexerGrammar.les"
 								_value = S.NullCoalesce;
 								#line default
 							}
 						} else if (la1 == '.') {
 							Skip();
 							Skip();
-							#line 240 "EcsLexerGrammar.les"
+							#line 238 "EcsLexerGrammar.les"
 							_type = TT.NullDot;
-							#line 240 "EcsLexerGrammar.les"
+							#line 238 "EcsLexerGrammar.les"
 							_value = S.NullDot;
 							#line default
 						} else {
 							Skip();
-							#line 241 "EcsLexerGrammar.les"
+							#line 239 "EcsLexerGrammar.les"
 							_type = TT.QuestionMark;
-							#line 241 "EcsLexerGrammar.les"
+							#line 239 "EcsLexerGrammar.les"
 							_value = S.QuestionMark;
 							#line default
 						}
@@ -1732,9 +1718,9 @@ namespace Loyc.Ecs.Parser
 				case '$':
 					{
 						Skip();
-						#line 242 "EcsLexerGrammar.les"
+						#line 240 "EcsLexerGrammar.les"
 						_type = TT.Substitute;
-						#line 242 "EcsLexerGrammar.les"
+						#line 240 "EcsLexerGrammar.les"
 						_value = S.Substitute;
 						#line default
 					}
@@ -1742,9 +1728,9 @@ namespace Loyc.Ecs.Parser
 				default:
 					{
 						Match('\\');
-						#line 243 "EcsLexerGrammar.les"
+						#line 241 "EcsLexerGrammar.les"
 						_type = TT.Backslash;
-						#line 243 "EcsLexerGrammar.les"
+						#line 241 "EcsLexerGrammar.les"
 						_value = S.Backslash;
 						#line default
 					}
@@ -1754,9 +1740,9 @@ namespace Loyc.Ecs.Parser
 			match7:
 				{
 					Skip();
-					#line 198 "EcsLexerGrammar.les"
+					#line 196 "EcsLexerGrammar.les"
 					_type = TT.GT;
-					#line 198 "EcsLexerGrammar.les"
+					#line 196 "EcsLexerGrammar.les"
 					_value = S.GT;
 					#line default
 				}
@@ -1764,9 +1750,9 @@ namespace Loyc.Ecs.Parser
 			match10:
 				{
 					Skip();
-					#line 201 "EcsLexerGrammar.les"
+					#line 199 "EcsLexerGrammar.les"
 					_type = TT.LT;
-					#line 201 "EcsLexerGrammar.les"
+					#line 199 "EcsLexerGrammar.les"
 					_value = S.LT;
 					#line default
 				}
@@ -1780,7 +1766,7 @@ namespace Loyc.Ecs.Parser
 			int la0;
 			Skip();
 			Skip();
-			// Line 248: ([^\$\n\r])*
+			// Line 246: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -1788,7 +1774,7 @@ namespace Loyc.Ecs.Parser
 				else
 					break;
 			}
-			// Line 248: (Newline)?
+			// Line 246: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
@@ -1800,7 +1786,7 @@ namespace Loyc.Ecs.Parser
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
-			// Line 256: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId => {..} / [a] [s] EndId => {..} / [b] [a] [s] [e] EndId => {..} / [b] [o] [o] [l] EndId => {..} / [b] [r] [e] [a] [k] EndId => {..} / [b] [y] [t] [e] EndId => {..} / [c] [a] [s] [e] EndId => {..} / [c] [a] [t] [c] [h] EndId => {..} / [c] [h] [a] [r] EndId => {..} / [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [c] [l] [a] [s] [s] EndId => {..} / [c] [o] [n] [s] [t] EndId => {..} / [c] [o] [n] [t] [i] [n] [u] [e] EndId => {..} / [d] [e] [c] [i] [m] [a] [l] EndId => {..} / [d] [e] [f] [a] [u] [l] [t] EndId => {..} / [d] [e] [l] [e] [g] [a] [t] [e] EndId => {..} / [d] [o] [u] [b] [l] [e] EndId => {..} / [d] [o] EndId => {..} / [e] [l] [s] [e] EndId => {..} / [e] [n] [u] [m] EndId => {..} / [e] [v] [e] [n] [t] EndId => {..} / [e] [x] [p] [l] [i] [c] [i] [t] EndId => {..} / [e] [x] [t] [e] [r] [n] EndId => {..} / [f] [a] [l] [s] [e] EndId => {..} / [f] [i] [n] [a] [l] [l] [y] EndId => {..} / [f] [i] [x] [e] [d] EndId => {..} / [f] [l] [o] [a] [t] EndId => {..} / [f] [o] [r] [e] [a] [c] [h] EndId => {..} / [f] [o] [r] EndId => {..} / [g] [o] [t] [o] EndId => {..} / [i] [f] EndId => {..} / [i] [m] [p] [l] [i] [c] [i] [t] EndId => {..} / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId => {..} / [i] [n] [t] [e] [r] [n] [a] [l] EndId => {..} / [i] [n] [t] EndId => {..} / [i] [n] EndId => {..} / [i] [s] EndId => {..} / [l] [o] [c] [k] EndId => {..} / [l] [o] [n] [g] EndId => {..} / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId => {..} / [n] [e] [w] EndId => {..} / [n] [u] [l] [l] EndId => {..} / [o] [b] [j] [e] [c] [t] EndId => {..} / [o] [p] [e] [r] [a] [t] [o] [r] EndId => {..} / [o] [u] [t] EndId => {..} / [o] [v] [e] [r] [r] [i] [d] [e] EndId => {..} / [p] [a] [r] [a] [m] [s] EndId => {..} / [p] [r] [i] [v] [a] [t] [e] EndId => {..} / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId => {..} / [p] [u] [b] [l] [i] [c] EndId => {..} / [r] [e] [a] [d] [o] [n] [l] [y] EndId => {..} / [r] [e] [f] EndId => {..} / [r] [e] [t] [u] [r] [n] EndId => {..} / [s] [b] [y] [t] [e] EndId => {..} / [s] [e] [a] [l] [e] [d] EndId => {..} / [s] [h] [o] [r] [t] EndId => {..} / [s] [i] [z] [e] [o] [f] EndId => {..} / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId => {..} / [s] [t] [a] [t] [i] [c] EndId => {..} / [s] [t] [r] [i] [n] [g] EndId => {..} / [s] [t] [r] [u] [c] [t] EndId => {..} / [s] [w] [i] [t] [c] [h] EndId => {..} / [t] [h] [i] [s] EndId => {..} / [t] [h] [r] [o] [w] EndId => {..} / [t] [r] [u] [e] EndId => {..} / [t] [r] [y] EndId => {..} / [t] [y] [p] [e] [o] [f] EndId => {..} / [u] [i] [n] [t] EndId => {..} / [u] [l] [o] [n] [g] EndId => {..} / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [u] [n] [s] [a] [f] [e] EndId => {..} / [u] [s] [h] [o] [r] [t] EndId => {..} / [u] [s] [i] [n] [g] EndId => {..} / [v] [i] [r] [t] [u] [a] [l] EndId => {..} / [v] [o] [l] [a] [t] [i] [l] [e] EndId => {..} / [v] [o] [i] [d] EndId => {..} / [w] [h] [i] [l] [e] EndId => {..} / &{AllowPP} [#] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [l] [s] [e] EndId => {..} / &{AllowPP} [#] [e] [l] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId => {..} / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId => {..} / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId => {..} / &{AllowPP} [#] [l] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / [v] [a] [r] EndId => {..} / [d] [y] [n] [a] [m] [i] [c] EndId => {..} / [t] [r] [a] [i] [t] EndId => {..} / [a] [l] [i] [a] [s] EndId => {..} / [a] [s] [s] [e] [m] [b] [l] [y] EndId => {..} / [m] [o] [d] [u] [l] [e] EndId => {..} / [f] [r] [o] [m] EndId => {..} / [w] [h] [e] [r] [e] EndId => {..} / [w] [h] [e] [n] EndId => {..} / [s] [e] [l] [e] [c] [t] EndId => {..} / [j] [o] [i] [n] EndId => {..} / [o] [n] EndId => {..} / [e] [q] [u] [a] [l] [s] EndId => {..} / [i] [n] [t] [o] EndId => {..} / [l] [e] [t] EndId => {..} / [o] [r] [d] [e] [r] [b] [y] EndId => {..} / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [g] [r] [o] [u] [p] EndId => {..} / [b] [y] EndId => {..} / [a] [w] [a] [i] [t] EndId => {..} / Id )
+			// Line 254: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId => {..} / [a] [s] EndId => {..} / [b] [a] [s] [e] EndId => {..} / [b] [o] [o] [l] EndId => {..} / [b] [r] [e] [a] [k] EndId => {..} / [b] [y] [t] [e] EndId => {..} / [c] [a] [s] [e] EndId => {..} / [c] [a] [t] [c] [h] EndId => {..} / [c] [h] [a] [r] EndId => {..} / [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [c] [l] [a] [s] [s] EndId => {..} / [c] [o] [n] [s] [t] EndId => {..} / [c] [o] [n] [t] [i] [n] [u] [e] EndId => {..} / [d] [e] [c] [i] [m] [a] [l] EndId => {..} / [d] [e] [f] [a] [u] [l] [t] EndId => {..} / [d] [e] [l] [e] [g] [a] [t] [e] EndId => {..} / [d] [o] [u] [b] [l] [e] EndId => {..} / [d] [o] EndId => {..} / [e] [l] [s] [e] EndId => {..} / [e] [n] [u] [m] EndId => {..} / [e] [v] [e] [n] [t] EndId => {..} / [e] [x] [p] [l] [i] [c] [i] [t] EndId => {..} / [e] [x] [t] [e] [r] [n] EndId => {..} / [f] [a] [l] [s] [e] EndId => {..} / [f] [i] [n] [a] [l] [l] [y] EndId => {..} / [f] [i] [x] [e] [d] EndId => {..} / [f] [l] [o] [a] [t] EndId => {..} / [f] [o] [r] [e] [a] [c] [h] EndId => {..} / [f] [o] [r] EndId => {..} / [g] [o] [t] [o] EndId => {..} / [i] [f] EndId => {..} / [i] [m] [p] [l] [i] [c] [i] [t] EndId => {..} / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId => {..} / [i] [n] [t] [e] [r] [n] [a] [l] EndId => {..} / [i] [n] [t] EndId => {..} / [i] [n] EndId => {..} / [i] [s] EndId => {..} / [l] [o] [c] [k] EndId => {..} / [l] [o] [n] [g] EndId => {..} / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId => {..} / [n] [e] [w] EndId => {..} / [n] [u] [l] [l] EndId => {..} / [o] [b] [j] [e] [c] [t] EndId => {..} / [o] [p] [e] [r] [a] [t] [o] [r] EndId => {..} / [o] [u] [t] EndId => {..} / [o] [v] [e] [r] [r] [i] [d] [e] EndId => {..} / [p] [a] [r] [a] [m] [s] EndId => {..} / [p] [r] [i] [v] [a] [t] [e] EndId => {..} / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId => {..} / [p] [u] [b] [l] [i] [c] EndId => {..} / [r] [e] [a] [d] [o] [n] [l] [y] EndId => {..} / [r] [e] [f] EndId => {..} / [r] [e] [t] [u] [r] [n] EndId => {..} / [s] [b] [y] [t] [e] EndId => {..} / [s] [e] [a] [l] [e] [d] EndId => {..} / [s] [h] [o] [r] [t] EndId => {..} / [s] [i] [z] [e] [o] [f] EndId => {..} / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId => {..} / [s] [t] [a] [t] [i] [c] EndId => {..} / [s] [t] [r] [i] [n] [g] EndId => {..} / [s] [t] [r] [u] [c] [t] EndId => {..} / [s] [w] [i] [t] [c] [h] EndId => {..} / [t] [h] [i] [s] EndId => {..} / [t] [h] [r] [o] [w] EndId => {..} / [t] [r] [u] [e] EndId => {..} / [t] [r] [y] EndId => {..} / [t] [y] [p] [e] [o] [f] EndId => {..} / [u] [i] [n] [t] EndId => {..} / [u] [l] [o] [n] [g] EndId => {..} / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [u] [n] [s] [a] [f] [e] EndId => {..} / [u] [s] [h] [o] [r] [t] EndId => {..} / [u] [s] [i] [n] [g] EndId => {..} / [v] [i] [r] [t] [u] [a] [l] EndId => {..} / [v] [o] [l] [a] [t] [i] [l] [e] EndId => {..} / [v] [o] [i] [d] EndId => {..} / [w] [h] [i] [l] [e] EndId => {..} / &{AllowPP} [#] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [l] [s] [e] EndId => {..} / &{AllowPP} [#] [e] [l] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId => {..} / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId => {..} / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId => {..} / &{AllowPP} [#] [l] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / [v] [a] [r] EndId => {..} / [d] [y] [n] [a] [m] [i] [c] EndId => {..} / [t] [r] [a] [i] [t] EndId => {..} / [a] [l] [i] [a] [s] EndId => {..} / [a] [s] [s] [e] [m] [b] [l] [y] EndId => {..} / [m] [o] [d] [u] [l] [e] EndId => {..} / [f] [r] [o] [m] EndId => {..} / [w] [h] [e] [r] [e] EndId => {..} / [w] [h] [e] [n] EndId => {..} / [s] [e] [l] [e] [c] [t] EndId => {..} / [j] [o] [i] [n] EndId => {..} / [o] [n] EndId => {..} / [e] [q] [u] [a] [l] [s] EndId => {..} / [i] [n] [t] [o] EndId => {..} / [l] [e] [t] EndId => {..} / [o] [r] [d] [e] [r] [b] [y] EndId => {..} / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [g] [r] [o] [u] [p] EndId => {..} / [b] [y] EndId => {..} / [a] [w] [a] [i] [t] EndId => {..} / Id )
 			switch (LA0) {
 			case 'a':
 				{
@@ -1828,9 +1814,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 256 "EcsLexerGrammar.les"
+													#line 254 "EcsLexerGrammar.les"
 													_type = TT.AttrKeyword;
-													#line 256 "EcsLexerGrammar.les"
+													#line 254 "EcsLexerGrammar.les"
 													_value = S.Abstract;
 													#line default
 												} else
@@ -1852,9 +1838,9 @@ namespace Loyc.Ecs.Parser
 						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 257 "EcsLexerGrammar.les"
+							#line 255 "EcsLexerGrammar.les"
 							_type = TT.As;
-							#line 257 "EcsLexerGrammar.les"
+							#line 255 "EcsLexerGrammar.les"
 							_value = S.As;
 							#line default
 						} else if (la2 == 's') {
@@ -1878,9 +1864,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 350 "EcsLexerGrammar.les"
+													#line 348 "EcsLexerGrammar.les"
 													_type = TT.ContextualKeyword;
-													#line 350 "EcsLexerGrammar.les"
+													#line 348 "EcsLexerGrammar.les"
 													_value = _assembly;
 													#line default
 												} else
@@ -1919,9 +1905,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 362 "EcsLexerGrammar.les"
+														#line 360 "EcsLexerGrammar.les"
 														_type = TT.LinqKeyword;
-														#line 362 "EcsLexerGrammar.les"
+														#line 360 "EcsLexerGrammar.les"
 														_value = _ascending;
 														#line default
 													} else
@@ -1954,9 +1940,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 349 "EcsLexerGrammar.les"
+										#line 347 "EcsLexerGrammar.les"
 										_type = TT.ContextualKeyword;
-										#line 349 "EcsLexerGrammar.les"
+										#line 347 "EcsLexerGrammar.les"
 										_value = _alias;
 										#line default
 									} else
@@ -1981,9 +1967,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 366 "EcsLexerGrammar.les"
+										#line 364 "EcsLexerGrammar.les"
 										_type = TT.ContextualKeyword;
-										#line 366 "EcsLexerGrammar.les"
+										#line 364 "EcsLexerGrammar.les"
 										_value = _await;
 										#line default
 									} else
@@ -2012,9 +1998,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 258 "EcsLexerGrammar.les"
+									#line 256 "EcsLexerGrammar.les"
 									_type = TT.Base;
-									#line 258 "EcsLexerGrammar.les"
+									#line 256 "EcsLexerGrammar.les"
 									_value = S.Base;
 									#line default
 								} else
@@ -2034,9 +2020,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 259 "EcsLexerGrammar.les"
+									#line 257 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 259 "EcsLexerGrammar.les"
+									#line 257 "EcsLexerGrammar.les"
 									_value = S.Bool;
 									#line default
 								} else
@@ -2059,9 +2045,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 260 "EcsLexerGrammar.les"
+										#line 258 "EcsLexerGrammar.les"
 										_type = TT.Break;
-										#line 260 "EcsLexerGrammar.les"
+										#line 258 "EcsLexerGrammar.les"
 										_value = S.Break;
 										#line default
 									} else
@@ -2083,9 +2069,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 261 "EcsLexerGrammar.les"
+									#line 259 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 261 "EcsLexerGrammar.les"
+									#line 259 "EcsLexerGrammar.les"
 									_value = S.UInt8;
 									#line default
 								} else
@@ -2095,9 +2081,9 @@ namespace Loyc.Ecs.Parser
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 365 "EcsLexerGrammar.les"
+							#line 363 "EcsLexerGrammar.les"
 							_type = TT.LinqKeyword;
-							#line 365 "EcsLexerGrammar.les"
+							#line 363 "EcsLexerGrammar.les"
 							_value = _by;
 							#line default
 						} else
@@ -2120,9 +2106,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 262 "EcsLexerGrammar.les"
+									#line 260 "EcsLexerGrammar.les"
 									_type = TT.Case;
-									#line 262 "EcsLexerGrammar.les"
+									#line 260 "EcsLexerGrammar.les"
 									_value = S.Case;
 									#line default
 								} else
@@ -2141,9 +2127,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 263 "EcsLexerGrammar.les"
+										#line 261 "EcsLexerGrammar.les"
 										_type = TT.Catch;
-										#line 263 "EcsLexerGrammar.les"
+										#line 261 "EcsLexerGrammar.les"
 										_value = S.Catch;
 										#line default
 									} else
@@ -2165,9 +2151,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 264 "EcsLexerGrammar.les"
+									#line 262 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 264 "EcsLexerGrammar.les"
+									#line 262 "EcsLexerGrammar.les"
 									_value = S.Char;
 									#line default
 								} else
@@ -2192,9 +2178,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 265 "EcsLexerGrammar.les"
+												#line 263 "EcsLexerGrammar.les"
 												_type = TT.Checked;
-												#line 265 "EcsLexerGrammar.les"
+												#line 263 "EcsLexerGrammar.les"
 												_value = S.Checked;
 												#line default
 											} else
@@ -2223,9 +2209,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 266 "EcsLexerGrammar.les"
+										#line 264 "EcsLexerGrammar.les"
 										_type = TT.Class;
-										#line 266 "EcsLexerGrammar.les"
+										#line 264 "EcsLexerGrammar.les"
 										_value = S.Class;
 										#line default
 									} else
@@ -2250,9 +2236,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 267 "EcsLexerGrammar.les"
+										#line 265 "EcsLexerGrammar.les"
 										_type = TT.AttrKeyword;
-										#line 267 "EcsLexerGrammar.les"
+										#line 265 "EcsLexerGrammar.les"
 										_value = S.Const;
 										#line default
 									} else
@@ -2278,9 +2264,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 268 "EcsLexerGrammar.les"
+													#line 266 "EcsLexerGrammar.les"
 													_type = TT.Continue;
-													#line 268 "EcsLexerGrammar.les"
+													#line 266 "EcsLexerGrammar.les"
 													_value = S.Continue;
 													#line default
 												} else
@@ -2324,9 +2310,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 269 "EcsLexerGrammar.les"
+												#line 267 "EcsLexerGrammar.les"
 												_type = TT.TypeKeyword;
-												#line 269 "EcsLexerGrammar.les"
+												#line 267 "EcsLexerGrammar.les"
 												_value = S.Decimal;
 												#line default
 											} else
@@ -2357,9 +2343,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 270 "EcsLexerGrammar.les"
+												#line 268 "EcsLexerGrammar.les"
 												_type = TT.Default;
-												#line 270 "EcsLexerGrammar.les"
+												#line 268 "EcsLexerGrammar.les"
 												_value = S.Default;
 												#line default
 											} else
@@ -2393,9 +2379,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 271 "EcsLexerGrammar.les"
+													#line 269 "EcsLexerGrammar.les"
 													_type = TT.Delegate;
-													#line 271 "EcsLexerGrammar.les"
+													#line 269 "EcsLexerGrammar.les"
 													_value = S.Delegate;
 													#line default
 												} else
@@ -2437,9 +2423,9 @@ namespace Loyc.Ecs.Parser
 															Skip();
 															Skip();
 															Skip();
-															#line 363 "EcsLexerGrammar.les"
+															#line 361 "EcsLexerGrammar.les"
 															_type = TT.LinqKeyword;
-															#line 363 "EcsLexerGrammar.les"
+															#line 361 "EcsLexerGrammar.les"
 															_value = _descending;
 															#line default
 														} else
@@ -2477,9 +2463,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 272 "EcsLexerGrammar.les"
+											#line 270 "EcsLexerGrammar.les"
 											_type = TT.TypeKeyword;
-											#line 272 "EcsLexerGrammar.les"
+											#line 270 "EcsLexerGrammar.les"
 											_value = S.Double;
 											#line default
 										} else
@@ -2493,9 +2479,9 @@ namespace Loyc.Ecs.Parser
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 273 "EcsLexerGrammar.les"
+							#line 271 "EcsLexerGrammar.les"
 							_type = TT.Do;
-							#line 273 "EcsLexerGrammar.les"
+							#line 271 "EcsLexerGrammar.les"
 							_value = S.Do;
 							#line default
 						} else
@@ -2520,9 +2506,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 347 "EcsLexerGrammar.les"
+												#line 345 "EcsLexerGrammar.les"
 												_type = TT.ContextualKeyword;
-												#line 347 "EcsLexerGrammar.les"
+												#line 345 "EcsLexerGrammar.les"
 												_value = _dynamic;
 												#line default
 											} else
@@ -2556,9 +2542,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 274 "EcsLexerGrammar.les"
+										#line 272 "EcsLexerGrammar.les"
 										_type = TT.Else;
-										#line 274 "EcsLexerGrammar.les"
+										#line 272 "EcsLexerGrammar.les"
 										_value = S.Else;
 										#line default
 									} else
@@ -2581,9 +2567,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 275 "EcsLexerGrammar.les"
+										#line 273 "EcsLexerGrammar.les"
 										_type = TT.Enum;
-										#line 275 "EcsLexerGrammar.les"
+										#line 273 "EcsLexerGrammar.les"
 										_value = S.Enum;
 										#line default
 									} else
@@ -2609,9 +2595,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 276 "EcsLexerGrammar.les"
+											#line 274 "EcsLexerGrammar.les"
 											_type = TT.Event;
-											#line 276 "EcsLexerGrammar.les"
+											#line 274 "EcsLexerGrammar.les"
 											_value = S.Event;
 											#line default
 										} else
@@ -2648,9 +2634,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 277 "EcsLexerGrammar.les"
+														#line 275 "EcsLexerGrammar.les"
 														_type = TT.AttrKeyword;
-														#line 277 "EcsLexerGrammar.les"
+														#line 275 "EcsLexerGrammar.les"
 														_value = S.Explicit;
 														#line default
 													} else
@@ -2680,9 +2666,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 278 "EcsLexerGrammar.les"
+												#line 276 "EcsLexerGrammar.les"
 												_type = TT.AttrKeyword;
-												#line 278 "EcsLexerGrammar.les"
+												#line 276 "EcsLexerGrammar.les"
 												_value = S.Extern;
 												#line default
 											} else
@@ -2715,9 +2701,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 358 "EcsLexerGrammar.les"
+												#line 356 "EcsLexerGrammar.les"
 												_type = TT.LinqKeyword;
-												#line 358 "EcsLexerGrammar.les"
+												#line 356 "EcsLexerGrammar.les"
 												_value = _equals;
 												#line default
 											} else
@@ -2756,9 +2742,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 279 "EcsLexerGrammar.les"
+											#line 277 "EcsLexerGrammar.les"
 											_type = TT.Literal;
-											#line 279 "EcsLexerGrammar.les"
+											#line 277 "EcsLexerGrammar.les"
 											_value = G.BoxedFalse;
 											#line default
 										} else
@@ -2792,9 +2778,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 280 "EcsLexerGrammar.les"
+													#line 278 "EcsLexerGrammar.les"
 													_type = TT.Finally;
-													#line 280 "EcsLexerGrammar.les"
+													#line 278 "EcsLexerGrammar.les"
 													_value = S.Finally;
 													#line default
 												} else
@@ -2819,9 +2805,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 281 "EcsLexerGrammar.les"
+											#line 279 "EcsLexerGrammar.les"
 											_type = TT.Fixed;
-											#line 281 "EcsLexerGrammar.les"
+											#line 279 "EcsLexerGrammar.les"
 											_value = S.Fixed;
 											#line default
 										} else
@@ -2849,9 +2835,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 282 "EcsLexerGrammar.les"
+											#line 280 "EcsLexerGrammar.les"
 											_type = TT.TypeKeyword;
-											#line 282 "EcsLexerGrammar.les"
+											#line 280 "EcsLexerGrammar.les"
 											_value = S.Single;
 											#line default
 										} else
@@ -2885,9 +2871,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 283 "EcsLexerGrammar.les"
+													#line 281 "EcsLexerGrammar.les"
 													_type = TT.Foreach;
-													#line 283 "EcsLexerGrammar.les"
+													#line 281 "EcsLexerGrammar.les"
 													_value = S.ForEach;
 													#line default
 												} else
@@ -2902,9 +2888,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 284 "EcsLexerGrammar.les"
+									#line 282 "EcsLexerGrammar.les"
 									_type = TT.For;
-									#line 284 "EcsLexerGrammar.les"
+									#line 282 "EcsLexerGrammar.les"
 									_value = S.For;
 									#line default
 								} else
@@ -2925,9 +2911,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 352 "EcsLexerGrammar.les"
+										#line 350 "EcsLexerGrammar.les"
 										_type = TT.LinqKeyword;
-										#line 352 "EcsLexerGrammar.les"
+										#line 350 "EcsLexerGrammar.les"
 										_value = _from;
 										#line default
 									} else
@@ -2958,9 +2944,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 285 "EcsLexerGrammar.les"
+									#line 283 "EcsLexerGrammar.les"
 									_type = TT.Goto;
-									#line 285 "EcsLexerGrammar.les"
+									#line 283 "EcsLexerGrammar.les"
 									_value = S.Goto;
 									#line default
 								} else
@@ -2983,9 +2969,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 364 "EcsLexerGrammar.les"
+										#line 362 "EcsLexerGrammar.les"
 										_type = TT.LinqKeyword;
-										#line 364 "EcsLexerGrammar.les"
+										#line 362 "EcsLexerGrammar.les"
 										_value = _group;
 										#line default
 									} else
@@ -3008,9 +2994,9 @@ namespace Loyc.Ecs.Parser
 						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 286 "EcsLexerGrammar.les"
+							#line 284 "EcsLexerGrammar.les"
 							_type = TT.If;
-							#line 286 "EcsLexerGrammar.les"
+							#line 284 "EcsLexerGrammar.les"
 							_value = S.If;
 							#line default
 						} else
@@ -3038,9 +3024,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 287 "EcsLexerGrammar.les"
+													#line 285 "EcsLexerGrammar.les"
 													_type = TT.AttrKeyword;
-													#line 287 "EcsLexerGrammar.les"
+													#line 285 "EcsLexerGrammar.les"
 													_value = S.Implicit;
 													#line default
 												} else
@@ -3083,9 +3069,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 288 "EcsLexerGrammar.les"
+														#line 286 "EcsLexerGrammar.les"
 														_type = TT.Interface;
-														#line 288 "EcsLexerGrammar.les"
+														#line 286 "EcsLexerGrammar.les"
 														_value = S.Interface;
 														#line default
 													} else
@@ -3111,9 +3097,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 289 "EcsLexerGrammar.les"
+													#line 287 "EcsLexerGrammar.les"
 													_type = TT.AttrKeyword;
-													#line 289 "EcsLexerGrammar.les"
+													#line 287 "EcsLexerGrammar.les"
 													_value = S.Internal;
 													#line default
 												} else
@@ -3130,9 +3116,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 290 "EcsLexerGrammar.les"
+								#line 288 "EcsLexerGrammar.les"
 								_type = TT.TypeKeyword;
-								#line 290 "EcsLexerGrammar.les"
+								#line 288 "EcsLexerGrammar.les"
 								_value = S.Int32;
 								#line default
 							} else if (la3 == 'o') {
@@ -3142,9 +3128,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 359 "EcsLexerGrammar.les"
+									#line 357 "EcsLexerGrammar.les"
 									_type = TT.LinqKeyword;
-									#line 359 "EcsLexerGrammar.les"
+									#line 357 "EcsLexerGrammar.les"
 									_value = _into;
 									#line default
 								} else
@@ -3154,9 +3140,9 @@ namespace Loyc.Ecs.Parser
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 291 "EcsLexerGrammar.les"
+							#line 289 "EcsLexerGrammar.les"
 							_type = TT.In;
-							#line 291 "EcsLexerGrammar.les"
+							#line 289 "EcsLexerGrammar.les"
 							_value = S.In;
 							#line default
 						} else
@@ -3166,9 +3152,9 @@ namespace Loyc.Ecs.Parser
 						if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 292 "EcsLexerGrammar.les"
+							#line 290 "EcsLexerGrammar.les"
 							_type = TT.Is;
-							#line 292 "EcsLexerGrammar.les"
+							#line 290 "EcsLexerGrammar.les"
 							_value = S.Is;
 							#line default
 						} else
@@ -3191,9 +3177,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 293 "EcsLexerGrammar.les"
+									#line 291 "EcsLexerGrammar.les"
 									_type = TT.Lock;
-									#line 293 "EcsLexerGrammar.les"
+									#line 291 "EcsLexerGrammar.les"
 									_value = S.Lock;
 									#line default
 								} else
@@ -3209,9 +3195,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 294 "EcsLexerGrammar.les"
+									#line 292 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 294 "EcsLexerGrammar.les"
+									#line 292 "EcsLexerGrammar.les"
 									_value = S.Int64;
 									#line default
 								} else
@@ -3228,9 +3214,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 360 "EcsLexerGrammar.les"
+								#line 358 "EcsLexerGrammar.les"
 								_type = TT.LinqKeyword;
-								#line 360 "EcsLexerGrammar.les"
+								#line 358 "EcsLexerGrammar.les"
 								_value = _let;
 								#line default
 							} else
@@ -3270,9 +3256,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 295 "EcsLexerGrammar.les"
+														#line 293 "EcsLexerGrammar.les"
 														_type = TT.Namespace;
-														#line 295 "EcsLexerGrammar.les"
+														#line 293 "EcsLexerGrammar.les"
 														_value = S.Namespace;
 														#line default
 													} else
@@ -3299,9 +3285,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 296 "EcsLexerGrammar.les"
+								#line 294 "EcsLexerGrammar.les"
 								_type = TT.New;
-								#line 296 "EcsLexerGrammar.les"
+								#line 294 "EcsLexerGrammar.les"
 								_value = S.New;
 								#line default
 							} else
@@ -3319,9 +3305,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 297 "EcsLexerGrammar.les"
+									#line 295 "EcsLexerGrammar.les"
 									_type = TT.Literal;
-									#line 297 "EcsLexerGrammar.les"
+									#line 295 "EcsLexerGrammar.les"
 									_value = null;
 									#line default
 								} else
@@ -3355,9 +3341,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 298 "EcsLexerGrammar.les"
+												#line 296 "EcsLexerGrammar.les"
 												_type = TT.TypeKeyword;
-												#line 298 "EcsLexerGrammar.les"
+												#line 296 "EcsLexerGrammar.les"
 												_value = S.Object;
 												#line default
 											} else
@@ -3396,9 +3382,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 299 "EcsLexerGrammar.les"
+														#line 297 "EcsLexerGrammar.les"
 														_type = TT.Operator;
-														#line 299 "EcsLexerGrammar.les"
+														#line 297 "EcsLexerGrammar.les"
 														_value = S.Operator;
 														#line default
 													} else
@@ -3426,9 +3412,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 300 "EcsLexerGrammar.les"
+									#line 298 "EcsLexerGrammar.les"
 									_type = TT.AttrKeyword;
-									#line 300 "EcsLexerGrammar.les"
+									#line 298 "EcsLexerGrammar.les"
 									_value = S.Out;
 									#line default
 								} else
@@ -3461,9 +3447,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 301 "EcsLexerGrammar.les"
+														#line 299 "EcsLexerGrammar.les"
 														_type = TT.AttrKeyword;
-														#line 301 "EcsLexerGrammar.les"
+														#line 299 "EcsLexerGrammar.les"
 														_value = S.Override;
 														#line default
 													} else
@@ -3488,9 +3474,9 @@ namespace Loyc.Ecs.Parser
 							if (!IdOrKeyword_set0.Contains(la2)) {
 								Skip();
 								Skip();
-								#line 357 "EcsLexerGrammar.les"
+								#line 355 "EcsLexerGrammar.les"
 								_type = TT.LinqKeyword;
-								#line 357 "EcsLexerGrammar.les"
+								#line 355 "EcsLexerGrammar.les"
 								_value = _on;
 								#line default
 							} else
@@ -3518,9 +3504,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 361 "EcsLexerGrammar.les"
+													#line 359 "EcsLexerGrammar.les"
 													_type = TT.LinqKeyword;
-													#line 361 "EcsLexerGrammar.les"
+													#line 359 "EcsLexerGrammar.les"
 													_value = _orderby;
 													#line default
 												} else
@@ -3563,9 +3549,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 302 "EcsLexerGrammar.les"
+											#line 300 "EcsLexerGrammar.les"
 											_type = TT.AttrKeyword;
-											#line 302 "EcsLexerGrammar.les"
+											#line 300 "EcsLexerGrammar.les"
 											_value = S.Params;
 											#line default
 										} else
@@ -3598,9 +3584,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 303 "EcsLexerGrammar.les"
+												#line 301 "EcsLexerGrammar.les"
 												_type = TT.AttrKeyword;
-												#line 303 "EcsLexerGrammar.les"
+												#line 301 "EcsLexerGrammar.les"
 												_value = S.Private;
 												#line default
 											} else
@@ -3637,9 +3623,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 304 "EcsLexerGrammar.les"
+														#line 302 "EcsLexerGrammar.les"
 														_type = TT.AttrKeyword;
-														#line 304 "EcsLexerGrammar.les"
+														#line 302 "EcsLexerGrammar.les"
 														_value = S.Protected;
 														#line default
 													} else
@@ -3675,9 +3661,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 305 "EcsLexerGrammar.les"
+											#line 303 "EcsLexerGrammar.les"
 											_type = TT.AttrKeyword;
-											#line 305 "EcsLexerGrammar.les"
+											#line 303 "EcsLexerGrammar.les"
 											_value = S.Public;
 											#line default
 										} else
@@ -3720,9 +3706,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 306 "EcsLexerGrammar.les"
+													#line 304 "EcsLexerGrammar.les"
 													_type = TT.AttrKeyword;
-													#line 306 "EcsLexerGrammar.les"
+													#line 304 "EcsLexerGrammar.les"
 													_value = S.Readonly;
 													#line default
 												} else
@@ -3743,9 +3729,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 307 "EcsLexerGrammar.les"
+								#line 305 "EcsLexerGrammar.les"
 								_type = TT.AttrKeyword;
-								#line 307 "EcsLexerGrammar.les"
+								#line 305 "EcsLexerGrammar.les"
 								_value = S.Ref;
 								#line default
 							} else
@@ -3765,9 +3751,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 308 "EcsLexerGrammar.les"
+											#line 306 "EcsLexerGrammar.les"
 											_type = TT.Return;
-											#line 308 "EcsLexerGrammar.les"
+											#line 306 "EcsLexerGrammar.les"
 											_value = S.Return;
 											#line default
 										} else
@@ -3802,9 +3788,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 309 "EcsLexerGrammar.les"
+											#line 307 "EcsLexerGrammar.les"
 											_type = TT.TypeKeyword;
-											#line 309 "EcsLexerGrammar.les"
+											#line 307 "EcsLexerGrammar.les"
 											_value = S.Int8;
 											#line default
 										} else
@@ -3835,9 +3821,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 310 "EcsLexerGrammar.les"
+												#line 308 "EcsLexerGrammar.les"
 												_type = TT.AttrKeyword;
-												#line 310 "EcsLexerGrammar.les"
+												#line 308 "EcsLexerGrammar.les"
 												_value = S.Sealed;
 												#line default
 											} else
@@ -3863,9 +3849,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 355 "EcsLexerGrammar.les"
+												#line 353 "EcsLexerGrammar.les"
 												_type = TT.LinqKeyword;
-												#line 355 "EcsLexerGrammar.les"
+												#line 353 "EcsLexerGrammar.les"
 												_value = _select;
 												#line default
 											} else
@@ -3895,9 +3881,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 311 "EcsLexerGrammar.les"
+											#line 309 "EcsLexerGrammar.les"
 											_type = TT.TypeKeyword;
-											#line 311 "EcsLexerGrammar.les"
+											#line 309 "EcsLexerGrammar.les"
 											_value = S.Int16;
 											#line default
 										} else
@@ -3928,9 +3914,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 312 "EcsLexerGrammar.les"
+												#line 310 "EcsLexerGrammar.les"
 												_type = TT.Sizeof;
-												#line 312 "EcsLexerGrammar.les"
+												#line 310 "EcsLexerGrammar.les"
 												_value = S.Sizeof;
 												#line default
 											} else
@@ -3975,9 +3961,9 @@ namespace Loyc.Ecs.Parser
 																Skip();
 																Skip();
 																Skip();
-																#line 313 "EcsLexerGrammar.les"
+																#line 311 "EcsLexerGrammar.les"
 																_type = TT.Stackalloc;
-																#line 313 "EcsLexerGrammar.les"
+																#line 311 "EcsLexerGrammar.les"
 																_value = S.StackAlloc;
 																#line default
 															} else
@@ -4007,9 +3993,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 314 "EcsLexerGrammar.les"
+												#line 312 "EcsLexerGrammar.les"
 												_type = TT.AttrKeyword;
-												#line 314 "EcsLexerGrammar.les"
+												#line 312 "EcsLexerGrammar.les"
 												_value = S.Static;
 												#line default
 											} else
@@ -4035,9 +4021,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 315 "EcsLexerGrammar.les"
+												#line 313 "EcsLexerGrammar.les"
 												_type = TT.TypeKeyword;
-												#line 315 "EcsLexerGrammar.les"
+												#line 313 "EcsLexerGrammar.les"
 												_value = S.String;
 												#line default
 											} else
@@ -4059,9 +4045,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 316 "EcsLexerGrammar.les"
+												#line 314 "EcsLexerGrammar.les"
 												_type = TT.Struct;
-												#line 316 "EcsLexerGrammar.les"
+												#line 314 "EcsLexerGrammar.les"
 												_value = S.Struct;
 												#line default
 											} else
@@ -4094,9 +4080,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 317 "EcsLexerGrammar.les"
+												#line 315 "EcsLexerGrammar.les"
 												_type = TT.Switch;
-												#line 317 "EcsLexerGrammar.les"
+												#line 315 "EcsLexerGrammar.les"
 												_value = S.SwitchStmt;
 												#line default
 											} else
@@ -4131,9 +4117,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 318 "EcsLexerGrammar.les"
+									#line 316 "EcsLexerGrammar.les"
 									_type = TT.This;
-									#line 318 "EcsLexerGrammar.les"
+									#line 316 "EcsLexerGrammar.les"
 									_value = S.This;
 									#line default
 								} else
@@ -4152,9 +4138,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 319 "EcsLexerGrammar.les"
+										#line 317 "EcsLexerGrammar.les"
 										_type = TT.Throw;
-										#line 319 "EcsLexerGrammar.les"
+										#line 317 "EcsLexerGrammar.les"
 										_value = S.Throw;
 										#line default
 									} else
@@ -4176,9 +4162,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 320 "EcsLexerGrammar.les"
+									#line 318 "EcsLexerGrammar.les"
 									_type = TT.Literal;
-									#line 320 "EcsLexerGrammar.les"
+									#line 318 "EcsLexerGrammar.les"
 									_value = G.BoxedTrue;
 									#line default
 								} else
@@ -4191,9 +4177,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 321 "EcsLexerGrammar.les"
+								#line 319 "EcsLexerGrammar.les"
 								_type = TT.Try;
-								#line 321 "EcsLexerGrammar.les"
+								#line 319 "EcsLexerGrammar.les"
 								_value = S.Try;
 								#line default
 							} else
@@ -4210,9 +4196,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 348 "EcsLexerGrammar.les"
+										#line 346 "EcsLexerGrammar.les"
 										_type = TT.ContextualKeyword;
-										#line 348 "EcsLexerGrammar.les"
+										#line 346 "EcsLexerGrammar.les"
 										_value = _trait;
 										#line default
 									} else
@@ -4240,9 +4226,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 322 "EcsLexerGrammar.les"
+											#line 320 "EcsLexerGrammar.les"
 											_type = TT.Typeof;
-											#line 322 "EcsLexerGrammar.les"
+											#line 320 "EcsLexerGrammar.les"
 											_value = S.Typeof;
 											#line default
 										} else
@@ -4273,9 +4259,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 323 "EcsLexerGrammar.les"
+									#line 321 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 323 "EcsLexerGrammar.les"
+									#line 321 "EcsLexerGrammar.les"
 									_value = S.UInt32;
 									#line default
 								} else
@@ -4298,9 +4284,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 324 "EcsLexerGrammar.les"
+										#line 322 "EcsLexerGrammar.les"
 										_type = TT.TypeKeyword;
-										#line 324 "EcsLexerGrammar.les"
+										#line 322 "EcsLexerGrammar.les"
 										_value = S.UInt64;
 										#line default
 									} else
@@ -4337,9 +4323,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 325 "EcsLexerGrammar.les"
+														#line 323 "EcsLexerGrammar.les"
 														_type = TT.Unchecked;
-														#line 325 "EcsLexerGrammar.les"
+														#line 323 "EcsLexerGrammar.les"
 														_value = S.Unchecked;
 														#line default
 													} else
@@ -4371,9 +4357,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 326 "EcsLexerGrammar.les"
+											#line 324 "EcsLexerGrammar.les"
 											_type = TT.AttrKeyword;
-											#line 326 "EcsLexerGrammar.les"
+											#line 324 "EcsLexerGrammar.les"
 											_value = S.Unsafe;
 											#line default
 										} else
@@ -4403,9 +4389,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 327 "EcsLexerGrammar.les"
+											#line 325 "EcsLexerGrammar.les"
 											_type = TT.TypeKeyword;
-											#line 327 "EcsLexerGrammar.les"
+											#line 325 "EcsLexerGrammar.les"
 											_value = S.UInt16;
 											#line default
 										} else
@@ -4428,9 +4414,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 328 "EcsLexerGrammar.les"
+										#line 326 "EcsLexerGrammar.les"
 										_type = TT.Using;
-										#line 328 "EcsLexerGrammar.les"
+										#line 326 "EcsLexerGrammar.les"
 										_value = S.UsingStmt;
 										#line default
 									} else
@@ -4468,9 +4454,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 329 "EcsLexerGrammar.les"
+												#line 327 "EcsLexerGrammar.les"
 												_type = TT.AttrKeyword;
-												#line 329 "EcsLexerGrammar.les"
+												#line 327 "EcsLexerGrammar.les"
 												_value = S.Virtual;
 												#line default
 											} else
@@ -4508,9 +4494,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 330 "EcsLexerGrammar.les"
+													#line 328 "EcsLexerGrammar.les"
 													_type = TT.AttrKeyword;
-													#line 330 "EcsLexerGrammar.les"
+													#line 328 "EcsLexerGrammar.les"
 													_value = S.Volatile;
 													#line default
 												} else
@@ -4534,9 +4520,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 331 "EcsLexerGrammar.les"
+									#line 329 "EcsLexerGrammar.les"
 									_type = TT.TypeKeyword;
-									#line 331 "EcsLexerGrammar.les"
+									#line 329 "EcsLexerGrammar.les"
 									_value = S.Void;
 									#line default
 								} else
@@ -4553,9 +4539,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 346 "EcsLexerGrammar.les"
+								#line 344 "EcsLexerGrammar.les"
 								_type = TT.ContextualKeyword;
-								#line 346 "EcsLexerGrammar.les"
+								#line 344 "EcsLexerGrammar.les"
 								_value = _var;
 								#line default
 							} else
@@ -4583,9 +4569,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 332 "EcsLexerGrammar.les"
+										#line 330 "EcsLexerGrammar.les"
 										_type = TT.While;
-										#line 332 "EcsLexerGrammar.les"
+										#line 330 "EcsLexerGrammar.les"
 										_value = S.While;
 										#line default
 									} else
@@ -4606,9 +4592,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 353 "EcsLexerGrammar.les"
+										#line 351 "EcsLexerGrammar.les"
 										_type = TT.LinqKeyword;
-										#line 353 "EcsLexerGrammar.les"
+										#line 351 "EcsLexerGrammar.les"
 										_value = _where;
 										#line default
 									} else
@@ -4622,9 +4608,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 354 "EcsLexerGrammar.les"
+									#line 352 "EcsLexerGrammar.les"
 									_type = TT.ContextualKeyword;
-									#line 354 "EcsLexerGrammar.les"
+									#line 352 "EcsLexerGrammar.les"
 									_value = _when;
 									#line default
 								} else
@@ -4650,9 +4636,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 333 "EcsLexerGrammar.les"
+										#line 331 "EcsLexerGrammar.les"
 										_type = TT.PPif;
-										#line 333 "EcsLexerGrammar.les"
+										#line 331 "EcsLexerGrammar.les"
 										_value = S.PPIf;
 										#line default
 									} else
@@ -4676,9 +4662,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 334 "EcsLexerGrammar.les"
+												#line 332 "EcsLexerGrammar.les"
 												_type = TT.PPelse;
-												#line 334 "EcsLexerGrammar.les"
+												#line 332 "EcsLexerGrammar.les"
 												_value = S.PPElse;
 												#line default
 											} else
@@ -4695,9 +4681,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 335 "EcsLexerGrammar.les"
+												#line 333 "EcsLexerGrammar.les"
 												_type = TT.PPelif;
-												#line 335 "EcsLexerGrammar.les"
+												#line 333 "EcsLexerGrammar.les"
 												_value = S.PPElIf;
 												#line default
 											} else
@@ -4721,9 +4707,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 336 "EcsLexerGrammar.les"
+													#line 334 "EcsLexerGrammar.les"
 													_type = TT.PPendif;
-													#line 336 "EcsLexerGrammar.les"
+													#line 334 "EcsLexerGrammar.les"
 													_value = S.PPEndIf;
 													#line default
 												} else
@@ -4753,7 +4739,7 @@ namespace Loyc.Ecs.Parser
 																	Skip();
 																	Skip();
 																	Skip();
-																	#line 345 "EcsLexerGrammar.les"
+																	#line 343 "EcsLexerGrammar.les"
 																	_type = TT.PPendregion;
 																	#line default
 																	_value = RestOfPPLine();
@@ -4788,7 +4774,7 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 341 "EcsLexerGrammar.les"
+													#line 339 "EcsLexerGrammar.les"
 													_type = TT.PPerror;
 													#line default
 													_value = RestOfPPLine();
@@ -4825,9 +4811,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 337 "EcsLexerGrammar.les"
+														#line 335 "EcsLexerGrammar.les"
 														_type = TT.PPdefine;
-														#line 337 "EcsLexerGrammar.les"
+														#line 335 "EcsLexerGrammar.les"
 														_value = S.PPDefine;
 														#line default
 													} else
@@ -4862,9 +4848,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 338 "EcsLexerGrammar.les"
+													#line 336 "EcsLexerGrammar.les"
 													_type = TT.PPundef;
-													#line 338 "EcsLexerGrammar.les"
+													#line 336 "EcsLexerGrammar.les"
 													_value = S.PPUndef;
 													#line default
 												} else
@@ -4900,9 +4886,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 339 "EcsLexerGrammar.les"
+														#line 337 "EcsLexerGrammar.les"
 														_type = TT.PPpragma;
-														#line 339 "EcsLexerGrammar.les"
+														#line 337 "EcsLexerGrammar.les"
 														_value = S.PPPragma;
 														#line default
 													} else
@@ -4934,9 +4920,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 340 "EcsLexerGrammar.les"
+												#line 338 "EcsLexerGrammar.les"
 												_type = TT.PPline;
-												#line 340 "EcsLexerGrammar.les"
+												#line 338 "EcsLexerGrammar.les"
 												_value = S.PPLine;
 												#line default
 											} else
@@ -4973,7 +4959,7 @@ namespace Loyc.Ecs.Parser
 															Skip();
 															Skip();
 															Skip();
-															#line 342 "EcsLexerGrammar.les"
+															#line 340 "EcsLexerGrammar.les"
 															_type = TT.PPwarning;
 															#line default
 															_value = RestOfPPLine();
@@ -5008,7 +4994,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 343 "EcsLexerGrammar.les"
+												#line 341 "EcsLexerGrammar.les"
 												_type = TT.PPnote;
 												#line default
 												_value = RestOfPPLine();
@@ -5043,7 +5029,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 344 "EcsLexerGrammar.les"
+														#line 342 "EcsLexerGrammar.les"
 														_type = TT.PPregion;
 														#line default
 														_value = RestOfPPLine();
@@ -5089,9 +5075,9 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											Skip();
-											#line 351 "EcsLexerGrammar.les"
+											#line 349 "EcsLexerGrammar.les"
 											_type = TT.ContextualKeyword;
-											#line 351 "EcsLexerGrammar.les"
+											#line 349 "EcsLexerGrammar.les"
 											_value = _module;
 											#line default
 										} else
@@ -5122,9 +5108,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 356 "EcsLexerGrammar.les"
+									#line 354 "EcsLexerGrammar.les"
 									_type = TT.LinqKeyword;
-									#line 356 "EcsLexerGrammar.les"
+									#line 354 "EcsLexerGrammar.les"
 									_value = _join;
 									#line default
 								} else
@@ -5147,10 +5133,10 @@ namespace Loyc.Ecs.Parser
 		string RestOfPPLine()
 		{
 			int la0;
-			#line 394 "EcsLexerGrammar.les"
+			#line 392 "EcsLexerGrammar.les"
 			int start = InputPosition;
 			#line default
-			// Line 395: ([^\$\n\r])*
+			// Line 393: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -5158,26 +5144,27 @@ namespace Loyc.Ecs.Parser
 				else
 					break;
 			}
-			#line 396 "EcsLexerGrammar.les"
+			#line 394 "EcsLexerGrammar.les"
 			return CharSource.Slice(start, InputPosition - start).ToString();
 			#line default
 		}
 	
 		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~', '', '﻾');
-		static readonly HashSet<int> Token_set1 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '^', '^', '|', '|', '~', '~');
+		static readonly HashSet<int> Token_set1 = NewSetOfRanges('#', '#', 'A', 'Z', '\\', '\\', '_', '_', 'a', 'z', '', '﻾');
+		static readonly HashSet<int> Token_set2 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', '', '﻾');
 	
 		// Token -----------------------------------------------------------------
 		private 
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 408: ( Newline / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
+			// Line 406: ( Newline / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
 			do {
 				la0 = LA0;
 				switch (la0) {
 				case '\n': case '\r':
 					{
-						#line 408 "EcsLexerGrammar.les"
+						#line 406 "EcsLexerGrammar.les"
 						_type = TT.Newline;
 						#line default
 						Newline();
@@ -5202,14 +5189,14 @@ namespace Loyc.Ecs.Parser
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
-							#line 410 "EcsLexerGrammar.les"
+							#line 408 "EcsLexerGrammar.les"
 							_type = TT.SLComment;
 							#line default
 							SLComment();
 						} else if (la1 == '*') {
 							la2 = LA(2);
 							if (la2 != -1) {
-								#line 411 "EcsLexerGrammar.les"
+								#line 409 "EcsLexerGrammar.les"
 								_type = TT.MLComment;
 								#line default
 								MLComment();
@@ -5224,7 +5211,7 @@ namespace Loyc.Ecs.Parser
 						if (InputPosition == 0) {
 							la1 = LA(1);
 							if (la1 == '!') {
-								#line 413 "EcsLexerGrammar.les"
+								#line 411 "EcsLexerGrammar.les"
 								_type = TT.Shebang;
 								#line default
 								Shebang();
@@ -5232,6 +5219,54 @@ namespace Loyc.Ecs.Parser
 								goto match6;
 						} else
 							goto match6;
+					}
+					break;
+				case '@':
+					{
+						la1 = LA(1);
+						switch (la1) {
+						case '`':
+							{
+								la2 = LA(2);
+								if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
+									goto match6;
+								else
+									goto matchAt;
+							}
+						case 33: case 36: case 37: case 38:
+						case 39: case 42: case 43: case 45:
+						case 46: case 47: case 48: case 49:
+						case 50: case 51: case 52: case 53:
+						case 54: case 55: case 56: case 57:
+						case 58: case 60: case 61: case 62:
+						case 63: case 94: case 124: case 126:
+							goto match6;
+						case '"':
+							{
+								la2 = LA(2);
+								if (la2 != -1)
+									goto matchDQString;
+								else
+									goto matchAt;
+							}
+						case '@':
+							{
+								la2 = LA(2);
+								if (Token_set0.Contains(la2)) {
+									#line 417 "EcsLexerGrammar.les"
+									_type = TT.Literal;
+									#line default
+									Symbol();
+								} else
+									goto matchAt;
+							}
+							break;
+						default:
+							if (Token_set1.Contains(la1))
+								goto match6;
+							else
+								goto matchAt;
+						}
 					}
 					break;
 				case '\\':
@@ -5245,38 +5280,6 @@ namespace Loyc.Ecs.Parser
 								Operator();
 						} else
 							Operator();
-					}
-					break;
-				case '@':
-					{
-						la1 = LA(1);
-						if (Id_set0.Contains(la1))
-							goto match6;
-						else if (la1 == '`') {
-							la2 = LA(2);
-							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
-								goto match6;
-							else
-								goto matchAt;
-						} else if (Token_set1.Contains(la1))
-							goto match6;
-						else if (la1 == '"') {
-							la2 = LA(2);
-							if (la2 != -1)
-								goto matchDQString;
-							else
-								goto matchAt;
-						} else if (la1 == '@') {
-							la2 = LA(2);
-							if (Token_set0.Contains(la2)) {
-								#line 419 "EcsLexerGrammar.les"
-								_type = TT.Literal;
-								#line default
-								Symbol();
-							} else
-								goto matchAt;
-						} else
-							goto matchAt;
 					}
 					break;
 				case '"':
@@ -5309,7 +5312,7 @@ namespace Loyc.Ecs.Parser
 					}
 				case '`':
 					{
-						#line 418 "EcsLexerGrammar.les"
+						#line 416 "EcsLexerGrammar.les"
 						_type = TT.BQString;
 						#line default
 						BQString();
@@ -5323,7 +5326,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '﻿':
 					{
-						#line 422 "EcsLexerGrammar.les"
+						#line 420 "EcsLexerGrammar.les"
 						_type = TT.Spaces;
 						#line default
 						UTF_BOM();
@@ -5331,7 +5334,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ',':
 					{
-						#line 423 "EcsLexerGrammar.les"
+						#line 421 "EcsLexerGrammar.les"
 						_type = TT.Comma;
 						#line default
 						Comma();
@@ -5339,7 +5342,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ';':
 					{
-						#line 424 "EcsLexerGrammar.les"
+						#line 422 "EcsLexerGrammar.les"
 						_type = TT.Semicolon;
 						#line default
 						Semicolon();
@@ -5347,7 +5350,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '(':
 					{
-						#line 425 "EcsLexerGrammar.les"
+						#line 423 "EcsLexerGrammar.les"
 						_type = TT.LParen;
 						#line default
 						Skip();
@@ -5355,7 +5358,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ')':
 					{
-						#line 426 "EcsLexerGrammar.les"
+						#line 424 "EcsLexerGrammar.les"
 						_type = TT.RParen;
 						#line default
 						Skip();
@@ -5363,7 +5366,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '[':
 					{
-						#line 427 "EcsLexerGrammar.les"
+						#line 425 "EcsLexerGrammar.les"
 						_type = TT.LBrack;
 						#line default
 						Skip();
@@ -5371,7 +5374,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ']':
 					{
-						#line 428 "EcsLexerGrammar.les"
+						#line 426 "EcsLexerGrammar.les"
 						_type = TT.RBrack;
 						#line default
 						Skip();
@@ -5379,7 +5382,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '{':
 					{
-						#line 429 "EcsLexerGrammar.les"
+						#line 427 "EcsLexerGrammar.les"
 						_type = TT.LBrace;
 						#line default
 						Skip();
@@ -5387,14 +5390,14 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '}':
 					{
-						#line 430 "EcsLexerGrammar.les"
+						#line 428 "EcsLexerGrammar.les"
 						_type = TT.RBrace;
 						#line default
 						Skip();
 					}
 					break;
 				default:
-					if (Symbol_set0.Contains(la0))
+					if (Token_set2.Contains(la0))
 						goto match6;
 					else
 						goto error;
@@ -5402,7 +5405,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchNumber:
 				{
-					#line 409 "EcsLexerGrammar.les"
+					#line 407 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					Number();
@@ -5410,7 +5413,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			match6:
 				{
-					#line 414 "EcsLexerGrammar.les"
+					#line 412 "EcsLexerGrammar.les"
 					_type = TT.Id;
 					#line default
 					IdOrKeyword();
@@ -5418,7 +5421,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchTQString:
 				{
-					#line 415 "EcsLexerGrammar.les"
+					#line 413 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					TQString();
@@ -5426,7 +5429,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchSQString:
 				{
-					#line 416 "EcsLexerGrammar.les"
+					#line 414 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					SQString();
@@ -5434,7 +5437,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchDQString:
 				{
-					#line 417 "EcsLexerGrammar.les"
+					#line 415 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					DQString();
@@ -5442,7 +5445,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchAt:
 				{
-					#line 420 "EcsLexerGrammar.les"
+					#line 418 "EcsLexerGrammar.les"
 					_type = TT.At;
 					#line default
 					At();
@@ -5450,9 +5453,9 @@ namespace Loyc.Ecs.Parser
 				break;
 			error:
 				{
-					#line 431 "EcsLexerGrammar.les"
+					#line 429 "EcsLexerGrammar.les"
 					_type = TT.Unknown;
-					#line 431 "EcsLexerGrammar.les"
+					#line 429 "EcsLexerGrammar.les"
 					Error(0, "Unrecognized token");
 					#line default
 					MatchExcept();

@@ -886,7 +886,6 @@ namespace Loyc.Ecs.Parser
 		@[private] fn MaybeRecognizeVarAsKeyword(ref type::LNode)
 		{
 			// Recognize "var" (but not @var) as a contextual keyword.
-			rng::SourceRange;
 			name::Symbol = type.Name;
 			if (name == _var) && type.IsId
 				&& (type.BaseStyle & NodeStyle.VerbatimId) == 0

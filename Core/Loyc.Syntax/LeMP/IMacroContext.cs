@@ -13,8 +13,7 @@ namespace LeMP
 	{
 		/// <summary>Returns the message sink, used for writing warnings and errors.</summary>
 		/// <remarks>For backward compatibility, IMacroContext itself implements 
-		/// IMessageSink, but if we were starting from scratch you'd have to write 
-		/// output through this property.</remarks>
+		/// IMessageSink also.</remarks>
 		IMessageSink Sink { get; }
 
 		/// <summary>Returns a table of "properties" (arbitrary key-value pairs)

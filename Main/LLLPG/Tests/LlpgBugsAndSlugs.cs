@@ -217,7 +217,6 @@ namespace Loyc.LLParserGenerator
 			*/
 		}
 
-		[Test(Fails = "TODO: investigate this bug")]
 		public void Bug_2016_11()
 		{
 			// Originally SLComment would do `if (la1 == -1 || la1 == '\\') goto stop;`,

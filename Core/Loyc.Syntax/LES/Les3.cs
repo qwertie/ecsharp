@@ -344,7 +344,6 @@ namespace Loyc.Syntax.Les
 		public static TokenType GetOperatorTokenType(UString op)
 		{
 			Debug.Assert(op.Length > 0);
-			TokenType tt;
 
 			int length = op.Length;
 			// Get first and last of the operator's initial punctuation

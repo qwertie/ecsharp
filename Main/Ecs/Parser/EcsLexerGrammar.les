@@ -144,7 +144,7 @@ namespace Loyc.Ecs.Parser
 
 		// Identifiers and Symbols -----------------------------------------------
 
-		@[private] rule IdStartChar @{ '_'|'a'..'z'|'A'..'Z' };
+		@[private] rule IdStartChar @{ '_'|'a'..'z'|'A'..'Z'|'#' };
 		@[k(9), private]
 		rule IdUniLetter @
 		{	&{char.IsLetter(LA0 -> char)} 0x80..0xFEFE
@@ -154,7 +154,6 @@ namespace Loyc.Ecs.Parser
 		@[k(9), private]
 		rule IdContChars @{ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* };
 		@[private] rule NormalId @{ (IdStartChar|IdUniLetter) IdContChars };
-		@[private] rule HashId   @{ '#'                       IdContChars };
 		
 		@[private] rule CommentStart @{ '/' ('/'|'*') };
 		@[k(9), private]
@@ -174,9 +173,8 @@ namespace Loyc.Ecs.Parser
 			{_parseNeeded = _verbatim = false;}
 			{isBQ::bool = false;}
 			{skipAt::int = 0;}
-			(	default NormalId 
-			|	HashId 
-			|	'@' (NormalId / isBQ=FancyId) {skipAt=1; _style = NodeStyle.VerbatimId;} )
+			(	'@' (NormalId / isBQ=FancyId) {skipAt=1; _style = NodeStyle.VerbatimId;} 
+			|	default NormalId )
 			{ParseIdValue(skipAt, isBQ);}
 		};
 		@[private] rule LettersOrPunc @{ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
