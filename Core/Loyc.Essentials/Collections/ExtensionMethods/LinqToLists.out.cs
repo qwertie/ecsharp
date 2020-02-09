@@ -25,27 +25,10 @@ namespace Loyc.Collections
 	/// </remarks>
 	public static partial class LinqToLists
 	{
-		// *** Reminder: do not edit the generated output! ***
-		public static int Count<T>(this IList<T> list)
-		{
-			return list.Count;
-		}
-		// *** Reminder: do not edit the generated output! ***
-		public static int Count<T>(this IReadOnlyCollection<T> list)
-		{
-			return list.Count;
-		}
-		// *** Reminder: do not edit the generated output! ***
-		public static int Count<T>(this INegListSource<T> list)
-		{
-			return list.Count;
-		}
-		public static T FirstOrDefault<T>(this IList<T> list, T defaultValue = default(T))
-		{
-			if (list.Count > 0)
-				return list[0];
-			return defaultValue;
-		}
+		// *** Visual Studio lets me edit the generated output, so I'm sprinkling notes to myself not to do that.
+		public static int Count<T>(this IReadOnlyCollection<T> list) => list.Count;
+		public static int Count<T>(this INegListSource<T> list) => list.Count;
+	
 		public static T FirstOrDefault<T>(this IListSource<T> list)
 		{
 			bool _;
@@ -59,27 +42,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			return result;
 		}
-		public static T FirstOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T))
-		{
-			return FirstOrDefault((IListSource<T>) list, defaultValue);
-		}
 	
-		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
-		/// <exception cref="EmptySequenceException">The list is empty</exception>
-		public static T Last<T>(this IList<T> list)
-		{
-			int last = list.Count - 1;
-			if (last < 0)
-				throw new EmptySequenceException();
-			return list[last];
-		}
-		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
-		public static T LastOrDefault<T>(this IList<T> list, T defaultValue = default(T))
-		{
-			int last = list.Count - 1;
-			return last < 0 ? defaultValue : list[last];
-		}
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
 		/// <exception cref="EmptySequenceException">The list is empty</exception>
@@ -97,10 +60,7 @@ namespace Loyc.Collections
 			return last < 0 ? defaultValue : list[last];
 		}
 		// *** Reminder: do not edit the generated output! ***
-		public static T Last<T>(this IListAndListSource<T> list) { return Last((IList<T>) list); }
-		public static T LastOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) {
-			return LastOrDefault((IList<T>) list, defaultValue);
-		}
+		public static T Last<T>(this IListAndListSource<T> list) { return Last((IListSource<T>) list); }
 	
 		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
 		/// <exception cref="EmptySequenceException">The list is empty</exception>
@@ -137,21 +97,6 @@ namespace Loyc.Collections
 		/// <summary>Skips the specified number of elements immediately and 
 		/// returns a slice of part of the list that remains, or an empty 
 		/// slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
-		public static ListSlice<T> Skip<T>(this IList<T> list, int start)
-		{
-			return new ListSlice<T>(list, start);
-		}
-		/// <summary>Returns a slice of the specified number of elements from 
-		/// the beginning of the list, or a slice of the entire list if <c>count</c> 
-		/// is greater than or equal to the <c>list.Count</c>.</summary>
-		public static ListSlice<T> Take<T>(this IList<T> list, int count)
-		{
-			return new ListSlice<T>(list, 0, count);
-		}
-		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Skips the specified number of elements immediately and 
-		/// returns a slice of part of the list that remains, or an empty 
-		/// slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
 		public static ListSlice<T> Skip<T>(this IListAndListSource<T> list, int start)
 		{
 			return new ListSlice<T>(list, start);
@@ -175,37 +120,6 @@ namespace Loyc.Collections
 			return new NegListSlice<T>(list, list.Min, count);
 		}
 	
-		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
-		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
-		/// the list immediately.</summary>
-		/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
-		/// (not a copy) of the first 3 elements.</remarks>
-		public static ListSlice<T> TakeNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
-		{
-			Maybe<T> value;
-			for (int i = 0;; i++) {
-				if (!(value = list.TryGet(i)).HasValue)
-					return new ListSlice<T>(list);
-				else if (!predicate(value.Value))
-					return new ListSlice<T>(list, 0, i);
-			}
-		}
-		/// <summary>Returns a slice without the initial elements of the list that meet the specified
-		/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
-		/// method scans the list immediately.</summary>
-		/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
-		/// (not a copy) of the last 2 elements.</remarks>
-		public static ListSlice<T> SkipNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
-		{
-			Maybe<T> value;
-			for (int i = 0;; i++) {
-				if (!(value = list.TryGet(i)).HasValue)
-					return new ListSlice<T>();
-				else if (!predicate(value.Value))
-					return new ListSlice<T>(list, i);
-			}
-		}
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
@@ -269,16 +183,6 @@ namespace Loyc.Collections
 			}
 		}
 		// *** Reminder: do not edit the generated output! ***
-		public static ListSlice<T> TakeNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
-		{
-			return TakeNowWhile((IList<T>) list, predicate);
-		}
-		public static ListSlice<T> SkipNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
-		{
-			return SkipNowWhile((IList<T>) list, predicate);
-		}
-	
-		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Copies the contents of a list to an array.</summary>
 		public static T[] ToArray<T>(this IReadOnlyList<T> c)
 		{
@@ -287,17 +191,8 @@ namespace Loyc.Collections
 				array[i] = c[i];
 			return array;
 		}
-		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Copies the contents of a list to an array.</summary>
-		public static T[] ToArray<T>(this IList<T> c)
-		{
-			var array = new T[c.Count];
-			for (int i = 0; i < array.Length; i++)
-				array[i] = c[i];
-			return array;
-		}
 	
-		public static T[] ToArray<T>(this IListAndListSource<T> c) { return ToArray((IReadOnlyList<T>) c); }
+		public static T[] ToArray<T>(this IListAndListSource<T> c) => MutableListExtensionMethods.LinqToLists.ToArray(c);
 	
 		/// <summary>Copies the contents of an <see cref="INegListSource{T}"/> to an array.</summary>
 		public static T[] ToArray<T>(this INegListSource<T> c)
@@ -318,18 +213,139 @@ namespace Loyc.Collections
 		{
 			return new SelectReadOnlyList<IReadOnlyList<T>, T, TResult>(list, selector);
 		}
-		public static SelectList<IList<T>, T, TResult> Select<T, TResult>(this IList<T> list, Func<T, TResult> selector)
-		{
-			return new SelectList<IList<T>, T, TResult>(list, selector);
-		}
 		public static SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult> Select<T, TResult>(this IReadOnlyCollection<T> list, Func<T, TResult> selector)
 		{
 			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
+		}
+	
+		/// <summary>Returns a reversed view of a read-only list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
+		{
+			return new ReversedListSource<T>(c);
+		}
+	
+		// The following methods operate on mutable collections (contrary to the plan in 
+		// #84 to avoid ambiguity errors) because there's no IReadOnlyList version of 
+		// them and so we can reasonably expect the collection to implement IListAndListSource
+		/// <summary>Returns an editable reversed view of a list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedList<T> Reverse<T>(this IList<T> list) => new ReversedList<T>(list);
+		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list) => new ReversedList<T>(list);
+	
+			// TODO: interface-preserving version of this
+			//     Projects each element of a sequence into a new form by incorporating the element's index.
+			//   source:
+			//     A sequence of values to invoke a transform function on.
+			//   selector:
+			//     A transform function to apply to each source element; the second parameter of
+			//     the function represents the index of the source element.
+			// public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, TResult> selector);
+	}
+}
+
+namespace Loyc.Collections.MutableListExtensionMethods
+{
+	public static partial class LinqToLists
+	{
+		public static int Count<T>(this IList<T> list) => list.Count;
+	
+		public static T FirstOrDefault<T>(this IList<T> list, T defaultValue = default(T))
+		{
+			if (list.Count > 0)
+				return list[0];
+			return defaultValue;
+		}
+	
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
+		/// <exception cref="EmptySequenceException">The list is empty</exception>
+		public static T Last<T>(this IList<T> list)
+		{
+			int last = list.Count - 1;
+			if (last < 0)
+				throw new EmptySequenceException();
+			return list[last];
+		}
+		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
+		public static T LastOrDefault<T>(this IList<T> list, T defaultValue = default(T))
+		{
+			int last = list.Count - 1;
+			return last < 0 ? defaultValue : list[last];
+		}
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Skips the specified number of elements immediately and 
+		/// returns a slice of part of the list that remains, or an empty 
+		/// slice if <c>start</c> is greater than or equal to the <c>list.Count</c>.</summary>
+		public static ListSlice<T> Skip<T>(this IList<T> list, int start)
+		{
+			return new ListSlice<T>(list, start);
+		}
+		/// <summary>Returns a slice of the specified number of elements from 
+		/// the beginning of the list, or a slice of the entire list if <c>count</c> 
+		/// is greater than or equal to the <c>list.Count</c>.</summary>
+		public static ListSlice<T> Take<T>(this IList<T> list, int count)
+		{
+			return new ListSlice<T>(list, 0, count);
+		}
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
+		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
+		/// the list immediately.</summary>
+		/// <remarks>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n => n > 10) returns a slice 
+		/// (not a copy) of the first 3 elements.</remarks>
+		public static ListSlice<T> TakeNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0;; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new ListSlice<T>(list);
+				else if (!predicate(value.Value))
+					return new ListSlice<T>(list, 0, i);
+			}
+		}
+		/// <summary>Returns a slice without the initial elements of the list that meet the specified
+		/// criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this 
+		/// method scans the list immediately.</summary>
+		/// <remarks>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n => n > 10) returns a slice 
+		/// (not a copy) of the last 2 elements.</remarks>
+		public static ListSlice<T> SkipNowWhile<T>(this IList<T> list, Func<T, bool> predicate)
+		{
+			Maybe<T> value;
+			for (int i = 0;; i++) {
+				if (!(value = list.TryGet(i)).HasValue)
+					return new ListSlice<T>();
+				else if (!predicate(value.Value))
+					return new ListSlice<T>(list, i);
+			}
 		}
 		public static SelectCollection<ICollection<T>, T, TResult> Select<T, TResult>(this ICollection<T> list, Func<T, TResult> selector)
 		{
 			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
 		}
+		public static SelectList<IList<T>, T, TResult> Select<T, TResult>(this IList<T> list, Func<T, TResult> selector)
+		{
+			return new SelectList<IList<T>, T, TResult>(list, selector);
+		}
+	
+		public static T[] ToArray<T>(this ICollection<T> c)
+		{
+			var array = new T[c.Count];
+			c.CopyTo(array, 0);
+			return array;
+		}
+	
+		#region Disambiguating methods (for collections that support them)
+		// https://github.com/qwertie/ecsharp/issues/84 describes the problem solved by these methods
+		// *** Reminder: do not edit the generated output! ***
+		public static T Last<T>(this IListAndListSource<T> list) => Last((IList<T>) list);
+		public static T LastOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) => 
+		LastOrDefault((IList<T>) list, defaultValue);
+		public static T FirstOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) => 
+		FirstOrDefault((IList<T>) list, defaultValue);
+	
+		public static SelectList<T[], T, TResult> Select<T, TResult>(this T[] list, Func<T, TResult> selector) => 
+		new SelectList<T[], T, TResult>(list, selector);
 	
 		// *** Reminder: do not edit the generated output! ***
 		// Avoid ambiguity errors involving collections that support the ambiguity-avoidance interfaces
@@ -341,11 +357,6 @@ namespace Loyc.Collections
 		{
 			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
 		}
-	
-		// Microsoft didn't plan intelligently, so in new versions of .NET we have to 
-		// manually add overloads for standard lists like List<T> to avoid ambiguity errors.
-		// Perhaps we should transition off support for IList and ICollection to avoid 
-		// ambiguity in the first place.
 		public static SelectList<IList<T>, T, TResult> Select<T, TResult>(this List<T> list, Func<T, TResult> selector)
 		{
 			return new SelectList<IList<T>, T, TResult>(list, selector);
@@ -358,31 +369,17 @@ namespace Loyc.Collections
 		{
 			return new SelectCollection<ICollection<KeyValuePair<K, V>>, KeyValuePair<K, V>, TResult>(list, selector);
 		}
-		public static SelectList<T[], T, TResult> Select<T, TResult>(this T[] list, Func<T, TResult> selector)
-		{
-			return new SelectList<T[], T, TResult>(list, selector);
-		}
-	
-		/// <summary>Returns a reversed view of a read-only list.</summary>
-		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
-		{
-			return new ReversedListSource<T>(c);
-		}
 	
 		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Returns an editable reversed view of a list.</summary>
-		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-		public static ReversedList<T> Reverse<T>(this IList<T> list)
+		public static ListSlice<T> TakeNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
-			return new ReversedList<T>(list);
+			return TakeNowWhile((IList<T>) list, predicate);
 		}
-		// *** Reminder: do not edit the generated output! ***
-		/// <summary>Returns an editable reversed view of a list.</summary>
-		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
-		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list)
+		public static ListSlice<T> SkipNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
-			return new ReversedList<T>(list);
+			return SkipNowWhile((IList<T>) list, predicate);
 		}
+	
+		#endregion
 	}
 }
