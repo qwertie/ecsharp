@@ -4,7 +4,6 @@ using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
 using Loyc;
-using Loyc.Math;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Collections.Impl;

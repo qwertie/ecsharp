@@ -59,7 +59,7 @@ namespace Loyc.Syntax
 		/// Indentation-sensitive languages should treat an empty string as one space or tab.
 		/// </remarks>
 		string IndentString { get; }
-		
+
 		/// <summary>Specifies the string to use for line breaks (typically "\n").</summary>
 		/// <remarks>
 		/// If this option is null, the printer should use its default newline string, which
@@ -71,30 +71,5 @@ namespace Loyc.Syntax
 		/// depending on how strings are defined in the language being printed.
 		/// </remarks>
 		string NewlineString { get; }
-	}
-
-	/// <summary>A concrete class that users can pass to an <see cref="LNodePrinter"/>.</summary>
-	public class LNodePrinterOptions : ILNodePrinterOptions
-	{
-		public virtual bool AllowChangeParentheses { get; set; }
-		public virtual bool OmitComments { get; set; }
-		public virtual bool OmitUnknownTrivia { get; set; }
-		public virtual bool PrintTriviaExplicitly { get; set; }
-		public virtual bool CompatibilityMode { get; set; }
-		public virtual bool CompactMode { get; set; }
-		public virtual string IndentString { get; set; }
-		public virtual string NewlineString { get; set; }
-
-		public void CopyFrom(ILNodePrinterOptions original)
-		{
-			AllowChangeParentheses = original.AllowChangeParentheses;
-			OmitComments = original.OmitComments;
-			OmitUnknownTrivia = original.OmitUnknownTrivia;
-			PrintTriviaExplicitly = original.PrintTriviaExplicitly;
-			CompatibilityMode = original.CompatibilityMode;
-			CompactMode = original.CompactMode;
-			IndentString = original.IndentString;
-			NewlineString = original.NewlineString;
-		}
 	}
 }

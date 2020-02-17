@@ -6,6 +6,9 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
+	/// <summary>The three kinds of nodes in a Loyc tree</summary>
+	public enum LNodeKind { Id, Literal, Call }
+
 	/// <summary>A read-only interface for objects that act as Loyc trees.</summary>
 	/// <remarks>
 	/// To simplify implementations of this interface, there is no separate 
@@ -38,7 +41,7 @@ namespace Loyc.Syntax
 	/// Tip: the LES node printer can print any ILNode as a string. See
 	/// <see cref="Loyc.Syntax.Les.Les3LanguageService.Print(ILNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)"/>
 	/// </remarks>
-	public interface ILNode : IToLNode, IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
+	public interface ILNode : IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
 	{
 		/// <inheritdoc cref="LNode.Kind"/>
 		LNodeKind Kind { get; }
@@ -61,15 +64,5 @@ namespace Loyc.Syntax
 		/// you have a certain kind of node, it's common to check <i>both</i> the Name 
 		/// and ArgCount(); checking both in one call avoids extra interface invocations.</remarks>
 		bool Calls(Symbol name, int argCount);
-	}
-
-	/// <summary>An interface for objects that can be converted to <see cref="LNode"/>.</summary>
-	public interface IToLNode
-	{
-		/// <summary>Converts this object to an <see cref="LNode"/>, or returns 
-		/// <c>this</c> if the object is already an <see cref="LNode"/>.</summary>
-		/// <remarks>If your class implements <see cref="ILNode"/>, you can implement
-		/// this method simply by calling <see cref="LNodeExt.ToLNode"/>.</remarks>
-		LNode ToLNode();
 	}
 }

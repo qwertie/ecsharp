@@ -10,9 +10,6 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
-	/// <summary>The three kinds of nodes in a Loyc tree</summary>
-	public enum LNodeKind { Id, Literal, Call }
-
 	/// <summary>All nodes in a Loyc syntax tree share this base class.</summary>
 	/// <remarks>
 	/// Loyc defines only three types of nodes: simple symbols, literals, and calls.
@@ -926,8 +923,6 @@ namespace Loyc.Syntax
 		{
 			return new NegListSlice<ILNode>(this, start, count);
 		}
-
-		LNode IToLNode.ToLNode() { return this; }
 
 		#endregion
 

@@ -27,15 +27,16 @@ namespace Loyc
 	/// supporting non-English characters (or "ĉĥáràĉtérŝ", as I like to say),
 	/// it is useful to have a bidirectional iterator that scans characters one
 	/// codepoint at a time. UString provides that functionality for .NET, and
-	/// the nice thing about UString is that it's portable to UTF-8 environments.
-	/// That is, by using UString, your code will be portable to a UTF-8 
-	/// environment that uses an equivalent implementation of UString for UTF-8. 
-	/// Eventually I want Loyc to target native environments, where UTF-8 is 
-	/// common, and UString can provide a common data type for both UTF-8 and 
-	/// UTF-16 environments.
+	/// the nice thing about UString is that it's largely portable to UTF-8 
+	/// environments. That is, if you use UString, as long as you do not assume 
+	/// that you can access non-ASCII characters via the indexer, your code 
+	/// will be portable to a UTF-8 environment that uses an equivalent 
+	/// implementation of UString for UTF-8. Eventually I want Loyc to target 
+	/// native environments, where UTF-8 is common, and UString can provide a 
+	/// common data type for both UTF-8 and UTF-16 environments.
 	/// <para/>
-	/// UString is a bidirectional range of "uchar", which is an alias for int
-	/// (uchar means "Unicode" or "UCS-4", rather than "unsigned").
+	/// UString is a bidirectional range of Unicode UCS-4 integers (known as 
+	/// "uchar" in the source code.)
 	/// <para/>
 	/// UString has a <see cref="DecodeAt(int)"/> method that tries to decode
 	/// a UTF character to UCS at a particular index.
@@ -101,9 +102,10 @@ namespace Loyc
 			_count = count;
 			Debug.Assert(start >= 0 && count >= 0 && start + count <= (_str == null ? 0 : _str.Length));
 		}
+		
 		/// <summary>Returns the original string.</summary>
-		/// <remarks>Ideally, keep the string private, there would be no way to 
-		/// access its contents beyond the boundaries of the slice. However, the
+		/// <remarks>Ideally, the string would be private and there would be no way 
+		/// to access its contents beyond the boundaries of the slice. However, the
 		/// reality in .NET today is that many methods accept "slices" in the 
 		/// form of a triple (string, start index, count). In order to call such an
 		/// old-style API using a slice, one must be able to extract the internal
@@ -112,23 +114,11 @@ namespace Loyc
 		public int InternalStart { get { return _start; } }
 		public int InternalStop { get { return _start + _count; } }
 
-		public int Length
-		{
-			get { return _count; }
-		}
+		public int Length => _count;
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public int Count
-		{
-			get { return _count; }
-		}
-		public bool IsEmpty
-		{
-			get { return _count == 0; }
-		}
-		public uchar First
-		{
-			get { return DecodeAt(0); }
-		}
+		public int Count => _count;
+		public bool IsEmpty => _count == 0;
+		public uchar First => DecodeAt(0);
 		public uchar Last
 		{
 			get {
@@ -169,18 +159,18 @@ namespace Loyc
 			return default(uchar);
 		}
 
-		public Maybe<uchar> TryPopFirst()
-		{
-			bool fail;
-			uchar next = PopFirst(out fail);
-			return fail ? default(Maybe<uchar>) : next;
-		}
-		public Maybe<uchar> TryPopLast()
-		{
-			bool fail;
-			uchar next = PopLast(out fail);
-			return fail ? default(Maybe<uchar>) : next;
-		}
+		//public Maybe<uchar> TryPopFirst()
+		//{
+		//	bool fail;
+		//	uchar next = PopFirst(out fail);
+		//	return fail ? default(Maybe<uchar>) : next;
+		//}
+		//public Maybe<uchar> TryPopLast()
+		//{
+		//	bool fail;
+		//	uchar next = PopLast(out fail);
+		//	return fail ? default(Maybe<uchar>) : next;
+		//}
 
 		char IFRange<char>.PopFirst(out bool fail)
 		{
@@ -206,20 +196,17 @@ namespace Loyc
 		}
 		char IFRange<char>.First => this[0];
 		char IBRange<char>.Last => this[_count - 1];
-		IFRange<uchar>  ICloneable<IFRange<uchar>>.Clone() { return Clone(); }
-		IBRange<uchar>  ICloneable<IBRange<uchar>>.Clone() { return Clone(); }
-		IFRange<char>   ICloneable<IFRange<char>>.Clone() { return Clone(); }
-		IBRange<char>   ICloneable<IBRange<char>>.Clone() { return Clone(); }
-		IRange<char>    ICloneable<IRange<char>>.Clone()  { return Clone(); }
-		public UString Clone() { return this; }
+		IFRange<uchar>  ICloneable<IFRange<uchar>>.Clone() => Clone();
+		IBRange<uchar>  ICloneable<IBRange<uchar>>.Clone() => Clone();
+		IFRange<char>   ICloneable<IFRange<char>>.Clone() => Clone();
+		IBRange<char>   ICloneable<IBRange<char>>.Clone() => Clone();
+		IRange<char>    ICloneable<IRange<char>>.Clone() => Clone();
+		public UString Clone() => this;
 
-		IEnumerator<uchar> IEnumerable<uchar>.GetEnumerator() { return GetEnumerator(); }
-		IEnumerator<char> IEnumerable<char>.GetEnumerator() { return new RangeEnumerator<UString,char>(this); }
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public RangeEnumerator<UString,uchar> GetEnumerator()
-		{
-			return new RangeEnumerator<UString,uchar>(this);
-		}
+		IEnumerator<uchar> IEnumerable<uchar>.GetEnumerator() => GetEnumerator();
+		IEnumerator<char> IEnumerable<char>.GetEnumerator() => new RangeEnumerator<UString,char>(this);
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		public RangeEnumerator<UString,uchar> GetEnumerator() => new RangeEnumerator<UString,uchar>(this);
 
 		/// <summary>Returns the UCS code point that starts at the specified index.</summary>
 		/// <remarks>

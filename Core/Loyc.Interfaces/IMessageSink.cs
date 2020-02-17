@@ -1,4 +1,4 @@
-﻿//
+//
 // Defines IMessageSink and the Severity enum that it depends on
 //
 using System;

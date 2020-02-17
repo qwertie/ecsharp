@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created David on 7/20/2007 at 2:21 PM
  */
 
@@ -8,6 +8,7 @@ using Loyc.Threading;
 using System.Resources;
 using System.Globalization;
 using Loyc;
+using System.Threading;
 
 namespace Loyc
 {
@@ -16,13 +17,16 @@ namespace Loyc
 	/// installed. It makes your program localization-ready with no effort.
 	/// See article: http://core.loyc.net/essentials/localize.html
 	/// </summary><remarks>
-	/// The idea of this Localize facility is to convince programmers to support
+	/// The idea of the Localize facility is to convince programmers to support
 	/// localization by making it dead-easy to do. By default it is not connected to
 	/// any translator (it just passes strings through), so people who are only
 	/// writing a program for a one-language market can easily make their code
 	/// "multiligual-ready" without doing any extra work. All you do is call the
-	/// <c>.Localized()</c> extension method, which is actually shorter than the
-	/// traditional <c>string.Format()</c>.
+	/// <c>.Localized()</c> extension method, which is actually shorter than 
+	/// <c>string.Format()</c>.
+	/// <p/>
+	/// All errors thrown from Loyc libraries are in English but pass through this 
+	/// localizer.
 	/// <p/>
 	/// The translation system itself is separate from this class, and connected 
 	/// to `Localized()` by a delegate, so that multiple translation systems are 
@@ -189,14 +193,30 @@ namespace Loyc
 	/// </remarks>
 	public static class Localize
 	{
-		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru, autoFallback: true);
-		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.FormatCore, autoFallback: true);
+		public static ThreadLocal<LocalizerDelegate> _localizer = new ThreadLocal<LocalizerDelegate>();
+		public static ThreadLocal<FormatterDelegate> _formatter = new ThreadLocal<FormatterDelegate>(trackAllValues: true);
+		static LocalizerDelegate _globalLocalizer = Passthrough;
+		static FormatterDelegate _globalFormatter = string.Format;
+
+		/// <summary>Gets or sets the localizer used when one has not been assigned 
+		/// to the current thread with <see cref="SetLocalizer"/>.</summary>
+		public static LocalizerDelegate GlobalDefaultLocalizer
+		{
+			get => _globalLocalizer;
+			set => _globalLocalizer = value ?? throw new ArgumentNullException();
+		}
+		/// <summary>Gets or sets the formatter used when one has not been assigned 
+		/// to the current thread with <see cref="SetFormatter"/>.</summary>
+		public static FormatterDelegate GlobalDefaultFormatter
+		{
+			get => _globalFormatter;
+			set => _globalFormatter = value ?? throw new ArgumentNullException();
+		}
 
 		/// <summary>Localizer method, which is a do-nothing pass-through by default</summary>
-		public static LocalizerDelegate Localizer
-		{
-			get { return _localizer.Value; }
-		}
+		public static LocalizerDelegate Localizer => _localizer.Value ?? GlobalDefaultLocalizer;
+		/// <summary>String formatter method, which is `string.Format` by default</summary>
+		public static FormatterDelegate Formatter => _formatter.Value ?? GlobalDefaultFormatter;
 
 		/// <summary>Sets the localizer method.</summary>
 		/// <remarks><see cref="Localizer"/> is a thread-local value, but since
@@ -207,9 +227,20 @@ namespace Loyc
 		/// This property follows the Ambient Service Pattern:
 		/// http://core.loyc.net/essentials/ambient-service-pattern.html
 		/// </remarks>
-		public static SavedValue<LocalizerDelegate> SetLocalizer(LocalizerDelegate newValue)
+		public static SavedThreadLocal<LocalizerDelegate> SetLocalizer(LocalizerDelegate newValue)
 		{
-			return new SavedValue<LocalizerDelegate>(_localizer, newValue ?? Passthru);
+			return new SavedThreadLocal<LocalizerDelegate>(_localizer, newValue ?? throw new ArgumentNullException());
+		}
+
+		/// <summary>Sets the formatter method.</summary>
+		/// <remarks><see cref="Formatter"/> is a thread-local value, but since
+		/// .NET does not support inheritance of thread-local values, this method
+		/// also sets the global default used by threads on which this method was 
+		/// never called.
+		/// </remarks>
+		public static SavedThreadLocal<FormatterDelegate> SetFormatter(FormatterDelegate newValue)
+		{
+			return new SavedThreadLocal<FormatterDelegate>(_formatter, newValue ?? throw new ArgumentNullException());
 		}
 
 		/// <summary>Uses a standard <see cref="ResourceManager"/> object to obtain translations.</summary>
@@ -225,17 +256,17 @@ namespace Loyc
 		/// be used to compute a resource name such as "strSaveAs" automatically,
 		/// according to whatever naming convention is used in your resource file.
 		/// </param>
-		/// <param name="fallbackToPrevious">If a translation was not found in the 
-		/// specified ResourceManager and this parameter is true, the previously-
-		/// installed <see cref="Localizer"/> is called instead. Otherwise, the 
-		/// dummy translator <see cref="Passthru"/> is used.</param>
 		/// <returns></returns>
-		public static SavedValue<LocalizerDelegate> UseResourceManager(ResourceManager manager, 
-			CultureInfo culture = null, Func<string, string> resxNameCalculator = null, bool fallbackToPrevious = true)
+		/// <remarks>If a translation was not found in the specified ResourceManager 
+		/// and this parameter is true, the previously-installed <see cref="Localizer"/> 
+		/// is called instead.</remarks>
+		public static SavedThreadLocal<LocalizerDelegate> UseResourceManager(ResourceManager manager, 
+			CultureInfo culture = null, Func<string, string> resxNameCalculator = null)
 		{
-			CheckParam.IsNotNull("manager", manager);
+			if (manager == null)
+				throw new ArgumentNullException(nameof(manager));
 
-			LocalizerDelegate fallback = (fallbackToPrevious ? Localizer : null) ?? Passthru;
+			LocalizerDelegate fallback = Localizer;
 
 			return SetLocalizer((Symbol resourceId, string defaultMessage) =>
 			{
@@ -243,7 +274,7 @@ namespace Loyc
 				if (resourceId != null)
 					id = resourceId.Name;
 				else
-					id = (resxNameCalculator != null ? resxNameCalculator(defaultMessage) : null) ?? defaultMessage;
+					id = resxNameCalculator?.Invoke(defaultMessage) ?? defaultMessage;
 
 				var translation = manager.GetString(id, culture);
 				if (translation != null)
@@ -253,34 +284,17 @@ namespace Loyc
 			});
 		}
 
-		/// <summary>Formatting delegate, which is <see cref="StringExt.FormatCore"/> by default.</summary>
-		public static FormatterDelegate Formatter
-		{
-			get { return _formatter.Value; }
-		}
-		
-		/// <summary>Sets the formatter method.</summary>
-		/// <remarks><see cref="Formatter"/> is a thread-local value, but since
-		/// .NET does not support inheritance of thread-local values, this method
-		/// also sets the global default used by threads on which this method was 
-		/// never called.
-		/// </remarks>
-		public static SavedValue<FormatterDelegate> SetFormatter(FormatterDelegate newValue)
-		{
-			return new SavedValue<FormatterDelegate>(_formatter, newValue ?? StringExt.FormatCore);
-		}
-
 		/// <summary>
 		/// This is the dummy translator, which is the default value of Localizer. 
 		/// It passes strings through untranslated. A msgId symbol cannot be handled 
 		/// so it is simply converted to a string.
 		/// </summary>
-		public static string Passthru(Symbol msgId, string msg)
+		public static string Passthrough(Symbol msgId, string msg)
 		{
             return msg ?? (msgId == null ? null : msgId.Name);
 		}
 
-		#region Main Localize() and Symbol() methods
+		#region Main Localize() methods
 
 		/// <summary>
 		/// This is the heart of the Localize class, which localizes and formats a string.
@@ -297,7 +311,7 @@ namespace Loyc
 		/// placeholders after the Localizer is called. If args is null or empty then 
 		/// Formatter is not called.</param>
 		/// <returns>The translated and formatted string.</returns>
-		public static string Symbol(this Symbol resourceId, [Localizable] string message, params object[] args)
+		public static string Localized(this Symbol resourceId, [Localizable] string message, params object[] args)
 		{
 			string localized = Localizer(resourceId, message);
 			if (args == null || args.Length == 0)
@@ -307,8 +321,8 @@ namespace Loyc
 		}
 		
 		/// <inheritdoc cref="Symbol(Loyc.Symbol, string, object[])"/>
-		public static string Symbol(this string resourceId, [Localizable] string message, params object[] args)
-			{ return Symbol((Symbol)resourceId, message, args); }
+		public static string WithSymbol(string resourceId, [Localizable] string message, params object[] args)
+			{ return Localized((Symbol)resourceId, message, args); }
 		
 		/// <summary>Finds and formats a localization of the given message. If none is 
 		/// found, the original string is formatted.</summary>
@@ -321,51 +335,32 @@ namespace Loyc
 		/// Formatter is not called.</param>
 		/// <returns>The translated and formatted string.</returns>
 		public static string Localized([Localizable] this string message, params object[] args)
-			{ return Symbol((Symbol)null, message, args); }
+			{ return Localized((Symbol)null, message, args); }
 
-		#endregion
+		public static string Symbol(string resourceId, [Localizable] string message, params object[] args) =>
+			Localized((Symbol)resourceId, message, args);
+		[Obsolete("Renamed to Localized")]
+		public static string Symbol(this Symbol resourceId, [Localizable] string message, params object[] args) =>
+			Localized(resourceId, message, args);
 
-		#region Versions of Localize() and Symbol() specialized for 0, 1 or 2 arguments
+		/////////////////////////////////////////////////////////////////////////////////
+		// Specializations for 0 to 3 arguments (more efficient than params[])
+		/////////////////////////////////////////////////////////////////////////////////
 
-		public static string Localized([Localizable] this string message)
-			{ return Symbol((Symbol)null, message, (object[])null); }
+		static ScratchBuffer<object[]> _3args = new ScratchBuffer<object[]>(() => new object[3]);
 
-		static ScratchBuffer<object[]> _1arg = new ScratchBuffer<object[]>(() => new object[1]);
-		static ScratchBuffer<object[]> _2args = new ScratchBuffer<object[]>(() => new object[2]);
-
-		public static string Localized([Localizable] this string message, object arg1)
+		public static string Localized([Localizable] this string message) =>
+			Localized((Symbol)null, message, (object[])null);
+		public static string Localized([Localizable] this string message, object a, object b = null, object c = null) =>
+			Localized((Symbol)null, message, a, b, c);
+		public static string Localized(this Symbol resourceId, string message, object a, object b = null, object c = null)
 		{
-			object[] buf = _1arg.Value;
-			buf[0] = arg1;
-			var result = Symbol((Symbol)null, message, buf); 
-			buf[0] = null;
-			return result;
-		}
-		public static string Symbol(Symbol resourceId, [Localizable] string message, object arg1)
-		{
-			object[] buf = _1arg.Value;
-			buf[0] = arg1;
-			var result = Symbol(resourceId, message, buf); 
-			buf[0] = null;
-			return result;
-		}
-
-		public static string Localized([Localizable] this string message, object arg1, object arg2)
-		{
-			object[] buf = _2args.Value;
-			buf[0] = arg1;
-			buf[1] = arg2;
-			var result = Symbol((Symbol)null, message, buf); 
-			buf[0] = buf[1] = null;
-			return result;
-		}
-		public static string Symbol(Symbol resourceId, [Localizable] string message, object arg1, object arg2)
-		{
-			object[] buf = _2args.Value;
-			buf[0] = arg1;
-			buf[1] = arg2;
-			var result = Symbol(resourceId, message, buf);
-			buf[0] = buf[1] = null;
+			object[] buf = _3args.Value;
+			buf[0] = a;
+			buf[1] = b;
+			buf[2] = c;
+			var result = Localized(resourceId, message, buf); 
+			buf[0] = buf[1] = buf[2] = null;
 			return result;
 		}
 
@@ -376,7 +371,7 @@ namespace Loyc
 	/// I plan to use this attribute someday to gather all the localizable strings 
 	/// in an application. This attribute should be applied to a string function 
 	/// parameter if the method calls Localized() using that parameter as the 
-	/// format string.
+	/// format string, or passes it to another localizing method.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field)]
 	public class LocalizableAttribute : System.Attribute { }

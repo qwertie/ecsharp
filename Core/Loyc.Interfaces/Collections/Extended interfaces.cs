@@ -52,7 +52,7 @@ namespace Loyc.Collections
 			if (newSize < count)
 				list.RemoveRange(newSize, count - newSize);
 			else if (newSize > count)
-				list.InsertRange(count, (IListSource<T>)ListExt.Repeat(default(T), newSize - count));
+				list.InsertRange(count, new T[newSize - count]); // ListExt.Repeat(default(T), newSize - count)
 		}
 	}
 

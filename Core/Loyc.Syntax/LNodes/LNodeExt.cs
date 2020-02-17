@@ -603,8 +603,11 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Converts <see cref="ILNode"/> to <see cref="LNode"/> recursively.</summary>
-		public static LNode ToLNode(ILNode node)
+		public static LNode ToLNode(this ILNode node)
 		{
+			if (node is LNode n)
+				return n;
+
 			var attrs = VList<LNode>.Empty;
 			for (int i = node.Min; i < -1; i++)
 				attrs.Add(ToLNode(node[i]));

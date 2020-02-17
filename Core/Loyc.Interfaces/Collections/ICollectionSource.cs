@@ -6,6 +6,16 @@ using System.Threading.Tasks;
 
 namespace Loyc.Collections
 {
+	public interface IContains<in T>
+	{
+		/// <summary>Returns true if and only if the collection contains the specified 
+		/// item.</summary>
+		/// <param name="item">Data/object whose presence you want to check for. The
+		/// collection decides how to test for equality, but it's most common to use
+		/// <see cref="EqualityComparer{T}.Default"/>.</param>
+		bool Contains(T item);
+	}
+
 	/// <summary>A variation of IReadOnlyCollection that provides the Contains() and 
 	/// CopyTo() methods from ICollection.</summary>
 	/// <remarks>
@@ -19,15 +29,8 @@ namespace Loyc.Collections
 	/// IReadOnlyCollection with additional functionality. The word "source" means "data
 	/// comes out"; it is the opposite of a "sink" which means "data goes in".
 	/// </remarks>
-	public interface ICollectionSource<T> : IReadOnlyCollection<T>
+	public interface ICollectionSource<T> : IContains<T>, IReadOnlyCollection<T>
 	{
-		/// <summary>Returns true if and only if the collection contains the specified 
-		/// item.</summary>
-		/// <param name="item">Data/object whose presence you want to check for. The
-		/// collection decides how to test for equality, but it's most common to use
-		/// <see cref="EqualityComparer{T}.Default"/>.</param>
-		bool Contains(T item);
-
 		/// <summary>Copies the elements of the collection to an Array, starting at a 
 		/// particular array index.</summary>
 		/// <remarks>It's usually more convenient to call the ToArray() extension method, 

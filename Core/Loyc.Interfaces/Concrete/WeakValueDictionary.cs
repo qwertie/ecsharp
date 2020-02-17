@@ -48,7 +48,7 @@ namespace Loyc.Collections
 		{
 			List<K> _removeQueue = new List<K>();
 			foreach (var kvp in _dict)
-				if (!kvp.Value.IsAlive() && kvp.Value != WeakNull)
+				if (!kvp.Value.TryGetTarget(out var _) && kvp.Value != WeakNull)
 					_removeQueue.Add(kvp.Key);
 			for (int i = 0; i < _removeQueue.Count; i++)
 				_dict.Remove(_removeQueue[i]);
@@ -71,9 +71,9 @@ namespace Loyc.Collections
 		public override void Add(K key, V value)
 		{
 			_accessCounter += 4;
-			WeakReference<V> wv = _dict.TryGetValue(key, null);
+			_dict.TryGetValue(key, out WeakReference<V> wv);
 			if (wv != null) {
-				if (wv.IsAlive() || wv == WeakNull)
+				if (wv.TryGetTarget(out var _) || wv == WeakNull)
 					throw new KeyAlreadyExistsException();
 				else if (value != null) {
 					wv.SetTarget(value);
@@ -86,9 +86,9 @@ namespace Loyc.Collections
 		public override bool ContainsKey(K key)
 		{
 			_accessCounter++;
-			WeakReference<V> wv = _dict.TryGetValue(key, null);
+			_dict.TryGetValue(key, out WeakReference<V> wv);
 			if (wv != null)
-				if (wv.IsAlive())
+				if (wv.TryGetTarget(out var _))
 					return true;
 				else
 					_dict.Remove(key);
@@ -104,10 +104,10 @@ namespace Loyc.Collections
 		public override bool TryGetValue(K key, out V value)
 		{
 			_accessCounter++;
-			WeakReference<V> wv = _dict.TryGetValue(key, null);
+			_dict.TryGetValue(key, out WeakReference<V> wv);
 			if (wv != null)
 			{
-				value = wv.Target();
+				wv.TryGetTarget(out value);
 				if (value != null || wv == WeakNull)
 					return true;
 				else
@@ -121,7 +121,7 @@ namespace Loyc.Collections
 		{
 			foreach (var kvp in _dict)
 			{
-				var target = kvp.Value.Target();
+				kvp.Value.TryGetTarget(out var target);
 				if (target != null || kvp.Value == WeakNull)
 					yield return new KeyValuePair<K, V>(kvp.Key, target);
 			}
@@ -131,7 +131,7 @@ namespace Loyc.Collections
 		protected override void SetValue(K key, V value)
 		{
 			_accessCounter += 3;
-			WeakReference<V> wv = _dict.TryGetValue(key, null);
+			_dict.TryGetValue(key, out WeakReference<V> wv);
 			if (wv != null && (value == null) == (wv == WeakNull))
 				wv.SetTarget(value);
 			else

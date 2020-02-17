@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,7 +49,7 @@ namespace LeMP
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;
 			if (var.IsId && !var.HasPAttrs()) {
-				replacements.Add(Pair.Create(var.Name, (LNode)LNode.Missing, 0));
+				replacements.Add(Triplet.Create(var.Name, (LNode)LNode.Missing, 0));
 			} else {
 				var vars = var.Args;
 				if ((var.Calls(S.Tuple) || var.Calls(S.Braces)) && vars.All(a => a.IsId && !a.HasPAttrs())) {

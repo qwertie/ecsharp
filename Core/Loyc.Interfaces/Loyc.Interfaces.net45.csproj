@@ -2,13 +2,13 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
-    <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Math</BaseIntermediateOutputPath>
-    <ProjectGuid>{7493A75D-106A-4A50-9DCF-A7A034629FFF}</ProjectGuid>
+    <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Interfaces</BaseIntermediateOutputPath>
+    <ProjectGuid>{834F7631-149C-4172-83C2-C6BF9F8BF26B}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
-    <RootNamespace>Loyc.Math</RootNamespace>
-    <AssemblyName>Loyc.Math</AssemblyName>
+    <RootNamespace>Loyc</RootNamespace>
+    <AssemblyName>Loyc.Interfaces</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -43,17 +43,17 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <DefineConstants>TRACE;DEBUG;DotNet4,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
+    <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
+    <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
     <OutputPath>..\Bin\Release.NET4\</OutputPath>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <DefineConstants>TRACE;DotNet4,CSharp4</DefineConstants>
+    <DefineConstants>TRACE;DotNet4</DefineConstants>
     <NoWarn>1591, 1573, 0419</NoWarn>
-    <DocumentationFile>..\Bin\Release.NET4\Loyc.Math.xml</DocumentationFile>
+    <DocumentationFile>..\Bin\Release.NET4\Loyc.Interfaces.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
@@ -64,6 +64,7 @@
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
@@ -77,12 +78,12 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET3\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet3,CSharp4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
     <FileAlignment>4096</FileAlignment>
     <NoWarn>1591, 1573</NoWarn>
     <DebugType>Full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Debug.NET4\Loyc.Math.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\Bin\Debug.NET4\Loyc.Interfaces.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -95,14 +96,14 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release.NET3\</OutputPath>
-    <DefineConstants>TRACE;DotNet3,CSharp4</DefineConstants>
-    <DocumentationFile>..\Bin\Release.NET3\Loyc.Math.xml</DocumentationFile>
+    <DefineConstants>TRACE;DotNet3</DefineConstants>
+    <DocumentationFile>..\Bin\Release.NET3\Loyc.Interfaces.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
     <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Release.NET4\Loyc.Math.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\Bin\Release.NET4\Loyc.Interfaces.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -116,7 +117,7 @@
     </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet45,CSharp4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
     <FileAlignment>4096</FileAlignment>
     <NoWarn>1591, 1573</NoWarn>
     <DebugType>Full</DebugType>
@@ -129,8 +130,8 @@
     </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE;DotNet45,CSharp4</DefineConstants>
-    <DocumentationFile>..\Bin\Release.NET4\Loyc.Math.xml</DocumentationFile>
+    <DefineConstants>TRACE;DotNet45</DefineConstants>
+    <DocumentationFile>..\Bin\Release.NET4\Loyc.Interfaces.xml</DocumentationFile>
     <FileAlignment>4096</FileAlignment>
     <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -143,7 +144,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Drawing" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
@@ -161,71 +161,60 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Geometry\BoundingBoxMathTT.cs">
-      <DependentUpon>BoundingBoxMathTT.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Geometry\LineMath.cs" />
-    <Compile Include="Geometry\LineMathTT.cs">
-      <DependentUpon>LineMathTT.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Geometry\PointExt.cs" />
-    <Compile Include="Geometry\PointMath.cs" />
-    <Compile Include="Geometry\PointMathTT.cs">
-      <DependentUpon>PointMathTT.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Geometry\PolygonMathTT.cs">
-      <DependentUpon>PolygonMathTT.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Geometry\Rectangle3Ext.cs" />
-    <Compile Include="Geometry\RectangleExt.cs" />
-    <Compile Include="Math\MathEx.cs" />
+    <Compile Include="Collections\ICharSource.cs" />
+    <Compile Include="Concrete\BaseDictionary.cs" />
+    <Compile Include="Concrete\EmptySourceFile.cs" />
+    <Compile Include="Concrete\Exceptions.cs" />
+    <Compile Include="Concrete\KeyCollection.cs" />
+    <Compile Include="Concrete\ListChangeInfo.cs" />
+    <Compile Include="Concrete\MemoizedTypeName.cs" />
+    <Compile Include="Concrete\Pair.cs" />
+    <Compile Include="Concrete\RangeEnumerator.cs" />
+    <Compile Include="Concrete\UString.cs" />
+    <Compile Include="Concrete\ValueCollection.cs" />
+    <Compile Include="Concrete\WeakValueDictionary.cs" />
+    <Compile Include="IHasLocation.cs" />
+    <Compile Include="Localize.cs" />
+    <Compile Include="Concrete\Maybe.cs" />
+    <Compile Include="Misc.cs" />
+    <Compile Include="Concrete\NoValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Geometry\BoundingBox.cs" />
-    <Compile Include="Geometry\LineSegment.cs" />
-    <Compile Include="Geometry\PointT.cs" />
-    <Compile Include="Geometry\Vector3T.cs" />
-    <Compile Include="Geometry\VectorT.cs" />
-    <Compile Include="Math\FixedPoint.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FixedPoint.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Math\Math128.cs" />
-    <Compile Include="Math\MathsT.cs" />
-    <Compile Include="Math\Maths.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Maths.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Range.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Range.ecs</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Math\FixedPoint.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FixedPoint.cs</LastGenOutput>
-    </None>
-    <None Include="Math\Maths.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Maths.cs</LastGenOutput>
-    </None>
-    <None Include="Math\NumTraits.ttinclude" />
+    <Compile Include="NamespaceDocs.cs" />
+    <Compile Include="Collections\ISparseList.cs" />
+    <Compile Include="Collections\New enumerators.cs" />
+    <Compile Include="Collections\IRanges.cs" />
+    <Compile Include="Collections\ISetImm.cs" />
+    <Compile Include="Collections\ICount.cs" />
+    <Compile Include="Collections\IDictionaryEx.cs" />
+    <Compile Include="Collections\IListSource.cs" />
+    <Compile Include="Collections\INegListSource.cs" />
+    <Compile Include="Collections\IAutoCreatePool.cs" />
+    <Compile Include="Collections\INotifyListChanging.cs" />
+    <Compile Include="Collections\Queue interfaces.cs" />
+    <Compile Include="Collections\Sink interfaces.cs" />
+    <Compile Include="Collections\Disambiguation interfaces.cs" />
+    <Compile Include="Collections\Extended interfaces.cs" />
+    <Compile Include="Collections\ICollectionSource.cs" />
+    <Compile Include="Collections\Other interfaces.cs" />
+    <Compile Include="Compatibility\IReadOnlyCollections.cs" />
+    <Compile Include="Geometry\IPoint.cs" />
+    <Compile Include="Geometry\IPoint3.cs" />
+    <Compile Include="Geometry\IRectangle.cs" />
+    <Compile Include="Geometry\IRectangle3.cs" />
+    <Compile Include="Math\Interfaces.cs" />
+    <Compile Include="IMessageSink.cs" />
+    <Compile Include="MiscInterfaces.cs" />
+    <Compile Include="Concrete\Symbol.cs" />
+    <Compile Include="Syntax\IIndexPositionMapper.cs" />
+    <Compile Include="Syntax\ILNode.cs" />
+    <Compile Include="Syntax\ILNodePrinterOptions.cs" />
+    <Compile Include="Syntax\ISourceFile.cs" />
+    <Compile Include="Syntax\NodeStyle.cs" />
+    <Compile Include="Concrete\SourcePos.cs" />
+    <Compile Include="Concrete\SourceRange.cs" />
+    <Compile Include="Concrete\SavedThreadLocal.cs" />
+    <Compile Include="Concrete\ScratchBuffer.cs" />
     <None Include="OpenSourceKey.snk" />
-    <None Include="Range.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>Range.out.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -259,41 +248,5 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Geometry\PolygonMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PolygonMathTT.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Geometry\BoundingBoxMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>BoundingBoxMathTT.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Geometry\LineMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>LineMathTT.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Geometry\PointMathTT.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PointMathTT.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
-      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
-      <Name>Loyc.Essentials.net45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
-      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
-      <Name>Loyc.Interfaces.net45</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
 </Project>

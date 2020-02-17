@@ -184,9 +184,8 @@
     <Compile Include="Lexing\WhitespaceFilter.cs" />
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
-    <Compile Include="LNodes\ILNode.cs" />
     <Compile Include="LNodes\ILNodePrinter.cs" />
-    <Compile Include="LNodes\ILNodePrintingOptions.cs" />
+    <Compile Include="LNodes\LNodePrintingOptions.cs" />
     <Compile Include="LNodes\ParsingMode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
@@ -218,7 +217,6 @@
     <Compile Include="LNodes\LNodeExt.cs" />
     <Compile Include="LNodes\LNodeFactory.cs" />
     <Compile Include="LNodes\LNodeVisitor.cs" />
-    <Compile Include="LNodes\NodeStyle.cs" />
     <Compile Include="LNodes\StdNodes.cs" />
     <Compile Include="Parsing\OperatorShape.cs" />
     <Compile Include="Parsing\ParseHelpers.cs" />
@@ -228,13 +226,9 @@
     <Compile Include="Parsing\Precedence.cs" />
     <Compile Include="PrinterState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SourceFiles\EmptySourceFile.cs" />
-    <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
     <Compile Include="SourceFiles\IndexPositionMapper.cs" />
     <Compile Include="SourceFiles\ISourceFile.cs" />
     <Compile Include="SourceFiles\LineRemapper.cs" />
-    <Compile Include="SourceFiles\SourcePos.cs" />
-    <Compile Include="SourceFiles\SourceRange.cs" />
     <Compile Include="SourceFiles\StreamCharSource.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +271,10 @@
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

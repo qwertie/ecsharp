@@ -109,5 +109,35 @@ namespace Loyc.Collections
 					removed++;
 			return removed;
 		}
+
+		/// <summary>Default implementation of <see cref="IDictionaryEx{K, V}.AddRange"/>.
+		/// Merges the contents of the specified sequence into this map.</summary>
+		public static int AddRange<K, V>(this IDictionary<K, V> dict, IEnumerable<KeyValuePair<K, V>> data, DictEditMode mode)
+		{
+			var e = data.GetEnumerator();
+			int numMissing = 0;
+			foreach (var pair in data)
+			{
+				K key = pair.Key;
+				V val = pair.Value;
+				if (!LCInterfaces.GetAndEdit(dict, key, ref val, mode))
+					numMissing++;
+			}
+			return numMissing;
+		}
+
+		/// <summary>Default implementation of <see cref="IDictionaryEx{K, V}.GetAndRemove"/>.
+		/// Gets the value associated with the specified key, then removes the 
+		/// pair with that key from the dictionary.</summary>
+		public static Maybe<V> GetAndRemove<K, V>(this IDictionary<K, V> dict, K key)
+		{
+			if (dict.TryGetValue(key, out V value))
+			{
+				dict.Remove(key);
+				return value;
+			}
+			return default(Maybe<V>);
+		}
 	}
+
 }

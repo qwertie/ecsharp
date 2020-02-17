@@ -427,7 +427,7 @@ namespace Loyc.Ecs.Parser
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			CurrentSink(true).Error(new SourceRange(_sourceFile, token), message, args);
+			CurrentSink(true).Error(token.Range(_sourceFile), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

@@ -1,4 +1,4 @@
-﻿using Loyc.Threading;
+using Loyc.Threading;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -51,6 +51,7 @@ namespace Loyc
 	/// Thanks to <a href="http://blog.differentpla.net/blog/2011/12/20/did-you-know-that-net-already-had-an-ioc-container">
 	/// Roger's blog</a> for the idea of these extension methods.
 	/// </remarks>
+	[Obsolete("I have a hypothesis that no one is using this and that deprecation won't hurt (am I wrong?)")]
 	public static class ServiceProvider
 	{
 		public static TInterface GetService<TInterface>(this IServiceProvider provider)

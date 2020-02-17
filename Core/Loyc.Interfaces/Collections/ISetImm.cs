@@ -21,17 +21,12 @@ namespace Loyc.Collections
 	/// <summary>Set-combining operations: With, Without, Union, Intersect, Except, Xor.</summary>
 	/// <typeparam name="T">Type of items in the set.</typeparam>
 	/// <typeparam name="SetT">Type of the set itself.</typeparam>
-	#if !CSharp4
 	public interface ISetOperations<in T, SetT> : ISetOperations<T, SetT, SetT> { }
-	public interface ISetOperations<in T, in InSetT, out OutSetT>
-	#else
-	public interface ISetOperations<T, SetT> : ISetOperations<T, SetT, SetT> { }
 	/// <summary>Set-combining operations: With, Without, Union, Intersect, Except, Xor.</summary>
 	/// <typeparam name="T">Type of items in the set.</typeparam>
 	/// <typeparam name="InSetT">Data type of the input sets that you pass to methods of this interface.</typeparam>
 	/// <typeparam name="OutSetT">Data type of the output sets returned from this interface.</typeparam>
-	public interface ISetOperations<T, InSetT, OutSetT>
-	#endif
+	public interface ISetOperations<in T, in InSetT, out OutSetT>
 	{
 		OutSetT With(T item);
 		OutSetT Without(T item);

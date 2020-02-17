@@ -12,7 +12,7 @@ namespace Loyc.Syntax
 	/// beginning and end indices of a range in that file.
 	/// </summary>
     [DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
-	public struct SourceRange
+	public struct SourceRange : IEquatable<SourceRange>
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
 
@@ -22,12 +22,12 @@ namespace Loyc.Syntax
 			_startIndex = beginIndex;
 			_length = length;
 		}
-		public SourceRange(ISourceFile source, Lexing.Token token)
-		{
-			_source = source;
-			_startIndex = token.StartIndex;
-			_length = token.Length;
-		}
+		//public SourceRange(ISourceFile source, Lexing.Token token)
+		//{
+		//	_source = source;
+		//	_startIndex = token.StartIndex;
+		//	_length = token.Length;
+		//}
 
 		private ISourceFile _source;
 		private int _startIndex;
@@ -78,6 +78,7 @@ namespace Loyc.Syntax
 		}
 		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
 
+		public bool Equals(SourceRange other) => this == other;
 		public override bool Equals(object obj)
 		{
 			return obj is SourceRange && (SourceRange)obj == this;
@@ -90,11 +91,12 @@ namespace Loyc.Syntax
 		}
 		public override string ToString()
 		{
-			return string.Format("{0}[{1}+{2}]", _source.FileName, _startIndex, _length);
+			return string.Format("{0}[{1}..{2}]", _source.FileName, _startIndex, _startIndex + _length);
 		}
-        public bool Contains(SourceRange inner)
-        {
-            return Source == inner.Source && StartIndex <= inner.StartIndex && EndIndex >= inner.EndIndex;
-        }
+
+		public bool Contains(SourceRange inner)
+		{
+			return Source == inner.Source && StartIndex <= inner.StartIndex && EndIndex >= inner.EndIndex;
+		}
 	}
 }
