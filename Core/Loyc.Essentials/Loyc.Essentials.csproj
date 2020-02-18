@@ -12,6 +12,7 @@
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <Compile Update="Collections\ExtensionMethods\LinqToLists.out.cs">
       <DesignTime>True</DesignTime>

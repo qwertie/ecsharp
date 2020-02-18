@@ -12,6 +12,7 @@
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Syntax.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj"/>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj"/>
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />

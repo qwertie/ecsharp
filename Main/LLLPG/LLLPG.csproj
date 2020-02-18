@@ -12,6 +12,7 @@
     <DocumentationFile>..\..\Bin\$(Configuration)\$(TargetFramework)\LLLPG.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
     <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj" />
