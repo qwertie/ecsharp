@@ -1,6 +1,6 @@
 Unless otherwise specified by a header comment in an individual 
-source file, the software in the Loyc project (and also LLLPG and 
-Baadia) are released under the terms of the GNU Lesser General Public 
+source file, the software in the Loyc project (and also LLLPG)
+are released under the terms of the GNU Lesser General Public 
 license version 2.1, or, at your option, any future version. 
 Commercial uses of Loyc are welcome, and, as the license explains (in 
 a rather muddy way), you do not have to release any source code of 

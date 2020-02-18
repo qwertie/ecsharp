@@ -11,11 +11,12 @@
     <summary>A parser library.</summary>
     <description>Loyc.Syntax implements various interfaces and helper classes for Loyc Languages and for users of LLLPG. It also implements Loyc trees for .NET (LNode), and parsers and printers for Loyc Expression Syntax (LES) versions 2 and 3.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Parser LES LLLPG</tags>
     <dependencies>
-      <dependency id="Loyc.Collections" version="$version$" />
-      <dependency id="Loyc.Essentials" version="$version$" />
+      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$"/>
     </dependencies>
   </metadata>
   <files>

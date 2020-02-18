@@ -11,13 +11,14 @@
     <summary>Additional functionality to extend the Loyc core libraries.</summary>
     <description>Loyc.Utilities contains useful non-core functionality that is either (A) not important enough to be placed in Loyc.Essentials or (B) takes Loyc.Collections, Loyc.Math or Loyc.Syntax as a dependency.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Utilities Adapters Interfaces</tags>
     <dependencies>
-      <dependency id="Loyc.Collections" version="$version$" />
-      <dependency id="Loyc.Essentials" version="$version$" />
-      <dependency id="Loyc.Math" version="$version$" />
-      <dependency id="Loyc.Syntax" version="$version$" />
+      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$"/>
+      <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.Math" version="$version$"/>
+      <dependency id="Loyc.Syntax" version="$version$"/>
     </dependencies>
   </metadata>
   <files>

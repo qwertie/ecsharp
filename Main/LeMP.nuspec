@@ -13,13 +13,14 @@
     
     This is just the core engine! To integrate LeMP into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc Enhanced C# EC# ECSharp LeMP Lisp Macro Processor</tags>
     <dependencies>
-      <dependency id="Loyc.Collections" version="$version$" />
-      <dependency id="Loyc.Essentials" version="$version$" />
-      <dependency id="Loyc.Syntax" version="$version$" />
-      <dependency id="Loyc.Utilities" version="$version$" />
+      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$"/>
+      <dependency id="Loyc.Syntax" version="$version$"/>
+      <dependency id="Loyc.Utilities" version="$version$"/>
       <dependency id="Loyc.Ecs" version="$version$"/>
     </dependencies>
   </metadata>

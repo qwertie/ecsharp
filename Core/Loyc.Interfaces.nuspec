@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Loyc.Essentials</id>
+    <id>Loyc.Interfaces</id>
     <version>$version$</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.loyc.net</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <summary>"Fills in the gaps" in the .NET Base Class Library</summary>
-    <description>A library of interfaces, extension methods, and small bits of functionality that are useful in almost any software project, according to the theme "things that should be built into the .NET framework, but aren’t".
+    <summary>Interfaces implemented in other Loyc Core libraries</summary>
+    <description>A library of interfaces, enums, and delegates that are useful in a broad range of software projects, according to the theme "things that should be built into the .NET framework, but aren’t".
     
-    At least half of Loyc.Essentials is devoted to collections: collection interfaces, collection adapters, collection extension methods (e.g. LinqToLists) and even a couple of collection implementations. The other half includes a variety of things including Symbols, a localization helper, "message sinks", a miniature NUnit clone and more.</description>
+    Also contains a small number of essential structs and classes, most notably Symbol, UString, Maybe&lt;T>, and Localize. These are types that the interfaces refer to, or that the concrete types themselves depend on.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2020</copyright>
-    <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
+    <tags>Loyc Core Interfaces Collections</tags>
     <dependencies>
-      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <!--<dependency id="SampleDependency" version="1.0"/>-->
     </dependencies>
   </metadata>
   <files>
