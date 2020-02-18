@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['literal',['Literal',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903ad7da1b76e5799f53a399b7a96ba67437',1,'Loyc::Syntax::Lexing']]]
+  ['keep',['Keep',['../namespaceLoyc_1_1Collections.html#af0ffc4d7615f186f5aa815a344723f35a02bce93bff905887ad2233110bf9c49e',1,'Loyc::Collections']]]
 ];

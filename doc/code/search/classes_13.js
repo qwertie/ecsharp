@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['valuecollection',['ValueCollection',['../classLoyc_1_1Collections_1_1ValueCollection.html',1,'Loyc::Collections']]],
   ['valuecomparer',['ValueComparer',['../classLoyc_1_1ValueComparer.html',1,'Loyc']]],
   ['valuelist',['ValueList',['../structLoyc_1_1Collections_1_1BMultiMap_1_1ValueList.html',1,'Loyc::Collections::BMultiMap']]],
   ['vlist',['VList',['../structLoyc_1_1Collections_1_1VList.html',1,'Loyc::Collections']]],

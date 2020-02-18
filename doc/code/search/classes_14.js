@@ -5,8 +5,6 @@ var searchData=
   ['weakkeydictionary',['WeakKeyDictionary',['../classLoyc_1_1Collections_1_1WeakKeyDictionary.html',1,'Loyc::Collections']]],
   ['weakkeyreference',['WeakKeyReference',['../classLoyc_1_1Collections_1_1WeakKeyReference.html',1,'Loyc::Collections']]],
   ['weakreferenceext',['WeakReferenceExt',['../classLoyc_1_1WeakReferenceExt.html',1,'Loyc']]],
-  ['weakvaluedictionary',['WeakValueDictionary',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
-  ['weakvaluedictionary_3c_20string_2c_20loyc_3a_3asymbol_20_3e',['WeakValueDictionary&lt; string, Loyc::Symbol &gt;',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
   ['whitespacefilter',['WhitespaceFilter',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceFilter.html',1,'Loyc::Syntax::Lexing']]],
   ['whitespacetag',['WhitespaceTag',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html',1,'Loyc::Syntax::Lexing']]],
   ['wlist',['WList',['../classLoyc_1_1Collections_1_1WList.html',1,'Loyc::Collections']]],

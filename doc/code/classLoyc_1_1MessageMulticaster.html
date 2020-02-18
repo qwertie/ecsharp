@@ -109,8 +109,6 @@ Inheritance diagram for Loyc.MessageMulticaster&lt; TContext &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1MessageMulticaster.png" usemap="#Loyc.MessageMulticaster_3C_20TContext_20_3E_map" alt=""/>
   <map id="Loyc.MessageMulticaster_3C_20TContext_20_3E_map" name="Loyc.MessageMulticaster&lt; TContext &gt;_map">
-<area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink&lt; in in TContext &gt;" shape="rect" coords="0,0,230,24"/>
-<area href="interfaceLoyc_1_1IMessageSink.html" alt="Loyc.IMessageSink&lt; TContext &gt;" shape="rect" coords="240,0,470,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -121,48 +119,35 @@ Inheritance diagram for Loyc.MessageMulticaster&lt; TContext &gt;:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a7e5748d8723b4e0f78b0b3ef4b2a2a6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e5748d8723b4e0f78b0b3ef4b2a2a6f"></a>
-IList&lt; <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; TContext &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b><code> [get]</code></td></tr>
+IList&lt; IMessageSink&lt; TContext &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b><code> [get]</code></td></tr>
 <tr class="separator:a7e5748d8723b4e0f78b0b3ef4b2a2a6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ab734ff4369a41f7701832bd5410a19b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab734ff4369a41f7701832bd5410a19b6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; TContext &gt;&gt; targets)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (IEnumerable&lt; IMessageSink&lt; TContext &gt;&gt; targets)</td></tr>
 <tr class="separator:ab734ff4369a41f7701832bd5410a19b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a091caac6b72a1012463714017473daeb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a091caac6b72a1012463714017473daeb"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (params <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; TContext &gt;[] targets)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (params IMessageSink&lt; TContext &gt;[] targets)</td></tr>
 <tr class="separator:a091caac6b72a1012463714017473daeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a007e5d4bba4ab0592d6778ed05cc1ed5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageMulticaster.html#a007e5d4bba4ab0592d6778ed05cc1ed5">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, string format)</td></tr>
-<tr class="memdesc:a007e5d4bba4ab0592d6778ed05cc1ed5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a007e5d4bba4ab0592d6778ed05cc1ed5">More...</a><br /></td></tr>
+<tr class="memitem:a007e5d4bba4ab0592d6778ed05cc1ed5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a007e5d4bba4ab0592d6778ed05cc1ed5"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (Severity level, TContext context, string format)</td></tr>
 <tr class="separator:a007e5d4bba4ab0592d6778ed05cc1ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c0ac4ff02ad7735a94c60b589943914"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c0ac4ff02ad7735a94c60b589943914"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, string format, object arg0, object arg1=null)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (Severity level, TContext context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a7c0ac4ff02ad7735a94c60b589943914"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8337c76058d75b401e20c075d34ea593"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8337c76058d75b401e20c075d34ea593"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context, string format, params object[] args)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (Severity level, TContext context, string format, params object[] args)</td></tr>
 <tr class="separator:a8337c76058d75b401e20c075d34ea593"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7be6e35b458f2349a0320ba0736de240"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageMulticaster.html#a7be6e35b458f2349a0320ba0736de240">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
+<tr class="memitem:a7be6e35b458f2349a0320ba0736de240"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageMulticaster.html#a7be6e35b458f2349a0320ba0736de240">IsEnabled</a> (Severity level)</td></tr>
 <tr class="memdesc:a7be6e35b458f2349a0320ba0736de240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>s.IsEnabled(type)</code> is true for at least one target message sink 's'. <a href="#a7be6e35b458f2349a0320ba0736de240">More...</a><br /></td></tr>
 <tr class="separator:a7be6e35b458f2349a0320ba0736de240"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d4d05a16f44a9a4ce8fd00ae3ea2513"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d4d05a16f44a9a4ce8fd00ae3ea2513"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (IEnumerable&lt; <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt;&gt; targets)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (IEnumerable&lt; IMessageSink&lt; object &gt;&gt; targets)</td></tr>
 <tr class="separator:a2d4d05a16f44a9a4ce8fd00ae3ea2513"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb9c3b68512dcc21a740f7a67c70a190"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adb9c3b68512dcc21a740f7a67c70a190"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (params <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt;[] targets)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MessageMulticaster</b> (params IMessageSink&lt; object &gt;[] targets)</td></tr>
 <tr class="separator:adb9c3b68512dcc21a740f7a67c70a190"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1IMessageSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1IMessageSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink&lt; TContext &gt;</a></td></tr>
-<tr class="memitem:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context,[Localizable] string format)</td></tr>
-<tr class="memdesc:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a9a94824f7aa5fcf1311cd67edcf4e222">More...</a><br /></td></tr>
-<tr class="separator:a9a94824f7aa5fcf1311cd67edcf4e222 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af44dd26ee810d4ecea40dcd0af78e069"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context,[Localizable] string format, object arg0, object arg1=null)</td></tr>
-<tr class="separator:af44dd26ee810d4ecea40dcd0af78e069 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6357f7a23a2d6c3153f061a2684a77d8"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level, TContext context,[Localizable] string format, params object[] args)</td></tr>
-<tr class="separator:a6357f7a23a2d6c3153f061a2684a77d8 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6db1db5451df906265c101e025accace inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> level)</td></tr>
-<tr class="memdesc:a6db1db5451df906265c101e025accace inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if messages of the specified type will actually be printed, or false if Write(type, ...) has no effect. <a href="#a6db1db5451df906265c101e025accace">More...</a><br /></td></tr>
-<tr class="separator:a6db1db5451df906265c101e025accace inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a7be6e35b458f2349a0320ba0736de240"></a>
@@ -175,7 +160,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">bool <a class="el" href="classLoyc_1_1MessageMulticaster.html">Loyc.MessageMulticaster</a>&lt; TContext &gt;.IsEnabled </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
+          <td class="paramtype">Severity&#160;</td>
           <td class="paramname"><em>level</em></td><td>)</td>
           <td></td>
         </tr>
@@ -189,69 +174,13 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns true if <code>s.IsEnabled(type)</code> is true for at least one target message sink 's'.</p>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a007e5d4bba4ab0592d6778ed05cc1ed5"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="classLoyc_1_1MessageMulticaster.html">Loyc.MessageMulticaster</a>&lt; TContext &gt;.Write </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>level</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TContext&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>format</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Writes a message to the target that this object represents.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">level</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
-    <tr><td class="paramname">context</td><td>An object that the message is related to, or that represents the location that the message applies to. The message sink may try to convert this object to a string and include it in its output. See also <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">MessageSink.ContextToString</a>().</td></tr>
-    <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Loyc.IMessageSink&lt; in in TContext &gt;</a>.</p>
-
-<p>References <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#a296a47dbe6906f7495ef42519e5ad12f">Loyc.SeverityMessageFilter&lt; TContext &gt;.Write()</a>.</p>
-
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

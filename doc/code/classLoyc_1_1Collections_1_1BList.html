@@ -110,19 +110,7 @@ Inheritance diagram for Loyc.Collections.BList&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1BList.png" usemap="#Loyc.Collections.BList_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.BList_3C_20T_20_3E_map" name="Loyc.Collections.BList&lt; T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1AListBase.html" alt="Loyc.Collections.AListBase&lt; T, T &gt;" shape="rect" coords="0,168,283,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="293,168,576,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html" title="This interface combines the original ICollection(T) interface with IReadOnlyCollection(T), ISinkCollection(T), and IAddRange(T), a convenient way to implement all three. " alt="Loyc.Collections.ICollectionEx&lt; T &gt;" shape="rect" coords="732,168,1015,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAddRange.html" title="An interface typically implemented alongside ICollection&lt;T&gt;, for collection types that can add multip..." alt="Loyc.Collections.IAddRange&lt; T &gt;" shape="rect" coords="1465,168,1748,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="146,112,429,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html" title="Represents a write-only collection: you can modify it, but you cannot learn what it contains..." alt="Loyc.Collections.ICollectionSink&lt; T &gt;" shape="rect" coords="586,112,869,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAddRange.html" title="An interface typically implemented alongside ICollection&lt;T&gt;, for collection types that can add multip..." alt="Loyc.Collections.IAddRange&lt; T &gt;" shape="rect" coords="879,112,1162,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="1172,112,1455,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICount.html" title="Holds the Count property found in nearly all collection interfaces." alt="Loyc.Collections.ICount" shape="rect" coords="1465,112,1748,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAdd.html" alt="Loyc.Collections.IAdd&lt; T &gt;" shape="rect" coords="586,56,869,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICount.html" title="Holds the Count property found in nearly all collection interfaces." alt="Loyc.Collections.ICount" shape="rect" coords="879,56,1162,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="1465,56,1748,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="879,0,1162,24"/>
+<area href="classLoyc_1_1Collections_1_1AListBase.html" alt="Loyc.Collections.AListBase&lt; T, T &gt;" shape="rect" coords="0,0,213,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -138,7 +126,7 @@ Changes to the tree structure can be observed too (see IAListTreeObserver&lt;K,T
 <li>
 The list can be frozen with AListBase&lt;K,T&gt;.Freeze, making it read-only. </li>
 <li>
-<a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c" title="Finds the lowest index of an item that is equal to or greater than the specified item.">FindLowerBound</a> and <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a905243c54f2dbf344a343e4dc215f567" title="Finds the index of the first item in the list that is greater than the specified item.">FindUpperBound</a> operations that find the nearest item equal to or greater than a specified item. </li>
+<a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c">FindLowerBound</a> and <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a905243c54f2dbf344a343e4dc215f567" title="Finds the index of the first item in the list that is greater than the specified item.">FindUpperBound</a> operations that find the nearest item equal to or greater than a specified item. </li>
 <li>
 A reversed view of the list is available through the AListBase&lt;K,T&gt;.ReverseView property, and the list can be enumerated backwards, also in O(1) time per element.. </li>
 <li>
@@ -146,7 +134,7 @@ A <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted i
 <li>
 Other features inherited from AListBase&lt;T&gt; </li>
 </ul>
-<p>Please note, however, that <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a204dc20f6017720d4643d61b850c7bef" title="Initializes an empty BList.">BList&lt;T&gt;</a> is generally slower than Dictionary&lt;K,V&gt; and HashSet&lt;T&gt;, so you should only use it when you need a sorted list of items, or when you need its special features such as <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c" title="Finds the lowest index of an item that is equal to or greater than the specified item.">FindLowerBound</a> or observability. </p>
+<p>Please note, however, that <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a204dc20f6017720d4643d61b850c7bef" title="Initializes an empty BList.">BList&lt;T&gt;</a> is generally slower than Dictionary&lt;K,V&gt; and HashSet&lt;T&gt;, so you should only use it when you need a sorted list of items, or when you need its special features such as <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c">FindLowerBound</a> or observability. </p>
 <p>Caution: items must not be modified in a way that affects their sort order after they are added to the list. If the list ever stops being sorted, it will malfunction, as it will no longer be possible to find some of the items. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -213,11 +201,11 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <tr class="memitem:a66c9597e31ad76eda55c4e7d6c708dab"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a66c9597e31ad76eda55c4e7d6c708dab">Contains</a> (T item)</td></tr>
 <tr class="memdesc:a66c9597e31ad76eda55c4e7d6c708dab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the list contains the specified item, and false if not. <a href="#a66c9597e31ad76eda55c4e7d6c708dab">More...</a><br /></td></tr>
 <tr class="separator:a66c9597e31ad76eda55c4e7d6c708dab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a7efe516c803f13a693d237914faf1c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c">FindLowerBound</a> (T item)</td></tr>
-<tr class="memdesc:a5a7efe516c803f13a693d237914faf1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the lowest index of an item that is equal to or greater than the specified item. <a href="#a5a7efe516c803f13a693d237914faf1c">More...</a><br /></td></tr>
+<tr class="memitem:a5a7efe516c803f13a693d237914faf1c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a7efe516c803f13a693d237914faf1c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a5a7efe516c803f13a693d237914faf1c">FindLowerBound</a> (T item)</td></tr>
 <tr class="separator:a5a7efe516c803f13a693d237914faf1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a38d745e485d166c21bdf2b9404740f5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38d745e485d166c21bdf2b9404740f5d"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a38d745e485d166c21bdf2b9404740f5d">FindLowerBound</a> (T item, out bool found)</td></tr>
+<tr class="memitem:a38d745e485d166c21bdf2b9404740f5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a38d745e485d166c21bdf2b9404740f5d">FindLowerBound</a> (T item, out bool found)</td></tr>
+<tr class="memdesc:a38d745e485d166c21bdf2b9404740f5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the lowest index of an item that is equal to or greater than the specified item. <a href="#a38d745e485d166c21bdf2b9404740f5d">More...</a><br /></td></tr>
 <tr class="separator:a38d745e485d166c21bdf2b9404740f5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99d8fcdb1adbf15d611d8a9f13c22e9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99d8fcdb1adbf15d611d8a9f13c22e9d"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a99d8fcdb1adbf15d611d8a9f13c22e9d">FindLowerBound</a> (ref T item)</td></tr>
@@ -234,25 +222,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>FindUpperBound</b> (re
 <tr class="memitem:acf57801f8cf3d7f6eec175c6a617e676"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#acf57801f8cf3d7f6eec175c6a617e676">IndexOfExact</a> (T item)</td></tr>
 <tr class="memdesc:acf57801f8cf3d7f6eec175c6a617e676"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specialized search function that finds the index of an item that not only compares equal to the specified item according to the comparison function for this collection, but is also equal according to Object.Equals. This function works properly even if duplicate items exist in addition that do NOT compare equal according to Object.Equals.  <a href="#acf57801f8cf3d7f6eec175c6a617e676">More...</a><br /></td></tr>
 <tr class="separator:acf57801f8cf3d7f6eec175c6a617e676"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
-<tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionEx"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionEx')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html">Loyc.Collections.ICollectionEx&lt; T &gt;</a></td></tr>
-<tr class="memitem:aa2ca73e850acfd09d4de59c3f8407494 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionEx"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html#aa2ca73e850acfd09d4de59c3f8407494">RemoveAll</a> (Predicate&lt; T &gt; match)</td></tr>
-<tr class="memdesc:aa2ca73e850acfd09d4de59c3f8407494 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionEx"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the all the elements that match the conditions defined by the specified predicate. <a href="#aa2ca73e850acfd09d4de59c3f8407494">More...</a><br /></td></tr>
-<tr class="separator:aa2ca73e850acfd09d4de59c3f8407494 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionEx"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionSink"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionSink')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html">Loyc.Collections.ICollectionSink&lt; T &gt;</a></td></tr>
-<tr class="memitem:aeac15a23e2f25427104117b5de01d07c inherit pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionSink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeac15a23e2f25427104117b5de01d07c"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> ()</td></tr>
-<tr class="separator:aeac15a23e2f25427104117b5de01d07c inherit pub_methods_interfaceLoyc_1_1Collections_1_1ICollectionSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IAdd')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IAdd.html">Loyc.Collections.IAdd&lt; T &gt;</a></td></tr>
-<tr class="memitem:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae233f417073b9ff820666d50d5ef8684"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (T item)</td></tr>
-<tr class="separator:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8d8b261d5a7e51b4a0b144b30dbcf19"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8d8b261d5a7e51b4a0b144b30dbcf19"></a>
+override long&#160;</td><td class="memItemRight" valign="bottom"><b>CountSizeInBytes</b> (int sizeOfElement, int sizeOfKey=8)</td></tr>
+<tr class="separator:ad8d8b261d5a7e51b4a0b144b30dbcf19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -271,17 +243,6 @@ Protected fields</h2></td></tr>
 <tr class="memitem:ac2629e3f6b29ef2f45740312e7ebd9be"><td class="memItemLeft" align="right" valign="top">Func&lt; T, T, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BList.html#ac2629e3f6b29ef2f45740312e7ebd9be">_compareItems</a></td></tr>
 <tr class="memdesc:ac2629e3f6b29ef2f45740312e7ebd9be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two items. See Comparison&lt;T&gt;. <a href="#ac2629e3f6b29ef2f45740312e7ebd9be">More...</a><br /></td></tr>
 <tr class="separator:ac2629e3f6b29ef2f45740312e7ebd9be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1ICount"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1ICount')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html">Loyc.Collections.ICount</a></td></tr>
-<tr class="memitem:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html#a08d479898a458b28bb483892304a5837">Count</a><code> [get]</code></td></tr>
-<tr class="memdesc:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of items in the collection. <a href="#a08d479898a458b28bb483892304a5837">More...</a><br /></td></tr>
-<tr class="separator:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
-<tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
-<tr class="separator:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a204dc20f6017720d4643d61b850c7bef"></a>
@@ -439,8 +400,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <dl class="section return"><dt>Returns</dt><dd>Returns the number of items that were added.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Collections_1_1BList.html#a68610104747eee3e42a43a9032c61605" title="Performs the same operation for each item in a series. Equivalent to calling Do(AListOperation,T) on each item.">DoRange</a></dd></dl>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1IAddRange.html">Loyc.Collections.IAddRange&lt; T &gt;</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a50209baebb2a2da21a35b2266b25a97e"></a>
@@ -590,7 +549,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 
 </div>
 </div>
-<a class="anchor" id="a5a7efe516c803f13a693d237914faf1c"></a>
+<a class="anchor" id="a38d745e485d166c21bdf2b9404740f5d"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -601,8 +560,18 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
           <td class="memname">int <a class="el" href="classLoyc_1_1Collections_1_1BList.html">Loyc.Collections.BList</a>&lt; T &gt;.FindLowerBound </td>
           <td>(</td>
           <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>item</em></td><td>)</td>
+          <td class="paramname"><em>item</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">out bool&#160;</td>
+          <td class="paramname"><em>found</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -742,8 +711,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 
 <p>Removes a single instance of the specified item.</p>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html">Loyc.Collections.ICollectionSink&lt; T &gt;</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="ae3500c084159f03a200f02026895d880"></a>
@@ -844,7 +811,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

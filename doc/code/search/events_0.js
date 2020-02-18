@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['listchanging',['ListChanging',['../interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32',1,'Loyc::Collections::INotifyListChanging']]]
+  ['onitemmoved',['OnItemMoved',['../classLoyc_1_1Collections_1_1MaxHeap.html#ae3b11bc2ace640b72425f3337173fb92',1,'Loyc::Collections::MaxHeap']]]
 ];

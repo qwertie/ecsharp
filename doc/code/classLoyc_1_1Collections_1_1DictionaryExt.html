@@ -97,13 +97,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Extension methods for Dictionary&lt;K,V&gt; and IDictionary&lt;K,V&gt;. 
+<p>Extension methods for Dictionary&lt;K,V&gt;, IDictionary&lt;K,V&gt; and IDictionaryEx&lt;K, V&gt;. 
  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/ExtensionMethods/DictionaryExt.cs'>/Core/Loyc.Essentials/Collections/ExtensionMethods/DictionaryExt.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Extension methods for Dictionary&lt;K,V&gt; and IDictionary&lt;K,V&gt;.</p>
+<div class="textblock"><p>Extension methods for Dictionary&lt;K,V&gt;, IDictionary&lt;K,V&gt; and IDictionaryEx&lt;K, V&gt;.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -116,17 +116,225 @@ static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="memitem:a28834331eaa6a5d89b161a55d3d4da5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28834331eaa6a5d89b161a55d3d4da5d"></a>
 static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a28834331eaa6a5d89b161a55d3d4da5d">TryGetValue&lt; K, V &gt;</a> (this IReadOnlyDictionary&lt; K, V &gt; dict, K key, V defaultValue)</td></tr>
 <tr class="separator:a28834331eaa6a5d89b161a55d3d4da5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae043e760b2f59fb29f440511e92045b2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ae043e760b2f59fb29f440511e92045b2">TryGetValue&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key)</td></tr>
-<tr class="memdesc:ae043e760b2f59fb29f440511e92045b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns <a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>), and it returns the result as Maybe&lt;V&gt; instead of storing the result in an "out" parameter. <a href="#ae043e760b2f59fb29f440511e92045b2">More...</a><br /></td></tr>
+<tr class="memitem:ae043e760b2f59fb29f440511e92045b2"><td class="memItemLeft" align="right" valign="top">static Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ae043e760b2f59fb29f440511e92045b2">TryGetValue&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key)</td></tr>
+<tr class="memdesc:ae043e760b2f59fb29f440511e92045b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns NoValue), and it returns the result as Maybe&lt;V&gt; instead of storing the result in an "out" parameter. <a href="#ae043e760b2f59fb29f440511e92045b2">More...</a><br /></td></tr>
 <tr class="separator:ae043e760b2f59fb29f440511e92045b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac591172f50eaa5131d05e4ebe0663f8f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac591172f50eaa5131d05e4ebe0663f8f"></a>
-static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ac591172f50eaa5131d05e4ebe0663f8f">TryGetValue&lt; K, V &gt;</a> (this IReadOnlyDictionary&lt; K, V &gt; dict, K key)</td></tr>
+static Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ac591172f50eaa5131d05e4ebe0663f8f">TryGetValue&lt; K, V &gt;</a> (this IReadOnlyDictionary&lt; K, V &gt; dict, K key)</td></tr>
 <tr class="separator:ac591172f50eaa5131d05e4ebe0663f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaadca26694a75731379f3d2895ebaa2a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaadca26694a75731379f3d2895ebaa2a"></a>
+static Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#aaadca26694a75731379f3d2895ebaa2a">TryGetValue&lt; K, V &gt;</a> (this IDictionaryAndReadOnly&lt; K, V &gt; dict, K key)</td></tr>
+<tr class="separator:aaadca26694a75731379f3d2895ebaa2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a227056d7b974aef359c5ed3002e8c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a227056d7b974aef359c5ed3002e8c1"></a>
+static Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a3a227056d7b974aef359c5ed3002e8c1">TryGetValue&lt; K, V &gt;</a> (this Dictionary&lt; K, V &gt; dict, K key)</td></tr>
+<tr class="separator:a3a227056d7b974aef359c5ed3002e8c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36db6dc944c76c1caec16a92cf38b15b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a36db6dc944c76c1caec16a92cf38b15b">TryGetValueSafe&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, out V value)</td></tr>
 <tr class="memdesc:a36db6dc944c76c1caec16a92cf38b15b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns false). <a href="#a36db6dc944c76c1caec16a92cf38b15b">More...</a><br /></td></tr>
 <tr class="separator:a36db6dc944c76c1caec16a92cf38b15b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12d618964b95d5b724d00a96f7697296"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a12d618964b95d5b724d00a96f7697296">AddRange&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; list)</td></tr>
+<tr class="memdesc:a12d618964b95d5b724d00a96f7697296"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds data to a dictionary (<code><a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9" title="A new item will be added unconditionally, without affecting existing elements, in no particular order...">dict.Add(key, value)</a></code> for all pairs in a sequence.) <a href="#a12d618964b95d5b724d00a96f7697296">More...</a><br /></td></tr>
+<tr class="separator:a12d618964b95d5b724d00a96f7697296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a259a61fd00b4936dd0467315556e3053"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a259a61fd00b4936dd0467315556e3053">SetRange&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; list)</td></tr>
+<tr class="memdesc:a259a61fd00b4936dd0467315556e3053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds data to a dictionary (<code>dict[key] = value</code> for all pairs in a sequence.) <a href="#a259a61fd00b4936dd0467315556e3053">More...</a><br /></td></tr>
+<tr class="separator:a259a61fd00b4936dd0467315556e3053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a746309ccf3ac18d98ecdc9258a9599c9"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a746309ccf3ac18d98ecdc9258a9599c9">RemoveRange&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, IEnumerable&lt; K &gt; list)</td></tr>
+<tr class="memdesc:a746309ccf3ac18d98ecdc9258a9599c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to remove a set of key-values from a dictionary based on their keys. <a href="#a746309ccf3ac18d98ecdc9258a9599c9">More...</a><br /></td></tr>
+<tr class="separator:a746309ccf3ac18d98ecdc9258a9599c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a121da3cae196a8f5550d1864d5c7ce5d"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a121da3cae196a8f5550d1864d5c7ce5d">AddRange&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; data, DictEditMode mode)</td></tr>
+<tr class="memdesc:a121da3cae196a8f5550d1864d5c7ce5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation of IDictionaryEx&lt;K, V&gt;.AddRange. Merges the contents of the specified sequence into this map. <a href="#a121da3cae196a8f5550d1864d5c7ce5d">More...</a><br /></td></tr>
+<tr class="separator:a121da3cae196a8f5550d1864d5c7ce5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6932b4253d83c55047105227d62389d"><td class="memItemLeft" align="right" valign="top">static Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ac6932b4253d83c55047105227d62389d">GetAndRemove&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key)</td></tr>
+<tr class="memdesc:ac6932b4253d83c55047105227d62389d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation of IDictionaryEx&lt;K, V&gt;.GetAndRemove. Gets the value associated with the specified key, then removes the pair with that key from the dictionary. <a href="#ac6932b4253d83c55047105227d62389d">More...</a><br /></td></tr>
+<tr class="separator:ac6932b4253d83c55047105227d62389d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a12d618964b95d5b724d00a96f7697296"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.Collections.DictionaryExt.AddRange&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt;&#160;</td>
+          <td class="paramname"><em>list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds data to a dictionary (<code><a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9" title="A new item will be added unconditionally, without affecting existing elements, in no particular order...">dict.Add(key, value)</a></code> for all pairs in a sequence.)</p>
+
+</div>
+</div>
+<a class="anchor" id="a121da3cae196a8f5550d1864d5c7ce5d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.Collections.DictionaryExt.AddRange&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DictEditMode&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Default implementation of IDictionaryEx&lt;K, V&gt;.AddRange. Merges the contents of the specified sequence into this map.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac6932b4253d83c55047105227d62389d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Maybe&lt;V&gt; Loyc.Collections.DictionaryExt.GetAndRemove&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Default implementation of IDictionaryEx&lt;K, V&gt;.GetAndRemove. Gets the value associated with the specified key, then removes the pair with that key from the dictionary.</p>
+
+</div>
+</div>
+<a class="anchor" id="a746309ccf3ac18d98ecdc9258a9599c9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.Collections.DictionaryExt.RemoveRange&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; K &gt;&#160;</td>
+          <td class="paramname"><em>list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tries to remove a set of key-values from a dictionary based on their keys.</p>
+<dl class="section return"><dt>Returns</dt><dd>The number of keys that were found and removed.</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a259a61fd00b4936dd0467315556e3053"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.DictionaryExt.SetRange&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt;&#160;</td>
+          <td class="paramname"><em>list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds data to a dictionary (<code>dict[key] = value</code> for all pairs in a sequence.)</p>
+
+</div>
+</div>
 <a class="anchor" id="a90f4365fca001536ed9a4c000ab25c7a"></a>
 <div class="memitem">
 <div class="memproto">
@@ -178,7 +386,7 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;V&gt; Loyc.Collections.DictionaryExt.TryGetValue&lt; K, V &gt; </td>
+          <td class="memname">static Maybe&lt;V&gt; Loyc.Collections.DictionaryExt.TryGetValue&lt; K, V &gt; </td>
           <td>(</td>
           <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
           <td class="paramname"><em>dict</em>, </td>
@@ -202,7 +410,7 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
 </table>
 </div><div class="memdoc">
 
-<p>Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns <a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>), and it returns the result as Maybe&lt;V&gt; instead of storing the result in an "out" parameter.</p>
+<p>Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns NoValue), and it returns the result as Maybe&lt;V&gt; instead of storing the result in an "out" parameter.</p>
 
 </div>
 </div>
@@ -252,7 +460,7 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

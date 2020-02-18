@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A concrete class that users can pass to an <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html" title="Standard extension methods for ILNodePrinter.">LNodePrinter</a>. 
  <a href="classLoyc_1_1Syntax_1_1LNodePrinterOptions.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LNodes/ILNodePrintingOptions.cs'>/Core/Loyc.Syntax/LNodes/ILNodePrintingOptions.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LNodes/LNodePrintingOptions.cs'>/Core/Loyc.Syntax/LNodes/LNodePrintingOptions.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.LNodePrinterOptions:</div>
@@ -109,7 +109,6 @@ Inheritance diagram for Loyc.Syntax.LNodePrinterOptions:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1LNodePrinterOptions.png" usemap="#Loyc.Syntax.LNodePrinterOptions_map" alt=""/>
   <map id="Loyc.Syntax.LNodePrinterOptions_map" name="Loyc.Syntax.LNodePrinterOptions_map">
-<area href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand." alt="Loyc.Syntax.ILNodePrinterOptions" shape="rect" coords="228,0,446,24"/>
 <area href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html" title="Options to control the way EcsNodePrinter&#39;s output is formatted." alt="Loyc.Ecs.EcsPrinterOptions" shape="rect" coords="0,112,218,136"/>
 <area href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html" title="Options to control the way Loyc trees are printed by Les2Printer." alt="Loyc.Syntax.Les.Les2PrinterOptions" shape="rect" coords="228,112,446,136"/>
 <area href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html" alt="Loyc.Syntax.Les.Les3PrinterOptions" shape="rect" coords="456,112,674,136"/>
@@ -144,43 +143,18 @@ virtual string&#160;</td><td class="memItemRight" valign="bottom"><b>IndentStrin
 <tr class="memitem:add6d965f26d7a843eefcc737de789578"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add6d965f26d7a843eefcc737de789578"></a>
 virtual string&#160;</td><td class="memItemRight" valign="bottom"><b>NewlineString</b><code> [get, set]</code></td></tr>
 <tr class="separator:add6d965f26d7a843eefcc737de789578"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">Loyc.Syntax.ILNodePrinterOptions</a></td></tr>
-<tr class="memitem:a591f28b23a1a6c17b36f8a72202c0d18 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a591f28b23a1a6c17b36f8a72202c0d18">AllowChangeParentheses</a><code> [get]</code></td></tr>
-<tr class="memdesc:a591f28b23a1a6c17b36f8a72202c0d18 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates that it is preferable to add (or remove) parenthesis to produce good-looking output, rather than to express faithfully whether or not parentheses were present in the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree being printed. <a href="#a591f28b23a1a6c17b36f8a72202c0d18">More...</a><br /></td></tr>
-<tr class="separator:a591f28b23a1a6c17b36f8a72202c0d18 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7aaf609e5336f5dfe1a6e58c915b3479 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a7aaf609e5336f5dfe1a6e58c915b3479">OmitComments</a><code> [get]</code></td></tr>
-<tr class="memdesc:a7aaf609e5336f5dfe1a6e58c915b3479 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, comment trivia attributes are suppressed (e.g. CodeSymbols.TriviaSLCommentAfter). <a href="#a7aaf609e5336f5dfe1a6e58c915b3479">More...</a><br /></td></tr>
-<tr class="separator:a7aaf609e5336f5dfe1a6e58c915b3479 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a580345f4292a6b97e663ffe3bf1d5024 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a580345f4292a6b97e663ffe3bf1d5024">OmitUnknownTrivia</a><code> [get]</code></td></tr>
-<tr class="memdesc:a580345f4292a6b97e663ffe3bf1d5024 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes trivia that the printer does not recognize (other than comments, spaces and raw text) to be dropped from the output rather than printed as attributes. <a href="#a580345f4292a6b97e663ffe3bf1d5024">More...</a><br /></td></tr>
-<tr class="separator:a580345f4292a6b97e663ffe3bf1d5024 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53d8f2f0e4c366330e450ed3501c1c66 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a53d8f2f0e4c366330e450ed3501c1c66">PrintTriviaExplicitly</a><code> [get]</code></td></tr>
-<tr class="memdesc:a53d8f2f0e4c366330e450ed3501c1c66 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">If supported by the printer, this option causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. <a href="#a53d8f2f0e4c366330e450ed3501c1c66">More...</a><br /></td></tr>
-<tr class="separator:a53d8f2f0e4c366330e450ed3501c1c66 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa72419587e4e2666a64ecc92d8171f1f inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#aa72419587e4e2666a64ecc92d8171f1f">CompatibilityMode</a><code> [get]</code></td></tr>
-<tr class="memdesc:aa72419587e4e2666a64ecc92d8171f1f inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">If there are multiple ways to print a given node, this option indicates that the printer should prefer an older, more compatible syntactic style over new ones, where applicable. <a href="#aa72419587e4e2666a64ecc92d8171f1f">More...</a><br /></td></tr>
-<tr class="separator:aa72419587e4e2666a64ecc92d8171f1f inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89d83bfbc334a2dea0b25fa533af6d80 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a89d83bfbc334a2dea0b25fa533af6d80">CompactMode</a><code> [get]</code></td></tr>
-<tr class="memdesc:a89d83bfbc334a2dea0b25fa533af6d80 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, the amount of whitespace in the output is reduced in a printer-defined way, in order to save bits. <a href="#a89d83bfbc334a2dea0b25fa533af6d80">More...</a><br /></td></tr>
-<tr class="separator:a89d83bfbc334a2dea0b25fa533af6d80 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af915960021e7daefd3512c28136ee9e5 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#af915960021e7daefd3512c28136ee9e5">IndentString</a><code> [get]</code></td></tr>
-<tr class="memdesc:af915960021e7daefd3512c28136ee9e5 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the string to use for each level of indentation of nested constructs in the language, e.g. a tab or four spaces. <a href="#af915960021e7daefd3512c28136ee9e5">More...</a><br /></td></tr>
-<tr class="separator:af915960021e7daefd3512c28136ee9e5 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93c28e48be11370475af2b284ae94748 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a93c28e48be11370475af2b284ae94748">NewlineString</a><code> [get]</code></td></tr>
-<tr class="memdesc:a93c28e48be11370475af2b284ae94748 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the string to use for line breaks (typically "\n"). <a href="#a93c28e48be11370475af2b284ae94748">More...</a><br /></td></tr>
-<tr class="separator:a93c28e48be11370475af2b284ae94748 inherit properties_interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:acb870774468afdfe38177205c91bea6c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb870774468afdfe38177205c91bea6c"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyFrom</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> original)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyFrom</b> (ILNodePrinterOptions original)</td></tr>
 <tr class="separator:acb870774468afdfe38177205c91bea6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:13 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

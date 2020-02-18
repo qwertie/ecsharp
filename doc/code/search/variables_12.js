@@ -7,6 +7,5 @@ var searchData=
   ['try',['Try',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aa0d9ba6adcc1db34dc234239a306a1e2',1,'Loyc::Syntax::CodeSymbols']]],
   ['twodimensionalarray',['TwoDimensionalArray',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9ebcb88817e2b3d2cd9259fcc54da952',1,'Loyc::Syntax::CodeSymbols']]],
   ['typeint',['TypeInt',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aec247d67d4c8cf23acde5735127c5387',1,'Loyc::Syntax::Lexing::Token']]],
-  ['typeof',['Typeof',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9d3995d248824f5b0e2f86683865b3de',1,'Loyc::Syntax::CodeSymbols']]],
-  ['types',['Types',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a57012ea4826e2614bb92b08af21b9002',1,'Loyc::Syntax::ParsingMode']]]
+  ['typeof',['Typeof',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9d3995d248824f5b0e2f86683865b3de',1,'Loyc::Syntax::CodeSymbols']]]
 ];

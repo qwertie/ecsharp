@@ -118,7 +118,7 @@ Inheritance diagram for Loyc.Collections.BDictionary&lt; K, V &gt;:</div>
 <div class="textblock"><p>An sorted dictionary that is efficient for all operations and offers indexed access to its list of key-value pairs. </p>
 <p>An <a href="http://core.loyc.net/collections/alists-part2.html">article</a> about the <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a> classes is available. </p>
 <p>The keys must be comparable (ordered); if the type does not implement <code>IComparable</code> or <code>IComparable(T)</code>, you must provide a Comparison(T) delegate to perform comparisons. </p>
-<p>This class offers the following additional features beyond what's offered by the standard SortedDictionary{T} class: indexed access, a find-nearest- key operation called <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ae3bf29909ffdae5d619d75bf9b19bccd" title="Finds the lowest index of an item with a key that is equal to or greater than the specified key...">FindLowerBound</a> (similar to lower_bound in C++), observability, fast cloning, freezability, fast cloning of an arbitrary range of items in a large collection, enumeration of part of the list (not just the entire list), and reverse enumeration, and a few compound operations. </p>
+<p>This class offers the following additional features beyond what's offered by the standard SortedDictionary{T} class: indexed access, a find-nearest- key operation called <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ae3bf29909ffdae5d619d75bf9b19bccd">FindLowerBound</a> (similar to lower_bound in C++), observability, fast cloning, freezability, fast cloning of an arbitrary range of items in a large collection, enumeration of part of the list (not just the entire list), and reverse enumeration, and a few compound operations. </p>
 <p>Duplicate keys are not allowed in a <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a>. If you would like to be able to associate multiple values with a single key, use BMultiMap&lt;K,V&gt; instead. </p>
 <p>If you need to store only keys, not values, use BList&lt;K&gt; instead (but note that <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a> does allow duplicate keys). </p>
 </div><table class="memberdecls">
@@ -171,11 +171,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (KeyValu
 <tr class="memitem:ad979e2cfa6ae78253521a51fe27b601b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad979e2cfa6ae78253521a51fe27b601b"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (KeyValuePair&lt; K, V &gt; item)</td></tr>
 <tr class="separator:ad979e2cfa6ae78253521a51fe27b601b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3bf29909ffdae5d619d75bf9b19bccd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ae3bf29909ffdae5d619d75bf9b19bccd">FindLowerBound</a> (K key)</td></tr>
-<tr class="memdesc:ae3bf29909ffdae5d619d75bf9b19bccd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the lowest index of an item with a key that is equal to or greater than the specified key. <a href="#ae3bf29909ffdae5d619d75bf9b19bccd">More...</a><br /></td></tr>
+<tr class="memitem:ae3bf29909ffdae5d619d75bf9b19bccd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3bf29909ffdae5d619d75bf9b19bccd"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ae3bf29909ffdae5d619d75bf9b19bccd">FindLowerBound</a> (K key)</td></tr>
 <tr class="separator:ae3bf29909ffdae5d619d75bf9b19bccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35f14108ab6d9c0dde43aa26fecd089b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35f14108ab6d9c0dde43aa26fecd089b"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a35f14108ab6d9c0dde43aa26fecd089b">FindLowerBound</a> (K key, out bool found)</td></tr>
+<tr class="memitem:a35f14108ab6d9c0dde43aa26fecd089b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a35f14108ab6d9c0dde43aa26fecd089b">FindLowerBound</a> (K key, out bool found)</td></tr>
+<tr class="memdesc:a35f14108ab6d9c0dde43aa26fecd089b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the lowest index of an item with a key that is equal to or greater than the specified key. <a href="#a35f14108ab6d9c0dde43aa26fecd089b">More...</a><br /></td></tr>
 <tr class="separator:a35f14108ab6d9c0dde43aa26fecd089b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20d0c20c42a1dcc37207302f8161b41e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a20d0c20c42a1dcc37207302f8161b41e"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a20d0c20c42a1dcc37207302f8161b41e">FindLowerBound</a> (ref K key)</td></tr>
@@ -195,6 +195,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>FindUpperBound</b> (re
 <tr class="memitem:a1e872ce1f2559f046a74da98aa3379c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e872ce1f2559f046a74da98aa3379c0"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; e)</td></tr>
 <tr class="separator:a1e872ce1f2559f046a74da98aa3379c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad45b8d64b5e013d9edfbbefa93f3674d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad45b8d64b5e013d9edfbbefa93f3674d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; e, DictEditMode mode)</td></tr>
+<tr class="separator:ad45b8d64b5e013d9edfbbefa93f3674d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b0ebeb3823975fc4dcf6229c88ed593"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b0ebeb3823975fc4dcf6229c88ed593"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRange</b> (IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; e)</td></tr>
 <tr class="separator:a8b0ebeb3823975fc4dcf6229c88ed593"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -225,30 +228,45 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryGetValue</b> (K ke
 <tr class="memitem:a15fc82443fe2d64da46608a3d0c9af57"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15fc82443fe2d64da46608a3d0c9af57"></a>
 <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">BDictionary</a>&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveSection</b> (int start, int count)</td></tr>
 <tr class="separator:a15fc82443fe2d64da46608a3d0c9af57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3ab38d44d37bd1d446fb9632181e829"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ac3ab38d44d37bd1d446fb9632181e829">AddIfNotPresent</a> (K key, V value)</td></tr>
-<tr class="memdesc:ac3ab38d44d37bd1d446fb9632181e829"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds the specified pair only if the key is not already present in the dictionary. <a href="#ac3ab38d44d37bd1d446fb9632181e829">More...</a><br /></td></tr>
-<tr class="separator:ac3ab38d44d37bd1d446fb9632181e829"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf1e9692aa391569e23ef76ed9d5ad56"><td class="memItemLeft" align="right" valign="top">Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#aaf1e9692aa391569e23ef76ed9d5ad56">GetAndRemove</a> (K key)</td></tr>
+<tr class="memdesc:aaf1e9692aa391569e23ef76ed9d5ad56"><td class="mdescLeft">&#160;</td><td class="mdescRight">TODO: TEST THIS!! <a href="#aaf1e9692aa391569e23ef76ed9d5ad56">More...</a><br /></td></tr>
+<tr class="separator:aaf1e9692aa391569e23ef76ed9d5ad56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a213f738b5bbf6eddee4aa73c6cea0a09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a213f738b5bbf6eddee4aa73c6cea0a09"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetAndEdit</b> (ref K key, ref V value, DictEditMode mode)</td></tr>
+<tr class="separator:a213f738b5bbf6eddee4aa73c6cea0a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a608c47a20b8b52cba24ca0a18182c695"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a608c47a20b8b52cba24ca0a18182c695"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a608c47a20b8b52cba24ca0a18182c695">AddIfNotPresent</a> (K key, ref V value)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddIfNotPresent</b> (K key, ref V value)</td></tr>
 <tr class="separator:a608c47a20b8b52cba24ca0a18182c695"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06880ebdb8a6209a1ba289a3319314f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a06880ebdb8a6209a1ba289a3319314f0"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a06880ebdb8a6209a1ba289a3319314f0">AddIfNotPresent</a> (ref K key, ref V value)</td></tr>
+<tr class="memitem:a06880ebdb8a6209a1ba289a3319314f0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a06880ebdb8a6209a1ba289a3319314f0">AddIfNotPresent</a> (ref K key, ref V value)</td></tr>
+<tr class="memdesc:a06880ebdb8a6209a1ba289a3319314f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a pair if it is not alredy present, or get its value if it is. <a href="#a06880ebdb8a6209a1ba289a3319314f0">More...</a><br /></td></tr>
 <tr class="separator:a06880ebdb8a6209a1ba289a3319314f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a80a7e49ccd9150a75a0eb2902c6d7c52">SetAndGetOldValue</a> (K key, ref V value)</td></tr>
-<tr class="memdesc:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates the specified value with the specified key, while getting the old value if one exists. <a href="#a80a7e49ccd9150a75a0eb2902c6d7c52">More...</a><br /></td></tr>
-<tr class="separator:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba5068daf20763f5addacf0affce339"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ba5068daf20763f5addacf0affce339"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddIfNotPresent</b> (ref KeyValuePair&lt; K, V &gt; pair)</td></tr>
+<tr class="separator:a0ba5068daf20763f5addacf0affce339"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71bdb8609e22da313a2ac00269902aca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71bdb8609e22da313a2ac00269902aca"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a71bdb8609e22da313a2ac00269902aca">SetAndGetOldValue</a> (ref K key, ref V value)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGetOldValue</b> (ref K key, ref V value)</td></tr>
 <tr class="separator:a71bdb8609e22da313a2ac00269902aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34231b07f04105f0d634e78911bfa9b4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a34231b07f04105f0d634e78911bfa9b4">ReplaceIfPresent</a> (K key, V value)</td></tr>
-<tr class="memdesc:a34231b07f04105f0d634e78911bfa9b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces the value associated with a specified key, if it already exists in the dictionary. <a href="#a34231b07f04105f0d634e78911bfa9b4">More...</a><br /></td></tr>
-<tr class="separator:a34231b07f04105f0d634e78911bfa9b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6212c0cca9685dbe8b9e11783a3121e5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a6212c0cca9685dbe8b9e11783a3121e5">SetAndGet</a> (ref K key, ref V value)</td></tr>
+<tr class="memdesc:a6212c0cca9685dbe8b9e11783a3121e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates the specified value with the specified key, while getting the old value if one exists. <a href="#a6212c0cca9685dbe8b9e11783a3121e5">More...</a><br /></td></tr>
+<tr class="separator:a6212c0cca9685dbe8b9e11783a3121e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80a7e49ccd9150a75a0eb2902c6d7c52"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGetOldValue</b> (K key, ref V value)</td></tr>
+<tr class="separator:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1481ea5d1b82e7e946db76b3026cf31"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad1481ea5d1b82e7e946db76b3026cf31"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGetOldValue</b> (ref KeyValuePair&lt; K, V &gt; pair)</td></tr>
+<tr class="separator:ad1481ea5d1b82e7e946db76b3026cf31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0ac4ed04fe3beaf074c9686f0d6a447"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac0ac4ed04fe3beaf074c9686f0d6a447"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>ReplaceIfPresent</b> (ref KeyValuePair&lt; K, V &gt; pair)</td></tr>
+<tr class="separator:ac0ac4ed04fe3beaf074c9686f0d6a447"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade1c0bb3b667160a1fa743a5d73908f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade1c0bb3b667160a1fa743a5d73908f3"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#ade1c0bb3b667160a1fa743a5d73908f3">ReplaceIfPresent</a> (K key, ref V value)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>ReplaceIfPresent</b> (K key, ref V value)</td></tr>
 <tr class="separator:ade1c0bb3b667160a1fa743a5d73908f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1309d1cfb375677fee83e6ea66deecf2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1309d1cfb375677fee83e6ea66deecf2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a1309d1cfb375677fee83e6ea66deecf2">ReplaceIfPresent</a> (ref K key, ref V value)</td></tr>
+<tr class="memitem:a1309d1cfb375677fee83e6ea66deecf2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a1309d1cfb375677fee83e6ea66deecf2">ReplaceIfPresent</a> (ref K key, ref V value)</td></tr>
+<tr class="memdesc:a1309d1cfb375677fee83e6ea66deecf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces the value associated with a specified key, if it already exists in the dictionary. <a href="#a1309d1cfb375677fee83e6ea66deecf2">More...</a><br /></td></tr>
 <tr class="separator:a1309d1cfb375677fee83e6ea66deecf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab748cca62463800cc14db328ae36598e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab748cca62463800cc14db328ae36598e"></a>
+override long&#160;</td><td class="memItemRight" valign="bottom"><b>CountSizeInBytes</b> (int sizeOfPair, int sizeOfKey=8)</td></tr>
+<tr class="separator:ab748cca62463800cc14db328ae36598e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -399,7 +417,7 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ac3ab38d44d37bd1d446fb9632181e829"></a>
+<a class="anchor" id="a06880ebdb8a6209a1ba289a3319314f0"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -409,13 +427,13 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
         <tr>
           <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.AddIfNotPresent </td>
           <td>(</td>
-          <td class="paramtype">K&#160;</td>
+          <td class="paramtype">ref K&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">V&#160;</td>
+          <td class="paramtype">ref V&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -431,16 +449,8 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 </table>
 </div><div class="memdoc">
 
-<p>Adds the specified pair only if the key is not already present in the dictionary.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Key to search for or add. If this parameter is passed by reference and a matching pair exists already, this method sets it to the existing key instance.</td></tr>
-    <tr><td class="paramname">value</td><td>Value to search for or add. If this parameter is passed by reference and a matching pair exists already, this method sets it to the existing value.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the new pair was added, false if not.</dd></dl>
-<p>This method has no effect if the key is already present. </p>
+<p>Add a pair if it is not alredy present, or get its value if it is.</p>
+<dl class="section return"><dt>Returns</dt><dd>True if the pair was added, false if it was retrieved.</dd></dl>
 
 </div>
 </div>
@@ -477,7 +487,7 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 
 </div>
 </div>
-<a class="anchor" id="ae3bf29909ffdae5d619d75bf9b19bccd"></a>
+<a class="anchor" id="a35f14108ab6d9c0dde43aa26fecd089b"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -488,8 +498,18 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
           <td class="memname">int <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.FindLowerBound </td>
           <td>(</td>
           <td class="paramtype">K&#160;</td>
-          <td class="paramname"><em>key</em></td><td>)</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">out bool&#160;</td>
+          <td class="paramname"><em>found</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -546,7 +566,33 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 
 </div>
 </div>
-<a class="anchor" id="a34231b07f04105f0d634e78911bfa9b4"></a>
+<a class="anchor" id="aaf1e9692aa391569e23ef76ed9d5ad56"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Maybe&lt;V&gt; <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.GetAndRemove </td>
+          <td>(</td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>TODO: TEST THIS!!</p>
+
+</div>
+</div>
+<a class="anchor" id="a1309d1cfb375677fee83e6ea66deecf2"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -556,13 +602,13 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
         <tr>
           <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.ReplaceIfPresent </td>
           <td>(</td>
-          <td class="paramtype">K&#160;</td>
+          <td class="paramtype">ref K&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">V&#160;</td>
+          <td class="paramtype">ref V&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -581,17 +627,17 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 <p>Replaces the value associated with a specified key, if it already exists in the dictionary.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">key</td><td>Key to replace. If this parameter is passed by reference and a matching pair existed, this method sets it to the old key instance.</td></tr>
-    <tr><td class="paramname">value</td><td>New value to associate with the key. If this parameter is passed by reference and a matching pair existed, this method sets it to the old value.</td></tr>
+    <tr><td class="paramname">key</td><td>Key to find. If a matching key existed, this method changes this parameter to the old stored key.</td></tr>
+    <tr><td class="paramname">value</td><td>Value to associate with the key. On exit, this is changed to the old value or left unchanged if the key was not found.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the key was found and the pair was replaced, false if it was not found.</dd></dl>
-<p>This method has no effect if the key was not already present. </p>
+<p>This method has no effect if the key was not already present.</p>
 
 </div>
 </div>
-<a class="anchor" id="a80a7e49ccd9150a75a0eb2902c6d7c52"></a>
+<a class="anchor" id="a6212c0cca9685dbe8b9e11783a3121e5"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -599,9 +645,9 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.SetAndGetOldValue </td>
+          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.SetAndGet </td>
           <td>(</td>
-          <td class="paramtype">K&#160;</td>
+          <td class="paramtype">ref K&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -639,7 +685,7 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

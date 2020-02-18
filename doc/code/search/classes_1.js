@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['basedictionary',['BaseDictionary',['../classLoyc_1_1Collections_1_1Impl_1_1BaseDictionary.html',1,'Loyc::Collections::Impl']]],
-  ['basedictionary_3c_20k_2c_20v_20_3e',['BaseDictionary&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1BaseDictionary.html',1,'Loyc::Collections::Impl']]],
   ['baseilexer',['BaseILexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html',1,'Loyc::Syntax::Lexing']]],
   ['baseilexer_3c_20icharsource_2c_20token_20_3e',['BaseILexer&lt; ICharSource, Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html',1,'Loyc::Syntax::Lexing']]],
@@ -12,7 +10,7 @@ var searchData=
   ['baseparserforlist_3c_20token_2c_20int_20_3e',['BaseParserForList&lt; Token, int &gt;',['../classLoyc_1_1Syntax_1_1BaseParserForList.html',1,'Loyc::Syntax']]],
   ['baseparsernobacktracking',['BaseParserNoBacktracking',['../classLoyc_1_1Syntax_1_1BaseParserNoBacktracking.html',1,'Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;'],['../classLoyc_1_1Syntax_1_1BaseParserNoBacktracking.html',1,'Loyc.Syntax.BaseParserNoBacktracking&lt; Token &gt;']]],
   ['bdictionary',['BDictionary',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
-  ['bdictionary_3c_20int_2c_20loyc_3a_3apair_3c_20int_2c_20string_20_3e_20_3e',['BDictionary&lt; int, Loyc::Pair&lt; int, string &gt; &gt;',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
+  ['bdictionary_3c_20int_2c_20pair_3c_20int_2c_20string_20_3e_20_3e',['BDictionary&lt; int, Pair&lt; int, string &gt; &gt;',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
   ['benchmarkattribute',['BenchmarkAttribute',['../classLoyc_1_1MiniTest_1_1BenchmarkAttribute.html',1,'Loyc::MiniTest']]],
   ['bijection',['Bijection',['../classLoyc_1_1Collections_1_1Bijection.html',1,'Loyc::Collections']]],
   ['bijection_3c_20k2_2c_20k1_20_3e',['Bijection&lt; K2, K1 &gt;',['../classLoyc_1_1Collections_1_1Bijection.html',1,'Loyc::Collections']]],
@@ -21,7 +19,8 @@ var searchData=
   ['bloomfilterm64k2',['BloomFilterM64K2',['../structLoyc_1_1Utilities_1_1BloomFilterM64K2.html',1,'Loyc::Utilities']]],
   ['bmultimap',['BMultiMap',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
   ['bmultimap_3c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistnode_3c_20k_2c_20t_20_3e_2c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistinnerbase_3c_20k_2c_20t_20_3e_20_3e',['BMultiMap&lt; Loyc::Collections::Impl::AListNode&lt; K, T &gt;, Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt; &gt;',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
-  ['bmultimap_3c_20t_2c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistleaf_3c_20k_2c_20t_20_3e_20_3e',['BMultiMap&lt; T, Loyc::Collections::Impl::AListLeaf&lt; K, T &gt; &gt;',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
+  ['bmultimap_3c_20t_2c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistleafbase_3c_20k_2c_20t_20_3e_20_3e',['BMultiMap&lt; T, Loyc::Collections::Impl::AListLeafBase&lt; K, T &gt; &gt;',['../classLoyc_1_1Collections_1_1BMultiMap.html',1,'Loyc::Collections']]],
   ['bufferedsequence',['BufferedSequence',['../classLoyc_1_1Collections_1_1BufferedSequence.html',1,'Loyc::Collections']]],
-  ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]]
+  ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]],
+  ['bytearrayinstring',['ByteArrayInString',['../classLoyc_1_1ByteArrayInString.html',1,'Loyc']]]
 ];

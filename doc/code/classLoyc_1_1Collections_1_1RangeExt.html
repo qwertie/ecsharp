@@ -113,23 +113,29 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ad4f9c1ec7ec53f2d4d45a250669a8768"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4f9c1ec7ec53f2d4d45a250669a8768"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>DropLast&lt; R, T &gt;</b> (ref R range, int count)</td></tr>
 <tr class="separator:ad4f9c1ec7ec53f2d4d45a250669a8768"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39b45cafc06019daa18f2f1fab9cc85f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a39b45cafc06019daa18f2f1fab9cc85f"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst&lt; R, T &gt;</b> (ref R range, T defaultValue)</td></tr>
-<tr class="separator:a39b45cafc06019daa18f2f1fab9cc85f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b7c3954b44a938ed9ef0f507c70d29c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b7c3954b44a938ed9ef0f507c70d29c"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst&lt; R, T &gt;</b> (ref R range)</td></tr>
 <tr class="separator:a3b7c3954b44a938ed9ef0f507c70d29c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b5091f1e15aa8f52e2ca81664ccdeb7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b5091f1e15aa8f52e2ca81664ccdeb7"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast&lt; R, T &gt;</b> (ref R range, T defaultValue)</td></tr>
-<tr class="separator:a2b5091f1e15aa8f52e2ca81664ccdeb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8e8503fd326eb36a94f70e37a49abaa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8e8503fd326eb36a94f70e37a49abaa"></a>
+static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst&lt; R, T &gt;</b> (ref R range)</td></tr>
+<tr class="separator:ab8e8503fd326eb36a94f70e37a49abaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88fea29e075b7975650185575a53d534"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88fea29e075b7975650185575a53d534"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst&lt; R, T &gt;</b> (ref R range, out T item)</td></tr>
+<tr class="separator:a88fea29e075b7975650185575a53d534"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5be81817d208c6d8c252648ba6c3068"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab5be81817d208c6d8c252648ba6c3068"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast&lt; R, T &gt;</b> (ref R range)</td></tr>
 <tr class="separator:ab5be81817d208c6d8c252648ba6c3068"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1eb81a5686ea3be3836c9cec845652a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad1eb81a5686ea3be3836c9cec845652a"></a>
+static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast&lt; R, T &gt;</b> (ref R range)</td></tr>
+<tr class="separator:ad1eb81a5686ea3be3836c9cec845652a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74339d2df77a8b8ab529ec30793e5825"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74339d2df77a8b8ab529ec30793e5825"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast&lt; R, T &gt;</b> (ref R range, out T item)</td></tr>
+<tr class="separator:a74339d2df77a8b8ab529ec30793e5825"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed1d78bc5f056d25c843df8da81dc9bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed1d78bc5f056d25c843df8da81dc9bf"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains&lt; R, T &gt;</b> (this R range, <a class="el" href="interfaceLoyc_1_1Collections_1_1IRangeEx.html">IRangeEx</a>&lt; R, T &gt; other)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains&lt; R, T &gt;</b> (this R range, IRangeEx&lt; R, T &gt; other)</td></tr>
 <tr class="separator:aed1d78bc5f056d25c843df8da81dc9bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae841a6ffb4d70344769398551d8e6f79"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae841a6ffb4d70344769398551d8e6f79"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Overlaps&lt; R, T &gt;</b> (this R range, <a class="el" href="interfaceLoyc_1_1Collections_1_1IRangeEx.html">IRangeEx</a>&lt; R, T &gt; other)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Overlaps&lt; R, T &gt;</b> (this R range, IRangeEx&lt; R, T &gt; other)</td></tr>
 <tr class="separator:ae841a6ffb4d70344769398551d8e6f79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -182,15 +188,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Overlaps&lt; R
 </dl>
 </div>
 
-<p>References <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad80d39323c4514531ffd7b3818ddb5c7">Loyc.Collections.IFRange&lt; out out T &gt;.PopFirst()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html#a09042c715094b014da89f53a9692db87">Loyc.Collections.IBRange&lt; out out T &gt;.PopLast()</a>.</p>
-
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

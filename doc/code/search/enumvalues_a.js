@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['matchidentifier',['MatchIdentifier',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a1c6e83359ec733bb9cd02d31e396d090',1,'LeMP']]],
-  ['minimal',['Minimal',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa30fc6bbba82125243ecf4ddb27fee645',1,'Loyc::Syntax']]]
+  ['literal',['Literal',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903ad7da1b76e5799f53a399b7a96ba67437',1,'Loyc::Syntax::Lexing']]]
 ];

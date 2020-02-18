@@ -133,11 +133,12 @@ Enumerations</h2></td></tr>
 <b>AllowAttrs</b> = 2, 
 <b>DisallowDotted</b> = 8, 
 <br />
-&#160;&#160;<b>InOf</b> = 32, 
+&#160;&#160;<b>DisallowColonColon</b> = 16, 
+<b>InOf</b> = 32, 
 <b>AllowAnyExprInOf</b> = 64, 
-<b>NameDefinition</b> = 128, 
 <br />
-&#160;&#160;<b>AllowParensAround</b> = 256
+&#160;&#160;<b>NameDefinition</b> = 128, 
+<b>AllowParensAround</b> = 256
 <br />
  }<tr class="memdesc:a26c2f30acf269ea309847823fdedfb36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags for EcsNodePrinter.IsComplexIdentifier. <a href="namespaceLoyc_1_1Ecs.html#a26c2f30acf269ea309847823fdedfb36">More...</a><br /></td></tr>
 </td></tr>
@@ -267,7 +268,7 @@ Enumerations</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a31748d155453336105544fe3a55e83e1a7a1920d61156abc05a60135aefe8bc67"></a>Default&#160;</td><td class="fielddoc">
 <p>Default value of EcsNodePrinter.NewlineOptions</p>
-<p>Oct 2016: Some defaults have been turned off because newlines can now be added with #trivia_newline, and turning on some NewlineOpts currently causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline at the same time.</p>
+<p>Oct 2016: Some defaults have been turned off because newlines can now be added with newline, and turning on some NewlineOpts currently causes double newlines (i.e. a blank line) when the LNode uses newline at the same time.</p>
 </td></tr>
 </table>
 
@@ -300,7 +301,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

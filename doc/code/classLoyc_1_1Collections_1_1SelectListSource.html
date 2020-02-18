@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Enhanced C#: Loyc.Collections.SelectListSource&lt; T, TResult &gt; Class Template Reference</title>
+<title>Enhanced C#: Loyc.Collections.SelectListSource&lt; ListT, T, TResult &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,69 +90,59 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-attribs">Protected fields</a> &#124;
 <a href="classLoyc_1_1Collections_1_1SelectListSource-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Loyc.Collections.SelectListSource&lt; T, TResult &gt; Class Template Reference</div>  </div>
+<div class="title">Loyc.Collections.SelectListSource&lt; ListT, T, TResult &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Helper class: provides a modified view of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  
+<p>Helper class: provides a modified view of an IListSource by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  
  <a href="classLoyc_1_1Collections_1_1SelectListSource.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/HelperClasses/SelectListSource.out.cs'>/Core/Loyc.Essentials/Collections/HelperClasses/SelectListSource.out.cs</a></li>
 </ul>
 <div class="dynheader">
-Inheritance diagram for Loyc.Collections.SelectListSource&lt; T, TResult &gt;:</div>
+Inheritance diagram for Loyc.Collections.SelectListSource&lt; ListT, T, TResult &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="classLoyc_1_1Collections_1_1SelectListSource.png" usemap="#Loyc.Collections.SelectListSource_3C_20T_2C_20TResult_20_3E_map" alt=""/>
-  <map id="Loyc.Collections.SelectListSource_3C_20T_2C_20TResult_20_3E_map" name="Loyc.Collections.SelectListSource&lt; T, TResult &gt;_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html" alt="Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;" shape="rect" coords="0,0,289,24"/>
+  <img src="classLoyc_1_1Collections_1_1SelectListSource.png" usemap="#Loyc.Collections.SelectListSource_3C_20ListT_2C_20T_2C_20TResult_20_3E_map" alt=""/>
+  <map id="Loyc.Collections.SelectListSource_3C_20ListT_2C_20T_2C_20TResult_20_3E_map" name="Loyc.Collections.SelectListSource&lt; ListT, T, TResult &gt;_map">
+<area href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html" title="Helper class: provides a modified view of an IListSource by transforming each element on-demand..." alt="Loyc.Collections.SelectReadOnlyList&lt; ListT, T, TResult &gt;" shape="rect" coords="0,56,340,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html" alt="Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;" shape="rect" coords="0,0,340,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Helper class: provides a modified view of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;) </p>
+<div class="textblock"><p>Helper class: provides a modified view of an IListSource by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;) </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>input type</td></tr>
     <tr><td class="paramname">TResult</td><td>output type</td></tr>
+    <tr><td class="paramname">ListT</td><td>Type of list being wrapped</td></tr>
   </table>
   </dd>
 </dl>
+<div class="typeconstraint">
+<dl><dt><b>Type Constraints</b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>ListT</em></td><td>&#160;:</td><td valign="top"><em>IListSource&lt;T&gt;</em></td><td>&#160;</td></tr>
+</table>
+</dd>
+</dl>
+</div>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
-Properties</h2></td></tr>
-<tr class="memitem:a666c5c3e13890ff3517e5bca86e0b59d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a666c5c3e13890ff3517e5bca86e0b59d"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>OriginalList</b><code> [get]</code></td></tr>
-<tr class="separator:a666c5c3e13890ff3517e5bca86e0b59d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e9749be99e4aefd56b298d6d4b96540"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e9749be99e4aefd56b298d6d4b96540"></a>
-new TResult&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
-<tr class="separator:a2e9749be99e4aefd56b298d6d4b96540"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a533b80cedf87948e73485edb2589c875"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a533b80cedf87948e73485edb2589c875"></a>
-sealed override int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
-<tr class="separator:a533b80cedf87948e73485edb2589c875"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html">Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;</a></td></tr>
-<tr class="memitem:a868a9fa8d280fddad310421749cd0d05 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a868a9fa8d280fddad310421749cd0d05"></a>
-abstract override int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
-<tr class="separator:a868a9fa8d280fddad310421749cd0d05 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93b1b50185e2e8c6ea74f26eba39099b inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a93b1b50185e2e8c6ea74f26eba39099b"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
-<tr class="separator:a93b1b50185e2e8c6ea74f26eba39099b inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab399a575a82d375acad9e05cb3ce12d6 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab399a575a82d375acad9e05cb3ce12d6"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
-<tr class="separator:ab399a575a82d375acad9e05cb3ce12d6 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afbc4300ec70aea01bd02e27669ad4109"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbc4300ec70aea01bd02e27669ad4109"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SelectListSource</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, Func&lt; T, TResult &gt; selector)</td></tr>
-<tr class="separator:afbc4300ec70aea01bd02e27669ad4109"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a951921ef60690765a821c5473da67cb7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a951921ef60690765a821c5473da67cb7"></a>
-sealed override TResult&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
-<tr class="separator:a951921ef60690765a821c5473da67cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9639813d8bcc1a36ccf2d751aaab7c3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9639813d8bcc1a36ccf2d751aaab7c3b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SelectListSource</b> (ListT list, Func&lt; T, TResult &gt; selector)</td></tr>
+<tr class="separator:a9639813d8bcc1a36ccf2d751aaab7c3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2821e122aca04aece1587c79fc84036"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2821e122aca04aece1587c79fc84036"></a>
+override TResult&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
+<tr class="separator:af2821e122aca04aece1587c79fc84036"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Collections_1_1SelectReadOnlyList')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html">Loyc.Collections.SelectReadOnlyList&lt; ListT, T, TResult &gt;</a></td></tr>
+<tr class="memitem:a886a7a0b47e0f3c41d77df736e7e1cdf inherit pub_methods_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a886a7a0b47e0f3c41d77df736e7e1cdf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SelectReadOnlyList</b> (ListT list, Func&lt; T, TResult &gt; selector)</td></tr>
+<tr class="separator:a886a7a0b47e0f3c41d77df736e7e1cdf inherit pub_methods_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html">Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;</a></td></tr>
 <tr class="memitem:a6777e6dca7c11cd099bf4c90eef604c2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6777e6dca7c11cd099bf4c90eef604c2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item)</td></tr>
@@ -164,27 +154,42 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item)</
 override IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
 <tr class="separator:a0c1fdb885d6e8101f692d26b88078054 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected fields</h2></td></tr>
-<tr class="memitem:a8d8063c105ab2fda9e3de0f2d0b2a83c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d8063c105ab2fda9e3de0f2d0b2a83c"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
-<tr class="separator:a8d8063c105ab2fda9e3de0f2d0b2a83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad10e74dc06326209f2be66241ee306b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad10e74dc06326209f2be66241ee306b5"></a>
-Func&lt; T, TResult &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_selector</b></td></tr>
-<tr class="separator:ad10e74dc06326209f2be66241ee306b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header properties_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Collections_1_1SelectReadOnlyList')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html">Loyc.Collections.SelectReadOnlyList&lt; ListT, T, TResult &gt;</a></td></tr>
+<tr class="memitem:a4a4b50feec2e1a1a0dedfa2bc51d966c inherit properties_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a4b50feec2e1a1a0dedfa2bc51d966c"></a>
+new TResult&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
+<tr class="separator:a4a4b50feec2e1a1a0dedfa2bc51d966c inherit properties_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab547432a8b9820e355e28e0e490c990a inherit properties_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab547432a8b9820e355e28e0e490c990a"></a>
+sealed override int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
+<tr class="separator:ab547432a8b9820e355e28e0e490c990a inherit properties_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html">Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;</a></td></tr>
+<tr class="memitem:a868a9fa8d280fddad310421749cd0d05 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a868a9fa8d280fddad310421749cd0d05"></a>
+abstract override int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
+<tr class="separator:a868a9fa8d280fddad310421749cd0d05 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93b1b50185e2e8c6ea74f26eba39099b inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a93b1b50185e2e8c6ea74f26eba39099b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
+<tr class="separator:a93b1b50185e2e8c6ea74f26eba39099b inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab399a575a82d375acad9e05cb3ce12d6 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab399a575a82d375acad9e05cb3ce12d6"></a>
+T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
+<tr class="separator:ab399a575a82d375acad9e05cb3ce12d6 inherit properties_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html">Loyc.Collections.Impl.ListSourceBase&lt; TResult &gt;</a></td></tr>
 <tr class="memitem:a1f504a4510bd2a17a940aa679a197e5a inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f504a4510bd2a17a940aa679a197e5a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>ThrowIndexOutOfRange</b> (int index)</td></tr>
 <tr class="separator:a1f504a4510bd2a17a940aa679a197e5a inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList')"><img src="closed.png" alt="-"/>&#160;Protected fields inherited from <a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html">Loyc.Collections.SelectReadOnlyList&lt; ListT, T, TResult &gt;</a></td></tr>
+<tr class="memitem:af7bdadd27425c85b635d0b2443027c78 inherit pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af7bdadd27425c85b635d0b2443027c78"></a>
+ListT&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
+<tr class="separator:af7bdadd27425c85b635d0b2443027c78 inherit pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accfdd8dc346e6a25ecbaf6abf03d2c1a inherit pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="accfdd8dc346e6a25ecbaf6abf03d2c1a"></a>
+Func&lt; T, TResult &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_selector</b></td></tr>
+<tr class="separator:accfdd8dc346e6a25ecbaf6abf03d2c1a inherit pro_attribs_classLoyc_1_1Collections_1_1SelectReadOnlyList"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

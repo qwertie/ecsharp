@@ -90,9 +90,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLeMP_1_1MacroInfo-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">LeMP.MacroInfo Class Reference</div>  </div>
@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Data returned from <a class="el" href="interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab" title="Gets information about all macros registered with the macro processor, including macros whose namespa...">IMacroContext.AllKnownMacros</a> 
  <a href="classLeMP_1_1MacroInfo.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LeMP/IMacroContext.cs'>/Core/Loyc.Syntax/LeMP/IMacroContext.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LeMP/MacroAttributes.cs'>/Core/Loyc.Syntax/LeMP/MacroAttributes.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for LeMP.MacroInfo:</div>
@@ -110,22 +110,16 @@ Inheritance diagram for LeMP.MacroInfo:</div>
  <div class="center">
   <img src="classLeMP_1_1MacroInfo.png" usemap="#LeMP.MacroInfo_map" alt=""/>
   <map id="LeMP.MacroInfo_map" name="LeMP.MacroInfo_map">
-<area href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as an LEL simple macro." alt="LeMP.LexicalMacroAttribute" shape="rect" coords="0,56,173,80"/>
+<area href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro." alt="LeMP.LexicalMacroAttribute" shape="rect" coords="0,56,173,80"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Data returned from <a class="el" href="interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab" title="Gets information about all macros registered with the macro processor, including macros whose namespa...">IMacroContext.AllKnownMacros</a></p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
-Public static fields</h2></td></tr>
-<tr class="memitem:a2ceea7b8f06a0b6c8366c75b5e04d28e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2ceea7b8f06a0b6c8366c75b5e04d28e"></a>
-static Comparison&lt; <a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>CompareDescendingByPriority</b> = (a, b) =&gt; b.Priority.CompareTo(a.Priority)</td></tr>
-<tr class="separator:a2ceea7b8f06a0b6c8366c75b5e04d28e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a93b5e88f8bcb834f9af34e5f2753bedd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a93b5e88f8bcb834f9af34e5f2753bedd"></a>
-<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Namespace</b><code> [get]</code></td></tr>
+Symbol&#160;</td><td class="memItemRight" valign="bottom"><b>Namespace</b><code> [get]</code></td></tr>
 <tr class="separator:a93b5e88f8bcb834f9af34e5f2753bedd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6fb270cfff99356c2a069bd2ca93f9d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fb270cfff99356c2a069bd2ca93f9d1"></a>
 <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LexicalMacro</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Macro</b><code> [get]</code></td></tr>
@@ -150,21 +144,88 @@ string[]&#160;</td><td class="memItemRight" valign="bottom"><b>Names</b><code> [
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:af080b542ca881f3f5589506e260b7170"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af080b542ca881f3f5589506e260b7170"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MacroInfo</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> @namespace, string name, <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LexicalMacro</a> macro)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MacroInfo</b> (Symbol @namespace, string name, <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LexicalMacro</a> macro)</td></tr>
 <tr class="separator:af080b542ca881f3f5589506e260b7170"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65ce8c6cd0f853e108d9ffb0cdaf3fcb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a65ce8c6cd0f853e108d9ffb0cdaf3fcb"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MacroInfo</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> @namespace, <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html">LexicalMacroAttribute</a> a, <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LexicalMacro</a> macro)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MacroInfo</b> (Symbol @namespace, <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html">LexicalMacroAttribute</a> a, <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LexicalMacro</a> macro)</td></tr>
 <tr class="separator:a65ce8c6cd0f853e108d9ffb0cdaf3fcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLeMP_1_1LexicalMacroAttribute"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLeMP_1_1LexicalMacroAttribute')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html">LeMP.LexicalMacroAttribute</a></td></tr>
 <tr class="memitem:a56e7242fad1bf5e0a8338f3d56bbc207 inherit pub_methods_classLeMP_1_1LexicalMacroAttribute"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1LexicalMacroAttribute.html#a56e7242fad1bf5e0a8338f3d56bbc207">LexicalMacroAttribute</a> (string syntax, string description, params string[] names)</td></tr>
-<tr class="memdesc:a56e7242fad1bf5e0a8338f3d56bbc207 inherit pub_methods_classLeMP_1_1LexicalMacroAttribute"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as an LEL simple macro.">LexicalMacroAttribute</a> constuctor. <a href="#a56e7242fad1bf5e0a8338f3d56bbc207">More...</a><br /></td></tr>
+<tr class="memdesc:a56e7242fad1bf5e0a8338f3d56bbc207 inherit pub_methods_classLeMP_1_1LexicalMacroAttribute"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro.">LexicalMacroAttribute</a> constuctor. <a href="#a56e7242fad1bf5e0a8338f3d56bbc207">More...</a><br /></td></tr>
 <tr class="separator:a56e7242fad1bf5e0a8338f3d56bbc207 inherit pub_methods_classLeMP_1_1LexicalMacroAttribute"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ae355c87c4bdf38fb6dcd5dc818012088"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroInfo.html#ae355c87c4bdf38fb6dcd5dc818012088">GetMacros</a> (Type type, IMessageSink errorSink=null, Symbol @namespace=null, object instance=null)</td></tr>
+<tr class="memdesc:ae355c87c4bdf38fb6dcd5dc818012088"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses reflection to find a list of macros within the specified type by searching for (static) methods that (1) are marked with <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro.">LexicalMacroAttribute</a> and (2) take no parameters and return a list (IEnumerable) of <a class="el" href="classLeMP_1_1MacroInfo.html" title="Data returned from IMacroContext.AllKnownMacros">MacroInfo</a>. Such methods are called to get macros.  <a href="#ae355c87c4bdf38fb6dcd5dc818012088">More...</a><br /></td></tr>
+<tr class="separator:ae355c87c4bdf38fb6dcd5dc818012088"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ae355c87c4bdf38fb6dcd5dc818012088"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a>&gt; LeMP.MacroInfo.GetMacros </td>
+          <td>(</td>
+          <td class="paramtype">Type&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IMessageSink&#160;</td>
+          <td class="paramname"><em>errorSink</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Symbol @&#160;</td>
+          <td class="paramname"><em>namespace</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">object&#160;</td>
+          <td class="paramname"><em>instance</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Uses reflection to find a list of macros within the specified type by searching for (static) methods that (1) are marked with <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro.">LexicalMacroAttribute</a> and (2) take no parameters and return a list (IEnumerable) of <a class="el" href="classLeMP_1_1MacroInfo.html" title="Data returned from IMacroContext.AllKnownMacros">MacroInfo</a>. Such methods are called to get macros. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>The type to search for macros.</td></tr>
+    <tr><td class="paramname">namespace</td><td>Optionally overrides the namespace associated with macros marked with <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro.">LexicalMacroAttribute</a>. Does not affect macros returned in a list of <a class="el" href="classLeMP_1_1MacroInfo.html" title="Data returned from IMacroContext.AllKnownMacros">MacroInfo</a>.</td></tr>
+    <tr><td class="paramname">errorSink</td><td>An object in which to send error messages (Severity.Warning is used because unavailability of a macro should not appear as an error when compiling something with <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>.)</td></tr>
+    <tr><td class="paramname">instance</td><td>An optional object of the same type as <code>type</code>, which will be used to bind instance methods. If this is null, only static methods are discovered.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+
+<p>References <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576">LeMP.LexicalMacro()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

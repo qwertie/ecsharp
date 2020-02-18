@@ -110,12 +110,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:abc86d956aa747ca9235514dbe4eb1b25"><td class="memItemLeft" align="right" valign="top">static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#abc86d956aa747ca9235514dbe4eb1b25">HexDigitChar</a> (int value)</td></tr>
 <tr class="memdesc:abc86d956aa747ca9235514dbe4eb1b25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15. Uses uppercase. <a href="#abc86d956aa747ca9235514dbe4eb1b25">More...</a><br /></td></tr>
 <tr class="separator:abc86d956aa747ca9235514dbe4eb1b25"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60a4d97fc46d2f5826bd42f1016032ac"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a60a4d97fc46d2f5826bd42f1016032ac">EscapeCStyle</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> flags=<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7a1920d61156abc05a60135aefe8bc67">EscapeC.Default</a>)</td></tr>
+<tr class="memitem:a60a4d97fc46d2f5826bd42f1016032ac"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a60a4d97fc46d2f5826bd42f1016032ac">EscapeCStyle</a> (UString s, <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> flags=<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7a1920d61156abc05a60135aefe8bc67">EscapeC.Default</a>)</td></tr>
 <tr class="memdesc:a60a4d97fc46d2f5826bd42f1016032ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Escapes characters in a string using C style, e.g. the string <code>"Foo\"<br />
 "&lt;/c&gt; maps to &lt;c&gt;"Foo\"\<br />
 "</code> by default. <a href="#a60a4d97fc46d2f5826bd42f1016032ac">More...</a><br /></td></tr>
 <tr class="separator:a60a4d97fc46d2f5826bd42f1016032ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a0bb4207de33944e4e3a368bf0005fa"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">EscapeCStyle</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> flags, char quoteType)</td></tr>
+<tr class="memitem:a7a0bb4207de33944e4e3a368bf0005fa"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">EscapeCStyle</a> (UString s, <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> flags, char quoteType)</td></tr>
 <tr class="memdesc:a7a0bb4207de33944e4e3a368bf0005fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Escapes characters in a string using C style. <a href="#a7a0bb4207de33944e4e3a368bf0005fa">More...</a><br /></td></tr>
 <tr class="separator:a7a0bb4207de33944e4e3a368bf0005fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2b2234032d969cee5cf2b38374939ca"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#ab2b2234032d969cee5cf2b38374939ca">EscapeCStyle</a> (int c, StringBuilder @out, <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> flags=<a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa7a1920d61156abc05a60135aefe8bc67">EscapeC.Default</a>, char quoteType= '\0')</td></tr>
@@ -216,7 +216,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
         <tr>
           <td class="memname">static string Loyc.Syntax.PrintHelpers.EscapeCStyle </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
+          <td class="paramtype">UString&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -256,7 +256,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
         <tr>
           <td class="memname">static string Loyc.Syntax.PrintHelpers.EscapeCStyle </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
+          <td class="paramtype">UString&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -292,8 +292,6 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
   </table>
   </dd>
 </dl>
-
-<p>References <a class="el" href="structLoyc_1_1UString.html#a5f8f71d145b910d09effe5002a0482af">Loyc.UString.InternalString</a>.</p>
 
 </div>
 </div>
@@ -450,7 +448,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

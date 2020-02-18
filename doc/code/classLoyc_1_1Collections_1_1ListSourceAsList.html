@@ -109,9 +109,6 @@ Inheritance diagram for Loyc.Collections.ListSourceAsList&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1ListSourceAsList.png" usemap="#Loyc.Collections.ListSourceAsList_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.ListSourceAsList_3C_20T_20_3E_map" name="Loyc.Collections.ListSourceAsList&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html" title="This interface combines the original IList&lt;T&gt; interface with its &quot;source&quot; (read-only) component inter..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="293,112,576,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="293,56,576,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="586,56,869,80"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -132,7 +129,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b><code> 
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa203ed6578c056de5aeb7875b762e771"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa203ed6578c056de5aeb7875b762e771"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ListSourceAsList</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; obj)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ListSourceAsList</b> (IListSource&lt; T &gt; obj)</td></tr>
 <tr class="separator:aa203ed6578c056de5aeb7875b762e771"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99b6a4e31f2e1d2c42c4bdbb6b1677d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99b6a4e31f2e1d2c42c4bdbb6b1677d9"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item)</td></tr>
@@ -167,19 +164,12 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, o
 <tr class="memitem:a89e6b63f627777f7f62a34776efbb9a4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89e6b63f627777f7f62a34776efbb9a4"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:a89e6b63f627777f7f62a34776efbb9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
-<tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

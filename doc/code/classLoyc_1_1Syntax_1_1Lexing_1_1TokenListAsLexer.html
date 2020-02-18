@@ -110,27 +110,26 @@ Inheritance diagram for Loyc.Syntax.Lexing.TokenListAsLexer:</div>
   <img src="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.png" usemap="#Loyc.Syntax.Lexing.TokenListAsLexer_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.TokenListAsLexer_map" name="Loyc.Syntax.Lexing.TokenListAsLexer_map">
 <area href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html" title="A standard interface for lexers." alt="Loyc.Syntax.Lexing.ILexer&lt; Token &gt;" shape="rect" coords="118,56,345,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="0,0,227,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Adapter: converts <code>IEnumerable(Token)</code> to the ILexer&lt;Token&gt; interface.</p>
-<p>The LineNumber property is computed on-demand by the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> provided. </p>
+<p>The LineNumber property is computed on-demand by the ISourceFile provided. </p>
 <p>TODO: IndentLevel, IndentString do not work. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a56021c3219aff28cc549f88c40222374"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56021c3219aff28cc549f88c40222374"></a>
-<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">Loyc.Syntax.ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SourceFile</b><code> [get]</code></td></tr>
+Loyc.Syntax.ISourceFile&#160;</td><td class="memItemRight" valign="bottom"><b>SourceFile</b><code> [get]</code></td></tr>
 <tr class="separator:a56021c3219aff28cc549f88c40222374"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7192a6d5cc610aa220bf7f9ba38e81e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7192a6d5cc610aa220bf7f9ba38e81e"></a>
-<a class="el" href="interfaceLoyc_1_1IMessageSink.html">Loyc.IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorSink</b><code> [get, set]</code></td></tr>
+Loyc.IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorSink</b><code> [get, set]</code></td></tr>
 <tr class="separator:aa7192a6d5cc610aa220bf7f9ba38e81e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ca901a07bf3f1149f032519d243b4ec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ca901a07bf3f1149f032519d243b4ec"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndentLevel</b><code> [get]</code></td></tr>
 <tr class="separator:a0ca901a07bf3f1149f032519d243b4ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6462565e5ccaf0340e78b73499f81ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af6462565e5ccaf0340e78b73499f81ff"></a>
-<a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>IndentString</b><code> [get]</code></td></tr>
+UString&#160;</td><td class="memItemRight" valign="bottom"><b>IndentString</b><code> [get]</code></td></tr>
 <tr class="separator:af6462565e5ccaf0340e78b73499f81ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c08de1fdfcc2e9560b210912e3ce8c7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c08de1fdfcc2e9560b210912e3ce8c7"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>LineNumber</b><code> [get]</code></td></tr>
@@ -145,16 +144,16 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>InputPosition</b><code
 string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
 <tr class="separator:ab9fb0905f13c9513f044c41b7babb644"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">Loyc.Syntax.Lexing.ILexer&lt; Token &gt;</a></td></tr>
-<tr class="memitem:a173348e6c8aacad1ba2d932d592f3584 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a173348e6c8aacad1ba2d932d592f3584">SourceFile</a><code> [get]</code></td></tr>
+<tr class="memitem:a173348e6c8aacad1ba2d932d592f3584 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">ISourceFile&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a173348e6c8aacad1ba2d932d592f3584">SourceFile</a><code> [get]</code></td></tr>
 <tr class="memdesc:a173348e6c8aacad1ba2d932d592f3584 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">The file being lexed. <a href="#a173348e6c8aacad1ba2d932d592f3584">More...</a><br /></td></tr>
 <tr class="separator:a173348e6c8aacad1ba2d932d592f3584 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a360f66b3b8c4b753e1fa28313cb6219a inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a360f66b3b8c4b753e1fa28313cb6219a">ErrorSink</a><code> [get, set]</code></td></tr>
+<tr class="memitem:a360f66b3b8c4b753e1fa28313cb6219a inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a360f66b3b8c4b753e1fa28313cb6219a">ErrorSink</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a360f66b3b8c4b753e1fa28313cb6219a inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event handler for errors. <a href="#a360f66b3b8c4b753e1fa28313cb6219a">More...</a><br /></td></tr>
 <tr class="separator:a360f66b3b8c4b753e1fa28313cb6219a inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a581794f80bb0bf835a4d6c2fa035601b inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a581794f80bb0bf835a4d6c2fa035601b">IndentLevel</a><code> [get]</code></td></tr>
 <tr class="memdesc:a581794f80bb0bf835a4d6c2fa035601b inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indentation level of the current line. This is updated after scanning the first whitespaces on a new line, and may be reset to zero when <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a32ebbe5070576a7e48a2fc58fde99703" title="Scans the next token and returns information about it.">NextToken()</a> returns a newline. <a href="#a581794f80bb0bf835a4d6c2fa035601b">More...</a><br /></td></tr>
 <tr class="separator:a581794f80bb0bf835a4d6c2fa035601b inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2ed6f77a6be0a25f6ce3a3b65079a87 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#ad2ed6f77a6be0a25f6ce3a3b65079a87">IndentString</a><code> [get]</code></td></tr>
+<tr class="memitem:ad2ed6f77a6be0a25f6ce3a3b65079a87 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">UString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#ad2ed6f77a6be0a25f6ce3a3b65079a87">IndentString</a><code> [get]</code></td></tr>
 <tr class="memdesc:ad2ed6f77a6be0a25f6ce3a3b65079a87 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a string slice that holds the spaces or tabs that were used to indent the current line. <a href="#ad2ed6f77a6be0a25f6ce3a3b65079a87">More...</a><br /></td></tr>
 <tr class="separator:ad2ed6f77a6be0a25f6ce3a3b65079a87 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacd7f437aea4753cb71a9b0c29e34e56 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#aacd7f437aea4753cb71a9b0c29e34e56">LineNumber</a><code> [get]</code></td></tr>
@@ -163,61 +162,26 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> 
 <tr class="memitem:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a7dc8b3b6a3187b791861a1480ae1bf95">InputPosition</a><code> [get]</code></td></tr>
 <tr class="memdesc:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current input position (an index into SourceFile.Text). <a href="#a7dc8b3b6a3187b791861a1480ae1bf95">More...</a><br /></td></tr>
 <tr class="separator:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html">Loyc.Syntax.IIndexToLine</a></td></tr>
-<tr class="memitem:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">FileName</a><code> [get]</code></td></tr>
-<tr class="memdesc:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the file name used in results returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a>. <a href="#a6d3da28c156caea83183fa8b10c1d56f">More...</a><br /></td></tr>
-<tr class="separator:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae66f12286a2d57e5b663c307791d06a5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae66f12286a2d57e5b663c307791d06a5"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TokenListAsLexer</b> (IEnumerable&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokenList, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TokenListAsLexer</b> (IEnumerable&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokenList, ISourceFile sourceFile)</td></tr>
 <tr class="separator:ae66f12286a2d57e5b663c307791d06a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1efd066b244fe2fa52737b13b43df495"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1efd066b244fe2fa52737b13b43df495"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TokenListAsLexer</b> (IEnumerator&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokenList, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TokenListAsLexer</b> (IEnumerator&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokenList, ISourceFile sourceFile)</td></tr>
 <tr class="separator:a1efd066b244fe2fa52737b13b43df495"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dd12f51322630573ed588eafd1a8cc8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a9dd12f51322630573ed588eafd1a8cc8">NextToken</a> ()</td></tr>
+<tr class="memitem:a9dd12f51322630573ed588eafd1a8cc8"><td class="memItemLeft" align="right" valign="top">Maybe&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a9dd12f51322630573ed588eafd1a8cc8">NextToken</a> ()</td></tr>
 <tr class="memdesc:a9dd12f51322630573ed588eafd1a8cc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scans the next token and returns information about it. <a href="#a9dd12f51322630573ed588eafd1a8cc8">More...</a><br /></td></tr>
 <tr class="separator:a9dd12f51322630573ed588eafd1a8cc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad187e2efa64205aaabcffab0e1943a9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad187e2efa64205aaabcffab0e1943a9b"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>MoveNext</b> ()</td></tr>
 <tr class="separator:ad187e2efa64205aaabcffab0e1943a9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46ca6bb1122ece3978b16a59261a55a3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a46ca6bb1122ece3978b16a59261a55a3">IndexToLine</a> (int index)</td></tr>
-<tr class="memdesc:a46ca6bb1122ece3978b16a59261a55a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index. <a href="#a46ca6bb1122ece3978b16a59261a55a3">More...</a><br /></td></tr>
+<tr class="memitem:a46ca6bb1122ece3978b16a59261a55a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a46ca6bb1122ece3978b16a59261a55a3"></a>
+SourcePos&#160;</td><td class="memItemRight" valign="bottom"><b>IndexToLine</b> (int index)</td></tr>
 <tr class="separator:a46ca6bb1122ece3978b16a59261a55a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a46ca6bb1122ece3978b16a59261a55a3"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> Loyc.Syntax.Lexing.TokenListAsLexer.IndexToLine </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the position in a source file of the specified index.</p>
-<p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3">Loyc.Syntax.IIndexToLine</a>.</p>
-
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a35d6b4643767c13d6b7402705394e35d">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;.IndexToLine()</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a9dd12f51322630573ed588eafd1a8cc8"></a>
 <div class="memitem">
 <div class="memproto">
@@ -226,7 +190,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>MoveNext</b> ()</td><
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&gt; Loyc.Syntax.Lexing.TokenListAsLexer.NextToken </td>
+          <td class="memname">Maybe&lt;<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&gt; Loyc.Syntax.Lexing.TokenListAsLexer.NextToken </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -244,7 +208,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>MoveNext</b> ()</td><
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a32ebbe5070576a7e48a2fc58fde99703">Loyc.Syntax.Lexing.ILexer&lt; Token &gt;</a>.</p>
 
-<p>References <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a75e7dcd665b344827826863acff6840d">Loyc.Syntax.Lexing.Token.EndIndex</a>, and <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3">Loyc.Syntax.IIndexToLine.IndexToLine()</a>.</p>
+<p>References <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a75e7dcd665b344827826863acff6840d">Loyc.Syntax.Lexing.Token.EndIndex</a>.</p>
 
 </div>
 </div>
@@ -252,7 +216,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>MoveNext</b> ()</td><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

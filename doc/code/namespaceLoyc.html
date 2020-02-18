@@ -86,59 +86,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Main <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> namespace. This namespace includes all general-purpose code in the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> megaproject. It includes the code of Loyc.Essentials.dll and Loyc.Collections.dll (collections, geometry, <a class="el" href="namespaceLoyc_1_1MiniTest.html" title="A stripped-down NUnit lookalike which allows you to put simple unit tests in an assembly without havi...">MiniTest</a>, <a class="el" href="classLoyc_1_1MessageSink.html" title="Keeps track of the default message sink (Default); contains a series of helper methods; and contains ...">MessageSink</a>, etc.), and also the code of Loyc.Syntax.dll. 
-<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceLoyc_1_1Collections"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections.html">Collections</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Collections"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc.), collection implementations (Loyc.Collections.DList&lt;T&gt;, Loyc.Collections.WeakValueDictionary&lt;K,V&gt;, etc.), extension methods (<a class="el" href="classLoyc_1_1Collections_1_1LCExt.html" title="Extension methods for Loyc Collection interfaces (such as IListSource&lt;T&gt;) and for Loyc Collection ada...">Loyc.Collections.LCExt</a>, <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html" title="Additional extension methods for IEnumerable&lt;T&gt;, beyond what LINQ provides. ">Loyc.Collections.EnumerableExt</a>, etc.), helper classes (Loyc.Collections.EmptyList&lt;T&gt;, (Loyc.Collections.Repeated&lt;T&gt;, etc.), and adapter classes (Loyc.Collections.ListSlice&lt;T&gt;, Loyc.Collections.BufferedSequence&lt;T&gt;, etc.). <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Compatibility"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Compatibility.html">Compatibility</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Compatibility"><td class="mdescLeft">&#160;</td><td class="mdescRight">Important interfaces of newer .NET versions than the version for which <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> was compiled<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceLoyc_1_1Ecs"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Ecs.html">Ecs</a></td></tr>
 <tr class="memdesc:namespaceLoyc_1_1Ecs"><td class="mdescLeft">&#160;</td><td class="mdescRight">Classes related to Enhanced C# (mostly found in Loyc.Ecs.dll).<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Geometry"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Geometry.html">Geometry</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Geometry"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains math code and data types for processing geometry (points, lines, polygons, etc.). Basic geometry stuff is in Loyc.Essentials.dll, while more advanced algorithms are found in Loyc.Utilities.dll.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1LLParserGenerator"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html">LLParserGenerator</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1LLParserGenerator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Code related to LLLPG, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator (LLLPG.exe).<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceLoyc_1_1LLPG"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLPG.html">LLPG</a></td></tr>
 <tr class="memdesc:namespaceLoyc_1_1LLPG"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains macros for using LLLPG in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Math"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Math.html">Math</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Math"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains general-purpose math algorithms beyond what is provided in the .NET BCL (Base Class Library). Notable class: Math.MathEx.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1MiniTest"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1MiniTest.html">MiniTest</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1MiniTest"><td class="mdescLeft">&#160;</td><td class="mdescRight">A stripped-down NUnit lookalike which allows you to put simple unit tests in an assembly without having to add a reference to <code>NUnit.Framework.dll</code>.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Syntax"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Syntax"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loyc.Syntax.dll: contains <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>), lexing stuff, LLLPG base classes (<a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol...">BaseParser</a>{T} and BaseLexer), the LES parser and printer, data types related to source code management (e.g. <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a>) and other general-purpose code related to the manipulation of syntax.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Threading"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Threading.html">Threading</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Threading"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper classes for multithreaded code.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespaceLoyc_1_1Utilities"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Utilities.html">Utilities</a></td></tr>
-<tr class="memdesc:namespaceLoyc_1_1Utilities"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains general-purpose classes that are not considered important enough to go directly into the <code><a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a></code> namespace. Most of the classes in this namespace are defined in Loyc.Utilities.dll.<br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1CheckParam.html">CheckParam</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper methods for checking argument values that throw exceptions when an argument value is not acceptable. <a href="classLoyc_1_1CheckParam.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ConcurrentModificationException.html">ConcurrentModificationException</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown when a data structure is accessed (read or written) by one thread at the same time as it is modified on another thread. <a href="classLoyc_1_1ConcurrentModificationException.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ByteArrayInString.html">ByteArrayInString</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes and decodes BAIS (Byte Array In <a class="el" href="namespaceString.html">String</a>) encoding, which preserves runs of ASCII characters unchanged. This encoding is useful for debugging (since ASCII runs are visible) and for conversion of bytes to JSON. <a href="classLoyc_1_1ByteArrayInString.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ConsoleMessageSink.html">ConsoleMessageSink</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail. <a href="classLoyc_1_1ConsoleMessageSink.html#details">More...</a><br /></td></tr>
@@ -154,54 +120,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>GoInterfaceBenchmark</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1GSymbol.html">GSymbol</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class produces global symbols. <a href="classLoyc_1_1GSymbol.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1HashTags.html">HashTags</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of IAttributes that can hold one attribute before allocating any memory for a hashtable. It is intended to be used as a base class but can be used on its own.  <a href="classLoyc_1_1HashTags.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Holder.html">Holder</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A trivial class that holds a single value of type T in the <a class="el" href="classLoyc_1_1Holder.html#a9e1c97badfeff57fc04d4e8573aa8762" title="Any value of type T.">Value</a> property.  <a href="classLoyc_1_1Holder.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for types that can duplicate themselves. <a href="interfaceLoyc_1_1ICloneable.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IHasLocation.html">IHasLocation</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface allows an object to declare its "location". <a href="interfaceLoyc_1_1IHasLocation.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IHasMutableValue.html">IHasMutableValue</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IHasValue.html">IHasValue</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for things that have a Value property. <a href="interfaceLoyc_1_1IHasValue.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A general-purpose interface for a class that accepts formatted messages with context information. <a href="interfaceLoyc_1_1IMessageSink.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1InvalidStateException.html">InvalidStateException</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown when an object detects that its own state is invalid, or in other words, that an invariant has been violated.  <a href="classLoyc_1_1InvalidStateException.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IReferenceEquatable.html">IReferenceEquatable</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is a tag which indicates that objects of this type are unique; specifically, any two different objects that implement this interface are always unequal, and one object is equal only to itself. <a href="interfaceLoyc_1_1IReferenceEquatable.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1ITags.html">ITags</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for an object that can have "tags" attached, which are arbitrary objects reached through a key <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>. <a href="interfaceLoyc_1_1ITags.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LocalizableAttribute.html">LocalizableAttribute</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">I plan to use this attribute someday to gather all the localizable strings in an application. This attribute should be applied to a string function parameter if the method calls Localized() using that parameter as the format string.  <a href="classLoyc_1_1LocalizableAttribute.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html">Localize</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It makes your progr...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It makes your program localization-ready with no effort.  <a href="classLoyc_1_1Localize.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LogException.html">LogException</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception that includes a "context" object as part of a <a class="el" href="structLoyc_1_1LogMessage.html" title="Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string). Typically used with MessageHolder.">LogMessage</a> structure, typically used to indicate where an error occurred. <a href="classLoyc_1_1LogException.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1LogMessage.html">LogMessage</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds an argument list compatible with <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string)</a>. Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>. <a href="structLoyc_1_1LogMessage.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MemoizedTypeName.html">MemoizedTypeName</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">.NET Framework reflection doesn't offer complete type names for generic types such as "List&amp;lt;int&gt;" (the <code>Type.Name</code> value of that class is "List`1"). Get fills in the gap, and also saves the computed name for fast repeated lookups. <a href="classLoyc_1_1MemoizedTypeName.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string). Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>. <a href="structLoyc_1_1LogMessage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageFilter.html">MessageFilter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A decorator that uses a delegate to accept or ignore messages. <a href="classLoyc_1_1MessageFilter.html#details">More...</a><br /></td></tr>
@@ -216,22 +145,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keeps track of the default message sink (Default); contains a series of helper methods; and contains extension methods modeled after log4net: Fatal, Error, Warn, Info, Debug. <a href="classLoyc_1_1MessageSink.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This helper class lets you implement <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> with one or two delegates (a writer method, and an optional severity filter). <a href="classLoyc_1_1MessageSinkFromDelegate.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This helper class lets you implement IMessageSink with one or two delegates (a writer method, and an optional severity filter). <a href="classLoyc_1_1MessageSinkFromDelegate.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkWithContext.html">MessageSinkWithContext</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A message sink wrapper that has a default value for the context parameter, which is used when the context provided is null, and an optional message prefix which is inserted at the beginning of the format string. <a href="classLoyc_1_1MessageSinkWithContext.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NoValue.html">NoValue</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>NoValue.Value</code> is meant to be used as the value of a property that has "no value", meaning no value is assigned or that the property is meaningless at the current time or in the current context.  <a href="classLoyc_1_1NoValue.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html">NullMessageSink</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discards all messages. However, there is a Count property that increases by one with each message received, as well as an ErrorCount. <a href="classLoyc_1_1NullMessageSink.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Pair.html">Pair</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>Pair.Create(a, b)</code> is a helper method for making pairs. <a href="classLoyc_1_1Pair.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ReadOnlyException.html">ReadOnlyException</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown when an attempt is made to modify a read-only object. <a href="classLoyc_1_1ReadOnlyException.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ReferenceComparer.html">ReferenceComparer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An IEqualityComparer&lt;T&gt; based on reference equality <a href="classLoyc_1_1ReferenceComparer.html#details">More...</a><br /></td></tr>
@@ -240,7 +160,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds extension methods to modernize .NET's simple built-in service locator. <a href="classLoyc_1_1ServiceProvider.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1SeverityMessageFilter.html">SeverityMessageFilter</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A decorator (wrapper) for <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> that filters out some messages if their <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e" title="A linear scale to categorize the importance and seriousness of messages sent to IMessageSink.">Severity</a> is too low, according to the value of the <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#ae22ba7c561d9e7d34991a212779b839f" title="Gets or sets the minimum severity that passes the filter. Note: usually this property should be set t...">MinSeverity</a> property. <a href="classLoyc_1_1SeverityMessageFilter.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A decorator (wrapper) for IMessageSink that filters out some messages if their Severity is too low, according to the value of the <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#ae22ba7c561d9e7d34991a212779b839f" title="Gets or sets the minimum severity that passes the filter. Note: usually this property should be set t...">MinSeverity</a> property. <a href="classLoyc_1_1SeverityMessageFilter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringBuilderExt.html">StringBuilderExt</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods that add some functionality of <code>string</code> to <code>StringBuilder</code>. <a href="classLoyc_1_1StringBuilderExt.html#details">More...</a><br /></td></tr>
@@ -248,26 +168,16 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html">StringExt</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count &gt; s.Length.">Right</a>, <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">FormatCore</a> and Slice. <a href="classLoyc_1_1StringExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums. <a href="classLoyc_1_1Symbol.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1SymbolPool.html">SymbolPool</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A collection of <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>s. <a href="classLoyc_1_1SymbolPool.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1SymbolSet.html">SymbolSet</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A set of symbols.  <a href="classLoyc_1_1SymbolSet.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1TraceMessageSink.html">TraceMessageSink</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends all messages to System.Diagnostics.Trace.WriteLine(string). <a href="classLoyc_1_1TraceMessageSink.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Triplet.html">Triplet</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A tuple of three values (<code>A</code>, <code>B</code> and <code>C</code>) in a struct. <a href="structLoyc_1_1Triplet.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Triplet.html">Triplet</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1TypeExt.html">TypeExt</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <code>Type</code>. <a href="classLoyc_1_1TypeExt.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1UString.html">UString</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> is a slice of a string. It is a wrapper around string that provides a <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange&lt;T&gt;</a> of 21-bit UCS-4 characters. "U" stands for "Unicode", as in UCS-4, as opposed to a normal string that is UTF-16. <a href="structLoyc_1_1UString.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ValueComparer.html">ValueComparer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">You'd think the .NET framework would have a built-in method&ndash;even a CIL opcode&ndash;to bitwise-compare two values. Not supporting bitwise compare is, in my opinion, one of several mind-bogglingly dumb decisions in the CLR. Instead, all you can do is call ValueComparer.Default.Equals(a, b).  <a href="classLoyc_1_1ValueComparer.html#details">More...</a><br /></td></tr>
@@ -282,142 +192,17 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract class that helps you implement wrappers by automatically forwarding calls to <a class="el" href="classLoyc_1_1WrapperBase.html#a23cf7690dbe152569da5beb4c9f27440" title="Returns true iff the parameter &#39;obj&#39; is a wrapper around the same object that this object wraps...">Equals()</a>, <a class="el" href="classLoyc_1_1WrapperBase.html#a4464824cb4615cdd75e0ce71bf1ab136" title="Returns the hashcode of the wrapped object.">GetHashCode()</a> and <a class="el" href="classLoyc_1_1WrapperBase.html#a1291cb3088276dccfb3f83d6ce9a7911" title="Returns ToString() of the wrapped object.">ToString()</a>. <a href="classLoyc_1_1WrapperBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:aeb4d5c77591b654c8d37485b1dd00f5e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> { <br />
-&#160;&#160;<b>VerboseDetail</b> = 9, 
-<b>Verbose</b> = 10, 
-<b>_Finer</b> = 20, 
-<br />
-&#160;&#160;<b>DebugDetail</b> = 29, 
-<b>Debug</b> = 30, 
-<b>InfoDetail</b> = 39, 
-<br />
-&#160;&#160;<b>Info</b> = 40, 
-<b>NoteDetail</b> = 49, 
-<b>Note</b> = 50, 
-<br />
-&#160;&#160;<b>WarningDetail</b> = 59, 
-<b>Warning</b> = 60, 
-<b>SpecialDetail</b> = 65, 
-<br />
-&#160;&#160;<b>Special</b> = 66, 
-<b>ErrorDetail</b> = 69, 
-<b>Error</b> = 70, 
-<br />
-&#160;&#160;<b>RareDetail</b> = 79, 
-<b>Rare</b> = 80, 
-<b>CriticalDetail</b> = 89, 
-<br />
-&#160;&#160;<b>Critical</b> = 90, 
-<b>_Alert</b> = 100, 
-<b>FatalDetail</b> = 109, 
-<br />
-&#160;&#160;<b>Fatal</b> = 110, 
-<b>_Emergency</b> = 120
-<br />
- }<tr class="memdesc:aeb4d5c77591b654c8d37485b1dd00f5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A linear scale to categorize the importance and seriousness of messages sent to IMessageSink. <a href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">More...</a><br /></td></tr>
-</td></tr>
-<tr class="separator:aeb4d5c77591b654c8d37485b1dd00f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab24c6dd4dc0e77e5891e63a6f257763f"><td class="memItemLeft" align="right" valign="top">delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
-<tr class="memdesc:ab24c6dd4dc0e77e5891e63a6f257763f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the method signature of <code><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a></code>. You can convert from one of these delegates to <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> by calling <a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd" title="Sends all messages to a user-defined method.">MessageSink.FromDelegate</a>. <a href="#ab24c6dd4dc0e77e5891e63a6f257763f">More...</a><br /></td></tr>
-<tr class="separator:ab24c6dd4dc0e77e5891e63a6f257763f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c64e64c8634bfd5fbc1d8eddba861bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6c64e64c8634bfd5fbc1d8eddba861bf"></a>
 delegate string&#160;</td><td class="memItemRight" valign="bottom"><b>WriterDelegate</b> (string format, params object[] args)</td></tr>
 <tr class="separator:a6c64e64c8634bfd5fbc1d8eddba861bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60bf26d11d36fa5b8bebcecacb4ee382"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60bf26d11d36fa5b8bebcecacb4ee382"></a>
-delegate string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatterDelegate</b> (string format, params object[] args)</td></tr>
-<tr class="separator:a60bf26d11d36fa5b8bebcecacb4ee382"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbed73b94cb66774fe1e9cc047d32892"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adbed73b94cb66774fe1e9cc047d32892"></a>
-delegate string&#160;</td><td class="memItemRight" valign="bottom"><b>LocalizerDelegate</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> resourceId, string defaultMessage)</td></tr>
-<tr class="separator:adbed73b94cb66774fe1e9cc047d32892"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Main <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> namespace. This namespace includes all general-purpose code in the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> megaproject. It includes the code of Loyc.Essentials.dll and Loyc.Collections.dll (collections, geometry, <a class="el" href="namespaceLoyc_1_1MiniTest.html" title="A stripped-down NUnit lookalike which allows you to put simple unit tests in an assembly without havi...">MiniTest</a>, <a class="el" href="classLoyc_1_1MessageSink.html" title="Keeps track of the default message sink (Default); contains a series of helper methods; and contains ...">MessageSink</a>, etc.), and also the code of Loyc.Syntax.dll.</p>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
-<a class="anchor" id="aeb4d5c77591b654c8d37485b1dd00f5e"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Loyc.Severity</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>A linear scale to categorize the importance and seriousness of messages sent to <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a>.</p>
-<p>The numbers are Fatal=110, Critical=90, Error=70, Warning=60, Note=50, Debug=30, Verbose=10 and Detail=0. The severity numbers are based on those defined in log4net, divided by 1000, e.g. Warning=60000 in log4net but 60 in this enum. </p>
-<p>Some of the enumeration values begin with an underscore. These are values defined by Log4net that are deprecated in LoycCore. </p>
-<p>The "Detail" severity levels are meant to contain extra information associated with the most recent non-Detail message, e.g. stack traces or extra diagnostic information for Errors. </p>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ab24c6dd4dc0e77e5891e63a6f257763f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">delegate <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.WriteMessageFn </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">object&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>format</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">params object[]&#160;</td>
-          <td class="paramname"><em>args</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This is the method signature of <code><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a></code>. You can convert from one of these delegates to <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> by calling <a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd" title="Sends all messages to a user-defined method.">MessageSink.FromDelegate</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">type</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
-    <tr><td class="paramname">context</td><td>An object that represents the location that the message applies to, a string that indicates what the program was doing when the message was generated, or any other relevant context information. See also <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">MessageSink.ContextToString</a>().</td></tr>
-    <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
-    <tr><td class="paramname">args</td><td>Optional arguments to fill in placeholders in the format string.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

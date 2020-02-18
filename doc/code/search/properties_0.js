@@ -1,7 +1,7 @@
 var searchData=
 [
   ['allknownmacros',['AllKnownMacros',['../interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab',1,'LeMP::IMacroContext']]],
-  ['allowchangeparentheses',['AllowChangeParentheses',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a2c752d6b46277ffe1f1d6d157e9b882f',1,'Loyc.Syntax.Les.Les2PrinterOptions.AllowChangeParentheses()'],['../interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a591f28b23a1a6c17b36f8a72202c0d18',1,'Loyc.Syntax.ILNodePrinterOptions.AllowChangeParentheses()']]],
+  ['allowchangeparentheses',['AllowChangeParentheses',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a2c752d6b46277ffe1f1d6d157e9b882f',1,'Loyc::Syntax::Les::Les2PrinterOptions']]],
   ['allowconstructorambiguity',['AllowConstructorAmbiguity',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#ad3b48848ba7c5144fb5d46a48710e89d',1,'Loyc::Ecs::EcsPrinterOptions']]],
   ['allowextrabraceforifelseambig',['AllowExtraBraceForIfElseAmbig',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#af76102730e6d5ce6444bdb2ec654e994',1,'Loyc::Ecs::EcsPrinterOptions']]],
   ['allowextraparenthesis',['AllowExtraParenthesis',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aeddfdf09a00ee0b670a93e4a62dae4cf',1,'Loyc::Syntax::Les::Les3PrinterOptions']]],

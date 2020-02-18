@@ -6,14 +6,11 @@ var searchData=
   ['weakkeydictionary',['WeakKeyDictionary',['../classLoyc_1_1Collections_1_1WeakKeyDictionary.html',1,'Loyc::Collections']]],
   ['weakkeyreference',['WeakKeyReference',['../classLoyc_1_1Collections_1_1WeakKeyReference.html',1,'Loyc::Collections']]],
   ['weakreferenceext',['WeakReferenceExt',['../classLoyc_1_1WeakReferenceExt.html',1,'Loyc']]],
-  ['weakvaluedictionary',['WeakValueDictionary',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
-  ['weakvaluedictionary_3c_20string_2c_20loyc_3a_3asymbol_20_3e',['WeakValueDictionary&lt; string, Loyc::Symbol &gt;',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
   ['where',['Where',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a43c8f4eb707e150d0b4c5811fda159c3',1,'Loyc.Syntax.CodeSymbols.Where()'],['../structLoyc_1_1Collections_1_1Set.html#a27762a0bd6a5f0d0953d8f08822896cc',1,'Loyc.Collections.Set.Where()'],['../structLoyc_1_1Collections_1_1FVList.html#a266f75826b9287d3a36e9bbdcf1cb9a9',1,'Loyc.Collections.FVList.Where()'],['../classLoyc_1_1Collections_1_1WList.html#a14cd1fe7e486f7228aebb146766c431d',1,'Loyc.Collections.WList.Where()']]],
   ['whereselect',['WhereSelect',['../structLoyc_1_1Collections_1_1FVList.html#a1cddbf313a0c80e34e8d24d13ae14aaf',1,'Loyc.Collections.FVList.WhereSelect()'],['../classLoyc_1_1Collections_1_1FWList.html#a7096ca1889e3c42f1632fc071980e6ed',1,'Loyc.Collections.FWList.WhereSelect()'],['../structLoyc_1_1Collections_1_1VList.html#a3751829c3359ff56319fe6d93b6be40a',1,'Loyc.Collections.VList.WhereSelect()'],['../classLoyc_1_1Collections_1_1WList.html#abe702ed3d5f8babe9801193d3b0d2cc3',1,'Loyc.Collections.WList.WhereSelect()']]],
   ['while',['While',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a35e2369fe5d78cfc19230921ff1af9a3',1,'Loyc::Syntax::CodeSymbols']]],
   ['whitespacefilter',['WhitespaceFilter',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceFilter.html',1,'Loyc::Syntax::Lexing']]],
   ['whitespacetag',['WhitespaceTag',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html',1,'Loyc::Syntax::Lexing']]],
-  ['width',['Width',['../interfaceLoyc_1_1Geometry_1_1ISizeReader.html#a5ccfd26fc50e3851f6442656f3c53714',1,'Loyc::Geometry::ISizeReader']]],
   ['with',['With',['../classLoyc_1_1Collections_1_1Map.html#a4c63e4a2931a5334d46ab0e253541dfc',1,'Loyc.Collections.Map.With()'],['../classLoyc_1_1Collections_1_1MMap.html#ae7fac7939769bf7d5b8fad5493b2dc97',1,'Loyc.Collections.MMap.With()'],['../classLoyc_1_1Syntax_1_1LNode.html#afc9436665fc3def9e35cf764b44b785c',1,'Loyc.Syntax.LNode.With(LNode target, VList&lt; LNode &gt; args)'],['../classLoyc_1_1Syntax_1_1LNode.html#a70e26f0f490a4c97ac59fee241f482aa',1,'Loyc.Syntax.LNode.With(Symbol target, VList&lt; LNode &gt; args)']]],
   ['with_3c_20t_20_3e',['With&lt; T &gt;',['../classLoyc_1_1G.html#a8b552ab7f99afe75149723e7c996b36d',1,'Loyc.G.With&lt; T &gt;(this T obj, Action&lt; T &gt; action)'],['../classLoyc_1_1G.html#a2449794f23bbac4ec1b6029269795bef',1,'Loyc.G.With&lt; T &gt;(this T obj, Func&lt; T, T &gt; action)']]],
   ['withargs',['WithArgs',['../classLoyc_1_1Syntax_1_1IdNode.html#ad67fc2f0a2367fc16aa14247ac8bb7b1',1,'Loyc.Syntax.IdNode.WithArgs()'],['../classLoyc_1_1Syntax_1_1LiteralNode.html#aea99c2d89d0744711e876c3164c48743',1,'Loyc.Syntax.LiteralNode.WithArgs()'],['../classLoyc_1_1Syntax_1_1CallNode.html#aa26db505e1da43420ef7e840c9fa3a36',1,'Loyc.Syntax.CallNode.WithArgs()'],['../classLoyc_1_1Syntax_1_1LNode.html#a406a157154471b738c0ea068a55e6136',1,'Loyc.Syntax.LNode.WithArgs()']]],
@@ -32,7 +29,5 @@ var searchData=
   ['wlistbase',['WListBase',['../classLoyc_1_1Collections_1_1WListBase.html',1,'Loyc::Collections']]],
   ['wlistprotected',['WListProtected',['../classLoyc_1_1Collections_1_1WListProtected.html',1,'Loyc::Collections']]],
   ['wrapperbase',['WrapperBase',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['wrapperbase_3c_20isourcefile_20_3e',['WrapperBase&lt; ISourceFile &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['write',['Write',['../interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222',1,'Loyc.IMessageSink.Write()'],['../classLoyc_1_1SeverityMessageFilter.html#a296a47dbe6906f7495ef42519e5ad12f',1,'Loyc.SeverityMessageFilter.Write()'],['../classLoyc_1_1MessageMulticaster.html#a007e5d4bba4ab0592d6778ed05cc1ed5',1,'Loyc.MessageMulticaster.Write()'],['../classLoyc_1_1MessageSinkWithContext.html#a2b9b67440b26096cbb83ff33f0a6c739',1,'Loyc.MessageSinkWithContext.Write()']]],
-  ['writemessagefn',['WriteMessageFn',['../namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f',1,'Loyc']]]
+  ['wrapperbase_3c_20isourcefile_20_3e',['WrapperBase&lt; ISourceFile &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]]
 ];

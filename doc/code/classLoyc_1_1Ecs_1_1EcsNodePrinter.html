@@ -109,8 +109,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Encapsulates the code for printing an LNode to EC# source code.</p>
 <p>To print EC# code, you not use this class directly. Instead, call <a class="el" href="classLoyc_1_1Ecs_1_1EcsLanguageService.html#a2a5f8b368d8dd8356051b4b34cb20b4d" title="Serializes the specified syntax tree to a StringBuilder in the syntax supported by this object...">EcsLanguageService.Print(LNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)</a> via EcsLanguageService.WithPlainCSharpPrinter or via EcsLanguageService.Value. This class does have some static methods like PrintLiteral(object, NodeStyle) and PrintId that are useful for printing tokens efficiently. </p>
-<p>This class is designed to faithfully preserve most <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees; almost any <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree that can be represented as EC# source code will be represented properly by this class, so that it is possible to parse the output text back into a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree equivalent to the one that was printed. Originally this class was meant to provide round-tripping from <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees to text and back, but Enhanced C# is syntactically very complicated and as a result this printer may contain bugs or (for the sake of practicality) minor intentional limitations that cause round-tripping not to work in rare cases. If you need perfect round-tripping, use LES instead (LesLanguageService). </p>
-<p>Only the attributes, head (LiteralNode.Value, IdNode.Name or CallNode.Target), and arguments of nodes are round-trippable. Superficial properties such as original source code locations and the LNode.Style are, in general, lost, although the printer can faithfully reproduce some (not all) NodeStyles (this caveat applies equally to LES). Also, any attribute whose Name starts with "#trivia_" may be dropped, because these attributes are considered extensions of the NodeStyle. However, the style indicated by the #trivia_* attribute will be used if the printer recognizes it. </p>
+<p>This class is designed to faithfully preserve most <a class="el" href="namespaceLoyc.html">Loyc</a> trees; almost any <a class="el" href="namespaceLoyc.html">Loyc</a> tree that can be represented as EC# source code will be represented properly by this class, so that it is possible to parse the output text back into a <a class="el" href="namespaceLoyc.html">Loyc</a> tree equivalent to the one that was printed. Originally this class was meant to provide round-tripping from <a class="el" href="namespaceLoyc.html">Loyc</a> trees to text and back, but Enhanced C# is syntactically very complicated and as a result this printer may contain bugs or (for the sake of practicality) minor intentional limitations that cause round-tripping not to work in rare cases. If you need perfect round-tripping, use LES instead (LesLanguageService). </p>
+<p>Only the attributes, head (LiteralNode.Value, IdNode.Name or CallNode.Target), and arguments of nodes are round-trippable. Superficial properties such as original source code locations and the LNode.Style are, in general, lost, although the printer can faithfully reproduce some (not all) NodeStyles (this caveat applies equally to LES). Also, any attribute whose Name starts with the trivia marker % may be dropped, because these attributes are considered extensions of the NodeStyle. However, the style indicated by the % attribute will be used if the printer recognizes it. </p>
 <p>For round-tripping to work, there are a couple of restrictions on the input tree: </p><ol>
 <li>
 Only literals that can exist in C# source code are allowed. For example, Values of type int, string, and double are acceptable, but Values of type Regex or int[] are not, because single tokens cannot represent these types in C# source code. The printer ignores Values of non-literal nodes, and non-representable literals are printed out using ToString(). </li>
@@ -148,13 +148,22 @@ Public Types</h2></td></tr>
  }<tr class="memdesc:a9c3b95fe21e2ff70c95988196f563bf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal enum (marked public for an obscure technical reason). These are flags that represent special situations in EC# syntax. <a href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a9c3b95fe21e2ff70c95988196f563bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a767770b3a546931207b6d04aa18eadd7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a767770b3a546931207b6d04aa18eadd7"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>IdPrintMode</b> { <br />
+&#160;&#160;<b>Normal</b>, 
+<b>Symbol</b>, 
+<b>Operator</b>, 
+<br />
+&#160;&#160;<b>Verbatim</b>
+<br />
+ }</td></tr>
+<tr class="separator:a767770b3a546931207b6d04aa18eadd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:aa00844da00df6fedd390223f5a085106"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa00844da00df6fedd390223f5a085106"></a>
 <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Writer</b><code> [get, set]</code></td></tr>
 <tr class="separator:aa00844da00df6fedd390223f5a085106"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbe72e063f92aa0e82fbb16ea026dee2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#afbe72e063f92aa0e82fbb16ea026dee2">ErrorSink</a><code> [get, set]</code></td></tr>
+<tr class="memitem:afbe72e063f92aa0e82fbb16ea026dee2"><td class="memItemLeft" align="right" valign="top">IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#afbe72e063f92aa0e82fbb16ea026dee2">ErrorSink</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:afbe72e063f92aa0e82fbb16ea026dee2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Any error that occurs during printing is printed to this object. <a href="#afbe72e063f92aa0e82fbb16ea026dee2">More...</a><br /></td></tr>
 <tr class="separator:afbe72e063f92aa0e82fbb16ea026dee2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a823a1406c7c08dfabb6eb0b8e3e9dc76"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a823a1406c7c08dfabb6eb0b8e3e9dc76"></a>
@@ -164,25 +173,25 @@ Properties</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:abb88e8d1cd6f0bc1ac5041baa71cfcdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb88e8d1cd6f0bc1ac5041baa71cfcdd"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetOptions</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetOptions</b> (ILNodePrinterOptions options)</td></tr>
 <tr class="separator:abb88e8d1cd6f0bc1ac5041baa71cfcdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa002943c867eb686262b19cfaa5d1a4f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa002943c867eb686262b19cfaa5d1a4f">PrintPlainCSharp</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
+<tr class="memitem:aa002943c867eb686262b19cfaa5d1a4f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa002943c867eb686262b19cfaa5d1a4f">PrintPlainCSharp</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options=null)</td></tr>
 <tr class="memdesc:aa002943c867eb686262b19cfaa5d1a4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a node while avoiding syntax specific to Enhanced C#. <a href="#aa002943c867eb686262b19cfaa5d1a4f">More...</a><br /></td></tr>
 <tr class="separator:aa002943c867eb686262b19cfaa5d1a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9b83d5453cb836d0509239c279e8f8e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ad9b83d5453cb836d0509239c279e8f8e">PrintECSharp</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
+<tr class="memitem:ad9b83d5453cb836d0509239c279e8f8e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ad9b83d5453cb836d0509239c279e8f8e">PrintECSharp</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options=null)</td></tr>
 <tr class="memdesc:ad9b83d5453cb836d0509239c279e8f8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a node as EC# code. <a href="#ad9b83d5453cb836d0509239c279e8f8e">More...</a><br /></td></tr>
 <tr class="separator:ad9b83d5453cb836d0509239c279e8f8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a107a71024c75c2069fe595871141a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a107a71024c75c2069fe595871141a0"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintId</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, bool useOperatorKeyword=false)</td></tr>
-<tr class="separator:a0a107a71024c75c2069fe595871141a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf91bb3f932f9fa5c5d75d77b083408e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf91bb3f932f9fa5c5d75d77b083408e"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintId</b> (Symbol name, IdPrintMode mode=IdPrintMode.Normal)</td></tr>
+<tr class="separator:adf91bb3f932f9fa5c5d75d77b083408e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9bba001b85d0a062a7255741c779cfd2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9bba001b85d0a062a7255741c779cfd2"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintSymbolLiteral</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintSymbolLiteral</b> (Symbol name)</td></tr>
 <tr class="separator:a9bba001b85d0a062a7255741c779cfd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a85c07c582cbad2d16b7dab5f352e25"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a85c07c582cbad2d16b7dab5f352e25"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintLiteral</b> (object value, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style)</td></tr>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintLiteral</b> (object value, NodeStyle style)</td></tr>
 <tr class="separator:a4a85c07c582cbad2d16b7dab5f352e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59dd0d531c3d18135ed336d7289b2c92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59dd0d531c3d18135ed336d7289b2c92"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString</b> (string value, char quoteType, bool verbatim=false, bool includeAtSign=true)</td></tr>
@@ -226,7 +235,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 <p>The current statement is the last one in the enclosing block, so #result can be represented by omitting a semicolon.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a9c3b95fe21e2ff70c95988196f563bf0a6200563ef865f533e8447a842e2f29ff"></a>TypeContext&#160;</td><td class="fielddoc">
-<p>An expression is being printed in a context where a type is expected.</p>
+<p>The "expression" being printed is a type, or part of a type, which may have special printing rules (e.g. consider <code>Foo?[]</code>, <code>List&lt;(X,Y)&gt;</code>.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a9c3b95fe21e2ff70c95988196f563bf0a9239b329d3ac06416ebfb984c7d375c0"></a>InDefinitionName&#160;</td><td class="fielddoc">
 <p>The expression being printed is a complex identifier that may contain special attributes, e.g. <code>Foo&lt;out T&gt;</code>.</p>
@@ -291,19 +300,19 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>sink</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
+          <td class="paramtype">ParsingMode&#160;</td>
           <td class="paramname"><em>mode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
+          <td class="paramtype">ILNodePrinterOptions&#160;</td>
           <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
@@ -321,7 +330,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 
 <p>Prints a node as EC# code.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff">Loyc.Syntax.ParsingMode.Expressions</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694">Loyc.Syntax.Precedence.Lo</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4">Loyc.Syntax.LNode.Name</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a252fb0a7ff67e43c3a4e8ee74db6cad9">Loyc.Ecs.EcsPrinterOptions.NewlineOptions</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a79c008546f36a08d22006636d8199b30">Loyc.Ecs.EcsPrinterOptions.SpaceAfterPrefixStopPrecedence</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#aad6ae44b52f0f42063424fffbdcb42bb">Loyc.Ecs.EcsPrinterOptions.SpaceAroundInfixStopPrecedence</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a81213a1b92b8f685ac950d95d680af26">Loyc.Ecs.EcsPrinterOptions.SpaceOptions</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688">Loyc.Syntax.LNode.Style</a>.</p>
+<p>References <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694">Loyc.Syntax.Precedence.Lo</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4">Loyc.Syntax.LNode.Name</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a252fb0a7ff67e43c3a4e8ee74db6cad9">Loyc.Ecs.EcsPrinterOptions.NewlineOptions</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a79c008546f36a08d22006636d8199b30">Loyc.Ecs.EcsPrinterOptions.SpaceAfterPrefixStopPrecedence</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#aad6ae44b52f0f42063424fffbdcb42bb">Loyc.Ecs.EcsPrinterOptions.SpaceAroundInfixStopPrecedence</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a81213a1b92b8f685ac950d95d680af26">Loyc.Ecs.EcsPrinterOptions.SpaceOptions</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688">Loyc.Syntax.LNode.Style</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Ecs_1_1EcsLanguageService.html#a2a5f8b368d8dd8356051b4b34cb20b4d">Loyc.Ecs.EcsLanguageService.Print()</a>.</p>
 
@@ -349,19 +358,19 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>sink</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
+          <td class="paramtype">ParsingMode&#160;</td>
           <td class="paramname"><em>mode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
+          <td class="paramtype">ILNodePrinterOptions&#160;</td>
           <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
@@ -393,7 +402,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> Loyc.Ecs.EcsNodePrinter.ErrorSink</td>
+          <td class="memname">IMessageSink Loyc.Ecs.EcsNodePrinter.ErrorSink</td>
         </tr>
       </table>
   </td>
@@ -411,7 +420,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

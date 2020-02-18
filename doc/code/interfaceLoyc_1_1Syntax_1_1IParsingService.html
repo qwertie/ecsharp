@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. 
+<p>An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html">Loyc</a> trees. 
  <a href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/IParsingService.cs'>/Core/Loyc.Syntax/IParsingService.cs</a></li>
@@ -116,8 +116,8 @@ Inheritance diagram for Loyc.Syntax.IParsingService:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees.</p>
-<p>The simplest way to parse code is with the extension method <code>Parse(string, <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> msgs = null, <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> inputType = null)</code>. The simplest way to print is with <code>Print(LNode, IMessageSink)</code> </p>
+<div class="textblock"><p>An interface that encapsulates the lexer and parser of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html">Loyc</a> trees.</p>
+<p>The simplest way to parse code is with the extension method <code>Parse(string, IMessageSink msgs = null, Symbol inputType = null)</code>. The simplest way to print is with <code>Print(LNode, IMessageSink)</code> </p>
 <p>The ToString() method should return a string that indicates the programming language represented by this object, e.g. "Enhanced C#". </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html" title="Standard extension methods for IParsingService.">ParsingService</a></dd></dl>
 </div><table class="memberdecls">
@@ -135,16 +135,16 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae06bec6105c05ddf106fe1a995010101"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae06bec6105c05ddf106fe1a995010101">Tokenize</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> text, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs)</td></tr>
+<tr class="memitem:ae06bec6105c05ddf106fe1a995010101"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae06bec6105c05ddf106fe1a995010101">Tokenize</a> (ICharSource text, string fileName, IMessageSink msgs)</td></tr>
 <tr class="memdesc:ae06bec6105c05ddf106fe1a995010101"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a lexer that is configured to begin reading the specified file. <a href="#ae06bec6105c05ddf106fe1a995010101">More...</a><br /></td></tr>
 <tr class="separator:ae06bec6105c05ddf106fe1a995010101"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99ae146a79f387ca324cffddac107eaf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a99ae146a79f387ca324cffddac107eaf">Parse</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> text, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode=null, bool preserveComments=true)</td></tr>
-<tr class="memdesc:a99ae146a79f387ca324cffddac107eaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a source file into one or more <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. <a href="#a99ae146a79f387ca324cffddac107eaf">More...</a><br /></td></tr>
+<tr class="memitem:a99ae146a79f387ca324cffddac107eaf"><td class="memItemLeft" align="right" valign="top">IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a99ae146a79f387ca324cffddac107eaf">Parse</a> (ICharSource text, string fileName, IMessageSink msgs=null, ParsingMode mode=null, bool preserveComments=true)</td></tr>
+<tr class="memdesc:a99ae146a79f387ca324cffddac107eaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a source file into one or more <a class="el" href="namespaceLoyc.html">Loyc</a> trees. <a href="#a99ae146a79f387ca324cffddac107eaf">More...</a><br /></td></tr>
 <tr class="separator:a99ae146a79f387ca324cffddac107eaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f2faf5c11bb1ca729792ffeed4ff586"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a4f2faf5c11bb1ca729792ffeed4ff586">Parse</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; input, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode=null, bool preserveComments=true)</td></tr>
+<tr class="memitem:a4f2faf5c11bb1ca729792ffeed4ff586"><td class="memItemLeft" align="right" valign="top">IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a4f2faf5c11bb1ca729792ffeed4ff586">Parse</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; input, IMessageSink msgs=null, ParsingMode mode=null, bool preserveComments=true)</td></tr>
 <tr class="memdesc:a4f2faf5c11bb1ca729792ffeed4ff586"><td class="mdescLeft">&#160;</td><td class="mdescRight">If <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a423c32c87da703adfc474562a07a1634" title="Returns true if the Tokenize method is available.">HasTokenizer</a> is true, this method accepts a lexer returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae06bec6105c05ddf106fe1a995010101" title="Returns a lexer that is configured to begin reading the specified file.">Tokenize()</a> and begins parsing. <a href="#a4f2faf5c11bb1ca729792ffeed4ff586">More...</a><br /></td></tr>
 <tr class="separator:a4f2faf5c11bb1ca729792ffeed4ff586"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b30d6ea04c5c13346a5bac1e5b44df6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a4b30d6ea04c5c13346a5bac1e5b44df6">Parse</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType)</td></tr>
+<tr class="memitem:a4b30d6ea04c5c13346a5bac1e5b44df6"><td class="memItemLeft" align="right" valign="top">IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a4b30d6ea04c5c13346a5bac1e5b44df6">Parse</a> (IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file, IMessageSink msgs, ParsingMode inputType)</td></tr>
 <tr class="memdesc:a4b30d6ea04c5c13346a5bac1e5b44df6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a token tree, such as one that came from a token literal. <a href="#a4b30d6ea04c5c13346a5bac1e5b44df6">More...</a><br /></td></tr>
 <tr class="separator:a4b30d6ea04c5c13346a5bac1e5b44df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -154,9 +154,9 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
+          <td class="memname">IListSource&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>&#160;</td>
+          <td class="paramtype">ICharSource&#160;</td>
           <td class="paramname"><em>text</em>, </td>
         </tr>
         <tr>
@@ -168,13 +168,13 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>msgs</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
+          <td class="paramtype">ParsingMode&#160;</td>
           <td class="paramname"><em>mode</em> = <code>null</code>, </td>
         </tr>
         <tr>
@@ -191,7 +191,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Parses a source file into one or more <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees.</p>
+<p>Parses a source file into one or more <a class="el" href="namespaceLoyc.html">Loyc</a> trees.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">text</td><td>input file or string.</td></tr>
@@ -214,7 +214,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
+          <td class="memname">IListSource&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td>
           <td class="paramname"><em>input</em>, </td>
@@ -222,13 +222,13 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>msgs</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
+          <td class="paramtype">ParsingMode&#160;</td>
           <td class="paramname"><em>mode</em> = <code>null</code>, </td>
         </tr>
         <tr>
@@ -250,7 +250,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">input</td><td>A source of tokens.</td></tr>
     <tr><td class="paramname">msgs</td><td>Error and warning messages are sent to this object. If this parameter is null, messages should be sent to MessageSink.Default.</td></tr>
-    <tr><td class="paramname">mode</td><td>Indicates how the input should be parsed. <code>null</code> is a synonym for <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html#a21183532357aeb06a10658785b67c97d" title="Tells IParsingService.Parse to treat the input as a complete source file (this should be the default...">ParsingMode.File</a></td></tr>
+    <tr><td class="paramname">mode</td><td>Indicates how the input should be parsed. <code>null</code> is a synonym for ParsingMode.File</td></tr>
     <tr><td class="paramname">preserveComments</td><td>Whether to preserve comments and newlines by attaching trivia attributes to the output. If the property <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a935b134eb841d2923f0228445152e02b" title="Returns true if the parser supports preserving comments.">CanPreserveComments</a> is false, this parameter will not work.</td></tr>
   </table>
   </dd>
@@ -272,27 +272,27 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
+          <td class="memname">IListSource&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.IParsingService.Parse </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td>
+          <td class="paramtype">IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td>
           <td class="paramname"><em>tokens</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td>
+          <td class="paramtype">ISourceFile&#160;</td>
           <td class="paramname"><em>file</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>msgs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
+          <td class="paramtype">ParsingMode&#160;</td>
           <td class="paramname"><em>inputType</em>&#160;</td>
         </tr>
         <tr>
@@ -332,7 +332,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt;<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&gt; Loyc.Syntax.IParsingService.Tokenize </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>&#160;</td>
+          <td class="paramtype">ICharSource&#160;</td>
           <td class="paramname"><em>text</em>, </td>
         </tr>
         <tr>
@@ -344,7 +344,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>msgs</em>&#160;</td>
         </tr>
         <tr>
@@ -358,7 +358,7 @@ Public Member Functions</h2></td></tr>
 <p>Returns a lexer that is configured to begin reading the specified file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">text</td><td>Text to be tokenized (e.g. <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a>)</td></tr>
+    <tr><td class="paramname">text</td><td>Text to be tokenized (e.g. UString)</td></tr>
     <tr><td class="paramname">fileName</td><td>File name to be associated with any errors that occur.</td></tr>
     <tr><td class="paramname">msgs</td><td>Error messages are sent to this object.</td></tr>
   </table>
@@ -416,7 +416,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Standard file extensions for this language, without leading dots, with the first one being the most common.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#aa63099785f5004c0e1085723f56eb36a">Loyc.Syntax.ParsingService.Register()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a1f537ce2b6768e1312b7d5ec840f8b9e">Loyc.Syntax.ParsingService.Unregister()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a1f537ce2b6768e1312b7d5ec840f8b9e">Loyc.Syntax.ParsingService.Unregister()</a>.</p>
 
 </div>
 </div>
@@ -446,7 +446,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:33 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:13 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

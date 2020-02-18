@@ -107,7 +107,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Keeps track of the default message sink (Default); contains a series of helper methods; and contains extension methods modeled after log4net: Fatal, Error, Warn, Info, Debug.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a></dd></dl>
+<p>Helpful article: <a href="http://core.loyc.net/essentials/messagesink.html">http://core.loyc.net/essentials/messagesink.html</a> </p>
+<dl class="section see"><dt>See also</dt><dd>IMessageSink</dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
@@ -130,10 +131,10 @@ Public static fields</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ac92e6a2fb56d5d3660eb73559f4dba0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac92e6a2fb56d5d3660eb73559f4dba0c"></a>
-static <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Default</b><code> [get]</code></td></tr>
+static IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><b>Default</b><code> [get]</code></td></tr>
 <tr class="separator:ac92e6a2fb56d5d3660eb73559f4dba0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf1b70d1be4b2a2cd9dc0f0972bc874"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aacf1b70d1be4b2a2cd9dc0f0972bc874"></a>
-static <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Current</b><code> [get, set]</code></td></tr>
+static IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><b>Current</b><code> [get, set]</code></td></tr>
 <tr class="separator:aacf1b70d1be4b2a2cd9dc0f0972bc874"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2439b36e47c9d854335ac1ab0f236638"><td class="memItemLeft" align="right" valign="top">static Func&lt; object, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">ContextToString</a><code> [get]</code></td></tr>
 <tr class="memdesc:a2439b36e47c9d854335ac1ab0f236638"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the strategy that message sinks should use to convert a context object to a string. <a href="#a2439b36e47c9d854335ac1ab0f236638">More...</a><br /></td></tr>
@@ -141,14 +142,14 @@ static <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a40fb494c06c087d13f1394b140ae26a5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a40fb494c06c087d13f1394b140ae26a5">SetDefault</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
+<tr class="memitem:a40fb494c06c087d13f1394b140ae26a5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt; IMessageSink &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a40fb494c06c087d13f1394b140ae26a5">SetDefault</a> (IMessageSink sink)</td></tr>
 <tr class="memdesc:a40fb494c06c087d13f1394b140ae26a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to change the MessageSink.Default property temporarily. <a href="#a40fb494c06c087d13f1394b140ae26a5">More...</a><br /></td></tr>
 <tr class="separator:a40fb494c06c087d13f1394b140ae26a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59c2f1932daf118d2b4f16ca7a0991a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59c2f1932daf118d2b4f16ca7a0991a6"></a>
-static <a class="el" href="structLoyc_1_1MessageSink_1_1PushedCurrent.html">PushedCurrent</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PushCurrent</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
+static <a class="el" href="structLoyc_1_1MessageSink_1_1PushedCurrent.html">PushedCurrent</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PushCurrent</b> (IMessageSink sink)</td></tr>
 <tr class="separator:a59c2f1932daf118d2b4f16ca7a0991a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a749716030611a79449e91102fcb684fe"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe">LocationOf</a> (object context)</td></tr>
-<tr class="memdesc:a749716030611a79449e91102fcb684fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns context.Location if context implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>; otherwise, returns context itself. <a href="#a749716030611a79449e91102fcb684fe">More...</a><br /></td></tr>
+<tr class="memdesc:a749716030611a79449e91102fcb684fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns context.Location if context implements IHasLocation; otherwise, returns context itself. <a href="#a749716030611a79449e91102fcb684fe">More...</a><br /></td></tr>
 <tr class="separator:a749716030611a79449e91102fcb684fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92234e9bd908d05f3a75cc5845d35ce3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92234e9bd908d05f3a75cc5845d35ce3"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationString</b> (object context)</td></tr>
@@ -160,120 +161,120 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationStri
 <tr class="memdesc:ad6b2bd7e5e4c197f8b286d5e2da3e6b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the strategy that message sinks should use to convert a context object to a string. <a href="#ad6b2bd7e5e4c197f8b286d5e2da3e6b6">More...</a><br /></td></tr>
 <tr class="separator:ad6b2bd7e5e4c197f8b286d5e2da3e6b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b4e9a9e2a9450a3e31a70088fbc992b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b4e9a9e2a9450a3e31a70088fbc992b"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsFatalEnabled&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsFatalEnabled&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink)</td></tr>
 <tr class="separator:a7b4e9a9e2a9450a3e31a70088fbc992b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14b33b099de8a30045e2394c881628ca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a14b33b099de8a30045e2394c881628ca"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format)</td></tr>
 <tr class="separator:a14b33b099de8a30045e2394c881628ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c0d48a28cec30e58c28ae72023f1e25"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c0d48a28cec30e58c28ae72023f1e25"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
 <tr class="separator:a4c0d48a28cec30e58c28ae72023f1e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78063952ff5e7c47971a0ce71f9f4239"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78063952ff5e7c47971a0ce71f9f4239"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a78063952ff5e7c47971a0ce71f9f4239"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1ba591954ddb95162f0463cd33183d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1ba591954ddb95162f0463cd33183d2"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fatal</b> (this IMessageSink&lt; object &gt; sink, string format)</td></tr>
 <tr class="separator:af1ba591954ddb95162f0463cd33183d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac84b4c3c12ae489a5c8e48ed831403b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac84b4c3c12ae489a5c8e48ed831403b5"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FatalFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FatalFormat</b> (this IMessageSink&lt; object &gt; sink, string format, params object[] args)</td></tr>
 <tr class="separator:ac84b4c3c12ae489a5c8e48ed831403b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63af5773bb62bbc1b9f132a85fbb30aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63af5773bb62bbc1b9f132a85fbb30aa"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FatalFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FatalFormat</b> (this IMessageSink&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a63af5773bb62bbc1b9f132a85fbb30aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a128f1d00dfc0d7579efcc69f6c846c20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a128f1d00dfc0d7579efcc69f6c846c20"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsErrorEnabled&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsErrorEnabled&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink)</td></tr>
 <tr class="separator:a128f1d00dfc0d7579efcc69f6c846c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e5b482af49e81e1398ccfaeb7503146"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e5b482af49e81e1398ccfaeb7503146"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format)</td></tr>
 <tr class="separator:a2e5b482af49e81e1398ccfaeb7503146"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2fb2ac524fda49f62438d2ddc627bd4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa2fb2ac524fda49f62438d2ddc627bd4"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
 <tr class="separator:aa2fb2ac524fda49f62438d2ddc627bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf096d2b5ab46ee363ddc74ef794faa0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf096d2b5ab46ee363ddc74ef794faa0"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:adf096d2b5ab46ee363ddc74ef794faa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa220ad3f3bd25f63da43c47c11a943bb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa220ad3f3bd25f63da43c47c11a943bb"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (this IMessageSink&lt; object &gt; sink, string format)</td></tr>
 <tr class="separator:aa220ad3f3bd25f63da43c47c11a943bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0e4c5c7b9700c1ed1689cef1b01ad0f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac0e4c5c7b9700c1ed1689cef1b01ad0f"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorFormat</b> (this IMessageSink&lt; object &gt; sink, string format, params object[] args)</td></tr>
 <tr class="separator:ac0e4c5c7b9700c1ed1689cef1b01ad0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a799ef84a03247d231224970ff7473589"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a799ef84a03247d231224970ff7473589"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorFormat</b> (this IMessageSink&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a799ef84a03247d231224970ff7473589"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfedd318f8abb283969e5ae1efa6484c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adfedd318f8abb283969e5ae1efa6484c"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsWarnEnabled&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsWarnEnabled&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink)</td></tr>
 <tr class="separator:adfedd318f8abb283969e5ae1efa6484c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a565c31c1e9f54621e8813e6455151ec7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a565c31c1e9f54621e8813e6455151ec7"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format)</td></tr>
 <tr class="separator:a565c31c1e9f54621e8813e6455151ec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56a5822f0b94cad236c142973dd49b9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56a5822f0b94cad236c142973dd49b9d"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
 <tr class="separator:a56a5822f0b94cad236c142973dd49b9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae33eb4b9892e25ea689d06cef1768e42"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae33eb4b9892e25ea689d06cef1768e42"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:ae33eb4b9892e25ea689d06cef1768e42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f5fc2969174ffcb1c8e75eb2837c530"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f5fc2969174ffcb1c8e75eb2837c530"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warn</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warn</b> (this IMessageSink&lt; object &gt; sink, string format)</td></tr>
 <tr class="separator:a5f5fc2969174ffcb1c8e75eb2837c530"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56f785e0a38de503deb06a244fdb19d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56f785e0a38de503deb06a244fdb19d1"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnFormat</b> (this IMessageSink&lt; object &gt; sink, string format, params object[] args)</td></tr>
 <tr class="separator:a56f785e0a38de503deb06a244fdb19d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a277cf2a42ef689efec38cf2e38e95d3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a277cf2a42ef689efec38cf2e38e95d3e"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnFormat</b> (this IMessageSink&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a277cf2a42ef689efec38cf2e38e95d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04effa3803e790691190b6c9a3a1cb83"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04effa3803e790691190b6c9a3a1cb83"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInfoEnabled&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInfoEnabled&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink)</td></tr>
 <tr class="separator:a04effa3803e790691190b6c9a3a1cb83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad757b11fdac0d508073255c1a40a2dac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad757b11fdac0d508073255c1a40a2dac"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format)</td></tr>
 <tr class="separator:ad757b11fdac0d508073255c1a40a2dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a929e00d25d8f352ff1c2e14c9ccdc63a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a929e00d25d8f352ff1c2e14c9ccdc63a"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
 <tr class="separator:a929e00d25d8f352ff1c2e14c9ccdc63a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a763f915b11e0f860cf8feff377d56bcc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a763f915b11e0f860cf8feff377d56bcc"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a763f915b11e0f860cf8feff377d56bcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a878aac94b0f97848c227946fa9324464"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a878aac94b0f97848c227946fa9324464"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Info</b> (this IMessageSink&lt; object &gt; sink, string format)</td></tr>
 <tr class="separator:a878aac94b0f97848c227946fa9324464"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02c19e24f66dcbb78f35ae9dc4231f28"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02c19e24f66dcbb78f35ae9dc4231f28"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InfoFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InfoFormat</b> (this IMessageSink&lt; object &gt; sink, string format, params object[] args)</td></tr>
 <tr class="separator:a02c19e24f66dcbb78f35ae9dc4231f28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad150448b8e69a539f6bc43b4505b51b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad150448b8e69a539f6bc43b4505b51b6"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InfoFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InfoFormat</b> (this IMessageSink&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:ad150448b8e69a539f6bc43b4505b51b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade7d793289c84d692c5f8bde84d4e003"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade7d793289c84d692c5f8bde84d4e003"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsDebugEnabled&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsDebugEnabled&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink)</td></tr>
 <tr class="separator:ade7d793289c84d692c5f8bde84d4e003"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9f6aaa96c90c03161147bfa3b56a3f1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9f6aaa96c90c03161147bfa3b56a3f1"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format)</td></tr>
 <tr class="separator:af9f6aaa96c90c03161147bfa3b56a3f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84297fadb80eb23a6e93e08bf6f83b42"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a84297fadb80eb23a6e93e08bf6f83b42"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, params object[] args)</td></tr>
 <tr class="separator:a84297fadb80eb23a6e93e08bf6f83b42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a974847e965b1f560f9c0db79923fdb75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a974847e965b1f560f9c0db79923fdb75"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug&lt; C &gt;</b> (this IMessageSink&lt; C &gt; sink, C context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a974847e965b1f560f9c0db79923fdb75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b5c022c75fcc30833e53a4a900c78bd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5b5c022c75fcc30833e53a4a900c78bd"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Debug</b> (this IMessageSink&lt; object &gt; sink, string format)</td></tr>
 <tr class="separator:a5b5c022c75fcc30833e53a4a900c78bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60d92291abb2e7e510f2512babc86bc0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60d92291abb2e7e510f2512babc86bc0"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>DebugFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, params object[] args)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>DebugFormat</b> (this IMessageSink&lt; object &gt; sink, string format, params object[] args)</td></tr>
 <tr class="separator:a60d92291abb2e7e510f2512babc86bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab94176cf299c5ca8af32950600e12df5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab94176cf299c5ca8af32950600e12df5"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>DebugFormat</b> (this <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>DebugFormat</b> (this IMessageSink&lt; object &gt; sink, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:ab94176cf299c5ca8af32950600e12df5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc8aff67a735cac3ae92e0b89bdff453"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#afc8aff67a735cac3ae92e0b89bdff453">FormatMessage</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
+<tr class="memitem:afc8aff67a735cac3ae92e0b89bdff453"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#afc8aff67a735cac3ae92e0b89bdff453">FormatMessage</a> (Severity type, object context, string format, params object[] args)</td></tr>
 <tr class="memdesc:afc8aff67a735cac3ae92e0b89bdff453"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a quadruplet (type, context, format, args) to a single string containing all that information. The format string and the Severity are localized with Localize.Localized(string, object[]). <a href="#afc8aff67a735cac3ae92e0b89bdff453">More...</a><br /></td></tr>
 <tr class="separator:afc8aff67a735cac3ae92e0b89bdff453"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd">FromDelegate</a> (<a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a> writer, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; isEnabled=null)</td></tr>
+<tr class="memitem:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd">FromDelegate</a> (WriteMessageFn writer, Func&lt; Severity, bool &gt; isEnabled=null)</td></tr>
 <tr class="memdesc:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends all messages to a user-defined method. <a href="#a56c0dedc4cca2f845665f0cdd1ed0fbd">More...</a><br /></td></tr>
 <tr class="separator:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a17d3757fc20548c431f4f0c38f61adc2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkWithContext.html">MessageSinkWithContext</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a17d3757fc20548c431f4f0c38f61adc2">WithContext</a> (object context, string messagePrefix=null)</td></tr>
 <tr class="memdesc:a17d3757fc20548c431f4f0c38f61adc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a message sink that writes to MessageSink.Default with a default context to be used when <code>Write</code> is called with <code>context: null</code>, so that you can use extension methods like <code>Error(string)</code> that do not have any context parameter. <a href="#a17d3757fc20548c431f4f0c38f61adc2">More...</a><br /></td></tr>
 <tr class="separator:a17d3757fc20548c431f4f0c38f61adc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1ab442f7c392b493bce4134bb6cb522"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkWithContext.html">MessageSinkWithContext</a>&lt; TContext &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#af1ab442f7c392b493bce4134bb6cb522">WithContext&lt; TContext &gt;</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; TContext &gt; target, TContext context, string messagePrefix=null)</td></tr>
+<tr class="memitem:af1ab442f7c392b493bce4134bb6cb522"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkWithContext.html">MessageSinkWithContext</a>&lt; TContext &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#af1ab442f7c392b493bce4134bb6cb522">WithContext&lt; TContext &gt;</a> (IMessageSink&lt; TContext &gt; target, TContext context, string messagePrefix=null)</td></tr>
 <tr class="memdesc:af1ab442f7c392b493bce4134bb6cb522"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a message sink with a default context to be used when <code>Write</code> is called with <code>context: null</code>, so that you can use extension methods like <code>Error(string)</code> that do not have any context parameter. <a href="#af1ab442f7c392b493bce4134bb6cb522">More...</a><br /></td></tr>
 <tr class="separator:af1ab442f7c392b493bce4134bb6cb522"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -288,7 +289,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
         <tr>
           <td class="memname">static string Loyc.MessageSink.FormatMessage </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td>
+          <td class="paramtype">Severity&#160;</td>
           <td class="paramname"><em>type</em>, </td>
         </tr>
         <tr>
@@ -325,7 +326,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <p>Converts a quadruplet (type, context, format, args) to a single string containing all that information. The format string and the Severity are localized with Localize.Localized(string, object[]).</p>
 <p>For example, <code>FormatMessage(Severity.Error, "context", "Something happened!")</code> comes out as "Error: context: Something happened!".</p>
 
-<p>References <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">Loyc.MessageSink.ContextToString</a>, and <a class="el" href="classLoyc_1_1Localize.html#a5055bea1e0b949af83eea78cc48ceb48">Loyc.Localize.Localized()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">Loyc.MessageSink.ContextToString</a>.</p>
 
 </div>
 </div>
@@ -339,13 +340,13 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
         <tr>
           <td class="memname">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a> Loyc.MessageSink.FromDelegate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a>&#160;</td>
+          <td class="paramtype">WriteMessageFn&#160;</td>
           <td class="paramname"><em>writer</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt;&#160;</td>
+          <td class="paramtype">Func&lt; Severity, bool &gt;&#160;</td>
           <td class="paramname"><em>isEnabled</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
@@ -394,7 +395,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>If <code>context</code> implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>, this converts IHasLocation.Location to a string; if <code>context</code> is null, this method returns <code>null</code>; otherwise it returns <code>context.ToString()</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>If <code>context</code> implements IHasLocation, this converts IHasLocation.Location to a string; if <code>context</code> is null, this method returns <code>null</code>; otherwise it returns <code>context.ToString()</code>. </dd></dl>
 
 <p>References <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">Loyc.MessageSink.ContextToString</a>.</p>
 
@@ -422,7 +423,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Returns context.Location if context implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>; otherwise, returns context itself.</p>
+<p>Returns context.Location if context implements IHasLocation; otherwise, returns context itself.</p>
 
 <p>References <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">Loyc.MessageSink.ContextToString</a>.</p>
 
@@ -454,8 +455,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <p><a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">ContextToString</a> is a thread-local value, but since .NET does not support inheritance of thread-local values, this method also sets the global default used by threads on which this method was never called. </p>
 <p>This property follows the Ambient Service Pattern: <a href="http://core.loyc.net/essentials/ambient-service-pattern.html">http://core.loyc.net/essentials/ambient-service-pattern.html</a> </p>
 
-<p>References <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a6db1db5451df906265c101e025accace">Loyc.IMessageSink&lt; in in TContext &gt;.IsEnabled()</a>, and <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222">Loyc.IMessageSink&lt; in in TContext &gt;.Write()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a40fb494c06c087d13f1394b140ae26a5"></a>
@@ -466,9 +465,9 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt;<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&gt; Loyc.MessageSink.SetDefault </td>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Threading_1_1SavedValue.html">SavedValue</a>&lt;IMessageSink&gt; Loyc.MessageSink.SetDefault </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramtype">IMessageSink&#160;</td>
           <td class="paramname"><em>sink</em></td><td>)</td>
           <td></td>
         </tr>
@@ -481,7 +480,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </div><div class="memdoc">
 
 <p>Used to change the MessageSink.Default property temporarily.</p>
-<div class="fragment"><div class="line"><span class="keyword">using</span> (MessageSink.SetDefault(ConsoleMessageSink.Value))</div><div class="line">    MessageSink.Default.Write(<a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Warning, null, <span class="stringliteral">&quot;This prints on the console.&quot;</span>)</div></div><!-- fragment --><p>This method sets a thread-local value, but it also sets the global default used by threads on which this method was never called. </p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> (MessageSink.SetDefault(ConsoleMessageSink.Value))</div><div class="line">    MessageSink.Default.Write(Severity.Warning, null, <span class="stringliteral">&quot;This prints on the console.&quot;</span>)</div></div><!-- fragment --><p>This method sets a thread-local value, but it also sets the global default used by threads on which this method was never called. </p>
 <p>This property follows the Ambient Service Pattern: <a href="http://core.loyc.net/essentials/ambient-service-pattern.html">http://core.loyc.net/essentials/ambient-service-pattern.html</a> </p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Utilities_1_1UG.html#a67f642cbc5500595487800a9f80f6121">Loyc.Utilities.UG.ProcessCommandLineArguments()</a>.</p>
@@ -534,7 +533,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
         <tr>
           <td class="memname">static <a class="el" href="classLoyc_1_1MessageSinkWithContext.html">MessageSinkWithContext</a>&lt;TContext&gt; <a class="el" href="classLoyc_1_1MessageSink.html#a17d3757fc20548c431f4f0c38f61adc2">Loyc.MessageSink.WithContext</a>&lt; TContext &gt; </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; TContext &gt;&#160;</td>
+          <td class="paramtype">IMessageSink&lt; TContext &gt;&#160;</td>
           <td class="paramname"><em>target</em>, </td>
         </tr>
         <tr>
@@ -661,7 +660,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </div><div class="memdoc">
 
 <p>Gets the strategy that message sinks should use to convert a context object to a string.</p>
-<p>Message sinks are commonly used to display error and warning messages, and when you write a message with <code><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a></code>, the second parameter is a "context" argument which specifies the object to which the message is related (for example, when writing compiler output, the context might be a node in a syntax tree). Most message sinks display the message in text form (in a log file or terminal), and in that case the best option is to display the location information associated with the context object (e.g. Foo.cpp:45), rather than a string representation of the object itself. </p>
+<p>Message sinks are commonly used to display error and warning messages, and when you write a message with <code>IMessageSink.Write()</code>, the second parameter is a "context" argument which specifies the object to which the message is related (for example, when writing compiler output, the context might be a node in a syntax tree). Most message sinks display the message in text form (in a log file or terminal), and in that case the best option is to display the location information associated with the context object (e.g. Foo.cpp:45), rather than a string representation of the object itself. </p>
 <p>Therefore, message sinks that display a message in text form will call this delegate to convert the context object to a string. </p>
 <p>See <a class="el" href="classLoyc_1_1MessageSink.html#a7261d05a562f4a1031961d39792cd056" title="Gets the location information from the specified object, or converts the object to a string...">GetLocationString</a> to learn how the default strategy works, but message sinks should call this delegate rather than <a class="el" href="classLoyc_1_1MessageSink.html#a7261d05a562f4a1031961d39792cd056" title="Gets the location information from the specified object, or converts the object to a string...">GetLocationString()</a>. </p>
 
@@ -673,7 +672,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

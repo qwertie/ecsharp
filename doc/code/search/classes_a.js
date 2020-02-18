@@ -1,9 +1,7 @@
 var searchData=
 [
+  ['lcext',['LCExt',['../classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LCExt.html',1,'Loyc::Collections::MutableListExtensionMethods']]],
   ['lcext',['LCExt',['../classLoyc_1_1Collections_1_1LCExt.html',1,'Loyc::Collections']]],
-  ['lcinterfaces',['LCInterfaces',['../classLoyc_1_1Collections_1_1LCInterfaces.html',1,'Loyc::Collections']]],
-  ['lempdemoform',['LempDemoForm',['../classTextEditor_1_1LempDemoForm.html',1,'TextEditor']]],
-  ['lempdemopanel',['LempDemoPanel',['../classTextEditor_1_1LempDemoPanel.html',1,'TextEditor']]],
   ['les2languageservice',['Les2LanguageService',['../classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html',1,'Loyc::Syntax::Les']]],
   ['les2lexer',['Les2Lexer',['../classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html',1,'Loyc::Syntax::Les']]],
   ['les2parser',['Les2Parser',['../classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html',1,'Loyc::Syntax::Les']]],
@@ -25,11 +23,10 @@ var searchData=
   ['lexersourceworkaround',['LexerSourceWorkaround',['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html',1,'Loyc::Syntax::Lexing']]],
   ['lexerwrapper',['LexerWrapper',['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html',1,'Loyc::Syntax::Lexing']]],
   ['lexicalmacroattribute',['LexicalMacroAttribute',['../classLeMP_1_1LexicalMacroAttribute.html',1,'LeMP']]],
-  ['lineandcol',['LineAndCol',['../classLoyc_1_1Syntax_1_1LineAndCol.html',1,'Loyc::Syntax']]],
   ['lineremapper',['LineRemapper',['../classLoyc_1_1Syntax_1_1LineRemapper.html',1,'Loyc::Syntax']]],
   ['linqtolists',['LinqToLists',['../classLoyc_1_1Collections_1_1LinqToLists.html',1,'Loyc::Collections']]],
+  ['linqtolists',['LinqToLists',['../classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LinqToLists.html',1,'Loyc::Collections::MutableListExtensionMethods']]],
   ['listaslistsource',['ListAsListSource',['../classLoyc_1_1Collections_1_1ListAsListSource.html',1,'Loyc::Collections']]],
-  ['listchangeinfo',['ListChangeInfo',['../structLoyc_1_1Collections_1_1ListChangeInfo.html',1,'Loyc::Collections']]],
   ['listexbase',['ListExBase',['../classLoyc_1_1Collections_1_1Impl_1_1ListExBase.html',1,'Loyc::Collections::Impl']]],
   ['listext',['ListExt',['../classLoyc_1_1Collections_1_1ListExt.html',1,'Loyc::Collections']]],
   ['listslice',['ListSlice',['../structLoyc_1_1Collections_1_1ListSlice.html',1,'Loyc::Collections']]],
@@ -53,8 +50,6 @@ var searchData=
   ['lnodeprinter',['LNodePrinter',['../classLoyc_1_1Syntax_1_1LNodePrinter.html',1,'Loyc::Syntax']]],
   ['lnodeprinteroptions',['LNodePrinterOptions',['../classLoyc_1_1Syntax_1_1LNodePrinterOptions.html',1,'Loyc::Syntax']]],
   ['lnodevisitor',['LNodeVisitor',['../classLoyc_1_1Syntax_1_1LNodeVisitor.html',1,'Loyc::Syntax']]],
-  ['localizableattribute',['LocalizableAttribute',['../classLoyc_1_1LocalizableAttribute.html',1,'Loyc']]],
-  ['localize',['Localize',['../classLoyc_1_1Localize.html',1,'Loyc']]],
   ['logexception',['LogException',['../classLoyc_1_1LogException.html',1,'Loyc']]],
   ['logmessage',['LogMessage',['../structLoyc_1_1LogMessage.html',1,'Loyc']]],
   ['longenumerator',['LongEnumerator',['../classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie_1_1LongEnumerator.html',1,'Loyc::Collections::Impl::CPIntTrie']]]

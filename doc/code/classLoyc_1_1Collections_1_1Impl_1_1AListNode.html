@@ -114,6 +114,7 @@ Inheritance diagram for Loyc.Collections.Impl.AListNode&lt; K, T &gt;:</div>
   <img src="classLoyc_1_1Collections_1_1Impl_1_1AListNode.png" usemap="#Loyc.Collections.Impl.AListNode_3C_20K_2C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.Impl.AListNode_3C_20K_2C_20T_20_3E_map" name="Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map">
 <area href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html" title="Internal implementation class. Shared base class of internal nodes for AList&lt;T&gt;, SparseAList&lt;T&gt;, BList&lt;T&gt;, BMultiMap&lt;K,V&gt; and BDictionary&lt;K,V&gt;." alt="Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;" shape="rect" coords="0,56,269,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeafBase.html" alt="Loyc.Collections.Impl.AListLeafBase&lt; K, T &gt;" shape="rect" coords="279,56,548,80"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -157,7 +158,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5132343b0095131a391bd3e26be790b2"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a5132343b0095131a391bd3e26be790b2">Insert</a> (uint index, T item, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a5132343b0095131a391bd3e26be790b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the specified index. This method can only be called for ALists, since other tree types don't allow insertion at a specific index. <a href="#a5132343b0095131a391bd3e26be790b2">More...</a><br /></td></tr>
 <tr class="separator:a5132343b0095131a391bd3e26be790b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af13714f40db692e2280940eddb8f4628"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
+<tr class="memitem:af13714f40db692e2280940eddb8f4628"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a092056ac4b87554536876f292ab84c11"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a092056ac4b87554536876f292ab84c11">GetLastItem</a> ()</td></tr>
@@ -184,6 +185,9 @@ abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:a0d118c9bb03a6cd6208f2994107a36c1"><td class="memItemLeft" align="right" valign="top">virtual uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a0d118c9bb03a6cd6208f2994107a36c1">GetRealItemCount</a> ()</td></tr>
 <tr class="memdesc:a0d118c9bb03a6cd6208f2994107a36c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">For sparse lists: counts the number of non-sparse items. <a href="#a0d118c9bb03a6cd6208f2994107a36c1">More...</a><br /></td></tr>
 <tr class="separator:a0d118c9bb03a6cd6208f2994107a36c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed1a273d40c742f1f124146280f2940a"><td class="memItemLeft" align="right" valign="top">abstract long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aed1a273d40c742f1f124146280f2940a">CountSizeInBytes</a> (int sizeOfT, int sizeOfK)</td></tr>
+<tr class="memdesc:aed1a273d40c742f1f124146280f2940a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tallies the memory use of the current node and all child nodes, with the assumption that each object has a header size of two words (e.g. <code>class Foo {}</code> has a size of 16 bytes per Foo object in a 64-bit process), and arrays have a header size of three words. <a href="#aed1a273d40c742f1f124146280f2940a">More...</a><br /></td></tr>
+<tr class="separator:aed1a273d40c742f1f124146280f2940a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -199,7 +203,7 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a67d4aeddc04cdb8052e9e09eb3fd4b87">HasListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree)</td></tr>
 <tr class="memdesc:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event. <a href="#a67d4aeddc04cdb8052e9e09eb3fd4b87">More...</a><br /></td></tr>
 <tr class="separator:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt; listChangeInfo)</td></tr>
+<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, ListChangeInfo&lt; T &gt; listChangeInfo)</td></tr>
 <tr class="memdesc:adc8d3a8df0d066e8bfa632203f001d65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event properly. <a href="#adc8d3a8df0d066e8bfa632203f001d65">More...</a><br /></td></tr>
 <tr class="separator:adc8d3a8df0d066e8bfa632203f001d65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -214,9 +218,9 @@ Protected fields</h2></td></tr>
 <tr class="memitem:a9d2b4503ed721b25b806622a79e8edc6"><td class="memItemLeft" align="right" valign="top">ushort&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a9d2b4503ed721b25b806622a79e8edc6">_maxNodeSize</a></td></tr>
 <tr class="memdesc:a9d2b4503ed721b25b806622a79e8edc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of slots in this node <a href="#a9d2b4503ed721b25b806622a79e8edc6">More...</a><br /></td></tr>
 <tr class="separator:a9d2b4503ed721b25b806622a79e8edc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6995d02e3d7f430f2a21bfd47bd6d0e3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a6995d02e3d7f430f2a21bfd47bd6d0e3">_isFrozen</a></td></tr>
-<tr class="memdesc:a6995d02e3d7f430f2a21bfd47bd6d0e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the node is knowingly cloned an therefore frozen. <a href="#a6995d02e3d7f430f2a21bfd47bd6d0e3">More...</a><br /></td></tr>
-<tr class="separator:a6995d02e3d7f430f2a21bfd47bd6d0e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a452a5b2c8b6ef855735614ccb8a239ff"><td class="memItemLeft" align="right" valign="top">volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a452a5b2c8b6ef855735614ccb8a239ff">_isFrozen</a></td></tr>
+<tr class="memdesc:a452a5b2c8b6ef855735614ccb8a239ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the node is knowingly cloned an therefore frozen. <a href="#a452a5b2c8b6ef855735614ccb8a239ff">More...</a><br /></td></tr>
+<tr class="separator:a452a5b2c8b6ef855735614ccb8a239ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7efb1f66090765df0594ddeab39fbbb"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aa7efb1f66090765df0594ddeab39fbbb">_childCount</a></td></tr>
 <tr class="memdesc:aa7efb1f66090765df0594ddeab39fbbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of children, if this is an inner node. <a href="#aa7efb1f66090765df0594ddeab39fbbb">More...</a><br /></td></tr>
 <tr class="separator:aa7efb1f66090765df0594ddeab39fbbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -271,6 +275,8 @@ Protected fields</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the node was unfrozen</dd></dl>
 
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aada73c62defe2d4c45dab0f6a5d81a4d">Loyc.Collections.Impl.AListNode&lt; K, T &gt;.DetachedClone()</a>.</p>
+
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>.</p>
 
 </div>
@@ -291,7 +297,7 @@ Protected fields</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt;&#160;</td>
+          <td class="paramtype">ListChangeInfo&lt; T &gt;&#160;</td>
           <td class="paramname"><em>listChangeInfo</em>&#160;</td>
         </tr>
         <tr>
@@ -364,6 +370,53 @@ Protected fields</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="aed1a273d40c742f1f124146280f2940a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract long <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">Loyc.Collections.Impl.AListNode</a>&lt; K, T &gt;.CountSizeInBytes </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sizeOfT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sizeOfK</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tallies the memory use of the current node and all child nodes, with the assumption that each object has a header size of two words (e.g. <code>class Foo {}</code> has a size of 16 bytes per Foo object in a 64-bit process), and arrays have a header size of three words.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sizeOfT</td><td>The size to attribute to a slot of type T</td></tr>
+    <tr><td class="paramname">sizeOfK</td><td>The size to attribute to a slot of type K</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a99ef6a10bbaed09b370ab6cf6ef11936">Loyc.Collections.AListBase&lt; K, T &gt;.GetImmutableCount()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="aada73c62defe2d4c45dab0f6a5d81a4d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -387,9 +440,7 @@ Protected fields</h2></td></tr>
 
 <p>Creates an unfrozen shallow duplicate copy of this node. The child nodes (if this is an inner node) are frozen so that they will require duplication if they are to be modified. The name "DetachedClone" is intended to emphasize that the AListNodeObserver (if any) is not notified, and the clone is effectively independent of the list that it came from.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html#a95934239c298592b06e1a22951a805fe">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>.</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a1d2b9e6c5bc98d045b1128c2ca8cceec">Loyc.Collections.Impl.AListNode&lt; int, T &gt;.AutoClone()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a1d2b9e6c5bc98d045b1128c2ca8cceec">Loyc.Collections.Impl.AListNode&lt; K, T &gt;.AutoClone()</a>.</p>
 
 </div>
 </div>
@@ -423,7 +474,7 @@ Protected fields</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a119f3dd3e65165774e0325052f701381">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html#a4df2805a6c19ba2a78c7859dcbab41ec">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a119f3dd3e65165774e0325052f701381">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a99ef6a10bbaed09b370ab6cf6ef11936">Loyc.Collections.AListBase&lt; K, T &gt;.GetImmutableCount()</a>.</p>
 
@@ -452,9 +503,7 @@ Protected fields</h2></td></tr>
 
 <p>Gets the last item in the last leaf node (needed by B+ trees, but is also called by AListBase&lt;K,T&gt;.Last).</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ae33ed22d37c2a56e4a3927d83fb772ce">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html#ad08c940d524f6f1eb4509bdba58dbe5c">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>.</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a9501a60988ad7318e8a2a18e598be440">Loyc.Collections.AListBase&lt; K, T &gt;.SwapHelper()</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ae33ed22d37c2a56e4a3927d83fb772ce">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -506,8 +555,6 @@ Protected fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>For sparse lists: counts the number of non-sparse items.</p>
-
-<p>Reimplemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html#a0ffbdf8b68f33f718d2efaa398e773ee">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -608,7 +655,7 @@ Protected fields</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramtype">IListSource&lt; T &gt;&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -801,9 +848,11 @@ Protected fields</h2></td></tr>
 <p>Number of children, if this is an inner node.</p>
 <p>Since AListLeaf&lt;T&gt; uses DListInternal, a separate item count is not needed and this counter is always zero. This field logically belongs in AListInnerBase&lt;K,T&gt; but is defined here to ensure that inner nodes are not 4 bytes larger than necessary. This field is "free" if it is declared in the base class, since class sizes are rounded up to the nearest multiple of 4 bytes (8 bytes in 64-bit). The fact that this field is a byte, however, does limit inner node sizes to 255. </p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.CountSizeInBytes()</a>.</p>
+
 </div>
 </div>
-<a class="anchor" id="a6995d02e3d7f430f2a21bfd47bd6d0e3"></a>
+<a class="anchor" id="a452a5b2c8b6ef855735614ccb8a239ff"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -811,7 +860,7 @@ Protected fields</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">Loyc.Collections.Impl.AListNode</a>&lt; K, T &gt;._isFrozen</td>
+          <td class="memname">volatile bool <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">Loyc.Collections.Impl.AListNode</a>&lt; K, T &gt;._isFrozen</td>
         </tr>
       </table>
   </td>
@@ -844,6 +893,8 @@ Protected fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Maximum number of slots in this node</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.CountSizeInBytes()</a>.</p>
 
 </div>
 </div>
@@ -915,8 +966,6 @@ Protected fields</h2></td></tr>
 
 <p>Returns true if the node is undersized, meaning it would prefer to have more immediate children.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleUndersized()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a81a903ee7cc50a9bd6f253eb8418568f"></a>
@@ -939,7 +988,7 @@ Protected fields</h2></td></tr>
 
 <p>Gets the number of items (slots) used this node only.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleUndersized()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a3b4566d4be91fa5289c1146c5141640e">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.RemoveAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a9c9b93b9ec85b02a3df15a2afffdae77">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.VerifyCorrectness()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleUndersized()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a640857ed3378f165ac5d63bd77093b55">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.LLDelete()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a3b4566d4be91fa5289c1146c5141640e">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.RemoveAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a9c9b93b9ec85b02a3df15a2afffdae77">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.VerifyCorrectness()</a>.</p>
 
 </div>
 </div>
@@ -985,7 +1034,7 @@ Protected fields</h2></td></tr>
 
 <p>Gets the total number of (T) items in this node and all children</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#abda2c5306cc230494d78426a60ae5463">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.CheckPoint()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a735666d7c291bc652f377279d91e7381">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleChildSplit()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleUndersized()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a94549dbe55594369a4616f578a0c76c0">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.LLInsert()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a3b4566d4be91fa5289c1146c5141640e">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.RemoveAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a9c9b93b9ec85b02a3df15a2afffdae77">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.VerifyCorrectness()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#abda2c5306cc230494d78426a60ae5463">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.CheckPoint()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.CountSizeInBytes()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a735666d7c291bc652f377279d91e7381">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleChildSplit()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.HandleUndersized()</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a3b4566d4be91fa5289c1146c5141640e">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.RemoveAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a9c9b93b9ec85b02a3df15a2afffdae77">Loyc.Collections.Impl.AListIndexer&lt; int, T &gt;.VerifyCorrectness()</a>.</p>
 
 </div>
 </div>
@@ -993,7 +1042,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

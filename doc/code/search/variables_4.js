@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['declarations',['Declarations',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a22c66547bb2611e350997c0ff4eca94b',1,'Loyc::Syntax::ParsingMode']]],
   ['default',['Default',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408',1,'Loyc::Syntax::CodeSymbols']]],
   ['defaultarm',['DefaultArm',['../classLoyc_1_1LLParserGenerator_1_1Alts.html#aa42f5797f460395295450b35e15b91e9',1,'Loyc::LLParserGenerator::Alts']]],
   ['defaultcomparer',['DefaultComparer',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aac7d404cb5692f28823c7688bbb921eb',1,'Loyc::Collections::Impl::InternalSet']]],

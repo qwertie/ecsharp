@@ -111,7 +111,7 @@ Inheritance diagram for Loyc.Syntax.Les.NodePrinterWriterBase:</div>
   <img src="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.png" usemap="#Loyc.Syntax.Les.NodePrinterWriterBase_map" alt=""/>
   <map id="Loyc.Syntax.Les.NodePrinterWriterBase_map" name="Loyc.Syntax.Les.NodePrinterWriterBase_map">
 <area href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing..." alt="Loyc.Syntax.Les.INodePrinterWriter" shape="rect" coords="0,0,252,24"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html" title="Base class for the helper classes of Les2Printer and Ecs.EcsNodePrinter, called LesNodePrinterWriter ..." alt="Loyc.Syntax.Les.DefaultNodePrinterWriter" shape="rect" coords="0,112,252,136"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html" title="Base class for token-printing helper classes. See INodePrinterWriter." alt="Loyc.Syntax.Les.DefaultNodePrinterWriter" shape="rect" coords="0,112,252,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -171,6 +171,9 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <tr class="memitem:ab92d0e72ba9dd9dd31718ccdba85e7a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab92d0e72ba9dd9dd31718ccdba85e7a1"></a>
 virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Pop</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n)</td></tr>
 <tr class="separator:ab92d0e72ba9dd9dd31718ccdba85e7a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38941194003ff3fa06a0797ee9b94c38"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html#a38941194003ff3fa06a0797ee9b94c38">Reset</a> ()</td></tr>
+<tr class="memdesc:a38941194003ff3fa06a0797ee9b94c38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when a new, separate printing operation begins. <a href="#a38941194003ff3fa06a0797ee9b94c38">More...</a><br /></td></tr>
+<tr class="separator:a38941194003ff3fa06a0797ee9b94c38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
@@ -178,11 +181,41 @@ Protected fields</h2></td></tr>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_indentLevel</b> = 0</td></tr>
 <tr class="separator:a540ced4cfbc3469b20d066848d4ee1ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a38941194003ff3fa06a0797ee9b94c38"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Syntax.Les.NodePrinterWriterBase.Reset </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called when a new, separate printing operation begins.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html#a1658676f24869ce7c281f014b4ea3c9f">Loyc.Syntax.Les.INodePrinterWriter</a>.</p>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#a2adf033b856a9e944aaf95c6cb904436">Loyc.Syntax.Les.DefaultNodePrinterWriter</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

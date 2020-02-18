@@ -110,7 +110,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a97a3d3efd3a36f28d05a5a58ea6c804d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97a3d3efd3a36f28d05a5a58ea6c804d"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CurrentNode</b> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx)</td></tr>
 <tr class="separator:a97a3d3efd3a36f28d05a5a58ea6c804d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307">GetArgsAndBody</a> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx, bool orRemainingNodes)</td></tr>
+<tr class="memitem:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="memItemLeft" align="right" valign="top">static Pair&lt; <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307">GetArgsAndBody</a> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx, bool orRemainingNodes)</td></tr>
 <tr class="memdesc:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits the current node into a pair of "argument" and "body" lists, potentially treating ctx.RemainingNodes as the "body" list. <a href="#a645c9e0b5a4d7f7fccf6885147fcb307">More...</a><br /></td></tr>
 <tr class="separator:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a915338924777f68be1a3c34f5519a958"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#a915338924777f68be1a3c34f5519a958">GetOptions</a> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; optionList)</td></tr>
@@ -126,7 +126,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt;, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetArgsAndBody </td>
+          <td class="memname">static Pair&lt;<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt;, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetArgsAndBody </td>
           <td>(</td>
           <td class="paramtype">this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>&#160;</td>
           <td class="paramname"><em>ctx</em>, </td>
@@ -191,7 +191,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </div><div class="memdoc">
 
 <p>Transforms an option list in the format <code>option1(v1), option2(v2)</code> or <code>option1: v1, option2: v2</code> into a sequence of (key, value) pairs. If the format of a given node is invalid, this function yields <code>(node, null)</code>.</p>
-<p><code>option1: v1, option2: v2</code> is parsed into <code>#namedArg(option1, v1), #namedArg(option2, v2)</code> in EC# or <code>@`':<code>(option1, v1), @</code>':`(option2, v2)</code> in LES. This function recognizes both forms. </p>
+<p><code>option1: v1, option2: v2</code> is parsed into <code>@`'::=<code>(option1, v1), @</code>'::=<code>(option2, v2)&lt;/c&gt; in EC# or &lt;c&gt;@</code>':<code>(option1, v1), @</code>':`(option2, v2)</code> in LES. </p>
 
 <p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="structLoyc_1_1Collections_1_1VList.html#ab429ef27c6d66520883bc8402d8e7653">Loyc.Collections.VList&lt; T &gt;.Last</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba9eeedc26cc952131b6955797efd7e2">Loyc.Syntax.CodeSymbols.NamedArg</a>.</p>
 
@@ -203,7 +203,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

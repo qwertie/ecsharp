@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['action',['Action',['../structLoyc_1_1Collections_1_1ListChangeInfo.html#aeebe1cbad046b0a7c5df6ed0535700a4',1,'Loyc::Collections::ListChangeInfo']]],
   ['add',['Add',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e610eb42b618674176e0a8fb52cb1c3',1,'Loyc::Syntax::CodeSymbols']]],
   ['addassign',['AddAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a5a62b6c918826166ded629e83cebcb65',1,'Loyc::Syntax::CodeSymbols']]],
   ['addcomments',['AddComments',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#acc72ef47f84486172275c361c995927f',1,'Loyc::LLParserGenerator::LLParserGenerator']]],

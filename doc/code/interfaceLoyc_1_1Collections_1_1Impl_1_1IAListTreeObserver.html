@@ -108,8 +108,10 @@ Inheritance diagram for Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;:<
  <div class="center">
   <img src="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.png" usemap="#Loyc.Collections.Impl.IAListTreeObserver_3C_20K_2C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.Impl.IAListTreeObserver_3C_20K_2C_20T_20_3E_map" name="Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html" title="A multiplexer that is only created for ALists that have two or more attached intances of IAListTreeOb..." alt="Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr" shape="rect" coords="0,56,295,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html" title="Observes changes and builds a table of items in the tree." alt="Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;" shape="rect" coords="305,56,600,80"/>
+<area href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html" title="A multiplexer that is only created for ALists that have two or more attached intances of IAListTreeOb..." alt="Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr" shape="rect" coords="0,56,369,80"/>
+<area href="classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html" title="Base class that helps efficiently keep track of statistics about the contents of one or more AListBas..." alt="Loyc.Collections.AListStatisticTrackerBase&lt; K, T, TSummary &gt;" shape="rect" coords="379,56,748,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html" title="Observes changes and builds a table of items in the tree." alt="Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;" shape="rect" coords="758,56,1127,80"/>
+<area href="classLoyc_1_1Collections_1_1AListStatisticTracker.html" alt="Loyc.Collections.AListStatisticTracker&lt; T &gt;" shape="rect" coords="379,112,748,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -131,25 +133,25 @@ Inheritance diagram for Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;:<
 </ul>
 <p>An observer object should be attached to only one list, because change notifications do not indicate which list is being changed. </p>
 <p>When an A-list is cloned, observers do are not included in the clone. </p>
-<p>IMPORTANT: unless otherwise noted, implementations of this interface must not throw exceptions because these methods are called during operations in progress. If you throw an exception, the tree can be left in an invalid state. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#afa78aa67a4893b601952cc8b14084fe3" title="Called when the observer is being attached to an AList.">Attach()</a> can safety throw, but the exception will propagate out of the AListBase&lt;K,T&gt;.AddObserver method. </p>
+<p>IMPORTANT: unless otherwise noted, implementations of this interface must not throw exceptions because these methods are called during operations in progress. If you throw an exception, the tree can be left in an invalid state. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a> can safety throw, but the exception will propagate out of the AListBase&lt;K,T&gt;.AddObserver method. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afa78aa67a4893b601952cc8b14084fe3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#afa78aa67a4893b601952cc8b14084fe3">Attach</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; list, Action&lt; bool &gt; populate)</td></tr>
-<tr class="memdesc:afa78aa67a4893b601952cc8b14084fe3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the observer is being attached to an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a href="#afa78aa67a4893b601952cc8b14084fe3">More...</a><br /></td></tr>
-<tr class="separator:afa78aa67a4893b601952cc8b14084fe3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8dae5e8d22892aab48816eefa4e8e6e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a8dae5e8d22892aab48816eefa4e8e6e6">Detach</a> ()</td></tr>
-<tr class="memdesc:a8dae5e8d22892aab48816eefa4e8e6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the observer is being detached from an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a href="#a8dae5e8d22892aab48816eefa4e8e6e6">More...</a><br /></td></tr>
-<tr class="separator:a8dae5e8d22892aab48816eefa4e8e6e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3abd2107a79db4d3769801f10ca5b267"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a3abd2107a79db4d3769801f10ca5b267">RootChanged</a> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; newRoot, bool clear)</td></tr>
-<tr class="memdesc:a3abd2107a79db4d3769801f10ca5b267"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the root of the tree changes, or when the list is cleared. <a href="#a3abd2107a79db4d3769801f10ca5b267">More...</a><br /></td></tr>
-<tr class="separator:a3abd2107a79db4d3769801f10ca5b267"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a889821df29f744529c69e68a293769a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a889821df29f744529c69e68a293769a6">ItemAdded</a> (T item, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf.html">AListLeaf</a>&lt; K, T &gt; parent)</td></tr>
-<tr class="memdesc:a889821df29f744529c69e68a293769a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an item is added to a leaf node. <a href="#a889821df29f744529c69e68a293769a6">More...</a><br /></td></tr>
-<tr class="separator:a889821df29f744529c69e68a293769a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07b43c46bf7d79ae1ccdcba1773a1bf5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a07b43c46bf7d79ae1ccdcba1773a1bf5">ItemRemoved</a> (T item, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf.html">AListLeaf</a>&lt; K, T &gt; parent)</td></tr>
-<tr class="memdesc:a07b43c46bf7d79ae1ccdcba1773a1bf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an item is removed from a leaf node. <a href="#a07b43c46bf7d79ae1ccdcba1773a1bf5">More...</a><br /></td></tr>
-<tr class="separator:a07b43c46bf7d79ae1ccdcba1773a1bf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3d546df46c02a2a55d920f2dea0383a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a">Attach</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; list)</td></tr>
+<tr class="memdesc:ab3d546df46c02a2a55d920f2dea0383a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the observer is being attached to an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a href="#ab3d546df46c02a2a55d920f2dea0383a">More...</a><br /></td></tr>
+<tr class="separator:ab3d546df46c02a2a55d920f2dea0383a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17cdb93613427c6acabd9337ded7762f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a17cdb93613427c6acabd9337ded7762f">Detach</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; list, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; root)</td></tr>
+<tr class="memdesc:a17cdb93613427c6acabd9337ded7762f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the observer is being detached from an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a17cdb93613427c6acabd9337ded7762f" title="Called when the observer is being detached from an AList. Detach(), unlike Attach(), is not paired with a call to RootChanged.">Detach()</a>, unlike <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a>, is not paired with a call to RootChanged. <a href="#a17cdb93613427c6acabd9337ded7762f">More...</a><br /></td></tr>
+<tr class="separator:a17cdb93613427c6acabd9337ded7762f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62bd2513f9b6174aef35a0925781507b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a62bd2513f9b6174aef35a0925781507b">RootChanged</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; list, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; root, bool clear)</td></tr>
+<tr class="memdesc:a62bd2513f9b6174aef35a0925781507b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the root of the tree changes, or when the list is cleared. Also called after <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a>, but not after <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a17cdb93613427c6acabd9337ded7762f" title="Called when the observer is being detached from an AList. Detach(), unlike Attach(), is not paired with a call to RootChanged.">Detach()</a>. <a href="#a62bd2513f9b6174aef35a0925781507b">More...</a><br /></td></tr>
+<tr class="separator:a62bd2513f9b6174aef35a0925781507b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1eee526adcaabd84d11b9804428a6d21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a1eee526adcaabd84d11b9804428a6d21">ItemAdded</a> (T item, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeafBase.html">AListLeafBase</a>&lt; K, T &gt; parent)</td></tr>
+<tr class="memdesc:a1eee526adcaabd84d11b9804428a6d21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an item is added to a leaf node. <a href="#a1eee526adcaabd84d11b9804428a6d21">More...</a><br /></td></tr>
+<tr class="separator:a1eee526adcaabd84d11b9804428a6d21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1c70c321527704b3b8a68ceaefcfa9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#af1c70c321527704b3b8a68ceaefcfa9e">ItemRemoved</a> (T item, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeafBase.html">AListLeafBase</a>&lt; K, T &gt; parent)</td></tr>
+<tr class="memdesc:af1c70c321527704b3b8a68ceaefcfa9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an item is removed from a leaf node. <a href="#af1c70c321527704b3b8a68ceaefcfa9e">More...</a><br /></td></tr>
+<tr class="separator:af1c70c321527704b3b8a68ceaefcfa9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a605c03aa32a7878e7453859022f61ebc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a605c03aa32a7878e7453859022f61ebc">NodeAdded</a> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; child, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html">AListInnerBase</a>&lt; K, T &gt; parent)</td></tr>
 <tr class="memdesc:a605c03aa32a7878e7453859022f61ebc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when a child node is added to an inner node. <a href="#a605c03aa32a7878e7453859022f61ebc">More...</a><br /></td></tr>
 <tr class="separator:a605c03aa32a7878e7453859022f61ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,7 +159,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a3efb469fbc2ccf1e5fad17b619887798"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when a child node is removed from an inner node. <a href="#a3efb469fbc2ccf1e5fad17b619887798">More...</a><br /></td></tr>
 <tr class="separator:a3efb469fbc2ccf1e5fad17b619887798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad7488b485ec7c71903acf74cc8c028c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ad7488b485ec7c71903acf74cc8c028c2">RemoveAll</a> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; node)</td></tr>
-<tr class="memdesc:ad7488b485ec7c71903acf74cc8c028c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when all children are being removed from a node (leaf or inner). Notifications are not sent for individual children. <a href="#ad7488b485ec7c71903acf74cc8c028c2">More...</a><br /></td></tr>
+<tr class="memdesc:ad7488b485ec7c71903acf74cc8c028c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when all children are being removed from a node (leaf or inner) because the node is being split (AddAll will be called afterward for the two replacement nodes). Notifications are not sent for individual children. <a href="#ad7488b485ec7c71903acf74cc8c028c2">More...</a><br /></td></tr>
 <tr class="separator:ad7488b485ec7c71903acf74cc8c028c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a767a338b6f7dac6380210491cb125cd9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a767a338b6f7dac6380210491cb125cd9">AddAll</a> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; node)</td></tr>
 <tr class="memdesc:a767a338b6f7dac6380210491cb125cd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when all children are being added to a node (leaf or inner). Notifications are not sent for individual children. <a href="#a767a338b6f7dac6380210491cb125cd9">More...</a><br /></td></tr>
@@ -187,26 +189,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="afa78aa67a4893b601952cc8b14084fe3"></a>
+<a class="anchor" id="ab3d546df46c02a2a55d920f2dea0383a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">Loyc.Collections.Impl.IAListTreeObserver</a>&lt; K, T &gt;.Attach </td>
+          <td class="memname">bool <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">Loyc.Collections.Impl.IAListTreeObserver</a>&lt; K, T &gt;.Attach </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>list</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>list</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">Action&lt; bool &gt;&#160;</td>
-          <td class="paramname"><em>populate</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -215,13 +207,13 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">list</td><td>The list that the observer is being attached to.</td></tr>
-    <tr><td class="paramname">populate</td><td>The observer can invoke this delegate to cause notifications to be sent about all the nodes in the tree through a depth-first search that calls <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a767a338b6f7dac6380210491cb125cd9" title="Called when all children are being added to a node (leaf or inner). Notifications are not sent for in...">AddAll</a> for each node in the tree. When calling this delegate, use a parameter of True if you want AddAll to be called for children before parents (roughly, leaves first). Use False if you want AddAll to be called for inner nodes before their children. populate() also calls <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a3abd2107a79db4d3769801f10ca5b267" title="Called when the root of the tree changes, or when the list is cleared.">RootChanged</a>() before scanning the tree. </td></tr>
   </table>
   </dd>
 </dl>
-<p>If <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#afa78aa67a4893b601952cc8b14084fe3" title="Called when the observer is being attached to an AList.">Attach()</a> throws an exception, <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase&lt;K,T&gt;</a> will cancel the AddObserver() operation and it will not catch the exception. </p>
+<dl class="section return"><dt>Returns</dt><dd>Return true or false to cause notifications to be sent about all the nodes in the tree, via a depth-first search that calls <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a767a338b6f7dac6380210491cb125cd9" title="Called when all children are being added to a node (leaf or inner). Notifications are not sent for in...">AddAll</a> for each node in the tree. Return true if you want AddAll to be called for children before their parents (roughly, leaves first). Use False if you want AddAll to be called for inner nodes before their children. If you return null, no notifications are sent except for <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a62bd2513f9b6174aef35a0925781507b" title="Called when the root of the tree changes, or when the list is cleared. Also called after Attach()...">RootChanged</a> which will be called unconditionally. </dd></dl>
+<p>If <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a> throws an exception, <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase&lt;K,T&gt;</a> will cancel the AddObserver() operation and it will not catch the exception. </p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a253dbb0a025dba18f3cff443f3f24c11">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a7ea47af7b2cebc00d573c5fea417716d">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a5ba4226f293b65d6e1a69384a1b09a16">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a6e0964a7d1738ea52771764e29b7343c">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 </div>
 </div>
@@ -248,28 +240,46 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a8dae5e8d22892aab48816eefa4e8e6e6"></a>
+<a class="anchor" id="a17cdb93613427c6acabd9337ded7762f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">Loyc.Collections.Impl.IAListTreeObserver</a>&lt; K, T &gt;.Detach </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td>
+          <td class="paramname"><em>root</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Called when the observer is being detached from an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>.</p>
+<p>Called when the observer is being detached from an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a17cdb93613427c6acabd9337ded7762f" title="Called when the observer is being detached from an AList. Detach(), unlike Attach(), is not paired with a call to RootChanged.">Detach()</a>, unlike <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a>, is not paired with a call to RootChanged.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">list</td><td>List that is being detached.</td></tr>
+    <tr><td class="paramname">root</td><td>Root node that is being detached.</td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a3c8f6f169cb511632af23deb354611cf">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a76aaa2f76e5aaf94426366e055dfb803">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#acc3892007948198657d3ef001b280372">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#ae0b125d8a24f302131f3d7d67148ce07">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a44023cb83862ac798b9eeb7a3fafc8d6">Loyc.Collections.AListBase&lt; K, T &gt;.RemoveObserver()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a889821df29f744529c69e68a293769a6"></a>
+<a class="anchor" id="a1eee526adcaabd84d11b9804428a6d21"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -282,7 +292,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf.html">AListLeaf</a>&lt; K, T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeafBase.html">AListLeafBase</a>&lt; K, T &gt;&#160;</td>
           <td class="paramname"><em>parent</em>&#160;</td>
         </tr>
         <tr>
@@ -296,11 +306,11 @@ Public Member Functions</h2></td></tr>
 <p>Called when an item is added to a leaf node.</p>
 <p>Note: this may be called as part of a move operation (remove+add)</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a8c35a45dc0efcea181fc6812b1901228">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a1838c357508ccb92f6c29be791d16379">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a781652b1058d822ca77507fe922b10b7">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a1b9f864efc7c93db3ef6ca0aa3e5934c">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a07b43c46bf7d79ae1ccdcba1773a1bf5"></a>
+<a class="anchor" id="af1c70c321527704b3b8a68ceaefcfa9e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -313,7 +323,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf.html">AListLeaf</a>&lt; K, T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeafBase.html">AListLeafBase</a>&lt; K, T &gt;&#160;</td>
           <td class="paramname"><em>parent</em>&#160;</td>
         </tr>
         <tr>
@@ -327,7 +337,7 @@ Public Member Functions</h2></td></tr>
 <p>Called when an item is removed from a leaf node.</p>
 <p>Note: this may be called as part of a move operation (remove+add)</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a7e20911c4161fa578df5b17f69306237">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a577ba5fb5690b8e749a9b500d79413b6">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#ae8f6bd7a757f9778c73477fc36159dff">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a76d66d5cd066cbc568c50a7098b4e920">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 </div>
 </div>
@@ -409,21 +419,27 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Called when all children are being removed from a node (leaf or inner). Notifications are not sent for individual children.</p>
+<p>Called when all children are being removed from a node (leaf or inner) because the node is being split (AddAll will be called afterward for the two replacement nodes). Notifications are not sent for individual children.</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a83d088065dd3b9f3c641880278cdb0c1">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a578fd2913f2b2569753f9425f9ef325a">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a3abd2107a79db4d3769801f10ca5b267"></a>
+<a class="anchor" id="a62bd2513f9b6174aef35a0925781507b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">Loyc.Collections.Impl.IAListTreeObserver</a>&lt; K, T &gt;.RootChanged </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>newRoot</em>, </td>
+          <td class="paramname"><em>root</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -439,16 +455,17 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Called when the root of the tree changes, or when the list is cleared.</p>
+<p>Called when the root of the tree changes, or when the list is cleared. Also called after <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#ab3d546df46c02a2a55d920f2dea0383a" title="Called when the observer is being attached to an AList.">Attach()</a>, but not after <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html#a17cdb93613427c6acabd9337ded7762f" title="Called when the observer is being detached from an AList. Detach(), unlike Attach(), is not paired with a call to RootChanged.">Detach()</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">clear</td><td>true if the root is changing due to a Clear() operation. If this parameter is true, the observer should clear its own state. If this parameter is false but newRoot is null, it means that the list was cleared by removing all the items (rather than by calling Clear() on the list). In that case, if the observer still believes that any items exist in leaf nodes, it means that there is a bookkeeping error somewhere.</td></tr>
+    <tr><td class="paramname">list</td><td>The list that changed.</td></tr>
     <tr><td class="paramname">newRoot</td><td>The new root (null if the tree is cleared).</td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#aac51a0a37a81fb0e1745a23e111fb92f">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#a06b1e8eb25573c100c41724f8971fde9">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#ab1722336197cb2dfb1d8152b635dfa84">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1AListBase_1_1ObserverMgr.html#aeab59b60488957cc1e295dd7b5f20575">Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a0f6453eda7a0daace7453032bcb7f620">Loyc.Collections.AListBase&lt; K, T &gt;.AListBase()</a>.</p>
 
@@ -458,7 +475,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

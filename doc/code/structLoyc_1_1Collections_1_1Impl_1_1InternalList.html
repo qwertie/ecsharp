@@ -90,6 +90,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Nested classes</a> &#124;
+<a href="#pub-attribs">Public fields</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -111,13 +113,6 @@ Inheritance diagram for Loyc.Collections.Impl.InternalList&lt; T &gt;:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1Impl_1_1InternalList.png" usemap="#Loyc.Collections.Impl.InternalList_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.Impl.InternalList_3C_20T_20_3E_map" name="Loyc.Collections.Impl.InternalList&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html" title="This interface combines the original IList&lt;T&gt; interface with its &quot;source&quot; (read-only) component inter..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="293,168,576,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListRangeMethods.html" title="An interface typically implemented alongside IList&lt;T&gt; for collection types that can add or remove mul..." alt="Loyc.Collections.IListRangeMethods&lt; T &gt;" shape="rect" coords="1025,168,1308,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="293,112,576,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="586,112,869,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAddRange.html" title="An interface typically implemented alongside ICollection&lt;T&gt;, for collection types that can add multip..." alt="Loyc.Collections.IAddRange&lt; T &gt;" shape="rect" coords="1025,112,1308,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICount.html" title="Holds the Count property found in nearly all collection interfaces." alt="Loyc.Collections.ICount" shape="rect" coords="1025,56,1308,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="1025,0,1308,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -125,12 +120,23 @@ Inheritance diagram for Loyc.Collections.Impl.InternalList&lt; T &gt;:</div>
 <p>Contains static methods to help manage raw arrays with even less overhead than InternalList&lt;T&gt;. </p>
 <p>An <a href="http://core.loyc.net/collections/internal-list.html">article</a> about this class is available. </p>
 <p><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="A compact auto-enlarging array structure that is intended to be used within other data structures...">InternalList</a> is a struct, not a class, in order to save memory; and for maximum performance, it asserts rather than throwing an exception when an incorrect array index is used. Besides that, it has an InternalArray property that provides access to the internal array. For all these reasons one should not expose it in a public API, and it should only be used when performance trumps all other concerns. </p>
-<p>Passing this structure by value is dangerous because changes to a copy of the structure may or may not be reflected in the original list. It's best not to pass it around at all, but if you must pass it, pass it by reference. </p>
-<p>Also, do not use the default contructor. Always specify an initial capacity or copy InternalList.Empty so that _array gets a value. This is required because methods such as Add(), Insert() and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b" title="Makes the list larger or smaller, depending on whether newSize is larger or smaller than Count...">Resize()</a> assume _array is not null. </p>
-<p><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="A compact auto-enlarging array structure that is intended to be used within other data structures...">InternalList</a> has one nice thing that List(of T) lacks: a <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b" title="Makes the list larger or smaller, depending on whether newSize is larger or smaller than Count...">Resize</a> method and an equivalent Count setter. Which dork at Microsoft decided no one should be allowed to set the list length directly? This type also provides a handy Last property and a Pop method to respectively get or remove the last item. </p>
+<p>Passing this structure by value is dangerous because changes to a copy of the structure may or may not be reflected in the original list. It's best not to pass it around at all, but if you must pass it, pass it by reference. Avoid using extension methods on this struct because an extension method will receive a copy of the struct. </p>
+<p>Also, do not use the default contructor. Always specify an initial capacity or copy InternalList.Empty so that _array gets a value. This is required because methods such as Add(), Insert() and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b">Resize()</a> assume _array is not null. </p>
+<p><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="A compact auto-enlarging array structure that is intended to be used within other data structures...">InternalList</a> has one nice thing that List(of T) lacks: a <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b">Resize</a> method and an equivalent Count setter. Which dork at Microsoft decided no one should be allowed to set the list length directly? This type also provides a handy Last property and a Pop method to respectively get or remove the last item. </p>
 <p>Finally, alongside InternalList(T), the static class <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="A compact auto-enlarging array structure that is intended to be used within other data structures...">InternalList</a> comes with some static methods (CopyToNewArray, Insert, RemoveAt, Move) to help manage raw arrays. You might want to use these in a data structure implementation even if you choose not to use InternalList(T) instances. </p>
 <p>The methods of this class are used by some data structures that contain arrays but, for whatever reason, don't use InternalList&lt;T&gt;. These methods are also used by InternalList(T) itself. </p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Nested classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList_1_1Enumerator.html">Enumerator</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public fields</h2></td></tr>
+<tr class="memitem:a47c6aa8a2ca24e6a668a2fcaf8f3ca86"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a47c6aa8a2ca24e6a668a2fcaf8f3ca86"></a>
+bool ICollection&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b> =&gt; false</td></tr>
+<tr class="separator:a47c6aa8a2ca24e6a668a2fcaf8f3ca86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a72a8a28c1829150e8d160f554cc65290"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a72a8a28c1829150e8d160f554cc65290"></a>
@@ -151,32 +157,21 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <tr class="memitem:ade5b302d17b19c2ae19ec38c12cf6834"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#ade5b302d17b19c2ae19ec38c12cf6834">Capacity</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ade5b302d17b19c2ae19ec38c12cf6834"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the array length. <a href="#ade5b302d17b19c2ae19ec38c12cf6834">More...</a><br /></td></tr>
 <tr class="separator:ade5b302d17b19c2ae19ec38c12cf6834"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7bb493701770bac856c6c27602a6b239"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7bb493701770bac856c6c27602a6b239"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get, set]</code></td></tr>
-<tr class="separator:a7bb493701770bac856c6c27602a6b239"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a829bfb5e6c6e53d8f7dd95d965c1661c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a829bfb5e6c6e53d8f7dd95d965c1661c"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaultValue]</b><code> [get]</code></td></tr>
-<tr class="separator:a829bfb5e6c6e53d8f7dd95d965c1661c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9baaa87d2468b8d153f04d5a7006965c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9baaa87d2468b8d153f04d5a7006965c"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>First</b><code> [get, set]</code></td></tr>
 <tr class="separator:a9baaa87d2468b8d153f04d5a7006965c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7375381ef878bb66c8c82c0856c47d45"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7375381ef878bb66c8c82c0856c47d45"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Last</b><code> [get, set]</code></td></tr>
 <tr class="separator:a7375381ef878bb66c8c82c0856c47d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a084af64a76408599a7be5a69d30b48"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a084af64a76408599a7be5a69d30b48"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b><code> [get]</code></td></tr>
-<tr class="separator:a5a084af64a76408599a7be5a69d30b48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfe1d3d09f7f7008fdff076888fbbf82"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfe1d3d09f7f7008fdff076888fbbf82"></a>
 T[]&#160;</td><td class="memItemRight" valign="bottom"><b>InternalArray</b><code> [get]</code></td></tr>
 <tr class="separator:acfe1d3d09f7f7008fdff076888fbbf82"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1ICount"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1ICount')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html">Loyc.Collections.ICount</a></td></tr>
-<tr class="memitem:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html#a08d479898a458b28bb483892304a5837">Count</a><code> [get]</code></td></tr>
-<tr class="memdesc:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of items in the collection. <a href="#a08d479898a458b28bb483892304a5837">More...</a><br /></td></tr>
-<tr class="separator:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
-<tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
-<tr class="separator:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bb493701770bac856c6c27602a6b239"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7bb493701770bac856c6c27602a6b239"></a>
+T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get, set]</code></td></tr>
+<tr class="separator:a7bb493701770bac856c6c27602a6b239"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a829bfb5e6c6e53d8f7dd95d965c1661c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a829bfb5e6c6e53d8f7dd95d965c1661c"></a>
+T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaultValue]</b><code> [get]</code></td></tr>
+<tr class="separator:a829bfb5e6c6e53d8f7dd95d965c1661c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -195,11 +190,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad6cffb40c1e5bb1419496da0f62e9ae1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6cffb40c1e5bb1419496da0f62e9ae1"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AutoRaiseCapacity</b> (int more, int capacityLimit)</td></tr>
 <tr class="separator:ad6cffb40c1e5bb1419496da0f62e9ae1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95e91f931cbf4cde071db2f53e8b5f7b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b">Resize</a> (int newSize)</td></tr>
-<tr class="memdesc:a95e91f931cbf4cde071db2f53e8b5f7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Makes the list larger or smaller, depending on whether <code>newSize</code> is larger or smaller than Count. <a href="#a95e91f931cbf4cde071db2f53e8b5f7b">More...</a><br /></td></tr>
+<tr class="memitem:a95e91f931cbf4cde071db2f53e8b5f7b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95e91f931cbf4cde071db2f53e8b5f7b"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b">Resize</a> (int newSize)</td></tr>
 <tr class="separator:a95e91f931cbf4cde071db2f53e8b5f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a308bcf2e3d38b8745942c52d1ea83a7c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a308bcf2e3d38b8745942c52d1ea83a7c"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a308bcf2e3d38b8745942c52d1ea83a7c">Resize</a> (int newSize, bool allowReduceCapacity)</td></tr>
+<tr class="memitem:a308bcf2e3d38b8745942c52d1ea83a7c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a308bcf2e3d38b8745942c52d1ea83a7c">Resize</a> (int newSize, bool allowReduceCapacity)</td></tr>
+<tr class="memdesc:a308bcf2e3d38b8745942c52d1ea83a7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Makes the list larger or smaller, depending on whether <code>newSize</code> is larger or smaller than Count. <a href="#a308bcf2e3d38b8745942c52d1ea83a7c">More...</a><br /></td></tr>
 <tr class="separator:a308bcf2e3d38b8745942c52d1ea83a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d91dd674fa42df2b1cfbb5ca498c714"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d91dd674fa42df2b1cfbb5ca498c714"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (T item)</td></tr>
@@ -211,7 +206,7 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (int index, T item)</td></tr>
 <tr class="separator:a42ee9cfd80367491d421a34d1432ab52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51cb0e22e005ba156fb48999025c86ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51cb0e22e005ba156fb48999025c86ed"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (int index, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html">ICollectionAndReadOnly</a>&lt; T &gt; items)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (int index, ICollectionAndReadOnly&lt; T &gt; items)</td></tr>
 <tr class="separator:a51cb0e22e005ba156fb48999025c86ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50c8dfefe0fcc0cf912a6fca20013bc4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a50c8dfefe0fcc0cf912a6fca20013bc4"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (int index, IReadOnlyCollection&lt; T &gt; items)</td></tr>
@@ -219,6 +214,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7eb557030e31baf260de1dd47d5439a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7eb557030e31baf260de1dd47d5439a0"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (int index, ICollection&lt; T &gt; items)</td></tr>
 <tr class="separator:a7eb557030e31baf260de1dd47d5439a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad850c45b6c1f620fc4e0d1197651149e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad850c45b6c1f620fc4e0d1197651149e"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRangeHelper</b> (int index, int spaceNeeded)</td></tr>
+<tr class="separator:ad850c45b6c1f620fc4e0d1197651149e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f4be1968538f257850676fbee97f8d7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3f4be1968538f257850676fbee97f8d7"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (int index, IEnumerable&lt; T &gt; e)</td></tr>
 <tr class="separator:a3f4be1968538f257850676fbee97f8d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -232,7 +230,7 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerable&lt; T &gt; e)</td></tr>
 <tr class="separator:aa037b2ea1c84f0ca362ba318c6e01740"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a970b4402de63d39071175738d2f4b2ea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a970b4402de63d39071175738d2f4b2ea"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html">ICollectionAndReadOnly</a>&lt; T &gt; items)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (ICollectionAndReadOnly&lt; T &gt; items)</td></tr>
 <tr class="separator:a970b4402de63d39071175738d2f4b2ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ad4f447018d5be2bc6cc8c6e1b33ef3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a4ad4f447018d5be2bc6cc8c6e1b33ef3">Clear</a> ()</td></tr>
 <tr class="memdesc:a4ad4f447018d5be2bc6cc8c6e1b33ef3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the list and frees the memory used by the list. Can also be used to initialize a list whose constructor was never called. <a href="#a4ad4f447018d5be2bc6cc8c6e1b33ef3">More...</a><br /></td></tr>
@@ -301,21 +299,14 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, o
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Sort</b> (int index, int count, Comparison&lt; T &gt; comp)</td></tr>
 <tr class="separator:aaffafe3a0ee757f3c2d0e9f49706be67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a213e9ad3bd0ac28e1ed6ac70311491e8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a213e9ad3bd0ac28e1ed6ac70311491e8"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:a213e9ad3bd0ac28e1ed6ac70311491e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09946af5398c9debcfb5565afadc565b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09946af5398c9debcfb5565afadc565b"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
-<tr class="separator:a09946af5398c9debcfb5565afadc565b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8e9f1da6c843cb3a8f9f4d3adef7eba"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8e9f1da6c843cb3a8f9f4d3adef7eba"></a>
+<a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count=int.MaxValue)</td></tr>
+<tr class="separator:ad8e9f1da6c843cb3a8f9f4d3adef7eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b963fa5f8fc6a52a03f9696093b4ef0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b963fa5f8fc6a52a03f9696093b4ef0"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>CopySection</b> (int start, int subcount)</td></tr>
 <tr class="separator:a7b963fa5f8fc6a52a03f9696093b4ef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
-<tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -789,7 +780,7 @@ capacityLimit is returned instead. If the return value would be slightly less th
 
 </div>
 </div>
-<a class="anchor" id="a95e91f931cbf4cde071db2f53e8b5f7b"></a>
+<a class="anchor" id="a308bcf2e3d38b8745942c52d1ea83a7c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -800,8 +791,18 @@ capacityLimit is returned instead. If the return value would be slightly less th
           <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html">Loyc.Collections.Impl.InternalList</a>&lt; T &gt;.Resize </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>newSize</em></td><td>)</td>
+          <td class="paramname"><em>newSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>allowReduceCapacity</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -819,8 +820,6 @@ capacityLimit is returned instead. If the return value would be slightly less th
   </table>
   </dd>
 </dl>
-
-<p>Referenced by <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a95e91f931cbf4cde071db2f53e8b5f7b">Loyc.Collections.Impl.InternalList&lt; Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt; &gt;.Resize()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a7109a7eb2172249ff4d5e2e41e55cc5b">Loyc.Syntax.AbstractTriviaInjector&lt; Token &gt;.RunCore()</a>.</p>
 
 </div>
 </div>
@@ -927,7 +926,7 @@ capacityLimit is returned instead. If the return value would be slightly less th
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -111,24 +111,11 @@ Inheritance diagram for Loyc.Collections.ListSlice&lt; T &gt;:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1ListSlice.png" usemap="#Loyc.Collections.ListSlice_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.ListSlice_3C_20T_20_3E_map" name="Loyc.Collections.ListSlice&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IRange.html" alt="Loyc.Collections.IRange&lt; T &gt;" shape="rect" coords="0,224,283,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html" title="This interface combines the original IList&lt;T&gt; interface with its &quot;source&quot; (read-only) component inter..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="586,224,869,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html" title="This interface combines the original ICollection(T) interface with IReadOnlyCollection(T), ISinkCollection(T), and IAddRange(T), a convenient way to implement all three. " alt="Loyc.Collections.ICollectionEx&lt; T &gt;" shape="rect" coords="1172,224,1455,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1IArray.html" title="This interface models the capabilities of an array: getting and setting elements by index..." alt="Loyc.Collections.IArray&lt; T &gt;" shape="rect" coords="1758,224,2041,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="2051,224,2334,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1IArraySink.html" title="Represents a write-only array." alt="Loyc.Collections.IArraySink&lt; T &gt;" shape="rect" coords="2051,168,2334,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="2051,112,2334,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="1465,168,1748,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAddRange.html" title="An interface typically implemented alongside ICollection&lt;T&gt;, for collection types that can add multip..." alt="Loyc.Collections.IAddRange&lt; T &gt;" shape="rect" coords="1465,112,1748,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html" title="Represents a write-only collection: you can modify it, but you cannot learn what it contains..." alt="Loyc.Collections.ICollectionSink&lt; T &gt;" shape="rect" coords="1465,56,1748,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="1465,0,1748,24"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="879,168,1162,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="879,112,1162,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are returned from ListExt.Slice&lt;T&gt; </p>
-<p><a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html" title="Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are re...">ListSlice</a> provides both a IList&lt;T&gt; interface and a <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange&lt;T&gt;</a> interface, and it is important not to confuse them. The IList&lt;T&gt; interface allows you to insert and remove items from both the original list and the slice simultaneously. The <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange&lt;T&gt;</a> interface allows you to "Pop" items from the front and back, but this reduces the length of the slice only, not the original list. </p>
+<p><a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html" title="Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are re...">ListSlice</a> provides both a IList&lt;T&gt; interface and a IRange&lt;T&gt; interface, and it is important not to confuse them. The IList&lt;T&gt; interface allows you to insert and remove items from both the original list and the slice simultaneously. The IRange&lt;T&gt; interface allows you to "Pop" items from the front and back, but this reduces the length of the slice only, not the original list. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -180,22 +167,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>InternalStop</b><code>
 <tr class="memitem:ac856f6f68aa203981b39f4c8bed72809"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac856f6f68aa203981b39f4c8bed72809"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b><code> [get]</code></td></tr>
 <tr class="separator:ac856f6f68aa203981b39f4c8bed72809"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1ICount"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1ICount')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html">Loyc.Collections.ICount</a></td></tr>
-<tr class="memitem:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html#a08d479898a458b28bb483892304a5837">Count</a><code> [get]</code></td></tr>
-<tr class="memdesc:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the number of items in the collection. <a href="#a08d479898a458b28bb483892304a5837">More...</a><br /></td></tr>
-<tr class="separator:a08d479898a458b28bb483892304a5837 inherit properties_interfaceLoyc_1_1Collections_1_1ICount"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
-<tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
-<tr class="separator:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IArray"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IArray')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html">Loyc.Collections.IArray&lt; T &gt;</a></td></tr>
-<tr class="memitem:aff28ad27291cd475a632b9f148da1ea3 inherit properties_interfaceLoyc_1_1Collections_1_1IArray"><td class="memItemLeft" align="right" valign="top">new T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html#aff28ad27291cd475a632b9f148da1ea3">this[int index]</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aff28ad27291cd475a632b9f148da1ea3 inherit properties_interfaceLoyc_1_1Collections_1_1IArray"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets an element of the array-like collection. <a href="#aff28ad27291cd475a632b9f148da1ea3">More...</a><br /></td></tr>
-<tr class="separator:aff28ad27291cd475a632b9f148da1ea3 inherit properties_interfaceLoyc_1_1Collections_1_1IArray"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IArraySink"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IArraySink')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IArraySink.html">Loyc.Collections.IArraySink&lt; T &gt;</a></td></tr>
-<tr class="memitem:a86619796daf974fb538f97a6d07457d6 inherit properties_interfaceLoyc_1_1Collections_1_1IArraySink"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86619796daf974fb538f97a6d07457d6"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [set]</code></td></tr>
-<tr class="separator:a86619796daf974fb538f97a6d07457d6 inherit properties_interfaceLoyc_1_1Collections_1_1IArraySink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -212,16 +183,16 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool f
 T&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast</b> (out bool fail)</td></tr>
 <tr class="separator:a4e81897662c8f2aee2f46a7a53baf3cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92322e58f616acb65f1fbda5f661cd14"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92322e58f616acb65f1fbda5f661cd14"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IFRange&lt; T &gt; ICloneable&lt; IFRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a92322e58f616acb65f1fbda5f661cd14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83aa335e8502c7f91ead7ce358f2dabb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a83aa335e8502c7f91ead7ce358f2dabb"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IBRange&lt; T &gt; ICloneable&lt; IBRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a83aa335e8502c7f91ead7ce358f2dabb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ac5754f6617569823668e6056097a51"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ac5754f6617569823668e6056097a51"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IRange&lt; T &gt; ICloneable&lt; IRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a4ac5754f6617569823668e6056097a51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec39d3a1c70d092992e1be4fdaf64f59"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec39d3a1c70d092992e1be4fdaf64f59"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+<a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt; ICloneable&lt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:aec39d3a1c70d092992e1be4fdaf64f59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a107c67844722a8c08c83a58e45f1d7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a107c67844722a8c08c83a58e45f1d7"></a>
 IEnumerator&lt; T &gt; IEnumerable&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
@@ -236,7 +207,7 @@ System.Collections.IEnumerator System.Collections.IEnumerable.&#160;</td><td cla
 T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:ac83ce63f04cc3d3670f5d9f54e78f525"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdb8f7b541c5940edc31742b09d854be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acdb8f7b541c5940edc31742b09d854be"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:acdb8f7b541c5940edc31742b09d854be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa46b966f667a44019b1db644e3f14380"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa46b966f667a44019b1db644e3f14380"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count=int.MaxValue)</td></tr>
@@ -274,20 +245,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>TrySet</b> (int index
 <tr class="memitem:abd25858897eeacf0490a45e9fb078896"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd25858897eeacf0490a45e9fb078896"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerable&lt; T &gt; list)</td></tr>
 <tr class="separator:abd25858897eeacf0490a45e9fb078896"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5bef1fd1e1679c3616f812439a2d141"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html#aa5bef1fd1e1679c3616f812439a2d141">RemoveAll</a> (Predicate&lt; T &gt; match)</td></tr>
-<tr class="memdesc:aa5bef1fd1e1679c3616f812439a2d141"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the all the elements that match the conditions defined by the specified predicate. <a href="#aa5bef1fd1e1679c3616f812439a2d141">More...</a><br /></td></tr>
-<tr class="separator:aa5bef1fd1e1679c3616f812439a2d141"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
-<tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
-<tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IAdd')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IAdd.html">Loyc.Collections.IAdd&lt; T &gt;</a></td></tr>
-<tr class="memitem:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae233f417073b9ff820666d50d5ef8684"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (T item)</td></tr>
-<tr class="separator:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a9e011514e069577f32dbc7f5cd37c187"></a>
@@ -344,42 +301,6 @@ if (start + count) is above the original Count, the Count of the new slice is re
 
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aa5bef1fd1e1679c3616f812439a2d141"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">Loyc.Collections.ListSlice</a>&lt; T &gt;.RemoveAll </td>
-          <td>(</td>
-          <td class="paramtype">Predicate&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>match</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Removes the all the elements that match the conditions defined by the specified predicate.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">match</td><td>A delegate that defines the conditions of the elements to remove</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of elements removed.</dd></dl>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html#aa2ca73e850acfd09d4de59c3f8407494">Loyc.Collections.ICollectionEx&lt; T &gt;</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="af5cfde311f08ffefe73f8b2d7c0f25e4"></a>
 <div class="memitem">
@@ -408,7 +329,7 @@ if (start + count) is above the original Count, the Count of the new slice is re
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

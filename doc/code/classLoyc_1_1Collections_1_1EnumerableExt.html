@@ -97,17 +97,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Additional extension methods for IEnumerable&lt;T&gt;, beyond what LINQ provides.  
+<p>Additional extension methods for IEnumerable&lt;T&gt;, IReadOnlyCollection&lt;T&gt;, and ICollection&lt;T&gt;, beyond what LINQ provides.  
  <a href="classLoyc_1_1Collections_1_1EnumerableExt.html#details">More...</a></p>
-<hr/><b>Source file</b>:<ul>
+<hr/><b>Source file</b>s:<ul>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/BufferedSequence.cs'>/Core/Loyc.Essentials/Collections/Adapters/BufferedSequence.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/CollectionAsSource.cs'>/Core/Loyc.Essentials/Collections/Adapters/CollectionAsSource.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/SelectDictionaryFromKeys.cs'>/Core/Loyc.Essentials/Collections/Adapters/SelectDictionaryFromKeys.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/ExtensionMethods/EnumerableExt.cs'>/Core/Loyc.Essentials/Collections/ExtensionMethods/EnumerableExt.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Additional extension methods for IEnumerable&lt;T&gt;, beyond what LINQ provides. </p>
+<div class="textblock"><p>Additional extension methods for IEnumerable&lt;T&gt;, IReadOnlyCollection&lt;T&gt;, and ICollection&lt;T&gt;, beyond what LINQ provides. </p>
 <p>The methods include WithIndexes&lt;T&gt;, which pairs each item of a sequence with a 0-based index of that item; ForEach&lt;T&gt;, which runs a lambda for each member of a sequence; <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a55ac60a0b41aec5509a71dfd69e9df4e" title="Gets the lowest index at which a condition is true, or -1 if nowhere.">IndexWhere&lt;T&gt;</a>, which finds the index where a predicate is true; <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a28aaeadc14ae336745d3666465a9e193" title="Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})">AdjacentPairs&lt;T&gt;</a>, which pairs each list item with the next one, and MinOrDefault, which finds the item such that some associated value is minimized (in contrast to LINQ's Min(), which just returns the minimum value itself.) And there's more. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:af37723006271c6adbd165e60d4782d82"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af37723006271c6adbd165e60d4782d82"></a>
+static <a class="el" href="classLoyc_1_1Collections_1_1BufferedSequence.html">BufferedSequence</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Buffered&lt; T &gt;</b> (this IEnumerator&lt; T &gt; source)</td></tr>
+<tr class="separator:af37723006271c6adbd165e60d4782d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a213341c0ef036170e0e55e7e6ad278a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a213341c0ef036170e0e55e7e6ad278a6"></a>
+static <a class="el" href="classLoyc_1_1Collections_1_1BufferedSequence.html">BufferedSequence</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Buffered&lt; T &gt;</b> (this IEnumerable&lt; T &gt; source)</td></tr>
+<tr class="separator:a213341c0ef036170e0e55e7e6ad278a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf03a0e2a97ea74c0f99500d8c670a2b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf03a0e2a97ea74c0f99500d8c670a2b"></a>
+static IListSource&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Buffered&lt; T &gt;</b> (this IListSource&lt; T &gt; source)</td></tr>
+<tr class="separator:aaf03a0e2a97ea74c0f99500d8c670a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4e97d9384d74c5263190f62e83f8c57"><td class="memItemLeft" align="right" valign="top">static IReadOnlyCollection&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#af4e97d9384d74c5263190f62e83f8c57">AsReadOnly&lt; T &gt;</a> (this ICollection&lt; T &gt; c)</td></tr>
+<tr class="memdesc:af4e97d9384d74c5263190f62e83f8c57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Treats any ICollection{T} object to IReadOnlyCollection{T}. <a href="#af4e97d9384d74c5263190f62e83f8c57">More...</a><br /></td></tr>
+<tr class="separator:af4e97d9384d74c5263190f62e83f8c57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc382bcc528253e7b79fbc58fd7c0711"><td class="memItemLeft" align="right" valign="top">static IReadOnlyDictionary&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#abc382bcc528253e7b79fbc58fd7c0711">AsReadOnlyDictionary&lt; K, V &gt;</a> (this IReadOnlyCollection&lt; K &gt; keys, Func&lt; K, Maybe&lt; V &gt;&gt; tryGetValue, Func&lt; K, V &gt; getValue=null)</td></tr>
+<tr class="memdesc:abc382bcc528253e7b79fbc58fd7c0711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a collection of keys to an IReadOnlyDictionary, based on a function that can obtain a value for a given key. <a href="#abc382bcc528253e7b79fbc58fd7c0711">More...</a><br /></td></tr>
+<tr class="separator:abc382bcc528253e7b79fbc58fd7c0711"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb744ff4fb67da3a239866452d66b188"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb744ff4fb67da3a239866452d66b188"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ForEach&lt; T &gt;</b> (this IEnumerable&lt; T &gt; list, Action&lt; T &gt; action)</td></tr>
 <tr class="separator:acb744ff4fb67da3a239866452d66b188"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,7 +183,7 @@ static IEnumerable&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a5479ff0edf01453bd0d6eff097faa492"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5479ff0edf01453bd0d6eff097faa492"></a>
 static IEnumerable&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WhereNotNull&lt; T &gt;</b> (this IEnumerable&lt; T?&gt; list)</td></tr>
 <tr class="separator:a5479ff0edf01453bd0d6eff097faa492"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Out &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a810c3ad3d92ffcc2e871422a9d67ddeb">SelectFilter&lt; T, Out &gt;</a> (this IEnumerable&lt; T &gt; list, Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; Out &gt;&gt; filter)</td></tr>
+<tr class="memitem:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Out &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a810c3ad3d92ffcc2e871422a9d67ddeb">SelectFilter&lt; T, Out &gt;</a> (this IEnumerable&lt; T &gt; list, Func&lt; T, Maybe&lt; Out &gt;&gt; filter)</td></tr>
 <tr class="memdesc:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combines 'Select' and 'Where' in a single operation. <a href="#a810c3ad3d92ffcc2e871422a9d67ddeb">More...</a><br /></td></tr>
 <tr class="separator:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab12bb537a998412880799cbb353fda2"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#aab12bb537a998412880799cbb353fda2">MaxOrDefault&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list, Func&lt; T, int &gt; selector, T defaultValue=default(T))</td></tr>
@@ -189,36 +207,21 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceHashCod
 <tr class="memitem:ae6af03afbb1a0cc88d639533478b742e"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Base &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#ae6af03afbb1a0cc88d639533478b742e">Upcast&lt; Base, Derived &gt;</a> (this IEnumerable&lt; Derived &gt; list)</td></tr>
 <tr class="memdesc:ae6af03afbb1a0cc88d639533478b742e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upcasts a sequence. <a href="#ae6af03afbb1a0cc88d639533478b742e">More...</a><br /></td></tr>
 <tr class="separator:ae6af03afbb1a0cc88d639533478b742e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28aaeadc14ae336745d3666465a9e193"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a28aaeadc14ae336745d3666465a9e193">AdjacentPairs&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list)</td></tr>
+<tr class="memitem:a28aaeadc14ae336745d3666465a9e193"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a28aaeadc14ae336745d3666465a9e193">AdjacentPairs&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list)</td></tr>
 <tr class="memdesc:a28aaeadc14ae336745d3666465a9e193"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)}) <a href="#a28aaeadc14ae336745d3666465a9e193">More...</a><br /></td></tr>
 <tr class="separator:a28aaeadc14ae336745d3666465a9e193"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8b0c1f96cf1eb8415458a4ad731b0e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8b0c1f96cf1eb8415458a4ad731b0e9"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AdjacentPairs&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e)</td></tr>
+static IEnumerable&lt; Pair&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AdjacentPairs&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e)</td></tr>
 <tr class="separator:aa8b0c1f96cf1eb8415458a4ad731b0e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0320af2a69f229087550fc16269fdb7e"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a0320af2a69f229087550fc16269fdb7e">AdjacentPairsCircular&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list)</td></tr>
+<tr class="memitem:a0320af2a69f229087550fc16269fdb7e"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a0320af2a69f229087550fc16269fdb7e">AdjacentPairsCircular&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list)</td></tr>
 <tr class="memdesc:a0320af2a69f229087550fc16269fdb7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns all adjacent pairs, treating the first and last pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs {(1,2),(2,3),(3,4),(4,1)}.) <a href="#a0320af2a69f229087550fc16269fdb7e">More...</a><br /></td></tr>
 <tr class="separator:a0320af2a69f229087550fc16269fdb7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec6bc81fbc3b63d3f3648f8a0bd2bfb5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec6bc81fbc3b63d3f3648f8a0bd2bfb5"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AdjacentPairsCircular&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e)</td></tr>
+static IEnumerable&lt; Pair&lt; T, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AdjacentPairsCircular&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e)</td></tr>
 <tr class="separator:aec6bc81fbc3b63d3f3648f8a0bd2bfb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0400f000876e93e85420c248a964a03"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa0400f000876e93e85420c248a964a03"></a>
 static List&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToList&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e)</td></tr>
 <tr class="separator:aa0400f000876e93e85420c248a964a03"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adef709401cbf341aacb8adb9ecb563ae"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adef709401cbf341aacb8adb9ecb563ae"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToDList&lt; T &gt;</b> (this IReadOnlyCollection&lt; T &gt; c)</td></tr>
-<tr class="separator:adef709401cbf341aacb8adb9ecb563ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b408d579492db9bcab17257187eb318"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5b408d579492db9bcab17257187eb318"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToDList&lt; T &gt;</b> (this IList&lt; T &gt; c)</td></tr>
-<tr class="separator:a5b408d579492db9bcab17257187eb318"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2967dd0460c2f776da6b059b6167e55"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad2967dd0460c2f776da6b059b6167e55"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToDList&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; c)</td></tr>
-<tr class="separator:ad2967dd0460c2f776da6b059b6167e55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe5c628affc7fbce706ef8fa81625b65"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abe5c628affc7fbce706ef8fa81625b65"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToDList&lt; T &gt;</b> (this IEnumerable&lt; T &gt; c)</td></tr>
-<tr class="separator:abe5c628affc7fbce706ef8fa81625b65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeeea92b6ab4cf1e933406e5e661d897c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeeea92b6ab4cf1e933406e5e661d897c"></a>
-static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToDList&lt; T &gt;</b> (this IEnumerator&lt; T &gt; e, int initialCapacity=4)</td></tr>
-<tr class="separator:aeeea92b6ab4cf1e933406e5e661d897c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a28aaeadc14ae336745d3666465a9e193"></a>
@@ -229,7 +232,7 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;T, T&gt; &gt; Loyc.Collections.EnumerableExt.AdjacentPairs&lt; T &gt; </td>
+          <td class="memname">static IEnumerable&lt;Pair&lt;T, T&gt; &gt; Loyc.Collections.EnumerableExt.AdjacentPairs&lt; T &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
@@ -255,7 +258,7 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;T, T&gt; &gt; Loyc.Collections.EnumerableExt.AdjacentPairsCircular&lt; T &gt; </td>
+          <td class="memname">static IEnumerable&lt;Pair&lt;T, T&gt; &gt; Loyc.Collections.EnumerableExt.AdjacentPairsCircular&lt; T &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
@@ -271,8 +274,83 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
 
 <p>Returns all adjacent pairs, treating the first and last pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs {(1,2),(2,3),(3,4),(4,1)}.)</p>
 
-<p>References <a class="el" href="classLoyc_1_1Collections_1_1DList.html#a3424bff1b4734e85cb2b5f3971390fc6">Loyc.Collections.DList&lt; T &gt;.Add()</a>.</p>
+</div>
+</div>
+<a class="anchor" id="af4e97d9384d74c5263190f62e83f8c57"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IReadOnlyCollection&lt;T&gt; Loyc.Collections.EnumerableExt.AsReadOnly&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this ICollection&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
+<p>Treats any ICollection{T} object to IReadOnlyCollection{T}.</p>
+<p>This method is named "AsReadOnly" and not "ToReadOnly" because, in contrast to methods like ToArray(), and ToList() it does not make a copy of the sequence, although it does create a new wrapper object.</p>
+
+</div>
+</div>
+<a class="anchor" id="abc382bcc528253e7b79fbc58fd7c0711"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IReadOnlyDictionary&lt;K, V&gt; Loyc.Collections.EnumerableExt.AsReadOnlyDictionary&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IReadOnlyCollection&lt; K &gt;&#160;</td>
+          <td class="paramname"><em>keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, Maybe&lt; V &gt;&gt;&#160;</td>
+          <td class="paramname"><em>tryGetValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>getValue</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts a collection of keys to an IReadOnlyDictionary, based on a function that can obtain a value for a given key.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">keys</td><td>A collection of dictionary keys.</td></tr>
+    <tr><td class="paramname">tryGetValue</td><td>This function is used both to test membership and to get values.</td></tr>
+    <tr><td class="paramname">getValue</td><td>This function is optional. It is used to get values when it is known in advance that the key exists (in GetEnumerator() and in the Values property). If this is null, tryGetValue is used instead. Providing this function can increase performance.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function is useful, for example, when you need to implement an interface that provides a dictionary of values, but your data is in the wrong format. You don't want to convert the entire dictionary, since the caller might only need to look up one item from it. </p><div class="fragment"><div class="line"><span class="keyword">interface </span>ICompany</div><div class="line">{</div><div class="line">    IReadOnlyDictionary&lt;long, string&gt; Employees { <span class="keyword">get</span>; }</div><div class="line">    ...</div><div class="line">}</div><div class="line"><span class="keyword">class </span>Company : ICompany</div><div class="line">{</div><div class="line">    Dictionary&lt;int, Person&gt; _employees = <span class="keyword">new</span> Dictionary&lt;int, Person&gt;();</div><div class="line"></div><div class="line">    <span class="keyword">public</span> IReadOnlyDictionary&lt;long, string&gt; Employees =&gt; </div><div class="line">        LinqToLists.Select(_employees.Keys, k =&gt; (<span class="keywordtype">long</span>)k)</div><div class="line">        .AsReadOnlyDictionary(k =&gt; {</div><div class="line">            var v = _employees.TryGetValue((<span class="keywordtype">int</span>)k);</div><div class="line">            <span class="keywordflow">return</span> v.HasValue ? (Maybe&lt;string&gt;)v.Value.ToString() : Maybe&lt;string&gt;.NoValue;</div><div class="line">        });     </div><div class="line">    ...</div><div class="line">}</div><div class="line"><span class="keyword">class </span>Person</div><div class="line">{</div><div class="line">    <span class="keywordtype">string</span> FirstName, LastName;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="keywordtype">string</span> ToString() =&gt; FirstName + <span class="stringliteral">&quot; &quot;</span> + LastName;</div><div class="line">}</div></div><!-- fragment --> 
 </div>
 </div>
 <a class="anchor" id="acc45b80d774ececb51d11b24313aa69c"></a>
@@ -309,7 +387,7 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
 
 <p>Determines the index of a specific value.</p>
 <dl class="section return"><dt>Returns</dt><dd>The index of the value, if found, or -1 if it was not found.</dd></dl>
-<p>At first, this method was a member of <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> itself, just in case the source might have some kind of fast lookup logic (e.g. binary search) or custom comparer. However, since the item to find is an "in" argument, it would prevent <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> from being marked covariant when I upgrade to C# 4. </p>
+<p>At first, this method was a member of IListSource itself, just in case the source might have some kind of fast lookup logic (e.g. binary search) or custom comparer. However, since the item to find is an "in" argument, it would prevent IListSource from being marked covariant when I upgrade to C# 4. </p>
 
 </div>
 </div>
@@ -465,7 +543,7 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; Out &gt;&gt;&#160;</td>
+          <td class="paramtype">Func&lt; T, Maybe&lt; Out &gt;&gt;&#160;</td>
           <td class="paramname"><em>filter</em>&#160;</td>
         </tr>
         <tr>
@@ -558,7 +636,7 @@ static <a class="el" href="classLoyc_1_1Collections_1_1DList.html">DList</a>&lt;
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

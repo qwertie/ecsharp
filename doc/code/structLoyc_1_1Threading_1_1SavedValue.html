@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Designed to be used in a "using" statement to temporarily alter a ThreadLocalVariable&lt;T&gt; or Holder&lt;T&gt;.  
+<p>Designed to be used in a "using" statement to temporarily alter a ThreadLocalVariable&lt;T&gt; or Holder&lt;T&gt; or something else implementing IHasMutableValue&lt;T&gt;.  
  <a href="structLoyc_1_1Threading_1_1SavedValue.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/SavedValue.cs'>/Core/Loyc.Essentials/Utilities/SavedValue.cs</a></li>
@@ -113,7 +113,7 @@ Inheritance diagram for Loyc.Threading.SavedValue&lt; T &gt;:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Designed to be used in a "using" statement to temporarily alter a ThreadLocalVariable&lt;T&gt; or Holder&lt;T&gt;. </p>
+<div class="textblock"><p>Designed to be used in a "using" statement to temporarily alter a ThreadLocalVariable&lt;T&gt; or Holder&lt;T&gt; or something else implementing IHasMutableValue&lt;T&gt;. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -121,7 +121,7 @@ Public fields</h2></td></tr>
 readonly T&#160;</td><td class="memItemRight" valign="bottom"><b>_oldValue</b></td></tr>
 <tr class="separator:a4f614f4b6f396cf76d6eb248da7dafb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4138ed1ef2e83915386e60c890c60ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4138ed1ef2e83915386e60c890c60ff"></a>
-readonly <a class="el" href="interfaceLoyc_1_1IHasMutableValue.html">IHasMutableValue</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_valueHolder</b></td></tr>
+readonly IHasMutableValue&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_valueHolder</b></td></tr>
 <tr class="separator:ae4138ed1ef2e83915386e60c890c60ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -133,7 +133,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>OldValue</b><code> [get]
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2466bcc93045f70a4ac80e4d171a79cc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2466bcc93045f70a4ac80e4d171a79cc"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SavedValue</b> (<a class="el" href="interfaceLoyc_1_1IHasMutableValue.html">IHasMutableValue</a>&lt; T &gt; oldValue, T newValue)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SavedValue</b> (IHasMutableValue&lt; T &gt; oldValue, T newValue)</td></tr>
 <tr class="separator:a2466bcc93045f70a4ac80e4d171a79cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61cb414a155211ea9d5bd511867c94e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61cb414a155211ea9d5bd511867c94e4"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Dispose</b> ()</td></tr>
@@ -143,7 +143,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

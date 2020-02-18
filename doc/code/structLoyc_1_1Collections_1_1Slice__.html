@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. 
+<p>Adapter: a random-access range for a slice of an IListSource&lt;T&gt;. 
  <a href="structLoyc_1_1Collections_1_1Slice__.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/Slice.cs'>/Core/Loyc.Essentials/Collections/Adapters/Slice.cs</a></li>
@@ -111,12 +111,10 @@ Inheritance diagram for Loyc.Collections.Slice_&lt; T &gt;:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1Slice__.png" usemap="#Loyc.Collections.Slice_5F_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.Slice_5F_3C_20T_20_3E_map" name="Loyc.Collections.Slice_&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IRange.html" alt="Loyc.Collections.IRange&lt; T &gt;" shape="rect" coords="0,0,180,24"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="380,0,560,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>.</p>
+<div class="textblock"><p>Adapter: a random-access range for a slice of an IListSource&lt;T&gt;.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Item type in the list</td></tr>
@@ -124,12 +122,12 @@ Inheritance diagram for Loyc.Collections.Slice_&lt; T &gt;:</div>
   </dd>
 </dl>
 <p>This type was supposed to be called simply <code>Slice</code>, but this was not allowed because in plain C#, "CS0542: member names cannot be the same as 
-their enclosing type" and of course, this type contains the Slice() method from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>. </p>
+their enclosing type" and of course, this type contains the Slice() method from IListSource. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:aeff43d11b9ba0c5f490a6ddaaae60e54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeff43d11b9ba0c5f490a6ddaaae60e54"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
+IListSource&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
 <tr class="separator:aeff43d11b9ba0c5f490a6ddaaae60e54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5a20d9b16ee4a2adf91309e5db52026"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab5a20d9b16ee4a2adf91309e5db52026"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_start</b></td></tr>
@@ -164,18 +162,14 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code
 <tr class="memitem:a1b13e67430437dff406894a13c6072ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b13e67430437dff406894a13c6072ab"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaultValue]</b><code> [get]</code></td></tr>
 <tr class="separator:a1b13e67430437dff406894a13c6072ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
-<tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
-<tr class="separator:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aec67458b1e7d07d9bd21f9cc261e76c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Slice__.html#aec67458b1e7d07d9bd21f9cc261e76c5">Slice_</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int start, int count=int.MaxValue)</td></tr>
+<tr class="memitem:aec67458b1e7d07d9bd21f9cc261e76c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Slice__.html#aec67458b1e7d07d9bd21f9cc261e76c5">Slice_</a> (IListSource&lt; T &gt; list, int start, int count=int.MaxValue)</td></tr>
 <tr class="memdesc:aec67458b1e7d07d9bd21f9cc261e76c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a slice. <a href="#aec67458b1e7d07d9bd21f9cc261e76c5">More...</a><br /></td></tr>
 <tr class="separator:aec67458b1e7d07d9bd21f9cc261e76c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ccdbac56d71665af3ad5915cdc69513"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ccdbac56d71665af3ad5915cdc69513"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Slice_</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Slice_</b> (IListSource&lt; T &gt; list)</td></tr>
 <tr class="separator:a5ccdbac56d71665af3ad5915cdc69513"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab53b2ae35c3a261d210f6a17b5f92fbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab53b2ae35c3a261d210f6a17b5f92fbc"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool empty)</td></tr>
@@ -184,13 +178,13 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool e
 T&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast</b> (out bool empty)</td></tr>
 <tr class="separator:aee39effff1a6ca3b01d7d7f6947e33d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26f0900a374f826b04b69389b4e84cf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26f0900a374f826b04b69389b4e84cf5"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IFRange&lt; T &gt; ICloneable&lt; IFRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a26f0900a374f826b04b69389b4e84cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af055eac96ad9bcb1b3a913e71e4b7239"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af055eac96ad9bcb1b3a913e71e4b7239"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IBRange&lt; T &gt; ICloneable&lt; IBRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:af055eac96ad9bcb1b3a913e71e4b7239"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeac7e8df38958c82b0975c198ab98fbf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeac7e8df38958c82b0975c198ab98fbf"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+IRange&lt; T &gt; ICloneable&lt; IRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:aeac7e8df38958c82b0975c198ab98fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc06da7096936fd66c057d334538fdee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abc06da7096936fd66c057d334538fdee"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
@@ -208,7 +202,7 @@ System.Collections.IEnumerator System.Collections.IEnumerable.&#160;</td><td cla
 T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:aaf618135a24a4268c9d67180a8d13755"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74f54c62d5c3f509fd19a1bd259b6a7a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74f54c62d5c3f509fd19a1bd259b6a7a"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:a74f54c62d5c3f509fd19a1bd259b6a7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c49442601c3a28b697a28173e9ad917"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c49442601c3a28b697a28173e9ad917"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count=int.MaxValue)</td></tr>
@@ -225,7 +219,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, o
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Loyc.Collections.Slice_</a>&lt; T &gt;.<a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramtype">IListSource&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -267,15 +261,13 @@ If 'start' is above the original Count, the Count of the new slice is set to zer
 if (start + count) is above the original Count, the Count of the new slice is reduced to <code>list.Count - start</code>. </li>
 </ul>
 
-<p>References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Loyc.Collections.IListSource&lt; out out T &gt;.Slice()</a>.</p>
-
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -142,6 +142,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>SelectArray&lt; T, R &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#af6166b7ee4eb0cd093625ae900050c9f">Loyc.Collections.ListExt</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1ICollectionExt.html#aef63e4f4c3c9296f42aa118dc4fc303b">Loyc.Collections.MutableListExtensionMethods.ICollectionExt</a>
+</li>
+<li>SelectDictionaryFromKeys()
+: <a class="el" href="classLoyc_1_1Collections_1_1SelectDictionaryFromKeys.html#ac786353defee639dbc902c8193404662">Loyc.Collections.SelectDictionaryFromKeys&lt; K, V &gt;</a>
 </li>
 <li>SelectFilter&lt; T, Out &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a810c3ad3d92ffcc2e871422a9d67ddeb">Loyc.Collections.EnumerableExt</a>
@@ -152,8 +156,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Set()
 : <a class="el" href="classLoyc_1_1Collections_1_1CPTrie.html#a9f4ea26038e072b24a248dce01b857d9">Loyc.Collections.CPTrie&lt; T &gt;</a>
 </li>
-<li>SetAndGetOldValue()
-: <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a80a7e49ccd9150a75a0eb2902c6d7c52">Loyc.Collections.BDictionary&lt; K, V &gt;</a>
+<li>SetAndGet()
+: <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a6212c0cca9685dbe8b9e11783a3121e5">Loyc.Collections.BDictionary&lt; K, V &gt;</a>
 </li>
 <li>SetAt()
 : <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a313c1d981a5e4c889d3282c08725bdbf">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>
@@ -177,33 +181,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#aa83a9eeeb0716523da6cdc81ee1d708e">Loyc.Collections.MSet&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1Set.html#aaad54a7291e47d584dedfe740fb0e0f3">Loyc.Collections.Set&lt; T &gt;</a>
 </li>
-<li>SetFormatter()
-: <a class="el" href="classLoyc_1_1Localize.html#af84b3b51ba94ac7a6b0cd8b715f39404">Loyc.Localize</a>
-</li>
 <li>SetListInitializer()
 : <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase</a>
 </li>
-<li>SetLocalizer()
-: <a class="el" href="classLoyc_1_1Localize.html#ae62800f9f1a28f0fdfaf5dea4e269f90">Loyc.Localize</a>
-</li>
-<li>SetScanRegion()
-: <a class="el" href="classTextEditor_1_1TextEditorSearcher.html#a0e9ac080069b8cef53d86c55e03227b3">TextEditor.TextEditorSearcher</a>
+<li>SetRange&lt; K, V &gt;()
+: <a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a259a61fd00b4936dd0467315556e3053">Loyc.Collections.DictionaryExt</a>
 </li>
 <li>SeverityMessageFilter()
 : <a class="el" href="classLoyc_1_1SeverityMessageFilter.html#abeeb789e716654c123b608bf8dd4ad64">Loyc.SeverityMessageFilter&lt; TContext &gt;</a>
 </li>
-<li>ShedExcessMemory()
-: <a class="el" href="structLoyc_1_1UString.html#ac5598a4c9d6bf9348bceac56f7a4dc40">Loyc.UString</a>
-</li>
-<li>Shl()
-: <a class="el" href="interfaceLoyc_1_1Math_1_1IBinaryMath.html#a42960931d668e36e83f4de03877348fd">Loyc.Math.IBinaryMath&lt; T &gt;</a>
-</li>
 <li>ShouldGenerateSwitch()
 : <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25">Loyc.LLParserGenerator.CodeGenHelperBase</a>
 , <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a4b2b259bfcdf3eeff6d0843e221f2693">Loyc.LLParserGenerator.IPGCodeGenHelper</a>
-</li>
-<li>Shr()
-: <a class="el" href="interfaceLoyc_1_1Math_1_1IBinaryMath.html#a38efb1496939346b1bb54f0aaeaeedc3">Loyc.Math.IBinaryMath&lt; T &gt;</a>
 </li>
 <li>Single&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a113e21367fef9583bcbe11ff88058c02">Loyc.Collections.ListExt</a>
@@ -218,9 +207,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>Skip&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#ac2beac0201bfad745cce213e98793e39">Loyc.Collections.LinqToLists</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LinqToLists.html#ae91e5d64e06f0564065384c10792dcff">Loyc.Collections.MutableListExtensionMethods.LinqToLists</a>
 </li>
 <li>SkipNowWhile&lt; T &gt;()
-: <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a6b79588c2d823f534b32909d868ce2cd">Loyc.Collections.LinqToLists</a>
+: <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a686c2f1a4bb7cfb71c6b66f2d10e2c44">Loyc.Collections.LinqToLists</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LinqToLists.html#accae23b91e6582d8f0377c67cb8777ee">Loyc.Collections.MutableListExtensionMethods.LinqToLists</a>
 </li>
 <li>SkipSpaces()
 : <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#ac50139ed454f580106765536df3fef56">Loyc.Syntax.ParseHelpers</a>
@@ -229,14 +220,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html#a7f61e1f687ebb8051ba14f6bd886df01">Loyc.Threading.ThreadEx</a>
 </li>
 <li>Slice()
-: <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html#a6015c7a99af81fe0de9fcc67e43a2768">Loyc.Collections.ICharSource</a>
-, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Loyc.Collections.IListSource&lt; out out T &gt;</a>
-, <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Loyc.Collections.INegListSource&lt; out out T &gt;</a>
-, <a class="el" href="structLoyc_1_1Collections_1_1NegList.html#af645e0146c08310b2251402acd2f6e62">Loyc.Collections.NegList&lt; T &gt;</a>
+: <a class="el" href="structLoyc_1_1Collections_1_1NegList.html#af645e0146c08310b2251402acd2f6e62">Loyc.Collections.NegList&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html#a5f56a428023d47bdf2529c81c62b7a06">Loyc.Collections.NegListSource&lt; T &gt;</a>
-, <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#a87c853794420125de1527263eaac5770">Loyc.Collections.StringSlice</a>
-, <a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html#a67c92612e281b8dcd5927b8186205457">Loyc.Syntax.StreamCharSource</a>
-, <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString</a>
 </li>
 <li>Slice&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ab61aabf57b341fa6b3643de2a9b2d9f2">Loyc.Collections.LCExt</a>
@@ -266,7 +251,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>Sort&lt; T &gt;()
 : <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#ae0057f0aabae8797d9ba66d4a7282956">Loyc.Collections.Impl.InternalList&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a6854e53258e6fdf9e60c8929d2a3abea">Loyc.Collections.ListExt</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a33f697008c11b02bb9906a6925661dce">Loyc.Collections.ListExt</a>
 </li>
 <li>SortLowestK&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a184629aa54a252dddbaa912dadae682f">Loyc.Collections.ListExt</a>
@@ -281,7 +266,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9ccc4fc99837b7ca9faf3d519d525551">Loyc.Syntax.Lexing.Token</a>
 </li>
 <li>SpaceDefinitionKind()
-: <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators</a>
+: <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ad5b55389daa158429702e8bd17322cd5">Loyc.Ecs.EcsValidators</a>
 </li>
 <li>Spaces()
 : <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a79c4e1d9e02ed6f1bd69870ff2f44a99">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;</a>
@@ -303,10 +288,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>StartsWith()
 : <a class="el" href="classLoyc_1_1StringBuilderExt.html#affc1387abde2f9df416eb36236e16071">Loyc.StringBuilderExt</a>
-, <a class="el" href="structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee">Loyc.UString</a>
-</li>
-<li>StringSlice()
-: <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#aba62a41125f3b3ab7f4e8702d4298f5b">Loyc.Collections.StringSlice</a>
 </li>
 <li>StripExtraWhitespace()
 : <a class="el" href="classLeMP_1_1TestCompiler.html#a6dca2ab1efab335a9c58ab739aa959b6">LeMP.TestCompiler</a>
@@ -316,12 +297,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classLoyc_1_1Collections_1_1VListBlockArray.html#a8d6c62c2e04ed7cf963f5431c3934220">Loyc.Collections.VListBlockArray&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo.html#a87c0667477f065757d52dbf1535f18a9">Loyc.Collections.VListBlockOfTwo&lt; T &gt;</a>
 </li>
-<li>SubOne()
-: <a class="el" href="interfaceLoyc_1_1Math_1_1IIncrementer.html#a972ff2ab0fb33acc8a7288475ebaa7d0">Loyc.Math.IIncrementer&lt; T &gt;</a>
-</li>
 <li>Substring()
 : <a class="el" href="classLoyc_1_1StringBuilderExt.html#a8833bd4a33c9182e42881c317c0fc281">Loyc.StringBuilderExt</a>
-, <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString</a>
 </li>
 <li>SubstringEquals()
 : <a class="el" href="classLoyc_1_1StringBuilderExt.html#a296fd5a48cee038edd7d3a93e5b6b850">Loyc.StringBuilderExt</a>
@@ -344,10 +321,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>SwapHelper()
 : <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#a9501a60988ad7318e8a2a18e598be440">Loyc.Collections.AListBase&lt; K, T &gt;</a>
 </li>
-<li>Symbol()
-: <a class="el" href="classLoyc_1_1Localize.html#a80475b2f3c64956e0a2261c4823a33d1">Loyc.Localize</a>
-, <a class="el" href="classLoyc_1_1Symbol.html#aa39a2ebfdb0372328483ecb9f419e2d6">Loyc.Symbol</a>
-</li>
 <li>SymmetricExceptWith()
 : <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aef1799cb5a1f92bdeeb583add3269e08">Loyc.Collections.Impl.InternalSet&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a42277658643df5b1d1f72a09986e9f33">Loyc.Collections.MSet&lt; T &gt;</a>
@@ -357,7 +330,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

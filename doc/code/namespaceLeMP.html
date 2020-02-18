@@ -121,7 +121,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">For <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>: an input file plus per-file options (input and output language) and output code.  <a href="classLeMP_1_1InputOutput.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1LexicalMacroAttribute.html">LexicalMacroAttribute</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a method as an LEL simple macro. <a href="classLeMP_1_1LexicalMacroAttribute.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a method as a <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> lexical macro. <a href="classLeMP_1_1LexicalMacroAttribute.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html">MacroContext</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP).">IMacroContext</a>. <a href="classLeMP_1_1MacroContext.html#details">More...</a><br /></td></tr>
@@ -135,7 +135,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>MacroProcessorTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1TestCompiler.html">TestCompiler</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple version of <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">Compiler</a> that takes a single input and produces a StringBuilder. Pre-opens <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a> namespace. <a href="classLeMP_1_1TestCompiler.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple version of <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">Compiler</a> that takes a single input and produces a StringBuilder. Pre-opens <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a> namespaces. <a href="classLeMP_1_1TestCompiler.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -291,9 +291,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A node to replace the original <code>node</code>, or null if this macro rejects the input node. Returning null can allow a different macro to accept the node instead.</dd></dl>
 <p>If there are multiple macros in scope with the same name, they are <em>all</em> called. Macro expansion succeeds if exactly one macro accepts the input. If no macros accept the input, the error message given by each macro is printed; if multiple macros accept the input, an ambiguity error is printed. </p>
-<p>When the macro processor scans an assembly looking for macros, it requires <a class="el" href="classLeMP_1_1ContainsMacrosAttribute.html" title="Marks a class to be searched for macros.">ContainsMacrosAttribute</a> on the containing class, and <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as an LEL simple macro.">LexicalMacroAttribute</a> on each macro in the class. The macros must be public static methods. </p>
+<p>When the macro processor scans an assembly looking for macros, it requires <a class="el" href="classLeMP_1_1ContainsMacrosAttribute.html" title="Marks a class to be searched for macros.">ContainsMacrosAttribute</a> on the containing class, and <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as a LeMP lexical macro.">LexicalMacroAttribute</a> on each macro in the class. The macros must be public static methods. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02">Loyc.LLPG.Macros.LLLPG_lexer()</a>, and <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>.</p>
+<p>Referenced by <a class="el" href="classLeMP_1_1MacroInfo.html#ae355c87c4bdf38fb6dcd5dc818012088">LeMP.MacroInfo.GetMacros()</a>, <a class="el" href="classLeMP_1_1MacroProcessor.html#a4288fb3010912dd8ac56a1082880dbaa">LeMP.MacroProcessor.IncrementTempCounter()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02">Loyc.LLPG.Macros.LLLPG_lexer()</a>, and <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>.</p>
 
 </div>
 </div>
@@ -301,7 +301,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['id',['Id',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a490aa6e856ccf208a054389e47ce0d06',1,'Loyc::Syntax::Lexing']]],
-  ['indefinitionname',['InDefinitionName',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a9239b329d3ac06416ebfb984c7d375c0',1,'Loyc::Ecs::EcsNodePrinter']]],
-  ['injectedtrivia',['InjectedTrivia',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ab3e89dbb0704ab342331b8760dbfbc23',1,'Loyc::Syntax']]],
-  ['inof',['InOf',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0ac073a517950215c2a7a059219129c46d',1,'Loyc::Ecs::EcsNodePrinter']]],
-  ['iscalltarget',['IsCallTarget',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a3049892795d62eadfd05ad49720c6e86',1,'Loyc::Ecs::EcsNodePrinter']]]
+  ['hasescapes',['HasEscapes',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4',1,'Loyc::Syntax']]],
+  ['hasinvalid6digitescape',['HasInvalid6DigitEscape',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa860d1f098ab0895628d6cc141a383bb8',1,'Loyc::Syntax']]],
+  ['haslongescape',['HasLongEscape',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa18110aa1122a2b61725655ba462bcea5',1,'Loyc::Syntax']]]
 ];

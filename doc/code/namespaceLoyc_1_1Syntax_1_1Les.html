@@ -95,9 +95,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Syntax.Les Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Contains classes related to <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> (LES), including the parser and printer (reachable through <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html" title="Alternate name for Les2LanguageService (will change to Les3LanguageService in the future)...">Loyc.Syntax.Les.LesLanguageService</a>). 
-<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -105,28 +102,28 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A custom literal is a normal number or string paired with a (typically unrecognized) type prefix or suffix. <a href="structLoyc_1_1Syntax_1_1Les_1_1CustomLiteral.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html">DefaultNodePrinterWriter</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. <a href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for token-printing helper classes. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. <a href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is implemented by helper objects that handle the low-level details of node printing. It is used by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a>. <a href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html">Les2LanguageService</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Value property provides easy access to the lexer, parser and printer for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> (LES). <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Value property provides easy access to the lexer, parser and printer for <a class="el" href="namespaceLoyc.html">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a> (LES). <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html">Les2Lexer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lexer for EC# source code. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html">Les2Parser</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses LES (<a class="el" href="namespaceLoyc.html">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html">Les2PrecedenceMap</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class's main job is to maintain a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is chosen by this class and cached for future reference. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html">Les2Printer</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree in LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) format. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a <a class="el" href="namespaceLoyc.html">Loyc</a> tree in LES (<a class="el" href="namespaceLoyc.html">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a>) format. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html">Les2PrinterOptions</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to control the way <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees are printed by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a>. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to control the way <a class="el" href="namespaceLoyc.html">Loyc</a> trees are printed by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a>. <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html">Les3LanguageService</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,7 +150,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. Has an protected <code>_indentLevel</code> field that is increased by Indent() and decreased by Dedent(). <a href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html">TokenExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240" title="Expresses an LES token as a string.">ToString(Token)</a> method to express an LES token as a string, for tokens that contain sufficient information to do so. <a href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240" title="Expresses a token as a string, using LES printers for identifiers and literals.">ToString(Token)</a> method to express an LES token as a string, for tokens that contain sufficient information to do so. <a href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -200,7 +197,7 @@ Enumerations</h2></td></tr>
 <b>SLComment</b> = TokenKind.Comment, 
 <br />
 &#160;&#160;<b>MLComment</b> = TokenKind.Comment + 1, 
-<b>Shebang</b> = TokenKind.Comment + 2, 
+<b>Shebang</b> = TokenKind.Comment + 255, 
 <b>Id</b> = TokenKind.Id, 
 <br />
 &#160;&#160;<b>BQId</b> = TokenKind.Id + 1, 
@@ -215,9 +212,9 @@ Enumerations</h2></td></tr>
 <b>At</b> = TokenKind.Operator + 5, 
 <b>Not</b> = TokenKind.Operator + 6, 
 <br />
-&#160;&#160;<b>BQOperator</b> = TokenKind.Operator + 7, 
-<b>Colon</b> = TokenKind.Operator + 8, 
+&#160;&#160;<b>Colon</b> = TokenKind.Operator + 8, 
 <b>SingleQuoteOp</b> = TokenKind.Operator + 9, 
+<b>BQOperator</b> = TokenKind.Operator + 255, 
 <br />
 &#160;&#160;<b>Comma</b> = TokenKind.Separator, 
 <b>Semicolon</b> = TokenKind.Separator + 1, 
@@ -237,9 +234,7 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="separator:afe2b2df7a1a16f56d226545d64951eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Contains classes related to <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> (LES), including the parser and printer (reachable through <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html" title="Alternate name for Les2LanguageService (will change to Les3LanguageService in the future)...">Loyc.Syntax.Les.LesLanguageService</a>).</p>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
 <a class="anchor" id="a2c4b0a54ca4ed26c90b34d0368746168"></a>
 <div class="memitem">
 <div class="memproto">
@@ -267,7 +262,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

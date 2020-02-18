@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Parses Enhanced C# code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (LNode), one per top-level statement. 
+<p>Parses Enhanced C# code into a sequence of <a class="el" href="namespaceLoyc.html">Loyc</a> trees (LNode), one per top-level statement. 
  <a href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/Ecs/Parser/EcsParser.cs'>/Main/Ecs/Parser/EcsParser.cs</a></li>
@@ -118,8 +118,8 @@ Inheritance diagram for Loyc.Ecs.Parser.EcsParser:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Parses Enhanced C# code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (LNode), one per top-level statement.</p>
-<p>You can use EcsLanguageService.Value with extension method ParsingService.Parse(IParsingService, UString, IMessageSink, ParsingMode, bool) to easily parse a text string (holding zero or more EC# statements) into a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree. One does not normally use this class directly. </p>
+<div class="textblock"><p>Parses Enhanced C# code into a sequence of <a class="el" href="namespaceLoyc.html">Loyc</a> trees (LNode), one per top-level statement.</p>
+<p>You can use EcsLanguageService.Value with extension method ParsingService.Parse(IParsingService, UString, IMessageSink, ParsingMode, bool) to easily parse a text string (holding zero or more EC# statements) into a <a class="el" href="namespaceLoyc.html">Loyc</a> tree. One does not normally use this class directly. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
@@ -138,7 +138,7 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a8f8e2457c1dc6d1201126e0f8a399d24"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f8e2457c1dc6d1201126e0f8a399d24"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TokensRoot</b><code> [get]</code></td></tr>
+IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TokensRoot</b><code> [get]</code></td></tr>
 <tr class="separator:a8f8e2457c1dc6d1201126e0f8a399d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bf2dce51475d6dfe401641f3a280fa8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1bf2dce51475d6dfe401641f3a280fa8"></a>
 sealed override int&#160;</td><td class="memItemRight" valign="bottom"><b>LA0Int</b><code> [get]</code></td></tr>
@@ -150,22 +150,22 @@ TT&#160;</td><td class="memItemRight" valign="bottom"><b>LA0</b><code> [get]</co
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae56f6c589c531199e07e6e6ecb583a7f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae56f6c589c531199e07e6e6ecb583a7f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>EcsParser</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EcsParser</b> (IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file, IMessageSink messageSink)</td></tr>
 <tr class="separator:ae56f6c589c531199e07e6e6ecb583a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a7154c29b3e383e3ecfe0ccb51e28d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a7154c29b3e383e3ecfe0ccb51e28d4"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file)</td></tr>
+virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file)</td></tr>
 <tr class="separator:a5a7154c29b3e383e3ecfe0ccb51e28d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd93d8e95ea2e5bda62dbcddd4e62674"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afd93d8e95ea2e5bda62dbcddd4e62674"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseExprs</b> (bool allowTrailingComma=false, bool allowUnassignedVarDecl=false)</td></tr>
+IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseExprs</b> (bool allowTrailingComma=false, bool allowUnassignedVarDecl=false)</td></tr>
 <tr class="separator:afd93d8e95ea2e5bda62dbcddd4e62674"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a70cf3e7301d43d4229e670e6605b55"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a70cf3e7301d43d4229e670e6605b55"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseStmtsGreedy</b> ()</td></tr>
+IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseStmtsGreedy</b> ()</td></tr>
 <tr class="separator:a3a70cf3e7301d43d4229e670e6605b55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65f8bf5e833f34545092c8b42f4b7852"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a65f8bf5e833f34545092c8b42f4b7852"></a>
 IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseStmtsLazy</b> ()</td></tr>
 <tr class="separator:a65f8bf5e833f34545092c8b42f4b7852"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3ea74e180100610c13cdf5307f168e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3ea74e180100610c13cdf5307f168e5"></a>
-<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CurrentSink</b> (bool incErrorCount)</td></tr>
+IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><b>CurrentSink</b> (bool incErrorCount)</td></tr>
 <tr class="separator:ad3ea74e180100610c13cdf5307f168e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea1dd841ecb11c80a28fd66d3e01dd47"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aea1dd841ecb11c80a28fd66d3e01dd47"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>DataType</b> (bool afterAsOrIs=false)</td></tr>
@@ -219,7 +219,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>GetTextPosition</b> (i
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Down</b> (int li)</td></tr>
 <tr class="separator:a4f5784b0532513ec95b90108b81edc2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c937e305686c2bc00992f13e011e1ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1c937e305686c2bc00992f13e011e1ac"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Down</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; children)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Down</b> (IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; children)</td></tr>
 <tr class="separator:a1c937e305686c2bc00992f13e011e1ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9505cfc395800ffc0e845d1f1e167f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9505cfc395800ffc0e845d1f1e167f3"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Up&lt; T &gt;</b> (T value)</td></tr>
@@ -249,10 +249,10 @@ Protected fields</h2></td></tr>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html">LNodeFactory</a>&#160;</td><td class="memItemRight" valign="bottom"><b>F</b></td></tr>
 <tr class="separator:aa1638c69533bb86e16892c8d51b7056c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fa0279b1745597918d7b211e19a36fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8fa0279b1745597918d7b211e19a36fc"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_tokensRoot</b></td></tr>
+IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_tokensRoot</b></td></tr>
 <tr class="separator:a8fa0279b1745597918d7b211e19a36fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f7e1c3ed672156361f7690852debe85"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3f7e1c3ed672156361f7690852debe85"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_tokens</b></td></tr>
+IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_tokens</b></td></tr>
 <tr class="separator:a3f7e1c3ed672156361f7690852debe85"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c85b14b3dd7344c5d86a819f8b7e5d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1c85b14b3dd7344c5d86a819f8b7e5d2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_startTextIndex</b> = 0</td></tr>
@@ -277,7 +277,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_startTextIndex</b> = 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:11 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

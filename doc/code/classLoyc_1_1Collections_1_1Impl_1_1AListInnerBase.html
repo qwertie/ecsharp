@@ -119,37 +119,32 @@ Inheritance diagram for Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;:</div
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Internal implementation class. Shared base class of internal nodes for AList&lt;T&gt;, SparseAList&lt;T&gt;, BList&lt;T&gt;, BMultiMap&lt;K,V&gt; and BDictionary&lt;K,V&gt;.</p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Nested classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_1_1Entry.html">Entry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a2c0040d972b27728fb6a7f024140c055"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c0040d972b27728fb6a7f024140c055"></a>
-const int&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultMaxNodeSize</b> = 32</td></tr>
+const int&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultMaxNodeSize</b> = 64</td></tr>
 <tr class="separator:a2c0040d972b27728fb6a7f024140c055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"></a>
+override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsLeaf</b> =&gt; false</td></tr>
+<tr class="separator:a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cd2cec34b93b059951abf39e5dfe698"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7cd2cec34b93b059951abf39e5dfe698"></a>
+sealed override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsFullLeaf</b> =&gt; false</td></tr>
+<tr class="separator:a7cd2cec34b93b059951abf39e5dfe698"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a455150f090c66887cc11155a045f986a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a455150f090c66887cc11155a045f986a"></a>
+override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsUndersized</b> =&gt; (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aa7efb1f66090765df0594ddeab39fbbb">_childCount</a> &lt;&lt; 1) &lt; <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a9d2b4503ed721b25b806622a79e8edc6">_maxNodeSize</a></td></tr>
+<tr class="separator:a455150f090c66887cc11155a045f986a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f0d327b5add1f72ed39c1f9d03759a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f0d327b5add1f72ed39c1f9d03759a3"></a>
+sealed override int&#160;</td><td class="memItemRight" valign="bottom"><b>LocalCount</b> =&gt; <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aa7efb1f66090765df0594ddeab39fbbb">_childCount</a></td></tr>
+<tr class="separator:a4f0d327b5add1f72ed39c1f9d03759a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"></a>
-override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsLeaf</b><code> [get]</code></td></tr>
-<tr class="separator:a0d4fce5bf9a86a36b7c5ef1cfe6b5a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f0d327b5add1f72ed39c1f9d03759a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f0d327b5add1f72ed39c1f9d03759a3"></a>
-sealed override int&#160;</td><td class="memItemRight" valign="bottom"><b>LocalCount</b><code> [get]</code></td></tr>
-<tr class="separator:a4f0d327b5add1f72ed39c1f9d03759a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35c32c8d9bc1cc93aa4d8877e4801883"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35c32c8d9bc1cc93aa4d8877e4801883"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>MaxNodeSize</b><code> [get, set]</code></td></tr>
 <tr class="separator:a35c32c8d9bc1cc93aa4d8877e4801883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6eab4afe30269093c9b2d1746819b144"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6eab4afe30269093c9b2d1746819b144"></a>
 sealed override uint&#160;</td><td class="memItemRight" valign="bottom"><b>TotalCount</b><code> [get]</code></td></tr>
 <tr class="separator:a6eab4afe30269093c9b2d1746819b144"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7cd2cec34b93b059951abf39e5dfe698"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7cd2cec34b93b059951abf39e5dfe698"></a>
-sealed override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsFullLeaf</b><code> [get]</code></td></tr>
-<tr class="separator:a7cd2cec34b93b059951abf39e5dfe698"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a455150f090c66887cc11155a045f986a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a455150f090c66887cc11155a045f986a"></a>
-override bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsUndersized</b><code> [get]</code></td></tr>
-<tr class="separator:a455150f090c66887cc11155a045f986a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42b1345e68d546e1370c61715b776e76"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a42b1345e68d546e1370c61715b776e76"></a>
 override T&#160;</td><td class="memItemRight" valign="bottom"><b>this[uint index]</b><code> [get]</code></td></tr>
 <tr class="separator:a42b1345e68d546e1370c61715b776e76"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -184,6 +179,9 @@ abstract int&#160;</td><td class="memItemRight" valign="bottom"><b>CapacityLeft<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:ab28165f13ac61326d640b67c3d080ad6"><td class="memItemLeft" align="right" valign="top">override long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">CountSizeInBytes</a> (int sizeOfT, int sizeOfK)</td></tr>
+<tr class="memdesc:ab28165f13ac61326d640b67c3d080ad6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tallies the memory use of the current node and all child nodes, with the assumption that each object has a header size of two words (e.g. <code>class Foo {}</code> has a size of 16 bytes per Foo object in a 64-bit process), and arrays have a header size of three words. <a href="#ab28165f13ac61326d640b67c3d080ad6">More...</a><br /></td></tr>
+<tr class="separator:ab28165f13ac61326d640b67c3d080ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a466157b7aecf3ba656aaad1e226f9227"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a466157b7aecf3ba656aaad1e226f9227"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AListInnerBase</b> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; left, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; right, int maxNodeSize)</td></tr>
 <tr class="separator:a466157b7aecf3ba656aaad1e226f9227"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -221,7 +219,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (<a class=
 <tr class="memitem:a5132343b0095131a391bd3e26be790b2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a5132343b0095131a391bd3e26be790b2">Insert</a> (uint index, T item, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a5132343b0095131a391bd3e26be790b2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the specified index. This method can only be called for ALists, since other tree types don't allow insertion at a specific index. <a href="#a5132343b0095131a391bd3e26be790b2">More...</a><br /></td></tr>
 <tr class="separator:a5132343b0095131a391bd3e26be790b2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
+<tr class="memitem:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aada73c62defe2d4c45dab0f6a5d81a4d inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aada73c62defe2d4c45dab0f6a5d81a4d">DetachedClone</a> ()</td></tr>
@@ -245,12 +243,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a1e14a00fa76f6a31ddc35d6d49224268"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e14a00fa76f6a31ddc35d6d49224268"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AListInnerBase</b> (<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html">AListInnerBase</a>&lt; K, T &gt; original, uint index, uint count, <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; list)</td></tr>
 <tr class="separator:a1e14a00fa76f6a31ddc35d6d49224268"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03e03505842eea986a2d6f011df5b32d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a03e03505842eea986a2d6f011df5b32d"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrepareToInsert</b> (int i, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
-<tr class="separator:a03e03505842eea986a2d6f011df5b32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a2b2c0298b213c9d55c00cf926bb9d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a2b2c0298b213c9d55c00cf926bb9d2"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryToShiftAnItemToSiblingOfLeaf</b> (int i, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
-<tr class="separator:a9a2b2c0298b213c9d55c00cf926bb9d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60c93e5bc15e587d0809bb6f6c66aa40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60c93e5bc15e587d0809bb6f6c66aa40"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>PrepareToInsert</b> (int i, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
+<tr class="separator:a60c93e5bc15e587d0809bb6f6c66aa40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6d09069c14353b77d0544be2ae4f50e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6d09069c14353b77d0544be2ae4f50e"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryToShiftItemsToSiblings</b> (int i, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
+<tr class="separator:ad6d09069c14353b77d0544be2ae4f50e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a735666d7c291bc652f377279d91e7381"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html">AListInnerBase</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#a735666d7c291bc652f377279d91e7381">HandleChildSplit</a> (int i, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitLeft, ref <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a735666d7c291bc652f377279d91e7381"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a slot after _children[i], increasing _childCount and replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'tob' of the replacement, and checks whether this node itself needs to split. <a href="#a735666d7c291bc652f377279d91e7381">More...</a><br /></td></tr>
 <tr class="separator:a735666d7c291bc652f377279d91e7381"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -285,15 +283,12 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>HandleUndersi
 <tr class="memitem:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a67d4aeddc04cdb8052e9e09eb3fd4b87">HasListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree)</td></tr>
 <tr class="memdesc:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event. <a href="#a67d4aeddc04cdb8052e9e09eb3fd4b87">More...</a><br /></td></tr>
 <tr class="separator:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt; listChangeInfo)</td></tr>
+<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, ListChangeInfo&lt; T &gt; listChangeInfo)</td></tr>
 <tr class="memdesc:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event properly. <a href="#adc8d3a8df0d066e8bfa632203f001d65">More...</a><br /></td></tr>
 <tr class="separator:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
-<tr class="memitem:ae49cc2cee7ea0fdd768eaba12f34d948"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_1_1Entry.html">Entry</a>[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ae49cc2cee7ea0fdd768eaba12f34d948">_children</a></td></tr>
-<tr class="memdesc:ae49cc2cee7ea0fdd768eaba12f34d948"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of child nodes. Empty children are null. <a href="#ae49cc2cee7ea0fdd768eaba12f34d948">More...</a><br /></td></tr>
-<tr class="separator:ae49cc2cee7ea0fdd768eaba12f34d948"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a630b89a73d84c127a3a8cfae0f18c8dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a630b89a73d84c127a3a8cfae0f18c8dc"></a>
 const int&#160;</td><td class="memItemRight" valign="bottom"><b>MaxMaxNodeSize</b> = 0xFF</td></tr>
 <tr class="separator:a630b89a73d84c127a3a8cfae0f18c8dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -304,9 +299,9 @@ const uint&#160;</td><td class="memItemRight" valign="bottom"><b>FrozenBit</b> =
 <tr class="memitem:a9d2b4503ed721b25b806622a79e8edc6 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">ushort&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a9d2b4503ed721b25b806622a79e8edc6">_maxNodeSize</a></td></tr>
 <tr class="memdesc:a9d2b4503ed721b25b806622a79e8edc6 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of slots in this node <a href="#a9d2b4503ed721b25b806622a79e8edc6">More...</a><br /></td></tr>
 <tr class="separator:a9d2b4503ed721b25b806622a79e8edc6 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6995d02e3d7f430f2a21bfd47bd6d0e3 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a6995d02e3d7f430f2a21bfd47bd6d0e3">_isFrozen</a></td></tr>
-<tr class="memdesc:a6995d02e3d7f430f2a21bfd47bd6d0e3 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the node is knowingly cloned an therefore frozen. <a href="#a6995d02e3d7f430f2a21bfd47bd6d0e3">More...</a><br /></td></tr>
-<tr class="separator:a6995d02e3d7f430f2a21bfd47bd6d0e3 inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a452a5b2c8b6ef855735614ccb8a239ff inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a452a5b2c8b6ef855735614ccb8a239ff">_isFrozen</a></td></tr>
+<tr class="memdesc:a452a5b2c8b6ef855735614ccb8a239ff inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the node is knowingly cloned an therefore frozen. <a href="#a452a5b2c8b6ef855735614ccb8a239ff">More...</a><br /></td></tr>
+<tr class="separator:a452a5b2c8b6ef855735614ccb8a239ff inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7efb1f66090765df0594ddeab39fbbb inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aa7efb1f66090765df0594ddeab39fbbb">_childCount</a></td></tr>
 <tr class="memdesc:aa7efb1f66090765df0594ddeab39fbbb inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of children, if this is an inner node. <a href="#aa7efb1f66090765df0594ddeab39fbbb">More...</a><br /></td></tr>
 <tr class="separator:aa7efb1f66090765df0594ddeab39fbbb inherit pro_attribs_classLoyc_1_1Collections_1_1Impl_1_1AListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -347,6 +342,53 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Performs a binary search for an index.</p>
 <p>Optimized. Fastest for power-of-two node sizes. If index is out of range, returns the highest valid index.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html#ab28165f13ac61326d640b67c3d080ad6">Loyc.Collections.Impl.AListInnerBase&lt; int, T &gt;.CountSizeInBytes()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab28165f13ac61326d640b67c3d080ad6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">override long <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html">Loyc.Collections.Impl.AListInnerBase</a>&lt; K, T &gt;.CountSizeInBytes </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sizeOfT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sizeOfK</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tallies the memory use of the current node and all child nodes, with the assumption that each object has a header size of two words (e.g. <code>class Foo {}</code> has a size of 16 bytes per Foo object in a 64-bit process), and arrays have a header size of three words.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sizeOfT</td><td>The size to attribute to a slot of type T</td></tr>
+    <tr><td class="paramname">sizeOfK</td><td>The size to attribute to a slot of type K</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#aed1a273d40c742f1f124146280f2940a">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -720,35 +762,11 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="ae49cc2cee7ea0fdd768eaba12f34d948"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_1_1Entry.html">Entry</a> [] <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase.html">Loyc.Collections.Impl.AListInnerBase</a>&lt; K, T &gt;._children</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>List of child nodes. Empty children are null.</p>
-<p>*** TODO ***: don't increase _children size by 4. Increase it exponentially </p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

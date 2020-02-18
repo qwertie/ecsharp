@@ -133,7 +133,7 @@ InternalSet&lt;T&gt;'s enumerator allows you to change or delete the current val
 InternalSet&lt;T&gt; was inspired by Clojure's PersistentHashMap, or rather by Karl Krukow's blog posts about PersistentHashMap**, and so it is designed so that you can use it as a fully persistent set, which means that you can keep a copy of every old version of the set that has ever existed, if you want. The "+" and "-" operators (provided on the wrapper classes, not on InternalSet&lt;T&gt; itself) allow you to add or remove a single item without modifying the original set. There is a substantial performance penalty for overusing these operators, but these operators are cheaper than duplicating a HashSet&lt;T&gt; every time you modify it. </li>
 </ul>
 <ul>
-<li>After developing AList&lt;T&gt; and <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees, I realized that freezable classes are error-prone, because it is sometimes difficult for a developer to figure out (before run-time) whether a given object could be frozen. If an object is frozen and you modify it, the compiler will never detect your mistake in advance and warn you. The collections based on InternalSet&lt;T&gt; fix this problem by having separate data types for frozen and unfrozen (a.k.a. immutable and mutable) collections.<br />
+<li>After developing AList&lt;T&gt; and <a class="el" href="namespaceLoyc.html">Loyc</a> trees, I realized that freezable classes are error-prone, because it is sometimes difficult for a developer to figure out (before run-time) whether a given object could be frozen. If an object is frozen and you modify it, the compiler will never detect your mistake in advance and warn you. The collections based on InternalSet&lt;T&gt; fix this problem by having separate data types for frozen and unfrozen (a.k.a. immutable and mutable) collections.<br />
  ** <a href="http://blog.higher-order.net/2010/08/16/assoc-and-clojures-persistenthashmap-part-ii/">http://blog.higher-order.net/2010/08/16/assoc-and-clojures-persistenthashmap-part-ii/</a> </li>
 </ul>
 <p><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html" title="A hash-trie data structure for use inside other data structures.">InternalSet</a> is not efficient for Ts that are expensive to compare; unlike standard .NET collections, this data structure does not store the hashcode of each item inside the collection. The memory saved by not storing the hashcode compensates for the extra memory that <code><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html" title="A hash-trie data structure for use inside other data structures.">InternalSet</a></code> tends to require due to its structure. </p>
@@ -274,8 +274,8 @@ Public static fields</h2></td></tr>
 <tr class="memitem:aa9a8dcb8bdd7d82f867fa3263226cc30"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html">InternalSet</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aa9a8dcb8bdd7d82f867fa3263226cc30">Empty</a> = new <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html">InternalSet</a>&lt;T&gt; { _root = FrozenEmptyRoot() }</td></tr>
 <tr class="memdesc:aa9a8dcb8bdd7d82f867fa3263226cc30"><td class="mdescLeft">&#160;</td><td class="mdescRight">An empty set. <a href="#aa9a8dcb8bdd7d82f867fa3263226cc30">More...</a><br /></td></tr>
 <tr class="separator:aa9a8dcb8bdd7d82f867fa3263226cc30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac7d404cb5692f28823c7688bbb921eb"><td class="memItemLeft" align="right" valign="top">static readonly IEqualityComparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aac7d404cb5692f28823c7688bbb921eb">DefaultComparer</a> = typeof(<a class="el" href="interfaceLoyc_1_1IReferenceEquatable.html">IReferenceEquatable</a>).IsAssignableFrom(typeof(T)) ? null : EqualityComparer&lt;T&gt;.Default</td></tr>
-<tr class="memdesc:aac7d404cb5692f28823c7688bbb921eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is EqualityComparer&lt;T&gt;.Default, or null if T implements <a class="el" href="interfaceLoyc_1_1IReferenceEquatable.html" title="This is a tag which indicates that objects of this type are unique; specifically, any two different o...">IReferenceEquatable</a>. <a href="#aac7d404cb5692f28823c7688bbb921eb">More...</a><br /></td></tr>
+<tr class="memitem:aac7d404cb5692f28823c7688bbb921eb"><td class="memItemLeft" align="right" valign="top">static readonly IEqualityComparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aac7d404cb5692f28823c7688bbb921eb">DefaultComparer</a> = typeof(IReferenceEquatable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer&lt;T&gt;.Default</td></tr>
+<tr class="memdesc:aac7d404cb5692f28823c7688bbb921eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is EqualityComparer&lt;T&gt;.Default, or null if T implements IReferenceEquatable. <a href="#aac7d404cb5692f28823c7688bbb921eb">More...</a><br /></td></tr>
 <tr class="separator:aac7d404cb5692f28823c7688bbb921eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a285f51e8dc037eccf22b594cd887dd8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a285f51e8dc037eccf22b594cd887dd8a"></a>
 static readonly OnFoundExisting&#160;</td><td class="memItemRight" valign="bottom"><b>AddIfNotPresent</b> = _IgnoreExisting_</td></tr>
@@ -511,6 +511,8 @@ static <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet_1_1E
 
 <p>Tries to add an item to the set, and retrieves the existing item if present.</p>
 <dl class="section return"><dt>Returns</dt><dd>true if the item was added, false if it was already present.</dd></dl>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Map.html#a64a221024f9722efb59fb948034a2cd9">Loyc.Collections.Map&lt; object, Loyc.Syntax.Precedence &gt;.Map()</a>.</p>
 
 </div>
 </div>
@@ -1290,7 +1292,7 @@ When the root node is frozen and you modify the set or call this method </li>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly IEqualityComparer&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html">Loyc.Collections.Impl.InternalSet</a>&lt; T &gt;.DefaultComparer = typeof(<a class="el" href="interfaceLoyc_1_1IReferenceEquatable.html">IReferenceEquatable</a>).IsAssignableFrom(typeof(T)) ? null : EqualityComparer&lt;T&gt;.Default</td>
+          <td class="memname">readonly IEqualityComparer&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html">Loyc.Collections.Impl.InternalSet</a>&lt; T &gt;.DefaultComparer = typeof(IReferenceEquatable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer&lt;T&gt;.Default</td>
         </tr>
       </table>
   </td>
@@ -1300,7 +1302,7 @@ When the root node is frozen and you modify the set or call this method </li>
 </table>
 </div><div class="memdoc">
 
-<p>This is EqualityComparer&lt;T&gt;.Default, or null if T implements <a class="el" href="interfaceLoyc_1_1IReferenceEquatable.html" title="This is a tag which indicates that objects of this type are unique; specifically, any two different o...">IReferenceEquatable</a>.</p>
+<p>This is EqualityComparer&lt;T&gt;.Default, or null if T implements IReferenceEquatable.</p>
 
 </div>
 </div>
@@ -1331,7 +1333,7 @@ When the root node is frozen and you modify the set or call this method </li>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

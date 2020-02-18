@@ -2,6 +2,7 @@ var searchData=
 [
   ['match',['Match',['../classLoyc_1_1LLParserGenerator_1_1Gate.html#a74a15834ec248fd1b1fb1565f22bd526',1,'Loyc::LLParserGenerator::Gate']]],
   ['matchcast',['MatchCast',['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#adb0d4a6bb3ef9a70bfeabb4d7ffca49f',1,'Loyc::LLParserGenerator::GeneralCodeGenHelper']]],
+  ['matches',['Matches',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a4741f5dc76ed68f5ebfe7d46c7b66100',1,'Loyc::Syntax::CodeSymbols']]],
   ['maxdepthnodes',['MaxDepthNodes',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSetStats.html#a17b159658ded678758107f69b224d8b2',1,'Loyc::Collections::Impl::InternalSetStats']]],
   ['missing',['Missing',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338',1,'Loyc.Syntax.CodeSymbols.Missing()'],['../classLoyc_1_1Syntax_1_1LNode.html#aa4b2c33e3c0b733dc9664093608338e9',1,'Loyc.Syntax.LNode.Missing()']]],
   ['mod',['Mod',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a6789dccc54facf2cafd3b5b853bf5cda',1,'Loyc::Syntax::CodeSymbols']]],

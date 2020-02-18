@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An implementation of <a class="el" href="interfaceLoyc_1_1ITags.html" title="Interface for an object that can have &quot;tags&quot; attached, which are arbitrary objects reached through a ...">ITags</a> designed for AstNode. 
+<p>An implementation of ITags designed for AstNode. 
  <a href="classLoyc_1_1Utilities_1_1TagsInWList.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Utilities/TagsInWList.cs'>/Core/Loyc.Utilities/TagsInWList.cs</a></li>
@@ -109,67 +109,62 @@ Inheritance diagram for Loyc.Utilities.TagsInWList&lt; ValueT &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Utilities_1_1TagsInWList.png" usemap="#Loyc.Utilities.TagsInWList_3C_20ValueT_20_3E_map" alt=""/>
   <map id="Loyc.Utilities.TagsInWList_3C_20ValueT_20_3E_map" name="Loyc.Utilities.TagsInWList&lt; ValueT &gt;_map">
-<area href="interfaceLoyc_1_1ITags.html" alt="Loyc.ITags&lt; ValueT &gt;" shape="rect" coords="634,0,941,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An implementation of <a class="el" href="interfaceLoyc_1_1ITags.html" title="Interface for an object that can have &quot;tags&quot; attached, which are arbitrary objects reached through a ...">ITags</a> designed for AstNode.</p>
+<div class="textblock"><p>An implementation of ITags designed for AstNode.</p>
 <p>It is supposed to be possible to clone AstNode quickly; to support extra tags, we need to be able to clone the tags quickly too, so it makes sense to store them in a WList. To make cloning as quick as possible, we derive from WListProtected. To optimize access to tags, we use the UserByte of WListProtected to hold the index of the last tag that was used. This ensures tags can be accessed quickly by code that only uses a single tag. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a32504134fa603d4044f0d03904f05c77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32504134fa603d4044f0d03904f05c77"></a>
-IDictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, ValueT &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Tags</b><code> [get]</code></td></tr>
+IDictionary&lt; Symbol, ValueT &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Tags</b><code> [get]</code></td></tr>
 <tr class="separator:a32504134fa603d4044f0d03904f05c77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1a4ab2c8183d3779e3ea8c83a242d37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1a4ab2c8183d3779e3ea8c83a242d37"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>TagCount</b><code> [get]</code></td></tr>
 <tr class="separator:ab1a4ab2c8183d3779e3ea8c83a242d37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1ITags"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1ITags')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1ITags.html">Loyc.ITags&lt; ValueT &gt;</a></td></tr>
-<tr class="memitem:a7f56c4958861dc5605c0b526033dfb7e inherit properties_interfaceLoyc_1_1ITags"><td class="memItemLeft" align="right" valign="top">IDictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1ITags.html#a7f56c4958861dc5605c0b526033dfb7e">Tags</a><code> [get]</code></td></tr>
-<tr class="memdesc:a7f56c4958861dc5605c0b526033dfb7e inherit properties_interfaceLoyc_1_1ITags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a dictionary that can be used to store additional state beyond the standard content of the object.  <a href="#a7f56c4958861dc5605c0b526033dfb7e">More...</a><br /></td></tr>
-<tr class="separator:a7f56c4958861dc5605c0b526033dfb7e inherit properties_interfaceLoyc_1_1ITags"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a25f3068937513ae6c0c822431c79038b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25f3068937513ae6c0c822431c79038b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TagsInWList</b> (<a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, ValueT &gt;&gt; original)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TagsInWList</b> (<a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; KeyValuePair&lt; Symbol, ValueT &gt;&gt; original)</td></tr>
 <tr class="separator:a25f3068937513ae6c0c822431c79038b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af75c89955b37cc036a5bdf9cf758ac3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af75c89955b37cc036a5bdf9cf758ac3e"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, ValueT &gt; &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>TagEnumerator</b> ()</td></tr>
+<a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; KeyValuePair&lt; Symbol, ValueT &gt; &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>TagEnumerator</b> ()</td></tr>
 <tr class="separator:af75c89955b37cc036a5bdf9cf758ac3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bb78ba3f820a48a1a760d9fd7ab9c8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bb78ba3f820a48a1a760d9fd7ab9c8a"></a>
 ValueT&#160;</td><td class="memItemRight" valign="bottom"><b>GetTag</b> (string key)</td></tr>
 <tr class="separator:a6bb78ba3f820a48a1a760d9fd7ab9c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a316aeb36f34c44fa9a83e4f0f86f631b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a316aeb36f34c44fa9a83e4f0f86f631b"></a>
-ValueT&#160;</td><td class="memItemRight" valign="bottom"><b>GetTag</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> key)</td></tr>
+ValueT&#160;</td><td class="memItemRight" valign="bottom"><b>GetTag</b> (Symbol key)</td></tr>
 <tr class="separator:a316aeb36f34c44fa9a83e4f0f86f631b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae675bcf27bed6ecf7052fb832805ed5c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae675bcf27bed6ecf7052fb832805ed5c"></a>
-ValueT&#160;</td><td class="memItemRight" valign="bottom"><b>GetTag</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> key, ValueT defaultValue)</td></tr>
+ValueT&#160;</td><td class="memItemRight" valign="bottom"><b>GetTag</b> (Symbol key, ValueT defaultValue)</td></tr>
 <tr class="separator:ae675bcf27bed6ecf7052fb832805ed5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adcfcf75c403e8db242f6415e2dc9fd97"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adcfcf75c403e8db242f6415e2dc9fd97"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetTag</b> (string key, ValueT val)</td></tr>
 <tr class="separator:adcfcf75c403e8db242f6415e2dc9fd97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54794d8c6849f1b4ae90a3bf873f91f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54794d8c6849f1b4ae90a3bf873f91f9"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetTag</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> key, ValueT val)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetTag</b> (Symbol key, ValueT val)</td></tr>
 <tr class="separator:a54794d8c6849f1b4ae90a3bf873f91f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5716ba4c4cddd2fbb20781b6f8502847"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5716ba4c4cddd2fbb20781b6f8502847"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveTag</b> (string key)</td></tr>
 <tr class="separator:a5716ba4c4cddd2fbb20781b6f8502847"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a413b566db943633f97db1cf1547fc3f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a413b566db943633f97db1cf1547fc3f8"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveTag</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> key)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveTag</b> (Symbol key)</td></tr>
 <tr class="separator:a413b566db943633f97db1cf1547fc3f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefcb576ad361afab0031dff6d9df8ff9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefcb576ad361afab0031dff6d9df8ff9"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasTag</b> (string key)</td></tr>
 <tr class="separator:aefcb576ad361afab0031dff6d9df8ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f0aea4a968b1e6ea0ec64c9695e07c5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f0aea4a968b1e6ea0ec64c9695e07c5"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasTag</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> key)</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasTag</b> (Symbol key)</td></tr>
 <tr class="separator:a6f0aea4a968b1e6ea0ec64c9695e07c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

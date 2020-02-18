@@ -2,10 +2,8 @@ var searchData=
 [
   ['savecomments',['SaveComments',['../classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a2083ec9116d7e605176e6e27ff1ef2f9',1,'Loyc::Ecs::Parser::EcsPreprocessor']]],
   ['scopedproperties',['ScopedProperties',['../interfaceLeMP_1_1IMacroContext.html#a12883b70ba50042d8fbda2e89e43b4f5',1,'LeMP::IMacroContext']]],
-  ['significantbits',['SignificantBits',['../interfaceLoyc_1_1Math_1_1INumTraits.html#a3e3a198315454063cfdc77c2359021dd',1,'Loyc::Math::INumTraits']]],
   ['sink',['Sink',['../interfaceLeMP_1_1IMacroContext.html#a8419c79777d647e75169adb9a3968ee8',1,'LeMP.IMacroContext.Sink()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c',1,'Loyc.LLParserGenerator.LLParserGenerator.Sink()']]],
   ['size',['Size',['../classLoyc_1_1LLParserGenerator_1_1IntSet.html#a1742c28481702275708b86a731985dd3',1,'Loyc::LLParserGenerator::IntSet']]],
-  ['slicestart',['SliceStart',['../interfaceLoyc_1_1Collections_1_1IBRangeEx.html#a1a7afbb1e9a5272223ab07ace44d9ae9',1,'Loyc::Collections::IBRangeEx']]],
   ['sortedtrivia',['SortedTrivia',['../classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ab5a7dddee267170e607cc8118128245e',1,'Loyc::Syntax::AbstractTriviaInjector']]],
   ['source',['Source',['../classLoyc_1_1Syntax_1_1LNode.html#a002045914ce7a51f2a2b7323ac671ac0',1,'Loyc::Syntax::LNode']]],
   ['sourcefile',['SourceFile',['../interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a173348e6c8aacad1ba2d932d592f3584',1,'Loyc.Syntax.Lexing.ILexer.SourceFile()'],['../classLoyc_1_1Syntax_1_1BaseParser.html#a960dc7787d9eccb923a01b2c30d5f3ed',1,'Loyc.Syntax.BaseParser.SourceFile()']]],
@@ -19,5 +17,5 @@ var searchData=
   ['spaceoptions',['SpaceOptions',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a81213a1b92b8f685ac950d95d680af26',1,'Loyc::Ecs::EcsPrinterOptions']]],
   ['spacespertab',['SpacesPerTab',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a69f7cb421781a7a9bc689230568c2cbe',1,'Loyc::Syntax::Lexing::BaseILexer']]],
   ['startindex',['StartIndex',['../interfaceLoyc_1_1Syntax_1_1Lexing_1_1ISimpleToken.html#af67c09a6dacad0d72915589ba2bf6c6d',1,'Loyc::Syntax::Lexing::ISimpleToken']]],
-  ['style',['Style',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9ca5d5ce34192300dd9005f6116aaac8',1,'Loyc.Syntax.Lexing.Token.Style()'],['../interfaceLoyc_1_1Syntax_1_1ILNode.html#aa89e114fb6f473a26e1bed876ceff9a6',1,'Loyc.Syntax.ILNode.Style()'],['../classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688',1,'Loyc.Syntax.LNode.Style()']]]
+  ['style',['Style',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9ca5d5ce34192300dd9005f6116aaac8',1,'Loyc.Syntax.Lexing.Token.Style()'],['../classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688',1,'Loyc.Syntax.LNode.Style()']]]
 ];

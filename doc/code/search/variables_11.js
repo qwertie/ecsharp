@@ -5,7 +5,6 @@ var searchData=
   ['shlassign',['ShlAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aaf4656b6c81478c9144dbc4fa02d71fe',1,'Loyc::Syntax::CodeSymbols']]],
   ['shr',['Shr',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a445f8ac03a658ff1216bf849ea1629d3',1,'Loyc::Syntax::CodeSymbols']]],
   ['shrassign',['ShrAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a53ceabb8cf122d77f0f55fa18010f9c1',1,'Loyc::Syntax::CodeSymbols']]],
-  ['sizechange',['SizeChange',['../structLoyc_1_1Collections_1_1ListChangeInfo.html#a650e767dbf7ce3c2a9116e06d9a76882',1,'Loyc::Collections::ListChangeInfo']]],
   ['sizeof',['Sizeof',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a8d618c971fc8e9db5a449386166d57d2',1,'Loyc::Syntax::CodeSymbols']]],
   ['skipvalueparsing',['SkipValueParsing',['../classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html#ab1eec652106b806bba70adcae1302cfb',1,'Loyc::Syntax::Les::Les2Lexer']]],
   ['spaceafterprefixstopprecedence',['SpaceAfterPrefixStopPrecedence',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a3ba38e7ee3c1a643ed26f84ff36c2429',1,'Loyc.Syntax.Les.Les2PrinterOptions.SpaceAfterPrefixStopPrecedence()'],['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aa3dbdb1e2f40be28eba2ca190f5caa2e',1,'Loyc.Syntax.Les.Les3PrinterOptions.SpaceAfterPrefixStopPrecedence()']]],
@@ -16,9 +15,9 @@ var searchData=
   ['startexpr',['StartExpr',['../classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html#a248742059e827cb8f527bb3bb0251c4c',1,'Loyc::Ecs::Parser::EcsParser']]],
   ['startindex',['StartIndex',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165',1,'Loyc::Syntax::Lexing::Token']]],
   ['startstmt',['StartStmt',['../classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html#aedb62ff4f93856ff5bf509856de6ba38',1,'Loyc::Syntax::Les::Les2Printer']]],
-  ['statements',['Statements',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a0431446a55fe87f7c962ac86e95fe21a',1,'Loyc::Syntax::ParsingMode']]],
   ['struct',['Struct',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9dc04ea4d1c431a4c2f50a76940b9a71',1,'Loyc::Syntax::CodeSymbols']]],
   ['sub',['Sub',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1394fa1522163796daf48e6920132e25',1,'Loyc::Syntax::CodeSymbols']]],
   ['subassign',['SubAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#afae7d17fc911681aab3d3ca845e0ba30',1,'Loyc::Syntax::CodeSymbols']]],
-  ['switch',['Switch',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#afddb6f44849db45db0f8ccc61d5c99a3',1,'Loyc::Syntax::CodeSymbols']]]
+  ['switchexpr',['SwitchExpr',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a43a3b8205b7f431460b25178662c4a9f',1,'Loyc::Syntax::CodeSymbols']]],
+  ['switchstmt',['SwitchStmt',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#af9a28cbf7276d880c3d68d3fbf29d296',1,'Loyc::Syntax::CodeSymbols']]]
 ];

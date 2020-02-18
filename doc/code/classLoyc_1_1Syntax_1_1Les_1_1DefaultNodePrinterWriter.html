@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. 
+<p>Base class for token-printing helper classes. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/Les2PrinterWriter.cs'>/Core/Loyc.Syntax/LES/Les2PrinterWriter.cs</a></li>
@@ -116,7 +116,7 @@ Inheritance diagram for Loyc.Syntax.Les.DefaultNodePrinterWriter:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Printer.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">Les2Printer</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Encapsulates the code for printing an LNode to EC# source code.">Ecs.EcsNodePrinter</a>, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>.</p>
+<div class="textblock"><p>Base class for token-printing helper classes. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -176,9 +176,9 @@ override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:a8f0c042088f41dcd10eed4bacfe2a958"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f0c042088f41dcd10eed4bacfe2a958"></a>
 override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Newline</b> (bool pending=false)</td></tr>
 <tr class="separator:a8f0c042088f41dcd10eed4bacfe2a958"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a678cec8bb9514b7a0f0ea0e4efc90cd3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a678cec8bb9514b7a0f0ea0e4efc90cd3"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> ()</td></tr>
-<tr class="separator:a678cec8bb9514b7a0f0ea0e4efc90cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2adf033b856a9e944aaf95c6cb904436"><td class="memItemLeft" align="right" valign="top">override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#a2adf033b856a9e944aaf95c6cb904436">Reset</a> ()</td></tr>
+<tr class="memdesc:a2adf033b856a9e944aaf95c6cb904436"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when a new, separate printing operation begins. <a href="#a2adf033b856a9e944aaf95c6cb904436">More...</a><br /></td></tr>
+<tr class="separator:a2adf033b856a9e944aaf95c6cb904436"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html">Loyc.Syntax.Les.NodePrinterWriterBase</a></td></tr>
 <tr class="memitem:a3b764a60ee09797f0538351b3d5d24a2 inherit pub_methods_classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b764a60ee09797f0538351b3d5d24a2"></a>
 virtual int&#160;</td><td class="memItemRight" valign="bottom"><b>Indent</b> ()</td></tr>
@@ -239,11 +239,39 @@ TextWriter&#160;</td><td class="memItemRight" valign="bottom"><b>_out</b></td></
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_indentLevel</b> = 0</td></tr>
 <tr class="separator:a540ced4cfbc3469b20d066848d4ee1ee inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a2adf033b856a9e944aaf95c6cb904436"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">override <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Syntax.Les.DefaultNodePrinterWriter.Reset </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called when a new, separate printing operation begins.</p>
+
+<p>Implements <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html#a38941194003ff3fa06a0797ee9b94c38">Loyc.Syntax.Les.NodePrinterWriterBase</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -110,10 +110,6 @@ Inheritance diagram for Loyc.Collections.MSet&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1MSet.png" usemap="#Loyc.Collections.MSet_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.MSet_3C_20T_20_3E_map" name="Loyc.Collections.MSet&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1ISetImm.html" alt="Loyc.Collections.ISetImm&lt; T &gt;" shape="rect" coords="0,56,283,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface combines the original ICollection&lt;T&gt; with IReadOnlyCollection&lt;T&gt;. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="586,56,869,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html" title="Represents a write-only collection: you can modify it, but you cannot learn what it contains..." alt="Loyc.Collections.ICollectionSink&lt; T &gt;" shape="rect" coords="1172,56,1455,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAdd.html" alt="Loyc.Collections.IAdd&lt; T &gt;" shape="rect" coords="1172,0,1455,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -169,7 +165,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ad93ac64f33256684a5984e126a9a1fb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches for an item. If the item is found, the copy in the set is returned in the 'item' parameter. Note: there is no reason to call this method in a set of completely immutable; in such cases, call Contains instead. <a href="#ad93ac64f33256684a5984e126a9a1fb2">More...</a><br /></td></tr>
 <tr class="separator:ad93ac64f33256684a5984e126a9a1fb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35c17985dd53a10a18136a682931d4ff"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a35c17985dd53a10a18136a682931d4ff">AddOrFind</a> (ref T item, bool replaceIfPresent)</td></tr>
-<tr class="memdesc:a35c17985dd53a10a18136a682931d4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds the specified item to the set, and retrieves an existing copy of the item if one existed. Note: there is no reason to call this method in a set of singletons (e.g. <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>) because if an item is found, it will always be the exact same object that you searched for. <a href="#a35c17985dd53a10a18136a682931d4ff">More...</a><br /></td></tr>
+<tr class="memdesc:a35c17985dd53a10a18136a682931d4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds the specified item to the set, and retrieves an existing copy of the item if one existed. Note: there is no reason to call this method in a set of singletons (e.g. Symbol) because if an item is found, it will always be the exact same object that you searched for. <a href="#a35c17985dd53a10a18136a682931d4ff">More...</a><br /></td></tr>
 <tr class="separator:a35c17985dd53a10a18136a682931d4ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fda2636e2a5d4ad2a1250445144527c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a7fda2636e2a5d4ad2a1250445144527c">Add</a> (T item, bool replaceIfPresent)</td></tr>
 <tr class="memdesc:a7fda2636e2a5d4ad2a1250445144527c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds the specified item to the set. <a href="#a7fda2636e2a5d4ad2a1250445144527c">More...</a><br /></td></tr>
@@ -375,10 +371,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a4cb309ca5999a0b3d7d85ecb2151d24c"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a4cb309ca5999a0b3d7d85ecb2151d24c">CountMemory</a> (int sizeOfT)</td></tr>
 <tr class="memdesc:a4cb309ca5999a0b3d7d85ecb2151d24c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measures the total size of all objects allocated to this collection, in bytes, including the size of this object itself; see <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#ab2e5a175fc9857dc7038387c3c130578" title="Measures the total size of all objects allocated to this collection, in bytes, including the size of ...">Impl.InternalSet&lt;T&gt;.CountMemory</a>. <a href="#a4cb309ca5999a0b3d7d85ecb2151d24c">More...</a><br /></td></tr>
 <tr class="separator:a4cb309ca5999a0b3d7d85ecb2151d24c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IAdd')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IAdd.html">Loyc.Collections.IAdd&lt; T &gt;</a></td></tr>
-<tr class="memitem:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae233f417073b9ff820666d50d5ef8684"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (T item)</td></tr>
-<tr class="separator:ae233f417073b9ff820666d50d5ef8684 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -458,13 +450,13 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator Set&lt; T 
 <p>Adds the specified item to the set.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">replaceIfPresent</td><td>If true, and a matching item is already present in the set, the specified item replaces the existing copy. If false, the existing copy is left alone. This parameter has no effect in a set of singletons (e.g. <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>).</td></tr>
+    <tr><td class="paramname">replaceIfPresent</td><td>If true, and a matching item is already present in the set, the specified item replaces the existing copy. If false, the existing copy is left alone. This parameter has no effect in a set of singletons (e.g. Symbol).</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the item was new, false if it was already present.</dd></dl>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25">Loyc.LLParserGenerator.CodeGenHelperBase.ShouldGenerateSwitch()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25">Loyc.LLParserGenerator.CodeGenHelperBase.ShouldGenerateSwitch()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html#aa44568bcbf09e5821073d50e3baec1e5">Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor.Visit()</a>.</p>
 
 </div>
 </div>
@@ -527,7 +519,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator Set&lt; T 
 </table>
 </div><div class="memdoc">
 
-<p>Adds the specified item to the set, and retrieves an existing copy of the item if one existed. Note: there is no reason to call this method in a set of singletons (e.g. <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>) because if an item is found, it will always be the exact same object that you searched for.</p>
+<p>Adds the specified item to the set, and retrieves an existing copy of the item if one existed. Note: there is no reason to call this method in a set of singletons (e.g. Symbol) because if an item is found, it will always be the exact same object that you searched for.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">item</td><td>An object to search for. If this method returns false, this parameter is changed to the existing value that was found in the collection.</td></tr>
@@ -894,7 +886,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator Set&lt; T 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

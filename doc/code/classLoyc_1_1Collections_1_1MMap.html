@@ -132,22 +132,22 @@ This class supports fast cloning in O(1) time. </li>
 <li>
 You can convert a mutable MMap&lt;K,V&gt; into an immutable Map&lt;K,V&gt;, a read-only dictionary that does not change when you change the original <a class="el" href="classLoyc_1_1Collections_1_1MMap.html" title="A dictionary class built on top of InternalSet&lt;KeyValuePair&lt;K,V&gt;&gt;. ">MMap</a>. </li>
 <li>
-This class has an <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a758ec7abaee387f62f1ab5b7415e0072" title="Merges the contents of the specified map into this map.">AddRange</a> method. </li>
+This class has bonus methods defined by IDictionaryEx&lt;K, V&gt;. </li>
 <li>
-This class has some bonus features: <a class="el" href="classLoyc_1_1Collections_1_1MapOrMMap.html#a52f4e2cc47e4cd8c26ccb327f0ba07f9" title="Synonym for this[key, defaultValue].">MapOrMMap&lt;K, V&gt;.TryGetValue(K, V)</a> returns a default value if the key is not present; <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#adc95a3141ac7a5244ee650e857251b4f" title="Adds an item to the map if the key is not present. If the key is already present, this method has no ...">AddIfNotPresent</a> only adds a pair if the collection does not already contain the key; <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a22b3b56e3ebabad5b7284fe74c0e1c72" title="Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is...">AddOrFind</a> can retrieve the current value and change it to a new value at the same time; and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a47e1b79b120c3b346f023da98a14be8f" title="Gets the value associated with the specified key, then removes the pair with that key from the dictio...">GetAndRemove</a> can get a value while it is being deleted. </li>
+The persistent map operations <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a3dda32d42d6c543e21468a00ad5346b4">Union</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a8dba7169b09ad61ef0a93fd569d8c000">Intersect</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#aae56f8a89a9044c396f2f20b6d8b528c">Except</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a19fe2e4387b54b492ec013e990d7f771">Xor</a> combine two dictionaries to create a new dictionary, without modifying either of the original dictionaries. </li>
 <li>
-The persistent map operations <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a3dda32d42d6c543e21468a00ad5346b4">Union</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a8dba7169b09ad61ef0a93fd569d8c000">Intersect</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#aae56f8a89a9044c396f2f20b6d8b528c">Except</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a19fe2e4387b54b492ec013e990d7f771">Xor</a> combine two dictionaries to create a new dictionary, without modifying either of the original dictionaries. Equally interesting, the methods <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#ae7fac7939769bf7d5b8fad5493b2dc97">With</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a9969acb86d39d26725cdd767081ee0f2">Without</a> create a new dictionary with a single item added or removed. </li>
+The methods <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#ae7fac7939769bf7d5b8fad5493b2dc97">With</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a9969acb86d39d26725cdd767081ee0f2">Without</a> create a new dictionary with a single item added or removed. </li>
 </ul>
 <p>The documentation of InternalSet&lt;T&gt; describes how the data structure works. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:af2166c8db7ed147e01f44b2efa2ca1b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2166c8db7ed147e01f44b2efa2ca1b5"></a>
-new ICollection&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Keys</b><code> [get]</code></td></tr>
-<tr class="separator:af2166c8db7ed147e01f44b2efa2ca1b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55d50a4b710c3b145d31807c64af87b1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a55d50a4b710c3b145d31807c64af87b1"></a>
-new ICollection&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Values</b><code> [get]</code></td></tr>
-<tr class="separator:a55d50a4b710c3b145d31807c64af87b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac39102d6b3c4666e06a675aaea8b38f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac39102d6b3c4666e06a675aaea8b38f3"></a>
+new KeyCollection&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Keys</b><code> [get]</code></td></tr>
+<tr class="separator:ac39102d6b3c4666e06a675aaea8b38f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9dc29708ac0cf8be74dcbea90a4798d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9dc29708ac0cf8be74dcbea90a4798d"></a>
+new ValueCollection&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Values</b><code> [get]</code></td></tr>
+<tr class="separator:aa9dc29708ac0cf8be74dcbea90a4798d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b13bc00c8a20b700bddb7dce57b046f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b13bc00c8a20b700bddb7dce57b046f"></a>
 new V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key]</b><code> [get, set]</code></td></tr>
 <tr class="separator:a8b13bc00c8a20b700bddb7dce57b046f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,15 +215,18 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</t
 <tr class="memitem:a4ac9ed3b554090fd5ce2a4bfa8f7d3a5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a4ac9ed3b554090fd5ce2a4bfa8f7d3a5">AddRange</a> (IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; data, bool replaceIfPresent=true)</td></tr>
 <tr class="memdesc:a4ac9ed3b554090fd5ce2a4bfa8f7d3a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the contents of the specified sequence into this map. <a href="#a4ac9ed3b554090fd5ce2a4bfa8f7d3a5">More...</a><br /></td></tr>
 <tr class="separator:a4ac9ed3b554090fd5ce2a4bfa8f7d3a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc95a3141ac7a5244ee650e857251b4f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#adc95a3141ac7a5244ee650e857251b4f">AddIfNotPresent</a> (K key, V value)</td></tr>
-<tr class="memdesc:adc95a3141ac7a5244ee650e857251b4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds an item to the map if the key is not present. If the key is already present, this method has no effect. <a href="#adc95a3141ac7a5244ee650e857251b4f">More...</a><br /></td></tr>
-<tr class="separator:adc95a3141ac7a5244ee650e857251b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86f3f81805e5fb987b6f19970eaabd76"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86f3f81805e5fb987b6f19970eaabd76"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerable&lt; KeyValuePair&lt; K, V &gt;&gt; data, DictEditMode mode)</td></tr>
+<tr class="separator:a86f3f81805e5fb987b6f19970eaabd76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26fdb1166a7a01adaa2d15d30f72a708"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26fdb1166a7a01adaa2d15d30f72a708"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a26fdb1166a7a01adaa2d15d30f72a708">GetAndEdit</a> (ref K key, ref V value, DictEditMode mode)</td></tr>
+<tr class="separator:a26fdb1166a7a01adaa2d15d30f72a708"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22b3b56e3ebabad5b7284fe74c0e1c72"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a22b3b56e3ebabad5b7284fe74c0e1c72">AddOrFind</a> (ref KeyValuePair&lt; K, V &gt; pair, bool replaceIfPresent)</td></tr>
-<tr class="memdesc:a22b3b56e3ebabad5b7284fe74c0e1c72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is present, and optionally replaces the existing pair with a new pair. <a href="#a22b3b56e3ebabad5b7284fe74c0e1c72">More...</a><br /></td></tr>
+<tr class="memdesc:a22b3b56e3ebabad5b7284fe74c0e1c72"><td class="mdescLeft">&#160;</td><td class="mdescRight">For internal use. Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is present, and optionally replaces the existing pair with a new pair. <a href="#a22b3b56e3ebabad5b7284fe74c0e1c72">More...</a><br /></td></tr>
 <tr class="separator:a22b3b56e3ebabad5b7284fe74c0e1c72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47e1b79b120c3b346f023da98a14be8f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a47e1b79b120c3b346f023da98a14be8f">GetAndRemove</a> (K key, ref V valueRemoved)</td></tr>
-<tr class="memdesc:a47e1b79b120c3b346f023da98a14be8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key, then removes the pair with that key from the dictionary. <a href="#a47e1b79b120c3b346f023da98a14be8f">More...</a><br /></td></tr>
-<tr class="separator:a47e1b79b120c3b346f023da98a14be8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae144dfe1c1bf700621519d2138a18ebd"><td class="memItemLeft" align="right" valign="top">Maybe&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#ae144dfe1c1bf700621519d2138a18ebd">GetAndRemove</a> (K key)</td></tr>
+<tr class="memdesc:ae144dfe1c1bf700621519d2138a18ebd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key, then removes the pair with that key from the dictionary. <a href="#ae144dfe1c1bf700621519d2138a18ebd">More...</a><br /></td></tr>
+<tr class="separator:ae144dfe1c1bf700621519d2138a18ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53a76c26de3ac5c6c622c38765835e59"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a53a76c26de3ac5c6c622c38765835e59">GetAndRemove</a> (ref KeyValuePair&lt; K, V &gt; pair)</td></tr>
 <tr class="memdesc:a53a76c26de3ac5c6c622c38765835e59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the pair associated with <code>pair.Key</code>, then removes the pair with that key from the dictionary. <a href="#a53a76c26de3ac5c6c622c38765835e59">More...</a><br /></td></tr>
 <tr class="separator:a53a76c26de3ac5c6c622c38765835e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -390,43 +393,6 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="adc95a3141ac7a5244ee650e857251b4f"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1MMap.html">Loyc.Collections.MMap</a>&lt; K, V &gt;.AddIfNotPresent </td>
-          <td>(</td>
-          <td class="paramtype">K&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">V&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Adds an item to the map if the key is not present. If the key is already present, this method has no effect.</p>
-<dl class="section return"><dt>Returns</dt><dd>True if the pair was added, false if not.</dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="a22b3b56e3ebabad5b7284fe74c0e1c72"></a>
 <div class="memitem">
 <div class="memproto">
@@ -459,7 +425,7 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
 </table>
 </div><div class="memdoc">
 
-<p>Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is present, and optionally replaces the existing pair with a new pair.</p>
+<p>For internal use. Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is present, and optionally replaces the existing pair with a new pair.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pair</td><td>When calling this method, pair.Key specifies the key that you want to search for in the map. If the key is not found then the pair is added to the map; if the key is found, the pair is replaced with the existing pair that was found in the map.</td></tr>
@@ -553,7 +519,7 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of items that were added.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of new pairs added, whose keys didn't already exist.</dd></dl>
 <p>Duplicates are allowed in the source data. If <code>replaceIfPresent</code> is true, later values take priority over earlier values, otherwise earlier values take priority.</p>
 
 </div>
@@ -581,9 +547,11 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
 
 <p>Creates a copy of this map in O(1) time, by marking the current root node as frozen.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#aa810dce4c35711e91e17a68109488af0">Loyc.Collections.MMap&lt; object, object &gt;.Clone()</a>.</p>
+
 </div>
 </div>
-<a class="anchor" id="a47e1b79b120c3b346f023da98a14be8f"></a>
+<a class="anchor" id="ae144dfe1c1bf700621519d2138a18ebd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -591,21 +559,11 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1MMap.html">Loyc.Collections.MMap</a>&lt; K, V &gt;.GetAndRemove </td>
+          <td class="memname">Maybe&lt;V&gt; <a class="el" href="classLoyc_1_1Collections_1_1MMap.html">Loyc.Collections.MMap</a>&lt; K, V &gt;.GetAndRemove </td>
           <td>(</td>
           <td class="paramtype">K&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>key</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">ref V&#160;</td>
-          <td class="paramname"><em>valueRemoved</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -619,11 +577,11 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>Key to search for.</td></tr>
-    <tr><td class="paramname">valueRemoved</td><td>The value that was removed. If the key is not found, the value of this parameter is left unchanged.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if a pair was removed, false if not.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The value that was removed. If the key is not found, the result has no value (Maybe&lt;V&gt;.HasValue is false).</dd></dl>
+<p>This method shall not throw when the key is null.</p>
 
 </div>
 </div>
@@ -692,7 +650,7 @@ static readonly EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" v
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

@@ -94,9 +94,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Syntax.Lexing Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Contains classes related to lexical analysis, such as the universal token type (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Loyc.Syntax.Lexing.Token</a>) and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="A preprocessor usually inserted between the lexer and parser that converts a token list into a token ...">Loyc.Syntax.Lexing.TokensToTree</a>. 
-<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -137,7 +134,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A base class for wrappers that modify lexer behavior. Implements the <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html" title="A standard interface for lexers.">ILexer</a> interface, except for the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#a3f1cb6d179c36f7a6e57883a19787fdd" title="Returns the next (postprocessed) token. This method should set the _current field to the returned val...">NextToken()</a> method. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A common token type recommended for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> languages that want to use features such as token literals or the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="A preprocessor usually inserted between the lexer and parser that converts a token list into a token ...">TokensToTree</a> class.  <a href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A common token type recommended for <a class="el" href="namespaceLoyc.html">Loyc</a> languages that want to use features such as token literals or the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="A preprocessor usually inserted between the lexer and parser that converts a token list into a token ...">TokensToTree</a> class.  <a href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html">TokenListAsLexer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: converts <code>IEnumerable(Token)</code> to the ILexer&lt;Token&gt; interface. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#details">More...</a><br /></td></tr>
@@ -146,7 +143,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A preprocessor usually inserted between the lexer and parser that converts a token list into a token tree. Everything inside brackets, parens or braces is made a child of the open bracket.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html">TokenTree</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> object that represents the source file that the tokens came from. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the ISourceFile object that represents the source file that the tokens came from. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TriviaSaver.html">TriviaSaver</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A lexer wrapper that saves whitespace tokens into a list (TriviaList). <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TriviaSaver.html#details">More...</a><br /></td></tr>
@@ -161,7 +158,7 @@ Classes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a7967f5b83e9c6ef96c23be72c4407903"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903">TokenKind</a> { <br />
-&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a2e2aa75122e0f772381b5bc7a1a4fd03">TokenKind.Spaces</a> = 0x0000, 
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a6311ae17c1ee52b36e68aaf4ad066387">TokenKind.Other</a> = 0x0000, 
 <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a0be8406951cdfda82f00f79328cf4efc">TokenKind.Comment</a> = 0x0100, 
 <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a490aa6e856ccf208a054389e47ce0d06">TokenKind.Id</a> = 0x0200, 
 <br />
@@ -175,7 +172,7 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903ab785d149fb8a5d4053303ff33131b2f3">TokenKind.TypeKeyword</a> = 0x0B00, 
 <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a3da6889722c9caab6a052a6866a05e9c">TokenKind.OtherKeyword</a> = 0x0C00, 
-<a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a6311ae17c1ee52b36e68aaf4ad066387">TokenKind.Other</a> = 0x0F00, 
+<a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a2e2aa75122e0f772381b5bc7a1a4fd03">TokenKind.Spaces</a> = 0x0F00, 
 <br />
 &#160;&#160;<b>LParen</b> = 0x1000, 
 <b>RParen</b> = 0x1100, 
@@ -199,9 +196,7 @@ Enumerations</h2></td></tr>
 </td></tr>
 <tr class="separator:a7967f5b83e9c6ef96c23be72c4407903"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Contains classes related to lexical analysis, such as the universal token type (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Loyc.Syntax.Lexing.Token</a>) and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="A preprocessor usually inserted between the lexer and parser that converts a token list into a token ...">Loyc.Syntax.Lexing.TokensToTree</a>.</p>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
 <a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903"></a>
 <div class="memitem">
 <div class="memproto">
@@ -221,7 +216,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>A list of token categories that most programming languages have.</p>
-<p>Some <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> languages will support the concept of a "token literal" which is a <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a>, and some DSLs will rely on these token literals for input. However, tokens differ between different languages; for instance the set of operators varies between languages. On the other hand, most languages do have some concept of "an operator" and "an 
+<p>Some <a class="el" href="namespaceLoyc.html">Loyc</a> languages will support the concept of a "token literal" which is a <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a>, and some DSLs will rely on these token literals for input. However, tokens differ between different languages; for instance the set of operators varies between languages. On the other hand, most languages do have some concept of "an operator" and "an 
 identifier", and the TokenKind reflects this fact. </p>
 <p>When you are using <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> to represent tokens in your language, it is recommended to define every value of your "TokenType" enumeration in terms of TokenKind using integer offsets, like this: </p><pre>
 enum MyTokenType {
@@ -238,11 +233,10 @@ enum MyTokenType {
     ...
 }
 </pre><p> Using TokenKind is only important if you intend to support DSLs via token literals (e.g. LLLPG) in your language. </p>
-<p>A DSL that just needs simple tokens like "strings", "identifiers" and "dots" can write a parser based on values of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af6a9c75808482f583bb3937121e4b4b1" title="Token kind.">Token.Kind</a> alone; if it needs certain specific operators or "keywords" that do not have a dedicated TokenKind, such as + and %, it can further check the Value of the token; meanwhile, the host language put a global <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> in the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> to represent operators, keywords and identifiers. </p>
+<p>A DSL that just needs simple tokens like "strings", "identifiers" and "dots" can write a parser based on values of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af6a9c75808482f583bb3937121e4b4b1" title="Token kind.">Token.Kind</a> alone; if it needs certain specific operators or "keywords" that do not have a dedicated TokenKind, such as + and %, it can further check the Value of the token; meanwhile, the host language put a global Symbol in the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> to represent operators, keywords and identifiers. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a2e2aa75122e0f772381b5bc7a1a4fd03"></a>Spaces&#160;</td><td class="fielddoc">
-<p>Spaces, tabs, non-semantic newlines, and EOF</p>
-<p>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a6311ae17c1ee52b36e68aaf4ad066387"></a>Other&#160;</td><td class="fielddoc">
+<p>For token types not covered by other token kinds.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a0be8406951cdfda82f00f79328cf4efc"></a>Comment&#160;</td><td class="fielddoc">
 <p>Single- and multi-line comments</p>
@@ -275,8 +269,9 @@ enum MyTokenType {
 <tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a3da6889722c9caab6a052a6866a05e9c"></a>OtherKeyword&#160;</td><td class="fielddoc">
 <p>e.g. sizeof, struct. Does not include literal keywords (true, false, null)</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a6311ae17c1ee52b36e68aaf4ad066387"></a>Other&#160;</td><td class="fielddoc">
-<p>For token types not covered by other token kinds.</p>
+<tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a2e2aa75122e0f772381b5bc7a1a4fd03"></a>Spaces&#160;</td><td class="fielddoc">
+<p>Spaces, tabs, non-semantic newlines, and EOF</p>
+<p>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a7967f5b83e9c6ef96c23be72c4407903a655b166f7bd37863348f7937762972b4"></a>BracketFlag&#160;</td><td class="fielddoc">
 <p>Openers and closers all have this bit set.</p>
@@ -292,7 +287,7 @@ enum MyTokenType {
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 1 2017 18:58:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>
