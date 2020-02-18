@@ -11,7 +11,8 @@
             This class helps you process command-line options (see <see cref="M:LeMP.Compiler.ProcessArguments(System.Collections.Generic.IList{System.String},System.Boolean,System.Boolean,System.Collections.Generic.IList{System.String})"/>), 
             complete <see cref="T:LeMP.InputOutput"/> objects based on those options (see 
             <see cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
-            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/> and <see cref="M:LeMP.Compiler.AddStdMacros"/>). 
+            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/> and <see cref="M:LeMP.Compiler.AddStdMacros"/>). When everything
+            is set up, call <see cref="M:LeMP.Compiler.Run"/>.
             </remarks>
         </member>
         <member name="M:LeMP.Compiler.ProcessArguments(System.Collections.Generic.IList{System.String},System.Boolean,System.Boolean,System.Collections.Generic.IList{System.String})">
@@ -100,8 +101,7 @@
             Higher-level code (e.g. <see cref="T:LeMP.Compiler"/>) can define "always-open"
             namespaces by adding entries to PreOpenedNamespaces, and the code being 
             processed can open additional namespaces with a #importMacros(Namespace) 
-            statement (in LES, "import_macros Namespace" can be used as a synonym if 
-            PreOpenedNamespaces contains LeMP.Prelude).
+            statement.
             <para/>
             MacroProcessor is not aware of any distinction between "statements"
             and "expressions"; it will run macros no matter where they are located,
@@ -109,10 +109,8 @@
             <para/>
             MacroProcessor's main responsibilities are to keep track of a table of 
             registered macros (call <see cref="M:LeMP.MacroProcessor.AddMacros(System.Type)"/> to register more), to
-            keep track of which namespaces are open (namespaces can be imported by
-            <c>#import</c>, or by <c>import</c> which is defined in the LES prelude);
-            to scan the input for macros to call; and to control the printout of 
-            messages.
+            keep track of which namespaces are open, to scan the input for macros to 
+            call; and to control the printout of messages.
             <para/>
             This class processes a batch of files at once. Call either
             <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
@@ -178,6 +176,14 @@
             <remarks>MacroProcessor currently starts this counter at 10 to avoid 
             collisions with names like tmp_2 and tmp_3 that might be names chosen 
             by a developer; tmp_10 is much less likely to collide.</remarks>
+        </member>
+        <member name="T:LeMP.InternalMacroInfo">
+            <summary>A macro delegate with a list of namespaces and <see cref="T:LeMP.LexicalMacroAttribute"/>.
+            The difference between this and the public class <see cref="T:LeMP.MacroInfo"/>
+            is that here the goal is to associate a list of namespaces with a a single 
+            macro name (in case the macro is re-used in other namespaces) and the other 
+            MacroInfo associates a single namespace with macro attributes that 
+            potentially list multiple names.</summary>
         </member>
         <member name="T:LeMP.MacroProcessorTask">
             <summary>Holds the transient state of the macro processor. Since one
@@ -271,7 +277,7 @@
         </member>
         <member name="T:LeMP.TestCompiler">
             <summary>A simple version of Compiler that takes a single input and produces 
-            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
+            a StringBuilder. Pre-opens LeMP.Prelude namespaces.</summary>
         </member>
         <member name="M:LeMP.TestCompiler.StripExtraWhitespace(System.String,System.String[])">
             <summary>Strips whitespace and single-line comments from a string.
@@ -281,179 +287,6 @@
             <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
             <c>import macros your.namespace.name</c> as an alias for 
             <c>#importMacros(your.namespace.name)</c>.
-            </summary>
-        </member>
-        <member name="F:TextEditor.FindAndReplaceForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.FindAndReplaceForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.FindAndReplaceForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:TextEditor.TextEditorSearcher">
-            <summary>This class finds occurrances of a search string in a text 
-            editor's IDocument... it's like Find box without a GUI.</summary>
-        </member>
-        <member name="M:TextEditor.TextEditorSearcher.SetScanRegion(ICSharpCode.TextEditor.Document.ISelection)">
-            <summary>Sets the region to search. The region is updated 
-            automatically as the document changes.</summary>
-        </member>
-        <member name="M:TextEditor.TextEditorSearcher.SetScanRegion(System.Int32,System.Int32)">
-            <summary>Sets the region to search. The region is updated 
-            automatically as the document changes.</summary>
-        </member>
-        <member name="P:TextEditor.TextEditorSearcher.BeginOffset">
-            <summary>Begins the start offset for searching</summary>
-        </member>
-        <member name="P:TextEditor.TextEditorSearcher.EndOffset">
-            <summary>Begins the end offset for searching</summary>
-        </member>
-        <member name="M:TextEditor.TextEditorSearcher.FindNext(System.Int32,System.Boolean,System.Boolean@)">
-            <summary>Finds next instance of LookFor, according to the search rules 
-            (MatchCase, MatchWholeWordOnly).</summary>
-            <param name="beginAtOffset">Offset in Document at which to begin the search</param>
-            <remarks>If there is a match at beginAtOffset precisely, it will be returned.</remarks>
-            <returns>Region of document that matches the search string</returns>
-        </member>
-        <member name="T:TextEditor.HighlightGroup">
-            <summary>Bundles a group of markers together so that they can be cleared 
-            together.</summary>
-        </member>
-        <member name="T:TextEditor.LempDemoForm">
-            <summary>Main form for a multi-file text editor based on 
-            ICSharpCode.TextEditor.TextEditorControl.</summary>
-        </member>
-        <member name="F:TextEditor.LempDemoForm._editorSettings">
-            <summary>This variable holds the editor settings (whether to show line 
-            numbers, etc.) that all editor controls share.</summary>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.DoEditAction(TextEditor.LempDemoPanel,ICSharpCode.TextEditor.Actions.IEditAction)">
-            <summary>Performs an action encapsulated in IEditAction.</summary>
-            <remarks>
-            There is an implementation of IEditAction for every action that 
-            the user can invoke using a shortcut key (arrow keys, Ctrl+X, etc.)
-            The editor control doesn't provide a public funciton to perform one
-            of these actions directly, so I wrote DoEditAction() based on the
-            code in TextArea.ExecuteDialogKey(). You can call ExecuteDialogKey
-            directly, but it is more fragile because it takes a Keys value (e.g.
-            Keys.Left) instead of the action to perform.
-            <para/>
-            Clipboard commands could also be done by calling methods in
-            editor.ActiveTextAreaControl.TextArea.ClipboardHandler.
-            </remarks>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.menuSplitTextArea_Click(System.Object,System.EventArgs)">
-            <summary>Toggles whether the editor control is split in two parts.</summary>
-            <remarks>Exercise for the reader: modify TextEditorControl and
-            TextAreaControl so it shows a little "splitter stub" like you see in
-            other apps, that allows the user to split the text editor by dragging
-            it.</remarks>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.OnSettingsChanged">
-            <summary>Show current settings on the Options menu</summary>
-            <remarks>We don't have to sync settings between the editors because 
-            they all share the same DefaultTextEditorProperties object.</remarks>
-        </member>
-        <member name="P:TextEditor.LempDemoForm.AllEditors">
-            <summary>Returns a list of all editor controls</summary>
-        </member>
-        <member name="P:TextEditor.LempDemoForm.ActivePage">
-            <summary>Returns the currently displayed editor page, or null if none are open</summary>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.IsModified(ICSharpCode.TextEditor.TextEditorControl)">
-            <summary>Gets whether the file in the specified editor is modified.</summary>
-            <remarks>TextEditorControl doesn't maintain its own internal modified 
-            flag, so we use the '*' shown after the file name to represent the 
-            modified state.</remarks>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.TextEditorForm_DragEnter(System.Object,System.Windows.Forms.DragEventArgs)">
-            <summary>We handle DragEnter and DragDrop so users can drop files on the editor.</summary>
-        </member>
-        <member name="F:TextEditor.LempDemoForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:TextEditor.RegionFoldingStrategy">
-            <summary>
-            The class to generate the foldings, it implements ICSharpCode.TextEditor.Document.IFoldingStrategy
-            </summary>
-        </member>
-        <member name="M:TextEditor.RegionFoldingStrategy.GenerateFoldMarkers(ICSharpCode.TextEditor.Document.IDocument,System.String,System.Object)">
-            <summary>
-            Generates the foldings for our document.
-            </summary>
-            <param name="document">The current document.</param>
-            <param name="fileName">The filename of the document.</param>
-            <param name="parseInformation">Extra parse information, not used in this sample.</param>
-            <returns>A list of FoldMarkers.</returns>
-        </member>
-        <member name="P:TextEditor.LempDemoPanel.EditorSettings">
-            <summary>This variable holds the editor settings (whether to show line 
-            numbers, etc.) that all editor controls share.</summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.IsModified">
-            <summary>Gets whether the file in the specified editor is modified.</summary>
-            <remarks>TextEditorControl doesn't maintain its own internal modified 
-            flag, so we use the '*' shown after the file name to represent the 
-            modified state.</remarks>
-        </member>
-        <member name="F:TextEditor.LempDemoPanel.components">
-            <summary> 
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.Dispose(System.Boolean)">
-            <summary> 
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.InitializeComponent">
-            <summary> 
-            Required method for Designer support - do not modify 
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:System.Windows.Forms.InputBoxDialog">
-            <summary>
-            Used by InputBox.Show().
-            </summary>
-        </member>
-        <member name="M:System.Windows.Forms.InputBoxDialog.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="T:System.Windows.Forms.InputBox">
-            <summary>
-            This static class contains methods named Show() to display a dialog box 
-            with an input field, similar in appearance to the one in Visual Basic.
-            The Show() method returns null if the user clicks Cancel, and non-null
-            if the user clicks OK.
             </summary>
         </member>
     </members>

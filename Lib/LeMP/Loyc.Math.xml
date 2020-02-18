@@ -33,6 +33,9 @@
             <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
         </member>
         <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)"/>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)">
             <summary>Performs projection, which finds the point on a line segment 
             or infinite line that is nearest to a specified point.</summary>
             <param name="seg">The line segment</param>
@@ -53,6 +56,9 @@
             </remarks>
         </member>
         <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)"/>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)">
             <summary>Gets the projection of a point onto a line, expressed as a 
             fraction where 0 represents the start of the line and 1 represents the 
             end of the line.</summary>
@@ -161,6 +167,9 @@
             <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
         </member>
         <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)"/>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)">
             <summary>Performs projection, which finds the point on a line segment 
             or infinite line that is nearest to a specified point.</summary>
             <param name="seg">The line segment</param>
@@ -181,6 +190,9 @@
             </remarks>
         </member>
         <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)"/>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)">
             <summary>Gets the projection of a point onto a line, expressed as a 
             fraction where 0 represents the start of the line and 1 represents the 
             end of the line.</summary>
@@ -405,31 +417,16 @@
         <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Single})">
             <summary>Converts a Loyc vector to BCL type.</summary>
         </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Double})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Double})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
         <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.Point)">
             <summary>Converts a BCL point to a Loyc point.</summary>
         </member>
         <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.PointF)">
             <summary>Converts a BCL point to a Loyc point.</summary>
         </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Point)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Vector)">
-            <summary>Converts a BCL Vector to a Loyc point.</summary>
-        </member>
         <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.Point)">
             <summary>Converts a BCL point to a Loyc vector.</summary>
         </member>
         <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.PointF)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Windows.Point)">
             <summary>Converts a BCL point to a Loyc vector.</summary>
         </member>
         <member name="M:Loyc.Geometry.PointMath.To``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">

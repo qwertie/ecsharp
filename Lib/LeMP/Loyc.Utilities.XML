@@ -4,6 +4,42 @@
         <name>Loyc.Utilities</name>
     </assembly>
     <members>
+        <member name="T:Loyc.Collections.AListStatisticTrackerBase`3">
+            <summary>Base class that helps efficiently keep track of statistics about the 
+            contents of one or more <see cref="T:Loyc.Collections.AListBase`2"/> objects (including derived 
+            classes such as AList, BList, BDictionary and BMultiMap). Usually you'll use one of
+            the derived classes instead, e.g. <see cref="T:Loyc.Collections.AListSumTracker`2"/>.</summary>
+            <typeparam name="K">Key type of the AListBase</typeparam>
+            <typeparam name="T">Value type of the AListBase</typeparam>
+            <typeparam name="TSummary">Type of value that will be derived from the contents of the list(s)</typeparam>
+            <remarks>
+            This class keeps track of a "summary" of each node in each attached AList.
+            It is assumed that there is some way to combine ("aggregate") summaries.
+            For example, one common "summary" is the sum of a list of items, and 
+            multiple summaries can be combined simply by adding them.
+            <para/>
+            This class can observe multiple lists at once and combine their results.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.AListStatisticTracker`3">
+            <summary>This class efficiently lets you keep track of simple commutative statistics 
+            (such as total, average, sum of squares, and min/max) derived from the items of 
+            <see cref="T:Loyc.Collections.AList`1"/> and its variants (BList, BDictionary, and BMultiMap).</summary>
+            <remarks>
+            Note: this class relies on the "tree observer" feature of ALists, but SparseAList 
+            doesn't support tree observers as of 2020/01.
+            <para/>
+            Typically a statistic tracker is created by calling an extension method on AList, BList, etc.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.AListStatisticTracker`2">
+            <summary>This class incrementally updates a <see cref="P:Loyc.Collections.AListStatisticTracker`2.Statistic"/> object based on
+            changes to <see cref="T:Loyc.Collections.AList`1"/> and its variants (BList, BDictionary, and BMultiMap).</summary>
+        </member>
+        <member name="T:Loyc.Collections.AListSumTracker`2">
+            <summary>This class incrementally recomputes the sum of an <see cref="T:Loyc.Collections.AList`1"/> 
+            (or its variants - BList, BDictionary, and BMultiMap).</summary>
+        </member>
         <member name="M:Loyc.Collections.Impl.CPBitArrayLeaf`1.MoveFirst(Loyc.Collections.Impl.CPEnumerator{`0})">
             (1) Add()s an Entry to e.Stack pointing to the first (lowest) item in 
                 the node, using e.Key.Offset as the value of Entry.KeyOffset;

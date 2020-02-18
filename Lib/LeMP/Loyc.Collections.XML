@@ -532,6 +532,23 @@
             <remarks>Variable time required. Scans all nodes if none are immutable; 
             stops at the root if the root is immutable.</remarks>
         </member>
+        <member name="M:Loyc.Collections.AListBase`2.CountSizeInBytes(System.Int32,System.Int32)">
+            <summary>Tallies the memory use, in bytes, of the entire list including
+            this object, the root node, all child nodes, and all arrays.</summary>
+            <param name="sizeOfElement">The size in bytes of a slot of type T</param>
+            <param name="sizeOfKey">The size in bytes of a key slot. This parameter
+            only has an effect in <see cref="T:Loyc.Collections.BDictionary`2"/>. In sorted types,
+            T is the combined size of the key and value, while K is the size of the
+            key by itself. But in <see cref="T:Loyc.Collections.BMultiMap`2"/>, <see cref="T:Loyc.Collections.BList`1"/>,
+            the key type is T, so this parameter is ignored. Notably, in BMultiMap,
+            a key-value <i>pair</i> is considered to be the key type.</param>
+            <returns>Number of bytes of heap used.</returns>
+            <remarks>
+            If T (or K) is a class, the element (or key) size that you pass in should
+            be IntPtr.Size. Do not include memory used by the class objects themselves,
+            because unused slots are counted in the total.
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.AListBase`2.AddObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
             <summary>Attaches a tree observer to this object.</summary>
             <returns>True if the observer was added, false if it was already attached.</returns>
@@ -616,7 +633,7 @@
             the effect of node size further.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.Impl.AListIndexer`2.ReconstructIndex(`1,Loyc.Collections.Impl.AListLeaf{`0,`1})">
+        <member name="M:Loyc.Collections.Impl.AListIndexer`2.ReconstructIndex(`1,Loyc.Collections.Impl.AListLeafBase{`0,`1})">
             <summary>Given an item and a leaf that is known to contain a copy of 
             the item, this method returns the index of the item in the tree as 
             a whole. Requires O(M )</summary>
@@ -638,6 +655,9 @@
             Tree observability is a difficult feature to implement correctly, so 
             this method is called a lot in unit tests to help work out the bugs.
             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.AListIndexer`2.CountMemory(System.Int32)">
+            <summary>Counts memory used by the index itself (not including the AList nodes)</summary>
         </member>
         <member name="T:Loyc.Collections.Impl.AListInner`1">
             <summary>Internal node of <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.SparseAList`1"/>.</summary>
@@ -880,17 +900,19 @@
             the new root node), or it is a leaf node with no children.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.Impl.AListNode`2.TakeFromRight(Loyc.Collections.Impl.AListNode{`0,`1},Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
-            <summary>Takes an element from a right sibling.</summary>
-            <returns>Returns the number of elements moved on success (1 if a leaf 
-            node, TotalCount of the child moved otherwise), or 0 if either (1) 
-            IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.TakeFromRight(Loyc.Collections.Impl.AListNode{`0,`1},System.Int32,Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
+            <summary>Moves item(s) from a right sibling into this node.</summary>
+            <param name="localsToMove">Number of local items to be moved.</param>
+            <returns>Returns the number of indexes moved on success (localsToMove
+            if a leaf node, TotalCount of the child moved otherwise), or 0 if
+            either or both nodes are frozen.</returns>
         </member>
-        <member name="M:Loyc.Collections.Impl.AListNode`2.TakeFromLeft(Loyc.Collections.Impl.AListNode{`0,`1},Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
-            <summary>Takes an element from a left sibling.</summary>
-            <returns>Returns the number of elements moved on success (1 if a leaf 
-            node, TotalCount of the child moved otherwise), or 0 if either (1) 
-            IsFullLeaf is true, or (2) one or both nodes is frozen.</returns>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.TakeFromLeft(Loyc.Collections.Impl.AListNode{`0,`1},System.Int32,Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
+            <summary>Moves item(s) from a left sibling into this node.</summary>
+            <param name="localsToMove">Number of local items to be moved.</param>
+            <returns>Returns the number of indexes moved on success (localsToMove
+            if a leaf node, TotalCount of the child moved otherwise), or 0 if
+            either or both nodes are frozen.</returns>
         </member>
         <member name="P:Loyc.Collections.Impl.AListNode`2.IsFrozen">
             <summary>Returns true if the node is explicitly marked read-only. 
@@ -965,6 +987,17 @@
         </member>
         <member name="M:Loyc.Collections.Impl.AListNode`2.GetRealItemCount">
             <summary>For sparse lists: counts the number of non-sparse items.</summary>
+        </member>
+        <member name="P:Loyc.Collections.Impl.AListNode`2.Leaves">
+            <summary>For testing and debugging only.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.CountSizeInBytes(System.Int32,System.Int32)">
+            <summary>Tallies the memory use of the current node and all child nodes,
+            with the assumption that each object has a header size of two words (e.g.
+            <c>class Foo {}</c> has a size of 16 bytes per Foo object in a 64-bit
+            process), and arrays have a header size of three words.</summary>
+            <param name="sizeOfT">The size to attribute to a slot of type T</param>
+            <param name="sizeOfK">The size to attribute to a slot of type K</param>
         </member>
         <member name="T:Loyc.Collections.Impl.AListSingleOperation`2">
             <summary>This structure is passed from the collection class (AList, BList 
@@ -1102,12 +1135,12 @@
         </member>
         <member name="M:Loyc.Collections.Impl.BListInner`2.BinarySearchK(`0,System.Func{`0,`0,System.Int32})">
             <summary>Performs a binary search for a key.</summary>
-            <remarks>If the key matches one of the values of _aggregateKey, this
+            <remarks>If the key matches one of the values of _highestKey, this
             method returns the index of the lowest node that contains that key so 
             that non-add operations work correctly. If we were concerned ONLY with 
             plain Add operations, it would be acceptable to return index i+1 
-            when key equals _aggregateKey[i] (and perhaps preferable, because it
-            guarantees that _aggregateKey[i] won't have to be updated).</remarks>
+            when key equals _highestKey[i] (and perhaps preferable, because it
+            guarantees that _highestKey[i] won't have to be updated).</remarks>
         </member>
         <member name="T:Loyc.Collections.Impl.BListLeaf`2">
             <summary>Internal implementation class. Leaf node of <see cref="T:Loyc.Collections.BList`1"/> and <see cref="T:Loyc.Collections.BDictionary`2"/>.</summary>
@@ -1148,29 +1181,31 @@
             will propagate out of the <see cref="M:Loyc.Collections.AListBase`2.AddObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})"/> method.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.Attach(Loyc.Collections.AListBase{`0,`1},System.Action{System.Boolean})">
+        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.Attach(Loyc.Collections.AListBase{`0,`1})">
             <summary>Called when the observer is being attached to an AList.</summary>
             <param name="list">The list that the observer is being attached to.</param>
-            <param name="populate">The observer can invoke this delegate to cause 
-            notifications to be sent about all the nodes in the tree through a
-            depth-first search that calls <see cref="M:Loyc.Collections.Impl.IAListTreeObserver`2.AddAll(Loyc.Collections.Impl.AListNode{`0,`1})"/> for each node in
-            the tree. When calling this delegate, use a parameter of True if you 
-            want AddAll to be called for children before parents (roughly, leaves 
-            first). Use False if you want AddAll to be called for inner nodes 
-            before their children. populate() also calls <see cref="M:Loyc.Collections.Impl.IAListTreeObserver`2.RootChanged(Loyc.Collections.Impl.AListNode{`0,`1},System.Boolean)"/>()
-            before scanning the tree.
-            </param>
+            <returns>Return true or false to cause notifications to be sent about
+            all the nodes in the tree, via a depth-first search that calls 
+            <see cref="M:Loyc.Collections.Impl.IAListTreeObserver`2.AddAll(Loyc.Collections.Impl.AListNode{`0,`1})"/> for each node in the tree. Return true if you 
+            want AddAll to be called for children before their parents (roughly, 
+            leaves first). Use False if you want AddAll to be called for inner nodes 
+            before their children. If you return null, no notifications are sent
+            except for <see cref="M:Loyc.Collections.Impl.IAListTreeObserver`2.RootChanged(Loyc.Collections.AListBase{`0,`1},Loyc.Collections.Impl.AListNode{`0,`1},System.Boolean)"/> which will be called unconditionally.
+            </returns>
             <remarks>
             If Attach() throws an exception, <see cref="T:Loyc.Collections.AListBase`2"/> will
             cancel the AddObserver() operation and it will not catch the exception.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.Detach">
-            <summary>Called when the observer is being detached from an AList.</summary>
+        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.Detach(Loyc.Collections.AListBase{`0,`1},Loyc.Collections.Impl.AListNode{`0,`1})">
+            <summary>Called when the observer is being detached from an AList.
+            Detach(), unlike Attach(), is not paired with a call to RootChanged.</summary>
+            <param name="list">List that is being detached.</param>
+            <param name="root">Root node that is being detached.</param>
         </member>
-        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.RootChanged(Loyc.Collections.Impl.AListNode{`0,`1},System.Boolean)">
+        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.RootChanged(Loyc.Collections.AListBase{`0,`1},Loyc.Collections.Impl.AListNode{`0,`1},System.Boolean)">
             <summary>Called when the root of the tree changes, or when the
-            list is cleared.</summary>
+            list is cleared. Also called after Attach(), but not after Detach().</summary>
             <param name="clear">true if the root is changing due to a Clear() 
             operation. If this parameter is true, the observer should clear its
             own state. If this parameter is false but newRoot is null, it means
@@ -1178,13 +1213,14 @@
             by calling Clear() on the list). In that case, if the observer still 
             believes that any items exist in leaf nodes, it means that there is 
             a bookkeeping error somewhere.</param>
+            <param name="list">The list that changed.</param>
             <param name="newRoot">The new root (null if the tree is cleared).</param>
         </member>
-        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.ItemAdded(`1,Loyc.Collections.Impl.AListLeaf{`0,`1})">
+        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.ItemAdded(`1,Loyc.Collections.Impl.AListLeafBase{`0,`1})">
             <summary>Called when an item is added to a leaf node.</summary>
             <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
         </member>
-        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.ItemRemoved(`1,Loyc.Collections.Impl.AListLeaf{`0,`1})">
+        <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.ItemRemoved(`1,Loyc.Collections.Impl.AListLeafBase{`0,`1})">
             <summary>Called when an item is removed from a leaf node.</summary>
             <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
         </member>
@@ -1198,7 +1234,9 @@
         </member>
         <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.RemoveAll(Loyc.Collections.Impl.AListNode{`0,`1})">
             <summary>Called when all children are being removed from a node (leaf 
-            or inner). Notifications are not sent for individual children.</summary>
+            or inner) because the node is being split (AddAll will be called 
+            afterward for the two replacement nodes). Notifications are not sent 
+            for individual children.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.AddAll(Loyc.Collections.Impl.AListNode{`0,`1})">
             <summary>Called when all children are being added to a node (leaf 
@@ -1899,7 +1937,11 @@
             the dictionary.</summary>
             <remarks>All the "add" operations are deliberately listed last, so that
             <see cref="M:Loyc.Collections.AListBase`2.DoSingleOperation(Loyc.Collections.Impl.AListSingleOperation{`0,`1}@)"/> can use a greater-than 
-            operator to figure out whether an item may be added or not.</remarks>
+            operator to figure out whether an item may be added or not. The numeric
+            values 0 through 3 are based on <see cref="T:Loyc.Collections.DictEditMode"/>.</remarks>
+        </member>
+        <member name="F:Loyc.Collections.AListOperation.Remove">
+            <summary>Remove the item with the specified key if present.</summary>
         </member>
         <member name="F:Loyc.Collections.AListOperation.Retrieve">
             <summary>Default operation. The item with the specified key will be 
@@ -1909,22 +1951,22 @@
             <summary>Replace an existing item/key if present, or do nothing if 
             there is no matching item/key.</summary>
         </member>
-        <member name="F:Loyc.Collections.AListOperation.Remove">
-            <summary>Remove the item with the specified key if present.</summary>
+        <member name="F:Loyc.Collections.AListOperation.__AddThreshold">
+            <summary>Lowest-numbered "add" command. For internal use only.</summary>
         </member>
-        <member name="F:Loyc.Collections.AListOperation.Add">
-            <summary>A new item will be added unconditionally, without affecting 
-            existing elements, in no particular order with respect to existing
-            items that have the same key.</summary>
+        <member name="F:Loyc.Collections.AListOperation.AddIfNotPresent">
+            <summary>A new item will be added if its key doesn't match an existing
+            element. If the item already exists, it is not replaced.</summary>
         </member>
         <member name="F:Loyc.Collections.AListOperation.AddOrReplace">
             <summary>A new item will replace an item that has the same key. If the 
             collection already contains multiple instances of the item/key, the 
             instance to be replaced is undefined.</summary>
         </member>
-        <member name="F:Loyc.Collections.AListOperation.AddIfNotPresent">
-            <summary>A new item will be added if its key doesn't match an existing
-            element. If the item already exists, it is not replaced.</summary>
+        <member name="F:Loyc.Collections.AListOperation.Add">
+            <summary>A new item will be added unconditionally, without affecting 
+            existing elements, in no particular order with respect to existing
+            items that have the same key.</summary>
         </member>
         <member name="F:Loyc.Collections.AListOperation.AddOrThrow">
             <summary>The item will be added if its key is not already present, but
@@ -2014,6 +2056,9 @@
             <param name="items">A list of items to be cloned.</param>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)">
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)"/>
+        </member>
+        <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)">
             <summary>Finds the lowest index of an item with a key that is equal to 
             or greater than the specified key.</summary>
             <param name="key">The key to find. If passed by reference, when this 
@@ -2026,14 +2071,11 @@
             greater item, or Count if the given item is greater than all items 
             in the list.</returns>
         </member>
-        <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
-        </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0@,System.Boolean@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindUpperBound(`0)">
             <summary>Finds the index of the first item in the list that is greater 
@@ -2061,44 +2103,26 @@
             new dictionary.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.BDictionary`2.AddIfNotPresent(`0,`1)">
-            <summary>Adds the specified pair only if the key is not already present in the dictionary.</summary>
-            <param name="key">Key to search for or add. If this parameter is passed by reference and a matching pair exists already, this method sets it to the existing key instance.</param>
-            <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair exists already, this method sets it to the existing value.</param>
-            <returns>True if the new pair was added, false if not.</returns>
-            <remarks>
-            This method has no effect if the key is already present.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.BDictionary`2.AddIfNotPresent(`0,`1@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.AddIfNotPresent(`0,`1)"/>
+        <member name="M:Loyc.Collections.BDictionary`2.GetAndRemove(`0)">
+            <summary>TODO: TEST THIS!!</summary>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.AddIfNotPresent(`0@,`1@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.AddIfNotPresent(`0,`1)"/>
+            <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
+            <returns>True if the pair was added, false if it was retrieved.</returns>
         </member>
-        <member name="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0,`1@)">
+        <member name="M:Loyc.Collections.BDictionary`2.SetAndGet(`0@,`1@)">
             <summary>Associates the specified value with the specified key, while getting the old value if one exists.</summary>
             <param name="key">Key to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old key instance.</param>
             <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</param>
             <returns>True if the new pair was added, false if it was replaced.</returns>
-        </member>
-        <member name="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0@,`1@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0,`1@)"/>
-        </member>
-        <member name="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0,`1)">
-            <summary>Replaces the value associated with a specified key, if it already exists in the dictionary.</summary>
-            <param name="key">Key to replace. If this parameter is passed by reference and a matching pair existed, this method sets it to the old key instance.</param>
-            <param name="value">New value to associate with the key. If this parameter is passed by reference and a matching pair existed, this method sets it to the old value.</param>
-            <returns>True if the key was found and the pair was replaced, false if it was not found.</returns>
-            <remarks>
-            This method has no effect if the key was not already present.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0,`1@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0,`1)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0@,`1@)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0@,`1@)">
-            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0,`1)"/>
+            <summary>Replaces the value associated with a specified key, if it already exists in the dictionary.</summary>
+            <param name="key">Key to find. If a matching key existed, this method changes this parameter to the old stored key.</param>
+            <param name="value">Value to associate with the key. On exit, this is changed to the old value or left unchanged if the key was not found.</param>
+            <returns>True if the key was found and the pair was replaced, false if it was not found.</returns>
+            <remarks>This method has no effect if the key was not already present.</remarks>
         </member>
         <member name="T:Loyc.Collections.BList`1">
             <summary>
@@ -2269,6 +2293,9 @@
             <summary>Returns true if the list contains the specified item, and false if not.</summary>
         </member>
         <member name="M:Loyc.Collections.BList`1.FindLowerBound(`0)">
+            <inheritdoc cref="M:Loyc.Collections.BList`1.FindLowerBound(`0,System.Boolean@)"/>
+        </member>
+        <member name="M:Loyc.Collections.BList`1.FindLowerBound(`0,System.Boolean@)">
             <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
             <param name="item">The item to find. If passed by reference, when this 
             method returns, item is set to the item that was found, or to the next 
@@ -2279,9 +2306,6 @@
             <returns>The index of the item that was found, or of the next
             greater item, or Count if the given item is greater than all items 
             in the list.</returns>
-        </member>
-        <member name="M:Loyc.Collections.BList`1.FindLowerBound(`0,System.Boolean@)">
-            <inheritdoc cref="M:Loyc.Collections.BList`1.FindLowerBound(`0)"/>
         </member>
         <member name="M:Loyc.Collections.BList`1.FindLowerBound(`0@)">
             <inheritdoc cref="M:Loyc.Collections.BList`1.FindLowerBound(`0)"/>
@@ -2410,6 +2434,12 @@
             <param name="item">Value to add.</param>
         </member>
         <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0)">
+            <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,`1@,System.Boolean@)"/>
+        </member>
+        <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,System.Boolean@)">
+            <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,`1@,System.Boolean@)"/>
+        </member>
+        <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,`1@,System.Boolean@)">
             <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
             <param name="key">The key to find.</param>
             <param name="value">The first value associated with the specified key,
@@ -2419,11 +2449,8 @@
             item, or Count if the given key is greater than the keys of all items 
             in the list.</returns>
         </member>
-        <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,System.Boolean@)">
-            <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0)"/>
-        </member>
-        <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,`1@,System.Boolean@)">
-            <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0)"/>
+        <member name="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0@,`1@,System.Boolean@)">
+            <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0,`1@,System.Boolean@)"/>
         </member>
         <member name="M:Loyc.Collections.BMultiMap`2.FindUpperBound(`0)">
             <summary>Finds the index of the first item in the list whose key is 
@@ -2603,6 +2630,177 @@
         </member>
         <member name="M:Loyc.Collections.CG.Cache(System.Boolean)">
             <summary>Returns <see cref="F:Loyc.G.BoxedTrue"/> or <see cref="F:Loyc.G.BoxedFalse"/> depending on the parameter.</summary>
+        </member>
+        <member name="T:Loyc.Collections.MaxHeap`3">
+            <summary>Encapsulates algorithms for a max-heap, i.e. a priority queue 
+            that always knows the largest item and can remove it in O(log Count) time,
+            or add a new item in O(log Count) time.
+            </summary>
+            <typeparam name="T">Item type</typeparam>
+            <typeparam name="TList">List type that the heap object is a wrapper for</typeparam>
+            <typeparam name="TComparer">Type used to compare items; an instance of this type 
+            must be provided to the constructor.</typeparam>
+            <remarks>
+            Call Push(T) to add a new item, Peek() to get the largest item, 
+            and Pop() or TryPop(out bool) to remove the largest item.
+            <para/>
+            Most users will want to use the derived classes <see cref="T:Loyc.Collections.MaxHeap`1"/> 
+            or <see cref="T:Loyc.Collections.MaxHeapInList`1"/> to avoid dealing with three type parameters.
+            Ideally this type would be a struct in order to maximize performance. 
+            It is a class in order to allow derived classes including <see cref="T:Loyc.Collections.MinHeap`1"/>.
+            </remarks>
+            <seealso cref="T:Loyc.Collections.MaxHeap`1"/>
+        </member>
+        <member name="P:Loyc.Collections.MaxHeap`3.List">
+            <summary>Returns the underlying list that represents the binary heap.</summary>
+        </member>
+        <member name="E:Loyc.Collections.MaxHeap`3.OnItemMoved">
+            <summary>This optional callback is called whenever an item is placed 
+            into the heap, removed from the heap, or moved within the <see cref="P:Loyc.Collections.MaxHeap`3.List"/>
+            that holds the contents of the heap. The callback is useful for certain
+            algorithms, such as the Dijkstra algorithm, in which an object's priority 
+            may need to change while it is inside the heap.
+            </summary><remarks>
+            In order to change an object's priority, the object must contain mutable
+            state that represents its priority. After changing the priority, you must
+            call <see cref="M:Loyc.Collections.MaxHeap`3.PriorityChanged(System.Int32)"/> to inform the heap that the priority has 
+            changed. That method takes the current position of the object in the
+            <see cref="P:Loyc.Collections.MaxHeap`3.List"/> as an argument. In order to keep track of the current 
+            position you must handle the OnItemMoved event and store the new position
+            somewhere, such as inside the object itself.
+            <para/>
+            The parameters to OnItemMoved are the object that has moved and the new
+            index of the item within the <see cref="P:Loyc.Collections.MaxHeap`3.List"/>. If the item has been
+            removed from the list, the index is -1.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.#ctor(`1,`2,System.Action{`0,System.Int32})">
+            <summary>Initializes the heap wrapper with the list and comparer to use.
+            Both parameters must not be null.</summary>
+            <param name="onItemMoved">This optional callback is called whenever an item 
+            is placed or relocated within the heap (see <see cref="E:Loyc.Collections.MaxHeap`3.OnItemMoved"/>.)</param>
+            <remarks>If the list is not already arranged as a max-heap, you must call
+            Heapify() after the constructor to rearrange it into a heap.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.Heapify">
+            <summary>Rearranges items to ensure that the underlying list has the heap 
+            property. Takes O(Count) time.</summary>
+            <returns>this.</returns>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.Add(`0)">
+            <summary>Adds an item to the heap (synonym of Push()). Complexity: O(Count).</summary>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.Push(`0)">
+            <summary>Adds an item to the heap. Complexity: O(Count).</summary>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.PriorityChanged(System.Int32)">
+            <summary>Notifies the heap that the priority of the item at the specified 
+            index has changed. The item is bubbled up or down as appropriate.</summary>
+            <returns>The new index of the same item.</returns>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.PopAndPush(`0)">
+            <summary>Combines a pop followed by a push into one operation that is more 
+            efficient than a separate <see cref="M:Loyc.Collections.MaxHeap`3.Pop"/> nad <see cref="M:Loyc.Collections.MaxHeap`3.Push(`0)"/>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.TryPop(System.Boolean@)">
+            <summary>Removes the largest item from the heap (or smallest item, if this is a MinHeap).</summary>
+            <param name="isEmpty">Set to true if the heap is empty, false if not.</param>
+            <returns>The popped value, or default(T) if the List was empty.</returns>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.Pop">
+            <summary>Removes the largest item from the heap (or smallest item, if this is a MinHeap).</summary>
+            <exception cref="T:Loyc.Collections.EmptySequenceException">Thrown if the List is empty.</exception>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.TryPeek(System.Boolean@)">
+            <summary>Gets the largest item from the heap if it is not empty 
+            (or the smallest item, if this is a MinHeap).</summary>
+            <param name="isEmpty">Set to true if the heap is empty, false if not.</param>
+            <returns>The popped value, or default(T) if the List was empty.</returns>
+        </member>
+        <member name="M:Loyc.Collections.MaxHeap`3.Peek">
+            <summary>Gets the largest item from the heap
+            (or the smallest item, if this is a MinHeap).</summary>
+            <exception cref="T:Loyc.Collections.EmptySequenceException">Thrown if the List is empty.</exception>
+        </member>
+        <member name="T:Loyc.Collections.MinHeap`3">
+            <summary>Encapsulates algorithms for a min-heap, i.e. a priority queue 
+            that always knows the smallest item and can remove it in O(log Count) time,
+            or add a new item in O(log Count) time.
+            </summary>
+            <typeparam name="T">Item type</typeparam>
+            <typeparam name="TList">List type that the heap object is a wrapper for</typeparam>
+            <typeparam name="TComparer">Type used to compare items; an instance of this type 
+            must be provided to the constructor.</typeparam>
+            <remarks>
+            Call Push(T) to add a new item, Peek() to get the smallest item, 
+            and Pop() or TryPop(out bool) to remove the smallest item.
+            <para/>
+            Most users will want to use the derived classes <see cref="T:Loyc.Collections.MinHeap`1"/> 
+            or <see cref="T:Loyc.Collections.MinHeapInList`1"/> to avoid dealing with three type parameters.
+            Ideally this type would be a struct in order to maximize performance. 
+            It is a class so that it can re-use the code in <see cref="T:Loyc.Collections.MaxHeap`3"/>.
+            </remarks>
+            <seealso cref="T:Loyc.Collections.MinHeap`1"/>
+        </member>
+        <member name="T:Loyc.Collections.MaxHeap`1">
+            <summary>This is a max-heap, i.e. a priority queue that always knows the 
+            smallest item and can remove it in O(log Count) time, or add a new item 
+            in O(log Count) time. The ToMaxHeap extension method returns this type.</summary>
+            <remarks>
+            Call Push(T) to add a new item, Peek() to get the smallest item, 
+            and Pop() or TryPop(out bool) to remove the smallest item.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.MinHeap`1">
+            <summary>This is a min-heap, i.e. a priority queue that always knows the 
+            smallest item and can remove it in O(log Count) time, or add a new item 
+            in O(log Count) time. The ToMinHeap extension method returns this type.</summary>
+            <remarks>
+            Call Push(T) to add a new item, Peek() to get the smallest item, 
+            and Pop() or TryPop(out bool) to remove the smallest item.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.MaxHeapInList`1">
+            <summary>This priority queue wrapper type is returned from the AsMaxHeap() extension method.</summary>
+        </member>
+        <member name="T:Loyc.Collections.MinHeapInList`1">
+            <summary>This priority queue wrapper type is returned from the AsMinHeap() extension method.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Heap.AsMaxHeap``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IComparer{``0},System.Boolean)">
+            <summary>Returns a MaxHeapInList wrapper object, which treats the
+            list as a binary max-heap (priority queue). This function assumes
+            that the given list already represents a binary max-heap in which 
+            the child nodes of list[x] are list[x*2+1] and list[x*2+2]. If this
+            is not the case, you can either use ToMaxHeap() to make a copy with
+            the heap property, or call Heapify() on the result of this function.</summary>
+            <param name="compare">An object to be used to compare T values.</param>
+            <param name="heapify">Whether to rearrange items so that they have the heap property.</param>
+        </member>
+        <member name="M:Loyc.Collections.Heap.ToMaxHeap``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IComparer{``0},System.Boolean)">
+            <summary>Copies the list into a new object with the items arranged
+            as a max-heap (priority queue). Complexity: O(N).</summary>
+            <param name="compare">An object to be used to compare T values.</param>
+            <param name="heapify">Whether to rearrange items so that they have
+            the heap property. If the items are already arranged with the heap 
+            property, you can skip heapification by setting this to false.</param>
+        </member>
+        <member name="M:Loyc.Collections.Heap.AsMinHeap``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IComparer{``0},System.Boolean)">
+            <summary>Returns a MinHeapInList wrapper object, which treats the
+            list as a binary min-heap (priority queue). This function assumes
+            that the given list already represents a binary min-heap in which 
+            the child nodes of list[x] are list[x*2+1] and list[x*2+2]. If this
+            is not true, you can either use ToMinHeap() to make a copy with
+            the heap property, or call Heapify() on the result of this function.</summary>
+            <param name="compare">An object to be used to compare T values.</param>
+            <param name="heapify">Whether to rearrange items so that they have the heap property.</param>
+        </member>
+        <member name="M:Loyc.Collections.Heap.ToMinHeap``1(System.Collections.Generic.IList{``0},System.Collections.Generic.IComparer{``0},System.Boolean)">
+            <summary>Copies the list into a new object with the items arranged
+            as a min-heap (priority queue). Complexity: O(N).</summary>
+            <param name="compare">An object to be used to compare T values.</param>
+            <param name="heapify">Whether to rearrange items so that they have
+            the heap property. If the items are already arranged with the heap 
+            property, you can skip heapification by setting this to false.</param>
         </member>
         <member name="T:Loyc.Collections.Bijection`2">
             <summary>A bijection is a one-to-one function and its inverse. It is 
@@ -2987,19 +3185,13 @@
             <li>You can convert a mutable <see cref="T:Loyc.Collections.MMap`2"/> into an immutable
             <see cref="T:Loyc.Collections.Map`2"/>, a read-only dictionary that does not change when 
             you change the original MMap.</li>
-            <li>This class has an <see cref="M:Loyc.Collections.MMap`2.AddRange(Loyc.Collections.MMap{`0,`1},System.Boolean)"/> method.</li>
-            <li>This class has some bonus features: <see cref="M:Loyc.Collections.MapOrMMap`2.TryGetValue(`0,`1)"/>
-            returns a default value if the key is not present; <see cref="M:Loyc.Collections.MMap`2.AddIfNotPresent(`0,`1)"/>
-            only adds a pair if the collection does not already contain the key;
-            <see cref="M:Loyc.Collections.MMap`2.AddOrFind(System.Collections.Generic.KeyValuePair{`0,`1}@,System.Boolean)"/> can retrieve the current value and change it to
-            a new value at the same time; and <see cref="M:Loyc.Collections.MMap`2.GetAndRemove(`0,`1@)"/> can get a
-            value while it is being deleted.</li>
+            <li>This class has bonus methods defined by <see cref="T:Loyc.Collections.IDictionaryEx`2"/>.</li>
             <li>The persistent map operations <see cref="M:Loyc.Collections.MMap`2.Union(Loyc.Collections.MapOrMMap{`0,`1})"/>, 
             <see cref="M:Loyc.Collections.MMap`2.Intersect(Loyc.Collections.MapOrMMap{`0,`1})"/>, <see cref="M:Loyc.Collections.MMap`2.Except(Loyc.Collections.MapOrMMap{`0,`1})"/> and <see cref="M:Loyc.Collections.MMap`2.Xor(Loyc.Collections.MapOrMMap{`0,`1})"/> 
             combine two dictionaries to create a new dictionary, without modifying 
-            either of the original dictionaries. Equally interesting, the methods
-            <see cref="M:Loyc.Collections.MMap`2.With(`0,`1,System.Boolean)"/> and <see cref="M:Loyc.Collections.MMap`2.Without(`0)"/> create a new dictionary
-            with a single item added or removed.</li>
+            either of the original dictionaries.</li>
+            <li>The methods <see cref="M:Loyc.Collections.MMap`2.With(`0,`1,System.Boolean)"/> and <see cref="M:Loyc.Collections.MMap`2.Without(`0)"/> create a new 
+            dictionary with a single item added or removed.</li>
             </ul>
             The documentation of <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> describes how the data 
             structure works.
@@ -3040,20 +3232,18 @@
             <param name="replaceIfPresent">If true, values in the other collection
             replace values in this one. If false, the existing pairs in this map
             are not overwritten.</param>
-            <returns>The number of items that were added.</returns>
+            <returns>The number of new pairs added, whose keys didn't already exist.</returns>
             <remarks>Duplicates are allowed in the source data. If 
             <c>replaceIfPresent</c> is true, later values take priority over 
             earlier values, otherwise earlier values take priority.</remarks>
         </member>
-        <member name="M:Loyc.Collections.MMap`2.AddIfNotPresent(`0,`1)">
-            <summary>Adds an item to the map if the key is not present. If the 
-            key is already present, this method has no effect.</summary>
-            <returns>True if the pair was added, false if not.</returns>
+        <member name="M:Loyc.Collections.MMap`2.GetAndEdit(`0@,`1@,Loyc.Collections.DictEditMode)">
+            <inheritdoc cref="M:Loyc.Collections.IDictionaryEx`2.GetAndEdit(`0@,`1@,Loyc.Collections.DictEditMode)"/>
         </member>
         <member name="M:Loyc.Collections.MMap`2.AddOrFind(System.Collections.Generic.KeyValuePair{`0,`1}@,System.Boolean)">
-            <summary>Adds a pair to the map if the key is not present, retrieves 
-            the existing key-value pair if the key is present, and optionally
-            replaces the existing pair with a new pair.</summary>
+            <summary>For internal use. Adds a pair to the map if the key is not 
+            present, retrieves the existing key-value pair if the key is present, 
+            and optionally replaces the existing pair with a new pair.</summary>
             <param name="pair">When calling this method, pair.Key specifies the
             key that you want to search for in the map. If the key is not found
             then the pair is added to the map; if the key is found, the pair is
@@ -3067,13 +3257,13 @@
             <returns>True if the pair's key did NOT exist and was added, false 
             if the key already existed.</returns>
         </member>
-        <member name="M:Loyc.Collections.MMap`2.GetAndRemove(`0,`1@)">
+        <member name="M:Loyc.Collections.MMap`2.GetAndRemove(`0)">
             <summary>Gets the value associated with the specified key, then
             removes the pair with that key from the dictionary.</summary>
             <param name="key">Key to search for.</param>
-            <param name="valueRemoved">The value that was removed. If the key 
-            is not found, the value of this parameter is left unchanged.</param>
-            <returns>True if a pair was removed, false if not.</returns>
+            <returns>The value that was removed. If the key is not found, 
+            the result has no value (<see cref="P:Loyc.Maybe`1.HasValue"/> is false).</returns>
+            <remarks>This method shall not throw when the key is null.</remarks>
         </member>
         <member name="M:Loyc.Collections.MMap`2.GetAndRemove(System.Collections.Generic.KeyValuePair{`0,`1}@)">
             <summary>Gets the pair associated with <c>pair.Key</c>, then
@@ -4750,13 +4940,13 @@
             <code>
             public IEnumerator&lt;string> GetEnumerator()
             {
-            	return CoGetEnumerator().Unwrap();
+            	return GetCoEnumerator().Unwrap();
             }
-            public IEnumerator&lt;Co&lt;string>> CoGetEnumerator()
+            public IEnumerator&lt;Co&lt;string>> GetCoEnumerator()
             {
-            	yield return LeftChild.All();
+            	yield return LeftChild.GetCoEnumerator().All();
             	yield return Value;
-            	yield return RightChild.All();
+            	yield return RightChild.GetCoEnumerator().All();
             }
             </code>
             Simple, right? String is automatically converted to Co{string} so that you 

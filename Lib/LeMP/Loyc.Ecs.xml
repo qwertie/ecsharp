@@ -31,9 +31,9 @@
             and <see cref="F:Loyc.Syntax.CodeSymbols.TriviaAppendStatement"/> is required to suppress 
             it. The Loyc tree does not specify whether or not there is a newline before
             the closing brace; it is assumed that there should be a newline unless ALL
-            children of the braced block use #trivia_appendStatement.</li>
+            children of the braced block use %appendStatement.</li>
             <li>Implicitly, there is a newline before every top-level statement except 
-            the first, and #trivia_appendStatement can be used to suppress it.</li>
+            the first, and %appendStatement can be used to suppress it.</li>
             <li>By default, the printer doesn't print a newline before an opening brace.
             #trivia_newline can be added to the braced block node to represent one.</li>
             <li>This injector explicitly encodes newlines in all other locations. 
@@ -42,7 +42,7 @@
             non-braced-block child statements of certain nodes (if statements, while
             loops, for loops, and other statements used without braces), the printer
             will print a newline before a child statement if it (1) does not have 
-            #trivia_newline or #trivia_appendStatement attributes and (2) does not have 
+            #trivia_newline or %appendStatement attributes and (2) does not have 
             an ancestor with the <see cref="F:Loyc.Syntax.NodeStyle.OneLiner"/> style.</li>
             <li>In an if-else statement, `else` has no representation in the syntax 
             tree and may appear to the injector the same as a blank line. In this 
@@ -50,7 +50,7 @@
             and is deleted so that there is only one newline before the second child.</li>
             <li>Constructors that call another constructor (`: base(...)`) get a 
             newline before the colon by default, which can be suppressed with 
-            #trivia_appendStatement. Note: These constructors have an unusual syntax 
+            %appendStatement. Note: These constructors have an unusual syntax 
             tree which the standard trivia injector can't handle properly; see comment 
             in DoneAttaching() for details.</li>
             </ul>
@@ -115,6 +115,9 @@
             <para/>
             The results are undefined if the token was not produced by <see cref="T:Loyc.Ecs.Parser.EcsLexer"/>.
             </remarks>
+        </member>
+        <member name="T:Loyc.Ecs.EcsNodePrinterWriter">
+            <summary>Helper class of <see cref="T:Loyc.Ecs.EcsNodePrinter"/></summary>
         </member>
         <member name="T:Loyc.Ecs.Tests.EcsPrinterAndParserTests">
             <summary>Tests shared between the printer and the parser. Both tests
@@ -229,7 +232,7 @@
             When printing an expression, we avoid emitting <c>x | y == z</c> because 
             the ranges of == and | overlap. Instead <see cref="T:Loyc.Ecs.EcsNodePrinter"/> prints 
             <c>@`'|`(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
-            the <see cref="!:EcsNodePrinter.AllowChangeParentheses"/> option, which allows 
+            the <see cref="P:Loyc.Syntax.ILNodePrinterOptions.AllowChangeParentheses"/> option, which allows 
             parenthesis to be added so that a Loyc tree with the structure 
             <c>@`'|`(x, y == z)</c> is emitted as <c>x | (y == z)</c>, even though the 
             latter is a slightly different tree.
@@ -310,10 +313,13 @@
         <member name="M:Loyc.Ecs.EcsValidators.IsPropertyDefinition(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Ecs.EcsValidators.Pedantics)">
             <summary>Returns true iff the given node has a valid syntax tree for 
             a property definition, and gets the component parts of the definition.</summary>
-            <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+            <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal 
+            body, otherwise it's a getter-only body (e.g. int Foo => 42). Indexer 
+            properties can have an argument list, e.g. <c>T Foo[int x] { get; }</c>
+            would have a syntax tree like <c>#property(T, Foo, #(#var(#int32, x)), { get; })</c>.</remarks>
         </member>
-        <member name="M:Loyc.Ecs.EcsValidators.IsVariableDeclExpr(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@)">
-            <summary>Verifies that a declaration of a single variable is valid and gets its parts.</summary>
+        <member name="M:Loyc.Ecs.EcsValidators.IsVariableDeclExpr(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Verifies that a declaration of a single variable is valid, and gets its parts.</summary>
             <param name="expr">Potential variable or field declaration</param>
             <param name="type">Variable type (empty identifier if `var`)</param>
             <param name="name">Variable name (identifier or $substutution expr)</param>
@@ -325,6 +331,16 @@
             <remarks>A type parameter definition must be a simple symbol with at 
             most one #in or #out attribute, and at most one #where attribute with
             an argument list consisting of complex identifiers.</remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsIsTest(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Checks whether an expression is a valid "is" test (pattern-
+            matching expression) such as "x is Foo", "x is Foo y" or "x is Foo y(z)".</summary>
+            <remarks>The format of a valid "is" test is <c>@'is(subject, type_or_vardecl, extraArgsList)</c>.
+            For example <c>a is Foo</c> would be <c>@'is(a, Foo)</c> and
+            <c>a is Foo b(c, d)</c> would be <c>@'is(a, #var(Foo, b), #(c, d))</c>.
+            Unary "is" expressions like <c>is Foo</c> are stored as binary expressions 
+            with an empty identifier as the left-hand side: <c>@'is(@``, Foo)</c>.
+            </remarks>
         </member>
         <member name="M:Loyc.Ecs.EcsValidators.KeyNameComponentOf(Loyc.Syntax.LNode)">
             <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
@@ -360,7 +376,7 @@
             <see cref="F:Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter"/> or via
             <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/>. This class does have some static
             methods like <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintLiteral(System.Object,Loyc.Syntax.NodeStyle)"/> and 
-            <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintId(Loyc.Symbol,System.Boolean)"/> that are useful for printing tokens efficiently.
+            <see cref="M:Loyc.Ecs.EcsNodePrinter.PrintId(Loyc.Symbol,Loyc.Ecs.EcsNodePrinter.IdPrintMode)"/> that are useful for printing tokens efficiently.
             <para/>
             This class is designed to faithfully preserve most Loyc trees; almost any 
             Loyc tree that can be represented as EC# source code will be represented 
@@ -379,9 +395,9 @@
             source code locations and the <see cref="P:Loyc.Syntax.LNode.Style"/> are, in 
             general, lost, although the printer can faithfully reproduce some (not 
             all) <see cref="T:Loyc.Syntax.NodeStyle"/>s (this caveat applies equally to LES). Also, 
-            any attribute whose Name starts with "#trivia_" may be dropped, because 
-            these attributes are considered extensions of the NodeStyle. However, the 
-            style indicated by the #trivia_* attribute will be used if the printer 
+            any attribute whose Name starts with the trivia marker % may be dropped, 
+            because these attributes are considered extensions of the NodeStyle. 
+            However, the style indicated by the % attribute will be used if the printer 
             recognizes it.
             <para/>
             For round-tripping to work, there are a couple of restrictions on the 
@@ -403,13 +419,13 @@
             </remarks>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.StartStmt">
-            <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
+            <summary>Context: beginning of statement (Named argument operator not supported, allow multiple #var decl)</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.StartExpr">
             <summary>Context: beginning of expression (#var must have initial value)</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.ContinueExpr">
-            <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
+            <summary>Context: middle of expression, top level (#var and named arguments not supported)</summary>
         </member>
         <member name="T:Loyc.Ecs.EcsNodePrinter.SPResult">
             <summary>Result from statement printer</summary>
@@ -484,7 +500,9 @@
             block, so #result can be represented by omitting a semicolon.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.TypeContext">
-            <summary>An expression is being printed in a context where a type is expected.</summary>
+            <summary>The "expression" being printed is a type, or part of a type,
+            which may have special printing rules (e.g. consider <c>Foo?[]</c>, 
+            <c>List&lt;(X,Y)></c>.</summary>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.InDefinitionName">
             <summary>The expression being printed is a complex identifier that
@@ -551,8 +569,8 @@
         <member name="F:Loyc.Ecs.NewlineOpt.Default">
             <summary>Default value of EcsNodePrinter.NewlineOptions</summary>
             <remarks>Oct 2016: Some defaults have been turned off because newlines can 
-            now be added with #trivia_newline, and turning on some NewlineOpts currently
-            causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline
+            now be added with %newline, and turning on some NewlineOpts currently
+            causes double newlines (i.e. a blank line) when the LNode uses %newline
             at the same time.</remarks>
         </member>
         <member name="T:Loyc.Ecs.EcsPrinterOptions">
@@ -585,11 +603,12 @@
             </remarks>
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.DropNonDeclarationAttributes">
-            <summary>Suppresses printing of all attributes that are not on 
-            declaration or definition statements (such as classes, methods and 
-            variable declarations at statement level). Also, avoids prefix notation 
-            when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
-            can be printed "a+b" instead.</summary>
+            <summary>Suppresses printing of attributes inside methods and inside
+            subexpressions, except on declaration or definition statements where
+            attributes are normally allowed (such as classes, methods and generic
+            type parameters). This option also avoids prefix notation when the 
+            attributes would have required it, e.g. <c>@+([Foo] a, b)</c> can be 
+            printed "a + b" instead.</summary>
         </member>
         <member name="P:Loyc.Ecs.EcsPrinterOptions.OmitMissingArguments">
             <summary>When an argument to a method or macro has an empty name (@``),
@@ -644,9 +663,6 @@
         <member name="P:Loyc.Ecs.EcsPrinterOptions.SpaceAfterPrefixStopPrecedence">
             <summary>The printer avoids printing spaces after prefix operators 
             that have the specified precedence or higher.</summary>
-        </member>
-        <member name="T:Loyc.Ecs.EcsNodePrinterWriter">
-            <summary>Helper class of <see cref="T:Loyc.Ecs.EcsNodePrinter"/></summary>
         </member>
     </members>
 </doc>

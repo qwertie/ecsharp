@@ -108,6 +108,10 @@
             This option causes the Token.Value to be set to a default, like '\0' for 
             single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
         </member>
+        <member name="M:Loyc.Syntax.Les.Les3Lexer.GetOperatorTokenType(Loyc.UString)">
+            <summary>Under the assumption that <c>op</c> is a sequence of punctuation 
+            marks that forms a legal operator, this method decides its TokenType.</summary>
+        </member>
         <member name="M:Loyc.Syntax.Les.Les3Parser.Start(Loyc.Holder{Loyc.Syntax.Les.TokenType})">
             <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
             <param name="separator">If there are multiple expressions, the Value of 
@@ -267,7 +271,7 @@
             using an empty attribute list [] to allow perfect round-tripping.</summary>
             <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
             <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-            add the trivia attribute #trivia_inParens.)</remarks>
+            add the trivia attribute %inParens.)</remarks>
         </member>
         <member name="P:Loyc.Syntax.Les.Les3PrinterOptions.OmitSpaceTrivia">
             <summary>When this flag is set, space trivia attributes are ignored
@@ -352,7 +356,7 @@
             <summary>A prefix or suffix on the literal that represents some 
             additional meaning.</summary>
             <remarks>In LESv3, this field becomes the sole parameter <c>s</c> 
-            of a <c>#trivia_literalType(s)</c> attribute attached to the <see cref="T:Loyc.Syntax.LNode"/>
+            of a <c>`%literalType`(s)</c> attribute attached to the <see cref="T:Loyc.Syntax.LNode"/>
             that represents the literal.</remarks>
         </member>
         <member name="T:Loyc.Syntax.Les.Les2LanguageService">
@@ -391,12 +395,12 @@
             using an empty attribute list [] to allow perfect round-tripping.</summary>
             <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
             <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-            add the trivia attribute #trivia_inParens.)</remarks>
+            add the trivia attribute <c>%inParens</c>.)</remarks>
         </member>
         <member name="P:Loyc.Syntax.Les.Les2PrinterOptions.PrintTriviaExplicitly">
             <summary>Causes comments and spaces to be printed as attributes in order 
             to ensure faithful round-trip parsing. By default, only "raw text" and
-            unrecognized trivia is printed this way. Note: #trivia_inParens is 
+            unrecognized trivia is printed this way. Note: <c>%inParens</c> is 
             always printed as parentheses, and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia"/> 
             has no effect when this flag is true.</summary>
         </member>
@@ -445,19 +449,21 @@
         <member name="P:Loyc.Syntax.Les.INodePrinterWriter.Target">
             <summary>Gets the object being written to (TextWriter or StringBuilder)</summary>
         </member>
+        <member name="M:Loyc.Syntax.Les.INodePrinterWriter.Reset">
+            <summary>Called when a new, separate printing operation begins.</summary>
+        </member>
         <member name="T:Loyc.Syntax.Les.NodePrinterWriterBase">
             <summary>Abstract base class for <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>. Has an
             protected <c>_indentLevel</c> field that is increased by Indent() and 
             decreased by Dedent().</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.DefaultNodePrinterWriter">
-            <summary>Base class for the helper classes of <see cref="T:Loyc.Syntax.Les.Les2Printer"/>
-            and <see cref="!:Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
-            EcsNodePrinterWriter. See <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>.</summary>
+            <summary>Base class for token-printing helper classes.
+            See <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>.</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.Les2PrinterWriter">
-            <summary>Helper class of <see cref="T:Loyc.Syntax.Les.Les2Printer"/> that ensures there is 
-            a tokens are spaced apart properly.</summary>
+            <summary>Helper class of <see cref="T:Loyc.Syntax.Les.Les2Printer"/> that ensures 
+            tokens are spaced apart properly.</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.LesPrecedence">
              <summary>Contains <see cref="T:Loyc.Syntax.Precedence"/> objects that represent the 
@@ -684,8 +690,8 @@
              start with a single quote in LES <b>do</b> start with a single quote
              in the final output (e.g. <c>2 + 2</c> is equivalent to <c>2 '+ 2</c>).
              There is an exception: While prefix ++ and -- are named <c>'++</c> and 
-             <c>'--</c>, the suffix versions are named <c>'++suf</c> and 
-             <c>'--suf</c> in the output tree. For LESv2 operators surrounded by 
+             <c>'--</c>, the suffix versions are named <c>'suf++</c> and 
+             <c>'suf--</c> in the output tree. For LESv2 operators surrounded by 
              `backquotes`, the backquotes are not included in the output tree (e.g.
              <c>`sqrt` x</c> is equivalent to <c>sqrt(x)</c>).
              </remarks>
@@ -703,8 +709,9 @@
         <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.Find(Loyc.Syntax.OperatorShape,System.Object,System.Boolean,System.Boolean)">
             <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
             <param name="shape">Specifies which precedence table and rules to use 
-            (Prefix, Suffix or Infix). Note: when this is Suffix, "suf" must not be 
-            part of the name in <c>op</c> (see <see cref="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@)"/>)</param>
+            (Prefix, Suffix or Infix). Note: when this is Suffix, "_" is not expected 
+            to be part of the name in <c>op</c>, i.e. op should be a Symbol like "'++" 
+            rather than "'_++" (see also <see cref="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@)"/>)</param>
             <param name="op">Parsed form of the operator. op must be a Symbol, but 
             the parameter has type object to avoid casting Token.Value in the parser.</param>
         </member>
@@ -715,14 +722,17 @@
             <summary>Returns true if this character is one of those that can appear 
             in "extended" LESv3 operators that start with an apostrophe.</summary>
         </member>
-        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator(System.String)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator(Loyc.UString)">
             <summary>Returns true if the given Symbol can be printed as an operator 
             without escaping it in LESv2.</summary>
             <remarks>The parser should read something like <c>+/*</c> as an operator
             with three characters, rather than "+" and a comment, but the printer 
             is more conservative, so this function returns false in such a case.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsExtendedOperator(System.String,System.String)">
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperatorToken(Loyc.UString)">
+            <summary>Like <see cref="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator(Loyc.UString)"/>, but doesn't expect name[0] is apostrophe.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsExtendedOperatorToken(Loyc.UString)">
             <summary>Returns true if the given Symbol can ever be used as an "extended" 
             binary operator in LESv3.</summary>
             <remarks>A binary operator's length must be between 2 and 255, its name must
@@ -732,17 +742,18 @@
         </member>
         <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.ToSuffixOpName(System.Object)">
             <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
-            the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
+            the suffix form of the name, such as <c>(Symbol)"'suf++"</c>.</summary>
             <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
         </member>
         <member name="M:Loyc.Syntax.Les.Les2PrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@)">
-            <summary>Decides whether the name appears to represent a suffix operator 
-            of the form <c>sufOP</c> or <c>OP\</c>.</summary>
+            <summary>Decides whether the name appears to represent a suffix operator.</summary>
             <param name="name">Potential operator name to evaluate.</param>
-            <param name="bareName">If the name ends with "suf", this is the same 
-            name without "suf", otherwise it is set to <c>name</c> itself. This
-            output is calculated even if the function returns false.
-            IsNaturalOperator(bareName) is true if the function returns true.</param>
+            <param name="bareName">If the name begins with "'suf", this is the same name with
+            "suf" removed, otherwise it is set to <c>name</c> itself. This output is 
+            calculated even if the function returns false.</param>
+            <remarks>This method doesn't verify that the operator IS a legal suffix 
+            operator, just that it has the form of one. More specifically, when
+            the function returns true, IsNaturalOperator(bareName.Name) is true.</remarks>
         </member>
         <member name="T:Loyc.Syntax.Les.TokenExt">
             <summary>Provides the <c>Type()</c> extension method required by 
@@ -753,14 +764,12 @@
             <summary>Converts <c>t.TypeInt</c> to <see cref="T:Loyc.Syntax.Les.TokenType"/>.</summary>
         </member>
         <member name="M:Loyc.Syntax.Les.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
-            <summary>Expresses an LES token as a string.</summary>
+            <summary>Expresses a token as a string, using LES printers for identifiers and literals.</summary>
             <remarks>Note that some Tokens do not contain enough information to
             reconstruct a useful token string, e.g. comment tokens do not store the 
             comment but merely contain the location of the comment in the source code.
             For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
             to its source file, so this method cannot return the original string.
-            <para/>
-            The results are undefined if the token was not produced by <see cref="T:Loyc.Syntax.Les.Les2Lexer"/>.
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.Lexing.BaseILexer`2">
@@ -768,7 +777,7 @@
             <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>. You should use this base class if you want to 
             wrap your lexer in a postprocessor such as <see cref="T:Loyc.Syntax.Lexing.IndentTokenGenerator"/> 
             or <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>. It can also be used with the <see 
-            cref="M:Loyc.Collections.LinqToLists.Buffered``1(System.Collections.Generic.IEnumerator{``0})"/> extension method to help feed data to your parser.
+            cref="!:LinqToLists.Buffered"/> extension method to help feed data to your parser.
             </summary>
             <remarks>
             Important: the derived class must call <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline"/> after
@@ -1776,9 +1785,8 @@
             identifiers.
             </remarks>
         </member>
-        <member name="F:Loyc.Syntax.Lexing.TokenKind.Spaces">
-            <summary>Spaces, tabs, non-semantic newlines, and EOF</summary>
-            <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Other">
+            <summary>For token types not covered by other token kinds.</summary>
         </member>
         <member name="F:Loyc.Syntax.Lexing.TokenKind.Comment">
             <summary>Single- and multi-line comments</summary>
@@ -1811,8 +1819,9 @@
         <member name="F:Loyc.Syntax.Lexing.TokenKind.OtherKeyword">
             <summary>e.g. sizeof, struct. Does not include literal keywords (true, false, null)</summary>
         </member>
-        <member name="F:Loyc.Syntax.Lexing.TokenKind.Other">
-            <summary>For token types not covered by other token kinds.</summary>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Spaces">
+            <summary>Spaces, tabs, non-semantic newlines, and EOF</summary>
+            <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
         </member>
         <member name="F:Loyc.Syntax.Lexing.TokenKind.BracketFlag">
             <summary>Openers and closers all have this bit set.</summary>
@@ -1829,74 +1838,6 @@
             <remarks>
             The close bracketis not treated as one of the children of the opening bracket.
             </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.ILNode">
-            <summary>A read-only interface for objects that act as Loyc trees.</summary>
-            <remarks>
-            To simplify implementations of this interface, there is no separate 
-            list of attributes and arguments; ILNode itself acts as a list of child
-            nodes. The argument list is numbered from 0 to Max, so the number of 
-            arguments is <c>Max + 1</c> (which is what the ArgCount() extension method 
-            returns).
-            <para/>
-            A node with no children must report <c>Min = -1</c> and <c>Max = -2</c>,
-            or some extension methods will malfunction.
-            <para/>
-            You can think of any node <c>N</c> as having a single contiguous list 
-            of child nodes indexed from <c>N.Min</c> to <c>N.Max</c>. Items with
-            non-negative indexes (e.g. <c>N[0], N[1]</c>) are arguments; <c>N[-1]</c>
-            is an alias for <c>Target</c>; and indexes below -1 refer to attributes
-            (e.g. <c>N[-2]</c> is the last attribute in the attribute list)
-            <para/>
-            ArgCount() and AttrCount() are implemented as extension methods; they
-            return <c>Max + 1</c> and <c>-Min - 1</c> respectively (note: ArgCount()
-            is different from <see cref="P:Loyc.Syntax.LNode.ArgCount"/> in case 
-            <c>Kind != LNodeKind.Call</c>: ArgCount() returns -1 in that case while
-            <see cref="P:Loyc.Syntax.LNode.ArgCount"/> reurns zero.
-            <para/>
-            The IsId(), IsLiteral() and IsCall() extension methods are useful 
-            shorthand for testing the <see cref="P:Loyc.Syntax.ILNode.Kind"/> property.
-            <para/>
-            The Attrs() and Args() extension methods return slices of this node
-            corresponding to the attributes and arguments.
-            <para/>
-            Tip: the LES node printer can print any ILNode as a string. See
-            <see cref="M:Loyc.Syntax.Les.Les3LanguageService.Print(Loyc.Syntax.ILNode,System.Text.StringBuilder,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,Loyc.Syntax.ILNodePrinterOptions)"/>
-            </remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNode.Kind">
-            <inheritdoc cref="P:Loyc.Syntax.LNode.Kind"/>
-        </member>
-        <member name="P:Loyc.Syntax.ILNode.Name">
-            <inheritdoc cref="P:Loyc.Syntax.LNode.Name"/>
-        </member>
-        <member name="P:Loyc.Syntax.ILNode.Target">
-            <inheritdoc cref="P:Loyc.Syntax.LNode.Target"/>
-        </member>
-        <member name="P:Loyc.Syntax.ILNode.Range">
-            <inheritdoc cref="P:Loyc.Syntax.LNode.Range"/>
-        </member>
-        <member name="P:Loyc.Syntax.ILNode.Style">
-            <inheritdoc cref="P:Loyc.Syntax.LNode.Style"/>
-        </member>
-        <member name="M:Loyc.Syntax.ILNode.CallsMin(Loyc.Symbol,System.Int32)">
-            <summary>Returns true if <c>Kind == LNodeKind.Call</c>, <c>Name == name</c>, 
-            and <c>Max + 1 >= argCount</c>.</summary>
-            <seealso cref="M:Loyc.Syntax.LNodeExt.Calls(Loyc.Syntax.ILNode,Loyc.Symbol)"/>
-        </member>
-        <member name="M:Loyc.Syntax.ILNode.Calls(Loyc.Symbol,System.Int32)">
-            <summary>Returns true if <c>Name == name</c> and <c>Max + 1 == argCount</c>
-            (which implies <c>Kind == LNodeKind.Call</c> if argCount != -1).</summary>
-            <remarks>This could have been an extension method, but when verifying that
-            you have a certain kind of node, it's common to check <i>both</i> the Name 
-            and ArgCount(); checking both in one call avoids extra interface invocations.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.IToLNode">
-            <summary>An interface for objects that can be converted to <see cref="T:Loyc.Syntax.LNode"/>.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.IToLNode.ToLNode">
-            <summary>Converts this object to an <see cref="T:Loyc.Syntax.LNode"/>, or returns 
-            <c>this</c> if the object is already an <see cref="T:Loyc.Syntax.LNode"/>.</summary>
         </member>
         <member name="T:Loyc.Syntax.ILNodePrinter">
             <summary>This interface allows serializing <see cref="T:Loyc.Syntax.LNode"/> objects into the
@@ -1944,111 +1885,10 @@
             <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
             <param name="printer">Printer to be used for each single LNode.</param>
             <remarks>The newline between two nodes is suppressed if the second 
-            node has a <c>#trivia_appendStatement</c> attribute.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.ILNodePrinterOptions">
-            <summary>A set of relatively universal printing options that 
-            <see cref="T:Loyc.Syntax.LNodePrinter"/>s should understand.</summary>
-            <seealso cref="T:Loyc.Syntax.LNodePrinterOptions"/>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.AllowChangeParentheses">
-            <summary>Indicates that it is preferable to add (or remove) parenthesis 
-            to produce good-looking output, rather than to express faithfully whether 
-            or not parentheses were present in the Loyc tree being printed.</summary>
-            <remarks>For example, the Loyc tree <c>x * `+`(a, b)</c> (LESv3 notation)
-            will be printed <c>x * (a + b)</c>, which is a slightly different tree 
-            (the parenthesis add the trivia attribute #trivia_inParens.)</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.OmitComments">
-            <summary>When this flag is set, comment trivia attributes are suppressed
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia">
-            <summary>Causes trivia that the printer does not recognize (other than 
-            comments, spaces and raw text) to be dropped from the output rather than
-            printed as attributes.</summary>
-            <remarks>Note: Some printers may force all unknown trivia to be dropped.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.PrintTriviaExplicitly">
-            <summary>If supported by the printer, this option causes comments and 
-            spaces to be printed as attributes in order to ensure faithful round-trip 
-            parsing.</summary>
-            <remarks>Note: Some printers may ignore <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitUnknownTrivia"/>,
-            and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.OmitComments"/> when this flag is true.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.CompatibilityMode">
-            <summary>If there are multiple ways to print a given node, this option 
-            indicates that the printer should prefer an older, more compatible 
-            syntactic style over new ones, where applicable.</summary>
-            <remarks>For example, it tells the EC# printer to use C# printing mode.
-            This option does not prevent printing of new constructs if such are 
-            present in the code, however.
-            </remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.CompactMode">
-            <summary>When this flag is set, the amount of whitespace in the output
-            is reduced in a printer-defined way, in order to save bits.</summary>
-            <remarks>This option should not suppress newlines, indents or trivia.
-            To suppress newlines or indents, the user can use empty strings for 
-            <see cref="P:Loyc.Syntax.ILNodePrinterOptions.IndentString"/> and <see cref="P:Loyc.Syntax.ILNodePrinterOptions.NewlineString"/>.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.IndentString">
-            <summary>Specifies the string to use for each level of indentation of 
-            nested constructs in the language, e.g. a tab or four spaces.</summary>
-            <remarks>
-            If this option is null, the printer should use its default indent string.
-            <para/>
-            Indentation-sensitive languages should treat an empty string the same as null.
-            </remarks>
-        </member>
-        <member name="P:Loyc.Syntax.ILNodePrinterOptions.NewlineString">
-            <summary>Specifies the string to use for line breaks (typically "\n").</summary>
-            <remarks>
-            If this option is null, the printer should use its default newline string, which
-            is almost always "\n".
-            <para/>
-            Newline-sensitive languages should treat an empty string the same as null.
-            <para/>
-            This string may or may not be used for line breaks inside multiline strings, 
-            depending on how strings are defined in the language being printed.
-            </remarks>
+            node has a <c>%appendStatement</c> attribute.</remarks>
         </member>
         <member name="T:Loyc.Syntax.LNodePrinterOptions">
             <summary>A concrete class that users can pass to an <see cref="T:Loyc.Syntax.LNodePrinter"/>.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.ParsingMode">
-            <summary>Standard parsing modes used with <see cref="T:Loyc.Syntax.IParsingService"/> and
-            <see cref="T:Loyc.Syntax.ILNodePrinterOptions"/>.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Expressions">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input 
-            as a single expression or expression list (which, in most languages, 
-            is comma-separated).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Statements">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
-            as a list of statements. If the language makes a distinction between 
-            executable and declaration contexts, this refers to the executable 
-            context.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Declarations">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
-            as a list of statements. If the language makes a distinction between 
-            executable and declaration contexts, this refers to the declaration
-            context, in which types, methods, and properties are recognized.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Types">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
-            as a list of types (or a single type, if a list is not supported).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.FormalArguments">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
-            as a formal argument list (parameter names with types).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.ParsingMode.File">
-            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode,System.Boolean)"/> to treat the input
-            as a complete source file (this should be the default, i.e. null will
-            do the same thing).</summary>
         </member>
         <member name="T:Loyc.Syntax.BaseParser`2">
             <summary>
@@ -2327,11 +2167,23 @@
             A list of common symbols that have special meaning somewhere in Loyc or EC#:
             operators, built-in data types, keywords, trivia, etc.
             </summary>
+            <remarks>
+            Code that can use symbol forms directly, such as "'!=", tends to be very compact.
+            The symbols in this class tend to be abbreviated in order to make usages of this 
+            class more compact (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.NotEq"/> is short like its corresponding 
+            symbol "'!="). In C# one can access these symbols more easily with 
+            <c>using static Loyc.Syntax.CodeSymbols</c> or with
+            <c>using S = Loyc.Syntax.CodeSymbols</c> as the Loyc codebase does.
+            <para/>
+            Some symbols have an alternate name that starts with an underscore. For example,
+            <c>_Negate</c> represents the unary minus operator, but in fact it is the same
+            symbol as the subtraction operator <c>Sub</c>, <c>'-</c>.
+            </remarks>
         </member>
         <member name="F:Loyc.Syntax.CodeSymbols.AltList">
             <summary># is used for lists of things in definition constructs, e.g. 
                 <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
-            For a time, #tuple was used for this purpose; the problem is that a
+            For a time, 'tuple was used for this purpose; the problem is that a
             find-and-replace operation intended to find run-time tuples could 
             accidentally match one of these lists. So I decided to dedicate # 
             for use inside special constructs; its meaning depends on context.
@@ -2385,11 +2237,8 @@
             current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
             form of <c>using X = Y</c> in EC#.</summary>
         </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.TriviaRawText">
-            `[#trivia_rawText("eat my shorts!")] x;` is printed as "eat my shorts!x;".
-        </member>
         <member name="F:Loyc.Syntax.CodeSymbols.TriviaWordAttribute">
-            "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
+            "%wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
         </member>
         <member name="F:Loyc.Syntax.CodeSymbols.RawText">
             #rawText must be a call with a single literal argument. The Value of
@@ -2501,7 +2350,7 @@
         </member>
         <member name="P:Loyc.Syntax.ParsingService.Default">
             <summary>Gets or sets the default language service on this thread. If 
-            no service has been assigned on this thread, returns <see cref="!:LesLanguageService.Value"/>.</summary>
+            no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.Les2LanguageService.Value"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.ParsingService.RegisteredLanguages">
             <summary>Dictionary of registered parsing services, keyed by file extension 
@@ -2584,9 +2433,6 @@
             <summary>Helper class used to enumerate <see cref="M:Loyc.Syntax.LNode.Descendants(Loyc.Syntax.NodeScanMode)"/>().</summary>
             <remarks>TODO code review</remarks>
         </member>
-        <member name="T:Loyc.Syntax.LNodeKind">
-            <summary>The three kinds of nodes in a Loyc tree</summary>
-        </member>
         <member name="T:Loyc.Syntax.LNode">
              <summary>All nodes in a Loyc syntax tree share this base class.</summary>
              <remarks>
@@ -2596,184 +2442,19 @@
              <li>A <see cref="T:Loyc.Syntax.LiteralNode"/> is a literal constant, such as 123 or "hello"</li>
              <li>A <see cref="T:Loyc.Syntax.CallNode"/> encompasses all other kinds of nodes, such as
              normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
-             (represented as <c>#of(f, x)</c>), braced blocks of statements (represented as
-             <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
-             are represented as a call with one argument and <c>null</c> as the <see cref="P:Loyc.Syntax.LNode.Target"/>.</li>
+             (represented as <c>@'of(f, x)</c>), braced blocks of statements (represented as
+             <c>@`'{}`(stmt1, stmt2, ...)</c>), and so on.</li>
              </ul>
+             See http://loyc.net/loyc-trees to learn more about the Loyc tree concept.
+             <para/>
              This class provides access to all properties of all three types of nodes,
              in order to make this class easier to access from plain C#, and to avoid
-             unnecessary downcasting in some cases.
+             unnecessary downcasting in some cases. In fact, you never need to use the
+             derived classes; you can think of them simply as a way of optimizing the
+             implementation.
              <para/>
-             Loyc nodes are always immutable, except for the 8-bit <see cref="P:Loyc.Syntax.LNode.Style"/> 
-             property which normally affects printing only.
-             <para/>
-             <h3>Background information</h3>
-             <para/>
-             EC# (enhanced C#) is intended to be the starting point of the Loyc 
-             (Language of your choice) project, which will be a family of programming
-             languages that will share a common representation for the syntax tree and 
-             other compiler-related data structures.
-             <para/>
-             Just as LLVM assembly has emerged as a nearly universal standard 
-             intermediate representation for back-ends, Loyc nodes are intended to be a 
-             universal intermediate representation for syntax trees, and Loyc will 
-             (eventually) include a generic set of tools for semantic analysis so that
-             it provides a generic representation for front-ends.
-             <para/>
-             EC#, then, will be the first language to use the Loyc syntax tree 
-             representation, known as the "Loyc tree" for short. Most syntax trees are 
-             very strongly typed, with separate data types for, say, variable 
-             declarations, binary operators, method calls, method declarations, unary 
-             operators, and so forth. Loyc, however, defines only three types of Nodes,
-             and this one class provides access to all the parts of a node. There are 
-             several reasons for this design:
-             <ul>
-             <li>Simplicity. Many compilers have thousands of lines of code dedicated 
-               to the AST (abstract syntax tree) data structure itself, because each 
-               kind of AST node has its own class.</li>
-             <li>Serializability. Loyc nodes can always be serialized to a plain text 
-               "prefix tree" and deserialized back to objects, even by programs that 
-               are not designed to handle the language that the tree represents*. This 
-               makes it easy to visualize syntax trees or exchange them between 
-               programs.</li>
-             <li>Extensibility. Loyc nodes can represent any language imaginable, and
-               they are suitable for embedded DSLs (domain-specific languages). Since 
-               nodes do not enforce a particular structure, they can be used in 
-               different ways than originally envisioned. For example, most languages 
-               only have "+" as a binary operator, that is, with two arguments. If  
-               Loyc had a separate class for each AST, there would probably be a 
-               PlusOperator class derived from BinaryOperator, or something, with 
-               properties "Left" and "Right". But since there is only one node class, 
-               a "+" operator with three arguments is always possible; this is denoted 
-               by #+(a, b, c) in EC# source code.</li>
-             </ul>
-               * Currently, the only supported languages for plain-text Loyc trees are 
-                 LES and EC# (either normal EC# or prefix-tree notation).
-             <para/>
-             Loyc trees are comparable to LISP trees, except that "attributes" and
-             position information are added to the tree, and the concept of a "list" 
-             is replaced with the concept of a "call", which I feel is a more 
-             intuitive notion in most programming languages that are not LISP.
-             <para/>
-             Loyc's representation is both an blessing and a curse. The advantage is 
-             that Loyc nodes can be used for almost any purpose, perhaps even 
-             representing data instead of code in some cases. However, there is no 
-             guarantee that a given AST follows the structure prescribed by a particular 
-             programming language, unless a special validation step is performed after 
-             parsing. In this way, Loyc trees are similar to XML trees, only simpler.
-             <para/>
-             Another major disadvantage is that it is more difficult to interpret a 
-             syntax tree correctly: you have to remember that a method definition has 
-             the structure <c>#fn(return_type, name, args, body)</c>, so if "node" is 
-             a method definition then <c>node.Args[2]</c> represents the argument 
-             list, for example. In contrast, most compilers have an AST class called 
-             <c>MethodDefinition</c> or something, that provides properties such as 
-             Name and ReturnType. If EC# is ever done, however, aliases could help 
-             avoid this problem by providing a more friendly veneer over the raw nodes.
-             <para/>
-             For optimization purposes, the node class is a class hierarchy, but most 
-             users should only use this class.
-             <para/>
-             <see cref="T:Loyc.Syntax.LNode"/>s are "persistent" in the comp-sci sense, which 
-             means that they are immutable, that a subtree can be shared among 
-             multiple syntax trees, and that nodes do not know their own parents, 
-             which allows a single node to exist at multiple locations in a syntax tree.
-             This makes manipulation of trees convenient, as there is no need to 
-             "detach" a node from one place, or duplicate it, before it can be inserted 
-             in another place.
+             Loyc nodes are always immutable.
             
-             <h3>The reimplementation</h3>
-             
-             This implementation has been redesigned (in Subversion, the last version
-             based on the old design is revision 289.) The core concept is the same as 
-             described in my blog at
-             http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html
-             except that the concept of a "Head" has mostly been eliminated, although
-             you might see it occasionally because it still has a meaning. The "head"
-             of a node refers either to the Name of a symbol, the Value of a literal,
-             or the Target of a call (i.e. the name of the method being called, which
-             could be an arbitrarily complex node). In the original implementation, it 
-             was also possible to have a complex head (a head that is itself a node) 
-             even when the node was not a call; this situation was used to represent
-             an expression in parenthesis.
-             <para/>
-             This didn't quite feel right, so I changed it. Now, only calls can be
-             "complex", and the head of a call (the method being called) is called 
-             the Target.
-             <para/>
-             In the new version, there are explicitly three types of nodes: symbols, 
-             literals, and calls. There is no longer a Head property, instead there 
-             are three separate properties for the three kinds of heads, <see 
-             cref="P:Loyc.Syntax.LNode.Name"/> (a Symbol), <see cref="P:Loyc.Syntax.LNode.Value"/> (an Object), and <see 
-             cref="P:Loyc.Syntax.LNode.Target"/> (an LNode). Only call nodes have a Target, and only 
-             literal nodes have a Value. Identifier nodes have a Name, but I thought 
-             it would be useful for some call nodes to also have a Name, which is 
-             defined as the name of the Target if the Target is an identifier (if 
-             the Target is not a symbol, the call has no name.)
-             <para/>
-             An expression in parenthesis is now represented by a call with the
-             #trivia_inParens attribute; use <see cref="M:Loyc.Syntax.LNodeExt.IsParenthesizedExpr(Loyc.Syntax.LNode)"/> to 
-             detect the parentheses.
-             <para/>
-             The problems that motivated a redesign are described at
-             http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html
-             <para/>
-             One very common use of mutable nodes is building lists of statements, e.g. 
-             you might create an empty braced block or an empty loop and then add 
-             statements to the body of the block or loop. To do this without mutable 
-             nodes, create a mutable <see cref="T:Loyc.Collections.WList`1"/> instead and add 
-             statements there; once the list is finished, create the braced block or
-             loop afterward. The new design stores arguments and attributes in 
-             <see cref="T:Loyc.Collections.VList`1"/> objects; you can instantly convert your WList 
-             to a VList by calling <see cref="M:Loyc.Collections.WListBase`1.ToVList"/>.
-             <para/>
-             During the redesign I've decided on some small changes to the representation
-             of certain expressions in EC#.
-             <ul>
-             <li>The '.' operator is now treated more like a normal binary operator; 
-                 <c>a.b.c</c> is now represented <c>@.(@.(a, b), c)</c> rather than 
-                 <c>@.(a, b, c)</c> mainly because it's easier that way, and because the 
-                 second representation doesn't buy anything significant other than a 
-                 need for special-casing.</li>
-             <li><c>int x = 0</c> will now be represented <c>#var(int, x = 0)</c>
-                 rather than <c>#var(int, x(0))</c>. I chose the latter representation 
-                 initially because it is slightly more convenient, because you can 
-                 always learn the name of the declared variable by calling 
-                 <c>var.Args[1].Name</c>. However, I decided that it was more important
-                 for the syntax tree to be predictable, with obvious connections between
-                 normal and prefix notations. Since I decided that <c>alias X = Y;</c> 
-                 was to be represented <c>#alias(X = Y, #())</c>, it made sense for the 
-                 syntax tree of a variable declaration to also resemble its C# syntax. 
-                 There's another small reason: C++ has both styles <c>Foo x(y)</c> and 
-                 <c>Foo x = y</c>; if Loyc were to ever support C++, it would make sense 
-                 to use <c>#var(Foo, x(y))</c> and <c>#var(Foo, x = y)</c> for these two 
-                 cases, and I believe C#'s variable declarations are semantically closer 
-                 to the latter. (Note: another possibility was #var(int, x) = 0, but I 
-                 decided this wasn't an improvement, it would just shift the pain around.)</li>
-             <li>A constructor argument list is required on <i>all</i> types using the #new
-                 operator, e.g. <c>new int[] { x }</c> must have an empty set of arguments
-                 on int[], i.e. <c>#new(#of(@`'[]`,int)(), x)</c>; this rule makes the 
-                 different kinds of new expressions easier to interpret by making them 
-                 consistent with each other.</li>
-             <li>A missing syntax element is now represented by the empty identifier 
-                 instead of the identifier #missing.</li>
-             <li>I've decided to adopt the "in-expression" generics syntax from Nemerle 
-                 and the binary ! from D as unambiguous alternatives to angle brackets: 
-                 List.[int] and List!int mean List&lt;int> and the printer will use 
-                 one of these in cases where angle brackets are ambiguous.</li>
-             <li>By popular demand, constructors will be written this(...) instead
-                 of new(...), since both D and Nemerle use the latter notation.</li>
-             <li>The \ and $ characters have been changed; @@S now denotes a symbol S,
-                 $S now denotes a substitution, and \S doesn't mean anything.
-                 Originally EC# was designed just as an extension of C#, so \ made 
-                 sense as a substitution operator for string interpolation because it 
-                 doesn't hurt backward compatibility: "Loaded '\(filename)' successfully". 
-                 But now that my focus has shifted to multi-language interoperability, 
-                 $ makes more sense, as it is used for string interpolation in at least 
-                 five other languages and it makes sense to use the same character for 
-                 both string substitution and code substitution.</li>
-             </ul>
-             
              <h3>Important properties</h3>
              
              The main properties of a node are
@@ -2795,38 +2476,7 @@
                 distinguish it from decimal literals such as 16. Custom display styles 
                 that do not fit in the Style property can be expressed with attributes.</li>
              </ol>
-             <para/>
-             The argument and attribute lists cannot be null, since they have type 
-             <see cref="T:Loyc.Collections.VList`1"/> which is a struct.
-             <para/>
-             <c>LNode</c> implements <see cref="T:Loyc.Collections.INegListSource`1"/>, so you can loop 
-             through all children of the node like this:
-             <code>
-             for (int i = node.Min; i &lt;= node.Max; i++) {
-                 LNode child = node[i];
-             }
-             </code>
-             You can also use <c>foreach</c>. The children are numbered like this:
-             <ul>
-             <li>if i is less than -1, node[i] refers to an attribute. Specifically, node[i] 
-             means node.Attrs[i + node.Attrs.Count + 1] in that case.</li>
-             <li>node[-1] refers to <c>Target</c> (but throws if there is no target)</li>
-             <li>Non-negative values are indexes of Args, e.g. node[i] means node.Args[i].</li>
-             </ul>
-             LNode also provides <c>Select(child => result)</c> and <c>ReplaceRecursive(child => result)</c>
-             methods which allows you to transform all children (Atrrs, Target and Args).
-             Currently there is no <c>Where(child => bool)</c> method because it is not
-             possible to remove the <see cref="P:Loyc.Syntax.LNode.Target"/> of an LNode (you can still use
-             standard LINQ Where(), of course, but the result is not an LNode).
-             
-             <h3>Note</h3>
-             
-             The argument and attribute lists should never contain null nodes. Any code 
-             that puts nulls in <see cref="P:Loyc.Syntax.LNode.Args"/> or <see cref="P:Loyc.Syntax.LNode.Attrs"/> is buggy. 
-             However, we can't ensure nulls are not placed into <see cref="T:Loyc.Collections.VList`1"/> 
-             since it's a general-purpose data type, not specialized for LNode. There is
-             code to ensure nulls are not placed in Args and Attrs (<see cref="M:Loyc.Syntax.LNode.NoNulls(Loyc.Collections.VList{Loyc.Syntax.LNode},System.String)"/>),
-             but only in debug builds, since null-checking is fairly expensive.
+             To learn more about working with LNode, see http://loyc.net/loyc-trees/dotnet.html
              </remarks>
         </member>
         <member name="F:Loyc.Syntax.LNode.Missing">
@@ -2859,8 +2509,8 @@
             <remarks>
             The Style is an 8-bit value that acts as a hint to the node printer about 
             how the node should be printed. Custom display styles that do not fit in 
-            the Style property can be expressed with special attributes that have a
-            <see cref="P:Loyc.Syntax.LNode.Name"/> starting with "#trivia_". ("#trivia" attributes, which
+            the Style property can be expressed with special "trivia" attributes that 
+            have a <see cref="P:Loyc.Syntax.LNode.Name"/> starting with <c>%</c>. (trivia attributes, which
             are also used to store comments in the syntax tree, are not printed like
             normal attributes and are normally ignored if the node printer does not 
             specifically recognize them.)
@@ -3080,6 +2730,19 @@
             <param name="binaryOpName">Binary operator to use when the nodes are not null.</param>
             <returns>If either node1 or node2 is null, this method returns the other node
             (node1 ?? node2), otherwise the nodes are joined with the specified operator.</returns>
+            <seealso cref="M:Loyc.Syntax.LNode.FlattenBinaryOpSeq(Loyc.Syntax.LNode,Loyc.Symbol,System.Nullable{System.Boolean})"/>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.FlattenBinaryOpSeq(Loyc.Syntax.LNode,Loyc.Symbol,System.Nullable{System.Boolean})">
+            <summary>Converts a sequence of the same operator (e.g. `x+y+z`) to a list (e.g. x, y, z).</summary>
+            <param name="expr">An expression that may or may not call the operator.</param>
+            <param name="opName">The operator to recognize.</param>
+            <param name="rightAssociative">Whether the operator is right associative. 
+            If this is null then either or both associativities will work (e.g. 
+            <c>(a*b)*(c*d)</c> is flattened to a,b,c,d).</param>
+            <returns>A list of subexpressions with the operator removed. If <c>expr</c> 
+            does not call the specified binary operator, the list contains a single item 
+            which is the original expression.</returns>
+            <remarks>This is the reverse operation of <see cref="M:Loyc.Syntax.LNode.MergeBinary(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Symbol)"/>.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNode.Select(System.Func{Loyc.Syntax.LNode,Loyc.Maybe{Loyc.Syntax.LNode}},Loyc.Syntax.LNode.ReplaceOpt)">
             <summary>Transforms the <see cref="P:Loyc.Syntax.LNode.Target"/>, parameters, and optionally
@@ -3140,25 +2803,25 @@
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.GetTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Gets all trailing trivia attached to the specified node.</summary>
-            <remarks>Trailing trivia is represented by a call to #trivia_trailing in
-            a node's attribute list; each argument to #trivia_trailing represents one
+            <remarks>Trailing trivia is represented by a call to <c>%trailing</c> in
+            a node's attribute list; each argument to %trailing represents one
             piece of trivia. If the attribute list has multiple calls to 
-            #trivia_trailing, this method combines those lists into a single list.</remarks>
+            %trailing, this method combines those lists into a single list.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.WithTrailingTrivia(Loyc.Syntax.LNode,Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Removes a node's trailing trivia and adds a new list of trailing trivia.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.WithTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Removes all existing trailing trivia from an attribute list and adds a new list of trailing trivia.</summary>
-            <remarks>This method has a side-effect of recreating the #trivia_trailing
+            <remarks>This method has a side-effect of recreating the %trailing
             node, if there is one, at the end of the attribute list. If <c>trivia</c>
-            is empty then all calls to #trivia_trailing are removed.</remarks>
+            is empty then all calls to %trailing are removed.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.WithoutTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode})">
-            <summary>Gets a new list with any #trivia_trailing attributes removed.</summary>
+            <summary>Gets a new list with any %trailing attributes removed.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.WithoutTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode}@)">
-            <summary>Gets a new list with any #trivia_trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
+            <summary>Gets a new list with any %trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Syntax.LNode,Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Adds additional trailing trivia to a node.</summary>
@@ -3169,12 +2832,11 @@
         <member name="M:Loyc.Syntax.LNodeExt.PlusTrailingTrivia(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Adds additional trailing trivia to an attribute list. Has no effect if <c>trivia</c> is empty.</summary>
             <remarks>
-            Trailing trivia is represented by a call to #trivia_trailing in a node's 
-            attribute list; each argument to #trivia_trailing represents one piece of 
-            trivia.
+            Trailing trivia is represented by a call to <c>%trailing</c> in a node's 
+            attribute list; each argument to %trailing represents one piece of trivia.
             <para/>
-            In the current design, this method has a side-effect of recreating the #trivia_trailing
-            node at the end of the attribute list, and if there are multiple #trivia_trailing
+            In the current design, this method has a side-effect of recreating the %trailing
+            node at the end of the attribute list, and if there are multiple %trailing
             lists, consolidating them into a single list, but only if the specified <c>trivia</c> 
             list is not empty.</remarks>
         </member>
@@ -3199,15 +2861,14 @@
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.InParens(Loyc.Syntax.LNode,Loyc.Syntax.SourceRange)">
             <summary>Returns the same node with a parentheses attribute added.</summary>
-            <remarks>The node's range is changed to the provided <see cref="T:Loyc.Syntax.SourceRange"/>
-            and the original range of the node is assigned to the parentheses attribute.</remarks>
+            <remarks>The node's range is changed to the provided <see cref="T:Loyc.Syntax.SourceRange"/>.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.InParens(Loyc.Syntax.LNode,Loyc.Syntax.ISourceFile,System.Int32,System.Int32)">
             <summary>Returns the same node with a parentheses attribute added.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.WithoutOuterParens(Loyc.Syntax.LNode)">
             <summary>Removes a single pair of parentheses, if the node has a 
-            #trivia_inParens attribute. Returns the same node when no parens are 
+            %inParens attribute. Returns the same node when no parens are 
             present.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)">
@@ -3264,9 +2925,7 @@
             if <c>pattern</c> was not a match.</returns>
         </member>
         <member name="M:Loyc.Syntax.LNodeExt.ToLNode(Loyc.Syntax.ILNode)">
-            <summary>Converts <see cref="T:Loyc.Syntax.ILNode"/> to <see cref="T:Loyc.Syntax.LNode"/> recursively.
-            If the specified node is already an <see cref="T:Loyc.Syntax.LNode"/>, this method simply
-            does a cast.</summary>
+            <summary>Converts <see cref="T:Loyc.Syntax.ILNode"/> to <see cref="T:Loyc.Syntax.LNode"/> recursively.</summary>
         </member>
         <member name="T:Loyc.Syntax.LNodeFactory">
             <summary>Contains helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
@@ -3282,9 +2941,9 @@
             this method just ensures there is a line break.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeFactory.Trivia(System.String,System.Object)">
-            <summary>Creates a trivia node named <c>"#trivia_" + suffix</c> with the 
+            <summary>Creates a trivia node named <c>"%" + suffix</c> with the 
             specified Value attached.</summary>
-            <remarks>This method only adds the prefix <c>#trivia_</c> if it is not 
+            <remarks>This method only adds the prefix <c>%</c> if it is not 
             already present in the 'suffix' argument.</remarks>
         </member>
         <member name="M:Loyc.Syntax.LNodeFactory.Trivia(Loyc.Symbol,System.Object,System.Int32,System.Int32)">
@@ -3297,127 +2956,6 @@
         <member name="T:Loyc.Syntax.ILNodeVisitor">
             <summary>Interface for people that want to implement the visitor pattern with <see cref="T:Loyc.Syntax.LNode"/>.
             If your visitor does not need a base class, use <see cref="T:Loyc.Syntax.LNodeVisitor"/> as the base class.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.NodeStyle">
-            <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
-            <remarks>See <see cref="P:Loyc.Syntax.LNode.Style"/>.
-            <para/>
-            TODO: review, rethink.
-            <para/>
-            A printer should not throw exceptions unless specifically requested. It 
-            should ignore printing styles that it does not allow, rather than throwing.
-            <para/>
-            Styles may be used in different ways by different parsers, different
-            printers and different people. Be careful how you rely on them; they are 
-            intended to affect only the appearance of a node when it is printed, not 
-            its semantics.
-            <para/>
-            Please note that language-specific printing styles can be denoted by 
-            attaching special attributes recognized by the printer for that language.
-            These attributes should have Names starting with the string "#trivia_";
-            printers are programmed to ignore trivia attributes that they do not
-            understand.</remarks>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Default">
-            <summary>No style category is specified; the printer should choose a 
-            style automatically.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Operator">
-            <summary>Indicates that a node was parsed as an operator (infix, prefix, 
-            suffix, or other operator), or that it should be printed with operator 
-            notation if possible.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Statement">
-            <summary>The node's immediate children (and/or the node itself) should be 
-            printed in statement notation, if possible in the context in which it is 
-            located.</summary>
-            <remarks>Used to mark braced blocks. In LES, marks a call in which ';'
-            is used as the argument separator.</remarks>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Special">
-            <summary>A language-specific special notation should be used for this
-            node. In LESv3, the parser puts this style on block call nodes (e.g. 
-            <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.PrefixNotation">
-            <summary>The node should be printed in prefix notation (even if it is 
-            not the natural notation to use). An example in EC# notation is 
-            <c>@`'+`(X, Y)</c> instead of <c>X + Y</c>.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Expression">
-            <summary>The node(s) should be printed as a normal expression, rather
-            than using a special or statement notation.</summary>
-            <remarks>In EC#, braced initializer blocks have this style. The EC# 
-            node printer will refuse to print a node with this style as a statement.</remarks>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Reserved">
-            <summary>Unassigned.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.OldStyle">
-            <summary>Use an older or backward-compatible notation.</summary>
-            <remarks>In EC#: prints lambda as delegate; forces old cast notation in EC#.</remarks>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.BaseStyleMask">
-            <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
-            base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.BinaryLiteral">
-            <summary>Used for a binary (base-2) literal like 0b11111.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.HexLiteral">
-            <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.OctalLiteral">
-            <summary>Used for an octal (base-7) literal like 0o37.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.VerbatimStringLiteral">
-            <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.TQStringLiteral">
-            <summary>Used for a triple-quoted string literal like <c>'''foo'''</c>.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.TDQStringLiteral">
-            <summary>Used for a triple-double-quoted string literal like <c>"""foo"""</c>.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Alternate">
-            <summary>If this node has two styles in which it can be printed, this
-            selects the second (the less common style, or less-well-supported style).
-            In EC#, it denotes x(->int) as opposed to (int)x, and x (as Y) as opposed 
-            to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate 
-            style for X => Y; it forces parens and braces as a side-effect.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.InjectedTrivia">
-            <summary>Injected trivia (see <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1"/>) 
-            will have this bit set.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.OneLiner">
-            <summary>Indicates that the there is no comment or newline trivia associated
-            with the children of this node, and therefore when printing this node,
-            automatic newlines can be suppressed.</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Handled">
-            <summary>Indicates that some part of a compiler has seen the node and 
-            done something with it.</summary>
-            <remarks>The motivation for this flag relates to compilers that allow 
-            user-defined attributes for plug-ins that add functionality. For 
-            example, internationalization plug-in might notice a language marker:
-            <code>
-               MessageBox.Show([en] "Hello, World!");
-            </code>
-            If an attribute is not used by any plug-in, the compiler should print 
-            a warning that the attribute is unused. This leads to the question, how
-            can a compiler tell if an attribute was ever used? The Handled flag
-            is one possible mechanism; when any part of the compiler or its plug-
-            ins use an attribute, the Handled flag could be set to disable the
-            compiler warning.
-            <para/>
-            Remember that the same node can theoretically appear in multiple
-            places in a syntax tree, which typically happens when a statement or
-            expression is duplicated by a macro, without being changed. Remember 
-            that when a style is changed on such a node, the change is visible at 
-            all locations where the same node is used. However, style flags are
-            not synchronized between copies of a node.
-            </remarks>
         </member>
         <member name="T:Loyc.Syntax.StdTriviaNode">
             <summary>A simple call node with a single literal argument. </summary>
@@ -3674,7 +3212,10 @@
         </member>
         <member name="T:Loyc.Syntax.StandardTriviaInjector">
             <summary>Encapsulates an algorithm that consumes trivia (comments and 
-            newlines) from a list and adds it as trivia attributes into LNodes.</summary>
+            newlines) from a list and adds it as trivia attributes into LNodes. This
+            makes it possible to preserve comments and newlines independently of the
+            language parser, so that the parser need not be specifically designed to 
+            preserve them.</summary>
             <remarks>
             Usage: Call the constructor, then call <see cref="M:Loyc.Syntax.AbstractTriviaInjector`1.Run(System.Collections.Generic.IEnumerator{Loyc.Syntax.LNode})"/>.
             See <see cref="T:Loyc.Syntax.AbstractTriviaInjector`1"/> for more information.
@@ -3695,25 +3236,25 @@
             The output, expressed in LESv2, is
             <pre>
             {
-            	@[#trivia_SLComment(" Leading Comment 1"),
-            	  #trivia_MLComment(" Leading Comment 2 "),
-            	  #trivia_newline,
-            	  #trivia_MLComment(" Leading Comment 3 "),
-            	  #trivia_beginTrailingTrivia,
-            	  #trivia_SLComment(" Trailing Comment 1"),
-            	  #trivia_MLComment(" Trailing Comment 2 "),
-            	  #trivia_newline]
+            	@[@%SLComment(" Leading Comment 1"),
+            	  @%MLComment(" Leading Comment 2 "),
+            	  @%newline,
+            	  @%MLComment(" Leading Comment 3 "),
+            	  @%trailing(
+            	    @%SLComment(" Trailing Comment 1"),
+            	    @%MLComment(" Trailing Comment 2 "),
+            	    @%newline)]
             	x = y;
             	y = z;
-            	@[#trivia_appendStatement] TheEnd();
+            	@[@%appendStatement] TheEnd();
             }
             </pre>
-            By default, printers add newlines between statements within a braced 
+            By default, printers should add newlines between statements within a braced 
             block. Therefore, this class does not add trivia to mark a single newline 
-            between statements; instead, it adds a #trivia_appendStatement attribute 
+            between statements; instead, it adds an %appendStatement attribute 
             when the expected newline prior to a statement in a braced block was NOT 
             present. Also, a newline is expected after a single-line comment and no 
-            <c>#trivia_newline</c> is created for the expected newline.
+            <c>%newline</c> is created for the expected newline.
             <para/>
             Finally, since printers typically add a newline before the closing brace by
             default, this class avoids adding an attribute for that newline, if present.
@@ -3757,10 +3298,11 @@
              <li>It must not include the newline character in the range of a single-line 
              comment.</li>
              <li>Generally, newlines (including the newline after a single-line comment)
-             must be included in the trivia list, as the algorithm relies on these newlines
-             instead of asking <see cref="P:Loyc.Syntax.LNode.Range"/> for line numbers, which is
-             slower. If newlines are omitted then a comment right after a statement (e.g.
-             on the same line) will be associated with the next statement instead.</li>
+             should be included in the trivia list, as the algorithm relies on newline trivia
+             to notice when a new line is starting. Notably, a comment/trivia right after a 
+             statement (e.g. on the same line) should normally be associated with that
+             statement; if this class is unaware of the newline it will be associated with
+             the next statement instead.</li>
              </ul>
              
              Typically one will wrap the lexer in <see cref="T:Loyc.Syntax.Lexing.TriviaSaver"/>, which 
@@ -3771,12 +3313,14 @@
              <ul>
              <li>The parser should assign minimal boundaries to each node: the 
              <see cref="P:Loyc.Syntax.LNode.Range"/> should not be wider than necessary. If there is 
-             a comment before an expression like <c>/*!* / x + y</c>, the parser should 
+             a comment before an expression like <c>/* ! * / x + y</c>, the parser should 
              not include the comment as part of the range unless it wants the comment to 
              be associated with a child node (<c>x</c>) instead of with the entire 
              expression (<c>x + y</c>).</li>
-             <li>If a node has normal (non-trivia) attributes attached to it, the range of
-             the node should include those attributes.</li>
+             <li>However, if a node has normal (non-trivia) attributes attached to it, 
+             the Range of the node must include those attributes. If your parser fails 
+             to do this, one symptom can be that a newline after an attribute "moves up" 
+             in the attribute list so it appears before the attribute.</li>
              <li>The parser should use <see cref="M:Loyc.Syntax.LNodeFactory.InParens(Loyc.Syntax.LNode)"/> to place a
              node in parentheses and include the index of the opening and closing parens.</li>
              <li>If an expression/statement is terminated by a semicolon/comma, it's 
@@ -3802,7 +3346,7 @@
             		argument1 + 1 /*1st comment* /, // 2nd comment
             		// Comment attached to «argument2 + 2»
             		argument2 + 2); // Comment attached to Foo() call
-            	  Area = 3.14159265/*PI* / * /*radius* /r**2;
+            	  Area = 3.14159265/*PI* /  *  /*radius* /r**2;
             	  // Comment attached to «Area =» statement, preceded by newline trivia?
             
             	  // Comment attached to Bar()
@@ -4069,7 +3613,7 @@
             precedence. It starts with a known parse tree and then has to figure out 
             how to output something that the parser will reconstruct into the original
             tree. This is more difficult if perfect round-tripping is required: parentheses
-            are encoded in the Loyc tree as a #trivia_inParens attribute, so if perfect
+            are encoded in the Loyc tree as a <c>%inParens</c> attribute, so if perfect
             round-tripping is desired, the printer cannot simply put everything in parens 
             "just to be safe".
             <para/>
@@ -4350,43 +3894,6 @@
             it can only be revoked once. Multiple newlines can be revoked if 
             they are revoked in the reverse order in which they were created.</remarks>
         </member>
-        <member name="T:Loyc.Syntax.EmptySourceFile">
-            <summary>
-            A dummy implementation of <see cref="T:Loyc.Syntax.ISourceFile"/> that has only a 
-            filename, no source text. Used as the source file of synthetic syntax 
-            nodes.
-            </summary>
-        </member>
-        <member name="T:Loyc.Syntax.IIndexToLine">
-            <summary>Contains <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> method.</summary>
-            <seealso cref="T:Loyc.Syntax.IIndexPositionMapper"/>
-        </member>
-        <member name="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)">
-            <summary>Returns the position in a source file of the specified index.</summary>
-            <remarks>If index is negative, this should return a SourcePos where 
-            Line and PosInLine are zero (signifying an unknown location). If index 
-            is beyond the end of the file, this should retun the final position in 
-            the file.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.IIndexToLine.FileName">
-            <summary>Gets the file name used in results returned by <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/>.</summary>
-            <remarks>It is not guaranteed that <i>all</i> return values from 
-            <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> use this filename; for example, the
-            file may vary in mappings from <see cref="T:Loyc.Syntax.SourceFileWithLineRemaps"/>.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.IIndexPositionMapper">
-            <summary>
-            This interface is for classes that can convert indexes to SourcePos
-            structures and back.
-            </summary>
-        </member>
-        <member name="M:Loyc.Syntax.IIndexPositionMapper.LineToIndex(System.Int32)">
-            <summary>Returns the index in a source file of the beginning of the 
-            specified line, where the first line is number 1, not 0.</summary>
-            <remarks>If lineNo is zero, this method should return -1 (signifying 
-            an unknown location). If lineNo is larger than the largest line 
-            number, this method should return the index of end-of-file.</remarks>
-        </member>
         <member name="T:Loyc.Syntax.IndexPositionMapper`1">
             <summary>
             Helper class for mapping from indexes to SourcePos and back.
@@ -4425,11 +3932,6 @@
         </member>
         <member name="T:Loyc.Syntax.IndexPositionMapper">
             <summary>Synonym for <c>IndexPositionMapper&lt;IListSource&lt;char>></c>.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.ISourceFile">
-            <summary>Represents a text file with a file name and its textual content,
-            plus the data necessary to convert between line-column positions and 
-            0-based integer indexes.</summary>
         </member>
         <member name="T:Loyc.Syntax.SourceFile`1">
             <summary>A default implementation of ISourceFile based on <see cref="T:Loyc.Syntax.IndexPositionMapper"/>.</summary>
@@ -4483,27 +3985,6 @@
             <param name="fileName">This is changed to the user-specified file name 
             string, if and only if a file-name remapping exists and applies here.</param>
             <returns>true if a remapping exists and was applied, false if not.</returns>
-        </member>
-        <member name="T:Loyc.Syntax.LineAndCol">
-            <summary>Holds a line number (Line) and a position in the line (PosInLine).
-            This class isn't really needed in Loyc but is separated from SourcePos 
-            in case anyone might want position without a filename.</summary>
-            <remarks>Numbering starts at one for both Line and PosInLine. 
-            Line=0 signifies nowhere in particular, or an unknown location.</remarks>
-        </member>
-        <member name="T:Loyc.Syntax.SourcePos">
-            <summary>Holds a filename (FileName), a line number (Line) and a position in 
-            the line (PosInLine), representing a position in a source code file.</summary>
-            <remarks>
-            Line and column numbering both start at one (1). Line=0 signifies nowhere 
-            in particular. Instances are immutable.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.SourceRange">
-            <summary>
-            Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
-            beginning and end indices of a range in that file.
-            </summary>
         </member>
         <member name="T:Loyc.Syntax.StreamCharSource">
             <summary>
@@ -4565,8 +4046,7 @@
         <member name="P:LeMP.IMacroContext.Sink">
             <summary>Returns the message sink, used for writing warnings and errors.</summary>
             <remarks>For backward compatibility, IMacroContext itself implements 
-            IMessageSink, but if we were starting from scratch you'd have to write 
-            output through this property.</remarks>
+            IMessageSink also.</remarks>
         </member>
         <member name="P:LeMP.IMacroContext.ScopedProperties">
             <summary>Returns a table of "properties" (arbitrary key-value pairs)
@@ -4735,13 +4215,9 @@
             or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
             If the format of a given node is invalid, this function yields <c>(node, null)</c>.</summary>
             <remarks>
-            <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
-            #namedArg(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
-            This function recognizes both forms.
+            <c>option1: v1, option2: v2</c> is parsed into <c>@`'::=`(option1, v1), 
+            @`'::=`(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
             </remarks>
-        </member>
-        <member name="T:LeMP.MacroInfo">
-            <summary>Data returned from <see cref="P:LeMP.IMacroContext.AllKnownMacros"/></summary>
         </member>
         <member name="T:LeMP.LexicalMacro">
             <summary>Method signature of an LeMP macro.</summary>
@@ -4776,7 +4252,7 @@
             it must be marked with <see cref="T:LeMP.LexicalMacroAttribute"/>.</remarks>
         </member>
         <member name="T:LeMP.LexicalMacroAttribute">
-            <summary>Marks a method as an LEL simple macro.</summary>
+            <summary>Marks a method as a LeMP lexical macro.</summary>
             <remarks>
             To be recognized as a macro, the method must be public and static and its 
             signature must be <see cref="T:LeMP.LexicalMacro"/>. A class will not be automatically
@@ -4845,6 +4321,28 @@
         </member>
         <member name="F:LeMP.MacroMode.PriorityMask">
             <summary>For internal use to isolate the priority of a macro.</summary>
+        </member>
+        <member name="T:LeMP.MacroInfo">
+            <summary>Data returned from <see cref="P:LeMP.IMacroContext.AllKnownMacros"/></summary>
+        </member>
+        <member name="M:LeMP.MacroInfo.GetMacros(System.Type,Loyc.IMessageSink,Loyc.Symbol,System.Object)">
+            <summary>Uses reflection to find a list of macros within the specified 
+            type by searching for (static) methods that
+            (1) are marked with <see cref="T:LeMP.LexicalMacroAttribute"/> and
+            (2) take no parameters and return a list (IEnumerable) of 
+                <see cref="T:LeMP.MacroInfo"/>. Such methods are called to get macros.
+            </summary>
+            <param name="type">The type to search for macros.</param>
+            <param name="namespace">Optionally overrides the namespace associated 
+            with macros marked with <see cref="T:LeMP.LexicalMacroAttribute"/>. Does not
+            affect macros returned in a list of <see cref="T:LeMP.MacroInfo"/>.</param>
+            <param name="errorSink">An object in which to send error messages
+            (<see cref="F:Loyc.Severity.Warning"/> is used because unavailability of a macro
+            should not appear as an error when compiling something with LeMP.)</param>
+            <param name="instance">An optional object of the same type as <c>type</c>, 
+            which will be used to bind instance methods. If this is null, only static
+            methods are discovered.</param>
+            <returns></returns>
         </member>
     </members>
 </doc>
