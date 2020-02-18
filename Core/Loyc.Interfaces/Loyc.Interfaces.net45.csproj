@@ -52,7 +52,7 @@
     <DebugType>pdbonly</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
-    <NoWarn>1591, 1573, 0419</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1574, 1587</NoWarn>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Interfaces.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -100,7 +100,7 @@
     <DocumentationFile>..\Bin\Release.NET3\Loyc.Interfaces.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
-    <NoWarn>1591, 1573, 0419</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1574, 1587</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>..\Bin\Release.NET4\Loyc.Interfaces.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -133,7 +133,7 @@
     <DefineConstants>TRACE;DotNet45</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Interfaces.xml</DocumentationFile>
     <FileAlignment>4096</FileAlignment>
-    <NoWarn>1591, 1573, 0419</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1574, 1587</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
