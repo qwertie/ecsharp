@@ -34,8 +34,11 @@ Dependency tree
 
 The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
 
-         Loyc.Essentials (Collection interfaces, collection adaptors, extension 
-                ^   ^     methods, UString, important utility classes, and more)
+         Loyc.Interfaces (Almost all interfaces + types used by interfaces)
+                ^
+                |
+         Loyc.Essentials (collection adaptors, extension methods, message
+                ^   ^     sinks, important utility classes, and more)
                 |   |
                 |   +----------------------------------------------+
                 |                                                  |
