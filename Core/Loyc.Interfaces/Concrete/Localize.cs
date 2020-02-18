@@ -194,7 +194,7 @@ namespace Loyc
 	public static class Localize
 	{
 		public static ThreadLocal<LocalizerDelegate> _localizer = new ThreadLocal<LocalizerDelegate>();
-		public static ThreadLocal<FormatterDelegate> _formatter = new ThreadLocal<FormatterDelegate>(trackAllValues: true);
+		public static ThreadLocal<FormatterDelegate> _formatter = new ThreadLocal<FormatterDelegate>();
 		static LocalizerDelegate _globalLocalizer = Passthrough;
 		static FormatterDelegate _globalFormatter = string.Format;
 

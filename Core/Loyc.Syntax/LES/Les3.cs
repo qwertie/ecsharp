@@ -283,7 +283,7 @@ namespace Loyc.Syntax.Les
 			if (LiteralParsers.TryGetValue(typeMarker, out parser)) {
 				value = parser(parsedText);
 				if (value == null)
-					syntaxError = "Syntax error in '{typeMarker}' literal".Localized("typeMarker", typeMarker);
+					syntaxError = "Syntax error in '{0}' literal".Localized(typeMarker);
 			}
 			return value ?? new CustomLiteral(parsedText.ToString(), (Symbol)typeMarker.ToString());
 		}

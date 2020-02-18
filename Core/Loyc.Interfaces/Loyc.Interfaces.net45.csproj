@@ -172,9 +172,10 @@
     <Compile Include="Concrete\RangeEnumerator.cs" />
     <Compile Include="Concrete\UString.cs" />
     <Compile Include="Concrete\ValueCollection.cs" />
+    <Compile Include="Concrete\WeakReference.cs" />
     <Compile Include="Concrete\WeakValueDictionary.cs" />
     <Compile Include="IHasLocation.cs" />
-    <Compile Include="Localize.cs" />
+    <Compile Include="Concrete\Localize.cs" />
     <Compile Include="Concrete\Maybe.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="Concrete\NoValue.cs" />
@@ -214,6 +215,7 @@
     <Compile Include="Concrete\SourceRange.cs" />
     <Compile Include="Concrete\SavedThreadLocal.cs" />
     <Compile Include="Concrete\ScratchBuffer.cs" />
+    <Compile Include="Syntax\ParsingMode.cs" />
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>

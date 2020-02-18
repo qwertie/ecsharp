@@ -186,7 +186,6 @@
     <Compile Include="LeMP\MacroAttributes.cs" />
     <Compile Include="LNodes\ILNodePrinter.cs" />
     <Compile Include="LNodes\LNodePrintingOptions.cs" />
-    <Compile Include="LNodes\ParsingMode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />

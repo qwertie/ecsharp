@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -9,6 +9,7 @@ using Loyc.Collections;
 using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections.Impl;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Geometry;
 using Benchmark.Resources;
 using PointD = Loyc.Geometry.Point<double>;
