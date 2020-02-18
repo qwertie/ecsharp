@@ -6,6 +6,35 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.7.0: February 17, 2020 ###
+
+#### EC# (parser and printer):
+
+- Mostly finish C# 7.0 support
+  - Support tuple type names
+  - Support `var (a, b, c) = ...`
+  - Add basic support for "arrow" constructors and destructors. These are currently parsed as expressions instead of constructors, but they successfully round-trip.
+  - Other C# 7 features such as variable declarations in `out` parameters, `ref` returns and binary literals were already understood
+- Support C# 7.1's "default literal expression" (bare `default` keyword)
+- Make `**` operator right-associative to match Python and JavaScript (despite the rarity of actually wanting it to be right-associative)
+- The at-sign in `@verbatim` identifiers should now be preserved from parser to printer
+- Lexer: remove the distinction between `HashId` and `NormalId`. The consequence is that `#foo*` now parses as two tokens `#foo *` instead of as a single token. Verbatim operators that begin with `@'`, such as `@'+=` and `@'hello!`, are still parsed as a single token.
+- Fixed a spacing bug in `EcsNodePrinter.PrintId` where its output occasionally started with an unwanted space
+- Fixed bugs involving scope resolution `::` operator:
+  - `EcsValidators.IsComplexIdentifier` did not understand `::` before, which sometimes caused problems printing it
+  - Max precedence when printing a type should be NullDot (not Primary)
+
+#### LeMP:
+
+- Added macros for converting LES3 code to C# (LeMP.Les3.To.CSharp namespace)
+- `define` macro now works in LES
+- Rename `LeMP.CSharp6` to `LeMP.CSharp6.To.OlderVersions` namespace to better indicate the purpose of its macros (down-conversion)
+- Moved tuple macros to new `LeMP.CSharp7.To.OlderVersions` namespace
+- `MacroProcessor.AddMacros` now returns the number of macros added
+- `GetMacros` can now find macros by calling static methods that take no parameters and return a list (IEnumerable) of `MacroInfo`. This can be used to add the same macro to multiple namespaces. Example: [AliasedMacros()](https://github.com/qwertie/ecsharp/blob/master/Main/LeMP.StdMacros/Prelude.Les3.ecs#L17)
+- Moved `GetMacros` from `LeMP.MacroProcessor` to `Loyc.Syntax.MacroInfo`.
+- Bug fix: macros duplicated across namespaces are now recognized as being the same macro. This fix required substantial changes including the creation of the `SelectDictionaryFromKeys` adapter added recently to Loyc.Essentials.
+
 ### v2.6.8: May 12, 2019 ###
 
 - Introduced .NET Standard 2.0 versions. NuGet package now contains four builds: .NET 3.5, .NET 4.0, .NET 4.5 and .NET Standard 2.

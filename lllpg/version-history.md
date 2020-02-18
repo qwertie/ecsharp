@@ -5,6 +5,11 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with [underlying](http://core.loyc.net/version-history.html) [subsystems](/lemp/version-history.html) which change more frequently.
 
+### LLLPG v2.7.0: February 17, 2020 ###
+
+- Enable FullLLk mode by default. To restore the old default, use `[FullLLk(false)]` attribute on your grammar (above the LLLPG statement).
+- Bug fix: don't add EOF to LA(i>0) follow sets (output will contain fewer checks like `la1 == EOF`)
+
 ### LLLPG v2.6.8: May 12, 2019 ###
 
 - Introduced .NET Standard 2.0 build and removed VS2010 support. For Windows users, the most convenient option is still the single-file generator for Visual Studio (vsix file on [Releases page](https://github.com/qwertie/ecsharp/releases).)
