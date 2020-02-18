@@ -58,8 +58,8 @@ namespace Loyc.Collections
 		public BList() 
 			: this(AListLeaf<T, T>.DefaultMaxNodeSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
-		public BList(int maxLeafSize)
-			: this(maxLeafSize, AListInnerBase<T, T>.DefaultMaxNodeSize) { }
+		public BList(int maxNodeSize)
+			: this(maxNodeSize, maxNodeSize) { }
 		/// <inheritdoc cref="BList(Func{T,T,int}, int, int)"/>
 		public BList(int maxLeafSize, int maxInnerSize)
 			: this(Comparer<T>.Default.Compare, maxLeafSize, maxInnerSize) { }

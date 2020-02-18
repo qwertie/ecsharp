@@ -127,6 +127,7 @@ namespace Loyc.Tests
 				new BDictionaryTests(false, _seed, 6, 6),
 				new SparseAListTests(false, _seed, 3, 3),
 				new SparseAListTests(false, _seed, 9, 9),
+				new BMultiMapTests(4),
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
 				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),

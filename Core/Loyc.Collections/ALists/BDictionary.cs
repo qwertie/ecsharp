@@ -52,8 +52,8 @@ namespace Loyc.Collections
 		public BDictionary() 
 			: this(DefaultComparison, DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
 		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
-		public BDictionary(int maxLeafSize)
-			: this(DefaultComparison, maxLeafSize, DefaultMaxInnerNodeSize) { }
+		public BDictionary(int maxNodeSize)
+			: this(DefaultComparison, maxNodeSize, maxNodeSize) { }
 		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
 		public BDictionary(int maxLeafSize, int maxInnerSize)
 			: this(DefaultComparison, maxLeafSize, maxInnerSize) { }
@@ -61,8 +61,8 @@ namespace Loyc.Collections
 		public BDictionary(Func<K, K, int> compareKeys)
 			: this(compareKeys, DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
 		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
-		public BDictionary(Func<K, K, int> compareKeys, int maxLeafSize)
-			: this(compareKeys, maxLeafSize, DefaultMaxInnerNodeSize) { }
+		public BDictionary(Func<K, K, int> compareKeys, int maxNodeSize)
+			: this(compareKeys, maxNodeSize, maxNodeSize) { }
 		
 		/// <summary>Initializes an empty BDictionary.</summary>
 		/// <param name="compareKeys">A method that compares two items and returns 

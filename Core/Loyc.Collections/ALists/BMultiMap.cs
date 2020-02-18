@@ -10,9 +10,18 @@ namespace Loyc.Collections
 
 	/// <summary>
 	/// An sorted dictionary that allows multiple values to be associated with a
-	/// single key. Note: both keys and values must be comparable.
+	/// single key.
 	/// </summary>
 	/// <remarks>
+	/// The keys must be comparable. By default, the values must also be comparable,
+	/// but if the values do not support IComparable, you can set the comparison 
+	/// function to <c>(a,b) => 0</c> to pretend all values are equal. A shorthand 
+	/// way to do this is to call the constructor with parameters of (null, null) 
+	/// which means "use default key comparison and treat all values as equal". If 
+	/// you do this, you should avoid calling this[key].Remove(value) or 
+	/// this[key].Contains(value), or the Remove method in the base class, since 
+	/// these methods will treat any value as a match.
+	/// <para/>
 	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
 	/// about the BList classes is available.
 	/// <para/>
@@ -43,26 +52,35 @@ namespace Loyc.Collections
 
 		public BMultiMap()
 			: this(DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
-		public BMultiMap(int maxLeafSize)
-			: this(maxLeafSize, DefaultMaxInnerNodeSize) { }
+		public BMultiMap(int maxNodeSize)
+			: this(maxNodeSize, maxNodeSize) { }
 		public BMultiMap(int maxLeafSize, int maxInnerSize)
 			: base(DefaultPairComparison, maxLeafSize, maxInnerSize)
 		{
 			_compareKeys = DefaultKComparison;
 			_compareValues = DefaultVComparison;
 		}
-		
+
+		/// <summary>Initializes the map with the specified key-comparer and default value comparer.
+		/// This constructor can only be used if values are comparible with <see cref="IComparable{V}"/>.< </summary>
+		/// <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
 		public BMultiMap(Func<K, K, int> compareKeys)
 			: this(compareKeys, DefaultVComparison) { }
+		/// <summary>Initializes the map with the specified key and value comparers.< </summary>
+		/// <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
+		/// <param name="compareValues">Value comparer, or null to pretend all values are equal.
+		/// It is useful to use null for this parameter when V does not implement IComparable.
+		/// However, keep in mind that the Contains() and Remove() methods won't work in
+		/// the normal way when all values are considered equal!</param>
 		public BMultiMap(Func<K, K, int> compareKeys, Func<V, V, int> compareValues)
 			: this(compareKeys, compareValues, DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
-		public BMultiMap(Func<K, K, int> compareKeys, Func<V, V, int> compareValues, int maxLeafSize)
-			: this(compareKeys, compareValues, maxLeafSize, DefaultMaxInnerNodeSize) { }
+		public BMultiMap(Func<K, K, int> compareKeys, Func<V, V, int> compareValues, int maxNodeSize)
+			: this(compareKeys, compareValues, maxNodeSize, maxNodeSize) { }
 		public BMultiMap(Func<K, K, int> compareKeys, Func<V, V, int> compareValues, int maxLeafSize, int maxInnerSize)
 			: base(DefaultPairComparison, maxLeafSize, maxInnerSize)
 		{
-			_compareKeys = compareKeys;
-			_compareValues = compareValues;
+			_compareKeys = compareKeys ?? DefaultKComparison;
+			_compareValues = compareValues ?? PretendValuesAreEqual;
 			_compareItems = CompareKeyAndValue;
 		}
 
@@ -72,6 +90,7 @@ namespace Loyc.Collections
 
 		protected readonly static Func<K, K, int> DefaultKComparison = Comparer<K>.Default.Compare;
 		protected readonly static Func<V, V, int> DefaultVComparison = Comparer<V>.Default.Compare;
+		protected readonly static Func<V, V, int> PretendValuesAreEqual = (a, b) => 0;
 		protected readonly static Func<KeyValuePair<K, V>, KeyValuePair<K, V>, int> DefaultPairComparison = (a, b) =>
 		{
 			int c = DefaultKComparison(a.Key, b.Key);

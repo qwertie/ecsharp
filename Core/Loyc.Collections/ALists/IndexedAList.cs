@@ -34,7 +34,7 @@ namespace Loyc.Collections
 		public IndexedAList(bool createIndexNow) { if (createIndexNow) CreateIndex(); }
 		public IndexedAList(IEnumerable<T> items) : base(items) { CreateIndex(); }
 		public IndexedAList(IListSource<T> items) : base(items) { CreateIndex(); }
-		public IndexedAList(int maxLeafSize) : base(maxLeafSize) { CreateIndex(); }
+		public IndexedAList(int maxNodeSize) : base(maxNodeSize) { CreateIndex(); }
 		public IndexedAList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { CreateIndex(); }
 		public IndexedAList(int maxLeafSize, int maxInnerSize, bool createIndexNow) { if (createIndexNow) CreateIndex(); }
 		public IndexedAList(AList<T> items, bool keepListChangingHandlers) : this(items, keepListChangingHandlers, true) { }

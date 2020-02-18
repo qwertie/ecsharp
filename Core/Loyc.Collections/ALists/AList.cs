@@ -126,7 +126,7 @@ namespace Loyc.Collections
 		public AList() { }
 		public AList(IEnumerable<T> items) { InsertRange(0, items); }
 		public AList(IListSource<T> items) { InsertRange(0, items); }
-		public AList(int maxLeafSize) : base(maxLeafSize) { }
+		public AList(int maxNodeSize) : base(maxNodeSize) { }
 		public AList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AList(AList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
 		protected AList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
