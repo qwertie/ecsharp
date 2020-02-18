@@ -27,7 +27,7 @@ namespace Loyc.Ecs
 				  || (_lastCh == '.' && (nextCh == '.' || char.IsDigit(nextCh)))
 				  || (_lastCh == '/' && nextCh == '*'))
 				_out.Write(' ');
-			else if (_lastStartCh == '@' && _lastCh != '`' && nextCh > ' ' && nextCh != '(' && nextCh != '[')
+			else if (_lastStartCh == '@' && _lastCh != '`' && nextCh > ' ' && nextCh != '(' && nextCh != '[' && nextCh != ')' && nextCh != ']' && nextCh != ';' && nextCh != ',')
 				_out.Write(' ');
 
 			_lastStartCh = nextCh;
