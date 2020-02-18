@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -140,6 +140,233 @@ namespace Loyc.Ecs.Parser
 			ErrorSink.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
+		#region DetectStatementCategory
+
+		// Originally I let LLLPG distinguish the statement types, but when the 
+		// parser was mature, LLLPG's analysis took from 10 to 40 seconds and it 
+		// generated 5000 lines of code to distinguish the various cases.
+		// And that was without supporting tuple types.
+		//
+		// This custom code, which was very tricky to get right,
+		// (1) detects method/property/variable (and lookalikes: trait, alias) and
+		//     distinguishes certain other cases (StmtCat values) out of convenience.
+		// (2) detects and skips word attributes (not including `this` in `this int x`).
+		// (3) is fast if possible.
+		//
+		// "word attributes" are a tricky feature of EC#. C# has a few non-keyword 
+		// attributes that appear at the beginning of a statement, such as "partial", 
+		// "yield" and "async". EC# generalizes this concept to "word attributes", which 
+		// can be ANY normal identifier.
+		//
+		// BTW: "word attributes" are not really "contextual keywords" in the C# 
+		// sense, because the identifiers are not recognized by the parser. The
+		// only true contextual keywords in EC# are "var", "module", "assembly",
+		// "from" (LINQ), "trait", "alias", and "when"; others like "partial" and 
+		// "yield" are merely "word attributes".
+		//
+		// Since they're not keywords, word attributes are difficult because:
+		// 1. Lots of statements start with words that are not word attributes, 
+		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
+		//    Somehow we have to figure out which words are attributes.
+		// 2. Not all statements accept word attributes. But the attributes 
+		//    appear BEFORE the statement, so how can we tell if we should
+		//    be expecting word attributes or not?
+		//
+		// There are lots of "keyword-based" statements that accept word
+		// attributes (think "partial class" and "yield return"), which are the
+		// easiest to handle. Our main difficulty is the non-keyword statements:
+		// 1. statements that can begin with an identifier, but also accept
+		//    word attributes:
+		//    - word type* name ... // field, property or method
+		//    - word type? name ... // field, property or method
+		//    - word type[,][] name ... // field, property or method
+		//    - word type<x> name ... // field, property or method
+		//    - word type name(); // method decl
+		//    - word type name<x>(); // method decl
+		//    - word type<x> name(); // method decl
+		//    - word type<x> name<x>(); // method decl
+		//    - word this();         // except inside methods
+		//    - word this<x>();      // except inside methods
+		//    - word label:
+		// 2. statements that can start with an identifier, and do not accept 
+		//    word attributes:
+		//    - foo();     // method call OR constructor
+		//    - foo<x>();
+		//    - foo = 0;
+		//    - foo - bar;
+		//
+		// Notice that if a word is followed by an operator of any kind, it 
+		// can't be an attribute; but if it is followed by another word, it's
+		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
+		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
+		// but in "A B<x>()" it is a return type. The same difficulty exists
+		// in case of alternate generics specifiers such as "A B!(x)" and types
+		// with suffixes, like "A int?*".
+		//
+		// Note: DetectStatementCategory() is allowed to (mis)categorize "this int x" as an
+		// IdStmt, so extension method parameters can't have word attributes.
+		StmtCat DetectStatementCategory(out int wordAttrCount, DetectionMode mode)
+		{
+			// If the statement starts with identifier(s), we have to figure out 
+			// whether, and how many of them, are word attributes. Also, skip over
+			// `new` because can be a keyword attribute in some cases.
+			wordAttrCount = 0;
+			int wordsStartAt = InputPosition;
+			bool haveNew = LA0 == TT.New;   // "new" keyword is the most annoying wrinkle
+			if (haveNew || LA0 == TT.Id || LA0 == TT.ContextualKeyword || LA0 == TT.LinqKeyword)
+			{
+				if (!haveNew) {
+					// Optimized path for common expressions that start with an Id (IdStmts)
+					var la1k = LT(1).Kind;
+					if (la1k == TokenKind.Assignment || la1k == TokenKind.Separator || la1k == (int)TT.EOF) {
+						return StmtCat.IdStmt;
+					} else if (la1k == TokenKind.Operator) {
+						var la1 = LA(1);
+						if (la1 != TT.QuestionMark && la1 != TT.LT && la1 != TT.Mul && la1 != TT.Power) { 
+							return StmtCat.IdStmt;
+						}
+					} else if (la1k == TokenKind.LParen && LA(3) == TT.Semicolon) {
+						return StmtCat.IdStmt; // Method();
+					}
+				}
+
+				// Scan past identifiers and extra AttrKeywords at beginning of statement
+				bool isAttrKw = haveNew;
+				do {
+					Skip(); // same as InputPosition++;
+					if (isAttrKw)
+						wordsStartAt = InputPosition;
+					else
+						wordAttrCount++;
+					isAttrKw = LA0 == TT.New || LA0 == TT.AttrKeyword;
+					haveNew |= LA0 == TT.New;
+				} while (isAttrKw || LA0 == TT.Id || LA0 == TT.ContextualKeyword || 
+				         LA0 == TT.LinqKeyword && !_insideLinqExpr);
+			}
+
+			// At this point we've skipped over all simple identifiers.
+			// Now decide: what kind of statement do we appear to have?
+			int consecutiveWords = InputPosition - wordsStartAt;
+			if (LA0 == TT.TypeKeyword)
+			{
+				// The rest of this method expects this to be treated as if it were an extra word, 
+				// although it cannot be treated as a word attribute.
+				InputPosition++;
+				consecutiveWords++;
+			}
+			else if (LA0 == TT.Substitute)
+			{
+				// The rest of this method expects this to be treated as if it were an extra word, 
+				// although it cannot be treated as a word attribute.
+				var la1 = LA(1);
+				if (LA(1) == TT.LParen && LA(2) == TT.RParen)
+				{
+					InputPosition += 3;
+				}
+				else
+				{
+					InputPosition++;
+				}
+				consecutiveWords++;
+			}
+			else if (LA0 == TT.This)
+			{
+				if (LA(1) == TT.LParen && LA(2) == TT.RParen)
+				{
+					TT la3 = LA(3);
+					if (la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn)
+					{
+						return StmtCat.ThisConstructor;
+					}
+					else
+					{
+						return StmtCat.OtherStmt;
+					}
+				}
+				else if (consecutiveWords != 0)
+				{
+					// Appears to be a this[] property (there could be a type 
+					// param, like this<T>[], so we can't check if LA(1) is "[")
+					InputPosition--;
+					return StmtCat.MethodOrPropOrVar;
+				}
+			}
+			else if (LT0.Kind == TokenKind.OtherKeyword)
+			{
+				if (EasilyDetectedKeywordStatements.Contains(LA0) || LA0 == TT.Delegate && LA(1) != TT.LParen || (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
+				{
+					// `if` and `using` do not support word attributes:
+					// - `if`, because in the original plan EC# was to support a 
+					//   D-style 'if' clause at the end of property definitions, 
+					//   making "T P if ..." ambiguous if word attributes were allowed.
+					// - `using` because `x using T` was planned as a new cast operator.
+					if (!(consecutiveWords > 0 && (LA0 == TT.If || LA0 == TT.Using)))
+					{
+						return StmtCat.KeywordStmt;
+					}
+				}
+			}
+			else if (consecutiveWords == 0 && !haveNew && LA0 != TT.LParen)
+			{
+				return StmtCat.OtherStmt;
+			}
+
+			// At this point we know it's not a "keyword statement" or "this constructor",
+			// so it's either MethodOrPropOrVar, which allows word attributes, or 
+			// something else that prohibits them (IdStmt or OtherStmt).
+			if (consecutiveWords >= 2)
+			{
+				// We know it's MethodOrPropOrVar, but where do the word attributes end?
+				int likelyStart = wordsStartAt + consecutiveWords - 2;   // most likely location
+				if (ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
+				{
+					InputPosition = likelyStart;
+				}
+				else
+				{
+					// We must distinguish among these three cases:
+					// 1. IEnumerator IEnumerable.GetEnumerator()
+					//    ^likelyStart(correct)  ^InputPosition
+					// 2. alias              Map<K,V> = Dictionary <K,V>;
+					//    ^likelyStart(correct) ^InputPosition
+					// 3. partial    Namespace.Class Method()
+					//    ^likelyStart(too low) ^InputPosition
+					InputPosition = likelyStart + 1;
+
+					if (Scan_ComplexNameDecl() && ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
+						InputPosition = likelyStart;
+					else
+						InputPosition = likelyStart + 1;
+				}
+				return StmtCat.MethodOrPropOrVar;
+			}
+
+			// At this point we're sure there are no word attributes, but it's the
+			// hardest case: we need arbitrary lookahead to detect var/property/method
+			InputPosition = wordsStartAt;
+			using (new SavePosition(this, 0))
+			{
+				TryMatch((int)TT.This); // skip 'this' attribute for extension methods
+										// Use MethodOrPropertyName to detect all possible method, property, 
+										// and variable declarations (this incidentally matches some invalid 
+										// things like `bool operator true { get {} }`.)
+				if (Scan_DataType(false) && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
+					return StmtCat.MethodOrPropOrVar;
+			}
+			if (haveNew)
+			{
+				if (LA(-1) == TT.New)
+					InputPosition--;
+				else {
+					// count 'new' as a word attribute, to trigger an error if it shouldn't be there
+					wordAttrCount++;
+				}
+			}
+			return consecutiveWords != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
+		}
+
+		#endregion
+
 		#region Methods/properties of LLLPG and base class overrides
 
 		protected sealed override int EofInt() { return 0; }
@@ -200,7 +427,7 @@ namespace Loyc.Ecs.Parser
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			CurrentSink(true).Error(new SourceRange(_sourceFile, token), message, args);
+			CurrentSink(true).Error(token.Range(_sourceFile), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

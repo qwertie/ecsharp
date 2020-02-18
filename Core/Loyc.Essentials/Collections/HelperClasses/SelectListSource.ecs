@@ -1,4 +1,4 @@
-﻿#ecs;
+#ecs;
 using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
@@ -7,37 +7,27 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	replace GenerateSelectClass($SelectList, $IList<T>)
+	define GenerateSelectClass($SelectList, $IList<T>)
 	{
-		public class $SelectList<T,TResult> : ListSourceBase<TResult>
+		public class $SelectList<ListT, T, TResult> : ListSourceBase<TResult>
+			where ListT : $IList<T>
 		{
-			protected $IList<T> _list;
-			protected Func<T, TResult> _selector;
+			public this(protected ListT _list, protected Func<T, TResult> _selector) {
+				if (_list == null || _selector == null)
+					throw new ArgumentNullException();
+			}
 
-			public this($IList<T> list, Func<T,TResult> selector)
-				{ _list = list; _selector = selector; }
-
-			public $IList<T> OriginalList { get { return _list; } }
-		
 			new public TResult this[int index]
 			{
 				get { return _selector(_list[index]); }
 			}
 
-			public sealed override TResult TryGet(int index, out bool fail)
+			public override TResult TryGet(int index, out bool fail)
 			{
-				static if ($IList<T> `tree==` IListSource<T>) {
-					T t = _list.TryGet(index, out fail);
-					if (!fail)
-						return _selector(t);
-					else
-						return default(TResult);
-				} else {
-					if (!(fail = ((uint)index >= (uint)_list.Count)))
-						return _selector(_list[index]);
-					else
-						return default(TResult);
-				}
+				if (!(fail = ((uint)index >= (uint)_list.Count)))
+					return _selector(_list[index]);
+				else
+					return default(TResult);
 			}
 
 			public sealed override int Count
@@ -47,21 +37,47 @@ namespace Loyc.Collections
 		}
 	}
 	
+	// *** Reminder: DO NOT MODIFY generated code ***
 	/// <summary>
 	/// Helper class: provides a modified view of an IList by transforming each element 
 	/// on-demand. Objects of this type are returned from 
-	/// <see cref="LinqToCollections.Select{T,TResult}(IList{T},Func{T,TResult})"/>
+	/// <see cref="LinqToLists.Select{T,TResult}(IList{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
 	GenerateSelectClass(SelectList, IList<T>);
 	
 	/// <summary>
 	/// Helper class: provides a modified view of an IListSource by transforming each element 
 	/// on-demand. Objects of this type are returned from 
-	/// <see cref="LinqToCollections.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
+	/// <see cref="LinqToLists.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
-	GenerateSelectClass(SelectListSource, IListSource<T>);
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
+	GenerateSelectClass(SelectReadOnlyList, IReadOnlyList<T>);
+
+	/// <summary>
+	/// Helper class: provides a modified view of an IListSource by transforming each element 
+	/// on-demand. Objects of this type are returned from 
+	/// <see cref="LinqToLists.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
+	/// </summary>
+	/// <typeparam name="T">input type</typeparam>
+	/// <typeparam name="TResult">output type</typeparam>
+	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
+	public class SelectListSource<ListT, T, TResult> : SelectReadOnlyList<ListT, T, TResult>
+		where ListT : IListSource<T>
+	{
+		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
+
+		public override TResult TryGet(int index, out bool fail)
+		{
+			T t = _list.TryGet(index, out fail);
+			if (!fail)
+				return _selector(t);
+			else
+				return default(TResult);
+		}
+	}
 }

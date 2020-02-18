@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +9,8 @@ using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Threading;
 using LeMP.Prelude;
+using System.Diagnostics;
+using Loyc.Collections.Impl;
 
 /// <summary>The lexical macro processor. Main classes: <see cref="LeMP.Compiler"/> and <see cref="LeMP.MacroProcessor"/>.</summary>
 namespace LeMP
@@ -59,8 +61,7 @@ namespace LeMP
 	/// Higher-level code (e.g. <see cref="Compiler"/>) can define "always-open"
 	/// namespaces by adding entries to PreOpenedNamespaces, and the code being 
 	/// processed can open additional namespaces with a #importMacros(Namespace) 
-	/// statement (in LES, "import_macros Namespace" can be used as a synonym if 
-	/// PreOpenedNamespaces contains LeMP.Prelude).
+	/// statement.
 	/// <para/>
 	/// MacroProcessor is not aware of any distinction between "statements"
 	/// and "expressions"; it will run macros no matter where they are located,
@@ -68,10 +69,8 @@ namespace LeMP
 	/// <para/>
 	/// MacroProcessor's main responsibilities are to keep track of a table of 
 	/// registered macros (call <see cref="AddMacros"/> to register more), to
-	/// keep track of which namespaces are open (namespaces can be imported by
-	/// <c>#import</c>, or by <c>import</c> which is defined in the LES prelude);
-	/// to scan the input for macros to call; and to control the printout of 
-	/// messages.
+	/// keep track of which namespaces are open, to scan the input for macros to 
+	/// call; and to control the printout of messages.
 	/// <para/>
 	/// This class processes a batch of files at once. Call either
 	/// <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>.
@@ -104,11 +103,12 @@ namespace LeMP
 			if (prelude != null)
 				AddMacros(prelude);
 			AbortTimeout = TimeSpan.FromSeconds(30);
+			PreOpenedNamespaces.Add(GSymbol.Empty);
 			PreOpenedNamespaces.Add((Symbol)"LeMP.Prelude");
 		}
 
-		MMap<Symbol, VList<MacroInfo>> _macros = new MMap<Symbol, VList<MacroInfo>>();
-		internal MMap<Symbol, VList<MacroInfo>> Macros { get { return _macros; } }
+		MMap<Symbol, InternalList<InternalMacroInfo>> _macros = new MMap<Symbol, InternalList<InternalMacroInfo>>();
+		internal MMap<Symbol, InternalList<InternalMacroInfo>> Macros { get { return _macros; } }
 
 		/// <summary>Macros in these namespaces will be available without an explicit 
 		/// import command (#importMacros). By default this list has one item: 
@@ -135,64 +135,58 @@ namespace LeMP
 
 		#region Adding macros from types (AddMacros())
 
-		public bool AddMacros(Type type)
+		public int AddMacros(Type type)
 		{
-			var ns = GSymbol.Get(type.Namespace);
-			bool any = false;
-			foreach (var info in GetMacros(type, ns, _sink)) {
-				any = true;
+			int found = 0;
+			foreach (var info in LeMP.MacroInfo.GetMacros(type, _sink)) {
+				found++;
 				AddMacro(_macros, info);
 			}
-			return any;
+			return found;
 		}
 
-		public bool AddMacros(Assembly assembly, bool writeToSink = true)
+		public int AddMacros(Assembly assembly, bool writeToSink = true)
 		{
-			bool any = false;
+			int found = 0;
 			foreach (Type type in assembly.GetExportedTypes()) {
 				if (!type.IsGenericTypeDefinition &&
 					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
 				{
 					if (writeToSink && Sink.IsEnabled(Severity.Verbose))
 						Sink.Write(Severity.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
-					any = AddMacros(type) || any;
+					found += AddMacros(type);
 				}
 			}
-			if (!any && writeToSink)
+			if (found == 0 && writeToSink)
 				Sink.Warning(assembly, "No macros found");
-			return any;
+			return found;
 		}
 
-		internal static void AddMacro(MMap<Symbol, VList<MacroInfo>> macros, MacroInfo info)
+		internal static void AddMacro(MMap<Symbol, InternalList<InternalMacroInfo>> macros, LeMP.MacroInfo newMacro)
 		{
-			foreach (string name in info.Names) {
-				var nameS = (Symbol)name;
-				var cases = macros[nameS, VList<MacroInfo>.Empty];
-				if (!cases.Any(existing => existing.Macro == info.Macro))
-					macros[nameS] = cases.Add(info);
-			}
-		}
+			if (newMacro?.Macro == null)
+				return; // TODO: should we throw? log an error?
+			foreach (string name_ in newMacro.Names) {
+				var name = (Symbol)name_;
+				var macrosWithThisName = macros[name, InternalList<InternalMacroInfo>.Empty];
 
-		internal static IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace, IMessageSink sink, object instance = null)
-		{
-			var flags = BindingFlags.Public | BindingFlags.Static;
-			if (instance != null)
-				flags |= BindingFlags.Instance;
-			foreach(var method in type.GetMethods(flags)) {
-				foreach (LexicalMacroAttribute attr in method.GetCustomAttributes(typeof(LexicalMacroAttribute), false)) {
-					var @delegate = AsDelegate(method, sink, instance);
-					if (@delegate != null)
-						yield return new MacroInfo(@namespace, attr, @delegate);
+				// Check if the same macro was added earlier, possibly in a different namespace
+				foreach (var macro in macrosWithThisName)
+				{
+					if (macro.Macro.Equals(newMacro.Macro)) {
+						if (!macro.Namespaces.Contains(newMacro.Namespace))
+							macro.Namespaces.Add(newMacro.Namespace);
+						goto continueOuter;
+					}
 				}
-			}
-		}
-		static LexicalMacro AsDelegate(MethodInfo method, IMessageSink sink, object instance)
-		{
-			try {
-				return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method);
-			} catch (Exception e) {
-				sink.Write(Severity.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
-				return null;
+				// It's a new macro, add it
+				macrosWithThisName.Add(new InternalMacroInfo {
+					Attr = newMacro,
+					Macro = newMacro.Macro,
+					Namespaces = new InternalList<Symbol>(new Symbol[] { newMacro.Namespace })
+				});
+				macros[name] = macrosWithThisName;
+				continueOuter:;
 			}
 		}
 
@@ -263,5 +257,22 @@ namespace LeMP
 		/// collisions with names like tmp_2 and tmp_3 that might be names chosen 
 		/// by a developer; tmp_10 is much less likely to collide.</remarks>
 		public static int IncrementTempCounter() { _nextTempCounter = NextTempCounter; return _nextTempCounter++; }
+	}
+
+	/// <summary>A macro delegate with a list of namespaces and <see cref="LexicalMacroAttribute"/>.
+	/// The difference between this and the public class <see cref="LeMP.MacroInfo"/>
+	/// is that here the goal is to associate a list of namespaces with a a single 
+	/// macro name (in case the macro is re-used in other namespaces) and the other 
+	/// MacroInfo associates a single namespace with macro attributes that 
+	/// potentially list multiple names.</summary>
+	internal class InternalMacroInfo
+	{
+		public LexicalMacro Macro;
+		public LexicalMacroAttribute Attr;
+		public InternalList<Symbol> Namespaces = InternalList<Symbol>.Empty;
+		public MacroMode Mode { get { return Attr.Mode; } }
+
+		public static Comparison<InternalMacroInfo> CompareDescendingByPriority =
+			(a, b) => b.Attr.Priority.CompareTo(a.Attr.Priority);
 	}
 }

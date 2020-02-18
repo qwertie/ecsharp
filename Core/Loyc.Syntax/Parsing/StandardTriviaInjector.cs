@@ -33,25 +33,25 @@ namespace Loyc.Syntax
 	/// The output, expressed in LESv2, is
 	/// <pre>
 	/// {
-	///		@[#trivia_SLComment(" Leading Comment 1"),
-	///		  #trivia_MLComment(" Leading Comment 2 "),
-	///		  #trivia_newline,
-	///		  #trivia_MLComment(" Leading Comment 3 "),
-	///		  #trivia_trailing(
-	///		    #trivia_SLComment(" Trailing Comment 1"),
-	///		    #trivia_MLComment(" Trailing Comment 2 "),
-	///		    #trivia_newline)]
+	///		@[@%SLComment(" Leading Comment 1"),
+	///		  @%MLComment(" Leading Comment 2 "),
+	///		  @%newline,
+	///		  @%MLComment(" Leading Comment 3 "),
+	///		  @%trailing(
+	///		    @%SLComment(" Trailing Comment 1"),
+	///		    @%MLComment(" Trailing Comment 2 "),
+	///		    @%newline)]
 	///		x = y;
 	///		y = z;
-	///		@[#trivia_appendStatement] TheEnd();
+	///		@[@%appendStatement] TheEnd();
 	/// }
 	/// </pre>
 	/// By default, printers should add newlines between statements within a braced 
 	/// block. Therefore, this class does not add trivia to mark a single newline 
-	/// between statements; instead, it adds a #trivia_appendStatement attribute 
+	/// between statements; instead, it adds an %appendStatement attribute 
 	/// when the expected newline prior to a statement in a braced block was NOT 
 	/// present. Also, a newline is expected after a single-line comment and no 
-	/// <c>#trivia_newline</c> is created for the expected newline.
+	/// <c>%newline</c> is created for the expected newline.
 	/// <para/>
 	/// Finally, since printers typically add a newline before the closing brace by
 	/// default, this class avoids adding an attribute for that newline, if present.

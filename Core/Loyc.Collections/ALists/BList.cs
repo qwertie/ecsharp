@@ -326,6 +326,12 @@ namespace Loyc.Collections
 			return IndexOf(item) > -1;
 		}
 
+		/// <inheritdoc cref="FindLowerBound(T, out bool)"/>
+		public int FindLowerBound(T item)
+		{
+			bool found;
+			return FindLowerBound(item, out found);
+		}
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
 		/// <param name="item">The item to find. If passed by reference, when this 
 		/// method returns, item is set to the item that was found, or to the next 
@@ -336,12 +342,6 @@ namespace Loyc.Collections
 		/// <returns>The index of the item that was found, or of the next
 		/// greater item, or Count if the given item is greater than all items 
 		/// in the list.</returns>
-		public int FindLowerBound(T item)
-		{
-			bool found;
-			return FindLowerBound(item, out found);
-		}
-		/// <inheritdoc cref="FindLowerBound(T)"/>
 		public int FindLowerBound(T item, out bool found)
 		{
 			var op = new AListSingleOperation<T, T>();

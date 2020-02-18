@@ -173,13 +173,13 @@ namespace LeMP
 		static readonly Symbol _replace = (Symbol)"replace";
 		static readonly Symbol _define = (Symbol)"define";
 
-		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...}; define Name($arg1, $arg2, ...) => ...",
+		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...}; define Name($arg1, $arg2, ...) => ...; // EC# syntax",
 			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. " +
 			"In some cases this macro is more efficient than replace(...). " +
 			"The macro's arguments can be patterns; for example `replace Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`.", 
 			"#fn", Mode = MacroMode.Passive)]
-		public static LNode define(LNode node, IMacroContext context1)
+		public static LNode define(LNode node, IMacroContext context)
 		{
 			var retType = node.Args[0, LNode.Missing].Name;
 			if (retType != _replace && retType != _define)
@@ -188,8 +188,24 @@ namespace LeMP
 			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn || body == null)
 				return null;
 
+			return RegisterSimpleMacro(node.Attrs, macroName, args.Args, body, context);
+		}
+
+		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...} // LES2 syntax",
+			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
+			"The macro's arguments can be patterns; for example `replace Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`.",
+			"define", "#define", Mode = MacroMode.Passive)]
+		public static LNode define_LES(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount == 2 && node.Args[0].IsCall && node.Args[1].Calls(S.Braces))
+				return RegisterSimpleMacro(node.Attrs, node.Args[0].Target, node.Args[0].Args, node.Args[1], context);
+			return null;
+		}
+
+		private static LNode RegisterSimpleMacro(VList<LNode> attrs, LNode macroName, VList<LNode> args, LNode body, IMacroContext context)
+		{
 			MacroMode mode, modes = 0;
-			var leftoverAttrs = node.Attrs.SmartWhere(attr =>
+			var leftoverAttrs = attrs.SmartWhere(attr =>
 			{
 				if (attr.IsId && Loyc.Compatibility.EnumStatic.TryParse(attr.Name.Name, out mode))
 				{
@@ -199,17 +215,17 @@ namespace LeMP
 				return true;
 			});
 
-			LNode pattern = F.Call(macroName, args.Args).PlusAttrs(leftoverAttrs);
-			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice).PlusAttrs(replaceKw.Attrs);
+			LNode pattern = F.Call(macroName, args).PlusAttrs(leftoverAttrs);
+			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice);
 			replacement.Style &= ~NodeStyle.OneLiner;
 
-			WarnAboutMissingDollarSigns(args, context1, pattern, replacement);
+			WarnAboutMissingDollarSigns(args, context, pattern, replacement);
 
 			// Note: we could fill out the macro's Syntax and Description with the 
 			// pattern and replacement converted to strings, but it's generally a 
 			// waste of CPU time as those strings are usually not requested.
 			var lma = new LexicalMacroAttribute(
-				string.Concat(macroName.Name, "(", args.Args.Count.ToString(), " args)"), "", macroName.Name.Name);
+				string.Concat(macroName.Name, "(", args.Count.ToString(), " args)"), "", macroName.Name.Name);
 			var macroInfo = new MacroInfo(null, lma, (candidate, context2) =>
 			{
 				MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
@@ -219,19 +235,20 @@ namespace LeMP
 					return ReplaceCaptures(replacement, captures).PlusAttrsBefore(unmatchedAttrs);
 				}
 				return null;
-			}) {
+			})
+			{
 				Mode = modes
 			};
-			context1.RegisterMacro(macroInfo);
+			context.RegisterMacro(macroInfo);
 			return F.Splice();
 		}
 
-		private static void WarnAboutMissingDollarSigns(LNode argList, IMacroContext context, LNode pattern, LNode replacement)
+		private static void WarnAboutMissingDollarSigns(VList<LNode> argList, IMacroContext context, LNode pattern, LNode replacement)
 		{
 			// Warn if a name appears in both pattern and replacement but uses $ in only one of the two.
 			Dictionary<Symbol, LNode> pVars = ScanForVariables(pattern), rVars = ScanForVariables(replacement);
 			// Also warn if it looks like all `$`s were forgotten.
-			bool allIds = argList.Args.Count > 0 && argList.Args.All(n => !n.IsCall);
+			bool allIds = argList.Count > 0 && argList.All(n => !n.IsCall);
 			foreach (var pair in pVars)
 			{
 				LNode rVar = rVars.TryGetValue(pair.Key, null);

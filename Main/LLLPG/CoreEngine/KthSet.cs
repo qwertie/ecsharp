@@ -1,4 +1,4 @@
-﻿//
+//
 // Prediction analysis intermediate data structures defined here:
 //   - KthSet
 //   - Transition
@@ -88,12 +88,12 @@ namespace Loyc.LLParserGenerator
 			{
 				return string.Format("la{0} = {1} ({2})", LA, Set.ToString(), Cases.Select(c => c.Set).Join("|"));
 			}
-			public KthSet Clone(bool update)
+			public KthSet Clone(bool updateSet)
 			{
  				KthSet copy = new KthSet(Prev) { LA = LA, Set = Set, Alt = Alt };
 				for (int i = 0; i < Cases.Count; i++)
 					copy.Cases.Add(Cases[i].Clone());
-				if (update)
+				if (updateSet)
 					copy.UpdateSet(Set.ContainsEOF);
 				return copy;
 			}

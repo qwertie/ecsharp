@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -39,7 +39,7 @@ namespace LeMP
 		// across multiple macros. Really we should think of a new and fancy 
 		// macroprocessor design, but right now the important thing is to provide 
 		// VALUE TO USERS. They'll never pay me, but if I'm lucky they'll use LeMP.
-		[LexicalMacro("notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + 
+		[LexicalMacro(@"notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + 
 		"[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; " + 
 		"[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}", 
 		"Generates Contract checks in a method.\n\n" + 
@@ -76,7 +76,7 @@ namespace LeMP
 					var body = fn.Args[3];
 					if (!body.Calls(S.Braces)	// Add braces in case of void LambdaMethod() => expr;
 					)
-						body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.Statement);
+						body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.StatementBlock);
 					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
 					fn = fn.WithArgChanged(3, body);
 					return fn;
@@ -87,7 +87,7 @@ namespace LeMP
 	
 		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
 	
-		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + 
+		[LexicalMacro(@"([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + 
 		"([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", 
 		"Generates Contract checks in a lambda function. See the documentation of " + 
 		"ContractsOnMethod for more information about the contract attributes.", 
@@ -113,7 +113,7 @@ namespace LeMP
 					var body = fn.Args[1];
 					if (!body.Calls(S.Braces)	// Add braces in case of void LambdaMethod() => expr;
 					)
-						body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.Statement);
+						body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.StatementBlock);
 					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
 					fn = fn.WithArgChanged(1, body);
 					return fn;
@@ -124,7 +124,7 @@ namespace LeMP
 	
 		static readonly LNode Id_value = LNode.Id(CodeSymbols.value);
 	
-		[LexicalMacro("notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + 
+		[LexicalMacro(@"notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + 
 		"T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + 
 		"[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", 
 		"Generates contract checks in a property. You can apply contract attributes to " + 
@@ -162,8 +162,8 @@ namespace LeMP
 						return null;	// lambda property has no contract attributes
 					// Transform into a normal property
 					getterAttrs = cAttrs;
-					getter = LNode.Call(CodeSymbols.get, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(braces)))).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special);
-					braces = LNode.Call(CodeSymbols.Braces, LNode.List(getter)).SetStyle(NodeStyle.Statement);
+					getter = LNode.Call(CodeSymbols.get, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(braces)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special);
+					braces = LNode.Call(CodeSymbols.Braces, LNode.List(getter)).SetStyle(NodeStyle.StatementBlock);
 					getterIndex = 0;
 				} else {
 					for (int i = 0; i < braces.Args.Count; i++) {
@@ -358,7 +358,7 @@ namespace LeMP
 					else
 						// return value
 						mode = sy_ensures;
-					conditions.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Id((Symbol) "_"), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
+					conditions.Add(LNode.Call(CodeSymbols.NotEq, LNode.List(LNode.Id((Symbol) "_"), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 				} else if (!attr.IsCall) {
 					Context.Sink.Warning(attr, "'{0}' expects a list of conditions.", attr.Name);
 				}
@@ -458,11 +458,11 @@ namespace LeMP
 						PrependStmts.AddRange(checks);
 					} else if (mode == sy_ensuresOnThrow) {
 						LNode excSpec = exceptionType == null ? Id__exception__ : LNode.Call(CodeSymbols.Var, LNode.List(exceptionType, Id__exception__));
-						PrependStmts.Add(LNode.Call((Symbol) "on_throw", LNode.List(excSpec, LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special));
+						PrependStmts.Add(LNode.Call((Symbol) "on_throw", LNode.List(excSpec, LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special));
 					} else if (mode == sy_ensuresFinally) {
-						PrependStmts.Add(LNode.Call((Symbol) "on_finally", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special));
+						PrependStmts.Add(LNode.Call((Symbol) "on_finally", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special));
 					} else {	// mode == @@ensures || mode == @@ensuresAssert
-						PrependStmts.Add(LNode.Call((Symbol) "on_return", LNode.List(Id_return_value, LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.Statement))).SetStyle(NodeStyle.Special));
+						PrependStmts.Add(LNode.Call((Symbol) "on_return", LNode.List(Id_return_value, LNode.Call(CodeSymbols.Braces, LNode.List(checks)).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special));
 					}
 				}
 			}
@@ -511,7 +511,7 @@ namespace LeMP
 					} else if (getter.ArgCount == 1) {
 						var body = getter.Args[0];
 						if (!body.Calls(S.Braces))
-							body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.Statement);
+							body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.StatementBlock);
 						body = body.WithArgs(body.Args.InsertRange(0, PrependStmts));
 						getter = getter.WithArgs(body);
 						braces = braces.WithArgChanged(getterIndex, getter);

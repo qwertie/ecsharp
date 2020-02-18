@@ -283,7 +283,7 @@ namespace Loyc.Syntax.Les
 			if (LiteralParsers.TryGetValue(typeMarker, out parser)) {
 				value = parser(parsedText);
 				if (value == null)
-					syntaxError = "Syntax error in '{typeMarker}' literal".Localized("typeMarker", typeMarker);
+					syntaxError = "Syntax error in '{0}' literal".Localized(typeMarker);
 			}
 			return value ?? new CustomLiteral(parsedText.ToString(), (Symbol)typeMarker.ToString());
 		}
@@ -334,16 +334,16 @@ namespace Loyc.Syntax.Les
 
 			Pair<Symbol, TokenType> symAndType;
 			if (!_opCache.TryGetValue(opText, out symAndType))
-				_opCache[opText] = symAndType = GetOpNameAndType(opText);
+				_opCache[opText] = symAndType = GetOperatorNameAndType(opText);
 			type = symAndType.B;
 			return symAndType.A;
 		}
 
-		private Pair<Symbol, TokenType> GetOpNameAndType(UString op)
+		/// <summary>Under the assumption that <c>op</c> is a sequence of punctuation 
+		/// marks that forms a legal operator, this method decides its TokenType.</summary>
+		public static TokenType GetOperatorTokenType(UString op)
 		{
 			Debug.Assert(op.Length > 0);
-			TokenType tt;
-			Symbol name;
 
 			int length = op.Length;
 			// Get first and last of the operator's initial punctuation
@@ -351,28 +351,41 @@ namespace Loyc.Syntax.Les
 
 			if (length == 1) {
 				if (first == '!')
-					return Pair.Create(CodeSymbols.Not, TokenType.Not);
+					return TokenType.Not;
 				if (first == ':')
-					return Pair.Create(CodeSymbols.Colon, TokenType.Colon);
+					return TokenType.Colon;
+				if (first == '.')
+					return TokenType.Dot;
 			}
 
 			Debug.Assert(first != '\'');
-			name = (Symbol)("'" + op);
-			if (name == CodeSymbols.Dot)
-				return Pair.Create(name, TokenType.Dot);
+			Symbol name = (Symbol)("'" + op);
 			
 			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
-				tt = TokenType.PreOrSufOp;
+				return TokenType.PreOrSufOp;
 			else if (first == '$')
-				tt = TokenType.PrefixOp;
-			else if (last == '.' && (length == 1 || first != '.'))
-				tt = TokenType.Dot;
+				return TokenType.PrefixOp;
+			else if (last == '.' && first != '.')
+				return TokenType.Dot;
 			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
-				tt = TokenType.Assignment;
+				return TokenType.Assignment;
 			else
-				tt = TokenType.NormalOp;
-			
-			return Pair.Create(name, tt);
+				return TokenType.NormalOp;
+		}
+
+		static Pair<Symbol, TokenType> GetOperatorNameAndType(UString op)
+		{
+			if (op.Length == 1)
+			{
+				char first = op[0];
+				if (first == '!')
+					return Pair.Create(CodeSymbols.Not, TokenType.Not);
+				if (first == ':')
+					return Pair.Create(CodeSymbols.Colon, TokenType.Colon);
+				if (first == '.')
+					return Pair.Create(CodeSymbols.Dot, TokenType.Dot);
+			}
+			return Pair.Create((Symbol)("'" + op), GetOperatorTokenType(op));
 		}
 
 		#endregion
@@ -464,7 +477,7 @@ namespace Loyc.Syntax.Les
 		internal static readonly HashSet<Symbol> ContinuatorOps = new HashSet<Symbol> {
 			(Symbol)"#else",  (Symbol)"#elsif",  (Symbol)"#elseif",
 			(Symbol)"#catch", (Symbol)"#except", (Symbol)"#finally",
-			(Symbol)"#while", (Symbol)"#until",
+			(Symbol)"#while", (Symbol)"#until",  (Symbol)"#initially",
 			(Symbol)"#plus",  (Symbol)"#using",
 		};
 

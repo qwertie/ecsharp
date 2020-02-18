@@ -1,0 +1,33 @@
+using Loyc.Collections.Impl;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Loyc.Collections
+{
+	define GenerateSelectClass($SelectCollection, $ICollection<T>)
+	{
+		/// <summary>Helper class for <see cref="LinqToLists"/>.</summary>
+		public class $SelectCollection<ListT, T, TResult>
+			: ReadOnlyCollectionBase<TResult> where ListT : $ICollection<T>
+		{
+			public this(protected ListT _list, protected Func<T, TResult> _selector) {
+				if (_list == null || _selector == null)
+					throw new ArgumentNullException();
+			}
+
+			public sealed override IEnumerator<TResult> GetEnumerator()
+			{
+				return Enumerable.Select(_list, _selector).GetEnumerator();
+			}
+			public sealed override int Count
+			{
+				get { return _list.Count; }
+			}
+		}
+	}
+
+	GenerateSelectClass(SelectCollection, ICollection<T>);
+
+	GenerateSelectClass(SelectReadOnlyCollection, IReadOnlyCollection<T>);
+}

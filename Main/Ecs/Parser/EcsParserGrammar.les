@@ -33,7 +33,7 @@ namespace Loyc.Ecs.Parser
 
 	@[partial] class EcsParser
 	{
-		@[LL(2), Verbosity(1), AddCsLineDirectives(@false)]
+		@[LL(2), FullLLk(false), Verbosity(1), AddCsLineDirectives(@false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
 
@@ -136,11 +136,36 @@ namespace Loyc.Ecs.Parser
 
 		@[recognizer(fn Scan_DataType(afterAsOrIs::bool = false))]
 		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @{
-			result:ComplexId()
+			(result:ComplexId() | result:TupleType())
 			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
 		};
+		@[private]
+		rule TupleType()::LNode @{
+			// My first inclination was to allow a liberalized syntax so that, for example,
+			// `(X, Y++) Foo()` would be understood as a method returning a tuple "type". 
+			// But to correctly detect that `(X, Y++)(Foo)` is a call rather than a cast,
+			// we need to scan accurately here for a list of things that look like types.
+			&{@[Hoist] Down($LI) && Up(Scan_TupleTypeList() && LA0 == EOF)}
+			"(" ")"
+			{
+				Down($"("); 
+				var typeList = Up(TupleTypeList());
+				return F.Of(S.Tuple, typeList, $"(".StartIndex, $")".EndIndex);
+			}
+		};
+		@[recognizer(fn Scan_TupleTypeList())]
+		rule TupleTypeList()::VList!LNode @{
+			{var items = LNode.List();}
+			items+=TupleTypeItem ","
+			(items+=TupleTypeItem ("," items+=TupleTypeItem)*)?
+			{return items;}
+		};
+		rule TupleTypeItem()::LNode @{
+			result:DataType 
+			(id:=IdAtom {result = F.Var(result, id, null, result.Range.StartIndex, id.Range.EndIndex);})?
+		};
 		
-		// Complex identifier in non-declaration context, e.g. Foo.Bar or Foo<x, y>
+		// Complex identifier, e.g. Foo.Bar or Foo<x, y>
 		@[FullLLk] // http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 		token ComplexId(declContext::bool = false)::LNode @{ // Part of DataType
 			result:IdWithOptionalTypeParams(declContext)
@@ -219,11 +244,11 @@ namespace Loyc.Ecs.Parser
 		// type parameters can have [normal attributes] and in/out variance 
 		// attrbutes. This matcher also helps match properties and therefore 
 		// optionally allows names ending in 'this', such as 'IList<T>.this'
-		fn ComplexNameDecl()::LNode { _::bool; return ComplexNameDecl(false, out _); };
+		fn ComplexNameDecl()::LNode { return ComplexNameDecl(false, out _::bool); };
 
 		@[FullLLk, recognizer(fn Scan_ComplexNameDecl(thisAllowed::bool = false))]
 		token ComplexNameDecl(thisAllowed::bool, out hasThis::bool)::LNode @{
-			result:ComplexId(declContext: true) {hasThis = false;}
+			result:ComplexId(declContext<: true) {hasThis = false;}
 			[	op:="." ComplexThisDecl(thisAllowed) {hasThis = true;}
 				{result = F.Dot(result, $ComplexThisDecl, result.Range.StartIndex, $ComplexThisDecl.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			]?
@@ -241,7 +266,7 @@ namespace Loyc.Ecs.Parser
 
 		// `this` with optional <type arguments>
 		token ComplexThisDecl(allowed::bool)::LNode @{
-			{if (!allowed) {Error("'this' is not allowed in this location.");};}
+			{if (!allowed) {Error("'this' is not allowed at this location.");};}
 			t:=TT.This    {$result = F.Id(t);}
 			TParams(true, ref result)?
 		};
@@ -356,7 +381,7 @@ namespace Loyc.Ecs.Parser
 		//    (A<B,C>)   // generics list
 		//    (A<B,C>D)  // context-dependent
 		// 4. Brackets. Is "Foo[]" a data type, or an indexer with no args?
-		//    (Foo[]) x; // data type: #of(@`'[]`, Foo)
+		//    (Foo[]) x; // data type: @'of(@`'[]`, Foo)
 		//    (Foo[]).x; // indexer:   @`'[]`(Foo)
 		// 5. Does "?" make a nullable type or a conditional operator?
 		//    Foo<B> ? x = null;     // nullable type
@@ -406,9 +431,13 @@ namespace Loyc.Ecs.Parser
 			|	t:=(TT.Checked | TT.Unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
-			|	t:=(TT.Typeof | TT.Default | TT.Sizeof)
+			|	t:=(TT.Typeof | TT.Sizeof)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+			|	t:=TT.Default
+				(   args:="(" rp:=")"
+				    {r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+				/   {r = F.Id(t);})
 			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args, false, true)), F.Braces(StmtListInside(block), block.StartIndex, rb.EndIndex), 
 				            t.StartIndex, rb.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.OldStyle);}
@@ -441,7 +470,7 @@ namespace Loyc.Ecs.Parser
 				var list = VList!LNode.Empty;
 			}
 			op:=TT.New
-			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
+			(	// new [] { ... }  <=>  @'new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
 				lb:="[" rb:="]" 
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
@@ -451,21 +480,21 @@ namespace Loyc.Ecs.Parser
 					AppendInitializersInside(lb, ref list);
 					endIndex = rb.EndIndex;
 				}
-			|	// new { ... }  <=>  #new(@``, ...)
+			|	// new { ... }  <=>  @'new(@``, ...)
 				lb:="{" rb:="}"
 				{
 					list.Add(F.Missing);
 					AppendInitializersInside(lb, ref list);
 					endIndex = rb.EndIndex;
 				}
-			|	// new Type(...)             <=> #new(Type(...))
-				// new Type(...) { ... }     <=> #new(Type(...), ...)
-				// new Type { ... }          <=> #new(Type(), ...)
-				// new Type[10] { ... }      <=> #new(#of(@`[]`, Type)(10), ...)
-				// new Type[10][]            <=> #new(#of(@`[]`, #of(@`'[]`, Type))(10))
+			|	// new Type(...)             <=> @'new(Type(...))
+				// new Type(...) { ... }     <=> @'new(Type(...), ...)
+				// new Type { ... }          <=> @'new(Type(), ...)
+				// new Type[10] { ... }      <=> @'new(@'of(@`'[]`, Type)(10), ...)
+				// new Type[10][]            <=> @'new(@'of(@`'[]`, @`'of`(@`'[]`, Type))(10))
 				type:=DataType(false, out majorDimension)
-				(	// new Type(...)         <=> #new(Type(...))
-					// new Type(...) { ... } <=> #new(Type(...), ...)
+				(	// new Type(...)         <=> @'new(Type(...))
+					// new Type(...) { ... } <=> @'new(Type(...), ...)
 					lp:="(" rp:=")"
 					{
 						if (majorDimension != null) {
@@ -480,9 +509,9 @@ namespace Loyc.Ecs.Parser
 							endIndex = rb.EndIndex;
 						}
 					)?
-				/	// new Type { ... }      <=> #new(Type(), ...)
-					// new Type[10] { ... }  <=> #new(#of(@`[]`, Type)(10), ...)
-					// new Type[10][]        <=> #new(#of(@`[]`, #of(@`[]`, Type))(10))
+				/	// new Type { ... }      <=> `@'new`(Type(), ...)
+					// new Type[10] { ... }  <=> `@'new`(@`'of`(@`'[]`, Type)(10), ...)
+					// new Type[10][]        <=> `@'new`(@`'of`(@`'[]`, @'of(@`[]`, Type))(10))
 					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
 					( lb="{" rb="}" {haveBraces = true;} )?
 					{
@@ -516,15 +545,6 @@ namespace Loyc.Ecs.Parser
 			var type = DataType();
 			Match(EOF -> int);
 			return Up(type);
-		};
-
-		@[private] rule ExprInParensAuto::LNode @{
-			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
-			"(" ")" =>
-			(	&(ExprInParens(true) ("="|"=>"))
-				r:=ExprInParens(true)  {return r;}
-			/	r:=ExprInParens(false) {return r;}
-			)
 		};
 
 		@[private] rule TokenLiteral()::LNode @{
@@ -692,11 +712,11 @@ namespace Loyc.Ecs.Parser
 				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=TT.Is
 				e=IsPattern(e, op)
-				// 'as' or 'using' cast (special case: #usingCast instead of #using)
+				// 'as' or 'using' cast (special case: 'using instead of #using)
 			|	&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
-				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex);}
+				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
@@ -723,8 +743,8 @@ namespace Loyc.Ecs.Parser
 			[targetName:=IdAtom {target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);}]?
 			{argList.Add(target);}
 			// EC# allows an argument list for recursive deconstruction
-			[ "(" ")" {argList.Add(F.List(ExprListInside($"(", allowUnassignedVarDecl: true), $"(".StartIndex, $")".EndIndex));} ]?
-			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex);}
+			[ "(" ")" {argList.Add(F.List(ExprListInside($"(", allowUnassignedVarDecl<: true), $"(".StartIndex, $")".EndIndex));} ]?
+			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex, NodeStyle.Operator);}
 		};
 
 		// An expression that can start with attributes [...], attribute keywords 
@@ -866,12 +886,21 @@ namespace Loyc.Ecs.Parser
 		@[private] fn MaybeRecognizeVarAsKeyword(ref type::LNode)
 		{
 			// Recognize "var" (but not @var) as a contextual keyword.
-			rng::SourceRange;
 			name::Symbol = type.Name;
 			if (name == _var) && type.IsId
-				&& (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@' {
+				&& (type.BaseStyle & NodeStyle.VerbatimId) == 0
+			{	// the old test was: (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@'
 				type = type.WithName(S.Missing);
 			}; 
+		};
+
+		@[private] rule ExprInParensAuto::LNode @{
+			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
+			"(" ")" =>
+			(	&(ExprInParens(true) ("="|"=>"))
+				r:=ExprInParens(true)  {return r;}
+			/	r:=ExprInParens(false) {return r;}
+			)
 		};
 
 		@[private] rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
@@ -888,6 +917,7 @@ namespace Loyc.Ecs.Parser
 		rule InParens_ExprOrTuple(allowUnassignedVarDecl::bool, startIndex::int, endIndex::int)::LNode @
 		{	// We're parsing a token tree so EOF could represent ")" or "]" or "}"
 			EOF =>
+			// Treat empty parens as an empty tuple
 			{return F.Tuple(VList!LNode.Empty, startIndex, endIndex);}
 		/	{var hasAttrList = LA0 == TT.LBrack;}
 			e:=ExprStart(allowUnassignedVarDecl)
@@ -919,7 +949,7 @@ namespace Loyc.Ecs.Parser
 				var stmts = StmtListInside($"{");
 				_spaceName = oldSpace;
 				return F.Call(target ?? S.Braces, stmts, 
-					startIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex, NodeStyle.Statement);
+					startIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex, NodeStyle.StatementBlock);
 			}
 		};
 
@@ -944,7 +974,7 @@ namespace Loyc.Ecs.Parser
 			{attrTarget::Token = default(Token);}
 			(	attrTarget=(TT.Id|TT.ContextualKeyword|TT.LinqKeyword|TT.Return) ":"
 				{newAttrs::VList!LNode = (new VList!LNode());}
-				ExprList(ref newAttrs, allowTrailingComma: true, allowUnassignedVarDecl: true)
+				ExprList(ref newAttrs, allowTrailingComma<: true, allowUnassignedVarDecl<: true)
 				{
 					var attrTargetId = F.Id(attrTarget);
 					for (i::int = 0; i < newAttrs.Count; i++) {
@@ -958,7 +988,7 @@ namespace Loyc.Ecs.Parser
 						attrs.Add(attr);
 					};
 				}
-			/	ExprList(ref attrs,    allowTrailingComma: true, allowUnassignedVarDecl: true)
+			/	ExprList(ref attrs,    allowTrailingComma<: true, allowUnassignedVarDecl<: true)
 			)
 		};
 
@@ -1196,8 +1226,10 @@ namespace Loyc.Ecs.Parser
 			for (; oldPosition < InputPosition; oldPosition++) {
 				word::Token = _tokens[oldPosition];
 				wordAttr::LNode;
-				if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.New) {
+				if word.Kind == TokenKind.AttrKeyword {
 					wordAttr = F.Id(word);
+				} else if (word.Type() == TT.New) {
+					wordAttr = F.Id(S.NewAttribute);
 				} else {
 					wordAttr = F.Attr(_triviaWordAttribute, F.Id("#" + word.Value.ToString(), word.StartIndex, word.EndIndex));
 				};
@@ -1205,206 +1237,6 @@ namespace Loyc.Ecs.Parser
 			};
 			return cat;
 		};
-
-		// Originally I let LLLPG distinguish the statement types, but when the 
-		// parser was mature, LLLPG's analysis took from 10 to 40 seconds and it 
-		// generated 5000 lines of code to distinguish the various cases.
-		// This custom code, which was very tricky to get right,
-		// (1) detects method/property/variable (and lookalikes: trait, alias) and
-		//     distinguishes certain other cases (StmtCat values) out of convenience.
-		// (2) detects and skips word attributes (not including `this` in `this int x`).
-		// (3) is fast if possible.
-		//
-		// "word attributes" are a messy feature of EC#. C# has a few non-keyword 
-		// attributes that appear at the beginning of a statement, such as "partial", 
-		// "yield" and "async". EC# generalizes this concept to "word attributes", which 
-		// can be ANY normal identifier.
-		//
-		// BTW: "word attributes" are not really "contextual keywords" in the C# 
-		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "module", "assembly",
-		// "from" (LINQ), "trait", "alias", and "when"; others like "partial" and 
-		// "yield" are merely "word attributes".
-		//
-		// Since they're not keywords, word attributes are difficult because:
-		// 1. Lots of statements start with words that are not word attributes, 
-		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
-		//    Somehow we have to figure out which words are attributes.
-		// 2. Not all statements accept word attributes. But the attributes 
-		//    appear BEFORE the statement, so how can we tell if we should
-		//    be expecting word attributes or not?
-		//
-		// There are lots of "keyword-based" statements that accept word
-		// attributes (think "partial class" and "yield return"), which are the
-		// easiest to handle. Our main difficulty is the non-keyword statements:
-		// 1. statements that can begin with an identifier, but also accept
-		//    word attributes:
-		//    - word type* name ... // field, property or method
-		//    - word type? name ... // field, property or method
-		//    - word type[,][] name ... // field, property or method
-		//    - word type<x> name ... // field, property or method
-		//    - word type name(); // method decl
-		//    - word type name<x>(); // method decl
-		//    - word type<x> name(); // method decl
-		//    - word type<x> name<x>(); // method decl
-		//    - word this();         // except inside methods
-		//    - word this<x>();      // except inside methods
-		//    - word label:
-		// 2. statements that can start with an identifier, and do not accept 
-		//    word attributes:
-		//    - foo();     // method call OR constructor
-		//    - foo<x>();
-		//    - foo = 0;
-		//    - foo - bar;
-		//
-		// Notice that if a word is followed by an operator of any kind, it 
-		// can't be an attribute; but if it is followed by another word, it's
-		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
-		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
-		// but in "A B<x>()" it is a return type. The same difficulty exists
-		// in case of alternate generics specifiers such as "A B!(x)" and types
-		// with suffixes, like "A int?*".
-
-		fn DetectStatementCategory(out wordAttrCount::int, mode::DetectionMode)::StmtCat
-		{
-			// If the statement starts with identifier(s), we have to figure out 
-			// whether, and how many of them, are word attributes. Also, skip over
-			// `new` because can be a keyword attribute in some cases.
-			wordAttrCount = 0;
-			wordsStartAt::int = InputPosition;
-			haveNew::bool = LA0 == TT.New; // "new" keyword is the most annoying wrinkle
-			if (haveNew || LA0 == TT.Id || LA0 == TT.ContextualKeyword || LA0 == TT.LinqKeyword)
-			{
-				if (!haveNew) {
-					// Optimized path for common expressions that start with an Id (IdStmts)
-					// first lets get it working without optimization
-					/*var la1k = LT(1).Kind;
-					if la1k == TokenKind.LParen || la1k == TokenKind.Assignment ||
-					   la1k == TokenKind.Separator || la1k->int == TT.EOF->int {
-						return StmtCat.IdStmt;
-					} else if (la1k == TokenKind.Operator) {
-						var la1 = LA(1);
-						if la1 != TT.QuestionMark && la1 != TT.LT && la1 != TT.Mul { 
-							return StmtCat.IdStmt;
-						};
-					};*/
-				};
-
-				// Scan past identifiers and extra AttrKeywords at beginning of statement
-				isAttrKw::bool = haveNew;
-				do {
-					Skip();
-					if (isAttrKw) { 
-						wordsStartAt = InputPosition;
-					} else {
-						wordAttrCount++;
-					};
-					haveNew |= (isAttrKw = (LA0 == TT.New));
-				} while ((isAttrKw |= LA0 == TT.AttrKeyword || LA0 == TT.New)
-					|| LA0 == TT.Id || LA0 == TT.ContextualKeyword || LA0 == TT.LinqKeyword);
-			};
-			
-			// At this point we've skipped over all simple identifiers.
-			// Now decide: what kind of statement do we appear to have?
-			consecutive::int = InputPosition - wordsStartAt;
-			if (LA0 == TT.TypeKeyword) {
-				// We can treat this as if it were one additional identifier, 
-				// although it cannot be treated as a word attribute.
-				InputPosition++;
-				consecutive++;
-			} else if (LA0 == TT.Substitute) {
-				// We can treat this as if it were one additional identifier, 
-				// although it cannot be treated as a word attribute.
-				var la1 = LA(1);
-				if (LA(1) == TT.LParen && LA(2) == TT.RParen) {
-					InputPosition += 3;
-				} else {
-					InputPosition++;
-				};
-				consecutive++;
-			} else if (LA0 == TT.This) {
-				if LA(1) == TT.LParen && LA(2) == TT.RParen {
-					la3::TT = LA(3);
-					if la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn {
-						return StmtCat.ThisConstructor;
-					} else {
-						return StmtCat.OtherStmt;
-					};
-				} else if (consecutive != 0) {
-					// Appears to be a this[] property (there could be a type 
-					// param, like this<T>[], so we can't check if LA(1) is "[")
-					InputPosition--;
-					return StmtCat.MethodOrPropOrVar;
-				}
-			} else if (LT0.Kind == TokenKind.OtherKeyword) {
-				if (EasilyDetectedKeywordStatements.Contains(LA0)
-					|| LA0 == TT.Delegate && LA(1) != TT.LParen
-					|| (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
-				{
-					// `if` and `using` do not support word attributes:
-					// - `if`, because in the original plan EC# was to support a 
-					//   D-style 'if' clause at the end of property definitions, 
-					//   making "T P if ..." ambiguous if word attributes were allowed.
-					// - `using` because `x using T` was planned as a new cast operator.
-					unless (consecutive > 0 && (LA0 == TT.If || LA0 == TT.Using)) {
-						return StmtCat.KeywordStmt;
-					};
-				};
-			} else if (consecutive == 0) {
-				if (!haveNew) {
-					return StmtCat.OtherStmt;
-				};
-			};
-
-			// At this point we know it's not a "keyword statement" or "this constructor",
-			// so it's either MethodOrPropOrVar, which allows word attributes, or 
-			// something else that prohibits them (IdStmt or OtherStmt).
-			if consecutive >= 2 {
-				// We know it's MethodOrPropOrVar, but where do the word attributes end?
-				likelyStart::int = wordsStartAt + consecutive - 2; // most likely location
-				if (ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
-					InputPosition = likelyStart;
-				} else {
-					// We must distinguish among these three cases:
-					// 1. IEnumerator IEnumerable.GetEnumerator()
-					//    ^likelyStart(correct)  ^InputPosition
-					// 2. alias              Map<K,V> = Dictionary <K,V>;
-					//    ^likelyStart(correct) ^InputPosition
-					// 3. partial    Namespace.Class Method()
-					//    ^likelyStart(too low) ^InputPosition
-					InputPosition = likelyStart + 1;
-
-					if (Scan_ComplexNameDecl() && ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
-						InputPosition = likelyStart;
-					} else {
-						InputPosition = likelyStart + 1;
-					};
-				};
-				return StmtCat.MethodOrPropOrVar;
-			};
-			
-			// Worst case: need arbitrary lookahead to detect var/property/method
-			InputPosition = wordsStartAt;
-			using (new SavePosition(this, 0)) {
-				TryMatch(TT.This->int); // skip 'this' attribute for extension methods
-				// Use MethodOrPropertyName to detect all possible method, property, 
-				// and variable declarations (this incidentally matches some invalid 
-				// things like `bool operator true { get {} }`.)
-				if (Scan_DataType(false) && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
-					return StmtCat.MethodOrPropOrVar;
-				};
-			};
-			if (haveNew) {
-				if (LA(-1) == TT.New) {
-					InputPosition--;
-				} else {
-					// count 'new' as a word attribute, to trigger an error if it shouldn't be there
-					wordAttrCount++;
-				}
-			};
-			return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
-		};
-
 
 		// Methods, properties, variables, and things that look like them (trait & alias)
 		rule MethodOrPropertyOrVarStmt(startIndex::int, attrs::VList!LNode)::LNode @{
@@ -1877,7 +1709,7 @@ namespace Loyc.Ecs.Parser
 
 		fn IsArrayType(type::LNode)::bool 
 		{
-			// Detect an array type, which has the form #of(@`'[,]`, Type)
+			// Detect an array type, which has the form @'of(@`'[,]`, Type)
 			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
 		};
 

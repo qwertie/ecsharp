@@ -26,10 +26,10 @@ namespace Loyc.Syntax
 		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
 		public static VList<LNode> GetTrailingTrivia(this LNode node) { return GetTrailingTrivia(node.Attrs); }
 		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
-		/// <remarks>Trailing trivia is represented by a call to #trivia_trailing in
-		/// a node's attribute list; each argument to #trivia_trailing represents one
+		/// <remarks>Trailing trivia is represented by a call to <c>%trailing</c> in
+		/// a node's attribute list; each argument to %trailing represents one
 		/// piece of trivia. If the attribute list has multiple calls to 
-		/// #trivia_trailing, this method combines those lists into a single list.</remarks>
+		/// %trailing, this method combines those lists into a single list.</remarks>
 		public static VList<LNode> GetTrailingTrivia(this VList<LNode> attrs)
 		{
 			var trivia = VList<LNode>.Empty;
@@ -44,9 +44,9 @@ namespace Loyc.Syntax
 			return node.WithAttrs(WithTrailingTrivia(node.Attrs, trivia));
 		}
 		/// <summary>Removes all existing trailing trivia from an attribute list and adds a new list of trailing trivia.</summary>
-		/// <remarks>This method has a side-effect of recreating the #trivia_trailing
+		/// <remarks>This method has a side-effect of recreating the %trailing
 		/// node, if there is one, at the end of the attribute list. If <c>trivia</c>
-		/// is empty then all calls to #trivia_trailing are removed.</remarks>
+		/// is empty then all calls to %trailing are removed.</remarks>
 		public static VList<LNode> WithTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
 		{
 			var attrs2 = WithoutTrailingTrivia(attrs);
@@ -54,12 +54,12 @@ namespace Loyc.Syntax
 				return attrs2;
 			return attrs2.Add(LNode.Call(S.TriviaTrailing, trivia));
 		}
-		/// <summary>Gets a new list with any #trivia_trailing attributes removed.</summary>
+		/// <summary>Gets a new list with any %trailing attributes removed.</summary>
 		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs)
 		{
 			return attrs.Transform((int i, ref LNode attr) => attr.Calls(S.TriviaTrailing) ? XfAction.Drop : XfAction.Keep);
 		}
-		/// <summary>Gets a new list with any #trivia_trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
+		/// <summary>Gets a new list with any %trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
 		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs, out VList<LNode> trailingTrivia)
 		{
 			var trailingTrivia2 = VList<LNode>.Empty;
@@ -85,12 +85,11 @@ namespace Loyc.Syntax
 		}
 		/// <summary>Adds additional trailing trivia to an attribute list. Has no effect if <c>trivia</c> is empty.</summary>
 		/// <remarks>
-		/// Trailing trivia is represented by a call to #trivia_trailing in a node's 
-		/// attribute list; each argument to #trivia_trailing represents one piece of 
-		/// trivia.
+		/// Trailing trivia is represented by a call to <c>%trailing</c> in a node's 
+		/// attribute list; each argument to %trailing represents one piece of trivia.
 		/// <para/>
-		/// In the current design, this method has a side-effect of recreating the #trivia_trailing
-		/// node at the end of the attribute list, and if there are multiple #trivia_trailing
+		/// In the current design, this method has a side-effect of recreating the %trailing
+		/// node at the end of the attribute list, and if there are multiple %trailing
 		/// lists, consolidating them into a single list, but only if the specified <c>trivia</c> 
 		/// list is not empty.</remarks>
 		public static VList<LNode> PlusTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
@@ -264,7 +263,7 @@ namespace Loyc.Syntax
             return InParens(node, new SourceRange(file, startIndex, endIndex - startIndex));
 		}
 		/// <summary>Removes a single pair of parentheses, if the node has a 
-		/// #trivia_inParens attribute. Returns the same node when no parens are 
+		/// %inParens attribute. Returns the same node when no parens are 
 		/// present.</summary>
 		public static LNode WithoutOuterParens(this LNode self)
 		{
@@ -604,8 +603,11 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Converts <see cref="ILNode"/> to <see cref="LNode"/> recursively.</summary>
-		public static LNode ToLNode(ILNode node)
+		public static LNode ToLNode(this ILNode node)
 		{
+			if (node is LNode n)
+				return n;
+
 			var attrs = VList<LNode>.Empty;
 			for (int i = node.Min; i < -1; i++)
 				attrs.Add(ToLNode(node[i]));

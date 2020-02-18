@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{445D4D88-E182-49E1-A7FA-7617A71397EE}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LeMPDemo</RootNamespace>
     <AssemblyName>LeMPDemo</AssemblyName>
@@ -132,6 +132,9 @@
     <ApplicationIcon>
     </ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.TextEditor, Version=3.2.1.6466, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -179,6 +182,10 @@
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.net45.csproj">
       <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.net45</Name>

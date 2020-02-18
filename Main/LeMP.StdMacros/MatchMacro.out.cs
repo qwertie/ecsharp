@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.6.2.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -89,7 +89,7 @@ namespace LeMP
 							// needed. They are added just in case the handler declares a 
 							// variable and a different handler declares another variable 
 							// by the same name, which is illegal unless we add braces.
-							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.Statement));
+							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.StatementBlock));
 							if (next_i < contents.Count)
 								context.Sink.Error(contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
@@ -101,7 +101,7 @@ namespace LeMP
 		}
 	
 		static bool IsCaseLabel(LNode @case) {
-			if (@case.Calls(CodeSymbols.Case) || @case.Calls(CodeSymbols.Label, 1) && @case.Args[0].IsIdNamed((Symbol) "#default")) return true;
+			if (@case.Calls(CodeSymbols.Case) || @case.Calls(CodeSymbols.Label, 1) && @case.Args[0].IsIdNamed((Symbol) "'default")) return true;
 			return false;
 		}
 	
@@ -373,7 +373,7 @@ namespace LeMP
 				LNode subpatterns = null;
 				{
 					LNode lhs, type;
-					if (pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls((Symbol) "'is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
+					if (pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
 						if (subpatterns == null) {
 							if (type.Calls((Symbol) "with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null || type.Calls((Symbol) "'with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null) { }
 						}

@@ -145,7 +145,7 @@ namespace Loyc.Syntax.Les
 			// Note: if the operator has a space after it, there's a subtle reason why 
 			// we want to print that space before the trivia and not after. Consider
 			// the input "a == //comment\n    b". After trivia injection this becomes
-			// (@[#trivia_trailing(#trivia_SLComment("comment"))] @==)(a, @[#trivia_newline] b).
+			// (@[@%trailing(@%SLComment("comment"))] @==)(a, @[@%newline] b).
 			// Because the injector associates the newline with a different node than the
 			// single-line comment, there's no easy way to strip out the newline during
 			// the parsing process. So, to make the trivia round-trip, we use 
@@ -209,7 +209,7 @@ namespace Loyc.Syntax.Les
 			var name = node.Name;
 			if ((name == S.Array || name == S.Braces) && node.IsCall() && !HasPAttrs(node.Target)) {
 				if (name == S.Array) {
-					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "[", ']', node.Target);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "[", ']', node.Target);
 					return true;
 				} else if (name == S.Braces) {
 					PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', node.Target);
@@ -263,7 +263,7 @@ namespace Loyc.Syntax.Les
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
 					Print(node.Target, LesPrecedence.Primary.LeftContext(context), "(");
-					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.Statement, "", ')', null);
+					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "", ')', null);
 					break;
 			}
 		}
@@ -285,7 +285,7 @@ namespace Loyc.Syntax.Les
 					MaybeCloseBrack(ref wroteBrack);
 					parenCount++;
 					_out.Write('(', true);
-					// need extra paren when writing @[..] because (@[..] ...) doesn't count as #trivia_inParens
+					// need extra paren when writing @[..] because (@[..] ...) doesn't count as %inParens
 					needParen = true;
 					continue;
 				}
@@ -682,12 +682,12 @@ namespace Loyc.Syntax.Les
 		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
 		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute #trivia_inParens.)</remarks>
+		/// add the trivia attribute <c>%inParens</c>.)</remarks>
 		public override bool AllowChangeParentheses { get { return base.AllowChangeParentheses; } set { base.AllowChangeParentheses = value; } }
 
 		/// <summary>Causes comments and spaces to be printed as attributes in order 
 		/// to ensure faithful round-trip parsing. By default, only "raw text" and
-		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
+		/// unrecognized trivia is printed this way. Note: <c>%inParens</c> is 
 		/// always printed as parentheses, and <see cref="ILNodePrinterOptions.OmitUnknownTrivia"/> 
 		/// has no effect when this flag is true.</summary>
 		public override bool PrintTriviaExplicitly { get { return base.PrintTriviaExplicitly; } set { base.PrintTriviaExplicitly = value; } }
@@ -732,10 +732,10 @@ namespace Loyc.Syntax.Les
 		/// <summary>The printer avoids printing spaces around infix (binary) 
 		/// operators that have the specified precedence or higher.</summary>
 		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 
 		/// <summary>The printer avoids printing spaces after prefix operators 
 		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 	}
 }

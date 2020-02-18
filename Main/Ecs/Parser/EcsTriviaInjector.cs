@@ -18,9 +18,9 @@ namespace Loyc.Ecs.Parser
 	/// and <see cref="CodeSymbols.TriviaAppendStatement"/> is required to suppress 
 	/// it. The Loyc tree does not specify whether or not there is a newline before
 	/// the closing brace; it is assumed that there should be a newline unless ALL
-	/// children of the braced block use #trivia_appendStatement.</li>
+	/// children of the braced block use %appendStatement.</li>
 	/// <li>Implicitly, there is a newline before every top-level statement except 
-	/// the first, and #trivia_appendStatement can be used to suppress it.</li>
+	/// the first, and %appendStatement can be used to suppress it.</li>
 	/// <li>By default, the printer doesn't print a newline before an opening brace.
 	/// #trivia_newline can be added to the braced block node to represent one.</li>
 	/// <li>This injector explicitly encodes newlines in all other locations. 
@@ -29,7 +29,7 @@ namespace Loyc.Ecs.Parser
 	/// non-braced-block child statements of certain nodes (if statements, while
 	/// loops, for loops, and other statements used without braces), the printer
 	/// will print a newline before a child statement if it (1) does not have 
-	/// #trivia_newline or #trivia_appendStatement attributes and (2) does not have 
+	/// #trivia_newline or %appendStatement attributes and (2) does not have 
 	/// an ancestor with the <see cref="NodeStyle.OneLiner"/> style.</li>
 	/// <li>In an if-else statement, `else` has no representation in the syntax 
 	/// tree and may appear to the injector the same as a blank line. In this 
@@ -37,7 +37,7 @@ namespace Loyc.Ecs.Parser
 	/// and is deleted so that there is only one newline before the second child.</li>
 	/// <li>Constructors that call another constructor (`: base(...)`) get a 
 	/// newline before the colon by default, which can be suppressed with 
-	/// #trivia_appendStatement. Note: These constructors have an unusual syntax 
+	/// %appendStatement. Note: These constructors have an unusual syntax 
 	/// tree which the standard trivia injector can't handle properly; see comment 
 	/// in DoneAttaching() for details.</li>
 	/// </ul>
@@ -91,12 +91,12 @@ namespace Loyc.Ecs.Parser
 			//
 			// Gets trivia attached like this:
 			//
-			//     #cons(@``, Foo, #(int x), [#trivia_newline] ([#trivia_newline] @`'{}`)(
-			//         [#trivia_appendStatement] base(x), Bar()));
+			//     #cons(``, Foo, #(int x), @`%newline` (@`%newline` `'{}`)(
+			//         [`%appendStatement`] base(x), Bar()));
 			//
 			// This code changes the trivia to something more reasonable:
 			//
-			//     #cons(@``, Foo, #(int x), [#trivia_newline] { base(x), Bar() });
+			//     #cons(``, Foo, #(int x), @`%newline` { base(x), Bar() });
 			//
 			LNode baseCall;
 			if (node.CallsMin(S.Braces, 1) && parent != null && parent.Calls(S.Constructor) 

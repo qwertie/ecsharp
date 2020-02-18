@@ -104,23 +104,23 @@ namespace Loyc.Syntax
 	{
 		static ThreadLocalVariable<IParsingService> _default = new ThreadLocalVariable<IParsingService>();
 		/// <summary>Gets or sets the default language service on this thread. If 
-		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
+		/// no service has been assigned on this thread, returns <see cref="Les2LanguageService.Value"/>.</summary>
 		public static IParsingService Default
 		{
 			get { return _default.Value ?? LesLanguageService.Value; }
 			set { _default.Value = value; }
 		}
-        [Obsolete("This property was renamed to 'Default'")]
-        public static IParsingService Current
+		[Obsolete("This property was renamed to 'Default'")]
+		public static IParsingService Current
 		{
 			get { return Default; }
 			set { Default = value; }
 		}
 
-        public static SavedValue<IParsingService> SetDefault(IParsingService newValue)
-        {
-            return new SavedValue<IParsingService>(_default, newValue);
-        }
+		public static SavedValue<IParsingService> SetDefault(IParsingService newValue)
+		{
+			return new SavedValue<IParsingService>(_default, newValue);
+		}
 
 		#region Management of registered languages
 
@@ -201,6 +201,7 @@ namespace Loyc.Syntax
 		/// using (var old = ParsingService.PushCurrent(LesLanguageService.Value))
 		///     code = ParsingService.Current.ParseSingle("This `is` LES_code;");
 		/// </code></example>
+		[Obsolete("Use 'SetDefault' instead")]
 		public static PushedCurrent PushCurrent(IParsingService newValue) { return new PushedCurrent(newValue); }
 
 		/// <summary>Returned by <see cref="PushCurrent(IParsingService)"/>.</summary>

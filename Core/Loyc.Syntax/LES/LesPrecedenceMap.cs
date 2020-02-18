@@ -34,8 +34,9 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
 		/// <param name="shape">Specifies which precedence table and rules to use 
-		/// (Prefix, Suffix or Infix). Note: when this is Suffix, "suf" must not be 
-		/// part of the name in <c>op</c> (see <see cref="IsSuffixOperatorName"/>)</param>
+		/// (Prefix, Suffix or Infix). Note: when this is Suffix, "_" is not expected 
+		/// to be part of the name in <c>op</c>, i.e. op should be a Symbol like "'++" 
+		/// rather than "'_++" (see also <see cref="IsSuffixOperatorName"/>)</param>
 		/// <param name="op">Parsed form of the operator. op must be a Symbol, but 
 		/// the parameter has type object to avoid casting Token.Value in the parser.</param>
 		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true, bool les3InfixOp = false)
@@ -44,7 +45,7 @@ namespace Loyc.Syntax.Les
 			return FindPrecedence(pair.A, op, pair.B, cacheWordOp, les3InfixOp);
 		}
 
-		// Maps from Symbol to Precedence, paired with a default precedece for \word operators
+		// Maps from Symbol to Precedence, paired with a default precedece for unrecognized operators
 		protected Pair<MMap<object, Precedence>, Precedence>[] _precedenceMap = new Pair<MMap<object, Precedence>, Precedence>[4];
 		protected Pair<MMap<object, Precedence>, Precedence> this[OperatorShape s]
 		{
@@ -59,23 +60,28 @@ namespace Loyc.Syntax.Les
 		protected static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
 			new MMap<object, Precedence>() {
 				{ S.Substitute,  P.Substitute  }, // $
-				{ S.Dot,         P.Substitute  }, // hmm, I might repurpose '.' with lower precedence to remove the spacing rule
+				{ S.Dot,         P.Substitute  }, // . (LES2 only)
 				{ S.Colon,       P.Substitute  }, // :
 				{ S.NotBits,     P.Prefix      }, // ~
 				{ S.Not,         P.Prefix      }, // !
-				{ S.Mod,         P.Prefix      }, // %
 				{ S.XorBits,     P.Prefix      }, // ^
 				{ S._AddressOf,  P.Prefix      }, // &
 				{ S._Dereference,P.Prefix      }, // *
 				{ S._UnaryPlus,  P.Prefix      }, // +
 				{ S._Negate,     P.Prefix      }, // -
-				{ S.DotDot,      P.PrefixDots  }, // ..
-				{ S.OrBits,      P.PrefixOr    }, // |
+				{ S.Mod,         P.Prefix      }, // %
 				{ S.Div,         P.Prefix      }, // /
-				//{ S.LT,          P.Reserved    }, // <
-				//{ S.GT,          P.Reserved    }, // >
-				//{ S.QuestionMark,P.Reserved    }, // ?
-				//{ S.Assign,      P.Reserved    }, // =
+				{ S.DotDot,      P.RangePrefix }, // ..
+				{ (Symbol)"'.<", P.RangePrefix }, // .<
+				{ (Symbol)"'~>", P.SquigglyPrefix }, // ~>
+				{ (Symbol)"'<~", P.SquigglyPrefix }, // <~
+				{ (Symbol)"'->", P.ArrowPrefix }, // ->
+				{ (Symbol)"'<-", P.ArrowPrefix }, // <-
+				{ (Symbol)"':>", P.ColonArrowPrefix }, // :>
+				{ (Symbol)"'<:", P.ColonArrowPrefix }, // <:
+				{ S.GT,          P.LambdaPrefix }, // > and =>
+				{ (Symbol)"'|>", P.TrianglePrefix }, // |>
+				{ (Symbol)"'<|", P.TrianglePrefix }, // <|
 			}.AsImmutable();
 
 		protected static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
@@ -94,38 +100,39 @@ namespace Loyc.Syntax.Les
 				{ S.NullDot,     P.NullDot    }, // ?.
 				{ S.ColonColon,  P.NullDot    }, // ::
 				{ S.Exp,         P.Power      }, // **
+				{ S.DotDot,      P.Range      }, // ..
+				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
 				{ S.Mul,         P.Multiply   }, // *
 				{ S.Div,         P.Multiply   }, // /
 				{ S.Mod,         P.Multiply   }, // %
-				//{ S.Backslash,   P.Multiply   }, // \  (no longer supported)
 				{ S.Shr,         P.Shift      }, // >>
 				{ S.Shl,         P.Shift      }, // <<
 				{ S.Add,         P.Add        }, // +
 				{ S.Sub,         P.Add        }, // -
-				{ S._RightArrow, P.Arrow      }, // ->
-				{ S.LeftArrow,   P.Arrow      }, // <-
-				{ S.AndBits,     P.AndBitsLESv2 }, // &
-				{ S.OrBits,      P.OrBitsLESv2 }, // |
-				{ S.XorBits,     P.OrBitsLESv2 }, // ^
+				{ S.NotBits,     P.Squiggly   }, // ~
+				{ (Symbol)"'~>", P.Squiggly   }, // ~>
+				{ S.AndBits,     P.AndBitsLES2 }, // &
+				{ S.OrBits,      P.OrBitsLES2 }, // |
+				{ S.XorBits,     P.OrBitsLES2 }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
-				{ S.DotDot,      P.Range      }, // ..
-				{ (Symbol)"'.<", P.Range      }, // .< (controls the precedence of ..<)
 				{ S.GT,          P.Compare    }, // >
 				{ S.LT,          P.Compare    }, // <
 				{ S.LE,          P.Compare    }, // <=
 				{ S.GE,          P.Compare    }, // >=
 				{ S.Eq,          P.Compare    }, // ==
-				{ S.Neq,         P.Compare    }, // !=
+				{ S.NotEq,         P.Compare    }, // !=
+				{ S._RightArrow, P.Arrow      }, // ->
+				{ S.LeftArrow,   P.Arrow      }, // <-
 				{ S.And,         P.And        }, // &&
 				{ S.Or,          P.Or         }, // ||
 				{ S.Xor,         P.Or         }, // ^^
 				{ S.QuestionMark,P.IfElse     }, // ?
 				{ S.Colon,       P.IfElse     }, // :
+				{ (Symbol)"':>", P.IfElse     }, // :> (so <: and :> have the same precedence as :)
 				{ S.Assign,      P.Assign     }, // =
 				{ S.Lambda,      P.Lambda     }, // =>
 				{ (Symbol)"'|>", P.Triangle   }, // |>
 				{ (Symbol)"'<|", P.Triangle   }, // <|
-				{ S.NotBits,     P.Other      }, // ~
 			}.AsImmutable();
 		
 		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp, bool les3InfixOp = false)
@@ -232,11 +239,16 @@ namespace Loyc.Syntax.Les
 		/// <remarks>The parser should read something like <c>+/*</c> as an operator
 		/// with three characters, rather than "+" and a comment, but the printer 
 		/// is more conservative, so this function returns false in such a case.</remarks>
-		public static bool IsNaturalOperator(string name)
+		public static bool IsNaturalOperator(UString name)
 		{
 			if (name.Length <= 1 || name[0] != '\'')
 				return false; // optimized path
-			return IsOperator(name, OpChars, true, "'") || name == "'$" || IsOperator(name, OpChars, true, "'$");
+			return IsNaturalOperatorToken(name.Slice(1));
+		}
+		/// <summary>Like <see cref="IsNaturalOperator"/>, but doesn't expect name[0] is apostrophe.</summary>
+		public static bool IsNaturalOperatorToken(UString name)
+		{
+			return name.Length > 0 && IsOperator(name[0] == '$' ? name.Slice(1) : name, OpChars, true);
 		}
 
 		/// <summary>Returns true if the given Symbol can ever be used as an "extended" 
@@ -245,19 +257,16 @@ namespace Loyc.Syntax.Les
 		/// start with an apostrophe, and each remaining character must be punctuation marks 
 		/// from natural operators and/or characters from the set 
 		/// {'#', '_', 'a'..'z', 'A'..'Z', '0'..'9', '$'}.</remarks>
-		public static bool IsExtendedOperator(string name, string expectPrefix = "'")
+		public static bool IsExtendedOperatorToken(UString name)
 		{
-			return IsOperator(name, OpCharsEx, false, expectPrefix);
+			return IsOperator(name, OpCharsEx, false);
 		}
 
-		static bool IsOperator(string name, BitArray opChars, bool rejectComment, string expectPrefix)
+		static bool IsOperator(UString name, BitArray opChars, bool rejectComment)
 		{
-			int i = expectPrefix.Length;
-			if (!name.StartsWith(expectPrefix))
+			if (name.Length == 0 || name.Length > 254)
 				return false;
-			if (i >= name.Length || name.Length > 255)
-				return false;
-			for (;;) {
+			for (int i = 0;;) {
 				char c = name[i];
 				if ((uint)c > (uint)opChars.Count || !opChars[c])
 					return false;
@@ -270,30 +279,35 @@ namespace Loyc.Syntax.Les
 		}
 
 		/// <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
-		/// the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
+		/// the suffix form of the name, such as <c>(Symbol)"'suf++"</c>.</summary>
 		/// <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
 		public Symbol ToSuffixOpName(object symbol)
 		{
+			CheckParam.IsNotNull(nameof(symbol), symbol);
+
 			_suffixOpNames = _suffixOpNames ?? new Dictionary<object, Symbol>();
 			Symbol name;
 			if (_suffixOpNames.TryGetValue(symbol, out name))
 				return name;
 
+			CheckParam.Arg(nameof(symbol), symbol.ToString().StartsWith("'"), symbol);
+
 			var was = symbol.ToString();
-			return _suffixOpNames[symbol] = GSymbol.Get(symbol.ToString() + "suf");
+			return _suffixOpNames[symbol] = GSymbol.Get("'suf" + symbol.ToString().Substring(1));
 		}
 
-		/// <summary>Decides whether the name appears to represent a suffix operator 
-		/// of the form <c>sufOP</c> or <c>OP\</c>.</summary>
+		/// <summary>Decides whether the name appears to represent a suffix operator.</summary>
 		/// <param name="name">Potential operator name to evaluate.</param>
-		/// <param name="bareName">If the name ends with "suf", this is the same 
-		/// name without "suf", otherwise it is set to <c>name</c> itself. This
-		/// output is calculated even if the function returns false.
-		/// IsNaturalOperator(bareName) is true if the function returns true.</param>
+		/// <param name="bareName">If the name begins with "'suf", this is the same name with
+		/// "suf" removed, otherwise it is set to <c>name</c> itself. This output is 
+		/// calculated even if the function returns false.</param>
+		/// <remarks>This method doesn't verify that the operator IS a legal suffix 
+		/// operator, just that it has the form of one. More specifically, when
+		/// the function returns true, IsNaturalOperator(bareName.Name) is true.</remarks>
 		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName)
 		{
-			if (name.Name.EndsWith("suf")) {
-				bareName = (Symbol)name.Name.Substring(0, name.Name.Length - 3);
+			if (name.Name.StartsWith("'suf")) {
+				bareName = GSymbol.Get("'" + name.Name.Substring(4));
 				return IsNaturalOperator(bareName.Name);
 			} else {
 				bareName = name;
@@ -315,6 +329,7 @@ namespace Loyc.Syntax.Les
 			this[OperatorShape.Infix].Item1[S.AndBits] = LesPrecedence.AndBits;
 			this[OperatorShape.Infix].Item1[S.OrBits] = LesPrecedence.OrBits;
 			this[OperatorShape.Infix].Item1[S.XorBits] = LesPrecedence.OrBits;
+			this[OperatorShape.Prefix].Item1.Remove(S.Dot); // No prefix dot operator in LES3
 		}
 	}
 }

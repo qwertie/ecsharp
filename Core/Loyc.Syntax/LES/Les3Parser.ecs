@@ -84,6 +84,7 @@ partial class Les3Parser
 	public ExprList[ref TokenType endMarker, VList<LNode> list = default(VList<LNode>), bool isBracedBlock = false] returns [VList<LNode> result] :
 		NewlinesOpt
 		(e:TopExpr)?
+		ErrorTokensOpt
 		[	( &{isBracedBlock} {Error(0, "Unexpected closing bracket");} (")"|"]") )?
 			end:(","|"\n"|";")
 			{CheckEndMarker(ref endMarker, ref end);}
@@ -127,7 +128,7 @@ partial class Les3Parser
 			"@" {CheckForSpace(false, "Unexpected space after `@`");}
 			(	"@" 
 			|	attr:=Particle[inAttribute: true]
-				(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
+				greedy(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
 				{attrs.Add(attr);}
 			)
 			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
@@ -136,7 +137,7 @@ partial class Les3Parser
 		(	e:Expr[Precedence.MinValue]
 			greedy(
 				":" (("\n"|")"|"]"|"}"|EOF) =>)
-				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
+				{e = F.Call(@@`'suf:`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
 			)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
@@ -175,7 +176,7 @@ partial class Les3Parser
 				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:TT.PreOrSufOp
 				{e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
-			|	// ! operator (generic #of)
+			|	// ! operator (generic 'of)
 				&{[Local] context.CanParse(P.Of)}
 				"!"
 				{var args = new VList<LNode> { e }; int endIndex;}
@@ -230,7 +231,7 @@ partial class Les3Parser
 
 	PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
-			op:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
+			op:(TT.NormalOp|"!"|":"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
 			e:Expr[PrefixPrecedenceOf(op)]
 			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
 		/	result:Particle
@@ -297,7 +298,6 @@ partial class Les3Parser
 	////////////////////////////////////////////////////////////////////////////
 
 	KeywordExpression returns [LNode result] @init {var args = new VList<LNode>();} :
-		
 		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 

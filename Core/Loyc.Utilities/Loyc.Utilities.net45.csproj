@@ -211,6 +211,10 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.net45.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
       <Name>Loyc.Collections.net45</Name>

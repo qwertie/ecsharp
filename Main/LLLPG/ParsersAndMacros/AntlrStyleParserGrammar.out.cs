@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.6.8.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -201,11 +201,8 @@ namespace Loyc.LLParserGenerator
 					Error(0, "Expected ':' or '::=' to begin the rule");
 					// Line 126: greedy(TT.Assignment)?
 					la0 = (TT) LA0;
-					if (la0 == TT.Assignment) {
-						la1 = (TT) LA(1);
-						if (la1 != (TT) EOF)
-							Skip();
-					}
+					if (la0 == TT.Assignment)
+						Skip();
 				}
 				gExpr = GrammarExpr();
 				Match((int) TT.Semicolon);

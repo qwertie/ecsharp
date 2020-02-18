@@ -11,6 +11,18 @@ namespace Loyc.Syntax
 	/// A list of common symbols that have special meaning somewhere in Loyc or EC#:
 	/// operators, built-in data types, keywords, trivia, etc.
 	/// </summary>
+	/// <remarks>
+	/// Code that can use symbol forms directly, such as "'!=", tends to be very compact.
+	/// The symbols in this class tend to be abbreviated in order to make usages of this 
+	/// class more compact (e.g. <see cref="NotEq"/> is short like its corresponding 
+	/// symbol "'!="). In C# one can access these symbols more easily with 
+	/// <c>using static Loyc.Syntax.CodeSymbols</c> or with
+	/// <c>using S = Loyc.Syntax.CodeSymbols</c> as the Loyc codebase does.
+	/// <para/>
+	/// Some symbols have an alternate name that starts with an underscore. For example,
+	/// <c>_Negate</c> represents the unary minus operator, but in fact it is the same
+	/// symbol as the subtraction operator <c>Sub</c>, <c>'-</c>.
+	/// </remarks>
 	public partial class CodeSymbols
 	{
 		// Plain C# operators (node names)
@@ -24,18 +36,21 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Negate = GSymbol.Get("'-"); //!< Alias for Sub. Infix and prefix operators use same symbol
 		public static readonly Symbol PreInc = GSymbol.Get("'++"); //!< "++" Unary prefix increment
 		public static readonly Symbol PreDec = GSymbol.Get("'--"); //!< "--" Unary prefix decrement
-		public static readonly Symbol PostInc = GSymbol.Get("'++suf"); //!< "suf++" Unary suffix increment
-		public static readonly Symbol PostDec = GSymbol.Get("'--suf"); //!< "suf--" Unary suffix decrement
+		public static readonly Symbol PostInc = GSymbol.Get("'suf++"); //!< "suf++" Unary suffix increment
+		public static readonly Symbol PostDec = GSymbol.Get("'suf--"); //!< "suf--" Unary suffix decrement
 		public static readonly Symbol Mod = GSymbol.Get("'%");    //!< "%"  Remainder operator
 		public static readonly Symbol And = GSymbol.Get("'&&");   //!< "&&" Logical short-circuit 'and' operator
 		public static readonly Symbol Or = GSymbol.Get("'||");    //!< "||" Logical short-circuit 'or' operator
 		public static readonly Symbol Xor = GSymbol.Get("'^^");   //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
 		public static readonly Symbol Eq = GSymbol.Get("'==");    //!< "==" Equality test operator
+		public static readonly Symbol NotEq = GSymbol.Get("'!="); //!< "!=" Inequality test operator
+		[Obsolete("Use NotEq instead")]
 		public static readonly Symbol Neq = GSymbol.Get("'!=");   //!< "!=" Inequality test operator
 		public static readonly Symbol GT = GSymbol.Get("'>");     //!< ">"  Greater-than operator
 		public static readonly Symbol GE = GSymbol.Get("'>=");    //!< ">=" Greater-than-or-equal-to operator
 		public static readonly Symbol LT = GSymbol.Get("'<");     //!< "<"  Less-than operator
 		public static readonly Symbol LE = GSymbol.Get("'<=");    //!< "<=" Less-than-or-equal-to operator
+		public static readonly Symbol Matches = GSymbol.Get("'=~");    //!< "==" Equality test operator
 		public static readonly Symbol Shr = GSymbol.Get("'>>");   //!< ">>" Right-shift operator
 		public static readonly Symbol Shl = GSymbol.Get("'<<");   //!< "<<" Left-shift operator
 		public static readonly Symbol Not = GSymbol.Get("'!");    //!< "!"  Logical 'not' operator
@@ -49,11 +64,11 @@ namespace Loyc.Syntax
 		public static readonly Symbol XorBits = GSymbol.Get("'^");    //!< "^" Bitwise exclusive-or operator
 		
 		public static readonly Symbol Braces = GSymbol.Get("'{}"); //!< "{}" Creates a scope.
-		public static readonly Symbol IndexBracks = GSymbol.Get("'_[]"); //!< "_[]" indexing operator
-		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> #of(@`[]`, Foo)
+		public static readonly Symbol IndexBracks = GSymbol.Get("'suf[]"); //!< "'suf[]" indexing operator
+																		   //!< foo[1, A] <=> @`'suf[]`(foo, 1, A), but in a type context, Foo[] <=> @'of(@`[]`, Foo)
 		public static readonly Symbol Array = GSymbol.Get("'[]");  //!< Used for list/array literals. Not used for attributes.
 		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`#[]`)
-		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("'[,]"); //!< int[,] <=> #of(@`#[,]`, int)
+		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("'[,]"); //!< int[,] <=> @'of(@`#[,]`, int)
 
 		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
 		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
@@ -66,7 +81,7 @@ namespace Loyc.Syntax
 		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
 		///     <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
-		/// For a time, #tuple was used for this purpose; the problem is that a
+		/// For a time, 'tuple was used for this purpose; the problem is that a
 		/// find-and-replace operation intended to find run-time tuples could 
 		/// accidentally match one of these lists. So I decided to dedicate # 
 		/// for use inside special constructs; its meaning depends on context.
@@ -74,24 +89,25 @@ namespace Loyc.Syntax
 		public static readonly Symbol AltList = GSymbol.Get("#");
 		public static readonly Symbol _HashMark = GSymbol.Get("#");
 
-		public static readonly Symbol QuestionMark = GSymbol.Get("'?");    //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
-		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>
+		public static readonly Symbol QuestionMark = GSymbol.Get("'?");    //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> @'of(@`?`, int)
+		public static readonly Symbol Of = GSymbol.Get("'of");             //!< "'of" for giving generic arguments. @'of(List,int) <=> List<int>
 		public static readonly Symbol Dot = GSymbol.Get("'.");             //!< "." binary dot operator, e.g. string.Join
-		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); //!< "#namedArg" Named argument e.g. #namedarg(x, 0) <=> x: 0
-		public static readonly Symbol New = GSymbol.Get("#new");           //!< "#new": new Foo(x) { a } <=> #new(Foo(x), a);  new[] { ... } <=> #new(@`[]`(), ...)
+		public static readonly Symbol NamedArg = GSymbol.Get("'::=");      //!< "'::=" Named argument e.g. `'::=`(x, 0) <=> x: 0
+		public static readonly Symbol New = GSymbol.Get("'new");           //!< "'new": new Foo(x) { a } <=> @`'new`(Foo(x), a);  new[] { ... } <=> @`'new`(@`[]`(), ...)
+		public static readonly Symbol NewAttribute = GSymbol.Get("#new");  //!< "#new": public new void Foo() {} <=> [#public, #new] #fn(#void, Foo, #(), {})
 		public static readonly Symbol Out = GSymbol.Get("#out");           //!< "#out": out x <=> [#out] x
 		public static readonly Symbol Ref = GSymbol.Get("#ref");           //!< "#ref": ref int x <=> [#ref] #var(#int, x)
-		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");     //!< "#sizeof" sizeof(int) <=> #sizeof(int)
-		public static readonly Symbol Typeof = GSymbol.Get("#typeof");     //!< "#typeof" typeof(Foo) <=> #typeof(Foo),
-		                                                                   //!<           typeof<foo> <=> #of(#typeof, foo)
-		public static readonly Symbol As = GSymbol.Get("#as");             //!< "#as":   #as(x,string) <=> x as string <=> x(as string)
-		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string, #is(x,#var(Foo,v),#tuple(y,z)) <=> x is Foo v(y, z)
-		public static readonly Symbol Cast = GSymbol.Get("#cast");         //!< "#cast": #cast(x,int) <=> (int)x <=> x(-> int)
+		public static readonly Symbol Sizeof = GSymbol.Get("'sizeof");     //!< "'sizeof" sizeof(int) <=> @'sizeof(int)
+		public static readonly Symbol Typeof = GSymbol.Get("'typeof");     //!< "'typeof" typeof(Foo) <=> @'typeof(Foo),
+		                                                                   //!<           typeof<foo> <=> @'of(@'typeof, foo)
+		public static readonly Symbol As = GSymbol.Get("'as");             //!< "'as":   @'as(x,string) <=> x as string <=> x(as string)
+		public static readonly Symbol Is = GSymbol.Get("'is");             //!< "'is":   @'is(x,string) <=> x is string, @'is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
+		public static readonly Symbol Cast = GSymbol.Get("'cast");         //!< "'cast": @'cast(x,int) <=> (int)x <=> x(-> int)
 		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
 		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
 		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "::" Scope resolution operator in many languages
 		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "=>" used to define an anonymous function
-		public static readonly Symbol Default = GSymbol.Get("#default");   //!< "#default" for the default(T) pseudofunction in C#
+		public static readonly Symbol Default = GSymbol.Get("'default");   //!< "'default" for the default(T) pseudofunction in C#
 
 		// Compound assignment
 		public static readonly Symbol NullCoalesceAssign = GSymbol.Get("'??="); //!< "??=": `a ??= b` means `a = a ?? b`
@@ -127,7 +143,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol Unchecked = GSymbol.Get("#unchecked"); //!< e.g. #unchecked({ stmt; }); <=> unchecked { stmt; }
 		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x = &y), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
-		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
+		[Obsolete]
+		public static readonly Symbol Switch = GSymbol.Get("#switch");       
+		public static readonly Symbol SwitchStmt = GSymbol.Get("#switch");   //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
+		public static readonly Symbol SwitchExpr = GSymbol.Get("'switch");   //!< e.g. @'switch(x, { ... }); <=> x switch { ... }
 		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, @``, {...})); <=> try {...} catch {...}
 		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...})
 		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement: #finally({...})
@@ -145,11 +164,11 @@ namespace Loyc.Syntax
 		// Other definitions
 		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       //!< e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
-		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, #tuple()); <=> delegate int Foo();
+		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, @'tuple()); <=> delegate int Foo();
 		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, @``, { get; }) <=> int Foo { get; }
 
 		// Misc
-		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(#of(Foo, [#where(#class, Foo)] T), #(), {});
+		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(@'of(Foo, [#where(#class, Foo)] T), #(), {});
 		public static readonly Symbol This = GSymbol.Get("#this");         //!< "#this" e.g. this.X <=> #this.X; this(arg) <=> #this(arg).
 		public static readonly Symbol Base = GSymbol.Get("#base");         //!< "#base" e.g. base.X <=> #base.X; base(arg) <=> #base(arg).
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); //!< e.g. #fn(#bool, [#operator] @`==`, #(Foo a, Foo b))
@@ -168,12 +187,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)
 		public static readonly Symbol Backslash = GSymbol.Get(@"'\");      //!< "\" operator
 		[Obsolete("Use PreBangBang or SufBangBang")]
-		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "!!" operator
-		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "!!" operator
-		public static readonly Symbol SufBangBang = GSymbol.Get(@"'!!suf"); //!< "!!" operator
-		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "!!." operator
+		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "'!!" operator
+		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "'!!" operator
+		public static readonly Symbol SufBangBang = GSymbol.Get(@"'suf!!"); //!< "'suf!!" operator
+		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "'!!." operator
 		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
-		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "<-" operator
+		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "'<-" operator
 		public static readonly Symbol SingleQuote = GSymbol.Get("'");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 		public static readonly Symbol Parens = GSymbol.Get("'()");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 
@@ -210,15 +229,15 @@ namespace Loyc.Syntax
 		public static readonly Symbol DotDot = GSymbol.Get("'..");        //!< ".." Binary range operator (exclusive)
 		public static readonly Symbol DotDotDot = GSymbol.Get("'...");    //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol DotDotLT = GSymbol.Get("'..<");     //!< "..<" Swift uses this instead of ".."
-		public static readonly Symbol Tuple = GSymbol.Get("#tuple");      //!< "#tuple": (1, "a") <=> #tuple(1, "a")
+		public static readonly Symbol Tuple = GSymbol.Get("'tuple");      //!< "'tuple": (1, "a") <=> @'tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
 		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {this.x = 0;}) <=> Foo() {this.x = 0;)
 		public static readonly Symbol Forward = GSymbol.Get("'==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
-		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
+		public static readonly Symbol UsingCast = GSymbol.Get("'using");  //!< @`'using`(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}
-		public static readonly Symbol IsLegal = GSymbol.Get("#isLegal");     //!< "#isLegal" TODO
+		public static readonly Symbol IsLegal = GSymbol.Get("'isLegal");     //!< TODO
 		public static readonly Symbol Result = GSymbol.Get("#result");       //!< #result(expr) indicates that expr was missing a semicolon, which
 		                                                                     //!< indicates that "expr" will be the value of the containing block.
 
@@ -324,57 +343,59 @@ namespace Loyc.Syntax
 			// (C comma operator: all arguments are evaluated and the result of the expression is the value of the last argument. This is equivalent to the way we tentatively define #)
 
 		// Trivia
-		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");
-		public static readonly Symbol TriviaInParens = GSymbol.Get("#trivia_inParens");                     //!< "#trivia_inParens" an attribute attached to an expression that has parenthesis around it.
-		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("#trivia_macroAttribute");         //!< "#trivia_macroAttribute" an attribute attached to a EC# statement that uses a macro-style call, e.g. foo {...} <=> [#trivia_macroAttribute] foo({...});
-		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("#trivia_doubleVerbatim");         //!< obsolete
-		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("#trivia_useOperatorKeyword"); //!< "#trivia_useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([#trivia_useOperatorKeyword]@`+`)(a, b)
-		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("#trivia_forwardedProperty");   //!< "#trivia_forwardedProperty" e.g. get ==> _x; <=> [#trivia_forwardedProperty] get(@`==>`(_x));
-		public static readonly Symbol TriviaRawText = GSymbol.Get("#trivia_rawText");                 //!< #trivia_rawText("stuff") - Arbitrary text to be emitted unchanged, e.g. `[#trivia_rawText("cue!")] q;` is printed as `cue!q;`.
-		public static readonly Symbol TriviaCsRawText = GSymbol.Get("#trivia_C#RawText");             //!< #trivia_C#RawText("stuff") - Raw text that is only printed by the C# printer (not the printer for other languages)
-		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("#trivia_C#PPRawText");         //!< #trivia_C#PPRawText("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
+		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("%commaSeparated");
+		public static readonly Symbol TriviaInParens = GSymbol.Get("%inParens");                     //!< "%inParens" an attribute attached to an expression that has parenthesis around it.
+		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("%macroAttribute");         //!< "%macroAttribute" an attribute attached to a EC# statement that uses a macro-style call, e.g. foo {...} <=> [%macroAttribute] foo({...});
+		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("%doubleVerbatim");         //!< obsolete
+		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("%useOperatorKeyword"); //!< "%useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([`%useOperatorKeyword`]`'+`)(a, b)
+		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("%forwardedProperty");   //!< "%forwardedProperty" e.g. get ==> _x; <=> [`%forwardedProperty`] get(`'==>`(_x));
+		public static readonly Symbol TriviaRawText = GSymbol.Get("%rawText");                 //!< "%rawText" - Arbitrary text to be emitted unchanged, e.g. `[`%rawText`("cue!")] q;` is printed as `cue!q;`.
+		public static readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
+		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
+		
+  [Obsolete]
+		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("%rawTextBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");     //!< "#trivia_rawTextBefore"
-		[Obsolete]
-		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("#trivia_rawTextAfter");       //!< "#trivia_rawTextAfter"
+		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("%rawTextAfter");
 		// The following 6 kinds of trivia, which specify "Before" or "After" in their name,
 		// are deprecated in favor of trivia that is determined to be before or after
-		// based on its placement: trailing trivia is placed within a call to #trivia_trailing, 
+		// based on its placement: trailing trivia is placed within a call to %trailing, 
 		// while leading trivia is placed directly in the node's attribute list. For example,
-		// `[#trivia_MLComment("L"), #trivia_trailing(#trivia_SLComment("T")] f();` means
+		// `[%MLComment("L"), %trailing(%SLComment("T")] f();` means
 		// `/*L*/ f(); //T`.
 		[Obsolete]
-		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("#trivia_SLCommentBefore"); //!< "#trivia_SLCommentBefore"
+		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("%SLCommentBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("#trivia_MLCommentBefore"); //!< "#trivia_MLCommentBefore"
+		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("%MLCommentBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("#trivia_SLCommentAfter");   //!< "#trivia_SLCommentAfter"
+		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("%SLCommentAfter");
 		[Obsolete]
-		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("#trivia_MLCommentAfter");   //!< "#trivia_MLCommentAfter"
+		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("%MLCommentAfter");
 		[Obsolete]
-		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("#trivia_spaceBefore");         //!< "#trivia_spaceBefore"
+		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("%spaceBefore");
 		[Obsolete]
-		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("#trivia_spaceAfter");           //!< "#trivia_spaceAfter"
-		/// "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
-		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("#trivia_wordAttribute");
-		public static readonly Symbol TriviaDummyNode = GSymbol.Get("#trivia_dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
+		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("%spaceAfter");
+
+		/// "%wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
+		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("%wordAttribute");
+		public static readonly Symbol TriviaDummyNode = GSymbol.Get("%dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
 		[Obsolete]
-		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("#trivia_beginTrailingTrivia"); //!< "#trivia_SLCommentBefore"
-		public static readonly Symbol TriviaSLComment = GSymbol.Get("#trivia_SLComment"); //!< "#trivia_SLCommentBefore"
-		public static readonly Symbol TriviaMLComment = GSymbol.Get("#trivia_MLComment"); //!< "#trivia_MLCommentBefore"
-		public static readonly Symbol TriviaNewline = GSymbol.Get("#trivia_newline");
-		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("#trivia_appendStatement"); //!< Suppresses the newline that ordinarily appears before each statement in a braced block
-		public static readonly Symbol TriviaSpaces = GSymbol.Get("#trivia_spaces");
-		public static readonly Symbol TriviaTrailing = GSymbol.Get("#trivia_trailing");
-		public static readonly Symbol TriviaRegion = GSymbol.Get("#trivia_region");       //!< Region begin marker: #region Title <=> #trivia_region(" Title");
-		public static readonly Symbol TriviaEndRegion = GSymbol.Get("#trivia_endRegion"); //!< Region end marker: #endregion End <=> #trivia_endregion(" End");
+		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("%beginTrailingTrivia");
+		public static readonly Symbol TriviaSLComment = GSymbol.Get("%SLComment"); //!< "%SLComment", e.g. @`%SLComment`(" Text")
+		public static readonly Symbol TriviaMLComment = GSymbol.Get("%MLComment"); //!< "%MLComment", e.g. @`%MLComment`(" Text")
+		public static readonly Symbol TriviaNewline = GSymbol.Get("%newline");
+		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("%appendStatement"); //!< Suppresses the newline that ordinarily appears before each statement in a braced block
+		public static readonly Symbol TriviaSpaces = GSymbol.Get("%spaces");
+		public static readonly Symbol TriviaTrailing = GSymbol.Get("%trailing");
+		public static readonly Symbol TriviaRegion = GSymbol.Get("%region");       //!< "%region" - Region begin marker: #region Title <=> `%region`(" Title");
+		public static readonly Symbol TriviaEndRegion = GSymbol.Get("%endRegion"); //!< "%endRegion" - Region end marker: #endregion End <=> `%endregion`(" End");
 
 		/// #rawText must be a call with a single literal argument. The Value of
 		/// the argument is converted to a string and printed out by EcsNodePrinter 
 		/// without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
 		public static readonly Symbol CsRawText = GSymbol.Get("#C#RawText");
-		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< Preprocessor raw text: always printed on separate line
+		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< "#C#PPRawText" - Preprocessor raw text: always printed on separate line
 
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 
 		// new-style casts x(->int), delegate(old-style lambdas) {...}

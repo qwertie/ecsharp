@@ -175,12 +175,17 @@
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

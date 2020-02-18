@@ -32,6 +32,8 @@ namespace Loyc.Syntax.Les
 		void Pop(LNode oldNode);
 		char LastCharWritten { get; }
 		int LineNumber { get; }
+		/// <summary>Called when a new, separate printing operation begins.</summary>
+		void Reset();
 	}
 
 	/// <summary>Abstract base class for <see cref="INodePrinterWriter"/>. Has an
@@ -60,5 +62,6 @@ namespace Loyc.Syntax.Les
 		public virtual void Pop(LNode n) { }
 		public abstract char LastCharWritten { get; }
 		public abstract int LineNumber { get; }
+		public abstract void Reset();
 	}
 }

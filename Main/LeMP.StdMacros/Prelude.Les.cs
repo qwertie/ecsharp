@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,21 +15,28 @@ using S = Loyc.Syntax.CodeSymbols;
 /// convert LES to C# constructs.</summary>
 namespace LeMP.Prelude.Les
 {
-	/// <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
+	/// <summary>Defines the core, predefined constructs of LeMP for LES for .NET.</summary>
 	[ContainsMacros]
 	public static partial class Macros
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		static LNode Reject(IMessageSink error, LNode at, string msg)
+		internal static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
 			error.Write(Severity.Note, at, msg);
 			return null;
 		}
-		static LNode Reject(IMessageSink error, LNode at, string msg, params object[] args)
+		internal static LNode Reject(IMessageSink error, LNode at, string msg, params object[] args)
 		{
 			error.Write(Severity.Note, at, msg, args);
 			return null;
+		}
+		/// Some functions here are called by LESv3 macros. In LESv3, a syntax like 
+		/// .class is used which becomes #class in the LNode. Do not print an error 
+		/// in that case, since the tree might be valid, unbeknownst to the macro.
+		static LNode RejectIfNormal(IMessageSink error, LNode at, string msg)
+		{
+			return at.HasSpecialName ? null : Reject(error, at, msg);
 		}
 
 		#region Definition statements (classes, methods, etc.)
@@ -74,7 +81,7 @@ namespace LeMP.Prelude.Les
 			return TranslateSpaceDefinition(node, sink, S.Alias);
 		}
 		[LexicalMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
-		public static LNode @using1(LNode node, IMacroContext context)
+		public static LNode @usingDecl(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 1) {
 				if (IsComplexId(node.Args[0])) {
@@ -110,11 +117,11 @@ namespace LeMP.Prelude.Les
 					body = F.Braces(context.RemainingNodes);
 					context.DropRemainingNodes = true;
 				} else
-					return Reject(context, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
+					return RejectIfNormal(context, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
 			}
 			if (isAlias) {
 				if (!nameEtc.Calls(S.Assign, 2))
-					return Reject(context, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
+					return RejectIfNormal(context, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
 				oldName = nameEtc.Args[1];
 				nameEtc = nameEtc.Args[0];
 			}
@@ -169,7 +176,7 @@ namespace LeMP.Prelude.Les
 		}
 		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
 		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
-		// form X!Y!Z, i.e. #of(#of(...), ...) is not allowed. $Substitution is allowed.
+		// form X!Y!Z, i.e. @'of(@'of(...), ...) is not allowed. $Substitution is allowed.
 		public static bool IsComplexId(LNode id, bool allowOf = true)
 		{
 			if (id.IsCall) {
@@ -208,14 +215,9 @@ namespace LeMP.Prelude.Les
 		//   (def $name($args)) `where` (name 
 		// };
 
-		[LexicalMacro("def Name(Args...) { Body... }; def Name(Args...)::ReturnType { Body }; def Name ==> ForwardingTarget { Body }",
-			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
-		public static LNode @def(LNode node, IMessageSink sink)
-		{
-			return DefOrConstructor(node, sink, false);
-		}
-		[LexicalMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name ==> ForwardingTarget { Body }",
-			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
+		[LexicalMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name(Args...): ReturnType { Body }; fn Name ==> ForwardingTarget",
+			"Defines a function (also known as a method).",
+			"fn", "def")]
 		public static LNode @fn(LNode node, IMessageSink sink)
 		{
 			return DefOrConstructor(node, sink, false);
@@ -225,7 +227,7 @@ namespace LeMP.Prelude.Les
 		{
 			return DefOrConstructor(node, sink, true);
 		}
-		static LNode DefOrConstructor(LNode node, IMessageSink sink, bool isCons)
+		public static LNode DefOrConstructor(LNode node, IMessageSink sink, bool isCons)
 		{
 			var parts = node.Args;
 			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
@@ -233,13 +235,13 @@ namespace LeMP.Prelude.Les
 				return null;
 			
 			LNode forwardTo = null, retVal = null;
-			if (sig.Calls(S.Forward, 2)) {
+			if (sig.Calls(S.Forward, 2) || sig.Calls("'|>>", 2)) {
 				forwardTo = sig.Args[1];
 				sig = sig.Args[0];
 				if (body != null)
 					return Reject(sink, sig.Target, "Cannot use ==> and a method body {...} at the same time.");
 			}
-			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
+			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.Colon, 2) || sig.Calls(S.ColonColon, 2)) {
 				retVal = sig.Args[1];
 				sig = sig.Args[0];
 			}
@@ -280,7 +282,7 @@ namespace LeMP.Prelude.Les
 			var parts = node.Args;
 			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null), name, retVal = null;
 			if (parts.Count != 2 || !body.Calls(S.Braces))
-				return Reject(sink, node, "A property definition must have the form prop(Name, { Body }), or prop(Name::type, { Body })");
+				return RejectIfNormal(sink, node, "A property definition must have the form prop(Name, { Body }), or prop(Name::type, { Body })");
 
 			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
 				name = sig.Args[0];
@@ -290,24 +292,10 @@ namespace LeMP.Prelude.Les
 				retVal = F.Missing;
 			}
 			if (!IsComplexId(name))
-				return Reject(sink, name, "Property name must be a complex identifier");
+				return RejectIfNormal(sink, name, "Property name must be a complex identifier");
 
 			return node.With(S.Property, retVal, name, F.Missing, body);
 		}
-
-		//static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
-		//// TEMP: probably we should use NodeStyle.Special instead of #trivia_macroCall.
-		//// In that case this macro will be unnecessary, as get {...} will already 
-		//// be marked NodeStyle.Special due to its syntax, whereas get({...}); is not.
-		//[SimpleMacro("get {...}; set {...}", "Adds #trivia_macroCall attr for C# printing", "get", "set", "add", "remove",
-		//    Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)] // avoid being called a second time
-		//public static LNode GetSet(LNode node, IMessageSink sink)
-		//{
-		//    if (node.Style == NodeStyle.Special && node.AttrNamed(S.TriviaMacroCall) == null)
-		//        return node.WithAttr(trivia_macroCall);
-		//    return null;
-		//}
-		
 
 		[LexicalMacro("var Name::Type; var Name::Type = Value; var Name = Value",
 			"Defines a variable or field in the current scope. You can define more than one at a time, e.g. 'var X::int Name::string;'")]
@@ -397,17 +385,18 @@ namespace LeMP.Prelude.Les
 		static LNode asAltList(LNode node) {
 			return node.Calls(S.AltList) ? node
 			     : node.IsIdNamed(GSymbol.Empty) ? LNode.Call(S.AltList, node)
-			     : LNode.Call(S.AltList, LNode.List(node), node);
+			     : LNode.Call(S.AltList, LNode.List(node), node).SetBaseStyle(NodeStyle.Default);
 		}
 
-		static readonly Symbol _in = GSymbol.Get("in");
+		static readonly Symbol _in = GSymbol.Get("in"), __in = GSymbol.Get("'in");
 
 		[LexicalMacro(@"foreach Item \in Collection {Body...}; foreach Item::Type \in Collection {Body...}", "Represents the C# 'foreach' statement.")]
 		public static LNode @foreach(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
-			if (args.Count == 2 && args[0].Calls(_in, 2)) {
-				LNode decl = args[0].Args[0], list = args[0].Args[1], body = args[1];
+			LNode inExpr;
+			if (args.Count == 2 && ((inExpr = args[0]).Calls(_in, 2) || inExpr.Calls(__in, 2))) {
+				LNode decl = inExpr.Args[0], list = inExpr.Args[1], body = args[1];
 				if (decl.IsId)
 					decl = F.Var(F.Missing, decl);
 				return node.With(S.ForEach, decl, list, body);
@@ -434,8 +423,8 @@ namespace LeMP.Prelude.Les
 			}
 			return null;
 		}
-		static readonly Symbol _while = GSymbol.Get("while");
 
+		static readonly Symbol _while = GSymbol.Get("while");
 		static readonly Symbol _else = GSymbol.Get("else");
 		static readonly Symbol _unless = GSymbol.Get("unless");
 		static readonly Symbol _if = GSymbol.Get("if");
@@ -444,7 +433,7 @@ namespace LeMP.Prelude.Les
 			"If 'Condition' is true, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @if(LNode node, IMessageSink sink)
 		{
-			return IfUnless(node, false, sink);
+			return IfUnless(node, node.Calls(_unless), sink);
 		}
 		public static LNode IfUnless(LNode node, bool isUnless, IMessageSink sink)
 		{
@@ -470,7 +459,7 @@ namespace LeMP.Prelude.Les
 			"Chooses one of several code paths based on the specified 'Value'.")]
 		public static LNode @switch(LNode node, IMessageSink sink)
 		{
-			return TranslateCall(node, S.Switch);
+			return TranslateCall(node, S.SwitchStmt);
 		}
 
 		[LexicalMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)", Mode = MacroMode.MatchIdentifier)]
@@ -498,7 +487,7 @@ namespace LeMP.Prelude.Les
 		}
 		
 		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default", Mode = MacroMode.MatchIdentifier)]
-		public static LNode @default1(LNode node, IMessageSink sink)
+		public static LNode @defaultCase(LNode node, IMessageSink sink)
 		{
 			if (node.IsId)
 				return node.With(S.Label, F.Id(S.Default)).SetBaseStyle(NodeStyle.Default);
@@ -619,7 +608,7 @@ namespace LeMP.Prelude.Les
 		}
 
 		[LexicalMacro("using Disposable {Body...}; using VarName := Disposable {Body...}", "The Dispose() method of the 'Disposable' expression is called when the Body finishes.", "using")]
-		public static LNode @using2(LNode node, IMessageSink sink)
+		public static LNode @using(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
 				return node.WithTarget(S.UsingStmt);
@@ -658,22 +647,22 @@ namespace LeMP.Prelude.Les
 		}
 
 		[LexicalMacro("default(Type)", "The default value for the specified type (@null or an empty structure).", "default")]
-		public static LNode @default2(LNode node, IMessageSink sink)
+		public static LNode defaultPseudoFunc(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1 && !node.Args[0].Calls(S.Braces))
 				return node.WithTarget(S.Default).SetBaseStyle(NodeStyle.Default);
 			return null;
 		}
 
-		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "'cast", "'->")]
-		public static LNode cast(LNode node, IMessageSink sink)
+		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "'->")]
+		public static LNode castOperator(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
 				return node.WithTarget(S.Cast);
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "as", "'as")]
+		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "as")]
 		public static LNode @as(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -681,7 +670,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).", "is", "'is")]
+		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).", "is")]
 		public static LNode @is(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -700,11 +689,14 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"arg: value", "Represents a named argument.", "':")]
+		[LexicalMacro(@"arg<: value", "Represents a named argument.", "':", "'<:")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
-			if (node.Calls(S.Colon, 2) && node.Args[0].IsId)
+			if (node.ArgCount == 2 && node.Args[0].IsId) {
+				if (node.Name == S.Colon)
+					sink.Write(Severity.Warning, node, "Use of `:` for named arguments is deprecated. Use `<:` instead.");
 				return node.WithName(S.NamedArg);
+			}
 			return null;
 		}
 
@@ -713,8 +705,8 @@ namespace LeMP.Prelude.Les
 		static readonly Symbol _ptr = GSymbol.Get("ptr");
 
 		[LexicalMacro("array!Type; opt!Type; ptr!Type", 
-			"array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", 
-			"#of", Mode = MacroMode.Normal | MacroMode.Passive)]
+			"array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.",
+			"'of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode of(LNode node, IMessageSink sink)
 		{
 			LNode kind;
@@ -797,21 +789,18 @@ namespace LeMP.Prelude.Les
 		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
-		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "'::", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public static LNode ColonColon(LNode node, IMessageSink context)
+		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.",
+			"'::", Mode = MacroMode.Passive)]
+		public static LNode VarDecl(LNode node, IMessageSink context)
 		{
 			var a = node.Args;
 			if (a.Count == 2) {
 				if (a[0].IsId) {
-					var r = node.With(S.Var, a[1], a[0]);
-					r.BaseStyle = NodeStyle.Operator;
-					return r;
+					return node.With(S.Var, a[1], a[0]).SetBaseStyle(NodeStyle.Default);
 				} else if (a[0].CallsMin(S.Tuple, 1)) {
-					var r = node.With(S.Var, new VList<LNode>(a[1]).AddRange(a[0].Args));
-					r.BaseStyle = NodeStyle.Operator;
-					return r;
+					return node.With(S.Var, LNode.List(a[1]).AddRange(a[0].Args)).SetBaseStyle(NodeStyle.Default);
 				} else
-					return Reject(context, node, "Expected a variable name or tuple to the left of `::`");
+					return Reject(context, node, "Expected a variable name or tuple to the left of `{0}`", node.Name);
 			}
 			return null;
 		}
@@ -880,5 +869,4 @@ namespace LeMP.Prelude.Les
 
 		#endregion
 	}
-
 }

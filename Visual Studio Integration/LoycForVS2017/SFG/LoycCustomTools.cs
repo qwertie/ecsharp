@@ -88,6 +88,7 @@ namespace Loyc.VisualStudio
 			protected override void WriteOutput(InputOutput io)
 			{
 				VList<LNode> results = io.Output;
+				string NewlineString = io.OutOptions.NewlineString, IndentString = io.OutOptions.IndentString;
 				if (!NoOutHeader)
 					Output.AppendFormat(
 						"// Generated from {1} by LeMP custom tool. LeMP version: {2}{0}"

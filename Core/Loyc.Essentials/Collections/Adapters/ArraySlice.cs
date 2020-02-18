@@ -1,23 +1,22 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Math;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.MutableListExtensionMethods
 {
-	public static partial class ListExt
+	public static partial class IListExt
 	{
 		public static ArraySlice<T> Slice<T>(this T[] list, int start, int length = int.MaxValue)
 		{
 			return new ArraySlice<T>(list, start, length);
 		}
-		//public static ArraySlice<T> Slice<T>(this T[] list, NumRange<int, MathI> range)
-		//{
-		//	return new ArraySlice<T>(list, range.Lo, range.Count);
-		//}
 	}
+}
 
+namespace Loyc.Collections
+{
 	/// <summary>Adapter: Provides access to a section of an array.</summary>
 	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>, IIsEmpty
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -125,19 +125,19 @@ namespace LeMP.Tests
 		[Test]
 		public void TestNullDot()
 		{
-			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c.d;", 
-			         @"#importMacros(LeMP.CSharp6); a = b?.c.d;",
+			TestBoth(@"#importMacros(LeMP.CSharp6.To.OlderVersions); a = b?.c.d;",
+					 @"#importMacros(LeMP.CSharp6.To.OlderVersions); a = b?.c.d;",
 			          "a = (b != null ? b.c.d : null);");
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs(@"#importMacros(LeMP.CSharp6); a = B?.c.d;", 
+			TestEcs(@"#importMacros(LeMP.CSharp6.To.OlderVersions); a = B?.c.d;", 
 			         "a = (([] var B_"+n+" = B) != null ? B_"+n+".c.d : null);");
-			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c[d];", 
-			         @"#importMacros(LeMP.CSharp6); a = b?.c[d];",
+			TestBoth(@"#importMacros(LeMP.CSharp6.To.OlderVersions); a = b?.c[d];",
+					 @"#importMacros(LeMP.CSharp6.To.OlderVersions); a = b?.c[d];",
 			          "a = (b != null ? b.c[d] : null);");
-			TestEcs(@"#importMacros(LeMP.CSharp6); a = b?.c?.d();",
+			TestEcs(@"#importMacros(LeMP.CSharp6.To.OlderVersions); a = b?.c?.d();",
 			         "a = (b != null ? (b.c != null ? b.c.d() : null) : null);");
-			TestBoth(@"#importMacros(LeMP.CSharp6); return a.b?.c().d!x;", 
-			         @"#importMacros(LeMP.CSharp6); return a.b?.c().d<x>;",
+			TestBoth(@"#importMacros(LeMP.CSharp6.To.OlderVersions); return a.b?.c().d!x;",
+			         @"#importMacros(LeMP.CSharp6.To.OlderVersions); return a.b?.c().d<x>;",
 			          "return (a.b != null ? a.b.c().d<x> : null);");
 		}
 
@@ -146,11 +146,11 @@ namespace LeMP.Tests
 		{
 			// Combine ?. with #ecs macro (#useSequenceExpressions)
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = B?.c.d; }",
-			          "void F() { var B_"+n+" = B; a = (([#trivia_isTmpVar] B_"+n+") != null ? B_"+n+".c.d : null); }");
+			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6.To.OlderVersions); void F() { a = B?.c.d; }",
+			          "void F() { var B_"+n+" = B; a = (([@`%isTmpVar`] B_"+n+") != null ? B_"+n+".c.d : null); }");
 			n = MacroProcessor.NextTempCounter;
-			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6); void F() { a = A.B?.c.d; }",
-			         "void F() { var tmp_"+n+" = A.B; a = (([#trivia_isTmpVar] tmp_"+n+") != null ? tmp_"+n+".c.d : null); }");
+			TestEcs(@"#ecs; #importMacros(LeMP.CSharp6.To.OlderVersions); void F() { a = A.B?.c.d; }",
+			         "void F() { var tmp_"+n+" = A.B; a = (([@`%isTmpVar`] tmp_" + n+") != null ? tmp_"+n+".c.d : null); }");
 		}
 
 		[Test]
@@ -163,28 +163,29 @@ namespace LeMP.Tests
 		[Test]
 		public void TestTuples()
 		{
-			TestEcs("#useDefaultTupleTypes();", "");
-			TestBoth("(1; a) + (2; a; b) + (3; a; b; c);",
-			         "(1, a) + (2, a, b) + (3, a, b, c);",
+			var import = "#importMacros(LeMP.CSharp7.To.OlderVersions); ";
+			TestEcs(import + "#useDefaultTupleTypes();", "");
+			TestBoth(import + "(1; a) + (2; a; b) + (3; a; b; c);",
+					 import + "(1, a) + (2, a, b) + (3, a, b, c);",
 			         "Tuple.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
-			TestBoth("x::#!(String; DateTime) = (\"\"; DateTime.Now); y::#!(Y) = (new Y(););",
-			         "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
+			TestBoth(import + "x::#!(String; DateTime) = (\"\"; DateTime.Now); y::#!(Y) = (new Y(););",
+					 import + "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
 			         "Tuple<String, DateTime> x = Tuple.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
-			TestEcs("#setTupleType(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
-			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
-			TestEcs("#setTupleType(Tuple); #setTupleType(2, Pair, Pair.Create);"+
+			TestEcs(import + "#setTupleType(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
+					"a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
+			TestEcs(import + "#setTupleType(Tuple); #setTupleType(2, Pair, Pair.Create);" +
 			        "a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Tuple.Create(1) + Pair.Create(1, 2) + Tuple.Create(1, 2, 3, 4, 5);");
 			
-			TestBoth("(a; b; c) = foo;", "(a, b, c) = foo;",
+			TestBoth(import + "(a; b; c) = foo;", import + "(a, b, c) = foo;",
 			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
-			TestEcs("(var a, var b, c) = foo;",
+			TestEcs(import + "(var a, var b, c) = foo;",
 			        "var a = foo.Item1; var b = foo.Item2; c = foo.Item3;");
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs("(a, b.c.d) = Foo;",
+			TestEcs(import + "(a, b.c.d) = Foo;",
 			        "var Foo_"+n+" = Foo; a = Foo_"+n+".Item1; b.c.d = Foo_"+n+".Item2;");
 			n = MacroProcessor.NextTempCounter;
-			TestEcs("(a, b, c, d) = X.Y();",
+			TestEcs(import + "(a, b, c, d) = X.Y();",
 			        "var tmp_1 = X.Y(); a = tmp_1.Item1; b = tmp_1.Item2; c = tmp_1.Item3; d = tmp_1.Item4;"
 					.Replace("tmp_1", "tmp_"+n));
 		}
@@ -362,10 +363,10 @@ namespace LeMP.Tests
 		[Test]
 		public void TestNameOf()
 		{
-			TestBoth(@"#importMacros(LeMP.CSharp6); s = nameof(hello);",    
-			         @"#importMacros(LeMP.CSharp6); s = nameof(hello);",     @"s = ""hello"";");
-			TestBoth(@"#importMacros(LeMP.CSharp6); s = nameof(A.B!C(D));",
-			         @"#importMacros(LeMP.CSharp6); s = nameof(A.B<C>(D));", @"s = ""B"";");
+			TestBoth(@"#importMacros(LeMP.CSharp6.To.OlderVersions); s = nameof(hello);",
+					 @"#importMacros(LeMP.CSharp6.To.OlderVersions); s = nameof(hello);",     @"s = ""hello"";");
+			TestBoth(@"#importMacros(LeMP.CSharp6.To.OlderVersions); s = nameof(A.B!C(D));",
+					 @"#importMacros(LeMP.CSharp6.To.OlderVersions); s = nameof(A.B<C>(D));", @"s = ""B"";");
 		}
 
 		[Test]

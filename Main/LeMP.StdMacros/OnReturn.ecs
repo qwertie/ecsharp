@@ -1,4 +1,4 @@
-﻿using System(, .Collections.Generic, .Linq, .Text);
+using System(, .Collections.Generic, .Linq, .Text);
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;

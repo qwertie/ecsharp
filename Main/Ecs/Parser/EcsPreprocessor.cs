@@ -252,7 +252,7 @@ namespace Loyc.Ecs.Parser
 				return !Evaluate(expr.Args[0]);
 			else if (expr.Calls(S.Eq, 2))
 				return Evaluate(expr.Args[0]) == Evaluate(expr.Args[1]);
-			else if (expr.Calls(S.Neq, 2))
+			else if (expr.Calls(S.NotEq, 2))
 				return Evaluate(expr.Args[0]) != Evaluate(expr.Args[1]);
 			else {
 				ErrorSink.Error(expr.Range, "Only simple boolean expressions with &&, ||, !, ==, !=, are supported in #if and #elif");

@@ -1,4 +1,4 @@
-version: 2.6.9.{build}
+version: 2.7.0.{build}
 
 # Try to fix "The project file ... is not supported by MSBuild and cannot be built."
 image: Visual Studio 2017
@@ -12,7 +12,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=26.9.0
+    - set SEMVER=27.0.2
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
@@ -27,11 +27,13 @@ build_script:
 after_build:
     # Package the Core libraries:
     #  - Loyc.Essentials.dll  (Loyc.Essentials.$PKG_VERSION.nupkg)
+    #  - Loyc.Interfaces.dll  (Loyc.Interfaces.$PKG_VERSION.nupkg)
     #  - Loyc.Collections.dll (Loyc.Collections.$PKG_VERSION.nupkg)
     #  - Loyc.Math.dll        (Loyc.Math.$PKG_VERSION.nupkg)
     #  - Loyc.Syntax.dll      (Loyc.Syntax.$PKG_VERSION.nupkg)
     #  - Loyc.Utilities.dll   (Loyc.Utilities.$PKG_VERSION.nupkg)
     #  - All 5 together       (LoycCore.$PKG_VERSION.nupkg)
+    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Interfaces.nuspec
     - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Essentials.nuspec
     - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Collections.nuspec
     - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Math.nuspec

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,7 @@ namespace LeMP
 {
 	/// <summary>
 	/// Standard macros, such as unroll() and replace() that can work in all Loyc languages.
-	/// Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+	/// Also includes macros designed to convert EC#-only features to C# (e.g. quick::binding).
 	/// </summary>
 	[ContainsMacros]
 	public partial class StandardMacros
@@ -52,7 +52,7 @@ namespace LeMP
 		// declaration in `output` of a temporary variable to hold the value. 
 		// If `value` looks simple (according to LooksLikeSimpleValue), this 
 		// fn returns value and leaves output unchanged.
-		protected static LNode MaybeAddTempVarDecl(IMacroContext ctx, LNode value, WList<LNode> output)
+		protected internal static LNode MaybeAddTempVarDecl(IMacroContext ctx, LNode value, WList<LNode> output)
 		{
 			if (!LooksLikeSimpleValue(value)) {
 				LNode tmpId;
@@ -144,7 +144,7 @@ namespace LeMP
 				var r2 = NextStatementMayBeReachable(stmt.Args[2]);
 				return r1 || r2;
 			}
-			else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
+			else if (stmt.CallsMin(S.SwitchStmt, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
 			{
 				// for a switch statement, assume it exits normally if a break 
 				// statement is the last statement of any of the cases, or if
@@ -325,7 +325,7 @@ namespace LeMP
 							return F.True;
 						else
 							return ReduceBooleanExpr(node[1]);
-					if (n == S.Eq || n == S.Neq) {
+					if (n == S.Eq || n == S.NotEq) {
 						var rhs = ReduceBooleanExpr(node[1]);
 						if (rhs.Value is bool)
 							if ((((bool)lhs.Value) == ((bool)rhs.Value)) == (n == S.Eq))
@@ -368,7 +368,7 @@ namespace LeMP
 			return null;
 		}
 		
-		[LexicalMacro("A := B", "Deprecated. Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
+		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

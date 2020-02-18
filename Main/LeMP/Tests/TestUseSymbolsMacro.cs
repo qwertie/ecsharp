@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +13,11 @@ namespace LeMP.Tests
 		public void Basics()
 		{
 			TestLes("@[Attr] #useSymbols; @@foo;",
-				@"@[Attr, #static, #readonly] #var(Symbol, sy_foo = #cast(""foo"", Symbol)); sy_foo;");
+				@"@[Attr, #static, #readonly] #var(Symbol, sy_foo = @'cast(""foo"", Symbol)); sy_foo;");
 			TestEcs("[Attr] #useSymbols; Symbol status = @@OK;",
 				@"[Attr] static readonly Symbol sy_OK = (Symbol) ""OK""; Symbol status = sy_OK;");
 			TestLes("@[Attr] #useSymbols; @@`->`;",
-				@"@[Attr, #static, #readonly] #var(Symbol, @sy_-> = #cast(""->"", Symbol)); @sy_->;");
+				@"@[Attr, #static, #readonly] #var(Symbol, @sy_-> = @'cast(""->"", Symbol)); @sy_->;");
 		}
 		[Test]
 		public void WithinTypes()

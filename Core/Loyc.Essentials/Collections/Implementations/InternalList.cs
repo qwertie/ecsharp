@@ -24,7 +24,8 @@ namespace Loyc.Collections.Impl
 	/// Passing this structure by value is dangerous because changes to a copy 
 	/// of the structure may or may not be reflected in the original list. It's
 	/// best not to pass it around at all, but if you must pass it, pass it by
-	/// reference.
+	/// reference. Avoid using extension methods on this struct because an 
+	/// extension method will receive a copy of the struct.
 	/// <para/>
 	/// Also, do not use the default contructor. Always specify an initial 
 	/// capacity or copy InternalList.Empty so that _array gets a value. 
@@ -134,6 +135,8 @@ namespace Loyc.Collections.Impl
 			Capacity = InternalList.NextLargerSize(_array.Length);
 		}
 
+		/// <inheritdoc cref="Resize(int, bool)"/>
+		public void Resize(int newSize) { Resize(newSize, true); }
 		/// <summary>Makes the list larger or smaller, depending on whether 
 		/// <c>newSize</c> is larger or smaller than <see cref="Count"/>.</summary>
 		/// <param name="allowReduceCapacity">If this is true, and the new size is 
@@ -143,8 +146,6 @@ namespace Loyc.Collections.Impl
 		/// <param name="newSize">New value of <see cref="Count"/>. If the Count
 		/// increases, copies of default(T) are added to the end of the the list; 
 		/// otherwise items are removed from the end of the list.</param>
-		public void Resize(int newSize) { Resize(newSize, true); }
-		/// <inheritdoc cref="Resize(int)"/>
 		public void Resize(int newSize, bool allowReduceCapacity)
 		{
 			if (newSize > _count)
@@ -423,7 +424,7 @@ namespace Loyc.Collections.Impl
 		{
 			return new Slice_<T>(this, start, count);
 		}
-		public Slice_<T> Slice(int start, int count)
+		public Slice_<T> Slice(int start, int count = int.MaxValue)
 		{
 			return new Slice_<T>(this, start, count);
 		}

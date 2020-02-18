@@ -260,12 +260,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
-      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
-      <Name>Loyc.Essentials.net45</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
@@ -291,5 +285,15 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>PointMathTT.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.net45.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

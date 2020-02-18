@@ -229,44 +229,53 @@ namespace Loyc.Syntax.Les
 	/// start with a single quote in LES <b>do</b> start with a single quote
 	/// in the final output (e.g. <c>2 + 2</c> is equivalent to <c>2 '+ 2</c>).
 	/// There is an exception: While prefix ++ and -- are named <c>'++</c> and 
-	/// <c>'--</c>, the suffix versions are named <c>'++suf</c> and 
-	/// <c>'--suf</c> in the output tree. For LESv2 operators surrounded by 
+	/// <c>'--</c>, the suffix versions are named <c>'suf++</c> and 
+	/// <c>'suf--</c> in the output tree. For LESv2 operators surrounded by 
 	/// `backquotes`, the backquotes are not included in the output tree (e.g.
 	/// <c>`sqrt` x</c> is equivalent to <c>sqrt(x)</c>).
 	/// </remarks>
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
 	{
-		public static readonly Precedence Substitute  = new Precedence(106, 105);       // prefix $
-		public static readonly Precedence Of          = new Precedence(102, 101);       // List!T
-		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x--
-		public static readonly Precedence NullDot     = new Precedence(95);             // ?. (in LESv2, :: is NullDot, in LESv3 it's Primary)
-		// Prefix operators effectively have infinite precedence on the left side.
-		// Increasing the precedence of Prefix.Left allows printer to print things 
-		// like - -x without a special notation. It has no effect on the parser.
-		public static readonly Precedence Prefix      = new Precedence(111, 85, 85, 85); // most prefix operators, e.g. - ~ *
-		public static readonly Precedence Power       = new Precedence(81, 80);         // **
-		public static readonly Precedence PrefixDots  = new Precedence(70);             // prefix ..
-		public static readonly Precedence Range       = new Precedence(65);             // infix .. ..<
-		public static readonly Precedence Multiply    = new Precedence(60);             // * /
-		public static readonly Precedence Shift       = new Precedence(55, 55, 50, 55); // >> <<
-		public static readonly Precedence Other       = new Precedence(55, 55, 50, 60); // unrecognized op
-		public static readonly Precedence Add         = new Precedence(50);             // + -
-		public static readonly Precedence OrIfNull    = new Precedence(45);             // ??
-		public static readonly Precedence AndBits     = new Precedence(40, 40, 30, 40); // &
-		public static readonly Precedence OrBits      = new Precedence(38, 38, 30, 40); // | ^
-		public static readonly Precedence Compare     = new Precedence(35);             // == != > < >= <=
-		public static readonly Precedence AndBitsLESv2= new Precedence(32, 32, 30, 40); // &
-		public static readonly Precedence OrBitsLESv2 = new Precedence(30, 30, 30, 40); // | ^
-		public static readonly Precedence Arrow       = new Precedence(26, 25);         // -> <-
-		public static readonly Precedence And         = new Precedence(20);             // &&
-		public static readonly Precedence Or          = new Precedence(15);             // ||
-		public static readonly Precedence IfElse      = new Precedence(11, 10);         // ? :    a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
-		public static readonly Precedence Assign      = new Precedence(22, 5, 5, 5);    // =      label : (b = (c ? (d : e)))
-		public static readonly Precedence LowerKeyword = new Precedence(1, 0, 0, 0);    // (a = b) 'implies (a 'knows ('b = 'c)); a = (b ? (c 'else d))
-		public static readonly Precedence Triangle    = new Precedence(-3);             // |> <|
-		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5); // =>
-		public static readonly Precedence PrefixOr    = new Precedence(-10);            // prefix |
-		public static readonly Precedence SuperExpr   = new Precedence(-15);
+		// Precedence levels are listed in descending order by precedence.
+		//
+		// Note: Prefix operators effectively have infinite precedence on the left 
+		// side. Increasing the precedence of Prefix.Left to 111 allows the printer 
+		// to print things like - -x without a special notation; it has no effect 
+		// on the parser.
+
+		public static readonly Precedence Substitute   = new Precedence(111, 110);        // $ : (prefix)
+		public static readonly Precedence Of           = new Precedence(106, 105);        // List!T
+		public static readonly Precedence Primary      = new Precedence(100);             // . :: x() x[] x++ x--
+		public static readonly Precedence NullDot      = new Precedence(95);              // ?. (in LESv2, :: is NullDot, in LESv3 it's Primary)
+		public static readonly Precedence Prefix       = new Precedence(111, 90, 90, 90); // most prefix operators, e.g. - ~ *
+		public static readonly Precedence Power        = new Precedence(86, 85);          // **
+		public static readonly Precedence Multiply     = new Precedence(75);              // * /
+		public static readonly Precedence Shift        = new Precedence(70, 70, 65, 70);  // >> <<
+		public static readonly Precedence Other        = new Precedence(70, 70, 55, 75);  // WORD_OP (`word` in LES2)
+		public static readonly Precedence Add          = new Precedence(65);              // + -
+		public static readonly Precedence RangePrefix  = new Precedence(111, 60, 60, 60); // .. ..< (prefix)
+		public static readonly Precedence Range        = new Precedence(60);              // .. ..<
+		public static readonly Precedence Squiggly     = new Precedence(55);              // ~ ~> <~
+		public static readonly Precedence SquigglyPrefix = new Precedence(111,55,55,55);  // ~> <~ (prefix)
+		public static readonly Precedence AndBits      = new Precedence(52, 52, 35, 52);  // &   (LES3 precedence)
+		public static readonly Precedence OrBits       = new Precedence(50, 50, 35, 52);  // | ^ (LES3 precedence)
+		public static readonly Precedence OrIfNull     = new Precedence(45);              // ??
+		public static readonly Precedence Compare      = new Precedence(40);              // == != > < >= <=
+		public static readonly Precedence AndBitsLES2  = new Precedence(36, 36, 35, 46);  // &   (LES2 precedence)
+		public static readonly Precedence OrBitsLES2   = new Precedence(35, 35, 35, 46);  // | ^ (LES2 precedence)
+		public static readonly Precedence Arrow        = new Precedence(31, 30);          // -> <-
+		public static readonly Precedence ArrowPrefix  = new Precedence(111, 30, 30, 30); // -> <- (prefix)
+		public static readonly Precedence And          = new Precedence(25);              // &&
+		public static readonly Precedence Or           = new Precedence(20);              // ||
+		public static readonly Precedence IfElse       = new Precedence(16, 15);          // ? : :> <:   a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
+		public static readonly Precedence ColonArrowPrefix = new Precedence(111, 15);     // :> <: (prefix)
+		public static readonly Precedence Assign       = new Precedence(28, 10, 10, 10);  // =      label : (b = (c ? (d : e)))
+		public static readonly Precedence LowerKeyword = new Precedence(6, 5, 5, 5);      // keyword, e.g. (a = b) implies (a knows (b = c));
+		public static readonly Precedence Lambda       = new Precedence(52, 0, 0, 0);     // =>
+		public static readonly Precedence LambdaPrefix = new Precedence(111, 0, 0, 0);    // > => (prefix)
+		public static readonly Precedence Triangle     = new Precedence(-5);              // |> <|
+		public static readonly Precedence TrianglePrefix = new Precedence(111, -5);       // |> <| (prefix)
+		public static readonly Precedence SuperExpr    = new Precedence(-10);             // LES2 only
 	}
 }

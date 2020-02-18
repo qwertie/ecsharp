@@ -87,6 +87,9 @@
     <Reference Include="Loyc.Essentials">
       <HintPath>..\..\Lib\LeMP\Loyc.Essentials.dll</HintPath>
     </Reference>
+    <Reference Include="Loyc.Interfaces">
+      <HintPath>..\..\Lib\LeMP\Loyc.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Loyc.Syntax">
       <HintPath>..\..\Lib\LeMP\Loyc.Syntax.dll</HintPath>
     </Reference>

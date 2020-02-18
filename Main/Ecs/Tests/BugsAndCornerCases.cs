@@ -162,10 +162,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo:",                 F.Call(S.Label, Foo));
 			LNode Foo_a = F.Call(S.NamedArg, Foo, a);
 			Expr("Foo: a",               Foo_a);
-			Stmt("#namedArg(Foo, a);",   Foo_a);
-			Expr("#namedArg(Foo(x), a)", F.Call(S.NamedArg, F.Call(Foo, x), a));
+			Stmt("@`'::=`(Foo, a);",     Foo_a);
+			Expr("@`'::=`(Foo(x), a)",   F.Call(S.NamedArg, F.Call(Foo, x), a));
 			Expr("b + (Foo: a)",         F.Call(S.Add, b, F.InParens(Foo_a)));
-			Expr("b + #namedArg(Foo, a)",F.Call(S.Add, b, Foo_a));
+			Expr("b + @`'::=`(Foo, a)", F.Call(S.Add, b, Foo_a));
 			// Ambiguity between multiplication and pointer declarations:
 			// - multiplication at stmt level => prefix notation, except in #result or when lhs is not a complex identifier
 			// - pointer declaration inside expr => generic, not pointer, notation
@@ -177,7 +177,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo* a = x;",          F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
 			// Ambiguity between bitwise not and destructor declarations
 			Expr("~Foo()",               F.Call(S.NotBits, F.Call(Foo)));
-			Stmt("@`'~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));
+			Stmt("@`'~`(Foo());",        F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("~Foo;",                F.Call(S.NotBits, Foo));
 			Stmt("$Foo $x;",             F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x)));
 			Stmt("$Foo $x = 1;",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
@@ -192,6 +192,8 @@ namespace Loyc.Ecs.Tests
 			// Certain syntax trees can print differently in a "type context" than elsewhere.
 			var FooBracks = F.Call(S.IndexBracks, Foo);
 			var FooArray = F.Of(_(S.Array), Foo);
+			var Foo2DArray = F.Of(_(S.TwoDimensionalArray), Foo);
+			var FooNArray = F.Of(_(S.Array), F.Of(S.QuestionMark, Foo));
 			var FooNullable = F.Of(_(S.QuestionMark), Foo);
 			var FooPointer = F.Of(_(S._Pointer), Foo);
 			Expr("Foo[]",             FooBracks);
@@ -200,15 +202,42 @@ namespace Loyc.Ecs.Tests
 			Expr("@`'*`<Foo>",         FooPointer);
 			Stmt("#var(Foo[], a);",   F.Vars(FooBracks, a));
 			Stmt("Foo[] a;",          F.Vars(FooArray, a));
+			Stmt("Foo?[] a;",         F.Vars(FooNArray, a));
 			Stmt("typeof(Foo?);",     F.Call(S.Typeof, FooNullable));
 			Stmt("default(Foo*);",    F.Call(S.Default, FooPointer));
 			Stmt("(Foo[]) a;",        F.Call(S.Cast, a, FooArray));
+			Stmt("(Foo?[]) a;",       F.Call(S.Cast, a, FooNArray));
+			Stmt("(Foo[,]) a;",       F.Call(S.Cast, a, Foo2DArray));
 			Stmt("a(->Foo?);",        Alternate(F.Call(S.Cast, a, FooNullable)));
 			Stmt("a(as Foo*);",       Alternate(F.Call(S.As, a, FooPointer)));
 			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.List(FooBracks)));
 			Stmt("Foo!(#(@`'*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
 			Expr("checked(Foo[])",    F.Call(S.Checked, FooBracks));
 			Stmt("Foo<a*> x;",        F.Vars(F.Of(Foo, F.Of(_(S._Pointer), a)), x));
+			Stmt("(Foo, Foo x) a, b;", F.Vars(F.Of(_(S.Tuple), Foo, F.Var(Foo, x)), a, b));
+		}
+
+		[Test]
+		public void TypeContextTuples()
+		{
+			// Type Tuples are printed in a "type context" (Ambiguity.TypeContext)
+			// which changes printing behavior, e.g. Foo[10] normally means 
+			// @`'suf[]`(Foo), but in a type context it means @`'of`(@`'[]`, Foo)
+			// (which can also be written as @`'[]`<Foo>)
+			var FooBracks = F.Call(S.IndexBracks, Foo);
+			var FooArray = F.Of(_(S.Array), Foo);
+			var FooNullable = F.Of(_(S.QuestionMark), Foo);
+			LNode stmt;
+			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), FooArray), a, b);
+			Stmt("(Foo? x, Foo[]) a, b;", stmt);
+			Stmt("tuple!(2 + 2);",    F.Of(_("tuple"), F.Call(S.Add, two, two)));
+			Stmt("@tuple!(2 + 2);",   F.Of(_("tuple"), F.Call(S.Add, two, two)), Mode.ParserTest);
+			Stmt("@'tuple !(2 + 2);", F.Of(_("'tuple"), F.Call(S.Add, two, two)));
+			// In a type context, FooBracks shows as @`'suf[]`(Foo) instead of the usual Foo[] 
+			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), FooBracks), a, b);
+			Stmt("#var(@'tuple !(Foo? x, @`'suf[]`(Foo)), a, b);", stmt);
+			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), F.Var(FooBracks, T)), a, b);
+			Stmt("#var(@'tuple !(Foo? x, #var(Foo[], T)), a, b);", stmt);
 		}
 	}
 }

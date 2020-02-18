@@ -50,7 +50,8 @@ namespace Loyc.Tests
 		{
 			return RunTests.RunMany(
 				new MacroProcessorTests(),
-				new PreludeMacroTests(),
+				new PreludeMacroTests_Les2(),
+				new PreludeMacroTests_Les3(),
 				new SmallerMacroTests(),
 				new TestAlgebraicDataTypes(),
 				new TestCodeContractMacros(),

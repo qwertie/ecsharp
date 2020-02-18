@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -182,7 +182,7 @@ namespace Loyc.Syntax.Lexing
 		// without virtual function calls (as lexers are speed-critical).
 		UString _block;
 		int _blockStart;
-		protected int CachedBlockSize = 128;
+		protected int CachedBlockSize = 512;
 
 		private void ReadBlock()
 		{

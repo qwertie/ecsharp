@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,11 +20,6 @@ namespace Loyc.Collections
 		{
 			return list;
 		}
-
-		//public static IRange<T> Slice<T>(this IListSource<T> list, NumRange<int, MathI> range)
-		//{
-		//	return list.Slice(range.Lo, range.Count);
-		//}
 	}
 
 	/// <summary>Adapter: a random-access range for a slice of an 

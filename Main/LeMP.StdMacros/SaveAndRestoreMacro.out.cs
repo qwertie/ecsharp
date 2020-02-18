@@ -1,4 +1,4 @@
-// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.5.0.0
+// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -38,7 +38,7 @@ namespace LeMP
 						string mainProp = KeyNameComponentOf(property).Name;
 						string varPrefix = "old" + mainProp + "_";
 						LNode varName, varDecl = TempVarDecl(context, property, out varName, varPrefix);
-						LNode tryFinally = LNode.Call(CodeSymbols.Try, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(body)).SetStyle(NodeStyle.Statement), LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(property, varName)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Statement)))));
+						LNode tryFinally = LNode.Call(CodeSymbols.Try, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(body)).SetStyle(NodeStyle.StatementBlock), LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(property, varName)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.StatementBlock)))));
 						if (newValue != null) {
 							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, LNode.Call(CodeSymbols.Assign, LNode.List(property, newValue)).SetStyle(NodeStyle.Operator), tryFinally));
 						} else {

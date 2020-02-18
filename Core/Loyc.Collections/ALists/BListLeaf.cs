@@ -31,7 +31,7 @@ namespace Loyc.Collections.Impl
 			if (op.Mode == AListOperation.Retrieve)
 				return 0;
 
-			if (op.Mode >= AListOperation.Add)
+			if (op.Mode >= AListOperation.__AddThreshold)
 			{
 				// Possible operations: Add, AddOrReplace, AddIfNotPresent, AddOrThrow
 				if (_list.Count >= _maxNodeSize && (op.Mode == AListOperation.Add || !op.Found))

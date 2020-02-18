@@ -13,14 +13,15 @@
 
     Contributors are welcome: more unit tests, code reviews, and new features are desired, anything relatively small (under about 3000 lines of code) that fits the theme "things that should have been built into the .NET framework, but aren't".</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
     <dependencies>
-      <dependency id="Loyc.Collections" version="$version$" />
-      <dependency id="Loyc.Essentials" version="$version$" />
-      <dependency id="Loyc.Math" version="$version$" />
-      <dependency id="Loyc.Syntax" version="$version$" />
-      <dependency id="Loyc.Utilities" version="$version$" />
+      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$"/>
+      <dependency id="Loyc.Math" version="$version$"/>
+      <dependency id="Loyc.Syntax" version="$version$"/>
+      <dependency id="Loyc.Utilities" version="$version$"/>
     </dependencies>
   </metadata>
   <files>

@@ -1,4 +1,4 @@
-﻿namespace Loyc.Syntax
+namespace Loyc.Syntax
 {
 	using System;
 	using System.Collections.Generic;
@@ -11,6 +11,7 @@
 	using Loyc.Syntax;
 	using Loyc.Collections;
 	using Loyc.Collections.Impl;
+	using Loyc.Collections.MutableListExtensionMethods;
 	using Loyc.Syntax.Les;
 
 	/// <summary>
@@ -91,11 +92,11 @@
 		protected const int DefaultBufSize = 2048 + MaxSeqSize - 1;
 		protected const int MaxSeqSize = 8;
 
-		public new StringSlice Slice(int startIndex, int length)
+		public new UString Slice(int startIndex, int length)
 		{
 			CheckParam.IsNotNegative("startIndex", startIndex);
 			if (length <= 0)
-				return new StringSlice("", 0, length);
+				return new UString("", 0, length);
 
 			StringBuilder sb = new StringBuilder(Math.Min(length, 1024));
 			for (int i = startIndex; i < startIndex + length; i++) {
@@ -168,7 +169,7 @@
 
 		private int GetBlockIndex(int charIndex)
 		{
-			int i = ListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
+			int i = IListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
 				new Pair<int, uint>(charIndex, 0),
 				delegate(Pair<int, uint> a, Pair<int, uint> b) { return a.A.CompareTo(b.A); });
 			if (i < 0)

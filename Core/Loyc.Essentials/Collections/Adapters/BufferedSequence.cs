@@ -1,14 +1,25 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 
+namespace Loyc.Collections.MutableListExtensionMethods
+{
+	public static partial class IListExt
+	{
+		[Obsolete("An IList<T> does not need to be Buffered(). If you would like to convert the IList to IListSource, it is recommended to use AsListSource() instead.")]
+		public static BufferedSequence<T> Buffered<T>(this IList<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
+	}
+}
+
 namespace Loyc.Collections
 {
-	// Not in EnumerableExt because LCExt is for adapters and BufferedSequence<T> implements IListSource<T>
-	public static partial class LinqToLists
+	public static partial class EnumerableExt
 	{
 		public static BufferedSequence<T> Buffered<T>(this IEnumerator<T> source)
 		{
@@ -23,11 +34,6 @@ namespace Loyc.Collections
 		public static IListSource<T> Buffered<T>(this IListSource<T> source)
 		{
 			return source;
-		}
-		[Obsolete("An IList<T> does not need to be Buffered(). If you would like to convert the IList to IListSource, it is recommended to use AsListSource() instead.")]
-		public static BufferedSequence<T> Buffered<T>(this IList<T> source)
-		{
-			return new BufferedSequence<T>(source);
 		}
 	}
 

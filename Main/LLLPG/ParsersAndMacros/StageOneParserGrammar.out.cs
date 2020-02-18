@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 2.6.8.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -105,78 +105,26 @@ namespace Loyc.LLParserGenerator
 	
 		private LNode SeqExpr()
 		{
-			TT la0, la1;
+			TT la0;
 			// line 78
 			var seq = LNode.List();
 			// Line 79: (LoopExpr (TT.Comma)?)*
 			for (;;) {
 				switch ((TT) LA0) {
-				case TT.And: case TT.AndNot: case TT.Greedy: case TT.InvertSet:
+				case TT.And: case TT.AndNot: case TT.Any: case TT.Greedy:
+				case TT.Id: case TT.In: case TT.InvertSet: case TT.LBrace:
+				case TT.LBrack: case TT.Literal: case TT.LParen: case TT.Minus:
 				case TT.Nongreedy:
 					{
-						switch ((TT) LA(1)) {
-						case TT.And: case TT.AndNot: case TT.Any: case TT.Id:
-						case TT.In: case TT.InvertSet: case TT.LBrace: case TT.LBrack:
-						case TT.Literal: case TT.LParen: case TT.Minus:
-							goto matchLoopExpr;
-						default:
-							goto stop;
-						}
+						seq.Add(LoopExpr());
+						// Line 79: (TT.Comma)?
+						la0 = (TT) LA0;
+						if (la0 == TT.Comma)
+							Skip();
 					}
-				case TT.Minus:
-					{
-						switch ((TT) LA(1)) {
-						case TT.Any: case TT.Id: case TT.In: case TT.LBrace:
-						case TT.LBrack: case TT.Literal: case TT.LParen: case TT.Minus:
-							goto matchLoopExpr;
-						default:
-							goto stop;
-						}
-					}
-				case TT.Any:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.Id)
-							goto matchLoopExpr;
-						else
-							goto stop;
-					}
-				case TT.Id: case TT.In: case TT.Literal:
-					goto matchLoopExpr;
-				case TT.LParen:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.RParen)
-							goto matchLoopExpr;
-						else
-							goto stop;
-					}
-				case TT.LBrace:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.RBrace)
-							goto matchLoopExpr;
-						else
-							goto stop;
-					}
-				case TT.LBrack:
-					{
-						la1 = (TT) LA(1);
-						if (la1 == TT.RBrack)
-							goto matchLoopExpr;
-						else
-							goto stop;
-					}
+					break;
 				default:
 					goto stop;
-				}
-			matchLoopExpr:
-				{
-					seq.Add(LoopExpr());
-					// Line 79: (TT.Comma)?
-					la0 = (TT) LA0;
-					if (la0 == TT.Comma)
-						Skip();
 				}
 			}
 		stop:;
@@ -241,18 +189,10 @@ namespace Loyc.LLParserGenerator
 			// Line 103: ((TT.Assignment|TT.Colon|TT.HostOperator) AssignExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Assignment || la0 == TT.Colon || la0 == TT.HostOperator) {
-				switch ((TT) LA(1)) {
-				case TT.And: case TT.AndNot: case TT.Any: case TT.Id:
-				case TT.In: case TT.InvertSet: case TT.LBrace: case TT.LBrack:
-				case TT.Literal: case TT.LParen: case TT.Minus:
-					{
-						op = MatchAny();
-						var b = AssignExpr();
-						// line 103
-						Infix(ref a, (Symbol) op.Value, b);
-					}
-					break;
-				}
+				op = MatchAny();
+				var b = AssignExpr();
+				// line 103
+				Infix(ref a, (Symbol) op.Value, b);
 			}
 			// line 104
 			return a;
@@ -311,17 +251,10 @@ namespace Loyc.LLParserGenerator
 			// Line 120: (TT.DotDotDot PrimaryExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.DotDotDot) {
-				switch ((TT) LA(1)) {
-				case TT.Any: case TT.Id: case TT.In: case TT.LBrace:
-				case TT.LBrack: case TT.Literal: case TT.LParen: case TT.Minus:
-					{
-						var op = MatchAny();
-						var b = PrimaryExpr();
-						// line 120
-						Infix(ref a, (Symbol) op.Value, b);
-					}
-					break;
-				}
+				var op = MatchAny();
+				var b = PrimaryExpr();
+				// line 120
+				Infix(ref a, (Symbol) op.Value, b);
 			}
 			// line 121
 			return a;
@@ -377,41 +310,23 @@ namespace Loyc.LLParserGenerator
 						var b = Atom();
 						// line 135
 						Infix(ref a, (Symbol) op.Value, b);
-					} else if (la0 == TT.LParen) {
+					} else if (la0 == TT.LBrack || la0 == TT.LParen) {
 						if (a.Range.EndIndex == LT(0).StartIndex) {
-							la1 = (TT) LA(1);
-							if (la1 == TT.RParen)
-								goto match2;
-							else
-								break;
-						} else
-							break;
-					} else if (la0 == TT.LBrack) {
-						if (a.Range.EndIndex == LT(0).StartIndex) {
-							la1 = (TT) LA(1);
-							if (la1 == TT.RBrack)
-								goto match2;
-							else
-								break;
+							// Line 138: (TT.LParen TT.RParen | TT.LBrack TT.RBrack)
+							la0 = (TT) LA0;
+							if (la0 == TT.LParen) {
+								lp = MatchAny();
+								rp = Match((int) TT.RParen);
+							} else {
+								lp = Match((int) TT.LBrack);
+								rp = Match((int) TT.RBrack);
+							}
+							// line 141
+							a = F.Call(a, ParseHostCode(lp, ParsingMode.Expressions), a.Range.StartIndex, rp.EndIndex);
 						} else
 							break;
 					} else
 						break;
-					continue;
-				match2:
-					{
-						// Line 138: (TT.LParen TT.RParen | TT.LBrack TT.RBrack)
-						la0 = (TT) LA0;
-						if (la0 == TT.LParen) {
-							lp = MatchAny();
-							rp = Match((int) TT.RParen);
-						} else {
-							lp = Match((int) TT.LBrack);
-							rp = Match((int) TT.RBrack);
-						}
-						// line 141
-						a = F.Call(a, ParseHostCode(lp, ParsingMode.Expressions), a.Range.StartIndex, rp.EndIndex);
-					}
 				}
 				// line 143
 				return a;

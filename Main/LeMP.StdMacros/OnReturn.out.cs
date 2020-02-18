@@ -1,4 +1,4 @@
-// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.4.3.0
+// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -72,12 +72,12 @@ namespace LeMP
 						return rnode;	// ignore children of lambda expression or delegate(){}
 					else if (rnode.Calls(CodeSymbols.Return, 0)) {
 						foundReturn = true;
-						return LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(bracedHandler.Args).Add(rnode)).SetStyle(NodeStyle.Statement);
+						return LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(bracedHandler.Args).Add(rnode)).SetStyle(NodeStyle.StatementBlock);
 					} else if (rnode.Calls(CodeSymbols.Return, 1) && (retVal = rnode.Args[0]) != null) {
 						foundReturn = true;
 						var retValDecl = varDecl.WithArgChanged(1, LNode.Call(CodeSymbols.Assign, LNode.List(varName, retVal)).SetStyle(NodeStyle.Operator));
 						rnode = rnode.WithArgs(varName);
-						return LNode.Call(CodeSymbols.Braces, LNode.List().Add(retValDecl).AddRange(bracedHandler.Args).Add(rnode)).SetStyle(NodeStyle.Statement);
+						return LNode.Call(CodeSymbols.Braces, LNode.List().Add(retValDecl).AddRange(bracedHandler.Args).Add(rnode)).SetStyle(NodeStyle.StatementBlock);
 					} else
 						return null;
 				}

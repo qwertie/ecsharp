@@ -54,7 +54,7 @@ namespace Loyc.Syntax.Les {
 		@[public, virtual] rule ExprList(ref endMarker::TokenType, list::VList!LNode = default(VList!LNode))::VList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
-			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
+			{if (LT0.Value `'is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{e ??= MissingExpr(end);}
@@ -66,7 +66,7 @@ namespace Loyc.Syntax.Les {
 			{return list;}
 		};
 		@[public, virtual] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
-			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
+			{if (LT0.Value `'is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{e ??= MissingExpr(end);}
@@ -83,7 +83,7 @@ namespace Loyc.Syntax.Les {
 					endMarker = end.Type();
 				} else {
 					Error(-1, "Unexpected separator: {0} should be {1}",
-						ToString(end.TypeInt), ToString(endMarker->int));
+						ToString(end.TypeInt), ToString(endMarker -> int));
 				};
 			};
 		};
@@ -102,7 +102,7 @@ namespace Loyc.Syntax.Les {
 				{var args = VList!LNode.Empty;}
 				args+=Expr(P.SuperExpr)
 				[	{
-						if (LA0->TT == TT.LParen) {
+						if ((LA0 -> TT) == TT.LParen) {
 							var loc = args[args.Count - 2, args.Last].Range.End;
 							Error(0, "Expected a space before '(' (possibly missing ';' or ',' at {0})", loc);
 						};
@@ -204,7 +204,7 @@ namespace Loyc.Syntax.Les {
 				{$result = F.Call(S.Array, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);}
 			|	// (parens) - possibly a tuple
 				{var endMarker = default(TT);}
-				o:("("|" (") {var hasAttrList = LA0->TT == TT.LBrack || LA0->TT == TT.At;}
+				o:("("|" (") {var hasAttrList = (LA0 -> TT) == TT.LBrack || (LA0 -> TT) == TT.At;}
 				list:=ExprList(ref endMarker)
 				c:")" {
 					if (endMarker == TT.Semicolon || list.Count != 1) {

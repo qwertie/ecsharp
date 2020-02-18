@@ -103,7 +103,7 @@ namespace Loyc.Collections.Impl
 			if (op.Mode != AListOperation.Retrieve)
 			{
 				AutoClone(ref _children[i].Node, this, tob);
-				if (op.Mode >= AListOperation.Add && _children[i].Node.IsFullLeaf)
+				if (op.Mode >= AListOperation.__AddThreshold && _children[i].Node.IsFullLeaf)
 				{
 					if (!PrepareToInsert(i, tob))
 					{	// Items have been shifted out of _children[i] (to the left or right)

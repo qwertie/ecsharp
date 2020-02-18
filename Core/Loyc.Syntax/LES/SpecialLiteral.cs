@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,7 @@ namespace Loyc.Syntax.Les
 		/// <summary>A prefix or suffix on the literal that represents some 
 		/// additional meaning.</summary>
 		/// <remarks>In LESv3, this field becomes the sole parameter <c>s</c> 
-		/// of a <c>#trivia_literalType(s)</c> attribute attached to the <see cref="LNode"/>
+		/// of a <c>`%literalType`(s)</c> attribute attached to the <see cref="LNode"/>
 		/// that represents the literal.</remarks>
 		public Symbol TypeMarker { get; set; }
 

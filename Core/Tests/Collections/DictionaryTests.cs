@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Collections.Impl;
+using Loyc.Collections.MutableListExtensionMethods;
 
 namespace Loyc.Collections.Tests
 {

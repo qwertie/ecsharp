@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +6,8 @@ using System.IO;
 
 namespace Loyc.Syntax.Les
 {
-	/// <summary>Base class for the helper classes of <see cref="Les2Printer"/>
-	/// and <see cref="Ecs.EcsNodePrinter"/>, called LesNodePrinterWriter and 
-	/// EcsNodePrinterWriter. See <see cref="INodePrinterWriter"/>.</summary>
+	/// <summary>Base class for token-printing helper classes.
+	/// See <see cref="INodePrinterWriter"/>.</summary>
 	public abstract class DefaultNodePrinterWriter : NodePrinterWriterBase
 	{
 		protected string _indentString;
@@ -111,15 +110,15 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		public virtual void Reset() { _lastCh = '\0'; }
+		public override void Reset() { _lastCh = '\n'; }
 
 		public override char LastCharWritten { get { return _lastCh; } }
 
 		public override int LineNumber { get { return _lineNumber; } }
 	}
 
-	/// <summary>Helper class of <see cref="Les2Printer"/> that ensures there is 
-	/// a tokens are spaced apart properly.</summary>
+	/// <summary>Helper class of <see cref="Les2Printer"/> that ensures 
+	/// tokens are spaced apart properly.</summary>
 	internal class Les2PrinterWriter : DefaultNodePrinterWriter
 	{
 		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }

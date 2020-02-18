@@ -14,12 +14,13 @@
     This package contains the Loyc.Ecs.dll core library, which allows you to parse C# or EC# code and to print out C# or EC# syntax trees as code. If you want to expand EC# macros, you also need the LeMP package. To generate code at compile-time within your project, use LeMP: http://ecsharp.net/lemp
     </description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc CodeGen CodeGeneration Enhanced C# EC# ECSharp Parser</tags>
     <dependencies>
-      <dependency id="Loyc.Collections" version="$version$" />
-      <dependency id="Loyc.Essentials" version="$version$" />
-      <dependency id="Loyc.Syntax" version="$version$" />
+      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.Collections" version="$version$"/>
+      <dependency id="Loyc.Syntax" version="$version$"/>
     </dependencies>
   </metadata>
   <files>

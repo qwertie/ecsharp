@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +43,7 @@ namespace Loyc.LLPG
 	/// <see cref="GeneralCodeGenHelper"/> (this is the default helper).</li>
 	/// <li>The stage-one rule() macro uses <see cref="StageOneParser"/> to
 	/// translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
-	/// is currently translated to <c>#tuple(@`suf*`("Foo" | bar), ~';')</c>.</li>
+	/// is currently translated to <c>@'tuple(@`'suf*`("Foo" | bar), ~';')</c>.</li>
 	/// <li>The stage-two macro is named run_LLLPG(). It accepts the code-gen 
 	/// helper created by the LLLPG(lexer) or LLLPG(parser) macro, and it
 	/// has the ProcessChildrenBefore flag so that the stage-1 rule() macros 

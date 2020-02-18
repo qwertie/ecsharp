@@ -127,10 +127,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Foo] a.b.c;",         Attr(Foo, F.Dot(a, b, c)));
 			Stmt("[Foo] a<b, c>;",       Attr(Foo, F.Of(a, b, c)));
 			Stmt("[Foo] a = b;",         Attr(Foo, F.Assign(a, b)));
-			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
+			Stmt("@'of([Foo] a, b, c);",  F.Of(Attr(Foo, a), b, c));
 			Stmt("a!(b, [Foo] c);",       F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b, Foo + c);",       F.Of(a, b, F.Call(S.Add, Foo, c)));
-			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
+			Stmt("@'of(Foo<a>, b);",      F.Of(F.Of(Foo, a), b));
 			Stmt("public a;",             F.Attr(@public, a));
 			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
 			Stmt("public #foo;",          F.Attr(@public, fooKW));
@@ -163,7 +163,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("goto case [Foo] 1;", F.Call(S.GotoCase, Attr(Foo, one)));
 			Expr("new Foo(x) { [a] b = c }",
 										  F.Call(S.New, F.Call(Foo, x), Attr(a, F.Assign(b, c))));
-			Option(Mode.PrintBothParseFirst, "#new([#foo] Foo(x), a);", "new Foo(x) { a };",
+			Option(Mode.PrintBothParseFirst, "@'new([#foo] Foo(x), a);", "new Foo(x) { a };",
 										  F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
 		}
 
@@ -311,11 +311,11 @@ namespace Loyc.Ecs.Tests
 			args[3] = F.Call(S.DoWhile, ChildStmt(F.Call(a)), OnNewLine(c));
 			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo, [#trivia_wordAttribute] #foo] public using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
+			Stmt("[Foo, [@`%wordAttribute`] #foo] public using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
 			args[3] = F.Call(S.For, F.List(a), b, F.List(c), ChildStmt(x));
 			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
-			Stmt("[Foo, [#trivia_wordAttribute] #foo] public {\n  a();\n}", Attr(args), Mode.PrinterTest);
+			Stmt("[Foo, [@`%wordAttribute`] #foo] public {\n  a();\n}", Attr(args), Mode.PrinterTest);
 			args[1] = fooKW;
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));
@@ -485,8 +485,8 @@ namespace Loyc.Ecs.Tests
 			stmt = Attr(@static, _(S.Explicit),
 			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
 			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
-			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
-			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #([] Bar<T> b))", stmt);
+			Stmt(@"static explicit Foo<T> operator`'cast`<$T>(Bar<T> b);", stmt);
+			Expr(@"static explicit #fn(Foo<T>, operator`'cast`<$T>, #([] Bar<T> b))", stmt);
 			stmt = F.Fn(F.Bool, Attr(trivia_operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
 			Stmt("bool operator`when`(Foo a, Foo b) { }", stmt);
 			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), { })", stmt);
@@ -604,7 +604,7 @@ namespace Loyc.Ecs.Tests
 		{
 			var tree =
 				F.Call(S.Assign, Foo, F.Call(S.Add,
-					F.Call(S.Switch, x, F.Braces(
+					F.Call(S.SwitchStmt, x, F.Braces(
 						F.Call(S.Case, a), one,
 						F.Call(S.Label, F.Id(S.Default)), zero)),
 					one));

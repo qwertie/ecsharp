@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -61,7 +61,7 @@ namespace Loyc.Syntax
 		/// <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
 		/// <param name="printer">Printer to be used for each single LNode.</param>
 		/// <remarks>The newline between two nodes is suppressed if the second 
-		/// node has a <c>#trivia_appendStatement</c> attribute.</remarks>
+		/// node has a <c>%appendStatement</c> attribute.</remarks>
 		public static StringBuilder PrintMultiple(ILNodePrinter printer, IEnumerable<LNode> nodes, StringBuilder sb, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
 			sb = sb ?? new StringBuilder();

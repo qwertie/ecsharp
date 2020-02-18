@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,13 +64,13 @@ namespace LeMP
 			// not necessary to create a temporary variable to hold a copy of 
 			// earlier parts of the outer expression, because the sequence has no
 			// potentially-relevant side effects.
-			static readonly LNode _trivia_pure = LNode.Id("#trivia_pure");
+			static readonly LNode _trivia_pure = LNode.Id("%pure");
 
 			// This is an internal signal that it is not necessary to create a temporary 
 			// variable to hold a copy of a value because that value is already a copy. 
 			// e.g. this prevents an extra temporary from being created for `C` in
 			// `A.B[C::c] = D::d` (otherwise `D::d` would cause `c` to get copied to a temporary.)
-			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
+			static readonly LNode _trivia_isTmpVar = LNode.Id("%isTmpVar");
 			
 			public this(public IMacroContext Context) {}
 			LNode[] _arrayOf1 = new LNode[1];

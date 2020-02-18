@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc;
-using Loyc.Math;
 using Loyc.Syntax;
 
 namespace Loyc.Ecs
@@ -29,7 +28,7 @@ namespace Loyc.Ecs
 	/// When printing an expression, we avoid emitting <c>x | y == z</c> because 
 	/// the ranges of == and | overlap. Instead <see cref="EcsNodePrinter"/> prints 
 	/// <c>@`'|`(x, y == z)</c>. Admittedly this is rather ugly, but you can enable
-	/// the <see cref="EcsNodePrinter.AllowChangeParentheses"/> option, which allows 
+	/// the <see cref="ILNodePrinterOptions.AllowChangeParentheses"/> option, which allows 
 	/// parenthesis to be added so that a Loyc tree with the structure 
 	/// <c>@`'|`(x, y == z)</c> is emitted as <c>x | (y == z)</c>, even though the 
 	/// latter is a slightly different tree.
@@ -57,7 +56,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence NullDot    = new Precedence(99);    // ?.
 		public static readonly Precedence Prefix     = new Precedence(91, 90, 90, 91); // +  -  !  ~  ++x  --x  (T)x
 		public static readonly Precedence Forward    = new Precedence(88);    // ==>x
-		public static readonly Precedence Power      = new Precedence(80);    // **
+		public static readonly Precedence Power      = new Precedence(81, 80);// **
 		public static readonly Precedence Multiply   = new Precedence(70);    // *, /, %
 		public static readonly Precedence Add        = new Precedence(60);    // +, -, ~
 		public static readonly Precedence Shift      = new Precedence(56, 56, 56, 70); // >> << (for printing purposes, immiscible with * / + -)

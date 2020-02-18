@@ -73,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ContractsMacro.ecs</DependentUpon>
     </Compile>
+    <Compile Include="CSharp7Macros.cs" />
     <Compile Include="DeconstructMacro.cs" />
     <Compile Include="FluentMacro.cs" />
     <Compile Include="ForwardingMacro.cs" />
@@ -91,7 +92,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="CSharp6Macro.cs" />
+    <Compile Include="CSharp6Macros.cs" />
     <Compile Include="OnFinallyThrowCatch.cs" />
     <Compile Include="OnReturn.out.cs">
       <AutoGen>True</AutoGen>
@@ -99,6 +100,15 @@
       <DependentUpon>OnReturn.ecs</DependentUpon>
     </Compile>
     <Compile Include="Prelude.Les.cs" />
+    <None Include="Prelude.Les3.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Prelude.Les3.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Prelude.Les3.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Prelude.Les3.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplaceMacro.cs" />
     <None Include="AssertMacro.ecs">
@@ -122,7 +132,6 @@
     <Compile Include="StandardMacros.cs" />
     <Compile Include="StaticMatchCodeMacro.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
-    <Compile Include="TupleMacros.cs" />
     <Compile Include="UnrollMacro.cs" />
     <Compile Include="UseSequenceExpressions.out.cs">
       <AutoGen>True</AutoGen>
@@ -172,6 +181,10 @@
     <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.net45.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.net45.csproj">
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>

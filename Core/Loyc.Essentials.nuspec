@@ -13,10 +13,10 @@
     
     At least half of Loyc.Essentials is devoted to collections: collection interfaces, collection adapters, collection extension methods (e.g. LinqToLists) and even a couple of collection implementations. The other half includes a variety of things including Symbols, a localization helper, "message sinks", a miniature NUnit clone and more.</description>
     <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
     <dependencies>
-      <!--<dependency id="SampleDependency" version="1.0"/>-->
+      <dependency id="Loyc.Interfaces" version="$version$"/>
     </dependencies>
   </metadata>
   <files>

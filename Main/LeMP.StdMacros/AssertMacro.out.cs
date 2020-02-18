@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.4.2.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -64,7 +64,7 @@ namespace LeMP
 			return (context.ScopedProperties.TryGetValue(sy__numassertMethod, null)as LNode) ?? defaultAssertMethod;
 		}
 	
-		[LexicalMacro("assert(condition);", 
+		[LexicalMacro(@"assert(condition);", 
 		"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\"). " 
 		+ "You can change the assert method with `#snippet` as follows:\n\n" 
 		+ "    #snippet #assertMethod = System.Diagnostics.Debug.Assert; // default", 

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
-    <NoWarn>1591, 1573, 0419</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,6 +12,7 @@
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <Compile Update="Collections\ExtensionMethods\LinqToLists.out.cs">
       <DesignTime>True</DesignTime>
@@ -30,6 +31,15 @@
     <None Update="Collections\HelperClasses\SelectListSource.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>SelectListSource.out.cs</LastGenOutput>
+    </None>
+    <Compile Update="Collections\HelperClasses\SelectCollection.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SelectCollection.ecs</DependentUpon>
+    </Compile>
+    <None Update="Collections\HelperClasses\SelectCollection.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SelectCollection.out.cs</LastGenOutput>
     </None>
     <Compile Update="Utilities\GRange.out.cs">
       <AutoGen>True</AutoGen>

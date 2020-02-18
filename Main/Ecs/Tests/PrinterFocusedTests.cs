@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -24,41 +24,86 @@ namespace Loyc.Ecs.Tests
 			Action<EcsPrinterOptions> parens = p => p.AllowChangeParentheses = true;
 			Option(Mode.PrintBothParseFirst, @"@`'+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
 			Option(Mode.PrintBothParseFirst, @"@`'-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
-			
-			// Put attributes in various locations and watch them all disappear
+		}
+
+		[Test]
+		public void DropNonDeclarationAttributesTest()
+		{
+			// Put attributes in various locations and watch them disappear....
+			// New rule (2020/02): don't drop normal expression-scoped attributes except inside
+			//   methods. The reason is so that `public Foo(int? x) => _x = x;` is being parsed
+			//   as a "lambda expression" rather than as a constructor and the old behavior of
+			//   dropping attributes in this case was problematic. With this new rule, we need
+			//   to test both the method and non-method contexts.
 			Action<EcsPrinterOptions> dropAttrs = p => p.DropNonDeclarationAttributes = true;
-			Option(Mode.PrintBothParseFirst,  "[Foo] a + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'_[]`(static x, a);",  @"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'++`([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`'++suf`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",       @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",   @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo<a>, [#foo] b, c = 1);",@"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Assign(c, one)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo!(static a), b);",      @"Foo<a> b;",        F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);",  @"Foo<a> b;",        F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
-			Option(Mode.PrinterTest,         @"([Foo] a)(x);",          @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
+			ExpectAttrsDroppedWhenAsked(@"#var(static Foo, x);", @"Foo x;", F.Vars(Attr(@static, Foo), x));
+			ExpectAttrsDroppedWhenAsked(@"#var(Foo, static x);", @"Foo x;", F.Vars(Foo, Attr(@static, x)));
+			ExpectAttrsDroppedWhenAsked(@"#var(Foo<a>, [#foo] b, c = 1);", @"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Assign(c, one)));
+			ExpectAttrsDroppedWhenAsked(@"#var(Foo!(static a), b);", @"Foo<a> b;", F.Vars(F.Of(Foo, Attr(@static, a)), b));
+			ExpectAttrsDroppedWhenAsked(@"#var(@'of(static Foo, a), b);", @"Foo<a> b;", F.Vars(F.Of(Attr(@static, Foo), a), b));
+			ExpectAttrsDroppedWhenAsked(@"([Foo] a)(x);", @"a(x);", F.Call(Attr(Foo, a), x));
+
+			ExpectAttrsDroppedWhenAsked(@"x[[Foo] a];", @"x[a];", F.Call(S.IndexBracks, x, Attr(Foo, a)));
+			ExpectAttrsDroppedWhenAsked(@"a([#foo] x);", @"a(x);", F.Call(a, Attr(fooKW, x)));
+
+			ExpectAttrsDroppedOnlyInMethod("[Foo] a + b;", @"a + b;", Attr(Foo, F.Call(S.Add, a, b)));
+			ExpectAttrsDroppedOnlyInMethod(@"public a(x);", @"a(x);", Attr(@public, F.Call(a, x)));
+			ExpectAttrsDroppedOnlyInMethod("[Foo] a + b;", @"a + b;", Attr(Foo, F.Call(S.Add, a, b)));
+			var stmt = Attr(x, @public, F.Call(S.Lambda, F.Call(Foo, F.Var(F.Int32, x, zero)), F.Assign(a, x)));
+			ExpectAttrsDroppedOnlyInMethod("[x] public Foo(int x = 0) => a = x;", @"Foo(int x = 0) => a = x;", stmt);
+
+			ExpectAttrsAreNeverDropped(@"[Foo] public void Foo() { }", Attr(Foo, @public, F.Fn(F.Void, Foo, F.List(), F.Braces())));
+			ExpectAttrsAreNeverDropped(@"[Foo] public class Foo { }", Attr(Foo, @public, F.Call(S.Class, Foo, F.List(), F.Braces())));
+			ExpectAttrsAreNeverDropped(@"[Foo] public Foo x;", Attr(Foo, @public, F.Var(Foo, x)));
+
+			ExpectAttrsDroppedWhenAsked(@"@`'suf[]`(static x, a);", @"x[a];", F.Call(S.IndexBracks, Attr(@static, x), a));
+			ExpectAttrsDroppedWhenAsked(@"@`'+`([Foo] a, 1);", @"a + 1;", F.Call(S.Add, Attr(Foo, a), one));
+			ExpectAttrsDroppedWhenAsked(@"@`'+`(a, [Foo] 1);", @"a + 1;", F.Call(S.Add, a, Attr(Foo, one)));
+			ExpectAttrsDroppedWhenAsked(@"@`'?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c));
+			ExpectAttrsDroppedWhenAsked(@"@`'?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)));
+			ExpectAttrsDroppedWhenAsked(@"@`'++`([Foo] x);", @"++x;", F.Call(S.PreInc, Attr(Foo, x)));
+			ExpectAttrsDroppedWhenAsked(@"@`'suf++`([Foo] x);", @"x++;", F.Call(S.PostInc, Attr(Foo, x)));
+			ExpectAttrsDroppedWhenAsked(@"x(->static Foo);", @"(Foo) x;", F.Call(S.Cast, x, Attr(@static, Foo)));
+
+			// There are no actual attributes here, but the printer may try to insert
+			// an empty attribute list in order to add parentheses but suppress %inParens 
+			// when round-tripping, and the DropNonDeclarationAttributes flag should
+			// suppress such empty attribute lists. This particular case is weird, as 
+			// the parens disappear entirely, maybe higher-level code disagrees with 
+			// lower-level code about circumstances that need parentheses, but the matter 
+			// seems too minor to worry about...
+			ExpectAttrsDroppedWhenAsked(@"a.([] -b);", @"a.-b;", F.Dot(a, F.Call(S._Negate, b)));
+		}
+		static Action<EcsPrinterOptions> _dropAttrsOption = p => p.DropNonDeclarationAttributes = true;
+		void ExpectAttrsDroppedWhenAsked(string withAttrs, string withoutAttrs, LNode stmt)
+		{
+			Option(Mode.PrintBothParseFirst, withAttrs, withoutAttrs, stmt, _dropAttrsOption);
+		}
+		void ExpectAttrsDroppedOnlyInMethod(string withAttrs, string withoutAttrs, LNode stmt)
+		{
+			Stmt(withAttrs, stmt, _dropAttrsOption);
+			LNode stmtInFooMethod = F.Fn(F.Void, Foo, F.List(), F.Braces(stmt));
+			string expectedTextInMethod = "void Foo() {\n  " + withoutAttrs + "\n}";
+			Stmt(expectedTextInMethod, stmtInFooMethod, _dropAttrsOption, Mode.PrinterTest);
+		}
+		void ExpectAttrsAreNeverDropped(string withAttrs, LNode stmt)
+		{
+			// Check that the output stays the same inside a method
+			ExpectAttrsDroppedOnlyInMethod(withAttrs, withAttrs, stmt);
 		}
 
 		[Test]
 		public void PrintWrongArityOperators()
 		{
-			Expr("@`'_[]`()",        F.Call(S.IndexBracks));
-			Expr("@`'++suf`(a, b)",  F.Call(S.PostInc, a, b));
-			Expr("@`'--suf`()",      F.Call(S.PostDec));
+			Expr("@`'suf[]`()",      F.Call(S.IndexBracks));
+			Expr("@`'suf++`(a, b)",  F.Call(S.PostInc, a, b));
+			Expr("@`'suf--`()",      F.Call(S.PostDec));
 			Expr("@`'.`()", F.Call(S.Dot));
 			Expr("@`'*`()", F.Call(S.Mul));
-			Stmt("#break;",            _(S.Break));
-			Stmt("#continue;",         _(S.Continue));
-			Stmt("#return;",           _(S.Return));
-			Stmt("#throw;",            _(S.Throw));
+			Stmt("#break;",          _(S.Break));
+			Stmt("#continue;",       _(S.Continue));
+			Stmt("#return;",         _(S.Return));
+			Stmt("#throw;",          _(S.Throw));
 		}
 
 		public void PrinterRevertsToPrefixNotation()
@@ -159,17 +204,17 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrinterBreakingAttributes()
 		{
-			Stmt("@`'.`([Foo] a, b).c;",   F.Dot(Attr(Foo, a), b, c));
-			Stmt("@`'.`(a, [Foo] b).c;",   F.Dot(a, Attr(Foo, b), c));
-			Stmt("@`'.`(a.b, [Foo] c);",   F.Dot(a, b, Attr(Foo, c)));
-			Stmt("@`'.`([Foo] a, b, c);",  F.Call(S.Dot, Attr(Foo, a), b, c));
-			Stmt("@`'.`(a, b, [Foo] c);",  F.Call(S.Dot, a, b, Attr(Foo, c)));
-			Expr("@`'+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
-			Expr("@`'+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
-			Expr("@`'_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
-			Expr("@`'?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
-			Expr("@`'?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
-			Expr("@`'?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
+			Stmt("@`'.`([Foo] a, b).c;",  F.Dot(Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, [Foo] b).c;",  F.Dot(a, Attr(Foo, b), c));
+			Stmt("@`'.`(a.b, [Foo] c);",  F.Dot(a, b, Attr(Foo, c)));
+			Stmt("@`'.`([Foo] a, b, c);", F.Call(S.Dot, Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, b, [Foo] c);", F.Call(S.Dot, a, b, Attr(Foo, c)));
+			Expr("@`'+`([Foo] a, b)",     F.Call(S.Add, Attr(Foo, a), b));
+			Expr("@`'+`(a, [Foo] b)",     F.Call(S.Add, a, Attr(Foo, b)));
+			Expr("@`'suf[]`([Foo] a, b)", F.Call(S.IndexBracks, Attr(Foo, a), b));
+			Expr("@`'?`([Foo] c, a, b)",  F.Call(S.QuestionMark, Attr(Foo, c), a, b));
+			Expr("@`'?`(c, [Foo] a, b)",  F.Call(S.QuestionMark, c, Attr(Foo, a), b));
+			Expr("@`'?`(c, a, [Foo] b)",  F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
 		}
 
 		[Test]
@@ -210,16 +255,31 @@ namespace Loyc.Ecs.Tests
 		public void UnprintableOperatorNew()
 		{
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));      // new Foo() { a } would also be ok
-			Expr("#new([x] Foo(), a)",    F.Call(S.New, Attr(x, F.Call(Foo)), a));
-			Expr("#new(([x] Foo)(), a)",  F.Call(S.New, F.Call(Attr(x, Foo)), a), Mode.PrinterTest);
-			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
-			Expr("#new(Foo)",             F.Call(S.New, Foo));
-			Expr("new @`'+`(a, b)",        F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
-			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
-			Expr("#new",                  F.Id(S.New));
-			Expr("#new()",                F.Call(S.New));
+			Expr("@'new([x] Foo(), a)",   F.Call(S.New, Attr(x, F.Call(Foo)), a));
+			Expr("@'new(([x] Foo)(), a)", F.Call(S.New, F.Call(Attr(x, Foo)), a), Mode.PrinterTest);
+			Expr("@'new(Foo, a)",         F.Call(S.New, Foo, a));
+			Expr("@'new(Foo)",            F.Call(S.New, Foo));
+			Expr("new @`'+`(a, b)",       F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
+			Expr("@'new(Foo()(), a)",     F.Call(S.New, F.Call(F.Call(Foo)), a));
+			Expr("@'new",                 F.Id(S.New));
+			Expr("@'new()",               F.Call(S.New));
 			Expr("new { }",               F.Call(S.New, F.Missing));
 			Expr("new { a = 1 }",         F.Call(S.New, F.Missing, F.Call(S.Assign, a, one)));
+		}
+
+		[Test]
+		public void LambdaConstructorChallenge()
+		{
+			// In EC# mode, the printer produces an empty attribute list here
+			// to indicate that parsing as a var decl should be favored...
+			LNode intN_x = F.Var(F.Of(S.QuestionMark, F.Int32), x);
+			Stmt("public Foo([] int? x) => a;", Attr(@public, F.Call(S.Lambda, F.Call(Foo, intN_x), a)));
+			// But in plain C# mode the empty attribute list is illegal and 
+			// should be suppressed, while the attribute 'public' should be 
+			// preserved so that this "lambda", which C# understands as a 
+			// constructor, can be passed through from EC# to LeMP to C#.
+			Stmt("public Foo(int? x) => b;", Attr(@public, F.Call(S.Lambda, F.Call(Foo, intN_x), b)),
+				opt => opt.SetPlainCSharpMode());
 		}
 
 		[Test]
@@ -229,5 +289,6 @@ namespace Loyc.Ecs.Tests
 			Expr("checked(@`'[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
 			Expr("unchecked(@`'[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
 		}
+
 	}
 }

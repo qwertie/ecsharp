@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,10 +37,10 @@ namespace Loyc.VisualStudio
 			return _ss.GetText(startIndex, length);
 		}
 		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
-		public StringSlice Slice(int start, int count = 2147483647)
+		public UString Slice(int start, int count = 2147483647)
 		{
 			string s = SubstringCore(start, count);
-			return new StringSlice(s, 0, s.Length);
+			return new UString(s, 0, s.Length);
 		}
 		public char TryGet(int index, out bool fail)
 		{

@@ -1,4 +1,4 @@
-﻿using Loyc.Collections.Impl;
+using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +6,7 @@ using System.Linq;
 namespace Loyc.Collections
 {
 	/// <summary>Extension methods for Loyc Collection interfaces 
-	/// (such as <see cref="IListSource{T}"/>) and for Loyc Collection 
-	/// adapters (such as <see cref="AsReadOnly{T}"/>, which returns
-	/// a <see cref="CollectionAsReadOnly{T}"/> adapter.)</summary>
+	/// (such as <see cref="IListSource{T}"/>).</summary>
 	/// <remarks>
 	/// The source code for adapter extension methods such as AsReadOnly() is now 
 	/// placed in the source file for each adapter class (e.g. CollectionAsReadOnly.cs)

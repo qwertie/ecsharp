@@ -20,6 +20,7 @@
     <Compile Remove="GoInterfaceBenchmark.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj" />
     <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />

@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
+using Loyc.Collections.MutableListExtensionMethods;
 
 namespace Loyc.Collections
 {
@@ -16,75 +17,75 @@ namespace Loyc.Collections
 		[Test] public void TestBinarySearch()
 		{
 			IList<int> list = new int[] { };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 15));
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, -15));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 15));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, -15));
 			list = new int[] { 5 };
-			Assert.AreEqual(0, ListExt.BinarySearch(list, 5));
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 0));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 10));
+			Assert.AreEqual(0, IListExt.BinarySearch(list, 5));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 0));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 10));
 			list = new int[] { 5, 7 };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 0));
-			Assert.AreEqual( 0, ListExt.BinarySearch(list, 5));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 6));
-			Assert.AreEqual( 1, ListExt.BinarySearch(list, 7));
-			Assert.AreEqual(~2, ListExt.BinarySearch(list, 10));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 0));
+			Assert.AreEqual( 0, IListExt.BinarySearch(list, 5));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 6));
+			Assert.AreEqual( 1, IListExt.BinarySearch(list, 7));
+			Assert.AreEqual(~2, IListExt.BinarySearch(list, 10));
 			list = new int[] { 1, 5, 7, 13, 17, 29, 29, 31 };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, -1));
-			Assert.AreEqual( 0, ListExt.BinarySearch(list, 1));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 2));
-			Assert.AreEqual( 1, ListExt.BinarySearch(list, 5));
-			Assert.AreEqual(~2, ListExt.BinarySearch(list, 6));
-			Assert.AreEqual( 2, ListExt.BinarySearch(list, 7));
-			Assert.AreEqual(~3, ListExt.BinarySearch(list, 10));
-			Assert.AreEqual( 3, ListExt.BinarySearch(list, 13));
-			Assert.AreEqual(~4, ListExt.BinarySearch(list, 16));
-			Assert.AreEqual( 4, ListExt.BinarySearch(list, 17));
-			Assert.AreEqual(~5, ListExt.BinarySearch(list, 28));
-			int i = ListExt.BinarySearch(list, 29);
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, -1));
+			Assert.AreEqual( 0, IListExt.BinarySearch(list, 1));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 2));
+			Assert.AreEqual( 1, IListExt.BinarySearch(list, 5));
+			Assert.AreEqual(~2, IListExt.BinarySearch(list, 6));
+			Assert.AreEqual( 2, IListExt.BinarySearch(list, 7));
+			Assert.AreEqual(~3, IListExt.BinarySearch(list, 10));
+			Assert.AreEqual( 3, IListExt.BinarySearch(list, 13));
+			Assert.AreEqual(~4, IListExt.BinarySearch(list, 16));
+			Assert.AreEqual( 4, IListExt.BinarySearch(list, 17));
+			Assert.AreEqual(~5, IListExt.BinarySearch(list, 28));
+			int i = IListExt.BinarySearch(list, 29);
 			Assert.IsTrue(i == 5 || i == 6);
-			Assert.AreEqual(~7, ListExt.BinarySearch(list, 30));
-			Assert.AreEqual( 7, ListExt.BinarySearch(list, 31));
-			Assert.AreEqual(~8, ListExt.BinarySearch(list, 1000));
+			Assert.AreEqual(~7, IListExt.BinarySearch(list, 30));
+			Assert.AreEqual( 7, IListExt.BinarySearch(list, 31));
+			Assert.AreEqual(~8, IListExt.BinarySearch(list, 1000));
 		}
 		[Test] public void TestPredicatedBinarySearch()
 		{
 			Comparison<int> p = G.ToComparison<int>();
 			IList<int> list = new int[] { };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 15, p));
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, -15, p));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 15, p));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, -15, p));
 			list = new int[] { 5 };
-			Assert.AreEqual(0, ListExt.BinarySearch(list, 5, p));
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 0, p));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 10, p));
+			Assert.AreEqual(0, IListExt.BinarySearch(list, 5, p));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 0, p));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 10, p));
 			list = new int[] { 5, 7 };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, 0, p));
-			Assert.AreEqual( 0, ListExt.BinarySearch(list, 5, p));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 6, p));
-			Assert.AreEqual( 1, ListExt.BinarySearch(list, 7, p));
-			Assert.AreEqual(~2, ListExt.BinarySearch(list, 10, p));
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, 0, p));
+			Assert.AreEqual( 0, IListExt.BinarySearch(list, 5, p));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 6, p));
+			Assert.AreEqual( 1, IListExt.BinarySearch(list, 7, p));
+			Assert.AreEqual(~2, IListExt.BinarySearch(list, 10, p));
 			list = new int[] { 1, 5, 7, 13, 17, 29, 29, 31 };
-			Assert.AreEqual(~0, ListExt.BinarySearch(list, -1, p));
-			Assert.AreEqual( 0, ListExt.BinarySearch(list, 1, p));
-			Assert.AreEqual(~1, ListExt.BinarySearch(list, 2, p));
-			Assert.AreEqual( 1, ListExt.BinarySearch(list, 5, p));
-			Assert.AreEqual(~2, ListExt.BinarySearch(list, 6, p));
-			Assert.AreEqual( 2, ListExt.BinarySearch(list, 7, p));
-			Assert.AreEqual(~3, ListExt.BinarySearch(list, 10, p));
-			Assert.AreEqual( 3, ListExt.BinarySearch(list, 13, p));
-			Assert.AreEqual(~4, ListExt.BinarySearch(list, 16, p));
-			Assert.AreEqual( 4, ListExt.BinarySearch(list, 17, p));
-			Assert.AreEqual(~5, ListExt.BinarySearch(list, 28, p));
-			int i = ListExt.BinarySearch(list, 29, p);
+			Assert.AreEqual(~0, IListExt.BinarySearch(list, -1, p));
+			Assert.AreEqual( 0, IListExt.BinarySearch(list, 1, p));
+			Assert.AreEqual(~1, IListExt.BinarySearch(list, 2, p));
+			Assert.AreEqual( 1, IListExt.BinarySearch(list, 5, p));
+			Assert.AreEqual(~2, IListExt.BinarySearch(list, 6, p));
+			Assert.AreEqual( 2, IListExt.BinarySearch(list, 7, p));
+			Assert.AreEqual(~3, IListExt.BinarySearch(list, 10, p));
+			Assert.AreEqual( 3, IListExt.BinarySearch(list, 13, p));
+			Assert.AreEqual(~4, IListExt.BinarySearch(list, 16, p));
+			Assert.AreEqual( 4, IListExt.BinarySearch(list, 17, p));
+			Assert.AreEqual(~5, IListExt.BinarySearch(list, 28, p));
+			int i = IListExt.BinarySearch(list, 29, p);
 			Assert.IsTrue(i == 5 || i == 6);
-			Assert.AreEqual(~7, ListExt.BinarySearch(list, 30, p));
-			Assert.AreEqual( 7, ListExt.BinarySearch(list, 31, p));
-			Assert.AreEqual(~8, ListExt.BinarySearch(list, 1000, p));
+			Assert.AreEqual(~7, IListExt.BinarySearch(list, 30, p));
+			Assert.AreEqual( 7, IListExt.BinarySearch(list, 31, p));
+			Assert.AreEqual(~8, IListExt.BinarySearch(list, 1000, p));
 			
 			// This tests another code path in G.ToComparison<T>()
 			var p2 = G.ToComparisonFunc<string>();
 			IList<string> strs = new string[] {"1", "3", "5", "7", "9"};
-			Assert.AreEqual(1, ListExt.BinarySearch2(strs, "3", p2));
-			Assert.AreEqual(~4, ListExt.BinarySearch2(strs, "7b", p2));
+			Assert.AreEqual(1, IListExt.BinarySearch2(strs, "3", p2));
+			Assert.AreEqual(~4, IListExt.BinarySearch2(strs, "7b", p2));
 		}
 
 		struct IntPair : IComparable<IntPair>

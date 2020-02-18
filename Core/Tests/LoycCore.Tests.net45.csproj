@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
@@ -172,10 +172,12 @@
   <ItemGroup>
     <Compile Include="Collections\ALists\AListBaseTests.cs" />
     <Compile Include="Collections\HeapTests.cs" />
+    <Compile Include="Collections\ReadOnlyDictionaryTests.cs" />
     <Compile Include="Collections\VLists\FVListTests.cs" />
     <Compile Include="Collections\VLists\FWListTests.cs" />
     <Compile Include="Collections\VLists\VListTests.cs" />
     <Compile Include="Collections\VLists\WListTests.cs" />
+    <Compile Include="Essentials\BaisTests.cs" />
     <Compile Include="Essentials\ExtensionsTests.cs" />
     <Compile Include="Essentials\GTests.cs" />
     <Compile Include="Essentials\HashTagsTests.cs" />
@@ -277,6 +279,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.net45.csproj">
       <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
       <Name>Loyc.Collections.net45</Name>

@@ -53,6 +53,7 @@ This is not necessary for pull requests: qwertie will take care of versioning.
 4. Update appveyor.yml at `- set SEMVER=` (semantic version combines w.x.y into wx.y, e.g. 2.7.1 => 27.1, because semantic versioning demands a new major version number for each breaking change, while the internal version number increments the minor version for a minor breaking change.)
 5. If a GitHub release is to be created, uninstall the LeMP VS extension and rebuild it with UpdateLibLeMPAndReinstall.bat. Manually check that it still works.
 6. Commit changes
-7. Push changes. Appveyor will publish NuGet packages automatically.
-8. Create an (unannotated) git tag like `v2.7.1` locally: `git tag v2.7.1`. Push the tag: `git push origin v2.7.1` (optional if creating a release on GitHub)
+7. Create an (unannotated) git tag like `v2.7.1` locally: `git tag v2.7.1`.
+8. (optional if releasing on GitHub) Push changes. Push the tag to make Appveyor publish NuGet packages: `git push origin v2.7.1`.
 9. Every so often, create a release on GitHub.com. Prepare a zip file from the built binaries and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
+10. Update documentation by running doc/Doxygen.bat in the gh-pages branch.

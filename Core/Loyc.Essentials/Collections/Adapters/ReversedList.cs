@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -114,11 +114,6 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
-		}
-
-		public int RemoveAll(Predicate<T> match)
-		{
-			return ListExt.RemoveAll(this, match);
 		}
 
 		public void AddRange(IEnumerable<T> list)

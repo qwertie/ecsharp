@@ -7,7 +7,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
-    <RootNamespace>Loyc.Essentials</RootNamespace>
+    <RootNamespace>Loyc</RootNamespace>
     <AssemblyName>Loyc.Essentials</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -44,7 +44,7 @@
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DEBUG;DotNet4,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
     <OutputPath>..\Bin\Release.NET4\</OutputPath>
@@ -164,24 +164,37 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
+    <Compile Include="Collections\ExtensionMethods\IPush, IPop.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToLists.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
+    <Compile Include="Collections\ExtensionMethods\ICollectionExt.cs" />
+    <Compile Include="Collections\HelperClasses\NumRange.cs" />
+    <Compile Include="Collections\HelperClasses\Repeated.cs" />
     <Compile Include="Collections\HelperClasses\ReverseComparer.cs" />
     <Compile Include="Collections\HelperClasses\SelectListSource.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SelectListSource.ecs</DependentUpon>
     </Compile>
+    <None Include="Collections\HelperClasses\SelectCollection.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SelectCollection.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Collections\HelperClasses\SelectCollection.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SelectCollection.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Compatibility\Contract.Assert.cs" />
     <Compile Include="Compatibility\Enum.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
-    <Compile Include="MessageSinks\Misc.cs" />
+    <Compile Include="MessageSinks\LogException.cs" />
     <Compile Include="MessageSinks\WrapperSinks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
     <Compile Include="Collections\BaseClasses\EnumeratorBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
@@ -199,17 +212,14 @@
     <Compile Include="Collections\HelperClasses\EmptyArray.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\EmptyList.cs" />
-    <Compile Include="Collections\Adapters\KeyCollection.cs" />
     <Compile Include="Collections\Adapters\ListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ListSlice.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsList.cs" />
     <Compile Include="Collections\Adapters\NegList.cs" />
     <Compile Include="Collections\Adapters\NegListSource.cs" />
-    <Compile Include="Collections\HelperClasses\NumRange.cs" />
     <Compile Include="Collections\HelperClasses\RangeEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Collections\HelperClasses\Repeated.cs" />
     <Compile Include="Collections\Adapters\ReverseBinumerator.cs" />
     <Compile Include="Collections\Adapters\ReversedList.cs" />
     <Compile Include="Collections\Adapters\ReversedListSource.cs" />
@@ -220,45 +230,15 @@
     <Compile Include="Collections\Adapters\Slice.cs" />
     <Compile Include="Collections\Adapters\SourceAsCollection.cs" />
     <Compile Include="Collections\Adapters\NegListSlice.cs" />
-    <Compile Include="NamespaceDocs.cs" />
     <Compile Include="Strings\StringBuilderExt.cs" />
-    <Compile Include="Strings\StringSlice.cs" />
-    <Compile Include="Strings\UString.cs" />
-    <Compile Include="Collections\Adapters\ValueCollection.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
-    <Compile Include="Collections\Interfaces\ICharSource.cs" />
-    <Compile Include="Collections\Interfaces\ISparseList.cs" />
-    <Compile Include="Collections\Interfaces\New enumerators.cs" />
-    <Compile Include="Collections\Interfaces\IRanges.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Interfaces\ISetImm.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Collections\Implementations\ListChangeInfo.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
-    <Compile Include="Collections\Implementations\WeakValueDictionary.cs" />
-    <Compile Include="Collections\Interfaces\ICount.cs" />
-    <Compile Include="Collections\Interfaces\IListSource.cs" />
-    <Compile Include="Collections\Interfaces\INegListSource.cs" />
-    <Compile Include="Collections\Interfaces\IAutoCreatePool.cs" />
-    <Compile Include="Collections\Interfaces\INotifyListChanging.cs" />
-    <Compile Include="Collections\Interfaces\Queue interfaces.cs" />
-    <Compile Include="Collections\Interfaces\Read-write interfaces.cs" />
-    <Compile Include="Collections\Interfaces\Sink interfaces.cs" />
-    <Compile Include="Compatibility\IReadOnlyCollections.cs" />
-    <Compile Include="Compatibility\Serializable.cs" />
-    <Compile Include="Utilities\Exceptions.cs" />
+    <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\G.cs" />
-    <Compile Include="Geometry\IPoint.cs" />
-    <Compile Include="Geometry\IPoint3.cs" />
-    <Compile Include="Geometry\IRectangle.cs" />
-    <Compile Include="Geometry\IRectangle3.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
-    <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <None Include="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>
@@ -270,11 +250,8 @@
       <DependentUpon>GRange.ecs</DependentUpon>
     </Compile>
     <Compile Include="Utilities\HashTags.cs" />
-    <Compile Include="MessageSinks\IMessageSink.cs" />
+    <Compile Include="Utilities\Holder.cs" />
     <Compile Include="Utilities\IoC.cs" />
-    <Compile Include="Utilities\Localize.cs" />
-    <Compile Include="Utilities\Maybe.cs" />
-    <Compile Include="Utilities\MemoizedTypeName.cs" />
     <None Include="MessageSinks\MessageSink.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MessageSink.out.cs</LastGenOutput>
@@ -286,14 +263,12 @@
     </Compile>
     <Compile Include="MessageSinks\BasicSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
-    <Compile Include="Utilities\MiscInterfaces.cs" />
     <Compile Include="Utilities\PrintHelpers.cs" />
-    <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\SavedValue.cs" />
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
-    <Compile Include="Utilities\Symbol.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
+    <Compile Include="Utilities\Triplet.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Compatibility\WeakReference.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
@@ -339,7 +314,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.net45.csproj">
+      <Project>{834f7631-149c-4172-83c2-c6bf9f8bf26b}</Project>
+      <Name>Loyc.Interfaces.net45</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>

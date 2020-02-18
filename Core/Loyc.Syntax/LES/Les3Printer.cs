@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Globalization;
 using Loyc;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Syntax.Impl;
 using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
@@ -146,7 +147,7 @@ namespace Loyc.Syntax.Les
 		//   with braces, a semicolon is required after the first statement to avoid
 		//   the possibility that the braces will be parsed as part of the keyword
 		//   expression (alternative: begin the second statement with @@).
-		// - #trivia_newline must be ignored in some cases because a newline in 
+		// - %newline must be ignored in some cases because a newline in 
 		//   certain places will inadvertantly end the current statement early.
 		//   Also, single-line comments sometimes cannot end with a newline and
 		//   must use two backslashes to end the comment instead: \\
@@ -525,7 +526,7 @@ namespace Loyc.Syntax.Les
 						if (prefix != _number)
 							PrintIdCore(prefix, startToken: false, forceQuote: firstCh.IsOneOf('e', 'E'));
 						return;
-					} else if (prefix.Name == "@@" && Les3PrecedenceMap.IsExtendedOperator(text, "")) {
+					} else if (prefix.Name == "@@" && Les3PrecedenceMap.IsExtendedOperatorToken(text)) {
 						WriteToken("@@", kind, Chars.At, Chars.IdAndPunc);
 						SB.Append(text);
 						return;
@@ -753,7 +754,7 @@ namespace Loyc.Syntax.Les
 			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Operator:
-				case NodeStyle.Statement:
+				case NodeStyle.StatementBlock:
 				case NodeStyle.Default:
 					// Figure out if this node can be treated as an operator and if 
 					// so, whether it's a suffix operator.
@@ -873,8 +874,6 @@ namespace Loyc.Syntax.Les
 
 		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
 		{
-			// Peek ahead to decide whether to terminate with semicolon or newline 
-			// because trailing trivia (comments) appear after the semicolon, if any
 			bool anyNewlines = false;
 			if (args.Count > 0) {
 				var next = args[0];
@@ -908,12 +907,19 @@ namespace Loyc.Syntax.Les
 			if (name.Length <= 1 || name[0] != '\'')
 				return false;
 			int i;
-			for (i = 1; i < name.Length; i++)
-				if (!IsOpPrefixChar(name[i]))
+			for (i = 1; ;) {
+				if (!IsComboOpPrefixChar(name[i]))
 					break;
-			return EndsAsNaturalOperator(name, i);
+				if (++i == name.Length)
+					return true;
+			}
+			var opToken = name.Slice(i);
+			if (!Les3PrecedenceMap.IsNaturalOperatorToken(opToken))
+				return false;
+			TokenType tt = Les3Lexer.GetOperatorTokenType(opToken);
+			return tt != TokenType.PreOrSufOp && tt != TokenType.PrefixOp;
 		}
-		public static bool IsOpPrefixChar(char c) => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
+		public static bool IsComboOpPrefixChar(char c) => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
 
 		/// <summary>Returns true if the given name can be printed as a prefix operator in LESv3.</summary>
 		private static bool CanBePrefixOperator(string name)
@@ -921,20 +927,13 @@ namespace Loyc.Syntax.Les
 			if (name.Length <= 1 || name[0] != '\'')
 				return false; // optimized path
 
-			int i = name[1] == '$' ? 2 : 1;
-			return EndsAsNaturalOperator(name, i);
-		}
-
-		private static bool EndsAsNaturalOperator(string name, int i)
-		{
-			for (; (uint)i < (uint)name.Length; i++)
-			{
-				if (name[i] == '/' && name.TryGet(i + 1, '\0').IsOneOf('/', '*'))
-  					return false; // "//" or "/*" - note: parse accepts an operator like "*/*" but we avoid printing it
-				if (!Les3PrecedenceMap.IsOpChar(name[i]))
-					return false;
+			int i = 1;
+			if (name[1] == '$') {
+				i = 2;
+				if (name.Length == 2)
+					return true;
 			}
-			return true;
+			return Les3PrecedenceMap.IsNaturalOperatorToken(name.Slice(i));
 		}
 
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
@@ -943,7 +942,7 @@ namespace Loyc.Syntax.Les
 		{
 			// Check if this operator is allowed here. For example, if operator '+ 
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
-			// allowed without parentheses. Also, unary extended ops (e.g. 'foo) 
+			// allowed without parentheses. Also, unary word operators (e.g. 'foo) 
 			// are not supported.
 			Precedence prec = Les3PrecedenceMap.Default.Find(shape, opName, cacheWordOp: true, les3InfixOp: shape == OperatorShape.Infix);
 			if (shape == OperatorShape.Infix) {
@@ -1449,7 +1448,7 @@ namespace Loyc.Syntax.Les
 		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
 		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute #trivia_inParens.)</remarks>
+		/// add the trivia attribute %inParens.)</remarks>
 		public bool AllowExtraParenthesis {
 			get { return base.AllowChangeParentheses; }
 			set { base.AllowChangeParentheses = value; }
@@ -1489,11 +1488,11 @@ namespace Loyc.Syntax.Les
 		/// <summary>The printer avoids printing spaces around infix (binary) 
 		/// operators that have the specified precedence or higher.</summary>
 		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 
 		/// <summary>The printer avoids printing spaces after prefix operators 
 		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
+		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
 
 		/// <summary>Although the LES3 printer is not designed to insert line breaks
 		/// mid-expression or to keep lines under a certain length, this option can 

@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections;
+using Loyc.Collections.MutableListExtensionMethods;
 
 namespace Loyc.LLParserGenerator
 {

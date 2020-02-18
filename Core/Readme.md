@@ -14,6 +14,9 @@ Dependency tree
 
 Low-level libraries on top:
 
+         Loyc.Interfaces
+                ^
+                |
          Loyc.Essentials
                 ^   ^
                 |   |

@@ -46,7 +46,7 @@ namespace Loyc.Ecs
 		});
 		// Block statements take block(s) as arguments
 		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
-			S.DoWhile, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			S.DoWhile, S.Fixed, S.Lock, S.SwitchStmt, S.UsingStmt, S.While
 		});
 		static readonly HashSet<Symbol> OtherBlockStmts = new HashSet<Symbol>(new[] {
 			S.If, S.Checked, S.For, S.ForEach, S.If, S.Try, S.Unchecked
@@ -180,7 +180,7 @@ namespace Loyc.Ecs
 			}
 			else // argCount > 1
 			{
-				bool isSwitch = _name == S.Switch;
+				bool isSwitch = _name == S.SwitchStmt;
 				if (!isSwitch && (_n.BaseStyle == NodeStyle.PrefixNotation || _o.AvoidMacroSyntax))
 					return false;
 
@@ -313,7 +313,7 @@ namespace Loyc.Ecs
 
 		private void PrintWhereClauses(LNode name)
 		{
-			// Example: #of(Foo, [#where(#class, IEnumerable)] T)
+			// Example: @'of(Foo, [#where(#class, IEnumerable)] T)
 			//          represents Foo<T> where T: class, IEnumerable
 			if (!name.Calls(S.Of))
 				return;
@@ -424,8 +424,8 @@ namespace Loyc.Ecs
 				for (int i = (skipFirstStmt ? 1 : 0), c = braces.ArgCount; i < c; i++) {
 					var stmt = braces.Args[i];
 					// Bug fix: check if '\n' was just written to avoid a space before 'g' in
-					// [#trivia_trailing(#trivia_newline)] f();
-					// [#trivia_appendStatement] g();
+					// @`%trailing`(`%newline`) f();
+					// @`%appendStatement` g();
 					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt) || !Newline(NewlineOpt.Default)) {
 						if (_out.LastCharWritten != '\n')
 							Space(SpaceOpt.Default);
@@ -510,7 +510,7 @@ namespace Loyc.Ecs
 				}
 			}
 
-			// A cast operator with the structure: #fn(Foo, operator`#cast`, #(...))
+			// A cast operator with the structure: #fn(Foo, [@`%useOperatorKeyword`] @'cast, #(...))
 			// can be printed in a special format: operator Foo(...);
 			// Note: operator bool is a cast operator but operator true/false are not
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
@@ -772,7 +772,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintTwoArgBlockStmt()
 		{
-			// S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
+			// S.Do, S.Fixed, S.Lock, S.SwitchStmt, S.UsingStmt, S.While
 			var type = EcsValidators.TwoArgBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;

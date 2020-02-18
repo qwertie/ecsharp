@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,7 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+
 		[Test]
 		public void Bug_2017_08_UnexpectedWarning()
 		{
@@ -216,14 +217,18 @@ namespace Loyc.LLParserGenerator
 			*/
 		}
 
-		[Test(Fails = "TODO: investigate this bug")]
 		public void Bug_2016_11()
 		{
+			// Originally SLComment would do `if (la1 == -1 || la1 == '\\') goto stop;`,
+			// needlessly checking for EOF. Fixed by editing `ComputeNextSets()` to call
+			// `ComputeNextSet(..., addEOF: false)` not `addEOF: previous[i].Alt == ExitAlt`.
+			// This caused a few other EOF checks to disappear from the test suite and
+			// elsewhere, but it seems like a reasonable change.
 			Test(@"
 				[FullLLk, AddCsLineDirectives(false)]
 				LLLPG (lexer) @{
 					private token SLComment returns[object result] :
-						'/' '/' nongreedy(_)* ('\\' '\\' | ('\r'|'\n') =>);
+						'/' '/' nongreedy(_)* ('\\' '\\' | ('\r'|'\n'|EOF) =>);
 				};", @"
 					private object SLComment()
 					{
@@ -252,7 +257,7 @@ namespace Loyc.LLParserGenerator
 						la0 = LA0;
 						if (la0 == '\\') {
 							Skip();
-							Skip();
+							Match('\\');
 						} else { }
 					}", null, Ecs.EcsLanguageService.Value);
 		}

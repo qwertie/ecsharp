@@ -85,7 +85,7 @@ namespace Loyc.Ecs
 					break;
 				case 2:
 					if (childIndex == 0 ? n == S.DoWhile :
-						n == S.If || n == S.While || n == S.UsingStmt || n == S.Lock || n == S.Switch || n == S.Fixed)
+						n == S.If || n == S.While || n == S.UsingStmt || n == S.Lock || n == S.SwitchStmt || n == S.Fixed)
 						return true;
 					break;
 				case 3:
@@ -257,10 +257,13 @@ namespace Loyc.Ecs
 			LNode retType, name, args, body, initialValue;
 			return IsPropertyDefinition(n, out retType, out name, out args, out body, out initialValue, p);
 		}
-		
+
 		/// <summary>Returns true iff the given node has a valid syntax tree for 
 		/// a property definition, and gets the component parts of the definition.</summary>
-		/// <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+		/// <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal 
+		/// body, otherwise it's a getter-only body (e.g. int Foo => 42). Indexer 
+		/// properties can have an argument list, e.g. <c>T Foo[int x] { get; }</c>
+		/// would have a syntax tree like <c>#property(T, Foo, #(#var(#int32, x)), { get; })</c>.</remarks>
 		public static bool IsPropertyDefinition(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, out LNode initialValue, Pedantics p = Pedantics.Lax)
 		{
 			var argCount = n.ArgCount;
@@ -406,29 +409,31 @@ namespace Loyc.Ecs
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
-			// 3. An #of expr a<b,...>, where 'a' is (1) or (2) and each arg 'b' is a 
-			//    complex identifier (if printing in C# style)
-			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
+			// 3. An 'of' expression a<b,...>, where 'a' is (1) or (2) and each arg 'b' 
+			//    is a complex identifier (if printing in C# style)
+			// 4. A dotted expression (a.b), where 'a' is a complex identifier and 'b' 
 			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
 			//    do not count as complex identifiers. Note that a.b<c> is 
-			//    structured @`'.`(a, #of(b, c)), not #of(@`'.`(a, b), c). A dotted
+			//    structured @`'.`(a, @'of(b, c)), not #of(@`'.`(a, b), c). A dotted
 			//    expression that starts with a dot, such as .a.b, is structured
 			//    (.a).b rather than .(a.b), as unary . has precedence as high as $.
+			// 5. A scope-resolution expression (a::b), where 'a' is (1) or (2) and
+			//    'b' does not contain another scope-resolution operator.
 			// 
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
 			// 
-			// Foo*      <=> #of(@*, Foo)
-			// Foo[]     <=> #of(@`[]`, Foo)
-			// Foo[,]    <=> #of(#`[,]`, Foo)
-			// Foo?      <=> #of(@?, Foo)
+			// Foo*      <=> @'of(@*, Foo)
+			// Foo[]     <=> @'of(@`[]`, Foo)
+			// Foo[,]    <=> @'of(#`[,]`, Foo)
+			// Foo?      <=> @'of(@?, Foo)
 			//
-			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
+			// Note that we can't just use @'of(Nullable, Foo) for Foo? because it
 			// doesn't work if System is not imported. It's reasonable to allow '? 
 			// instead of global::System.Nullable, since we have special symbols 
 			// for types like #int32 anyway.
 			// 
-			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, #of(b, c)), #of(d, e)), f).
+			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, @'of(b, c)), #of(d, e)), f).
 			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n, p) : HasPAttrsOrParens(n, p)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
@@ -448,22 +453,40 @@ namespace Loyc.Ecs
 					return false;
 				if ((f & ICI.AllowAnyExprInOf) != 0)
 					return true;
-
 				ICI childFlags = ICI.InOf;
 				if ((f & ICI.NameDefinition) != 0)
+				{
 					childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted);
+				}
 				for (int i = 1; i < n.ArgCount; i++)
-					if (!IsComplexIdentifier(n.Args[i], childFlags, p))
+				{
+					var childArg = n.Args[i];
+					if (!IsComplexIdentifier(childArg, childFlags, p))
+					{
+						if (baseName.IsIdNamed(S.Tuple) && (childFlags & ICI.NameDefinition) == 0)
+						{   // If part of a tuple type isn't a valid complex Id, 
+							// it must be an unassigned variable declaration
+							if (childArg.Calls(S.Var, 2) &&
+								IsComplexIdentifier(childArg.Args[0], childFlags, p) &&
+								IsSimpleIdentifier(childArg.Args[1], p))
+								continue;
+						}
 						return false;
+					}
+				}
 				return true;
 			}
-			if (CallsWPAIH(n, S.Dot, p) && n.ArgCount == 2 && (f & ICI.DisallowDotted) == 0) {
-				LNode lhs = args[0], rhs = args.Last;
-				// right-hand argument must be simple
-				var rhsFlags = ICI.DisallowDotted;
-				if (!IsComplexIdentifier(args.Last, rhsFlags, p))
+			if (CallsWPAIH(n, S.Dot, 2, p) && (f & ICI.DisallowDotted) == 0) {
+				// right-hand argument must be simple or be an "of<expression>"
+				if (!IsComplexIdentifier(args.Last, ICI.DisallowDotted|ICI.DisallowColonColon, p))
 					return false;
 				return IsComplexIdentifier(args[0], ICI.Default, p);
+			}
+			if (CallsWPAIH(n, S.ColonColon, 2, p) && (f & ICI.DisallowColonColon) == 0) {
+				// left-hand argument must be simple
+				if (!IsSimpleIdentifier(args[0], p))
+					return false;
+				return IsComplexIdentifier(args.Last, ICI.DisallowColonColon, p);
 			}
 			return false;
 		}
@@ -504,13 +527,13 @@ namespace Loyc.Ecs
 		internal static Symbol TwoArgBlockStmtType(LNode _n, Pedantics p)
 		{
 			// S.Do:                     #doWhile(stmt, expr)
-			// S.Switch:                 #switch(expr, @`{}`(...))
+			// S.SwitchStmt:             #switch(expr, @`{}`(...))
 			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
 			var argCount = _n.ArgCount;
 			if (argCount != 2)
 				return null;
 			var name = _n.Name;
-			if (name == S.Switch)
+			if (name == S.SwitchStmt)
 				return CallsWPAIH(_n.Args[1], S.Braces, p) ? name : null;
 			else if (name == S.DoWhile)
 				return name;
@@ -601,15 +624,15 @@ namespace Loyc.Ecs
 
 		/// <summary>Checks whether an expression is a valid "is" test (pattern-
 		/// matching expression) such as "x is Foo", "x is Foo y" or "x is Foo y(z)".</summary>
-		/// <remarks>The format of a valid "is" test is <c>#is(subject, type_or_vardecl, extraArgsList)</c>.
-		/// For example <c>a is Foo</c> would be <c>#is(a, Foo)</c> and
-		/// <c>a is Foo b(c, d)</c> would be <c>#is(a, #var(Foo, b), #(c, d))</c>.
+		/// <remarks>The format of a valid "is" test is <c>@'is(subject, type_or_vardecl, extraArgsList)</c>.
+		/// For example <c>a is Foo</c> would be <c>@'is(a, Foo)</c> and
+		/// <c>a is Foo b(c, d)</c> would be <c>@'is(a, #var(Foo, b), #(c, d))</c>.
 		/// Unary "is" expressions like <c>is Foo</c> are stored as binary expressions 
-		/// with an empty identifier as the left-hand side: <c>#is(@``, Foo)</c>.
+		/// with an empty identifier as the left-hand side: <c>@'is(@``, Foo)</c>.
 		/// </remarks>
 		public static bool IsIsTest(LNode n, out LNode subject, out LNode targetType, out LNode targetVarName, out LNode extraArgs, Pedantics p = Pedantics.Lax)
 		{
-			// `x is Foo<T> y (e1, e2)` parses to #is(x, #var(Foo<T>, y), e1, e2)
+			// `x is Foo<T> y (e1, e2)` parses to @'is(x, #var(Foo<T>, y), e1, e2)
 			subject = targetType = targetVarName = extraArgs = null;
 			if (!n.CallsMin(S.Is, 2))
 				return false;
@@ -734,7 +757,7 @@ namespace Loyc.Ecs
 			if (name == null)
 				return null;
 			// global::Foo<int>.Bar<T> is structured (global::(Foo<int>)).(Bar<T>)
-			// so if `'.` or `'::` get second arg, then if #of, get first arg.
+			// so if `'.` or `'::` get second arg, then if @'of, get first arg.
 			if (name.CallsMin(S.Dot, 1) || name.Calls(S.ColonColon, 2))
 				name = name.Args.Last;
 			if (name.CallsMin(S.Of, 1))

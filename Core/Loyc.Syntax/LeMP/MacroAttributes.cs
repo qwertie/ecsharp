@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Loyc;
 using Loyc.Collections;
@@ -43,7 +45,7 @@ namespace LeMP
 	{
 	}
 
-	/// <summary>Marks a method as an LEL simple macro.</summary>
+	/// <summary>Marks a method as a LeMP lexical macro.</summary>
 	/// <remarks>
 	/// To be recognized as a macro, the method must be public and static and its 
 	/// signature must be <see cref="LexicalMacro"/>. A class will not be automatically
@@ -116,5 +118,83 @@ namespace LeMP
 		PriorityOverrideMax = 0x900,
 		/// <summary>For internal use to isolate the priority of a macro.</summary>
 		PriorityMask = 0xF00,
+	}
+
+	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
+	public class MacroInfo : LexicalMacroAttribute
+	{
+		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
+		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro)
+			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 ? a.Names : new[] { macro.Method.Name })
+		{
+			CheckParam.IsNotNull("macro", macro);
+			Namespace = @namespace;
+			Macro = macro;
+			Mode = a.Mode;
+		}
+		public Symbol Namespace { get; private set; }
+		public LexicalMacro Macro { get; private set; }
+
+		/// <summary>Uses reflection to find a list of macros within the specified 
+		/// type by searching for (static) methods that
+		/// (1) are marked with <see cref="LexicalMacroAttribute"/> and
+		/// (2) take no parameters and return a list (IEnumerable) of 
+		///     <see cref="MacroInfo"/>. Such methods are called to get macros.
+		/// </summary>
+		/// <param name="type">The type to search for macros.</param>
+		/// <param name="namespace">Optionally overrides the namespace associated 
+		/// with macros marked with <see cref="LexicalMacroAttribute"/>. Does not
+		/// affect macros returned in a list of <see cref="MacroInfo"/>.</param>
+		/// <param name="errorSink">An object in which to send error messages
+		/// (<see cref="Severity.Warning"/> is used because unavailability of a macro
+		/// should not appear as an error when compiling something with LeMP.)</param>
+		/// <param name="instance">An optional object of the same type as <c>type</c>, 
+		/// which will be used to bind instance methods. If this is null, only static
+		/// methods are discovered.</param>
+		/// <returns></returns>
+		public static IEnumerable<MacroInfo> GetMacros(Type type, IMessageSink errorSink = null, Symbol @namespace = null, object instance = null)
+		{
+			List<MacroInfo> results = new List<MacroInfo>();
+			errorSink = errorSink ?? MessageSink.Default;
+			@namespace = @namespace ?? (Symbol)type.Namespace;
+
+			var flags = BindingFlags.Public | BindingFlags.Static;
+			if (instance != null)
+				flags |= BindingFlags.Instance;
+			foreach(var method in type.GetMethods(flags))
+			{
+				// First look for [LexicalMacro(...)]
+				var lma = method.GetCustomAttributes(typeof(LexicalMacroAttribute), false);
+				if (lma.Length != 0) {
+					foreach (LexicalMacroAttribute attr in lma) {
+						var @delegate = AsDelegate(method);
+						Debug.Assert(@delegate != null);
+						results.Add(new MacroInfo(@namespace, attr, @delegate));
+					}
+				} else {
+					// Try to get macros by calling the method.
+					try {
+						var d = Delegate.CreateDelegate(typeof(Func<IEnumerable<MacroInfo>>), 
+							method.IsStatic ? null : instance, method, throwOnBindFailure: false);
+						if (d != null)
+							results.AddRange(((Func<IEnumerable<MacroInfo>>)d)());
+					} catch (Exception e) {
+						errorSink.Warning(method.DeclaringType, "Unable to get macros from '{0}': {1}", method.Name, e.Message);
+					}
+				}
+			}
+
+			return results;
+
+			LexicalMacro AsDelegate(MethodInfo method) {
+				try {
+					return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method,
+						throwOnBindFailure: true);
+				} catch (Exception e) {
+					errorSink.Write(Severity.Warning, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
+					return null;
+				}
+			}
+		}
 	}
 }

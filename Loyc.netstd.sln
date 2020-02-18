@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLLPG", "Main\LLLPG\LLLPG.c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Main\Tests\Tests.csproj", "{09F9A0FE-01E6-49F3-8FA3-4E9CF2BA03C0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Interfaces", "Core\Loyc.Interfaces\Loyc.Interfaces.csproj", "{21CD7586-16AB-4012-9A21-C17A44D986F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{09F9A0FE-01E6-49F3-8FA3-4E9CF2BA03C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09F9A0FE-01E6-49F3-8FA3-4E9CF2BA03C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09F9A0FE-01E6-49F3-8FA3-4E9CF2BA03C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21CD7586-16AB-4012-9A21-C17A44D986F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21CD7586-16AB-4012-9A21-C17A44D986F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21CD7586-16AB-4012-9A21-C17A44D986F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21CD7586-16AB-4012-9A21-C17A44D986F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{76171C0E-A252-4246-A19B-C90F1B970F02} = {7A19B8BB-B645-4A9A-8330-FEC7E44911C1}
 		{97C7D5F1-9720-4133-AE1F-AE66D6C5CC4F} = {7A19B8BB-B645-4A9A-8330-FEC7E44911C1}
 		{AE753A11-E663-4976-A198-11BC7D1EB6BB} = {7A19B8BB-B645-4A9A-8330-FEC7E44911C1}
+		{21CD7586-16AB-4012-9A21-C17A44D986F1} = {7A19B8BB-B645-4A9A-8330-FEC7E44911C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83999369-3DC0-4FBD-9330-7CB7615F0591}

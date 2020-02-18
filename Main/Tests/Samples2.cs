@@ -1,4 +1,4 @@
-﻿//
+//
 // A file for playing around
 // 
 using System;
@@ -61,7 +61,7 @@ namespace Samples
 
 		public static void PrintAllTheNames(string path)
 		{
-			using (ParsingService.PushCurrent(EcsLanguageService.Value))
+			using (ParsingService.SetDefault(EcsLanguageService.Value))
 			using (MessageSink.SetDefault(ConsoleMessageSink.Value))
 				foreach (var filename in Directory.GetFiles(path, "*.cs")) {
 					Console.WriteLine(filename);
