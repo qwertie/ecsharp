@@ -10,7 +10,7 @@ var searchData=
   ['baseparserforlist_3c_20token_2c_20int_20_3e',['BaseParserForList&lt; Token, int &gt;',['../classLoyc_1_1Syntax_1_1BaseParserForList.html',1,'Loyc::Syntax']]],
   ['baseparsernobacktracking',['BaseParserNoBacktracking',['../classLoyc_1_1Syntax_1_1BaseParserNoBacktracking.html',1,'Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;'],['../classLoyc_1_1Syntax_1_1BaseParserNoBacktracking.html',1,'Loyc.Syntax.BaseParserNoBacktracking&lt; Token &gt;']]],
   ['bdictionary',['BDictionary',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
-  ['bdictionary_3c_20int_2c_20pair_3c_20int_2c_20string_20_3e_20_3e',['BDictionary&lt; int, Pair&lt; int, string &gt; &gt;',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
+  ['bdictionary_3c_20int_2c_20loyc_3a_3apair_3c_20int_2c_20string_20_3e_20_3e',['BDictionary&lt; int, Loyc::Pair&lt; int, string &gt; &gt;',['../classLoyc_1_1Collections_1_1BDictionary.html',1,'Loyc::Collections']]],
   ['benchmarkattribute',['BenchmarkAttribute',['../classLoyc_1_1MiniTest_1_1BenchmarkAttribute.html',1,'Loyc::MiniTest']]],
   ['bijection',['Bijection',['../classLoyc_1_1Collections_1_1Bijection.html',1,'Loyc::Collections']]],
   ['bijection_3c_20k2_2c_20k1_20_3e',['Bijection&lt; K2, K1 &gt;',['../classLoyc_1_1Collections_1_1Bijection.html',1,'Loyc::Collections']]],

@@ -97,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html">Loyc</a> collection classes but sometimes useful in other cases. 
+<p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes but sometimes useful in other cases. 
  <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Collections/Other/TestHelpers.cs'>/Core/Loyc.Collections/Other/TestHelpers.cs</a></li>
@@ -112,18 +112,18 @@ Inheritance diagram for Loyc.Collections.Impl.TestHelpers:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html">Loyc</a> collection classes but sometimes useful in other cases.</p>
+<div class="textblock"><p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes but sometimes useful in other cases.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6bbb77af4b425b361cb19b4db27ac40"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, params T[] expected)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, params T[] expected)</td></tr>
 <tr class="separator:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c0e28bdd65e95b26aca0c776063102"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102">ExpectListByEnumerator&lt; T &gt;</a> (IListSource&lt; T &gt; list, params T[] expected)</td></tr>
+<tr class="memitem:a65c0e28bdd65e95b26aca0c776063102"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102">ExpectListByEnumerator&lt; T &gt;</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, params T[] expected)</td></tr>
 <tr class="memdesc:a65c0e28bdd65e95b26aca0c776063102"><td class="mdescLeft">&#160;</td><td class="mdescRight">When testing a buggy collection type, the enumerator might behave differently than the indexer, so this alternate comparer is provided.  <a href="#a65c0e28bdd65e95b26aca0c776063102">More...</a><br /></td></tr>
 <tr class="separator:a65c0e28bdd65e95b26aca0c776063102"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c56789bcdc182e7161fbde501c6f1e3"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator=false)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator=false)</td></tr>
 <tr class="separator:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a162f5208e9356cb3ca49597766aee0eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a162f5208e9356cb3ca49597766aee0eb"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IEnumerable&lt; T &gt; list, IEnumerable&lt; T &gt; expected)</td></tr>
@@ -467,7 +467,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
         <tr>
           <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.Impl.TestHelpers.ExpectListByEnumerator&lt; T &gt; </td>
           <td>(</td>
-          <td class="paramtype">IListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -499,7 +499,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

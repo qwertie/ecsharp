@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string). Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>. 
+<p>Holds an argument list compatible with <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string)</a>. Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>. 
  <a href="structLoyc_1_1LogMessage.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/MessageSinks/MessageHolder.cs'>/Core/Loyc.Essentials/MessageSinks/MessageHolder.cs</a></li>
@@ -110,15 +110,16 @@ Inheritance diagram for Loyc.LogMessage:</div>
  <div class="center">
   <img src="structLoyc_1_1LogMessage.png" usemap="#Loyc.LogMessage_map" alt=""/>
   <map id="Loyc.LogMessage_map" name="Loyc.LogMessage_map">
+<area href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;." alt="Loyc.IHasLocation" shape="rect" coords="0,0,117,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string). Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>.</p>
+<div class="textblock"><p>Holds an argument list compatible with <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a9a94824f7aa5fcf1311cd67edcf4e222" title="Writes a message to the target that this object represents.">IMessageSink&lt;TContext&gt;.Write(Severity,TContext,string)</a>. Typically used with <a class="el" href="classLoyc_1_1MessageHolder.html" title="A message sink that puts the messages it receives in a list.">MessageHolder</a>.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a3fd7f1e62ef07a6663037a4708ee0c16"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3fd7f1e62ef07a6663037a4708ee0c16"></a>
-readonly Severity&#160;</td><td class="memItemRight" valign="bottom"><b>Severity</b></td></tr>
+readonly <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Severity</b></td></tr>
 <tr class="separator:a3fd7f1e62ef07a6663037a4708ee0c16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa991d384876e69a91e65cf6bde715d72"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa991d384876e69a91e65cf6bde715d72"></a>
 readonly object&#160;</td><td class="memItemRight" valign="bottom"><b>Context</b></td></tr>
@@ -141,30 +142,34 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>Formatted</b><code>
 <tr class="memitem:a0774934c576cb3f904e6e0de41469313"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0774934c576cb3f904e6e0de41469313"></a>
 object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
 <tr class="separator:a0774934c576cb3f904e6e0de41469313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1IHasLocation"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasLocation')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasLocation.html">Loyc.IHasLocation</a></td></tr>
+<tr class="memitem:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97ffacc6ac52815c15c26212474f150d"></a>
+object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
+<tr class="separator:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a4cda7239c755031d4acd3f85066975c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4cda7239c755031d4acd3f85066975c0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (Severity type, object context, string format, object arg0, object arg1=null)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, object arg0, object arg1=null)</td></tr>
 <tr class="separator:a4cda7239c755031d4acd3f85066975c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ac8c146dd664d4f232af003182784a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2ac8c146dd664d4f232af003182784a8"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (Severity type, object context, string format)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
 <tr class="separator:a2ac8c146dd664d4f232af003182784a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2348204177303108a7eaf885e6a8e8c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2348204177303108a7eaf885e6a8e8c4"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (Severity type, object context, string format, params object[] args)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LogMessage</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
 <tr class="separator:a2348204177303108a7eaf885e6a8e8c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6dcdfccf77b7dcfe9ac8d5497c14c651"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6dcdfccf77b7dcfe9ac8d5497c14c651"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:a6dcdfccf77b7dcfe9ac8d5497c14c651"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c0d6ae2bb3aff2db088c57163e52adc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c0d6ae2bb3aff2db088c57163e52adc"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteTo</b> (IMessageSink sink)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteTo</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
 <tr class="separator:a7c0d6ae2bb3aff2db088c57163e52adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

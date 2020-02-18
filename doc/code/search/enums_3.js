@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['escapec',['EscapeC',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af',1,'Loyc::Syntax']]]
+  ['dicteditmode',['DictEditMode',['../namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32',1,'Loyc::Collections']]]
 ];

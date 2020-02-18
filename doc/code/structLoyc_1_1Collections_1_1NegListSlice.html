@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Adapter: a random-access range for a slice of an INegListSource&lt;T&gt;. 
+<p>Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource&lt;T&gt;</a>. 
  <a href="structLoyc_1_1Collections_1_1NegListSlice.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs'>/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs</a></li>
@@ -110,22 +110,25 @@ Inheritance diagram for Loyc.Collections.NegListSlice&lt; T &gt;:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1NegListSlice.png" usemap="#Loyc.Collections.NegListSlice_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.NegListSlice_3C_20T_20_3E_map" name="Loyc.Collections.NegListSlice&lt; T &gt;_map">
+<area href="interfaceLoyc_1_1Collections_1_1IRange.html" alt="Loyc.Collections.IRange&lt; T &gt;" shape="rect" coords="0,0,227,24"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html" title="Holds the IsEmpty property that tells you if a collection is empty." alt="Loyc.Collections.IIsEmpty" shape="rect" coords="474,0,701,24"/>
+<area href="interfaceLoyc_1_1Collections_1_1INegListSource.html" alt="Loyc.Collections.INegListSource&lt; T &gt;" shape="rect" coords="711,0,938,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Adapter: a random-access range for a slice of an INegListSource&lt;T&gt;.</p>
+<div class="textblock"><p>Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource&lt;T&gt;</a>.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Item type in the list</td></tr>
   </table>
   </dd>
 </dl>
-<p>Although this slices a neg-list, the slice itself is an ordinary zero-indexed IListSource&lt;T&gt;. It implements INegListSource&lt;T&gt; for completeness, but its <code>Min</code> is 0.</p>
+<p>Although this slices a neg-list, the slice itself is an ordinary zero-indexed <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. It implements <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource&lt;T&gt;</a> for completeness, but its <code>Min</code> is 0.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a92414bbb17dcd815b68615ec85a119f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92414bbb17dcd815b68615ec85a119f8"></a>
-INegListSource&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_list</b></td></tr>
 <tr class="separator:a92414bbb17dcd815b68615ec85a119f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad05a9980fa65d9ae1dc36e959757a7de"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad05a9980fa65d9ae1dc36e959757a7de"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_start</b></td></tr>
@@ -155,18 +158,32 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code
 T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaultValue]</b><code> [get]</code></td></tr>
 <tr class="separator:ae0f702ed05a135ac507f81f82205a435"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01c1f7dfa76a0b686c02ed543b22b7f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01c1f7dfa76a0b686c02ed543b22b7f9"></a>
-int INegListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Min</b><code> [get]</code></td></tr>
+int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Min</b><code> [get]</code></td></tr>
 <tr class="separator:a01c1f7dfa76a0b686c02ed543b22b7f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee51b11e67a76d62ceda5f88f5bb6c30"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee51b11e67a76d62ceda5f88f5bb6c30"></a>
-int INegListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Max</b><code> [get]</code></td></tr>
+int <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Max</b><code> [get]</code></td></tr>
 <tr class="separator:aee51b11e67a76d62ceda5f88f5bb6c30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIsEmpty')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">Loyc.Collections.IIsEmpty</a></td></tr>
+<tr class="memitem:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88d17ca119f721011bac0a30b666192c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
+<tr class="separator:a88d17ca119f721011bac0a30b666192c inherit properties_interfaceLoyc_1_1Collections_1_1IIsEmpty"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; T &gt;</a></td></tr>
+<tr class="memitem:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Min</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the minimum valid index in the collection. <a href="#ac91ff7dfc46c3b3e174a1b213742be9d">More...</a><br /></td></tr>
+<tr class="separator:ac91ff7dfc46c3b3e174a1b213742be9d inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Max</a><code> [get]</code></td></tr>
+<tr class="memdesc:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection. <a href="#a9ed8d45675c80490286b2cd38f3d880a">More...</a><br /></td></tr>
+<tr class="separator:a9ed8d45675c80490286b2cd38f3d880a inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">this[int index]</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index. <a href="#ac77166fcd7e5f4f0a7941bc299291e14">More...</a><br /></td></tr>
+<tr class="separator:ac77166fcd7e5f4f0a7941bc299291e14 inherit properties_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aaa0b0dbeb0543663a23ed7980db7516f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa0b0dbeb0543663a23ed7980db7516f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>NegListSlice</b> (INegListSource&lt; T &gt; list)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>NegListSlice</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list)</td></tr>
 <tr class="separator:aaa0b0dbeb0543663a23ed7980db7516f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6576e6a2900ed4dbb3a4b070f6bc838"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#ae6576e6a2900ed4dbb3a4b070f6bc838">NegListSlice</a> (INegListSource&lt; T &gt; list, int start, int count=int.MaxValue)</td></tr>
+<tr class="memitem:ae6576e6a2900ed4dbb3a4b070f6bc838"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html#ae6576e6a2900ed4dbb3a4b070f6bc838">NegListSlice</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int start, int count=int.MaxValue)</td></tr>
 <tr class="memdesc:ae6576e6a2900ed4dbb3a4b070f6bc838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a slice. <a href="#ae6576e6a2900ed4dbb3a4b070f6bc838">More...</a><br /></td></tr>
 <tr class="separator:ae6576e6a2900ed4dbb3a4b070f6bc838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8dbbc3debb1ab70e10ecaac8a729f0ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8dbbc3debb1ab70e10ecaac8a729f0ce"></a>
@@ -176,13 +193,13 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool e
 T&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast</b> (out bool empty)</td></tr>
 <tr class="separator:ac08ccc3e376c26a7f88fce320aba8ae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53e18e90aa09242534cf218926fb1868"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53e18e90aa09242534cf218926fb1868"></a>
-IFRange&lt; T &gt; ICloneable&lt; IFRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a53e18e90aa09242534cf218926fb1868"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9296fe8525bd2311138af7f6bb59e60"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9296fe8525bd2311138af7f6bb59e60"></a>
-IBRange&lt; T &gt; ICloneable&lt; IBRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:ad9296fe8525bd2311138af7f6bb59e60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04e21d378bfbc9edf0716ca7e1b6359d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04e21d378bfbc9edf0716ca7e1b6359d"></a>
-IRange&lt; T &gt; ICloneable&lt; IRange&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1ICloneable.html">ICloneable</a>&lt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a04e21d378bfbc9edf0716ca7e1b6359d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04df5df284ee00bdd7ff2a87ff62d12d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04df5df284ee00bdd7ff2a87ff62d12d"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
@@ -200,14 +217,21 @@ System.Collections.IEnumerator System.Collections.IEnumerable.&#160;</td><td cla
 T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:a2dea7082bbd74e2bc73a85037be993e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb12efe29c512ffcbede009997a38986"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb12efe29c512ffcbede009997a38986"></a>
-IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:acb12efe29c512ffcbede009997a38986"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27476d49de71360ae0bd4e1db92a45fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27476d49de71360ae0bd4e1db92a45fe"></a>
-IRange&lt; T &gt; INegListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:a27476d49de71360ae0bd4e1db92a45fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ce12112e7f657b4dddd881ecd8e2f94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1ce12112e7f657b4dddd881ecd8e2f94"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count=int.MaxValue)</td></tr>
 <tr class="separator:a1ce12112e7f657b4dddd881ecd8e2f94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource&lt; T &gt;</a></td></tr>
+<tr class="memitem:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a> (int index, out bool fail)</td></tr>
+<tr class="memdesc:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a238c28f7c77ade400dfa3329ef5fdb86">More...</a><br /></td></tr>
+<tr class="separator:a238c28f7c77ade400dfa3329ef5fdb86 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a0c0466927c95d573bbc32ba1a0ca8c77">More...</a><br /></td></tr>
+<tr class="separator:a0c0466927c95d573bbc32ba1a0ca8c77 inherit pub_methods_interfaceLoyc_1_1Collections_1_1INegListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ae6576e6a2900ed4dbb3a4b070f6bc838"></a>
@@ -220,7 +244,7 @@ IRange&lt; T &gt; INegListSource&lt; T &gt;.&#160;</td><td class="memItemRight" 
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">Loyc.Collections.NegListSlice</a>&lt; T &gt;.<a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a> </td>
           <td>(</td>
-          <td class="paramtype">INegListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -262,13 +286,15 @@ If 'start' is above the original Count, the Count of the new slice is set to zer
 if (start + count) is above the original Count, the Count of the new slice is reduced to <code>list.Count - start</code>. </li>
 </ul>
 
+<p>References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Loyc.Collections.INegListSource&lt; out out T &gt;.Max</a>, <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Loyc.Collections.INegListSource&lt; out out T &gt;.Min</a>, <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Loyc.Collections.INegListSource&lt; out out T &gt;.Slice()</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Loyc.Collections.IListSource&lt; out out T &gt;.Slice()</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:20 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

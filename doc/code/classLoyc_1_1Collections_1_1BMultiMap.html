@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable.  
+<p>An sorted dictionary that allows multiple values to be associated with a single key.  
  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Collections/ALists/BMultiMap.cs'>/Core/Loyc.Collections/ALists/BMultiMap.cs</a></li>
@@ -116,7 +116,8 @@ Inheritance diagram for Loyc.Collections.BMultiMap&lt; K, V &gt;:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. </p>
+<div class="textblock"><p>An sorted dictionary that allows multiple values to be associated with a single key. </p>
+<p>The keys must be comparable. By default, the values must also be comparable, but if the values do not support IComparable, you can set the comparison function to <code>(a,b) =&gt; 0</code> to pretend all values are equal. A shorthand way to do this is to call the constructor with parameters of (null, null) which means "use default key comparison and treat all values as equal". If you do this, you should avoid calling this[key].<a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717" title="Remove the item with the specified key if present.">Remove(value)</a> or this[key].Contains(value), or the Remove method in the base class, since these methods will treat any value as a match. </p>
 <p>An <a href="http://core.loyc.net/collections/alists-part2.html">article</a> about the <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a> classes is available. </p>
 <p>Often when people want to be able to associate multiple values with a single key, they use a Dictionary with values of type List&lt;T&gt;. This approach is very inefficient (in terms of memory use) if most keys are only associated with one or two values; this class solves the problem using a single sorted B+ tree for all keys and all values. It requires, however, that both the keys and values are totally ordered (i.e. are sortable). </p>
 <p>By default, keys and values are sorted using Comparer&lt;T&gt;.Default. This will work provided that the keys and values both implement the IComparable&lt;T&gt; interface. If they don't, you can pass custom comparison functions to the constructor instead (one comparison function for keys, and a second one for values). </p>
@@ -142,21 +143,21 @@ IEnumerable&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Key
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a97341b9731301506d7adce6e4d8e060f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97341b9731301506d7adce6e4d8e060f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (int maxLeafSize)</td></tr>
-<tr class="separator:a97341b9731301506d7adce6e4d8e060f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50db9e1d18b65991953b255ee677da1a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a50db9e1d18b65991953b255ee677da1a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (int maxNodeSize)</td></tr>
+<tr class="separator:a50db9e1d18b65991953b255ee677da1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36abea8731ad22666974ab230f67b643"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36abea8731ad22666974ab230f67b643"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (int maxLeafSize, int maxInnerSize)</td></tr>
 <tr class="separator:a36abea8731ad22666974ab230f67b643"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d0d96015dd09b33ba3c8e1bc3ca1d7e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys)</td></tr>
+<tr class="memitem:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#a8d0d96015dd09b33ba3c8e1bc3ca1d7e">BMultiMap</a> (Func&lt; K, K, int &gt; compareKeys)</td></tr>
+<tr class="memdesc:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;.&lt;  <a href="#a8d0d96015dd09b33ba3c8e1bc3ca1d7e">More...</a><br /></td></tr>
 <tr class="separator:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35388fd17abb492d73c7ee7d969481d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35388fd17abb492d73c7ee7d969481d2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues)</td></tr>
+<tr class="memitem:a35388fd17abb492d73c7ee7d969481d2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#a35388fd17abb492d73c7ee7d969481d2">BMultiMap</a> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues)</td></tr>
+<tr class="memdesc:a35388fd17abb492d73c7ee7d969481d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key and value comparers.&lt;  <a href="#a35388fd17abb492d73c7ee7d969481d2">More...</a><br /></td></tr>
 <tr class="separator:a35388fd17abb492d73c7ee7d969481d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16b76a13b8b71e8295d9c776b1641961"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a16b76a13b8b71e8295d9c776b1641961"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues, int maxLeafSize)</td></tr>
-<tr class="separator:a16b76a13b8b71e8295d9c776b1641961"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82db4eedf25cf24540982e3b0fd39aa7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82db4eedf25cf24540982e3b0fd39aa7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues, int maxNodeSize)</td></tr>
+<tr class="separator:a82db4eedf25cf24540982e3b0fd39aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e7af6e9e9ebcd7955c01f60d4c4b132"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e7af6e9e9ebcd7955c01f60d4c4b132"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues, int maxLeafSize, int maxInnerSize)</td></tr>
 <tr class="separator:a0e7af6e9e9ebcd7955c01f60d4c4b132"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -238,9 +239,88 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 <tr class="memitem:ada81ac9232f8299f4b42a35bcfda789c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada81ac9232f8299f4b42a35bcfda789c"></a>
 static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultVComparison</b> = Comparer&lt;V&gt;.Default.Compare</td></tr>
 <tr class="separator:ada81ac9232f8299f4b42a35bcfda789c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a842ae3b013124288e0e856738a5e3ada"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a842ae3b013124288e0e856738a5e3ada"></a>
+static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PretendValuesAreEqual</b> = (a, b) =&gt; 0</td></tr>
+<tr class="separator:a842ae3b013124288e0e856738a5e3ada"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e508831d5d3caa654743a608a738330"><td class="memItemLeft" align="right" valign="top">static readonly Func&lt; KeyValuePair&lt; K, V &gt;, KeyValuePair&lt; K, V &gt;, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultPairComparison</b></td></tr>
 <tr class="separator:a0e508831d5d3caa654743a608a738330"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a8d0d96015dd09b33ba3c8e1bc3ca1d7e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html">Loyc.Collections.BMultiMap</a>&lt; K, V &gt;.<a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html">BMultiMap</a> </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; K, K, int &gt;&#160;</td>
+          <td class="paramname"><em>compareKeys</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;.&lt; </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">compareKeys</td><td>Key comparer, or null to use the default key comparer.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a35388fd17abb492d73c7ee7d969481d2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html">Loyc.Collections.BMultiMap</a>&lt; K, V &gt;.<a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html">BMultiMap</a> </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; K, K, int &gt;&#160;</td>
+          <td class="paramname"><em>compareKeys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; V, V, int &gt;&#160;</td>
+          <td class="paramname"><em>compareValues</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes the map with the specified key and value comparers.&lt; </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">compareKeys</td><td>Key comparer, or null to use the default key comparer.</td></tr>
+    <tr><td class="paramname">compareValues</td><td>Value comparer, or null to pretend all values are equal. It is useful to use null for this parameter when V does not implement IComparable. However, keep in mind that the Contains() and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#ac73bb6ded7c205c9995ca7178678232c" title="Removes up to a specified number of items from the collections that have the specified key...">Remove()</a> methods won't work in the normal way when all values are considered equal!</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a7a2e2b50c9e41793cc37ecf2b9abe4f4"></a>
 <div class="memitem">
@@ -733,7 +813,7 @@ static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valig
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

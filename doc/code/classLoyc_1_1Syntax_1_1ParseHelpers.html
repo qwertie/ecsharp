@@ -108,10 +108,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a624529a6fc6b633f6e6ce7431c692cac"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a624529a6fc6b633f6e6ce7431c692cac">TryParseHex</a> (UString s, out int value)</td></tr>
+<tr class="memitem:a624529a6fc6b633f6e6ce7431c692cac"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a624529a6fc6b633f6e6ce7431c692cac">TryParseHex</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int value)</td></tr>
 <tr class="memdesc:a624529a6fc6b633f6e6ce7431c692cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple method to parse a sequence of hex digits, without overflow checks or other features supported by methods like <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef" title="Tries to parse a string to an integer. Unlike Int32.TryParse(string, out int), this method allows par...">TryParseInt(string, ref int, out int, int, bool)</a>. <a href="#a624529a6fc6b633f6e6ce7431c692cac">More...</a><br /></td></tr>
 <tr class="separator:a624529a6fc6b633f6e6ce7431c692cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a953ea802520bbdba8062d33ed3e73e3c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a953ea802520bbdba8062d33ed3e73e3c">TryParseHex</a> (ref UString s, out int value)</td></tr>
+<tr class="memitem:a953ea802520bbdba8062d33ed3e73e3c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a953ea802520bbdba8062d33ed3e73e3c">TryParseHex</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int value)</td></tr>
 <tr class="memdesc:a953ea802520bbdba8062d33ed3e73e3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple method to parse a sequence of hex digits, without overflow checks or other features supported by methods like <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef" title="Tries to parse a string to an integer. Unlike Int32.TryParse(string, out int), this method allows par...">TryParseInt(string, ref int, out int, int, bool)</a>. <a href="#a953ea802520bbdba8062d33ed3e73e3c">More...</a><br /></td></tr>
 <tr class="separator:a953ea802520bbdba8062d33ed3e73e3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeaf423c37f20238079c7224b8d0a9460"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#aeaf423c37f20238079c7224b8d0a9460">HexDigitValue</a> (char c)</td></tr>
@@ -120,49 +120,49 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a888699de1d0aba7b4096264ef7f16eaa"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a888699de1d0aba7b4096264ef7f16eaa">Base36DigitValue</a> (char c)</td></tr>
 <tr class="memdesc:a888699de1d0aba7b4096264ef7f16eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the integer value for the specified digit, where 'A' maps to 10 and 'Z' maps to 35, or -1 if the character is not a digit or letter. <a href="#a888699de1d0aba7b4096264ef7f16eaa">More...</a><br /></td></tr>
 <tr class="separator:a888699de1d0aba7b4096264ef7f16eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6add392827ce77346541211da2e4a76f"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a6add392827ce77346541211da2e4a76f">UnescapeCStyle</a> (UString s, bool removeUnnecessaryBackslashes=false)</td></tr>
+<tr class="memitem:a6add392827ce77346541211da2e4a76f"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a6add392827ce77346541211da2e4a76f">UnescapeCStyle</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, bool removeUnnecessaryBackslashes=false)</td></tr>
 <tr class="memdesc:a6add392827ce77346541211da2e4a76f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a string that uses C-style escape sequences, e.g. "\\\n\\\r" becomes "\n\r". <a href="#a6add392827ce77346541211da2e4a76f">More...</a><br /></td></tr>
 <tr class="separator:a6add392827ce77346541211da2e4a76f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acda35107491ca1ff25a4c59c8d97046a"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">UnescapeCStyle</a> (UString s, out <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> encountered, bool removeUnnecessaryBackslashes=false)</td></tr>
+<tr class="memitem:acda35107491ca1ff25a4c59c8d97046a"><td class="memItemLeft" align="right" valign="top">static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">UnescapeCStyle</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, out <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> encountered, bool removeUnnecessaryBackslashes=false)</td></tr>
 <tr class="memdesc:acda35107491ca1ff25a4c59c8d97046a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a string that uses C-style escape sequences, e.g. "\\\n\\\r" becomes "\n\r". <a href="#acda35107491ca1ff25a4c59c8d97046a">More...</a><br /></td></tr>
 <tr class="separator:acda35107491ca1ff25a4c59c8d97046a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27cce909ff0e9c60699efa1129da4cd1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27cce909ff0e9c60699efa1129da4cd1"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>UnescapeChar</b> (string s, ref int i)</td></tr>
 <tr class="separator:a27cce909ff0e9c60699efa1129da4cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a693b39f403fe4b573dd67449148dfcc7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a693b39f403fe4b573dd67449148dfcc7"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>UnescapeChar</b> (ref UString s)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>UnescapeChar</b> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
 <tr class="separator:a693b39f403fe4b573dd67449148dfcc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addcfd89299dcf4919dafc7ac0536baf1"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#addcfd89299dcf4919dafc7ac0536baf1">UnescapeChar</a> (ref UString s, ref <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> encountered)</td></tr>
+<tr class="memitem:addcfd89299dcf4919dafc7ac0536baf1"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#addcfd89299dcf4919dafc7ac0536baf1">UnescapeChar</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, ref <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> encountered)</td></tr>
 <tr class="memdesc:addcfd89299dcf4919dafc7ac0536baf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a single character of a string. Returns the first character if it is not a backslash, or <code>&lt;/c&gt; if it is a backslash but no escape sequence could be discerned.</code><code> </code> <a href="#addcfd89299dcf4919dafc7ac0536baf1">More...</a><br /></td></tr>
 <tr class="separator:addcfd89299dcf4919dafc7ac0536baf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adbd6242277228b3c780f57b58c17d8ef"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef">TryParseInt</a> (string s, ref int index, out int result, int radix=10, bool skipSpaces=true)</td></tr>
 <tr class="memdesc:adbd6242277228b3c780f57b58c17d8ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to parse a string to an integer. Unlike Int32.TryParse(string, out int), this method allows parsing to start at any point in the string, it allows non-numeric data after the number, and it can parse numbers that are not in base 10. <a href="#adbd6242277228b3c780f57b58c17d8ef">More...</a><br /></td></tr>
 <tr class="separator:adbd6242277228b3c780f57b58c17d8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a871faf491836f3fce4be7a63e5467fc6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a871faf491836f3fce4be7a63e5467fc6"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a871faf491836f3fce4be7a63e5467fc6">TryParseInt</a> (ref UString s, out int result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a871faf491836f3fce4be7a63e5467fc6">TryParseInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="separator:a871faf491836f3fce4be7a63e5467fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ff212fe367c0cdcddf1b16c790eef04"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2ff212fe367c0cdcddf1b16c790eef04"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a2ff212fe367c0cdcddf1b16c790eef04">TryParseInt</a> (ref UString input, out long result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a2ff212fe367c0cdcddf1b16c790eef04">TryParseInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> input, out long result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="separator:a2ff212fe367c0cdcddf1b16c790eef04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a42673fddabf106d38ac661e8c5b452"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a5a42673fddabf106d38ac661e8c5b452">TryParseUInt</a> (ref UString s, out ulong result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+<tr class="memitem:a5a42673fddabf106d38ac661e8c5b452"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a5a42673fddabf106d38ac661e8c5b452">TryParseUInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out ulong result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="memdesc:a5a42673fddabf106d38ac661e8c5b452"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to parse a string to an unsigned integer. <a href="#a5a42673fddabf106d38ac661e8c5b452">More...</a><br /></td></tr>
 <tr class="separator:a5a42673fddabf106d38ac661e8c5b452"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03348417473298e697d73346c4bfc9be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a03348417473298e697d73346c4bfc9be"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a03348417473298e697d73346c4bfc9be">TryParseUInt</a> (ref UString s, out BigInteger result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a03348417473298e697d73346c4bfc9be">TryParseUInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out BigInteger result, int radix=10, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="separator:a03348417473298e697d73346c4bfc9be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5198d886d97bab1db5c2acbd9de436a3"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a5198d886d97bab1db5c2acbd9de436a3">TryParseFloatParts</a> (ref UString source, int radix, out bool negative, out ulong mantissa, out int exponentBaseR, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+<tr class="memitem:a5198d886d97bab1db5c2acbd9de436a3"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a5198d886d97bab1db5c2acbd9de436a3">TryParseFloatParts</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, out bool negative, out ulong mantissa, out int exponentBaseR, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="memdesc:a5198d886d97bab1db5c2acbd9de436a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level method that identifies the parts of a float literal of arbitrary base (typically base 2, 10, or 16) with no prefix or suffix, such as <code>2.Cp0</code> (which means 2.75 in base 16). <a href="#a5198d886d97bab1db5c2acbd9de436a3">More...</a><br /></td></tr>
 <tr class="separator:a5198d886d97bab1db5c2acbd9de436a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa48df8c7ee64b35374000e8e6649e7e5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#aa48df8c7ee64b35374000e8e6649e7e5">TryParseFloatParts</a> (ref UString source, int radix, out bool negative, out ulong mantissa, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+<tr class="memitem:aa48df8c7ee64b35374000e8e6649e7e5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#aa48df8c7ee64b35374000e8e6649e7e5">TryParseFloatParts</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, out bool negative, out ulong mantissa, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="memdesc:aa48df8c7ee64b35374000e8e6649e7e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses the parts of a floating-point string. See the other overload for details. <a href="#aa48df8c7ee64b35374000e8e6649e7e5">More...</a><br /></td></tr>
 <tr class="separator:aa48df8c7ee64b35374000e8e6649e7e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93f2fc978edea8a79b32d0b8a928c9f1"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a93f2fc978edea8a79b32d0b8a928c9f1">TryParseDouble</a> (ref UString source, int radix, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+<tr class="memitem:a93f2fc978edea8a79b32d0b8a928c9f1"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a93f2fc978edea8a79b32d0b8a928c9f1">TryParseDouble</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="memdesc:a93f2fc978edea8a79b32d0b8a928c9f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a string to a double-precision float, returning NaN on failure or an infinity value on overflow. <a href="#a93f2fc978edea8a79b32d0b8a928c9f1">More...</a><br /></td></tr>
 <tr class="separator:a93f2fc978edea8a79b32d0b8a928c9f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fae326fa03aa84e1f923e048601d24d"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a1fae326fa03aa84e1f923e048601d24d">TryParseFloat</a> (ref UString source, int radix, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
+<tr class="memitem:a1fae326fa03aa84e1f923e048601d24d"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a1fae326fa03aa84e1f923e048601d24d">TryParseFloat</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> flags=0)</td></tr>
 <tr class="memdesc:a1fae326fa03aa84e1f923e048601d24d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a string to a single-precision float, returning NaN on failure or an infinity value on overflow. <a href="#a1fae326fa03aa84e1f923e048601d24d">More...</a><br /></td></tr>
 <tr class="separator:a1fae326fa03aa84e1f923e048601d24d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac50139ed454f580106765536df3fef56"><td class="memItemLeft" align="right" valign="top">static UString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#ac50139ed454f580106765536df3fef56">SkipSpaces</a> (UString s)</td></tr>
+<tr class="memitem:ac50139ed454f580106765536df3fef56"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#ac50139ed454f580106765536df3fef56">SkipSpaces</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
 <tr class="memdesc:ac50139ed454f580106765536df3fef56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string with any spaces and tabs removed from the beginning. <a href="#ac50139ed454f580106765536df3fef56">More...</a><br /></td></tr>
 <tr class="separator:ac50139ed454f580106765536df3fef56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -227,9 +227,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static UString Loyc.Syntax.ParseHelpers.SkipSpaces </td>
+          <td class="memname">static <a class="el" href="structLoyc_1_1UString.html">UString</a> Loyc.Syntax.ParseHelpers.SkipSpaces </td>
           <td>(</td>
-          <td class="paramtype">UString&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em></td><td>)</td>
           <td></td>
         </tr>
@@ -244,6 +244,8 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Returns a string with any spaces and tabs removed from the beginning.</p>
 <p>Only ' ' and '' are treated as spaces.</p>
 
+<p>References <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a93f2fc978edea8a79b32d0b8a928c9f1"></a>
@@ -256,7 +258,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static double Loyc.Syntax.ParseHelpers.TryParseDouble </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -307,7 +309,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static float Loyc.Syntax.ParseHelpers.TryParseFloat </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -358,7 +360,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static bool Loyc.Syntax.ParseHelpers.TryParseFloatParts </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -451,7 +453,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static bool Loyc.Syntax.ParseHelpers.TryParseFloatParts </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -538,7 +540,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static bool Loyc.Syntax.ParseHelpers.TryParseHex </td>
           <td>(</td>
-          <td class="paramtype">UString&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -577,7 +579,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static int Loyc.Syntax.ParseHelpers.TryParseHex </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -668,6 +670,8 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>This method never throws. If parsing fails, index is left unchanged, except that spaces are still skipped if you set the skipSpaces flag. If base&gt;36, parsing can succeed but digits above 35 (Z) cannot occur in the output number. If the input number cannot fit in 'result', the return value is false but index increases anyway, and 'result' is a bitwise truncated version of the number. </p>
 <p>When parsing input such as "12.34", the parser stops and returns true at the dot (with a result of 12 in this case). </p>
 
+<p>References <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a5a42673fddabf106d38ac661e8c5b452"></a>
@@ -680,7 +684,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static bool Loyc.Syntax.ParseHelpers.TryParseUInt </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -741,7 +745,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static int Loyc.Syntax.ParseHelpers.UnescapeChar </td>
           <td>(</td>
-          <td class="paramtype">ref UString&#160;</td>
+          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -766,7 +770,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Unescapes a single character of a string. Returns the first character if it is not a backslash, or <code>&lt;/c&gt; if it is a backslash but no escape sequence could be discerned.</code><code> </code></p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>Slice of a string to be unescaped. When using a <code>ref UString</code> overload of this method, <code>s</code> will be shorter upon returning from this method, as the parsed character(s) are clipped from the beginning (<code>s.InternalStart</code> is incremented by one normally and more than one in case of an escape sequence.)</td></tr>
+    <tr><td class="paramname">s</td><td>Slice of a string to be unescaped. When using a <code>ref <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a></code> overload of this method, <code>s</code> will be shorter upon returning from this method, as the parsed character(s) are clipped from the beginning (<code>s.InternalStart</code> is incremented by one normally and more than one in case of an escape sequence.)</td></tr>
     <tr><td class="paramname">encountered</td><td>Bits of this parameter are set according to which escape sequence is encountered, if any.</td></tr>
   </table>
   </dd>
@@ -775,7 +779,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Code points with 5 or 6 digits such as  are supported.  escapes must be two digits and set the <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afab7ed9d803ea10cb2e99329b2e02d10e5" title="Use  instead of  for characters 1-31 and 127-255">EscapeC.BackslashX</a> flag.  escapes must be 4 to 6 digits. If a  escape has more than 4 digits, the EscapeC.HasLongEscapes flag is set. Invalid 6-digit escapes like  are "made valid" by being treated as 5 digits (the largest valid escape is <code></code>.) </p>
 <p>Supported escapes: <code>  \ <br />
   \0 \' " `  <em><b></b> </em> </code> </p>
-<p>EscapeC e = 0; UString str = ""; char c = UnescapeChar(ref str, ref e); Contract.Assert(str == "foo"); Contract.Assert(e == <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4" title="While unescaping, a backslash was encountered.">EscapeC.HasEscapes</a>); </p>
+<p>EscapeC e = 0; <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> str = ""; char c = UnescapeChar(ref str, ref e); Contract.Assert(str == "foo"); Contract.Assert(e == <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4" title="While unescaping, a backslash was encountered.">EscapeC.HasEscapes</a>); </p>
+
+<p>References <a class="el" href="structLoyc_1_1UString.html#aee216d0c56d95fb1dc5e7aa11c643489">Loyc.UString.Left()</a>, and <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>.</p>
 
 </div>
 </div>
@@ -789,7 +795,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static string Loyc.Syntax.ParseHelpers.UnescapeCStyle </td>
           <td>(</td>
-          <td class="paramtype">UString&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -825,7 +831,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static StringBuilder Loyc.Syntax.ParseHelpers.UnescapeCStyle </td>
           <td>(</td>
-          <td class="paramtype">UString&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
           <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
@@ -869,7 +875,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:27 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

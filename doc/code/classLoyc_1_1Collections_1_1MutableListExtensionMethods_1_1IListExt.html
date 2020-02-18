@@ -107,7 +107,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Extension methods and helper methods for IList&lt;T&gt;. </p>
-<p>Extension methods that only apply to <a class="el" href="namespaceLoyc.html">Loyc</a>'s new interfaces, or adapt a list to those interfaces, will go in <a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LCExt.html">LCExt</a> instead. </p>
+<p>Extension methods that only apply to <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>'s new interfaces, or adapt a list to those interfaces, will go in <a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LCExt.html">LCExt</a> instead. </p>
 <p>The source code for adapter extension methods such as the Slice() method for arrays, which returns an ArraySlice&lt;T&gt; adapter, is now placed in the source file for each adapter class (e.g. ArraySlice.cs) to make it easier to create custom versions of Loyc.Essentials with parts removed. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -122,13 +122,13 @@ static <a class="el" href="classLoyc_1_1Collections_1_1BufferedSequence.html">Bu
 static <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this IList&lt; T &gt; list, int start, int length=int.MaxValue)</td></tr>
 <tr class="separator:a459fe48b1a3b28dada888ae2da0c268d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c11187ffde7f5c12c68247770a7dd4b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c11187ffde7f5c12c68247770a7dd4b"></a>
-static <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, int start, int length=int.MaxValue)</td></tr>
+static <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, int start, int length=int.MaxValue)</td></tr>
 <tr class="separator:a3c11187ffde7f5c12c68247770a7dd4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a421f41e8436f3b347d1bbfc8a3e41738"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a421f41e8436f3b347d1bbfc8a3e41738"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, T defaultValue)</td></tr>
 <tr class="separator:a421f41e8436f3b347d1bbfc8a3e41738"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa265289b8c83f0b357bf8cab4a06791e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa265289b8c83f0b357bf8cab4a06791e"></a>
-static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IList&lt; T &gt; list, int index)</td></tr>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IList&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:aa265289b8c83f0b357bf8cab4a06791e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a689053f70e319cc064dc9922964bdcb9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a689053f70e319cc064dc9922964bdcb9"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IList&lt; T &gt; list, T value)</td></tr>
@@ -145,13 +145,13 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&l
 <tr class="memitem:ac476d4818d2f7f2ebfadb5e47e9b7e70"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ac476d4818d2f7f2ebfadb5e47e9b7e70">LastIndexWhere&lt; T &gt;</a> (this IList&lt; T &gt; list, Func&lt; T, bool &gt; pred)</td></tr>
 <tr class="memdesc:ac476d4818d2f7f2ebfadb5e47e9b7e70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the highest index at which a condition is true, or -1 if nowhere. <a href="#ac476d4818d2f7f2ebfadb5e47e9b7e70">More...</a><br /></td></tr>
 <tr class="separator:ac476d4818d2f7f2ebfadb5e47e9b7e70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae91d8cfcf6ede194ff5a248cccc05d87"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ae91d8cfcf6ede194ff5a248cccc05d87">LastIndexWhere&lt; T &gt;</a> (this IListAndListSource&lt; T &gt; list, Func&lt; T, bool &gt; pred)</td></tr>
+<tr class="memitem:ae91d8cfcf6ede194ff5a248cccc05d87"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ae91d8cfcf6ede194ff5a248cccc05d87">LastIndexWhere&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, Func&lt; T, bool &gt; pred)</td></tr>
 <tr class="memdesc:ae91d8cfcf6ede194ff5a248cccc05d87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the highest index at which a condition is true, or -1 if nowhere. <a href="#ae91d8cfcf6ede194ff5a248cccc05d87">More...</a><br /></td></tr>
 <tr class="separator:ae91d8cfcf6ede194ff5a248cccc05d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac274dfc23b4b107bf3584802e4aec6b0"><td class="memItemLeft" align="right" valign="top">static T[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ac274dfc23b4b107bf3584802e4aec6b0">Randomized&lt; T &gt;</a> (this IList&lt; T &gt; list)</td></tr>
 <tr class="memdesc:ac274dfc23b4b107bf3584802e4aec6b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Quickly makes a copy of a list, as an array, in random order. <a href="#ac274dfc23b4b107bf3584802e4aec6b0">More...</a><br /></td></tr>
 <tr class="separator:ac274dfc23b4b107bf3584802e4aec6b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0e73789c395ce2db616d022eb524d56"><td class="memItemLeft" align="right" valign="top">static T[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ac0e73789c395ce2db616d022eb524d56">Randomized&lt; T &gt;</a> (this IListAndListSource&lt; T &gt; list)</td></tr>
+<tr class="memitem:ac0e73789c395ce2db616d022eb524d56"><td class="memItemLeft" align="right" valign="top">static T[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1IListExt.html#ac0e73789c395ce2db616d022eb524d56">Randomized&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list)</td></tr>
 <tr class="memdesc:ac0e73789c395ce2db616d022eb524d56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Quickly makes a copy of a list, as an array, in random order. <a href="#ac0e73789c395ce2db616d022eb524d56">More...</a><br /></td></tr>
 <tr class="separator:ac0e73789c395ce2db616d022eb524d56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -202,7 +202,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&l
         <tr>
           <td class="memname">static int Loyc.Collections.MutableListExtensionMethods.IListExt.LastIndexWhere&lt; T &gt; </td>
           <td>(</td>
-          <td class="paramtype">this IListAndListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -264,7 +264,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&l
         <tr>
           <td class="memname">static T [] Loyc.Collections.MutableListExtensionMethods.IListExt.Randomized&lt; T &gt; </td>
           <td>(</td>
-          <td class="paramtype">this IListAndListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
           <td></td>
         </tr>
@@ -284,7 +284,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&l
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

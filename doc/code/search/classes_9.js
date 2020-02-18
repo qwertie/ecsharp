@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['keyalreadyexistsexception',['KeyAlreadyExistsException',['../classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html',1,'Loyc::Collections']]],
+  ['keycollection',['KeyCollection',['../classLoyc_1_1Collections_1_1KeyCollection.html',1,'Loyc::Collections']]],
   ['keycollection',['KeyCollection',['../classLoyc_1_1Collections_1_1CPStringTrie_1_1KeyCollection.html',1,'Loyc::Collections::CPStringTrie']]],
   ['keyenumerator',['KeyEnumerator',['../classLoyc_1_1Collections_1_1CPStringTrie_1_1KeyEnumerator.html',1,'Loyc::Collections::CPStringTrie']]],
   ['keylesshashtable',['KeylessHashtable',['../classLoyc_1_1Collections_1_1Impl_1_1KeylessHashtable.html',1,'Loyc.Collections.Impl.KeylessHashtable&lt; T &gt;'],['../classLoyc_1_1Collections_1_1Impl_1_1KeylessHashtable.html',1,'Loyc.Collections.Impl.KeylessHashtable&lt; T, Int, Math &gt;']]],

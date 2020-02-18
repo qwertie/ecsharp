@@ -184,10 +184,10 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a936486a348447000ef6baa12c8a530be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a936486a348447000ef6baa12c8a530be"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GetPredictionSubtreeCode</b> (PredictionBranch branch, Pair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, string &gt;[] matchingCode, ref Symbol haveLoop)</td></tr>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GetPredictionSubtreeCode</b> (PredictionBranch branch, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, string &gt;[] matchingCode, ref <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> haveLoop)</td></tr>
 <tr class="separator:a936486a348447000ef6baa12c8a530be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a437bebca04539d72cdf1d755dcac0828"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a437bebca04539d72cdf1d755dcac0828"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GeneratePredictionTreeCode</b> (PredictionTree tree, Pair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, string &gt;[] matchingCode, ref Symbol haveLoop)</td></tr>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GeneratePredictionTreeCode</b> (PredictionTree tree, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, string &gt;[] matchingCode, ref <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> haveLoop)</td></tr>
 <tr class="separator:a437bebca04539d72cdf1d755dcac0828"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -217,7 +217,7 @@ Protected Member Functions</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">Loyc.LLParserGenerator.PredVisitor</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a7fda2636e2a5d4ad2a1250445144527c">Loyc.Collections.MSet&lt; T &gt;.Add()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#ae02c825beea98c33c37f103592967b7a">Loyc.LLParserGenerator.Alts.ErrorBranch</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Gate.html#a74a15834ec248fd1b1fb1565f22bd526">Loyc.LLParserGenerator.Gate.Match</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a3de98272cbbebd9bd71bdf12cfe1841a">Loyc.Syntax.LNode.MergeLists()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#aeca6e1b4b9c41116cd6c98c14cbda4eb">Loyc.LLParserGenerator.AndPred.Pred</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">Loyc.Syntax.LNode.ReplaceRecursive()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#acca06b437865e35fc06fe0e698e14c67">Loyc.LLParserGenerator.Pred.ResultSaver</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a91cb041440ebd71756f0025c0cdf3279">Loyc.Syntax.LNodeFactory.Trivia()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a48ba76d2600b73aca2aa8f04fe17bfc6">Loyc.Syntax.LNode.Calls()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#ae02c825beea98c33c37f103592967b7a">Loyc.LLParserGenerator.Alts.ErrorBranch</a>, <a class="el" href="classLoyc_1_1Symbol.html#aa2cf31d831892273afda6a55bed20981">Loyc.Symbol.For()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Gate.html#a74a15834ec248fd1b1fb1565f22bd526">Loyc.LLParserGenerator.Gate.Match</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a3de98272cbbebd9bd71bdf12cfe1841a">Loyc.Syntax.LNode.MergeLists()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html#aeca6e1b4b9c41116cd6c98c14cbda4eb">Loyc.LLParserGenerator.AndPred.Pred</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650">Loyc.Syntax.LNode.Range</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">Loyc.Syntax.LNode.ReplaceRecursive()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#acca06b437865e35fc06fe0e698e14c67">Loyc.LLParserGenerator.Pred.ResultSaver</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a91cb041440ebd71756f0025c0cdf3279">Loyc.Syntax.LNodeFactory.Trivia()</a>.</p>
 
 </div>
 </div>
@@ -225,7 +225,7 @@ Protected Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:12 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:24 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

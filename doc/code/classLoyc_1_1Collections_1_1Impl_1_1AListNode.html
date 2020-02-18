@@ -158,7 +158,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5132343b0095131a391bd3e26be790b2"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a5132343b0095131a391bd3e26be790b2">Insert</a> (uint index, T item, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a5132343b0095131a391bd3e26be790b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the specified index. This method can only be called for ALists, since other tree types don't allow insertion at a specific index. <a href="#a5132343b0095131a391bd3e26be790b2">More...</a><br /></td></tr>
 <tr class="separator:a5132343b0095131a391bd3e26be790b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af13714f40db692e2280940eddb8f4628"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
+<tr class="memitem:af13714f40db692e2280940eddb8f4628"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; source, ref int sourceIndex, out <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html">AListNode</a>&lt; K, T &gt; splitRight, <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver.html">IAListTreeObserver</a>&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a092056ac4b87554536876f292ab84c11"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a092056ac4b87554536876f292ab84c11">GetLastItem</a> ()</td></tr>
@@ -203,7 +203,7 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a67d4aeddc04cdb8052e9e09eb3fd4b87">HasListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree)</td></tr>
 <tr class="memdesc:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event. <a href="#a67d4aeddc04cdb8052e9e09eb3fd4b87">More...</a><br /></td></tr>
 <tr class="separator:a67d4aeddc04cdb8052e9e09eb3fd4b87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, ListChangeInfo&lt; T &gt; listChangeInfo)</td></tr>
+<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (<a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase</a>&lt; K, T &gt; tree, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt; listChangeInfo)</td></tr>
 <tr class="memdesc:adc8d3a8df0d066e8bfa632203f001d65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase&lt;T&gt;...">AListNode</a> to fire the AListBase.ListChanging event properly. <a href="#adc8d3a8df0d066e8bfa632203f001d65">More...</a><br /></td></tr>
 <tr class="separator:adc8d3a8df0d066e8bfa632203f001d65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -297,7 +297,7 @@ Protected fields</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">ListChangeInfo&lt; T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>listChangeInfo</em>&#160;</td>
         </tr>
         <tr>
@@ -655,7 +655,7 @@ Protected fields</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>source</em>, </td>
         </tr>
         <tr>
@@ -1042,7 +1042,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:21 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

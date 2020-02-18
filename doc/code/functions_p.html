@@ -154,6 +154,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>ParseSingle()
 : <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#ac4e0fb4d3e00bfe23136a174c00f50e7">Loyc.Syntax.ParsingService</a>
 </li>
+<li>Passthrough()
+: <a class="el" href="classLoyc_1_1Localize.html#a1dc0fcde124a4112f61d876df10997ae">Loyc.Localize</a>
+</li>
 <li>Pedantics
 : <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Loyc.Ecs.EcsValidators</a>
 </li>
@@ -161,7 +164,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Collections_1_1MaxHeap.html#ab57737f12780537893bf792c395670cb">Loyc.Collections.MaxHeap&lt; T &gt;</a>
 </li>
 <li>PlusTrailingTrivia()
-: <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a456c49cb9517ebf9c61c8c0d0da95ce6">Loyc.Syntax.LNodeExt</a>
+: <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#aa9fa44c2c9e606ba720b4742f9c77de2">Loyc.Syntax.LNodeExt</a>
+</li>
+<li>Pool
+: <a class="el" href="classLoyc_1_1Symbol.html#aacafe7216546adb5d192889e542b16a5">Loyc.Symbol</a>
 </li>
 <li>Pop()
 : <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a17f037fe233581f06847af5350b93747">Loyc.Collections.FVList&lt; T &gt;</a>
@@ -172,6 +178,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>PopAndPush()
 : <a class="el" href="classLoyc_1_1Collections_1_1MaxHeap.html#a1d2ac84f1689f042fdde6ad9979417a7">Loyc.Collections.MaxHeap&lt; T &gt;</a>
+</li>
+<li>PopFirst()
+: <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html#ad80d39323c4514531ffd7b3818ddb5c7">Loyc.Collections.IFRange&lt; out out T &gt;</a>
+</li>
+<li>PopLast()
+: <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html#a09042c715094b014da89f53a9692db87">Loyc.Collections.IBRange&lt; out out T &gt;</a>
+</li>
+<li>PositiveInfinity
+: <a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits.html#a458752990986401856690d09a834b326">Loyc.Math.INumTraits&lt; T &gt;</a>
 </li>
 <li>PostDec
 : <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac25f1c93c175c08d0197d8bf88e80ee4">Loyc.Syntax.CodeSymbols</a>
@@ -214,7 +229,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>Prepend()
 : <a class="el" href="classLoyc_1_1Collections_1_1AList.html#aaf9e500e3b7c0561803c44df4b967cc7">Loyc.Collections.AList&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1SparseAList.html#a5bb1f6ef142cb15ebe26de151b1292df">Loyc.Collections.SparseAList&lt; T &gt;</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1SparseAList.html#a110714a1c1845be1d65e7e6e93fe8f46">Loyc.Collections.SparseAList&lt; T &gt;</a>
 </li>
 <li>PreProcess()
 : <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a04443ef24521e6e888f6e4cd44919a7c">LeMP.IMacroContext</a>
@@ -229,7 +244,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Ecs_1_1EcsLanguageService.html#a2a5f8b368d8dd8356051b4b34cb20b4d">Loyc.Ecs.EcsLanguageService</a>
 , <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#a94bb4f1e780ce1a791bab9f341aed8f4">Loyc.Syntax.ILNodePrinter</a>
 , <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html#aa6b4a97cd27f14e542113edadf78748e">Loyc.Syntax.Les.Les2LanguageService</a>
-, <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html#afb76f73df226bd4db91d629b973e8c4b">Loyc.Syntax.LNodePrinter</a>
+, <a class="el" href="classLoyc_1_1Syntax_1_1LNodePrinter.html#abe154dc0ce05e057cc91c3cdc4564280">Loyc.Syntax.LNodePrinter</a>
 </li>
 <li>PrintChar()
 : <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab0a6036bb9deaf51fff90e741a79e206">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;</a>
@@ -251,13 +266,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1ConsoleMessageSink.html#a49dee4bb03921423d485c6b782b0270c">Loyc.ConsoleMessageSink</a>
 </li>
 <li>PrintToHtml()
-: <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a34464458f8bb3e8e7150c20d42a836e2">Loyc.Syntax.Les.Les3PrettyPrinter</a>
+: <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#ad7a822172ef73da4e66173d0765a258a">Loyc.Syntax.Les.Les3PrettyPrinter</a>
 </li>
 <li>PrintToHtmlCore()
 : <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrettyPrinter.html#a319ba7e6f55fe4cd2ca9006e530e8933">Loyc.Syntax.Les.Les3PrettyPrinter</a>
 </li>
 <li>PrintTriviaExplicitly
-: <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a1144f90bc6df15281a5e6dbe399e46a8">Loyc.Syntax.Les.Les2PrinterOptions</a>
+: <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a53d8f2f0e4c366330e450ed3501c1c66">Loyc.Syntax.ILNodePrinterOptions</a>
+, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a1144f90bc6df15281a5e6dbe399e46a8">Loyc.Syntax.Les.Les2PrinterOptions</a>
 </li>
 <li>Prior
 : <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a2d182adfa580c9bad2a83ff7f283f638">Loyc.Collections.VListBlock&lt; T &gt;</a>
@@ -275,7 +291,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Collections_1_1MaxHeap.html#a50bda2cfd21ca51052c9fd32c25ef7ee">Loyc.Collections.MaxHeap&lt; T &gt;</a>
 </li>
 <li>ProcessArguments()
-: <a class="el" href="classLeMP_1_1Compiler.html#a6ca005b126cd7d544e66c8d2e2099c59">LeMP.Compiler</a>
+: <a class="el" href="classLeMP_1_1Compiler.html#aabdf7a3e5e1746b75e6a3bf79d326aa7">LeMP.Compiler</a>
 </li>
 <li>ProcessAsync()
 : <a class="el" href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">LeMP.MacroProcessor</a>
@@ -287,7 +303,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15">LeMP.MacroProcessor</a>
 </li>
 <li>ProcessSynchronously()
-: <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f">LeMP.MacroProcessor</a>
+: <a class="el" href="classLeMP_1_1MacroProcessor.html#ab97d5ced3e55827800c2949b58679360">LeMP.MacroProcessor</a>
 </li>
 <li>PropagateVariables()
 : <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html#acfb5049ed66771ca45e078af74998851">Loyc.Threading.ThreadEx</a>
@@ -311,14 +327,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a7cd82ddd023c04603e5dc0eec6eaaa39">Loyc.Syntax.LNode</a>
 </li>
 <li>PutInRange()
-: <a class="el" href="classLoyc_1_1G.html#aa4e428089761f78b6b665a3aefbc7555">Loyc.G</a>
+: <a class="el" href="classLoyc_1_1G.html#a60dc7229066475b6827fd23421268ba5">Loyc.G</a>
 </li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

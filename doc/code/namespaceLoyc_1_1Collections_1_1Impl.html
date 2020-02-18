@@ -94,6 +94,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Collections.Impl Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Contains helper classes and base classes for implementing collections (Loyc.Collections.Impl.InternalList&lt;T&gt;, Loyc.Collections.Impl.ListExBase&lt;T&gt;, Loyc.Collections.Impl.ListSourceBase&lt;T&gt;, etc.) Also contains the <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a> and <a class="el" href="classLoyc_1_1Collections_1_1CPTrie.html" title="Compact patricia tree class that stores keys as byte arrays. This class is intended to be use as a ba...">CPTrie</a> node classes, which perhaps should not be <code>public</code>... 
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -125,6 +128,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie.html">CPIntTrie</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A trie that supports signed and unsigned keys with sizes up to 64 bits. Special encodings are used to preserve the sort order among integers of different sizes while using variable-length keys. <a href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1DictionaryBase.html">DictionaryBase</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A base class for user-defined dictionaries that want to implement both <code>IDictionary(K,V)</code> and <code>IReadOnlyDictionary(K, V)</code>. <a href="classLoyc_1_1Collections_1_1Impl_1_1DictionaryBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1EnumeratorFrame.html">EnumeratorFrame</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A standard base class for enumerator frames used by <code><a class="el" href="structLoyc_1_1Collections_1_1NestedEnumerator.html" title="Helper class. An enumerator that helps enumerate tree data structures. It maintains a virtual call st...">NestedEnumerator</a>{<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1EnumeratorFrame.html" title="A standard base class for enumerator frames used by NestedEnumerator{EnumeratorFrame{T},T}.">EnumeratorFrame</a>{T},T}</code>. <a href="classLoyc_1_1Collections_1_1Impl_1_1EnumeratorFrame.html#details">More...</a><br /></td></tr>
@@ -159,7 +165,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A base class for classes that wish to implement IListEx&lt;T&gt;. Provides default implementations for most of the methods. <a href="classLoyc_1_1Collections_1_1Impl_1_1ListExBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html">ListSourceBase</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A base class for read-only collections that wish to implement IList&lt;T&gt; and IListSource&lt;T&gt;. Provides default implementations for most of the methods. <a href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A base class for read-only collections that wish to implement IList&lt;T&gt; and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. Provides default implementations for most of the methods. <a href="classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1ReadOnlyCollectionBase.html">ReadOnlyCollectionBase</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helps you implement read-only collections by providing default implementations for most methods of ICollection&lt;T&gt; and IReadOnlyCollection&lt;T&gt;. <a href="classLoyc_1_1Collections_1_1Impl_1_1ReadOnlyCollectionBase.html#details">More...</a><br /></td></tr>
@@ -171,7 +177,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal implementation class. Leaf node of SparseAList&lt;T&gt;. <a href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html">TestHelpers</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html">Loyc</a> collection classes but sometimes useful in other cases. <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes but sometimes useful in other cases. <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -186,11 +192,13 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="separator:a38f7103eb703c1805cde82b6edf1bcca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Contains helper classes and base classes for implementing collections (Loyc.Collections.Impl.InternalList&lt;T&gt;, Loyc.Collections.Impl.ListExBase&lt;T&gt;, Loyc.Collections.Impl.ListSourceBase&lt;T&gt;, etc.) Also contains the <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a> and <a class="el" href="classLoyc_1_1Collections_1_1CPTrie.html" title="Compact patricia tree class that stores keys as byte arrays. This class is intended to be use as a ba...">CPTrie</a> node classes, which perhaps should not be <code>public</code>...</p>
+</div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:21 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

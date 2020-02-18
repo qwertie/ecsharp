@@ -107,11 +107,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a0707701acc3832378ab174fdf9b18ec0"><td class="memItemLeft" align="right" valign="top">static Pair&lt; UString, UString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0">SplitAt</a> (this string s, char delimiter)</td></tr>
+<tr class="memitem:a0707701acc3832378ab174fdf9b18ec0"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a0707701acc3832378ab174fdf9b18ec0">SplitAt</a> (this string s, char delimiter)</td></tr>
 <tr class="memdesc:a0707701acc3832378ab174fdf9b18ec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the substrings to the left and right of a dividing character. <a href="#a0707701acc3832378ab174fdf9b18ec0">More...</a><br /></td></tr>
 <tr class="separator:a0707701acc3832378ab174fdf9b18ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1827b5904a9dbda9e26624c9b984064e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1827b5904a9dbda9e26624c9b984064e"></a>
-static Pair&lt; UString, UString &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitAt</b> (this string s, string delimiter)</td></tr>
+static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitAt</b> (this string s, string delimiter)</td></tr>
 <tr class="separator:a1827b5904a9dbda9e26624c9b984064e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ba0b111059a3d796e4411c7d29689f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ba0b111059a3d796e4411c7d29689f3"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (this string s, char c)</td></tr>
@@ -138,10 +138,10 @@ static char&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (th
 static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a91fc7c6fa80981375c203ff3a44bc317">Join</a> (string separator, IEnumerator value)</td></tr>
 <tr class="separator:a91fc7c6fa80981375c203ff3a44bc317"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07af1c36bf9a9be7a294c8c2045e5e37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a07af1c36bf9a9be7a294c8c2045e5e37"></a>
-static UString&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (this string str, int start, int count=int.MaxValue)</td></tr>
+static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (this string str, int start, int count=int.MaxValue)</td></tr>
 <tr class="separator:a07af1c36bf9a9be7a294c8c2045e5e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3beeb9233645fe2315f544299438fc9e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3beeb9233645fe2315f544299438fc9e"></a>
-static UString&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (this string str, UString what, bool ignoreCase=false)</td></tr>
+static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (this string str, <a class="el" href="structLoyc_1_1UString.html">UString</a> what, bool ignoreCase=false)</td></tr>
 <tr class="separator:a3beeb9233645fe2315f544299438fc9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae410b7ab7ff9abec19c76b3c7b512d45"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45">FormatCore</a> (this string format, params object[] args)</td></tr>
 <tr class="memdesc:ae410b7ab7ff9abec19c76b3c7b512d45"><td class="mdescLeft">&#160;</td><td class="mdescRight">This formatter works like string.Format, except that named placeholders accepted as well as numeric placeholders. This method replaces named placeholders with numbers, then calls string.Format.  <a href="#ae410b7ab7ff9abec19c76b3c7b512d45">More...</a><br /></td></tr>
@@ -186,6 +186,8 @@ static UString&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (t
 <p>Called by Format to replace named placeholders with numeric placeholders in format strings.</p>
 <dl class="section return"><dt>Returns</dt><dd>A format string that can be used to call string.Format.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">FormatCore</a></dd></dl>
+
+<p>References <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45">Loyc.StringExt.FormatCore()</a>.</p>
 
@@ -399,7 +401,7 @@ static UString&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (t
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static Pair&lt;UString, UString&gt; Loyc.StringExt.SplitAt </td>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;<a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a>&gt; Loyc.StringExt.SplitAt </td>
           <td>(</td>
           <td class="paramtype">this string&#160;</td>
           <td class="paramname"><em>s</em>, </td>
@@ -439,7 +441,7 @@ static UString&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

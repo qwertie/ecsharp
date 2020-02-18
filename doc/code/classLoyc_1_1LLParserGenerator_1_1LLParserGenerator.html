@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. 
+<p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. 
  <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/CoreEngine/AnalysisVisitors.cs'>/Main/LLLPG/CoreEngine/AnalysisVisitors.cs</a></li>
@@ -107,10 +107,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/CoreEngine/PredictionTree.cs'>/Main/LLLPG/CoreEngine/PredictionTree.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers.</p>
-<p>LLLPG is an LL(k) parser generator under the umbrella of the <a class="el" href="namespaceLoyc.html">Loyc</a> initiative (<a href="http://loyc.net">http://loyc.net</a>). Home page: <a href="http://ecsharp.net/lllpg">http://ecsharp.net/lllpg</a> or <a href="http://lllpg.com">http://lllpg.com</a> </p>
+<div class="textblock"><p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers.</p>
+<p>LLLPG is an LL(k) parser generator under the umbrella of the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> initiative (<a href="http://loyc.net">http://loyc.net</a>). Home page: <a href="http://ecsharp.net/lllpg">http://ecsharp.net/lllpg</a> or <a href="http://lllpg.com">http://lllpg.com</a> </p>
 <p>LLLPG generates recursive-descent parsers for LL(k) grammars. It is designed for parsing computer languages, not natural languages. It also it supports "syntactic predicates" which are zero-width syntactic assertions, and "semantic predicates" which are arbitrary expressions. </p>
-<p>The <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> class is the core engine. It generates parsers in the form of a <a class="el" href="namespaceLoyc.html">Loyc</a> tree, which can be printed out as C# code. Look at the documentation of the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12" title="Generates a braced block of code {...} for the grammar described by the rules that were previously ad...">Run()</a> method for an overview of how the LLLPG engine works. </p>
+<p>The <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> class is the core engine. It generates parsers in the form of a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree, which can be printed out as C# code. Look at the documentation of the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12" title="Generates a braced block of code {...} for the grammar described by the rules that were previously ad...">Run()</a> method for an overview of how the LLLPG engine works. </p>
 <p>Note: the input to LLLPG is usually provided in the form of LES/EC# source code. In that case, there is no need to use this class directly. The source code of Program.Main shows how to invoke LLLPG as a macro via the <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">LeMP.Compiler</a>. </p>
 <p>For more information about how to use LLLPG, read <a href="http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp">http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp</a> </p>
 </div><table class="memberdecls">
@@ -150,7 +150,7 @@ Public fields</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a8f5f3f753e443aa66fdf298eefe20e2d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f5f3f753e443aa66fdf298eefe20e2d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LLParserGenerator</b> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a> csg, IMessageSink sink=null)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LLParserGenerator</b> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a> csg, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null)</td></tr>
 <tr class="separator:a8f5f3f753e443aa66fdf298eefe20e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5e7defec27fc4ffe008852d5c0b148a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#ab5e7defec27fc4ffe008852d5c0b148a">FullLLk</a> = true</td></tr>
 <tr class="memdesc:ab5e7defec27fc4ffe008852d5c0b148a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to use full LL(k) or "partly approximate" lookahead. <a href="#ab5e7defec27fc4ffe008852d5c0b148a">More...</a><br /></td></tr>
@@ -167,23 +167,23 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#afc2c8dd017187099f09dfcca1aaaf3b8">PrematchByDefault</a> = false</td></tr>
 <tr class="memdesc:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">If true, rules that are not marked private, public, or internal are assumed not to be called from outside the grammar so the prematch optimization can be used. <a href="#afc2c8dd017187099f09dfcca1aaaf3b8">More...</a><br /></td></tr>
 <tr class="separator:afc2c8dd017187099f09dfcca1aaaf3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f0916e4b7835c1792d412376d55e83c"><td class="memItemLeft" align="right" valign="top">IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c">Sink</a><code> [get, set]</code></td></tr>
+<tr class="memitem:a0f0916e4b7835c1792d412376d55e83c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a0f0916e4b7835c1792d412376d55e83c">Sink</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a0f0916e4b7835c1792d412376d55e83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when an error or warning occurs while parsing a grammar or while generating code for a parser. Also called to print "verbose" messages. <a href="#a0f0916e4b7835c1792d412376d55e83c">More...</a><br /></td></tr>
 <tr class="separator:a0f0916e4b7835c1792d412376d55e83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa034be1f7b0f4b3d92e2ce24f5b465fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa034be1f7b0f4b3d92e2ce24f5b465fc"></a>
 <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CodeGenHelper</b><code> [get, set]</code></td></tr>
 <tr class="separator:aa034be1f7b0f4b3d92e2ce24f5b465fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89a2af20d37dd54f0537ed832eb57113"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89a2af20d37dd54f0537ed832eb57113"></a>
-static Severity&#160;</td><td class="memItemRight" valign="bottom"><b>Warning</b> = Severity.Warning</td></tr>
+static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Warning</b> = Severity.Warning</td></tr>
 <tr class="separator:a89a2af20d37dd54f0537ed832eb57113"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04590c7c662a6fe8260c89130439fa5c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04590c7c662a6fe8260c89130439fa5c"></a>
-static Severity&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> = Severity.Error</td></tr>
+static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> = Severity.Error</td></tr>
 <tr class="separator:a04590c7c662a6fe8260c89130439fa5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20242b9b930fdf75b71578523fcad2fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a20242b9b930fdf75b71578523fcad2fc"></a>
-static Severity&#160;</td><td class="memItemRight" valign="bottom"><b>Verbose</b> = Severity.Verbose</td></tr>
+static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Verbose</b> = Severity.Verbose</td></tr>
 <tr class="separator:a20242b9b930fdf75b71578523fcad2fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6befd2c16f66dcb1ea61b25a42a8cabb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6befd2c16f66dcb1ea61b25a42a8cabb"></a>
-ISourceFile&#160;</td><td class="memItemRight" valign="bottom"><b>_sourceFile</b></td></tr>
+<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_sourceFile</b></td></tr>
 <tr class="separator:a6befd2c16f66dcb1ea61b25a42a8cabb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3d5d93ba9b18c661b2914ef0a971f4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3d5d93ba9b18c661b2914ef0a971f4c"></a>
 <a class="el" href="classLoyc_1_1Collections_1_1WList.html">WList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_classBody</b></td></tr>
@@ -206,11 +206,11 @@ ISourceFile&#160;</td><td class="memItemRight" valign="bottom"><b>_sourceFile</b
 <tr class="memitem:a151d356176f2e9d5e8c080dca8101c20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a151d356176f2e9d5e8c080dca8101c20"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRule</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule)</td></tr>
 <tr class="separator:a151d356176f2e9d5e8c080dca8101c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2287db28b2b9044187ab4c62207bcd12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12">Run</a> (ISourceFile sourceFile)</td></tr>
+<tr class="memitem:a2287db28b2b9044187ab4c62207bcd12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12">Run</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
 <tr class="memdesc:a2287db28b2b9044187ab4c62207bcd12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a braced block of code {...} for the grammar described by the rules that were previously added to this object with AddRule or AddRules(Rule[]). <a href="#a2287db28b2b9044187ab4c62207bcd12">More...</a><br /></td></tr>
 <tr class="separator:a2287db28b2b9044187ab4c62207bcd12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90e92b4f9dc6988208e3917e7cee702d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a90e92b4f9dc6988208e3917e7cee702d"></a>
-static Dictionary&lt; Symbol, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AddRulesToDict</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; rules, Dictionary&lt; Symbol, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; dict=null)</td></tr>
+static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AddRulesToDict</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; rules, Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; dict=null)</td></tr>
 <tr class="separator:a90e92b4f9dc6988208e3917e7cee702d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3ff86f4e778ae4b2c0bf7b35732df6d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac3ff86f4e778ae4b2c0bf7b35732df6d"></a>
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html">KthSet</a>[]&#160;</td><td class="memItemRight" valign="bottom"><b>ComputeFirstSets</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html">Alts</a> alts)</td></tr>
@@ -236,7 +236,7 @@ static Dictionary&lt; Symbol, <a class="el" href="classLoyc_1_1LLParserGenerator
         <tr>
           <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLParserGenerator.LLParserGenerator.Run </td>
           <td>(</td>
-          <td class="paramtype">ISourceFile&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td>
           <td class="paramname"><em>sourceFile</em></td><td>)</td>
           <td></td>
         </tr>
@@ -289,7 +289,7 @@ static Dictionary&lt; Symbol, <a class="el" href="classLoyc_1_1LLParserGenerator
 <p>Even without analyzing the contents of an and-predicate, they can still make prediction extremely complicated. Consider this example: </p><div class="fragment"><div class="line">(.&amp;amp;{a} (&amp;amp;{b} {B();} | &amp;amp;{c})</div><div class="line">  &amp;amp;{d} [&amp;amp;{e} (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;E&#39;</span>)]?</div><div class="line">  (&amp;amp;{f} (<span class="charliteral">&#39;f&#39;</span>|<span class="charliteral">&#39;t&#39;</span>) | <span class="charliteral">&#39;F&#39;</span>)</div><div class="line">| &amp;amp;{c} (&amp;amp;{f} (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;t&#39;</span>) | <span class="charliteral">&#39;f&#39;</span>) <span class="charliteral">&#39;g&#39;</span></div><div class="line">| <span class="charliteral">&#39;!&#39;</span> )</div></div><!-- fragment --><p> In this example, the first branch requires 'a' and 'd' to be true, there's a pair of zero-width alternatives that require 'b' or 'c' to be true, {B()} must be executed if 'b' is true, 'e' must be true if LA(0) is ('e'|'E'), 'f' must be true if LA(0) is 'f' and no condition is required for 'F'. The second branch also allows 'e' or 'f', provided that 'c' is true, but requires 'f' if LA(0) is 'e'. </p>
 <p>LLLPG appears to handle this case correctly. </p>
 
-<p>References <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#af1ff4bbda3d044d8ee00b6899ba38e9d">Loyc.LLParserGenerator.Alts.Greedy</a>, and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a46efa20acf8b9b4b1df5b80a5c7bfb5b">Loyc.Collections.Impl.InternalList&lt; T &gt;.Move()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#af1ff4bbda3d044d8ee00b6899ba38e9d">Loyc.LLParserGenerator.Alts.Greedy</a>, <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>, and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a46efa20acf8b9b4b1df5b80a5c7bfb5b">Loyc.Collections.Impl.InternalList&lt; T &gt;.Move()</a>.</p>
 
 </div>
 </div>
@@ -422,7 +422,7 @@ approximate" lookahead still has problems with certain cases involving nested al
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">IMessageSink Loyc.LLParserGenerator.LLParserGenerator.Sink</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> Loyc.LLParserGenerator.LLParserGenerator.Sink</td>
         </tr>
       </table>
   </td>
@@ -441,7 +441,7 @@ approximate" lookahead still has problems with certain cases involving nested al
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:12 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:24 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

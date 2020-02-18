@@ -1,9 +1,13 @@
 var searchData=
 [
+  ['savedthreadlocal',['SavedThreadLocal',['../structLoyc_1_1Threading_1_1SavedThreadLocal.html',1,'Loyc::Threading']]],
   ['savedvalue',['SavedValue',['../structLoyc_1_1Threading_1_1SavedValue.html',1,'Loyc::Threading']]],
   ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_1_1SavePosition.html',1,'Loyc::Syntax::Lexing::BaseLexer']]],
   ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1BaseParser_1_1SavePosition.html',1,'Loyc::Syntax::BaseParser']]],
   ['scell',['SCell',['../structLoyc_1_1Collections_1_1Impl_1_1SCell.html',1,'Loyc::Collections::Impl']]],
+  ['scratchbuffer',['ScratchBuffer',['../structLoyc_1_1Threading_1_1ScratchBuffer.html',1,'Loyc::Threading']]],
+  ['scratchbuffer_3c_20byte_5b_5d_3e',['ScratchBuffer&lt; byte[]&gt;',['../structLoyc_1_1Threading_1_1ScratchBuffer.html',1,'Loyc::Threading']]],
+  ['scratchbuffer_3c_20object_5b_5d_3e',['ScratchBuffer&lt; object[]&gt;',['../structLoyc_1_1Threading_1_1ScratchBuffer.html',1,'Loyc::Threading']]],
   ['selectcollection',['SelectCollection',['../classLoyc_1_1Collections_1_1SelectCollection.html',1,'Loyc::Collections']]],
   ['selectdictionaryfromkeys',['SelectDictionaryFromKeys',['../classLoyc_1_1Collections_1_1SelectDictionaryFromKeys.html',1,'Loyc::Collections']]],
   ['selectlist',['SelectList',['../classLoyc_1_1Collections_1_1SelectList.html',1,'Loyc::Collections']]],
@@ -23,7 +27,9 @@ var searchData=
   ['slice_5f',['Slice_',['../structLoyc_1_1Collections_1_1Slice__.html',1,'Loyc::Collections']]],
   ['sourcefile',['SourceFile',['../classLoyc_1_1Syntax_1_1SourceFile.html',1,'Loyc::Syntax']]],
   ['sourcefilewithlineremaps',['SourceFileWithLineRemaps',['../classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html',1,'Loyc::Syntax']]],
+  ['sourcepos',['SourcePos',['../classLoyc_1_1Syntax_1_1SourcePos.html',1,'Loyc::Syntax']]],
   ['sourceposandindex',['SourcePosAndIndex',['../classLoyc_1_1Syntax_1_1SourcePosAndIndex.html',1,'Loyc::Syntax']]],
+  ['sourcerange',['SourceRange',['../structLoyc_1_1Syntax_1_1SourceRange.html',1,'Loyc::Syntax']]],
   ['sparsealist',['SparseAList',['../classLoyc_1_1Collections_1_1SparseAList.html',1,'Loyc::Collections']]],
   ['sparsealistleaf',['SparseAListLeaf',['../classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf.html',1,'Loyc::Collections::Impl']]],
   ['standardtriviainjector',['StandardTriviaInjector',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html',1,'Loyc::Syntax']]],
@@ -32,5 +38,8 @@ var searchData=
   ['stringbuilderext',['StringBuilderExt',['../classLoyc_1_1StringBuilderExt.html',1,'Loyc']]],
   ['stringext',['StringExt',['../classLoyc_1_1StringExt.html',1,'Loyc']]],
   ['successexception',['SuccessException',['../classLoyc_1_1MiniTest_1_1SuccessException.html',1,'Loyc::MiniTest']]],
+  ['symbol',['Symbol',['../classLoyc_1_1Symbol.html',1,'Loyc']]],
+  ['symbolpool',['SymbolPool',['../classLoyc_1_1SymbolPool.html',1,'Loyc.SymbolPool&lt; SymbolE &gt;'],['../classLoyc_1_1SymbolPool.html',1,'Loyc.SymbolPool']]],
+  ['symbolpool_3c_20loyc_3a_3asyntax_3a_3aparsingmode_20_3e',['SymbolPool&lt; Loyc::Syntax::ParsingMode &gt;',['../classLoyc_1_1SymbolPool.html',1,'Loyc']]],
   ['symbolset',['SymbolSet',['../classLoyc_1_1SymbolSet.html',1,'Loyc']]]
 ];

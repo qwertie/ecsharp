@@ -114,6 +114,7 @@ Inheritance diagram for Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.png" usemap="#Loyc.Syntax.Lexing.BaseLexer_3C_20CharSrc_20_3E_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.BaseLexer_3C_20CharSrc_20_3E_map" name="Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;_map">
+<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="351,0,692,24"/>
 <area href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer&lt;Token&gt;)." alt="Loyc.Ecs.Parser.EcsLexer" shape="rect" coords="0,112,341,136"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html" title="A version of BaseLexer&lt;CharSrc&gt; that implements ILexer&lt;Token&gt;. You should use this base class if you ..." alt="Loyc.Syntax.Lexing.BaseILexer&lt; CharSrc, Token &gt;" shape="rect" coords="351,112,692,136"/>
 <area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html" title="This class only exists to work around a limitation of the C# language: &quot;cannot change access modifier..." alt="Loyc.Syntax.Lexing.LexerSourceWorkaround&lt; CharSrc &gt;" shape="rect" coords="702,112,1043,136"/>
@@ -130,14 +131,14 @@ Inheritance diagram for Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;:</div>
 <p>By default, errors are handled by throwing FormatException. The recommended way to alter this behavior is to change the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a2e052d761c53ba883b58b03cb7f8e4ff" title="Gets or sets the object to which error messages are sent. The default object is LogExceptionErrorSink...">ErrorSink</a> property. For example, set it to <a class="el" href="classLoyc_1_1MessageSink.html#a81ac62c2a94fe066156cce21f878f2a1" title="Sends all messages to the System.Console.WriteLine(string).">MessageSink.Console</a> to send errors to the console, or use <a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd" title="Sends all messages to a user-defined method.">MessageSink.FromDelegate</a> to provide a custom handler. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">CharSrc</td><td>A class that implements ICharSource. In order to write lexers that can accept any source of characters, set CharSrc=ICharSource. For maximum performance when parsing strings (or to avoid memory allocation), set CharSrc=UString (UString is a wrapper around <code>System.String</code> that, among other things, implements <code>ICharSource</code>; please note that C# will implicitly convert normal strings to UString for you).</td></tr>
+    <tr><td class="paramname">CharSrc</td><td>A class that implements ICharSource. In order to write lexers that can accept any source of characters, set CharSrc=ICharSource. For maximum performance when parsing strings (or to avoid memory allocation), set CharSrc=<a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> (<a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> is a wrapper around <code>System.String</code> that, among other things, implements <code>ICharSource</code>; please note that C# will implicitly convert normal strings to <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> for you).</td></tr>
   </table>
   </dd>
 </dl>
 <div class="typeconstraint">
 <dl><dt><b>Type Constraints</b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em>CharSrc</em></td><td>&#160;:</td><td valign="top"><em>ICharSource</em></td><td>&#160;</td></tr>
+<tr><td valign="top"><em>CharSrc</em></td><td>&#160;:</td><td valign="top"><em><a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a></em></td><td>&#160;</td></tr>
 </table>
 </dd>
 </dl>
@@ -151,15 +152,15 @@ Nested classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="memItemLeft" align="right" valign="top">static readonly IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6">LogExceptionErrorSink</a></td></tr>
+<tr class="memitem:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6">LogExceptionErrorSink</a></td></tr>
 <tr class="memdesc:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Default. <a href="#a1fbcd1f42ea2ebe33b7ee53481fd73e6">More...</a><br /></td></tr>
 <tr class="separator:a1fbcd1f42ea2ebe33b7ee53481fd73e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2519061cb92a4df83891264cec3796f0"><td class="memItemLeft" align="right" valign="top">static readonly IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><b>FormatExceptionErrorSink</b></td></tr>
+<tr class="memitem:a2519061cb92a4df83891264cec3796f0"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FormatExceptionErrorSink</b></td></tr>
 <tr class="separator:a2519061cb92a4df83891264cec3796f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="memItemLeft" align="right" valign="top">IMessageSink&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a2e052d761c53ba883b58b03cb7f8e4ff">ErrorSink</a><code> [get, set]</code></td></tr>
+<tr class="memitem:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a2e052d761c53ba883b58b03cb7f8e4ff">ErrorSink</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Default.">LogExceptionErrorSink</a>, which throws an exception if an error occurs. <a href="#a2e052d761c53ba883b58b03cb7f8e4ff">More...</a><br /></td></tr>
 <tr class="separator:a2e052d761c53ba883b58b03cb7f8e4ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94e48d9dc50a8819b2eef0d066271ca9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94e48d9dc50a8819b2eef0d066271ca9"></a>
@@ -183,6 +184,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>InputPosition</b><code
 <tr class="memitem:a195bafdad5c6bc2d0dce2354f2debce2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2">LineStartAt</a><code> [get]</code></td></tr>
 <tr class="memdesc:a195bafdad5c6bc2d0dce2354f2debce2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index at which the current line started. <a href="#a195bafdad5c6bc2d0dce2354f2debce2">More...</a><br /></td></tr>
 <tr class="separator:a195bafdad5c6bc2d0dce2354f2debce2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html">Loyc.Syntax.IIndexToLine</a></td></tr>
+<tr class="memitem:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">FileName</a><code> [get]</code></td></tr>
+<tr class="memdesc:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the file name used in results returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a>. <a href="#a6d3da28c156caea83183fa8b10c1d56f">More...</a><br /></td></tr>
+<tr class="separator:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -208,7 +213,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>LA</b> (int i)</td></t
 <tr class="memdesc:aaf01d80adc87cbc7457dac46df1f41b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lexer must call this method exactly once after it advances past each newline, even inside comments and strings. This method keeps the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af" title="Current line number. Starts at 1 for the first line, unless derived class changes it...">LineNumber</a> and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2" title="Index at which the current line started.">LineStartAt</a> properties updated. <a href="#aaf01d80adc87cbc7457dac46df1f41b1">More...</a><br /></td></tr>
 <tr class="separator:aaf01d80adc87cbc7457dac46df1f41b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe2204b25204257e6c67fd86072fa73d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afe2204b25204257e6c67fd86072fa73d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BaseLexer</b> (ICharSource source, string fileName=&quot;&quot;, int inputPosition=0, bool newSourceFile=true)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BaseLexer</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> source, string fileName=&quot;&quot;, int inputPosition=0, bool newSourceFile=true)</td></tr>
 <tr class="separator:afe2204b25204257e6c67fd86072fa73d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
@@ -231,8 +236,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_lineStartAt</b></td><
 <tr class="memitem:ae8eeb903f5eef427b220c816436496da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae8eeb903f5eef427b220c816436496da"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_lineNumber</b> = 1</td></tr>
 <tr class="separator:ae8eeb903f5eef427b220c816436496da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab53ed2c550ac6e738972acc41ad71757"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab53ed2c550ac6e738972acc41ad71757"></a>
-SourcePos&#160;</td><td class="memItemRight" valign="bottom"><b>IndexToLine</b> (int charIndex)</td></tr>
+<tr class="memitem:ab53ed2c550ac6e738972acc41ad71757"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab53ed2c550ac6e738972acc41ad71757">IndexToLine</a> (int charIndex)</td></tr>
+<tr class="memdesc:ab53ed2c550ac6e738972acc41ad71757"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index. <a href="#ab53ed2c550ac6e738972acc41ad71757">More...</a><br /></td></tr>
 <tr class="separator:ab53ed2c550ac6e738972acc41ad71757"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abae963fe4011bda74065554b7f606f0e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#abae963fe4011bda74065554b7f606f0e">Newline</a> ()</td></tr>
 <tr class="memdesc:abae963fe4011bda74065554b7f606f0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default newline parser that matches '<br />
@@ -410,10 +415,10 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <p>Initializes <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html" title="The recommended base class for lexers generated by LLLPG, when not using the inputSource option...">BaseLexer</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">chars</td><td>A source of characters, e.g. UString.</td></tr>
+    <tr><td class="paramname">chars</td><td>A source of characters, e.g. <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a>.</td></tr>
     <tr><td class="paramname">fileName</td><td>A file name associated with the characters, which will be used for error reporting.</td></tr>
     <tr><td class="paramname">inputPosition</td><td>A location to start lexing (normally 0). Careful: If you're starting to lex in the middle of the file, the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af" title="Current line number. Starts at 1 for the first line, unless derived class changes it...">LineNumber</a> still starts at 1, and (if <code>newSourceFile</code> is true) the <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html" title="A default implementation of ISourceFile based on IndexPositionMapper.">SourceFile</a> object may or may not discover line breaks prior to the starting point, depending on how it is used.</td></tr>
-    <tr><td class="paramname">newSourceFile</td><td>Whether to create a LexerSourceFile&lt;C&gt; object (an implementation of ISourceFile) to keep track of line boundaries. The <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html" title="A default implementation of ISourceFile based on IndexPositionMapper.">SourceFile</a> property will point to this object, and it will be null if this parameter is false. Using 'false' will avoid memory allocation, but prevent you from mapping character positions to line numbers and vice versa. However, this object will still keep track of the current <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af" title="Current line number. Starts at 1 for the first line, unless derived class changes it...">LineNumber</a> and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2" title="Index at which the current line started.">LineStartAt</a> (the index where the current line started) when this parameter is false.</td></tr>
+    <tr><td class="paramname">newSourceFile</td><td>Whether to create a LexerSourceFile&lt;C&gt; object (an implementation of <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>) to keep track of line boundaries. The <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html" title="A default implementation of ISourceFile based on IndexPositionMapper.">SourceFile</a> property will point to this object, and it will be null if this parameter is false. Using 'false' will avoid memory allocation, but prevent you from mapping character positions to line numbers and vice versa. However, this object will still keep track of the current <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af" title="Current line number. Starts at 1 for the first line, unless derived class changes it...">LineNumber</a> and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2" title="Index at which the current line started.">LineStartAt</a> (the index where the current line started) when this parameter is false.</td></tr>
   </table>
   </dd>
 </dl>
@@ -544,6 +549,37 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 </dl>
 
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html#a5d226cb13e6f4ce57bb988c39e3dca5e">Loyc.Syntax.Lexing.LexerSourceWorkaround&lt; CharSrc &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html#a1469281ae2a685657210cd51c705842a">Loyc.Syntax.Lexing.LexerSource&lt; CharSrc &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab53ed2c550ac6e738972acc41ad71757"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.IndexToLine </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the position in a source file of the specified index.</p>
+<p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3">Loyc.Syntax.IIndexToLine</a>.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a35d6b4643767c13d6b7402705394e35d">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;.IndexToLine()</a>.</p>
 
 </div>
 </div>
@@ -794,7 +830,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly IMessageSink <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.FormatExceptionErrorSink</td>
+          <td class="memname">readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.FormatExceptionErrorSink</td>
         </tr>
       </table>
   </td>
@@ -803,7 +839,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; { </div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= Severity.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.ContextToString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.Localized(fmt, args));</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    MessageSink.Default.Write(sev, location, fmt, args);</div><div class="line">            })</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; { </div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.ContextToString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.Localized(fmt, args));</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    MessageSink.Default.Write(sev, location, fmt, args);</div><div class="line">            })</div></div><!-- fragment -->
 </div>
 </div>
 <a class="anchor" id="a1fbcd1f42ea2ebe33b7ee53481fd73e6"></a>
@@ -814,7 +850,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly IMessageSink <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.LogExceptionErrorSink</td>
+          <td class="memname">readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.LogExceptionErrorSink</td>
         </tr>
       </table>
   </td>
@@ -823,7 +859,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; {</div><div class="line">                LogMessage msg = <span class="keyword">new</span> LogMessage(sev, location, fmt, args);</div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= Severity.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> LogException(msg);</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    msg.WriteTo(MessageSink.Default);</div><div class="line">            })</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div><div class="line">            (sev, location, fmt, args) =&gt; {</div><div class="line">                LogMessage msg = <span class="keyword">new</span> LogMessage(sev, location, fmt, args);</div><div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div><div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> LogException(msg);</div><div class="line">                <span class="keywordflow">else</span></div><div class="line">                    msg.WriteTo(MessageSink.Default);</div><div class="line">            })</div></div><!-- fragment -->
 <p>Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Default.</p>
 
 </div>
@@ -837,7 +873,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">IMessageSink <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.ErrorSink</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.ErrorSink</td>
         </tr>
       </table>
   </td>
@@ -899,7 +935,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:28 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

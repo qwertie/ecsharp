@@ -97,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, IListSource&lt;T&gt;, and for related mutable interfaces such as IArray&lt;T&gt;.  
+<p>Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>, and for related mutable interfaces such as IArray&lt;T&gt;.  
  <a href="classLoyc_1_1Collections_1_1ListExt.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/Slice.cs'>/Core/Loyc.Essentials/Collections/Adapters/Slice.cs</a></li>
@@ -105,17 +105,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/HelperClasses/Repeated.cs'>/Core/Loyc.Essentials/Collections/HelperClasses/Repeated.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, IListSource&lt;T&gt;, and for related mutable interfaces such as IArray&lt;T&gt;. </p>
-<p>Extension methods that only apply to <a class="el" href="namespaceLoyc.html">Loyc</a>'s new interfaces, or adapt a list to those interfaces, will go in <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html" title="Extension methods for Loyc Collection interfaces (such as IListSource&lt;T&gt;).">LCExt</a> instead. </p>
+<div class="textblock"><p>Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>, and for related mutable interfaces such as IArray&lt;T&gt;. </p>
+<p>Extension methods that only apply to <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>'s new interfaces, or adapt a list to those interfaces, will go in <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html" title="Extension methods for Loyc Collection interfaces (such as IListSource&lt;T&gt;).">LCExt</a> instead. </p>
 <p>The source code for adapter extension methods such as the Slice() method for arrays, which returns an ArraySlice&lt;T&gt; adapter, is now placed in the source file for each adapter class (e.g. ArraySlice.cs) to make it easier to create custom versions of Loyc.Essentials with parts removed. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aee6af912cff8a608922ece4565b1e70f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee6af912cff8a608922ece4565b1e70f"></a>
-static IRange&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsRange&lt; T &gt;</b> (this IListSource&lt; T &gt; list)</td></tr>
+static <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsRange&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list)</td></tr>
 <tr class="separator:aee6af912cff8a608922ece4565b1e70f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c01aff7b2084551ffda1331b0387c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88c01aff7b2084551ffda1331b0387c3"></a>
-static IRange&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsRange&lt; T &gt;</b> (this IRange&lt; T &gt; list)</td></tr>
+static <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsRange&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; list)</td></tr>
 <tr class="separator:a88c01aff7b2084551ffda1331b0387c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb9a1fc0630c98a2dab2b495533977d5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb9a1fc0630c98a2dab2b495533977d5"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, T value)</td></tr>
@@ -130,16 +130,16 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this IReadOnlyList&lt; T &gt; list, K find, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
 <tr class="separator:a413581011488285abaa6e21a164c3f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa22ba8d4f0611480f05fd7752b655e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa22ba8d4f0611480f05fd7752b655e5"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, T value)</td></tr>
 <tr class="separator:afa22ba8d4f0611480f05fd7752b655e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e2f57be27c140b6a352d156efcfa676"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e2f57be27c140b6a352d156efcfa676"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value, IComparer&lt; T &gt; comparer)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, T value, IComparer&lt; T &gt; comparer)</td></tr>
 <tr class="separator:a5e2f57be27c140b6a352d156efcfa676"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a234feab9cddaf1b6220c7a84b0f343ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a234feab9cddaf1b6220c7a84b0f343ce"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value, Comparison&lt; T &gt; compare)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, T value, Comparison&lt; T &gt; compare)</td></tr>
 <tr class="separator:a234feab9cddaf1b6220c7a84b0f343ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0c3da577757289aa913743de4b7f107"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0c3da577757289aa913743de4b7f107"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this IListAndListSource&lt; T &gt; list, K value, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, K value, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
 <tr class="separator:ae0c3da577757289aa913743de4b7f107"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad598b0a74278dd7de052b5b28ce7f371"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad598b0a74278dd7de052b5b28ce7f371"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyTo&lt; T &gt;</b> (this IReadOnlyCollection&lt; T &gt; c, T[] array, int arrayIndex)</td></tr>
@@ -148,25 +148,25 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this T[] list, int index, T defaultValue)</td></tr>
 <tr class="separator:aef79adea9faea5d4b062b96c0bf96d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70bdf0ecf4cb8f92187e985fa714b38d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70bdf0ecf4cb8f92187e985fa714b38d"></a>
-static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this T[] list, int index)</td></tr>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this T[] list, int index)</td></tr>
 <tr class="separator:a70bdf0ecf4cb8f92187e985fa714b38d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afca972c6f72b9a3844a23ea3612b38f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afca972c6f72b9a3844a23ea3612b38f8"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this List&lt; T &gt; list, int index, T defaultValue)</td></tr>
 <tr class="separator:afca972c6f72b9a3844a23ea3612b38f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab64596274cee315bf005831da1112cc8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab64596274cee315bf005831da1112cc8"></a>
-static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this List&lt; T &gt; list, int index)</td></tr>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this List&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:ab64596274cee315bf005831da1112cc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed17f663ab4ae38f4a4c1c85a14f2257"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed17f663ab4ae38f4a4c1c85a14f2257"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, int index, T defaultValue)</td></tr>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, int index, T defaultValue)</td></tr>
 <tr class="separator:aed17f663ab4ae38f4a4c1c85a14f2257"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50236545ec0f2dc26405692e3405208d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a50236545ec0f2dc26405692e3405208d"></a>
-static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, int index)</td></tr>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:a50236545ec0f2dc26405692e3405208d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb6baa904451b78727db8d4354c3df94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb6baa904451b78727db8d4354c3df94"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, int index, T defaultValue)</td></tr>
 <tr class="separator:acb6baa904451b78727db8d4354c3df94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa231e31bd9e82fe46ccdeb6d2d0cb2a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa231e31bd9e82fe46ccdeb6d2d0cb2a0"></a>
-static Maybe&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, int index)</td></tr>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:aa231e31bd9e82fe46ccdeb6d2d0cb2a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a5e41b63e568e0d11c5a4d93b9ae95598">RemoveRange&lt; T &gt;</a> (this IList&lt; T &gt; list, int index, int count)</td></tr>
 <tr class="memdesc:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes <code>count</code> items from <code>list</code> starting at the specified <code>index</code>. <a href="#a5e41b63e568e0d11c5a4d93b9ae95598">More...</a><br /></td></tr>
@@ -186,19 +186,19 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:acce31146d9c144d48eccae6c2135acec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acce31146d9c144d48eccae6c2135acec"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddIfNotPresent&lt; TList, T &gt;</b> (this TList list, T item)</td></tr>
 <tr class="separator:acce31146d9c144d48eccae6c2135acec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac126b64fa61fd78133d7ff9943aded4c"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#ac126b64fa61fd78133d7ff9943aded4c">Zip&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memitem:ac126b64fa61fd78133d7ff9943aded4c"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#ac126b64fa61fd78133d7ff9943aded4c">Zip&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
 <tr class="memdesc:ac126b64fa61fd78133d7ff9943aded4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence of length <code>Min(a.Count(), b.Count())</code> of items from <code>a</code> and <code>b</code> paired together. The output is produced lazily, so infinite input sequences are supported. <a href="#ac126b64fa61fd78133d7ff9943aded4c">More...</a><br /></td></tr>
 <tr class="separator:ac126b64fa61fd78133d7ff9943aded4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a9ceb39a2537063d2a71a7ec9807e7552">ZipLeft&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB)</td></tr>
+<tr class="memitem:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a9ceb39a2537063d2a71a7ec9807e7552">ZipLeft&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB)</td></tr>
 <tr class="memdesc:a9ceb39a2537063d2a71a7ec9807e7552"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence that has the same length as the first sequence, with items from the first and second sequence paired together. <a href="#a9ceb39a2537063d2a71a7ec9807e7552">More...</a><br /></td></tr>
 <tr class="separator:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01d968377b9c352d0c215923ee6fcee1"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a01d968377b9c352d0c215923ee6fcee1">ZipLeft&lt; A, B, C &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
 <tr class="memdesc:a01d968377b9c352d0c215923ee6fcee1"><td class="mdescLeft">&#160;</td><td class="mdescRight">An alternate version of ZipLeft&lt;A, B&gt;(IEnumerable&lt;A&gt;, IEnumerable&lt;B&gt;, B) in which a user-defined function is used to combine the items from the two lists. <a href="#a01d968377b9c352d0c215923ee6fcee1">More...</a><br /></td></tr>
 <tr class="separator:a01d968377b9c352d0c215923ee6fcee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98a05ad8d7cf390774d03e3910da7b49"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a98a05ad8d7cf390774d03e3910da7b49">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memitem:a98a05ad8d7cf390774d03e3910da7b49"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a98a05ad8d7cf390774d03e3910da7b49">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
 <tr class="memdesc:a98a05ad8d7cf390774d03e3910da7b49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value. <a href="#a98a05ad8d7cf390774d03e3910da7b49">More...</a><br /></td></tr>
 <tr class="separator:a98a05ad8d7cf390774d03e3910da7b49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a682aba93ad405a19a4957b0a6c5487ce"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Pair&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a682aba93ad405a19a4957b0a6c5487ce">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB)</td></tr>
+<tr class="memitem:a682aba93ad405a19a4957b0a6c5487ce"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a682aba93ad405a19a4957b0a6c5487ce">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB)</td></tr>
 <tr class="memdesc:a682aba93ad405a19a4957b0a6c5487ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value provided as a parameter. <a href="#a682aba93ad405a19a4957b0a6c5487ce">More...</a><br /></td></tr>
 <tr class="separator:a682aba93ad405a19a4957b0a6c5487ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7711a3f1659aa33aaa19aac6b3ad202"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#ae7711a3f1659aa33aaa19aac6b3ad202">ZipLonger&lt; A, B, C &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
@@ -247,7 +247,7 @@ static <a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlic
 <tr class="memdesc:a201a0b2cd95f4b2a9e6e779c404a7561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swaps list[i] with list[j]. <a href="#a201a0b2cd95f4b2a9e6e779c404a7561">More...</a><br /></td></tr>
 <tr class="separator:a201a0b2cd95f4b2a9e6e779c404a7561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29a0dddc53dd0350995b5251242d4487"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29a0dddc53dd0350995b5251242d4487"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap&lt; T &gt;</b> (this IArray&lt; T &gt; list, int i, int j)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html">IArray</a>&lt; T &gt; list, int i, int j)</td></tr>
 <tr class="separator:a29a0dddc53dd0350995b5251242d4487"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fa6a8bc17e1d2d390178b00aa067e37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3fa6a8bc17e1d2d390178b00aa067e37"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Randomize&lt; T &gt;</b> (this IList&lt; T &gt; list)</td></tr>
@@ -264,7 +264,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:af6166b7ee4eb0cd093625ae900050c9f"><td class="memItemLeft" align="right" valign="top">static R[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#af6166b7ee4eb0cd093625ae900050c9f">SelectArray&lt; T, R &gt;</a> (this IReadOnlyList&lt; T &gt; input, Func&lt; T, R &gt; selector)</td></tr>
 <tr class="memdesc:af6166b7ee4eb0cd093625ae900050c9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a list to an array of the same length. <a href="#af6166b7ee4eb0cd093625ae900050c9f">More...</a><br /></td></tr>
 <tr class="separator:af6166b7ee4eb0cd093625ae900050c9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a091494f72779f6e57a3d7535e93997"><td class="memItemLeft" align="right" valign="top">static R[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a2a091494f72779f6e57a3d7535e93997">SelectArray&lt; T, R &gt;</a> (this IListAndListSource&lt; T &gt; input, Func&lt; T, R &gt; selector)</td></tr>
+<tr class="memitem:a2a091494f72779f6e57a3d7535e93997"><td class="memItemLeft" align="right" valign="top">static R[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a2a091494f72779f6e57a3d7535e93997">SelectArray&lt; T, R &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; input, Func&lt; T, R &gt; selector)</td></tr>
 <tr class="memdesc:a2a091494f72779f6e57a3d7535e93997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a list to an array of the same length. <a href="#a2a091494f72779f6e57a3d7535e93997">More...</a><br /></td></tr>
 <tr class="separator:a2a091494f72779f6e57a3d7535e93997"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d62f1b0762693646c71d00461792122"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a3d62f1b0762693646c71d00461792122">RemoveAll&lt; T &gt;</a> (this IList&lt; T &gt; list, Predicate&lt; T &gt; match)</td></tr>
@@ -274,7 +274,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReverseInPlace&lt; T &gt;</b> (this IList&lt; T &gt; list)</td></tr>
 <tr class="separator:aab175d889dec7806ac8a1279771d8613"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92763c86efb3827b4748beda93ef1960"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92763c86efb3827b4748beda93ef1960"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReverseInPlace&lt; T &gt;</b> (this IArray&lt; T &gt; list)</td></tr>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReverseInPlace&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html">IArray</a>&lt; T &gt; list)</td></tr>
 <tr class="separator:a92763c86efb3827b4748beda93ef1960"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d64bea5f88a2a512c59a416ee22a61f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d64bea5f88a2a512c59a416ee22a61f"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange&lt; T &gt;</b> (this IList&lt; T &gt; list, IEnumerable&lt; T &gt; range)</td></tr>
@@ -286,10 +286,10 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, ICollection&lt; T &gt; source)</td></tr>
 <tr class="separator:a4e5841dd539c5e80e93ffa712935aa27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa651a2e2afd008ae2e594cd723b8d40a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa651a2e2afd008ae2e594cd723b8d40a"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, IListAndListSource&lt; T &gt; source)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; source)</td></tr>
 <tr class="separator:aa651a2e2afd008ae2e594cd723b8d40a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af12fb42d0a12bf1a9825b1a13e4c17d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af12fb42d0a12bf1a9825b1a13e4c17d6"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, ICollectionAndReadOnly&lt; T &gt; source)</td></tr>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html">ICollectionAndReadOnly</a>&lt; T &gt; source)</td></tr>
 <tr class="separator:af12fb42d0a12bf1a9825b1a13e4c17d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4979ca0ce4084119b7f0b199d3df36f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4979ca0ce4084119b7f0b199d3df36f"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, int count, IEnumerable&lt; T &gt; source)</td></tr>
@@ -719,7 +719,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
         <tr>
           <td class="memname">static R [] Loyc.Collections.ListExt.SelectArray&lt; T, R &gt; </td>
           <td>(</td>
-          <td class="paramtype">this IListAndListSource&lt; T &gt;&#160;</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt;&#160;</td>
           <td class="paramname"><em>input</em>, </td>
         </tr>
         <tr>
@@ -1066,7 +1066,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;Pair&lt;A, B&gt; &gt; Loyc.Collections.ListExt.Zip&lt; A, B &gt; </td>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.Zip&lt; A, B &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1102,7 +1102,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;Pair&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLeft&lt; A, B &gt; </td>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLeft&lt; A, B &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1205,7 +1205,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;Pair&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1241,7 +1241,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static IEnumerable&lt;Pair&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
           <td>(</td>
           <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1352,7 +1352,7 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange&lt;
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:09 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:20 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

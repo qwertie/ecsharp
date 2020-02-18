@@ -112,6 +112,15 @@ Inheritance diagram for Loyc.Collections.FVList&lt; T &gt;:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1FVList.png" usemap="#Loyc.Collections.FVList_3C_20T_20_3E_map" alt=""/>
   <map id="Loyc.Collections.FVList_3C_20T_20_3E_map" name="Loyc.Collections.FVList&lt; T &gt;_map">
+<area href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html" title="This interface is to be used by read-only sequences that nevertheless wish to be compatible with APIs..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="879,168,1162,192"/>
+<area href="interfaceLoyc_1_1ICloneable.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out out T &gt;" shape="rect" coords="1465,168,1748,192"/>
+<area href="interfaceLoyc_1_1Collections_1_1IListAndReadOnly.html" title="This interface is meant to be implemented by read-only sequence classes that originally implemented I..." alt="Loyc.Collections.IListAndReadOnly&lt; T &gt;" shape="rect" coords="439,112,722,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1IListSource.html" alt="Loyc.Collections.IListSource&lt; T &gt;" shape="rect" coords="732,112,1015,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndSource.html" title="This interface is to be implemented by read-only sequence types that still want to be compatible with..." alt="Loyc.Collections.ICollectionAndSource&lt; T &gt;" shape="rect" coords="1465,112,1748,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface is meant to be implemented by read-only sequence types that originally implemented ICo..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="146,56,429,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionSource.html" title="A variation of IReadOnlyCollection that provides the Contains() and CopyTo() methods from ICollection..." alt="Loyc.Collections.ICollectionSource&lt; T &gt;" shape="rect" coords="1172,56,1455,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html" title="This interface is meant to be implemented by read-only sequence types that originally implemented ICo..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="1758,56,2041,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IContains.html" alt="Loyc.Collections.IContains&lt; T &gt;" shape="rect" coords="1025,0,1308,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -256,8 +265,8 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</
 <tr class="memitem:a432a02750f1886f53bcf1cbab3b173f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a432a02750f1886f53bcf1cbab3b173f8"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (T item)</td></tr>
 <tr class="separator:a432a02750f1886f53bcf1cbab3b173f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a269debac9dc052ca7fd2b460ba984cdf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a269debac9dc052ca7fd2b460ba984cdf"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyTo</b> (T[] array, int arrayIndex)</td></tr>
+<tr class="memitem:a269debac9dc052ca7fd2b460ba984cdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a269debac9dc052ca7fd2b460ba984cdf">CopyTo</a> (T[] array, int arrayIndex)</td></tr>
+<tr class="memdesc:a269debac9dc052ca7fd2b460ba984cdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies the elements of the collection to an Array, starting at a particular array index. <a href="#a269debac9dc052ca7fd2b460ba984cdf">More...</a><br /></td></tr>
 <tr class="separator:a269debac9dc052ca7fd2b460ba984cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a0b8f69776243e94e3639a68d656455"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a0b8f69776243e94e3639a68d656455"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (T item)</td></tr>
@@ -275,7 +284,7 @@ System.Collections.IEnumerator System.Collections.IEnumerable.&#160;</td><td cla
 T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:a33c70e2d1121f34587b305cf69b43102"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff5a2a576a48f72daf41a13c65137ce3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aff5a2a576a48f72daf41a13c65137ce3"></a>
-IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count)</td></tr>
 <tr class="separator:aff5a2a576a48f72daf41a13c65137ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca9d32de098b082a296ec36d857488b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca9d32de098b082a296ec36d857488b5"></a>
 <a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice</b> (int start, int count=int.MaxValue)</td></tr>
@@ -289,7 +298,7 @@ object ICloneable.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</
 <tr class="memitem:a266f75826b9287d3a36e9bbdcf1cb9a9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a266f75826b9287d3a36e9bbdcf1cb9a9">Where</a> (Func&lt; T, bool &gt; filter)</td></tr>
 <tr class="memdesc:a266f75826b9287d3a36e9bbdcf1cb9a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a filter to a list, to exclude zero or more items. <a href="#a266f75826b9287d3a36e9bbdcf1cb9a9">More...</a><br /></td></tr>
 <tr class="separator:a266f75826b9287d3a36e9bbdcf1cb9a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a1cddbf313a0c80e34e8d24d13ae14aaf">WhereSelect</a> (Func&lt; T, Maybe&lt; T &gt;&gt; filter)</td></tr>
+<tr class="memitem:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a1cddbf313a0c80e34e8d24d13ae14aaf">WhereSelect</a> (Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; filter)</td></tr>
 <tr class="memdesc:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filters and maps a list with a user-defined function. <a href="#a1cddbf313a0c80e34e8d24d13ae14aaf">More...</a><br /></td></tr>
 <tr class="separator:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0f5fec404f3e8233235190ca6e42c44"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#ac0f5fec404f3e8233235190ca6e42c44">SmartSelect</a> (Func&lt; T, T &gt; map)</td></tr>
@@ -301,6 +310,17 @@ object ICloneable.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</
 <tr class="memitem:a00aaff73e8bd2e48b545a53d9dbc8047"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a00aaff73e8bd2e48b545a53d9dbc8047">Transform</a> (VListTransformer&lt; T &gt; x)</td></tr>
 <tr class="memdesc:a00aaff73e8bd2e48b545a53d9dbc8047"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms a list (combines filtering with selection and more). <a href="#a00aaff73e8bd2e48b545a53d9dbc8047">More...</a><br /></td></tr>
 <tr class="separator:a00aaff73e8bd2e48b545a53d9dbc8047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
+<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
+<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
+<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
+<tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IContains"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IContains')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IContains.html">Loyc.Collections.IContains&lt; T &gt;</a></td></tr>
+<tr class="memitem:af18fb028bdd55ed86fdebf069622e491 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IContains"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IContains.html#af18fb028bdd55ed86fdebf069622e491">Contains</a> (T item)</td></tr>
+<tr class="memdesc:af18fb028bdd55ed86fdebf069622e491 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IContains"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if and only if the collection contains the specified item. <a href="#af18fb028bdd55ed86fdebf069622e491">More...</a><br /></td></tr>
+<tr class="separator:af18fb028bdd55ed86fdebf069622e491 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IContains"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -375,7 +395,57 @@ Static Public Member Functions</h2></td></tr>
 
 <p>Inserts an item at the front (index 0) of the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure. ">FVList</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a0064a76e0a690cb2e44d4592c40115c7">Loyc.Collections.VListBlock&lt; T &gt;.Add()</a>, and <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717">Loyc.Collections.Remove</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a0064a76e0a690cb2e44d4592c40115c7">Loyc.Collections.VListBlock&lt; T &gt;.Add()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a269debac9dc052ca7fd2b460ba984cdf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">Loyc.Collections.FVList</a>&lt; T &gt;.CopyTo </td>
+          <td>(</td>
+          <td class="paramtype">T[]&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>arrayIndex</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copies the elements of the collection to an Array, starting at a particular array index.</p>
+<p>It's usually more convenient to call the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html#a32c32c209034d4bd151898ad0e89a985" title="Returns the FVList converted to an array.">ToArray()</a> extension method, which calls this method for you. </p>
+<p>This method exists for performance reasons (the collection itself can often copy data out faster than an enumerator can). </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">ArgumentNullException</td><td>array is null.</td></tr>
+    <tr><td class="paramname">ArgumentOutOfRangeException</td><td>arrayIndex is negative.</td></tr>
+    <tr><td class="paramname">ArgumentException</td><td>The number of elements in the source collection is greater than the available space from arrayIndex to the end of the destination array.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSource.html#a5b39bfe772dce668223b14f6f838a2dc">Loyc.Collections.ICollectionSource&lt; T &gt;</a>.</p>
+
+<p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717">Loyc.Collections.Remove</a>.</p>
 
 </div>
 </div>
@@ -970,7 +1040,7 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">Loyc.Collections.FVList</a>&lt; T &gt;.WhereSelect </td>
           <td>(</td>
-          <td class="paramtype">Func&lt; T, Maybe&lt; T &gt;&gt;&#160;</td>
+          <td class="paramtype">Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt;&#160;</td>
           <td class="paramname"><em>filter</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1092,7 +1162,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

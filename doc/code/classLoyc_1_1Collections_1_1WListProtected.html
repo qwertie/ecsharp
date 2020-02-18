@@ -123,7 +123,7 @@ Inheritance diagram for Loyc.Collections.WListProtected&lt; T &gt;:</div>
   </dd>
 </dl>
 <p>This base class is used in the same way one would use protected inheritance in C++: it provides the derived class with access to a FWList/WList, but it does not allow users of the derived class to access the list. </p>
-<p>I had planned to use this base class as an optimization to help implement <a class="el" href="namespaceLoyc.html">Loyc</a> trees, but I didn't end up using it. Still, it could be useful someday as a base class of a memory-critical class that wants a mutable <a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a>. </p>
+<p>I had planned to use this base class as an optimization to help implement <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees, but I didn't end up using it. Still, it could be useful someday as a base class of a memory-critical class that wants a mutable <a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a>. </p>
 <p>By default, the list will act like a <a class="el" href="classLoyc_1_1Collections_1_1FWList.html" title="FWList is the mutable variant of the FVList data structure. ">FWList</a>. If you want the list to act like an <a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a> instead, override AdjustWListIndex and GetWListEnumerator as follows: </p><div class="fragment"><div class="line"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keywordtype">int</span> <a class="code" href="classLoyc_1_1Collections_1_1WListProtected.html#ad42b66f9db3137bad997db69b6eecccd">AdjustWListIndex</a>(<span class="keywordtype">int</span> index, <span class="keywordtype">int</span> size) </div><div class="line">    { <span class="keywordflow">return</span> Count - size - index; }</div><div class="line"><span class="keyword">protected</span> <span class="keyword">virtual</span> IEnumerator&lt;T&gt; GetWListEnumerator() </div><div class="line">    { <span class="keywordflow">return</span> GetRVListEnumerator(); }</div></div><!-- fragment --> </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -363,7 +363,7 @@ virtual IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom
 <p>This method determines equality using the default equality comparer EqualityComparer.Default for T, the type of values in the list.</p>
 <p>This method performs a linear search; therefore, this method is an O(n) operation, where n is Count. </p>
 
-<p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9">Loyc.Collections.Add</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a332d4f58527a64091468f82d86503152">Loyc.Collections.VListBlock&lt; T &gt;.EnsureMutable()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#afb1c7846171aa7fdf4581c5de7b55c00">Loyc.Collections.VListBlock&lt; T &gt;.MuMove()</a>, and <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717">Loyc.Collections.Remove</a>.</p>
+<p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9">Loyc.Collections.Add</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a332d4f58527a64091468f82d86503152">Loyc.Collections.VListBlock&lt; T &gt;.EnsureMutable()</a>, <a class="el" href="classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e">Loyc.Localize.Localized()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#afb1c7846171aa7fdf4581c5de7b55c00">Loyc.Collections.VListBlock&lt; T &gt;.MuMove()</a>, and <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717">Loyc.Collections.Remove</a>.</p>
 
 </div>
 </div>
@@ -540,7 +540,7 @@ virtual IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom
 </div><div class="memdoc">
 
 <p>An additional byte that the derived class can optionally use.</p>
-<p>Used by <a class="el" href="namespaceLoyc.html">Loyc</a>.</p>
+<p>Used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html#ad42b66f9db3137bad997db69b6eecccd">Loyc.Collections.WListProtected&lt; T &gt;.AdjustWListIndex()</a>.</p>
 
@@ -550,7 +550,7 @@ virtual IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:21 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

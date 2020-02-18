@@ -3,6 +3,7 @@ var searchData=
   ['if',['If',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a01ac69f43e31b7d5a5449ca156fbfe99',1,'Loyc::Syntax::CodeSymbols']]],
   ['implicit',['Implicit',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aef020d3e790ef70f151bd4ebe15d2e24',1,'Loyc::Syntax::CodeSymbols']]],
   ['import',['Import',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c60ab9de3d65a6176bcae09070d722e',1,'Loyc::Syntax::CodeSymbols']]],
+  ['index',['Index',['../structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b',1,'Loyc::Collections::ListChangeInfo']]],
   ['indexbracks',['IndexBracks',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a78be31dfce1d8092cb12368259070939',1,'Loyc::Syntax::CodeSymbols']]],
   ['initializerassignment',['InitializerAssignment',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#affd0628335f3f317ef8954f09ecd9dff',1,'Loyc::Syntax::CodeSymbols']]],
   ['inparenstrivia',['InParensTrivia',['../classLoyc_1_1Syntax_1_1LNode.html#aaa9a240b979b6196a2d1fe898886708f',1,'Loyc::Syntax::LNode']]],

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['y',['Y',['../interfaceLoyc_1_1Geometry_1_1IPointBase.html#a707be43f39d9a7680a9f3e8bc33f446d',1,'Loyc::Geometry::IPointBase']]]
+  ['x',['X',['../interfaceLoyc_1_1Geometry_1_1IPointBase.html#a8ee534b6b2b1d444c87516181584392e',1,'Loyc::Geometry::IPointBase']]]
 ];

@@ -148,7 +148,7 @@ If an expression/statement is terminated by a semicolon/comma, it's best (but no
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:ab5a7dddee267170e607cc8118128245e"><td class="memItemLeft" align="right" valign="top">IListSource&lt; Trivia &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ab5a7dddee267170e607cc8118128245e">SortedTrivia</a><code> [get, set]</code></td></tr>
+<tr class="memitem:ab5a7dddee267170e607cc8118128245e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ab5a7dddee267170e607cc8118128245e">SortedTrivia</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ab5a7dddee267170e607cc8118128245e"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of trivia to be injected by <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aa8d088768a4d80c19dda40cf547ce752" title="Attaches trivia to the input nodes provided.">Run</a>. Must be sorted. <a href="#ab5a7dddee267170e607cc8118128245e">More...</a><br /></td></tr>
 <tr class="separator:ab5a7dddee267170e607cc8118128245e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41bbc0ded28c1551c92654cbb2f052a3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a41bbc0ded28c1551c92654cbb2f052a3">NextIndex</a><code> [get, set]</code></td></tr>
@@ -157,7 +157,7 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a836be32377d9935ff0c98f2a024dfa5b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b">AbstractTriviaInjector</a> (IListSource&lt; Trivia &gt; sortedTrivia)</td></tr>
+<tr class="memitem:a836be32377d9935ff0c98f2a024dfa5b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b">AbstractTriviaInjector</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt; sortedTrivia)</td></tr>
 <tr class="memdesc:a836be32377d9935ff0c98f2a024dfa5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ab5a7dddee267170e607cc8118128245e" title="List of trivia to be injected by Run. Must be sorted.">SortedTrivia</a> property. <a href="#a836be32377d9935ff0c98f2a024dfa5b">More...</a><br /></td></tr>
 <tr class="separator:a836be32377d9935ff0c98f2a024dfa5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8d088768a4d80c19dda40cf547ce752"><td class="memItemLeft" align="right" valign="top">IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aa8d088768a4d80c19dda40cf547ce752">Run</a> (IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; nodes)</td></tr>
@@ -166,14 +166,14 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a17d8ed7113eeae833c0c4443d60fc2c7">AttachTriviaTo</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, IListSource&lt; Trivia &gt; trivia, TriviaLocation loc, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
+<tr class="memitem:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a17d8ed7113eeae833c0c4443d60fc2c7">AttachTriviaTo</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt; trivia, TriviaLocation loc, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
 <tr class="memdesc:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class should associate the given list of trivia with the specified node. Leading trivia will be attached to a given node before trailing trivia. <a href="#a17d8ed7113eeae833c0c4443d60fc2c7">More...</a><br /></td></tr>
 <tr class="separator:a17d8ed7113eeae833c0c4443d60fc2c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97177c46d447e5678c99e4c87e51a2a6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a97177c46d447e5678c99e4c87e51a2a6">MarkOneLiner</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
 <tr class="memdesc:a97177c46d447e5678c99e4c87e51a2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method is called when a node has no newlines or comments within it (although the node may still have a leading or trailing comment). It informs the derived class that <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b" title="Initializes the SortedTrivia property.">AbstractTriviaInjector&lt;Trivia&gt;</a> will not traverse into the node. <a href="#a97177c46d447e5678c99e4c87e51a2a6">More...</a><br /></td></tr>
 <tr class="separator:a97177c46d447e5678c99e4c87e51a2a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2351a0e69beee2926543292cd3c9420"><td class="memItemLeft" align="right" valign="top">abstract SourceRange&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ae2351a0e69beee2926543292cd3c9420">GetRange</a> (Trivia trivia)</td></tr>
-<tr class="memdesc:ae2351a0e69beee2926543292cd3c9420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the SourceRange for an element of trivia. <a href="#ae2351a0e69beee2926543292cd3c9420">More...</a><br /></td></tr>
+<tr class="memitem:ae2351a0e69beee2926543292cd3c9420"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ae2351a0e69beee2926543292cd3c9420">GetRange</a> (Trivia trivia)</td></tr>
+<tr class="memdesc:ae2351a0e69beee2926543292cd3c9420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia. <a href="#ae2351a0e69beee2926543292cd3c9420">More...</a><br /></td></tr>
 <tr class="separator:ae2351a0e69beee2926543292cd3c9420"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c14d23e73bf1bbc40b7364f22215945"><td class="memItemLeft" align="right" valign="top">abstract bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a0c14d23e73bf1bbc40b7364f22215945">IsNewline</a> (Trivia trivia)</td></tr>
 <tr class="memdesc:a0c14d23e73bf1bbc40b7364f22215945"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the trivia represents a newline, false otherwise. <a href="#a0c14d23e73bf1bbc40b7364f22215945">More...</a><br /></td></tr>
@@ -184,14 +184,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:aef2b702aae92ce221b24e9552c20d3fa"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aef2b702aae92ce221b24e9552c20d3fa">DoneAttaching</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
 <tr class="memdesc:aef2b702aae92ce221b24e9552c20d3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method is called after a node has been processed and any applicable trivia was attached. <a href="#aef2b702aae92ce221b24e9552c20d3fa">More...</a><br /></td></tr>
 <tr class="separator:aef2b702aae92ce221b24e9552c20d3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7109a7eb2172249ff4d5e2e41e55cc5b"><td class="memItemLeft" align="right" valign="top">IEnumerator&lt; Pair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a7109a7eb2172249ff4d5e2e41e55cc5b">RunCore</a> (IEnumerator&lt; Pair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt;&gt; nodes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent)</td></tr>
+<tr class="memitem:a7109a7eb2172249ff4d5e2e41e55cc5b"><td class="memItemLeft" align="right" valign="top">IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a7109a7eb2172249ff4d5e2e41e55cc5b">RunCore</a> (IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt;&gt; nodes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent)</td></tr>
 <tr class="memdesc:a7109a7eb2172249ff4d5e2e41e55cc5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Core trivia associaton algorithm. <a href="#a7109a7eb2172249ff4d5e2e41e55cc5b">More...</a><br /></td></tr>
 <tr class="separator:a7109a7eb2172249ff4d5e2e41e55cc5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a8f6706ab254c01c1eafef88d64eabfd2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f6706ab254c01c1eafef88d64eabfd2"></a>
-static IEnumerator&lt; Pair&lt; T, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithIndexes&lt; T &gt;</b> (IEnumerator&lt; T &gt; e)</td></tr>
+static IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithIndexes&lt; T &gt;</b> (IEnumerator&lt; T &gt; e)</td></tr>
 <tr class="separator:a8f6706ab254c01c1eafef88d64eabfd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -205,7 +205,7 @@ static IEnumerator&lt; Pair&lt; T, int &gt; &gt;&#160;</td><td class="memItemRig
         <tr>
           <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.<a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">AbstractTriviaInjector</a> </td>
           <td>(</td>
-          <td class="paramtype">IListSource&lt; Trivia &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt;&#160;</td>
           <td class="paramname"><em>sortedTrivia</em></td><td>)</td>
           <td></td>
         </tr>
@@ -238,7 +238,7 @@ static IEnumerator&lt; Pair&lt; T, int &gt; &gt;&#160;</td><td class="memItemRig
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IListSource&lt; Trivia &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt;&#160;</td>
           <td class="paramname"><em>trivia</em>, </td>
         </tr>
         <tr>
@@ -377,7 +377,7 @@ this node" by returning null; the base class will, if possible, associate it wit
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract SourceRange <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.GetRange </td>
+          <td class="memname">abstract <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.GetRange </td>
           <td>(</td>
           <td class="paramtype">Trivia&#160;</td>
           <td class="paramname"><em>trivia</em></td><td>)</td>
@@ -391,7 +391,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 </table>
 </div><div class="memdoc">
 
-<p>Gets the SourceRange for an element of trivia.</p>
+<p>Gets the <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> for an element of trivia.</p>
 
 </div>
 </div>
@@ -444,7 +444,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 </div><div class="memdoc">
 
 <p>This method is called when a node has no newlines or comments within it (although the node may still have a leading or trailing comment). It informs the derived class that <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b" title="Initializes the SortedTrivia property.">AbstractTriviaInjector&lt;Trivia&gt;</a> will not traverse into the node.</p>
-<p>The default implementation sets the NodeStyle.OneLiner style flag.</p>
+<p>The default implementation sets the <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a758ec9536a977816029beb9f33c90daf" title="Indicates that the there is no comment or newline trivia associated with the children of this node...">NodeStyle.OneLiner</a> style flag.</p>
 
 </div>
 </div>
@@ -489,9 +489,9 @@ this node" by returning null; the base class will, if possible, associate it wit
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">IEnumerator&lt;Pair&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int&gt; &gt; <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.RunCore </td>
+          <td class="memname">IEnumerator&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int&gt; &gt; <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.RunCore </td>
           <td>(</td>
-          <td class="paramtype">IEnumerator&lt; Pair&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt;&gt;&#160;</td>
+          <td class="paramtype">IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, int &gt;&gt;&#160;</td>
           <td class="paramname"><em>nodes</em>, </td>
         </tr>
         <tr>
@@ -549,7 +549,7 @@ this node" by returning null; the base class will, if possible, associate it wit
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">IListSource&lt;Trivia&gt; <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.SortedTrivia</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;Trivia&gt; <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.SortedTrivia</td>
         </tr>
       </table>
   </td>
@@ -567,7 +567,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:12 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:25 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

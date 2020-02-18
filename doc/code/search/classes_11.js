@@ -9,8 +9,8 @@ var searchData=
   ['testattribute',['TestAttribute',['../classLoyc_1_1MiniTest_1_1TestAttribute.html',1,'Loyc::MiniTest']]],
   ['testcodecontractmacros',['TestCodeContractMacros',['../classLeMP_1_1Tests_1_1TestCodeContractMacros.html',1,'LeMP::Tests']]],
   ['testcodequotemacro',['TestCodeQuoteMacro',['../classLeMP_1_1Tests_1_1TestCodeQuoteMacro.html',1,'LeMP::Tests']]],
-  ['testcompiler',['TestCompiler',['../classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTestsBase_1_1TestCompiler.html',1,'Loyc::LLParserGenerator::LlpgGeneralTestsBase']]],
   ['testcompiler',['TestCompiler',['../classLeMP_1_1TestCompiler.html',1,'LeMP']]],
+  ['testcompiler',['TestCompiler',['../classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTestsBase_1_1TestCompiler.html',1,'Loyc::LLParserGenerator::LlpgGeneralTestsBase']]],
   ['testexception',['TestException',['../classLoyc_1_1MiniTest_1_1TestException.html',1,'Loyc::MiniTest']]],
   ['testfixtureattribute',['TestFixtureAttribute',['../classLoyc_1_1MiniTest_1_1TestFixtureAttribute.html',1,'Loyc::MiniTest']]],
   ['testhelpers',['TestHelpers',['../classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html',1,'Loyc::Collections::Impl']]],
@@ -31,7 +31,7 @@ var searchData=
   ['threadlocalvariable',['ThreadLocalVariable',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
   ['threadlocalvariable_3c_20func_3c_20loyc_3a_3asyntax_3a_3alexing_3a_3atoken_2c_20string_20_3e_20_3e',['ThreadLocalVariable&lt; Func&lt; Loyc::Syntax::Lexing::Token, string &gt; &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
   ['threadlocalvariable_3c_20func_3c_20object_2c_20string_20_3e_20_3e',['ThreadLocalVariable&lt; Func&lt; object, string &gt; &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
-  ['threadlocalvariable_3c_20imessagesink_20_3e',['ThreadLocalVariable&lt; IMessageSink &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
+  ['threadlocalvariable_3c_20loyc_3a_3aimessagesink_20_3e',['ThreadLocalVariable&lt; Loyc::IMessageSink &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
   ['threadlocalvariable_3c_20loyc_3a_3asyntax_3a_3ailnodeprinter_20_3e',['ThreadLocalVariable&lt; Loyc::Syntax::ILNodePrinter &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
   ['threadlocalvariable_3c_20loyc_3a_3asyntax_3a_3aiparsingservice_20_3e',['ThreadLocalVariable&lt; Loyc::Syntax::IParsingService &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
   ['threadlocalvariable_3c_20stoptestdelegate_20_3e',['ThreadLocalVariable&lt; StopTestDelegate &gt;',['../classLoyc_1_1Threading_1_1ThreadLocalVariable.html',1,'Loyc::Threading']]],
@@ -46,7 +46,7 @@ var searchData=
   ['tokentree',['TokenTree',['../classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html',1,'Loyc::Syntax::Lexing']]],
   ['tracemessagesink',['TraceMessageSink',['../classLoyc_1_1TraceMessageSink.html',1,'Loyc']]],
   ['transition',['Transition',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
-  ['triplet',['Triplet',['../classLoyc_1_1Triplet.html',1,'Loyc.Triplet'],['../structLoyc_1_1Triplet.html',1,'Loyc.Triplet&lt; T1, T2, T3 &gt;']]],
+  ['triplet',['Triplet',['../structLoyc_1_1Triplet.html',1,'Loyc.Triplet&lt; T1, T2, T3 &gt;'],['../classLoyc_1_1Triplet.html',1,'Loyc.Triplet']]],
   ['triviasaver',['TriviaSaver',['../classLoyc_1_1Syntax_1_1Lexing_1_1TriviaSaver.html',1,'Loyc::Syntax::Lexing']]],
   ['typeext',['TypeExt',['../classLoyc_1_1TypeExt.html',1,'Loyc']]]
 ];

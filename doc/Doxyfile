@@ -754,7 +754,8 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../../ecsharp/Core/Loyc.Essentials
+INPUT                  = ../../ecsharp/Core/Loyc.Interfaces
+INPUT                 += ../../ecsharp/Core/Loyc.Essentials
 INPUT                 += ../../ecsharp/Core/Loyc.Collections
 INPUT                 += ../../ecsharp/Core/Loyc.Syntax
 INPUT                 += ../../ecsharp/Core/Loyc.Utilities

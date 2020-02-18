@@ -27,7 +27,7 @@ var searchData=
   ['aliststatistictracker_3c_20k_2c_20t_2c_20tstatistic_20_3e',['AListStatisticTracker&lt; K, T, TStatistic &gt;',['../classLoyc_1_1Collections_1_1AListStatisticTracker.html',1,'Loyc::Collections']]],
   ['aliststatistictrackerbase',['AListStatisticTrackerBase',['../classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html',1,'Loyc::Collections']]],
   ['aliststatistictrackerbase_3c_20k_2c_20t_2c_20statistic_20_3e',['AListStatisticTrackerBase&lt; K, T, Statistic &gt;',['../classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html',1,'Loyc::Collections']]],
-  ['alistsumtracker',['AListSumTracker',['../classLoyc_1_1Collections_1_1AListSumTracker.html',1,'Loyc.Collections.AListSumTracker&lt; T &gt;'],['../classLoyc_1_1Collections_1_1AListSumTracker.html',1,'Loyc.Collections.AListSumTracker&lt; K, T &gt;']]],
+  ['alistsumtracker',['AListSumTracker',['../classLoyc_1_1Collections_1_1AListSumTracker.html',1,'Loyc.Collections.AListSumTracker&lt; K, T &gt;'],['../classLoyc_1_1Collections_1_1AListSumTracker.html',1,'Loyc.Collections.AListSumTracker&lt; T &gt;']]],
   ['alistsumtracker_3c_20int_2c_20t_20_3e',['AListSumTracker&lt; int, T &gt;',['../classLoyc_1_1Collections_1_1AListSumTracker.html',1,'Loyc::Collections']]],
   ['alisttreeobserverext',['AListTreeObserverExt',['../classLoyc_1_1Collections_1_1Impl_1_1AListTreeObserverExt.html',1,'Loyc::Collections::Impl']]],
   ['alts',['Alts',['../classLoyc_1_1LLParserGenerator_1_1Alts.html',1,'Loyc::LLParserGenerator']]],

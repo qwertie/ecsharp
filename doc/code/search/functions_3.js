@@ -1,6 +1,7 @@
 var searchData=
 [
   ['datalist',['DataList',['../classLoyc_1_1ExceptionExt.html#a0156c141548bbffc7271142e116c9390',1,'Loyc.ExceptionExt.DataList(this Exception ex)'],['../classLoyc_1_1ExceptionExt.html#a1133d55c63723bcf29bb2e77a068edf8',1,'Loyc.ExceptionExt.DataList(this Exception ex, string linePrefix, string keyValueSeparator, string newLine)']]],
+  ['decodeat',['DecodeAt',['../structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815',1,'Loyc::UString']]],
   ['definecustomwrappercreator',['DefineCustomWrapperCreator',['../classLoyc_1_1Utilities_1_1GoInterface.html#aec970845df3bb4ac035c044c59e9d110',1,'Loyc::Utilities::GoInterface']]],
   ['description',['Description',['../classLoyc_1_1ExceptionExt.html#aac948a514eb1d2d9d8c82b85e80bd15a',1,'Loyc.ExceptionExt.Description(this Exception ex)'],['../classLoyc_1_1ExceptionExt.html#a2c4e98f1462a6455be54d3476689f689',1,'Loyc.ExceptionExt.Description(this Exception ex, bool addStackTrace, string lineSeparator=&quot;\n\n&quot;)']]],
   ['descriptionandstacktrace',['DescriptionAndStackTrace',['../classLoyc_1_1ExceptionExt.html#aaaf5766c5f3e5e138a18a347c99a631a',1,'Loyc::ExceptionExt']]],

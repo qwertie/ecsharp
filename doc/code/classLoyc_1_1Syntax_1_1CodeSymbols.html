@@ -97,512 +97,512 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>A list of common symbols that have special meaning somewhere in <a class="el" href="namespaceLoyc.html">Loyc</a> or EC#: operators, built-in data types, keywords, trivia, etc.  
+<p>A list of common symbols that have special meaning somewhere in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> or EC#: operators, built-in data types, keywords, trivia, etc.  
  <a href="classLoyc_1_1Syntax_1_1CodeSymbols.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/CodeSymbols.cs'>/Core/Loyc.Syntax/CodeSymbols.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>A list of common symbols that have special meaning somewhere in <a class="el" href="namespaceLoyc.html">Loyc</a> or EC#: operators, built-in data types, keywords, trivia, etc. </p>
-<p>Code that can use symbol forms directly, such as "'!=", tends to be very compact. The symbols in this class tend to be abbreviated in order to make usages of this class more compact (e.g. <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a433a1e82c806b3bd0631f7883b7b8468" title="&quot;!=&quot; Inequality test operator ">NotEq</a> is short like its corresponding symbol "'!="). In C# one can access these symbols more easily with <code>using static <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html" title="A list of common symbols that have special meaning somewhere in Loyc or EC#: operators, built-in data types, keywords, trivia, etc. ">Loyc.Syntax.CodeSymbols</a></code> or with <code>using S = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html" title="A list of common symbols that have special meaning somewhere in Loyc or EC#: operators, built-in data types, keywords, trivia, etc. ">Loyc.Syntax.CodeSymbols</a></code> as the <a class="el" href="namespaceLoyc.html">Loyc</a> codebase does. </p>
+<div class="textblock"><p>A list of common symbols that have special meaning somewhere in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> or EC#: operators, built-in data types, keywords, trivia, etc. </p>
+<p>Code that can use symbol forms directly, such as "'!=", tends to be very compact. The symbols in this class tend to be abbreviated in order to make usages of this class more compact (e.g. <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a433a1e82c806b3bd0631f7883b7b8468" title="&quot;!=&quot; Inequality test operator ">NotEq</a> is short like its corresponding symbol "'!="). In C# one can access these symbols more easily with <code>using static <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html" title="A list of common symbols that have special meaning somewhere in Loyc or EC#: operators, built-in data types, keywords, trivia, etc. ">Loyc.Syntax.CodeSymbols</a></code> or with <code>using S = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html" title="A list of common symbols that have special meaning somewhere in Loyc or EC#: operators, built-in data types, keywords, trivia, etc. ">Loyc.Syntax.CodeSymbols</a></code> as the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> codebase does. </p>
 <p>Some symbols have an alternate name that starts with an underscore. For example, <code>_Negate</code> represents the unary minus operator, but in fact it is the same symbol as the subtraction operator <code>Sub</code>, <code>'-</code>. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:aa50b559e1ac53c801516180289ad5206"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa50b559e1ac53c801516180289ad5206"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa50b559e1ac53c801516180289ad5206">Mul</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa50b559e1ac53c801516180289ad5206">Mul</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
 <tr class="memdesc:aa50b559e1ac53c801516180289ad5206"><td class="mdescLeft">&#160;</td><td class="mdescRight">"*" Multiplication (or dereference) <br /></td></tr>
 <tr class="separator:aa50b559e1ac53c801516180289ad5206"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a661c77d6023f9550088e3794a63ee259"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a661c77d6023f9550088e3794a63ee259"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a661c77d6023f9550088e3794a63ee259">Div</a> = GSymbol.Get(&quot;'/&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a661c77d6023f9550088e3794a63ee259">Div</a> = GSymbol.Get(&quot;'/&quot;)</td></tr>
 <tr class="memdesc:a661c77d6023f9550088e3794a63ee259"><td class="mdescLeft">&#160;</td><td class="mdescRight">"/" Division <br /></td></tr>
 <tr class="separator:a661c77d6023f9550088e3794a63ee259"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e610eb42b618674176e0a8fb52cb1c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e610eb42b618674176e0a8fb52cb1c3"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e610eb42b618674176e0a8fb52cb1c3">Add</a> = GSymbol.Get(&quot;'+&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e610eb42b618674176e0a8fb52cb1c3">Add</a> = GSymbol.Get(&quot;'+&quot;)</td></tr>
 <tr class="memdesc:a5e610eb42b618674176e0a8fb52cb1c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">"+" Addition or unary + <br /></td></tr>
 <tr class="separator:a5e610eb42b618674176e0a8fb52cb1c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1394fa1522163796daf48e6920132e25"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1394fa1522163796daf48e6920132e25"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1394fa1522163796daf48e6920132e25">Sub</a> = GSymbol.Get(&quot;'-&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1394fa1522163796daf48e6920132e25">Sub</a> = GSymbol.Get(&quot;'-&quot;)</td></tr>
 <tr class="memdesc:a1394fa1522163796daf48e6920132e25"><td class="mdescLeft">&#160;</td><td class="mdescRight">"-" Subtraction or unary - <br /></td></tr>
 <tr class="separator:a1394fa1522163796daf48e6920132e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e15223b75431ed276d0ad91eec79e2a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e15223b75431ed276d0ad91eec79e2a"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4e15223b75431ed276d0ad91eec79e2a">_Dereference</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4e15223b75431ed276d0ad91eec79e2a">_Dereference</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
 <tr class="memdesc:a4e15223b75431ed276d0ad91eec79e2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for Mul. <br /></td></tr>
 <tr class="separator:a4e15223b75431ed276d0ad91eec79e2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4dc4c28f47ea0ca40abe3c95a724c37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4dc4c28f47ea0ca40abe3c95a724c37"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ad4dc4c28f47ea0ca40abe3c95a724c37">_Pointer</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ad4dc4c28f47ea0ca40abe3c95a724c37">_Pointer</a> = GSymbol.Get(&quot;'*&quot;)</td></tr>
 <tr class="memdesc:ad4dc4c28f47ea0ca40abe3c95a724c37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for Mul. <br /></td></tr>
 <tr class="separator:ad4dc4c28f47ea0ca40abe3c95a724c37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac175261d42413fdf89c08705872d1e11"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac175261d42413fdf89c08705872d1e11"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac175261d42413fdf89c08705872d1e11">_UnaryPlus</a> = GSymbol.Get(&quot;'+&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac175261d42413fdf89c08705872d1e11">_UnaryPlus</a> = GSymbol.Get(&quot;'+&quot;)</td></tr>
 <tr class="memdesc:ac175261d42413fdf89c08705872d1e11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for Add. <br /></td></tr>
 <tr class="separator:ac175261d42413fdf89c08705872d1e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a513ec2818f0032d833497b7edabd35dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a513ec2818f0032d833497b7edabd35dd"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a513ec2818f0032d833497b7edabd35dd">_Negate</a> = GSymbol.Get(&quot;'-&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a513ec2818f0032d833497b7edabd35dd">_Negate</a> = GSymbol.Get(&quot;'-&quot;)</td></tr>
 <tr class="memdesc:a513ec2818f0032d833497b7edabd35dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for Sub. Infix and prefix operators use same symbol. <br /></td></tr>
 <tr class="separator:a513ec2818f0032d833497b7edabd35dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab90d30d694b50d343e5ba6930d8c0630"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab90d30d694b50d343e5ba6930d8c0630"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab90d30d694b50d343e5ba6930d8c0630">PreInc</a> = GSymbol.Get(&quot;'++&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab90d30d694b50d343e5ba6930d8c0630">PreInc</a> = GSymbol.Get(&quot;'++&quot;)</td></tr>
 <tr class="memdesc:ab90d30d694b50d343e5ba6930d8c0630"><td class="mdescLeft">&#160;</td><td class="mdescRight">"++" Unary prefix increment <br /></td></tr>
 <tr class="separator:ab90d30d694b50d343e5ba6930d8c0630"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a447bf842b7c532f0f729dbb61cab3c83"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a447bf842b7c532f0f729dbb61cab3c83"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a447bf842b7c532f0f729dbb61cab3c83">PreDec</a> = GSymbol.Get(&quot;'--&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a447bf842b7c532f0f729dbb61cab3c83">PreDec</a> = GSymbol.Get(&quot;'--&quot;)</td></tr>
 <tr class="memdesc:a447bf842b7c532f0f729dbb61cab3c83"><td class="mdescLeft">&#160;</td><td class="mdescRight">"--" Unary prefix decrement <br /></td></tr>
 <tr class="separator:a447bf842b7c532f0f729dbb61cab3c83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d393ba2a13455dd092978089047088b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d393ba2a13455dd092978089047088b"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0d393ba2a13455dd092978089047088b">PostInc</a> = GSymbol.Get(&quot;'suf++&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0d393ba2a13455dd092978089047088b">PostInc</a> = GSymbol.Get(&quot;'suf++&quot;)</td></tr>
 <tr class="memdesc:a0d393ba2a13455dd092978089047088b"><td class="mdescLeft">&#160;</td><td class="mdescRight">"suf++" Unary suffix increment <br /></td></tr>
 <tr class="separator:a0d393ba2a13455dd092978089047088b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac25f1c93c175c08d0197d8bf88e80ee4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac25f1c93c175c08d0197d8bf88e80ee4"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac25f1c93c175c08d0197d8bf88e80ee4">PostDec</a> = GSymbol.Get(&quot;'suf--&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac25f1c93c175c08d0197d8bf88e80ee4">PostDec</a> = GSymbol.Get(&quot;'suf--&quot;)</td></tr>
 <tr class="memdesc:ac25f1c93c175c08d0197d8bf88e80ee4"><td class="mdescLeft">&#160;</td><td class="mdescRight">"suf--" Unary suffix decrement <br /></td></tr>
 <tr class="separator:ac25f1c93c175c08d0197d8bf88e80ee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6789dccc54facf2cafd3b5b853bf5cda"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6789dccc54facf2cafd3b5b853bf5cda"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6789dccc54facf2cafd3b5b853bf5cda">Mod</a> = GSymbol.Get(&quot;'%&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6789dccc54facf2cafd3b5b853bf5cda">Mod</a> = GSymbol.Get(&quot;'%&quot;)</td></tr>
 <tr class="memdesc:a6789dccc54facf2cafd3b5b853bf5cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">"%" Remainder operator <br /></td></tr>
 <tr class="separator:a6789dccc54facf2cafd3b5b853bf5cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ef98455bd162dec6d12a0cf459241c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ef98455bd162dec6d12a0cf459241c1"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8ef98455bd162dec6d12a0cf459241c1">And</a> = GSymbol.Get(&quot;'&amp;&amp;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8ef98455bd162dec6d12a0cf459241c1">And</a> = GSymbol.Get(&quot;'&amp;&amp;&quot;)</td></tr>
 <tr class="memdesc:a8ef98455bd162dec6d12a0cf459241c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&amp;&amp;" Logical short-circuit 'and' operator <br /></td></tr>
 <tr class="separator:a8ef98455bd162dec6d12a0cf459241c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a321540421f62f255d418325406f7723c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a321540421f62f255d418325406f7723c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a321540421f62f255d418325406f7723c">Or</a> = GSymbol.Get(&quot;'||&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a321540421f62f255d418325406f7723c">Or</a> = GSymbol.Get(&quot;'||&quot;)</td></tr>
 <tr class="memdesc:a321540421f62f255d418325406f7723c"><td class="mdescLeft">&#160;</td><td class="mdescRight">"||" Logical short-circuit 'or' operator <br /></td></tr>
 <tr class="separator:a321540421f62f255d418325406f7723c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26b40e64a6603dd459d671cc82fd0c45"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26b40e64a6603dd459d671cc82fd0c45"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a26b40e64a6603dd459d671cc82fd0c45">Xor</a> = GSymbol.Get(&quot;'^^&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a26b40e64a6603dd459d671cc82fd0c45">Xor</a> = GSymbol.Get(&quot;'^^&quot;)</td></tr>
 <tr class="memdesc:a26b40e64a6603dd459d671cc82fd0c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">"^^" Logical 'xor' operator (tentative&ndash;this operator is redundant, "!=" is equivalent) <br /></td></tr>
 <tr class="separator:a26b40e64a6603dd459d671cc82fd0c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad495eabe5dd95d326d05f1ba17a9284"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad495eabe5dd95d326d05f1ba17a9284"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aad495eabe5dd95d326d05f1ba17a9284">Eq</a> = GSymbol.Get(&quot;'==&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aad495eabe5dd95d326d05f1ba17a9284">Eq</a> = GSymbol.Get(&quot;'==&quot;)</td></tr>
 <tr class="memdesc:aad495eabe5dd95d326d05f1ba17a9284"><td class="mdescLeft">&#160;</td><td class="mdescRight">"==" Equality test operator <br /></td></tr>
 <tr class="separator:aad495eabe5dd95d326d05f1ba17a9284"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a433a1e82c806b3bd0631f7883b7b8468"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a433a1e82c806b3bd0631f7883b7b8468"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a433a1e82c806b3bd0631f7883b7b8468">NotEq</a> = GSymbol.Get(&quot;'!=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a433a1e82c806b3bd0631f7883b7b8468">NotEq</a> = GSymbol.Get(&quot;'!=&quot;)</td></tr>
 <tr class="memdesc:a433a1e82c806b3bd0631f7883b7b8468"><td class="mdescLeft">&#160;</td><td class="mdescRight">"!=" Inequality test operator <br /></td></tr>
 <tr class="separator:a433a1e82c806b3bd0631f7883b7b8468"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23ace55f57437a7a52ba75034c31baf8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23ace55f57437a7a52ba75034c31baf8"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a23ace55f57437a7a52ba75034c31baf8">Neq</a> = GSymbol.Get(&quot;'!=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a23ace55f57437a7a52ba75034c31baf8">Neq</a> = GSymbol.Get(&quot;'!=&quot;)</td></tr>
 <tr class="memdesc:a23ace55f57437a7a52ba75034c31baf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"!=" Inequality test operator <br /></td></tr>
 <tr class="separator:a23ace55f57437a7a52ba75034c31baf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a826c7c3143cbec08dcc108c2ee6b5fbb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a826c7c3143cbec08dcc108c2ee6b5fbb"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a826c7c3143cbec08dcc108c2ee6b5fbb">GT</a> = GSymbol.Get(&quot;'&gt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a826c7c3143cbec08dcc108c2ee6b5fbb">GT</a> = GSymbol.Get(&quot;'&gt;&quot;)</td></tr>
 <tr class="memdesc:a826c7c3143cbec08dcc108c2ee6b5fbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&gt;" Greater-than operator <br /></td></tr>
 <tr class="separator:a826c7c3143cbec08dcc108c2ee6b5fbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48434b8335d8b39392e01f7d8efeae7c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48434b8335d8b39392e01f7d8efeae7c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a48434b8335d8b39392e01f7d8efeae7c">GE</a> = GSymbol.Get(&quot;'&gt;=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a48434b8335d8b39392e01f7d8efeae7c">GE</a> = GSymbol.Get(&quot;'&gt;=&quot;)</td></tr>
 <tr class="memdesc:a48434b8335d8b39392e01f7d8efeae7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&gt;=" Greater-than-or-equal-to operator <br /></td></tr>
 <tr class="separator:a48434b8335d8b39392e01f7d8efeae7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c7d4e2fdc70cf90e64f89bea2c45779"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6c7d4e2fdc70cf90e64f89bea2c45779"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6c7d4e2fdc70cf90e64f89bea2c45779">LT</a> = GSymbol.Get(&quot;'&lt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6c7d4e2fdc70cf90e64f89bea2c45779">LT</a> = GSymbol.Get(&quot;'&lt;&quot;)</td></tr>
 <tr class="memdesc:a6c7d4e2fdc70cf90e64f89bea2c45779"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&lt;" Less-than operator <br /></td></tr>
 <tr class="separator:a6c7d4e2fdc70cf90e64f89bea2c45779"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2707451486382a0d4a5a89140783f7ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2707451486382a0d4a5a89140783f7ff"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a2707451486382a0d4a5a89140783f7ff">LE</a> = GSymbol.Get(&quot;'&lt;=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a2707451486382a0d4a5a89140783f7ff">LE</a> = GSymbol.Get(&quot;'&lt;=&quot;)</td></tr>
 <tr class="memdesc:a2707451486382a0d4a5a89140783f7ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&lt;=" Less-than-or-equal-to operator <br /></td></tr>
 <tr class="separator:a2707451486382a0d4a5a89140783f7ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4741f5dc76ed68f5ebfe7d46c7b66100"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4741f5dc76ed68f5ebfe7d46c7b66100"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4741f5dc76ed68f5ebfe7d46c7b66100">Matches</a> = GSymbol.Get(&quot;'=~&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4741f5dc76ed68f5ebfe7d46c7b66100">Matches</a> = GSymbol.Get(&quot;'=~&quot;)</td></tr>
 <tr class="memdesc:a4741f5dc76ed68f5ebfe7d46c7b66100"><td class="mdescLeft">&#160;</td><td class="mdescRight">"==" Equality test operator <br /></td></tr>
 <tr class="separator:a4741f5dc76ed68f5ebfe7d46c7b66100"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a445f8ac03a658ff1216bf849ea1629d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a445f8ac03a658ff1216bf849ea1629d3"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a445f8ac03a658ff1216bf849ea1629d3">Shr</a> = GSymbol.Get(&quot;'&gt;&gt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a445f8ac03a658ff1216bf849ea1629d3">Shr</a> = GSymbol.Get(&quot;'&gt;&gt;&quot;)</td></tr>
 <tr class="memdesc:a445f8ac03a658ff1216bf849ea1629d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&gt;&gt;" Right-shift operator <br /></td></tr>
 <tr class="separator:a445f8ac03a658ff1216bf849ea1629d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a815651defeb8f476c245d035f5721582"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a815651defeb8f476c245d035f5721582"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a815651defeb8f476c245d035f5721582">Shl</a> = GSymbol.Get(&quot;'&lt;&lt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a815651defeb8f476c245d035f5721582">Shl</a> = GSymbol.Get(&quot;'&lt;&lt;&quot;)</td></tr>
 <tr class="memdesc:a815651defeb8f476c245d035f5721582"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&lt;&lt;" Left-shift operator <br /></td></tr>
 <tr class="separator:a815651defeb8f476c245d035f5721582"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac56097e29f5254529470d32b8d6191bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac56097e29f5254529470d32b8d6191bf"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac56097e29f5254529470d32b8d6191bf">Not</a> = GSymbol.Get(&quot;'!&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac56097e29f5254529470d32b8d6191bf">Not</a> = GSymbol.Get(&quot;'!&quot;)</td></tr>
 <tr class="memdesc:ac56097e29f5254529470d32b8d6191bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">"!" Logical 'not' operator <br /></td></tr>
 <tr class="separator:ac56097e29f5254529470d32b8d6191bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4484aa5c01c373b7f183af9cf314b12b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4484aa5c01c373b7f183af9cf314b12b"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b">Assign</a> = GSymbol.Get(&quot;'=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b">Assign</a> = GSymbol.Get(&quot;'=&quot;)</td></tr>
 <tr class="memdesc:a4484aa5c01c373b7f183af9cf314b12b"><td class="mdescLeft">&#160;</td><td class="mdescRight">"=" Assignment operator <br /></td></tr>
 <tr class="separator:a4484aa5c01c373b7f183af9cf314b12b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfdd5dac0f2f13ab5f3ae152e5eed150"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfdd5dac0f2f13ab5f3ae152e5eed150"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#acfdd5dac0f2f13ab5f3ae152e5eed150">OrBits</a> = GSymbol.Get(&quot;'|&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#acfdd5dac0f2f13ab5f3ae152e5eed150">OrBits</a> = GSymbol.Get(&quot;'|&quot;)</td></tr>
 <tr class="memdesc:acfdd5dac0f2f13ab5f3ae152e5eed150"><td class="mdescLeft">&#160;</td><td class="mdescRight">"|" Bitwise or operator <br /></td></tr>
 <tr class="separator:acfdd5dac0f2f13ab5f3ae152e5eed150"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5482443bfc93a989c8506324fbb753aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5482443bfc93a989c8506324fbb753aa"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5482443bfc93a989c8506324fbb753aa">AndBits</a> = GSymbol.Get(&quot;'&amp;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5482443bfc93a989c8506324fbb753aa">AndBits</a> = GSymbol.Get(&quot;'&amp;&quot;)</td></tr>
 <tr class="memdesc:a5482443bfc93a989c8506324fbb753aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&amp;" Bitwise and operator. Also, address-of (unary &amp;) <br /></td></tr>
 <tr class="separator:a5482443bfc93a989c8506324fbb753aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9672aa4215bab8561d293cdbdedc421"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9672aa4215bab8561d293cdbdedc421"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af9672aa4215bab8561d293cdbdedc421">_AddressOf</a> = GSymbol.Get(&quot;'&amp;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af9672aa4215bab8561d293cdbdedc421">_AddressOf</a> = GSymbol.Get(&quot;'&amp;&quot;)</td></tr>
 <tr class="memdesc:af9672aa4215bab8561d293cdbdedc421"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for AndBits. <br /></td></tr>
 <tr class="separator:af9672aa4215bab8561d293cdbdedc421"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab259fd6eb869d058090882037145eeae"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab259fd6eb869d058090882037145eeae"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab259fd6eb869d058090882037145eeae">NotBits</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab259fd6eb869d058090882037145eeae">NotBits</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
 <tr class="memdesc:ab259fd6eb869d058090882037145eeae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unary bitwise inversion operator. <br /></td></tr>
 <tr class="separator:ab259fd6eb869d058090882037145eeae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a465be0a2e14a65055642f763a52f6c49"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a465be0a2e14a65055642f763a52f6c49"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a465be0a2e14a65055642f763a52f6c49">_Concat</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a465be0a2e14a65055642f763a52f6c49">_Concat</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
 <tr class="memdesc:a465be0a2e14a65055642f763a52f6c49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for NotBits. Concat operator in D. <br /></td></tr>
 <tr class="separator:a465be0a2e14a65055642f763a52f6c49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32097261ea9482607a3e47fbfc0772fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32097261ea9482607a3e47fbfc0772fe"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a32097261ea9482607a3e47fbfc0772fe">_Destruct</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a32097261ea9482607a3e47fbfc0772fe">_Destruct</a> = GSymbol.Get(&quot;'~&quot;)</td></tr>
 <tr class="memdesc:a32097261ea9482607a3e47fbfc0772fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for NotBits. <br /></td></tr>
 <tr class="separator:a32097261ea9482607a3e47fbfc0772fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a808d6a0d3f61c8405e745775bf2f625c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a808d6a0d3f61c8405e745775bf2f625c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a808d6a0d3f61c8405e745775bf2f625c">XorBits</a> = GSymbol.Get(&quot;'^&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a808d6a0d3f61c8405e745775bf2f625c">XorBits</a> = GSymbol.Get(&quot;'^&quot;)</td></tr>
 <tr class="memdesc:a808d6a0d3f61c8405e745775bf2f625c"><td class="mdescLeft">&#160;</td><td class="mdescRight">"^" Bitwise exclusive-or operator <br /></td></tr>
 <tr class="separator:a808d6a0d3f61c8405e745775bf2f625c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b43c4a6ddadf3ab8fe3333aee405969"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b43c4a6ddadf3ab8fe3333aee405969"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1b43c4a6ddadf3ab8fe3333aee405969">Braces</a> = GSymbol.Get(&quot;'{}&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1b43c4a6ddadf3ab8fe3333aee405969">Braces</a> = GSymbol.Get(&quot;'{}&quot;)</td></tr>
 <tr class="memdesc:a1b43c4a6ddadf3ab8fe3333aee405969"><td class="mdescLeft">&#160;</td><td class="mdescRight">"{}" Creates a scope. <br /></td></tr>
 <tr class="separator:a1b43c4a6ddadf3ab8fe3333aee405969"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78be31dfce1d8092cb12368259070939"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a78be31dfce1d8092cb12368259070939">IndexBracks</a> = GSymbol.Get(&quot;'suf[]&quot;)</td></tr>
+<tr class="memitem:a78be31dfce1d8092cb12368259070939"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a78be31dfce1d8092cb12368259070939">IndexBracks</a> = GSymbol.Get(&quot;'suf[]&quot;)</td></tr>
 <tr class="separator:a78be31dfce1d8092cb12368259070939"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25615887d2c9b4753c8b29d07f67ed40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25615887d2c9b4753c8b29d07f67ed40"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a25615887d2c9b4753c8b29d07f67ed40">Array</a> = GSymbol.Get(&quot;'[]&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a25615887d2c9b4753c8b29d07f67ed40">Array</a> = GSymbol.Get(&quot;'[]&quot;)</td></tr>
 <tr class="memdesc:a25615887d2c9b4753c8b29d07f67ed40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used for list/array literals. Not used for attributes. <br /></td></tr>
 <tr class="separator:a25615887d2c9b4753c8b29d07f67ed40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b6565e429f159bb31cd4a67e1f9f3c2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b6565e429f159bb31cd4a67e1f9f3c2"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3b6565e429f159bb31cd4a67e1f9f3c2">_Bracks</a> = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a25615887d2c9b4753c8b29d07f67ed40">Array</a></td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3b6565e429f159bb31cd4a67e1f9f3c2">_Bracks</a> = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a25615887d2c9b4753c8b29d07f67ed40">Array</a></td></tr>
 <tr class="memdesc:a3b6565e429f159bb31cd4a67e1f9f3c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synonym for Array (@<code>#[]</code>) <br /></td></tr>
 <tr class="separator:a3b6565e429f159bb31cd4a67e1f9f3c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ebcb88817e2b3d2cd9259fcc54da952"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ebcb88817e2b3d2cd9259fcc54da952"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9ebcb88817e2b3d2cd9259fcc54da952">TwoDimensionalArray</a> = GSymbol.Get(&quot;'[,]&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9ebcb88817e2b3d2cd9259fcc54da952">TwoDimensionalArray</a> = GSymbol.Get(&quot;'[,]&quot;)</td></tr>
 <tr class="memdesc:a9ebcb88817e2b3d2cd9259fcc54da952"><td class="mdescLeft">&#160;</td><td class="mdescRight">int[,] &lt;=&gt; @'of(&lt;tt&gt;#[,], int) <br /></td></tr>
 <tr class="separator:a9ebcb88817e2b3d2cd9259fcc54da952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68ecc8b429d671012701bb846422b2e6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68ecc8b429d671012701bb846422b2e6"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a68ecc8b429d671012701bb846422b2e6">Async</a> = GSymbol.Get(&quot;#async&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a68ecc8b429d671012701bb846422b2e6">Async</a> = GSymbol.Get(&quot;#async&quot;)</td></tr>
 <tr class="memdesc:a68ecc8b429d671012701bb846422b2e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">[#async] Task Foo(); &lt;=&gt; async Task Foo(); <br /></td></tr>
 <tr class="separator:a68ecc8b429d671012701bb846422b2e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40e50d494d14d9787c8e2295aea408f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40e50d494d14d9787c8e2295aea408f8"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a40e50d494d14d9787c8e2295aea408f8">Await</a> = GSymbol.Get(&quot;await&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a40e50d494d14d9787c8e2295aea408f8">Await</a> = GSymbol.Get(&quot;await&quot;)</td></tr>
 <tr class="memdesc:a40e50d494d14d9787c8e2295aea408f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">await(x); &lt;=&gt; await x; (TENTATIVE: should this be changed to #await?) <br /></td></tr>
 <tr class="separator:a40e50d494d14d9787c8e2295aea408f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7a4f0187c1f7fa1ca8fc49971dccc5b8">NullIndexBracks</a> = GSymbol.Get(&quot;'?[]&quot;)</td></tr>
+<tr class="memitem:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7a4f0187c1f7fa1ca8fc49971dccc5b8">NullIndexBracks</a> = GSymbol.Get(&quot;'?[]&quot;)</td></tr>
 <tr class="memdesc:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">&lt;tt&gt;?[](foo, #(1, A)) &lt;=&gt; foo?[1, A] (TENTATIVE, may be changed later)  <a href="#a7a4f0187c1f7fa1ca8fc49971dccc5b8">More...</a><br /></td></tr>
 <tr class="separator:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affd0628335f3f317ef8954f09ecd9dff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="affd0628335f3f317ef8954f09ecd9dff"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#affd0628335f3f317ef8954f09ecd9dff">InitializerAssignment</a> = GSymbol.Get(&quot;'[]=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#affd0628335f3f317ef8954f09ecd9dff">InitializerAssignment</a> = GSymbol.Get(&quot;'[]=&quot;)</td></tr>
 <tr class="memdesc:affd0628335f3f317ef8954f09ecd9dff"><td class="mdescLeft">&#160;</td><td class="mdescRight">&lt;tt&gt;[]=(0, 1, x) &lt;=&gt; [0, 1]=x <br /></td></tr>
 <tr class="separator:affd0628335f3f317ef8954f09ecd9dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aff3159e20b6c4b8de5a29ada18e47a3a">AltList</a> = GSymbol.Get(&quot;#&quot;)</td></tr>
+<tr class="memitem:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aff3159e20b6c4b8de5a29ada18e47a3a">AltList</a> = GSymbol.Get(&quot;#&quot;)</td></tr>
 <tr class="memdesc:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight"># is used for lists of things in definition constructs, e.g. <code>#class(Derived, #(Base, IEnumerable), {...})</code>. For a time, 'tuple was used for this purpose; the problem is that a find-and-replace operation intended to find run-time tuples could accidentally match one of these lists. So I decided to dedicate # for use inside special constructs; its meaning depends on context.  <a href="#aff3159e20b6c4b8de5a29ada18e47a3a">More...</a><br /></td></tr>
 <tr class="separator:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00400ab91cf7c9b15f80ecc22e8fec94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00400ab91cf7c9b15f80ecc22e8fec94"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><b>_HashMark</b> = GSymbol.Get(&quot;#&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_HashMark</b> = GSymbol.Get(&quot;#&quot;)</td></tr>
 <tr class="separator:a00400ab91cf7c9b15f80ecc22e8fec94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a306a3682a3eff3b6500545a5afd18596"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a306a3682a3eff3b6500545a5afd18596"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a306a3682a3eff3b6500545a5afd18596">QuestionMark</a> = GSymbol.Get(&quot;'?&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a306a3682a3eff3b6500545a5afd18596">QuestionMark</a> = GSymbol.Get(&quot;'?&quot;)</td></tr>
 <tr class="memdesc:a306a3682a3eff3b6500545a5afd18596"><td class="mdescLeft">&#160;</td><td class="mdescRight">"?" Conditional operator. (a?b:c) &lt;=&gt; &lt;tt&gt;?(a,b,c) and int? &lt;=&gt; @'of(&lt;tt&gt;?, int) <br /></td></tr>
 <tr class="separator:a306a3682a3eff3b6500545a5afd18596"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c56025ca1da53ce5a019de6c22ccb10"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c56025ca1da53ce5a019de6c22ccb10"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7c56025ca1da53ce5a019de6c22ccb10">Of</a> = GSymbol.Get(&quot;'of&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7c56025ca1da53ce5a019de6c22ccb10">Of</a> = GSymbol.Get(&quot;'of&quot;)</td></tr>
 <tr class="memdesc:a7c56025ca1da53ce5a019de6c22ccb10"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'of" for giving generic arguments. @'of(List,int) &lt;=&gt; List&lt;int&gt; <br /></td></tr>
 <tr class="separator:a7c56025ca1da53ce5a019de6c22ccb10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3bbdaf945130e196febcb9ad51eae09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac3bbdaf945130e196febcb9ad51eae09"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac3bbdaf945130e196febcb9ad51eae09">Dot</a> = GSymbol.Get(&quot;'.&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac3bbdaf945130e196febcb9ad51eae09">Dot</a> = GSymbol.Get(&quot;'.&quot;)</td></tr>
 <tr class="memdesc:ac3bbdaf945130e196febcb9ad51eae09"><td class="mdescLeft">&#160;</td><td class="mdescRight">"." binary dot operator, e.g. string.Join <br /></td></tr>
 <tr class="separator:ac3bbdaf945130e196febcb9ad51eae09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba9eeedc26cc952131b6955797efd7e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba9eeedc26cc952131b6955797efd7e2"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba9eeedc26cc952131b6955797efd7e2">NamedArg</a> = GSymbol.Get(&quot;'::=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba9eeedc26cc952131b6955797efd7e2">NamedArg</a> = GSymbol.Get(&quot;'::=&quot;)</td></tr>
 <tr class="memdesc:aba9eeedc26cc952131b6955797efd7e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'::=" Named argument e.g. `'::=`(x, 0) &lt;=&gt; x: 0 <br /></td></tr>
 <tr class="separator:aba9eeedc26cc952131b6955797efd7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c864c30f57909ba8d419e1eea49e00a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c864c30f57909ba8d419e1eea49e00a"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9c864c30f57909ba8d419e1eea49e00a">New</a> = GSymbol.Get(&quot;'new&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9c864c30f57909ba8d419e1eea49e00a">New</a> = GSymbol.Get(&quot;'new&quot;)</td></tr>
 <tr class="memdesc:a9c864c30f57909ba8d419e1eea49e00a"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'new": new Foo(x) { a } &lt;=&gt; &lt;tt&gt;'new(Foo(x), a); new[] { ... } &lt;=&gt; &lt;tt&gt;'new(&lt;tt&gt;[](), ...) <br /></td></tr>
 <tr class="separator:a9c864c30f57909ba8d419e1eea49e00a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6754deb103cebbfc942e9c27254990dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6754deb103cebbfc942e9c27254990dc"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6754deb103cebbfc942e9c27254990dc">NewAttribute</a> = GSymbol.Get(&quot;#new&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6754deb103cebbfc942e9c27254990dc">NewAttribute</a> = GSymbol.Get(&quot;#new&quot;)</td></tr>
 <tr class="memdesc:a6754deb103cebbfc942e9c27254990dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#new": public new void Foo() {} &lt;=&gt; [#public, #new] #fn(#void, Foo, #(), {}) <br /></td></tr>
 <tr class="separator:a6754deb103cebbfc942e9c27254990dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0271325e0aec32aa2b4cbe5ab5abc70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0271325e0aec32aa2b4cbe5ab5abc70"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af0271325e0aec32aa2b4cbe5ab5abc70">Out</a> = GSymbol.Get(&quot;#out&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af0271325e0aec32aa2b4cbe5ab5abc70">Out</a> = GSymbol.Get(&quot;#out&quot;)</td></tr>
 <tr class="memdesc:af0271325e0aec32aa2b4cbe5ab5abc70"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#out": out x &lt;=&gt; [#out] x <br /></td></tr>
 <tr class="separator:af0271325e0aec32aa2b4cbe5ab5abc70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0da5f2b4e1ec0c226edb1aed1dc1ae35"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0da5f2b4e1ec0c226edb1aed1dc1ae35"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0da5f2b4e1ec0c226edb1aed1dc1ae35">Ref</a> = GSymbol.Get(&quot;#ref&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0da5f2b4e1ec0c226edb1aed1dc1ae35">Ref</a> = GSymbol.Get(&quot;#ref&quot;)</td></tr>
 <tr class="memdesc:a0da5f2b4e1ec0c226edb1aed1dc1ae35"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#ref": ref int x &lt;=&gt; [#ref] #var(#int, x) <br /></td></tr>
 <tr class="separator:a0da5f2b4e1ec0c226edb1aed1dc1ae35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d618c971fc8e9db5a449386166d57d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d618c971fc8e9db5a449386166d57d2"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8d618c971fc8e9db5a449386166d57d2">Sizeof</a> = GSymbol.Get(&quot;'sizeof&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8d618c971fc8e9db5a449386166d57d2">Sizeof</a> = GSymbol.Get(&quot;'sizeof&quot;)</td></tr>
 <tr class="memdesc:a8d618c971fc8e9db5a449386166d57d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'sizeof" sizeof(int) &lt;=&gt; @'sizeof(int) <br /></td></tr>
 <tr class="separator:a8d618c971fc8e9db5a449386166d57d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d3995d248824f5b0e2f86683865b3de"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9d3995d248824f5b0e2f86683865b3de">Typeof</a> = GSymbol.Get(&quot;'typeof&quot;)</td></tr>
+<tr class="memitem:a9d3995d248824f5b0e2f86683865b3de"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9d3995d248824f5b0e2f86683865b3de">Typeof</a> = GSymbol.Get(&quot;'typeof&quot;)</td></tr>
 <tr class="separator:a9d3995d248824f5b0e2f86683865b3de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fe87592101a85d89beb3c9727eb200b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8fe87592101a85d89beb3c9727eb200b"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8fe87592101a85d89beb3c9727eb200b">As</a> = GSymbol.Get(&quot;'as&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8fe87592101a85d89beb3c9727eb200b">As</a> = GSymbol.Get(&quot;'as&quot;)</td></tr>
 <tr class="memdesc:a8fe87592101a85d89beb3c9727eb200b"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'as": @'as(x,string) &lt;=&gt; x as string &lt;=&gt; x(as string) <br /></td></tr>
 <tr class="separator:a8fe87592101a85d89beb3c9727eb200b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3041ba7090b9f87929ec244f2b5645c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3041ba7090b9f87929ec244f2b5645c0"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3041ba7090b9f87929ec244f2b5645c0">Is</a> = GSymbol.Get(&quot;'is&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3041ba7090b9f87929ec244f2b5645c0">Is</a> = GSymbol.Get(&quot;'is&quot;)</td></tr>
 <tr class="memdesc:a3041ba7090b9f87929ec244f2b5645c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'is": @'is(x,string) &lt;=&gt; x is string, @'is(x,#var(Foo,v),#(y,z)) &lt;=&gt; x is Foo v(y, z) <br /></td></tr>
 <tr class="separator:a3041ba7090b9f87929ec244f2b5645c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a827d6b363beac6b9346f5572a8f79e34"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a827d6b363beac6b9346f5572a8f79e34"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a827d6b363beac6b9346f5572a8f79e34">Cast</a> = GSymbol.Get(&quot;'cast&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a827d6b363beac6b9346f5572a8f79e34">Cast</a> = GSymbol.Get(&quot;'cast&quot;)</td></tr>
 <tr class="memdesc:a827d6b363beac6b9346f5572a8f79e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'cast": @'cast(x,int) &lt;=&gt; (int)x &lt;=&gt; x(-&gt; int) <br /></td></tr>
 <tr class="separator:a827d6b363beac6b9346f5572a8f79e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61e8a90ed51990449f45e580782b4a83"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61e8a90ed51990449f45e580782b4a83"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a61e8a90ed51990449f45e580782b4a83">NullCoalesce</a> = GSymbol.Get(&quot;'??&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a61e8a90ed51990449f45e580782b4a83">NullCoalesce</a> = GSymbol.Get(&quot;'??&quot;)</td></tr>
 <tr class="memdesc:a61e8a90ed51990449f45e580782b4a83"><td class="mdescLeft">&#160;</td><td class="mdescRight">"??": a ?? b &lt;=&gt; &lt;tt&gt;??(a, b) <br /></td></tr>
 <tr class="separator:a61e8a90ed51990449f45e580782b4a83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59d6958654d46888653344df0bc0ac19"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59d6958654d46888653344df0bc0ac19"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a59d6958654d46888653344df0bc0ac19">PtrArrow</a> = GSymbol.Get(&quot;'-&gt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a59d6958654d46888653344df0bc0ac19">PtrArrow</a> = GSymbol.Get(&quot;'-&gt;&quot;)</td></tr>
 <tr class="memdesc:a59d6958654d46888653344df0bc0ac19"><td class="mdescLeft">&#160;</td><td class="mdescRight">"-&gt;": a-&gt;b &lt;=&gt; &lt;tt&gt;-&gt;(a, b) <br /></td></tr>
 <tr class="separator:a59d6958654d46888653344df0bc0ac19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade52d4e682e138d242eae55bf9574424"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade52d4e682e138d242eae55bf9574424"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ade52d4e682e138d242eae55bf9574424">ColonColon</a> = GSymbol.Get(&quot;'::&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ade52d4e682e138d242eae55bf9574424">ColonColon</a> = GSymbol.Get(&quot;'::&quot;)</td></tr>
 <tr class="memdesc:ade52d4e682e138d242eae55bf9574424"><td class="mdescLeft">&#160;</td><td class="mdescRight">"::" Scope resolution operator in many languages <br /></td></tr>
 <tr class="separator:ade52d4e682e138d242eae55bf9574424"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b5579759007a16fd2cba43fd624433d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b5579759007a16fd2cba43fd624433d"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9b5579759007a16fd2cba43fd624433d">Lambda</a> = GSymbol.Get(&quot;'=&gt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9b5579759007a16fd2cba43fd624433d">Lambda</a> = GSymbol.Get(&quot;'=&gt;&quot;)</td></tr>
 <tr class="memdesc:a9b5579759007a16fd2cba43fd624433d"><td class="mdescLeft">&#160;</td><td class="mdescRight">"=&gt;" used to define an anonymous function <br /></td></tr>
 <tr class="separator:a9b5579759007a16fd2cba43fd624433d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e7b1ab4fa682b89e50e70efdd736408"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e7b1ab4fa682b89e50e70efdd736408"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408">Default</a> = GSymbol.Get(&quot;'default&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408">Default</a> = GSymbol.Get(&quot;'default&quot;)</td></tr>
 <tr class="memdesc:a1e7b1ab4fa682b89e50e70efdd736408"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'default" for the default(T) pseudofunction in C# <br /></td></tr>
 <tr class="separator:a1e7b1ab4fa682b89e50e70efdd736408"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea4754ed177c2e6073a341f24498077e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aea4754ed177c2e6073a341f24498077e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aea4754ed177c2e6073a341f24498077e">NullCoalesceAssign</a> = GSymbol.Get(&quot;'??=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aea4754ed177c2e6073a341f24498077e">NullCoalesceAssign</a> = GSymbol.Get(&quot;'??=&quot;)</td></tr>
 <tr class="memdesc:aea4754ed177c2e6073a341f24498077e"><td class="mdescLeft">&#160;</td><td class="mdescRight">"??=": <code>a ??= b</code> means <code>a = a ?? b</code> <br /></td></tr>
 <tr class="separator:aea4754ed177c2e6073a341f24498077e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a248b59984cee390c8080b86ed617edfa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a248b59984cee390c8080b86ed617edfa"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a248b59984cee390c8080b86ed617edfa">MulAssign</a> = GSymbol.Get(&quot;'*=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a248b59984cee390c8080b86ed617edfa">MulAssign</a> = GSymbol.Get(&quot;'*=&quot;)</td></tr>
 <tr class="memdesc:a248b59984cee390c8080b86ed617edfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">"*=" multiply-and-set operator <br /></td></tr>
 <tr class="separator:a248b59984cee390c8080b86ed617edfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00c3531df4eab232ac333869a357d09d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00c3531df4eab232ac333869a357d09d"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a00c3531df4eab232ac333869a357d09d">DivAssign</a> = GSymbol.Get(&quot;'/=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a00c3531df4eab232ac333869a357d09d">DivAssign</a> = GSymbol.Get(&quot;'/=&quot;)</td></tr>
 <tr class="memdesc:a00c3531df4eab232ac333869a357d09d"><td class="mdescLeft">&#160;</td><td class="mdescRight">"/=" divide-and-set operator <br /></td></tr>
 <tr class="separator:a00c3531df4eab232ac333869a357d09d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a360e63e2bca0ac5ebe3c56dad2624d1c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a360e63e2bca0ac5ebe3c56dad2624d1c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a360e63e2bca0ac5ebe3c56dad2624d1c">ModAssign</a> = GSymbol.Get(&quot;'%=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a360e63e2bca0ac5ebe3c56dad2624d1c">ModAssign</a> = GSymbol.Get(&quot;'%=&quot;)</td></tr>
 <tr class="memdesc:a360e63e2bca0ac5ebe3c56dad2624d1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">"%=" set-to-remainder operator <br /></td></tr>
 <tr class="separator:a360e63e2bca0ac5ebe3c56dad2624d1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afae7d17fc911681aab3d3ca845e0ba30"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afae7d17fc911681aab3d3ca845e0ba30"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#afae7d17fc911681aab3d3ca845e0ba30">SubAssign</a> = GSymbol.Get(&quot;'-=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#afae7d17fc911681aab3d3ca845e0ba30">SubAssign</a> = GSymbol.Get(&quot;'-=&quot;)</td></tr>
 <tr class="memdesc:afae7d17fc911681aab3d3ca845e0ba30"><td class="mdescLeft">&#160;</td><td class="mdescRight">"-=" subtract-and-set operator <br /></td></tr>
 <tr class="separator:afae7d17fc911681aab3d3ca845e0ba30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a62b6c918826166ded629e83cebcb65"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a62b6c918826166ded629e83cebcb65"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5a62b6c918826166ded629e83cebcb65">AddAssign</a> = GSymbol.Get(&quot;'+=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5a62b6c918826166ded629e83cebcb65">AddAssign</a> = GSymbol.Get(&quot;'+=&quot;)</td></tr>
 <tr class="memdesc:a5a62b6c918826166ded629e83cebcb65"><td class="mdescLeft">&#160;</td><td class="mdescRight">"+=" add-and-set operator <br /></td></tr>
 <tr class="separator:a5a62b6c918826166ded629e83cebcb65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35c7a87446b92a51d2fd3d708a7da7dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35c7a87446b92a51d2fd3d708a7da7dd"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a35c7a87446b92a51d2fd3d708a7da7dd">ConcatAssign</a> = GSymbol.Get(&quot;'~=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a35c7a87446b92a51d2fd3d708a7da7dd">ConcatAssign</a> = GSymbol.Get(&quot;'~=&quot;)</td></tr>
 <tr class="memdesc:a35c7a87446b92a51d2fd3d708a7da7dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">"~=" concatenate-and-set operator <br /></td></tr>
 <tr class="separator:a35c7a87446b92a51d2fd3d708a7da7dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53ceabb8cf122d77f0f55fa18010f9c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53ceabb8cf122d77f0f55fa18010f9c1"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a53ceabb8cf122d77f0f55fa18010f9c1">ShrAssign</a> = GSymbol.Get(&quot;'&gt;&gt;=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a53ceabb8cf122d77f0f55fa18010f9c1">ShrAssign</a> = GSymbol.Get(&quot;'&gt;&gt;=&quot;)</td></tr>
 <tr class="memdesc:a53ceabb8cf122d77f0f55fa18010f9c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&gt;&gt;=" shift-right-by operator <br /></td></tr>
 <tr class="separator:a53ceabb8cf122d77f0f55fa18010f9c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf4656b6c81478c9144dbc4fa02d71fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf4656b6c81478c9144dbc4fa02d71fe"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aaf4656b6c81478c9144dbc4fa02d71fe">ShlAssign</a> = GSymbol.Get(&quot;'&lt;&lt;=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aaf4656b6c81478c9144dbc4fa02d71fe">ShlAssign</a> = GSymbol.Get(&quot;'&lt;&lt;=&quot;)</td></tr>
 <tr class="memdesc:aaf4656b6c81478c9144dbc4fa02d71fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&lt;&lt;=" shift-left-by operator <br /></td></tr>
 <tr class="separator:aaf4656b6c81478c9144dbc4fa02d71fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b148bff95b70a71d9e3877e7d9b9753"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b148bff95b70a71d9e3877e7d9b9753"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7b148bff95b70a71d9e3877e7d9b9753">ExpAssign</a> = GSymbol.Get(&quot;'**=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7b148bff95b70a71d9e3877e7d9b9753">ExpAssign</a> = GSymbol.Get(&quot;'**=&quot;)</td></tr>
 <tr class="memdesc:a7b148bff95b70a71d9e3877e7d9b9753"><td class="mdescLeft">&#160;</td><td class="mdescRight">"**=" raise-to-exponent-and-set operator <br /></td></tr>
 <tr class="separator:a7b148bff95b70a71d9e3877e7d9b9753"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfa8b40bb5bbbb05b8877d8e20806cb5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abfa8b40bb5bbbb05b8877d8e20806cb5"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#abfa8b40bb5bbbb05b8877d8e20806cb5">XorBitsAssign</a> = GSymbol.Get(&quot;'^=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#abfa8b40bb5bbbb05b8877d8e20806cb5">XorBitsAssign</a> = GSymbol.Get(&quot;'^=&quot;)</td></tr>
 <tr class="memdesc:abfa8b40bb5bbbb05b8877d8e20806cb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">"^=" bitwise-xor-by operator <br /></td></tr>
 <tr class="separator:abfa8b40bb5bbbb05b8877d8e20806cb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a361415d2e05cc894ca53aa927940c862"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a361415d2e05cc894ca53aa927940c862"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a361415d2e05cc894ca53aa927940c862">AndBitsAssign</a> = GSymbol.Get(&quot;'&amp;=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a361415d2e05cc894ca53aa927940c862">AndBitsAssign</a> = GSymbol.Get(&quot;'&amp;=&quot;)</td></tr>
 <tr class="memdesc:a361415d2e05cc894ca53aa927940c862"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&amp;=" bitwise-and-with operator <br /></td></tr>
 <tr class="separator:a361415d2e05cc894ca53aa927940c862"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36cf137b5ca19e68431255a61dc1353b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36cf137b5ca19e68431255a61dc1353b"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a36cf137b5ca19e68431255a61dc1353b">OrBitsAssign</a> = GSymbol.Get(&quot;'|=&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a36cf137b5ca19e68431255a61dc1353b">OrBitsAssign</a> = GSymbol.Get(&quot;'|=&quot;)</td></tr>
 <tr class="memdesc:a36cf137b5ca19e68431255a61dc1353b"><td class="mdescLeft">&#160;</td><td class="mdescRight">"|=" set-bits operator <br /></td></tr>
 <tr class="separator:a36cf137b5ca19e68431255a61dc1353b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01ac69f43e31b7d5a5449ca156fbfe99"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01ac69f43e31b7d5a5449ca156fbfe99"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a01ac69f43e31b7d5a5449ca156fbfe99">If</a> = GSymbol.Get(&quot;#if&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a01ac69f43e31b7d5a5449ca156fbfe99">If</a> = GSymbol.Get(&quot;#if&quot;)</td></tr>
 <tr class="memdesc:a01ac69f43e31b7d5a5449ca156fbfe99"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #if(c,x,y) and #if(c,x); I wanted it to be the conditional operator too, but the semantics are a bit different <br /></td></tr>
 <tr class="separator:a01ac69f43e31b7d5a5449ca156fbfe99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16a8619f73dbcf7c5bfee0b212c44bbc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a16a8619f73dbcf7c5bfee0b212c44bbc"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a16a8619f73dbcf7c5bfee0b212c44bbc">DoWhile</a> = GSymbol.Get(&quot;#doWhile&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a16a8619f73dbcf7c5bfee0b212c44bbc">DoWhile</a> = GSymbol.Get(&quot;#doWhile&quot;)</td></tr>
 <tr class="memdesc:a16a8619f73dbcf7c5bfee0b212c44bbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #doWhile(x++, condition); &lt;=&gt; do x++; while(condition); <br /></td></tr>
 <tr class="separator:a16a8619f73dbcf7c5bfee0b212c44bbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35e2369fe5d78cfc19230921ff1af9a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a35e2369fe5d78cfc19230921ff1af9a3"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a35e2369fe5d78cfc19230921ff1af9a3">While</a> = GSymbol.Get(&quot;#while&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a35e2369fe5d78cfc19230921ff1af9a3">While</a> = GSymbol.Get(&quot;#while&quot;)</td></tr>
 <tr class="memdesc:a35e2369fe5d78cfc19230921ff1af9a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #while(condition,{...}); &lt;=&gt; while(condition) {...} <br /></td></tr>
 <tr class="separator:a35e2369fe5d78cfc19230921ff1af9a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54ac05b6bd02e9c86972679bdcd103cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54ac05b6bd02e9c86972679bdcd103cf"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a54ac05b6bd02e9c86972679bdcd103cf">UsingStmt</a> = GSymbol.Get(&quot;#using&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a54ac05b6bd02e9c86972679bdcd103cf">UsingStmt</a> = GSymbol.Get(&quot;#using&quot;)</td></tr>
 <tr class="memdesc:a54ac05b6bd02e9c86972679bdcd103cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #using(expr, {...}); &lt;=&gt; using(expr) {...} (note: use #import or <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c60ab9de3d65a6176bcae09070d722e" title="#import is used instead of #using because the using(...) {...} statement already uses #using ...">CodeSymbols.Import</a> for a using directive) <br /></td></tr>
 <tr class="separator:a54ac05b6bd02e9c86972679bdcd103cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9601a7c5f93d4603144e14294d99d1e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9601a7c5f93d4603144e14294d99d1e4"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9601a7c5f93d4603144e14294d99d1e4">For</a> = GSymbol.Get(&quot;#for&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9601a7c5f93d4603144e14294d99d1e4">For</a> = GSymbol.Get(&quot;#for&quot;)</td></tr>
 <tr class="memdesc:a9601a7c5f93d4603144e14294d99d1e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #for(int i = 0, i &lt; Count, i++, {...}); &lt;=&gt; for(int i = 0; i &lt; Count; i++) {...} <br /></td></tr>
 <tr class="separator:a9601a7c5f93d4603144e14294d99d1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c981b3d8b46caf926d4233621a43fc2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1c981b3d8b46caf926d4233621a43fc2"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c981b3d8b46caf926d4233621a43fc2">ForEach</a> = GSymbol.Get(&quot;#foreach&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c981b3d8b46caf926d4233621a43fc2">ForEach</a> = GSymbol.Get(&quot;#foreach&quot;)</td></tr>
 <tr class="memdesc:a1c981b3d8b46caf926d4233621a43fc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #foreach(#var(@``, n), list, {...}); &lt;=&gt; foreach(var n in list) {...} <br /></td></tr>
 <tr class="separator:a1c981b3d8b46caf926d4233621a43fc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa83c17c66c03f5e169964b87997de25a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa83c17c66c03f5e169964b87997de25a"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa83c17c66c03f5e169964b87997de25a">Label</a> = GSymbol.Get(&quot;#label&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa83c17c66c03f5e169964b87997de25a">Label</a> = GSymbol.Get(&quot;#label&quot;)</td></tr>
 <tr class="memdesc:aa83c17c66c03f5e169964b87997de25a"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #label(success) &lt;=&gt; success: <br /></td></tr>
 <tr class="separator:aa83c17c66c03f5e169964b87997de25a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87d8657acf3e2747798f379fe95c2b05"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a87d8657acf3e2747798f379fe95c2b05"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a87d8657acf3e2747798f379fe95c2b05">Case</a> = GSymbol.Get(&quot;#case&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a87d8657acf3e2747798f379fe95c2b05">Case</a> = GSymbol.Get(&quot;#case&quot;)</td></tr>
 <tr class="memdesc:a87d8657acf3e2747798f379fe95c2b05"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #case(10, 20) &lt;=&gt; case 10, 20: <br /></td></tr>
 <tr class="separator:a87d8657acf3e2747798f379fe95c2b05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a2c2083e93ccb361f38162ddde112d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a2c2083e93ccb361f38162ddde112d1"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1a2c2083e93ccb361f38162ddde112d1">Return</a> = GSymbol.Get(&quot;#return&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1a2c2083e93ccb361f38162ddde112d1">Return</a> = GSymbol.Get(&quot;#return&quot;)</td></tr>
 <tr class="memdesc:a1a2c2083e93ccb361f38162ddde112d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #return(x); &lt;=&gt; return x; [#yield] #return(x) &lt;=&gt; yield return x; <br /></td></tr>
 <tr class="separator:a1a2c2083e93ccb361f38162ddde112d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67830e7e484161917444e93ced605698"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67830e7e484161917444e93ced605698"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a67830e7e484161917444e93ced605698">Continue</a> = GSymbol.Get(&quot;#continue&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a67830e7e484161917444e93ced605698">Continue</a> = GSymbol.Get(&quot;#continue&quot;)</td></tr>
 <tr class="memdesc:a67830e7e484161917444e93ced605698"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #continue(); &lt;=&gt; continue; <br /></td></tr>
 <tr class="separator:a67830e7e484161917444e93ced605698"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab84080680179aab3c395a65a216a4666"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab84080680179aab3c395a65a216a4666"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666">Break</a> = GSymbol.Get(&quot;#break&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666">Break</a> = GSymbol.Get(&quot;#break&quot;)</td></tr>
 <tr class="memdesc:ab84080680179aab3c395a65a216a4666"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #break(); &lt;=&gt; break; <br /></td></tr>
 <tr class="separator:ab84080680179aab3c395a65a216a4666"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac0e8fcc1f2fa9ee093aa8688f82483c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac0e8fcc1f2fa9ee093aa8688f82483c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aac0e8fcc1f2fa9ee093aa8688f82483c">Goto</a> = GSymbol.Get(&quot;#goto&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aac0e8fcc1f2fa9ee093aa8688f82483c">Goto</a> = GSymbol.Get(&quot;#goto&quot;)</td></tr>
 <tr class="memdesc:aac0e8fcc1f2fa9ee093aa8688f82483c"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #goto(label) &lt;=&gt; goto label; <br /></td></tr>
 <tr class="separator:aac0e8fcc1f2fa9ee093aa8688f82483c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82109c4f0dedaed7ac927f4f7f85876e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82109c4f0dedaed7ac927f4f7f85876e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a82109c4f0dedaed7ac927f4f7f85876e">GotoCase</a> = GSymbol.Get(&quot;#gotoCase&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a82109c4f0dedaed7ac927f4f7f85876e">GotoCase</a> = GSymbol.Get(&quot;#gotoCase&quot;)</td></tr>
 <tr class="memdesc:a82109c4f0dedaed7ac927f4f7f85876e"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #gotoCase(expr) &lt;=&gt; goto case expr; <br /></td></tr>
 <tr class="separator:a82109c4f0dedaed7ac927f4f7f85876e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a49ae448d2145ac4dc9cae3963ccf4649"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a49ae448d2145ac4dc9cae3963ccf4649"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a49ae448d2145ac4dc9cae3963ccf4649">Throw</a> = GSymbol.Get(&quot;#throw&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a49ae448d2145ac4dc9cae3963ccf4649">Throw</a> = GSymbol.Get(&quot;#throw&quot;)</td></tr>
 <tr class="memdesc:a49ae448d2145ac4dc9cae3963ccf4649"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #throw(expr); &lt;=&gt; throw expr; <br /></td></tr>
 <tr class="separator:a49ae448d2145ac4dc9cae3963ccf4649"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff51798c13656efc7e979f74bfe26c1e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aff51798c13656efc7e979f74bfe26c1e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aff51798c13656efc7e979f74bfe26c1e">Checked</a> = GSymbol.Get(&quot;#checked&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aff51798c13656efc7e979f74bfe26c1e">Checked</a> = GSymbol.Get(&quot;#checked&quot;)</td></tr>
 <tr class="memdesc:aff51798c13656efc7e979f74bfe26c1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #checked({ stmt; }); &lt;=&gt; checked { stmt; } <br /></td></tr>
 <tr class="separator:aff51798c13656efc7e979f74bfe26c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa91dd6a24e0d4c4367fb226296fcdb30"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa91dd6a24e0d4c4367fb226296fcdb30"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa91dd6a24e0d4c4367fb226296fcdb30">Unchecked</a> = GSymbol.Get(&quot;#unchecked&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa91dd6a24e0d4c4367fb226296fcdb30">Unchecked</a> = GSymbol.Get(&quot;#unchecked&quot;)</td></tr>
 <tr class="memdesc:aa91dd6a24e0d4c4367fb226296fcdb30"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #unchecked({ stmt; }); &lt;=&gt; unchecked { stmt; } <br /></td></tr>
 <tr class="separator:aa91dd6a24e0d4c4367fb226296fcdb30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94e1c3fbe35254233f9f0aaad2535f8d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94e1c3fbe35254233f9f0aaad2535f8d"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a94e1c3fbe35254233f9f0aaad2535f8d">Fixed</a> = GSymbol.Get(&quot;#fixed&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a94e1c3fbe35254233f9f0aaad2535f8d">Fixed</a> = GSymbol.Get(&quot;#fixed&quot;)</td></tr>
 <tr class="memdesc:a94e1c3fbe35254233f9f0aaad2535f8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #fixed(#var(&lt;tt&gt;*(#int32), x = &amp;y), stmt); &lt;=&gt; fixed(int* x = &amp;y) stmt; <br /></td></tr>
 <tr class="separator:a94e1c3fbe35254233f9f0aaad2535f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a076549f188e595b63d8aff571aea3391"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a076549f188e595b63d8aff571aea3391"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a076549f188e595b63d8aff571aea3391">Lock</a> = GSymbol.Get(&quot;#lock&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a076549f188e595b63d8aff571aea3391">Lock</a> = GSymbol.Get(&quot;#lock&quot;)</td></tr>
 <tr class="memdesc:a076549f188e595b63d8aff571aea3391"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #lock(obj, stmt); &lt;=&gt; lock(obj) stmt; <br /></td></tr>
 <tr class="separator:a076549f188e595b63d8aff571aea3391"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afddb6f44849db45db0f8ccc61d5c99a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afddb6f44849db45db0f8ccc61d5c99a3"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><b>Switch</b> = GSymbol.Get(&quot;#switch&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Switch</b> = GSymbol.Get(&quot;#switch&quot;)</td></tr>
 <tr class="separator:afddb6f44849db45db0f8ccc61d5c99a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9a28cbf7276d880c3d68d3fbf29d296"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9a28cbf7276d880c3d68d3fbf29d296"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af9a28cbf7276d880c3d68d3fbf29d296">SwitchStmt</a> = GSymbol.Get(&quot;#switch&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af9a28cbf7276d880c3d68d3fbf29d296">SwitchStmt</a> = GSymbol.Get(&quot;#switch&quot;)</td></tr>
 <tr class="memdesc:af9a28cbf7276d880c3d68d3fbf29d296"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #switch(n, { ... }); &lt;=&gt; switch(n) { ... } <br /></td></tr>
 <tr class="separator:af9a28cbf7276d880c3d68d3fbf29d296"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43a3b8205b7f431460b25178662c4a9f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a43a3b8205b7f431460b25178662c4a9f"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a43a3b8205b7f431460b25178662c4a9f">SwitchExpr</a> = GSymbol.Get(&quot;'switch&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a43a3b8205b7f431460b25178662c4a9f">SwitchExpr</a> = GSymbol.Get(&quot;'switch&quot;)</td></tr>
 <tr class="memdesc:a43a3b8205b7f431460b25178662c4a9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. @'switch(x, { ... }); &lt;=&gt; x switch { ... } <br /></td></tr>
 <tr class="separator:a43a3b8205b7f431460b25178662c4a9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa0d9ba6adcc1db34dc234239a306a1e2"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa0d9ba6adcc1db34dc234239a306a1e2">Try</a> = GSymbol.Get(&quot;#try&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa0d9ba6adcc1db34dc234239a306a1e2">Try</a> = GSymbol.Get(&quot;#try&quot;)</td></tr>
 <tr class="memdesc:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #try({...}, #catch(&lt;tt&gt;, @, {...})); &lt;=&gt; try {...} catch {...} <br /></td></tr>
 <tr class="separator:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa35426e37b6ed6db5d49dd319f37dbb0"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa35426e37b6ed6db5d49dd319f37dbb0">Catch</a> = GSymbol.Get(&quot;#catch&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa35426e37b6ed6db5d49dd319f37dbb0">Catch</a> = GSymbol.Get(&quot;#catch&quot;)</td></tr>
 <tr class="memdesc:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#catch" catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...}) <br /></td></tr>
 <tr class="separator:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3af6a9b6d7fee3e1ffb2bc1ef699358f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3af6a9b6d7fee3e1ffb2bc1ef699358f"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3af6a9b6d7fee3e1ffb2bc1ef699358f">Finally</a> = GSymbol.Get(&quot;#finally&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3af6a9b6d7fee3e1ffb2bc1ef699358f">Finally</a> = GSymbol.Get(&quot;#finally&quot;)</td></tr>
 <tr class="memdesc:a3af6a9b6d7fee3e1ffb2bc1ef699358f"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#finally" finally clause of #try statement: #finally({...}) <br /></td></tr>
 <tr class="separator:a3af6a9b6d7fee3e1ffb2bc1ef699358f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a022fa7db83968a917ef38dc405fb9ef8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a022fa7db83968a917ef38dc405fb9ef8"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a022fa7db83968a917ef38dc405fb9ef8">Class</a> = GSymbol.Get(&quot;#class&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a022fa7db83968a917ef38dc405fb9ef8">Class</a> = GSymbol.Get(&quot;#class&quot;)</td></tr>
 <tr class="memdesc:a022fa7db83968a917ef38dc405fb9ef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #class(Foo, #(IFoo), { }); &lt;=&gt; class Foo : IFoo { } <br /></td></tr>
 <tr class="separator:a022fa7db83968a917ef38dc405fb9ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dc04ea4d1c431a4c2f50a76940b9a71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9dc04ea4d1c431a4c2f50a76940b9a71"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9dc04ea4d1c431a4c2f50a76940b9a71">Struct</a> = GSymbol.Get(&quot;#struct&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9dc04ea4d1c431a4c2f50a76940b9a71">Struct</a> = GSymbol.Get(&quot;#struct&quot;)</td></tr>
 <tr class="memdesc:a9dc04ea4d1c431a4c2f50a76940b9a71"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #struct(Foo, #(IFoo), { }); &lt;=&gt; struct Foo : IFoo { } <br /></td></tr>
 <tr class="separator:a9dc04ea4d1c431a4c2f50a76940b9a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf9f744666e3d16037950038098eba93"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf9f744666e3d16037950038098eba93"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#adf9f744666e3d16037950038098eba93">Trait</a> = GSymbol.Get(&quot;#trait&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#adf9f744666e3d16037950038098eba93">Trait</a> = GSymbol.Get(&quot;#trait&quot;)</td></tr>
 <tr class="memdesc:adf9f744666e3d16037950038098eba93"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #trait(Foo, #(IFoo), { }); &lt;=&gt; trait Foo : IFoo { } <br /></td></tr>
 <tr class="separator:adf9f744666e3d16037950038098eba93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63afce58b9e77cfd66ed8b6c32542c61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63afce58b9e77cfd66ed8b6c32542c61"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a63afce58b9e77cfd66ed8b6c32542c61">Enum</a> = GSymbol.Get(&quot;#enum&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a63afce58b9e77cfd66ed8b6c32542c61">Enum</a> = GSymbol.Get(&quot;#enum&quot;)</td></tr>
 <tr class="memdesc:a63afce58b9e77cfd66ed8b6c32542c61"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #enum(Foo, #(byte), { }); &lt;=&gt; enum Foo : byte { } <br /></td></tr>
 <tr class="separator:a63afce58b9e77cfd66ed8b6c32542c61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae417cea7912982a42b2fb0ebf3b911a6"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ae417cea7912982a42b2fb0ebf3b911a6">Alias</a> = GSymbol.Get(&quot;#alias&quot;)</td></tr>
+<tr class="memitem:ae417cea7912982a42b2fb0ebf3b911a6"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ae417cea7912982a42b2fb0ebf3b911a6">Alias</a> = GSymbol.Get(&quot;#alias&quot;)</td></tr>
 <tr class="separator:ae417cea7912982a42b2fb0ebf3b911a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af299b95bd1533345d5a18dcf048c6203"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af299b95bd1533345d5a18dcf048c6203"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af299b95bd1533345d5a18dcf048c6203">Interface</a> = GSymbol.Get(&quot;#interface&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af299b95bd1533345d5a18dcf048c6203">Interface</a> = GSymbol.Get(&quot;#interface&quot;)</td></tr>
 <tr class="memdesc:af299b95bd1533345d5a18dcf048c6203"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #interface(IB, #(IA), { }); &lt;=&gt; interface IB : IA { } <br /></td></tr>
 <tr class="separator:af299b95bd1533345d5a18dcf048c6203"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e25a6abe6593a4f0f74221fbdb1e084"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e25a6abe6593a4f0f74221fbdb1e084"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9e25a6abe6593a4f0f74221fbdb1e084">Namespace</a> = GSymbol.Get(&quot;#namespace&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9e25a6abe6593a4f0f74221fbdb1e084">Namespace</a> = GSymbol.Get(&quot;#namespace&quot;)</td></tr>
 <tr class="memdesc:a9e25a6abe6593a4f0f74221fbdb1e084"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #namespace(NS, @``, { }); &lt;=&gt; namespace NS { } <br /></td></tr>
 <tr class="separator:a9e25a6abe6593a4f0f74221fbdb1e084"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af84fe50fb0bea5deffc924b886dd56ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af84fe50fb0bea5deffc924b886dd56ad"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af84fe50fb0bea5deffc924b886dd56ad">Var</a> = GSymbol.Get(&quot;#var&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af84fe50fb0bea5deffc924b886dd56ad">Var</a> = GSymbol.Get(&quot;#var&quot;)</td></tr>
 <tr class="memdesc:af84fe50fb0bea5deffc924b886dd56ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) &lt;=&gt; var x = 0; <br /></td></tr>
 <tr class="separator:af84fe50fb0bea5deffc924b886dd56ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af589bd68fe1540ccbabba8b2aa14b9a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af589bd68fe1540ccbabba8b2aa14b9a0"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af589bd68fe1540ccbabba8b2aa14b9a0">Event</a> = GSymbol.Get(&quot;#event&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af589bd68fe1540ccbabba8b2aa14b9a0">Event</a> = GSymbol.Get(&quot;#event&quot;)</td></tr>
 <tr class="memdesc:af589bd68fe1540ccbabba8b2aa14b9a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #event(EventHandler, Click, { }) &lt;=&gt; event EventHandler Click { } <br /></td></tr>
 <tr class="separator:af589bd68fe1540ccbabba8b2aa14b9a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79be8a501e81e4626f613ec68e35674e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79be8a501e81e4626f613ec68e35674e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a79be8a501e81e4626f613ec68e35674e">Delegate</a> = GSymbol.Get(&quot;#delegate&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a79be8a501e81e4626f613ec68e35674e">Delegate</a> = GSymbol.Get(&quot;#delegate&quot;)</td></tr>
 <tr class="memdesc:a79be8a501e81e4626f613ec68e35674e"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #delegate(#int32, Foo, @'tuple()); &lt;=&gt; delegate int Foo(); <br /></td></tr>
 <tr class="separator:a79be8a501e81e4626f613ec68e35674e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8c4f4491a71aef6c9ed49fcb22ae4f33"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8c4f4491a71aef6c9ed49fcb22ae4f33">Property</a> = GSymbol.Get(&quot;#property&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8c4f4491a71aef6c9ed49fcb22ae4f33">Property</a> = GSymbol.Get(&quot;#property&quot;)</td></tr>
 <tr class="memdesc:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #property(#int32, Foo, @``, { get; }) &lt;=&gt; int Foo { get; } <br /></td></tr>
 <tr class="separator:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c8f4eb707e150d0b4c5811fda159c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a43c8f4eb707e150d0b4c5811fda159c3"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a43c8f4eb707e150d0b4c5811fda159c3">Where</a> = GSymbol.Get(&quot;#where&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a43c8f4eb707e150d0b4c5811fda159c3">Where</a> = GSymbol.Get(&quot;#where&quot;)</td></tr>
 <tr class="memdesc:a43c8f4eb707e150d0b4c5811fda159c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#where" e.g. class Foo&lt;T&gt; where T:class, Foo {} &lt;=&gt; #class(@'of(Foo, [#where(#class, Foo)] T), #(), {}); <br /></td></tr>
 <tr class="separator:a43c8f4eb707e150d0b4c5811fda159c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a910e9ab5f08ef28a6762d56d6a761d8e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a910e9ab5f08ef28a6762d56d6a761d8e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a910e9ab5f08ef28a6762d56d6a761d8e">This</a> = GSymbol.Get(&quot;#this&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a910e9ab5f08ef28a6762d56d6a761d8e">This</a> = GSymbol.Get(&quot;#this&quot;)</td></tr>
 <tr class="memdesc:a910e9ab5f08ef28a6762d56d6a761d8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#this" e.g. this.X &lt;=&gt; #this.X; this(arg) &lt;=&gt; #this(arg). <br /></td></tr>
 <tr class="separator:a910e9ab5f08ef28a6762d56d6a761d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf0b0606a0239be7b574c8df07d920ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf0b0606a0239be7b574c8df07d920ed"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#acf0b0606a0239be7b574c8df07d920ed">Base</a> = GSymbol.Get(&quot;#base&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#acf0b0606a0239be7b574c8df07d920ed">Base</a> = GSymbol.Get(&quot;#base&quot;)</td></tr>
 <tr class="memdesc:acf0b0606a0239be7b574c8df07d920ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#base" e.g. base.X &lt;=&gt; #base.X; base(arg) &lt;=&gt; #base(arg). <br /></td></tr>
 <tr class="separator:acf0b0606a0239be7b574c8df07d920ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc39bb37f8156213ade5e319005e2718"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc39bb37f8156213ade5e319005e2718"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#adc39bb37f8156213ade5e319005e2718">Operator</a> = GSymbol.Get(&quot;#operator&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#adc39bb37f8156213ade5e319005e2718">Operator</a> = GSymbol.Get(&quot;#operator&quot;)</td></tr>
 <tr class="memdesc:adc39bb37f8156213ade5e319005e2718"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #fn(#bool, [#operator] &lt;tt&gt;==, #(Foo a, Foo b)) <br /></td></tr>
 <tr class="separator:adc39bb37f8156213ade5e319005e2718"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef020d3e790ef70f151bd4ebe15d2e24"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef020d3e790ef70f151bd4ebe15d2e24"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aef020d3e790ef70f151bd4ebe15d2e24">Implicit</a> = GSymbol.Get(&quot;#implicit&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aef020d3e790ef70f151bd4ebe15d2e24">Implicit</a> = GSymbol.Get(&quot;#implicit&quot;)</td></tr>
 <tr class="memdesc:aef020d3e790ef70f151bd4ebe15d2e24"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. [#implicit] #fn(#int32, [#operator] #cast, (Foo a,)) <br /></td></tr>
 <tr class="separator:aef020d3e790ef70f151bd4ebe15d2e24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba4a48374a43325e21e2e310ded2304e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba4a48374a43325e21e2e310ded2304e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba4a48374a43325e21e2e310ded2304e">Explicit</a> = GSymbol.Get(&quot;#explicit&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba4a48374a43325e21e2e310ded2304e">Explicit</a> = GSymbol.Get(&quot;#explicit&quot;)</td></tr>
 <tr class="memdesc:aba4a48374a43325e21e2e310ded2304e"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. [#explicit] #fn(#int32, [#operator] #cast, (Foo a,)) <br /></td></tr>
 <tr class="separator:aba4a48374a43325e21e2e310ded2304e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a546c2a6bcc42131c1eacfef1937d2338"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a546c2a6bcc42131c1eacfef1937d2338"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338">Missing</a> = GSymbol.Empty</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338">Missing</a> = GSymbol.Empty</td></tr>
 <tr class="memdesc:a546c2a6bcc42131c1eacfef1937d2338"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates that a syntax element was omitted, e.g. Foo(, y) =&gt; Foo(@``, y) <br /></td></tr>
 <tr class="separator:a546c2a6bcc42131c1eacfef1937d2338"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af00cf539b8025430f47cd3ca5d6f6549"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af00cf539b8025430f47cd3ca5d6f6549"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549">Splice</a> = GSymbol.Get(&quot;#splice&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549">Splice</a> = GSymbol.Get(&quot;#splice&quot;)</td></tr>
 <tr class="memdesc:af00cf539b8025430f47cd3ca5d6f6549"><td class="mdescLeft">&#160;</td><td class="mdescRight">When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code. <br /></td></tr>
 <tr class="separator:af00cf539b8025430f47cd3ca5d6f6549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a805db2710da7b2a9b800ed40b3594204"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a805db2710da7b2a9b800ed40b3594204"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a805db2710da7b2a9b800ed40b3594204">Assembly</a> = GSymbol.Get(&quot;#assembly&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a805db2710da7b2a9b800ed40b3594204">Assembly</a> = GSymbol.Get(&quot;#assembly&quot;)</td></tr>
 <tr class="memdesc:a805db2710da7b2a9b800ed40b3594204"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. [assembly: Foo] &lt;=&gt; #assembly(Foo); <br /></td></tr>
 <tr class="separator:a805db2710da7b2a9b800ed40b3594204"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50c17a6d3f8934ad67e518c82b255471"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a50c17a6d3f8934ad67e518c82b255471"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a50c17a6d3f8934ad67e518c82b255471">Module</a> = GSymbol.Get(&quot;#module&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a50c17a6d3f8934ad67e518c82b255471">Module</a> = GSymbol.Get(&quot;#module&quot;)</td></tr>
 <tr class="memdesc:a50c17a6d3f8934ad67e518c82b255471"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. [module: Foo] &lt;=&gt; [Foo] #module; <br /></td></tr>
 <tr class="separator:a50c17a6d3f8934ad67e518c82b255471"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c60ab9de3d65a6176bcae09070d722e"><td class="memItemLeft" align="right" valign="top">static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c60ab9de3d65a6176bcae09070d722e">Import</a> = GSymbol.Get(&quot;#import&quot;)</td></tr>
+<tr class="memitem:a1c60ab9de3d65a6176bcae09070d722e"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c60ab9de3d65a6176bcae09070d722e">Import</a> = GSymbol.Get(&quot;#import&quot;)</td></tr>
 <tr class="memdesc:a1c60ab9de3d65a6176bcae09070d722e"><td class="mdescLeft">&#160;</td><td class="mdescRight">#import is used instead of #using because the using(...) {...} statement already uses #using  <a href="#a1c60ab9de3d65a6176bcae09070d722e">More...</a><br /></td></tr>
 <tr class="separator:a1c60ab9de3d65a6176bcae09070d722e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebd83824e4d701ca431b282d80dc284c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aebd83824e4d701ca431b282d80dc284c"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><b>Partial</b> = GSymbol.Get(&quot;#partial&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Partial</b> = GSymbol.Get(&quot;#partial&quot;)</td></tr>
 <tr class="separator:aebd83824e4d701ca431b282d80dc284c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45a69b5b14dc3c34af3dacf2b5603d2e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45a69b5b14dc3c34af3dacf2b5603d2e"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a45a69b5b14dc3c34af3dacf2b5603d2e">Yield</a> = GSymbol.Get(&quot;#yield&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a45a69b5b14dc3c34af3dacf2b5603d2e">Yield</a> = GSymbol.Get(&quot;#yield&quot;)</td></tr>
 <tr class="memdesc:a45a69b5b14dc3c34af3dacf2b5603d2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #return(x); &lt;=&gt; return x; [#yield] #return(x) &lt;=&gt; yield return x; <br /></td></tr>
 <tr class="separator:a45a69b5b14dc3c34af3dacf2b5603d2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c04ac007b0e2db947ebc14f4b03d591"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0c04ac007b0e2db947ebc14f4b03d591"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0c04ac007b0e2db947ebc14f4b03d591">ArrayInit</a> = GSymbol.Get(&quot;#arrayInit&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0c04ac007b0e2db947ebc14f4b03d591">ArrayInit</a> = GSymbol.Get(&quot;#arrayInit&quot;)</td></tr>
 <tr class="memdesc:a0c04ac007b0e2db947ebc14f4b03d591"><td class="mdescLeft">&#160;</td><td class="mdescRight">C# e.g. int[] x = {1,2} &lt;=&gt; int[] x = #arrayInit(1, 2) <br /></td></tr>
 <tr class="separator:a0c04ac007b0e2db947ebc14f4b03d591"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aced5b164655dd05adf2ccd77fc36be83"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aced5b164655dd05adf2ccd77fc36be83"></a>
-static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aced5b164655dd05adf2ccd77fc36be83">StackAlloc</a> = GSymbol.Get(&quot;#stackalloc&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aced5b164655dd05adf2ccd77fc36be83">StackAlloc</a> = GSymbol.Get(&quot;#stackalloc&quot;)</td></tr>
 <tr class="memdesc:aced5b164655dd05adf2ccd77fc36be83"><td class="mdescLeft">&#160;</td><td class="mdescRight">#stackalloc for C# stackalloc (TODO) <br /></td></tr>
 <tr class="separator:aced5b164655dd05adf2ccd77fc36be83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -615,7 +615,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.Alias = GSymbol.Get(&quot;#alias&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.Alias = GSymbol.Get(&quot;#alias&quot;)</td>
         </tr>
       </table>
   </td>
@@ -636,7 +636,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.AltList = GSymbol.Get(&quot;#&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.AltList = GSymbol.Get(&quot;#&quot;)</td>
         </tr>
       </table>
   </td>
@@ -658,7 +658,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.Import = GSymbol.Get(&quot;#import&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.Import = GSymbol.Get(&quot;#import&quot;)</td>
         </tr>
       </table>
   </td>
@@ -681,7 +681,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.IndexBracks = GSymbol.Get(&quot;'suf[]&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.IndexBracks = GSymbol.Get(&quot;'suf[]&quot;)</td>
         </tr>
       </table>
   </td>
@@ -702,7 +702,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.NullIndexBracks = GSymbol.Get(&quot;'?[]&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.NullIndexBracks = GSymbol.Get(&quot;'?[]&quot;)</td>
         </tr>
       </table>
   </td>
@@ -725,7 +725,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly Symbol Loyc.Syntax.CodeSymbols.Typeof = GSymbol.Get(&quot;'typeof&quot;)</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.Typeof = GSymbol.Get(&quot;'typeof&quot;)</td>
         </tr>
       </table>
   </td>
@@ -742,7 +742,7 @@ static readonly Symbol&#160;</td><td class="memItemRight" valign="bottom"><a cla
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:13 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

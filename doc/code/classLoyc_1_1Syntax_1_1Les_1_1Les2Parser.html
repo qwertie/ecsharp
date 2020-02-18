@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Parses LES (<a class="el" href="namespaceLoyc.html">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement. 
+<p>Parses LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/Les2Parser.cs'>/Core/Loyc.Syntax/LES/Les2Parser.cs</a></li>
@@ -116,8 +116,8 @@ Inheritance diagram for Loyc.Syntax.Les.Les2Parser:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Parses LES (<a class="el" href="namespaceLoyc.html">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement.</p>
-<p>You can use Les2LanguageService.Value with <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a11f2ad4d8afa9c67ce25a498f13060eb" title="Parses a string by invoking IParsingService.Parse(ICharSource, string, IMessageSink, ParsingMode, bool) using an empty string as the file name.">ParsingService.Parse</a> to easily parse a text string (holding zero or more LES statements) into a <a class="el" href="namespaceLoyc.html">Loyc</a> tree. </p>
+<div class="textblock"><p>Parses LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) code into a sequence of <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>), one per top-level statement.</p>
+<p>You can use Les2LanguageService.Value with <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a11f2ad4d8afa9c67ce25a498f13060eb" title="Parses a string by invoking IParsingService.Parse(ICharSource, string, IMessageSink, ParsingMode, bool) using an empty string as the file name.">ParsingService.Parse</a> to easily parse a text string (holding zero or more LES statements) into a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree. </p>
 <p>This class expects to receive tokens from <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html" title="Lexer for EC# source code.">Les2Lexer</a> that have been preprocessed by TokensToTree, with whitespace tokens filtered out. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
@@ -129,16 +129,16 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ab4c8219df47c599ff5e5c438373bbd9f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4c8219df47c599ff5e5c438373bbd9f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (IListAndListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file, IMessageSink messageSink)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
 <tr class="separator:ab4c8219df47c599ff5e5c438373bbd9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ed6799c4df979857b0ee0bb974fb357"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ed6799c4df979857b0ee0bb974fb357"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (IListSource&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file, IMessageSink messageSink)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink)</td></tr>
 <tr class="separator:a7ed6799c4df979857b0ee0bb974fb357"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8993a6bf92adda6f2cf9ef841d324633"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8993a6bf92adda6f2cf9ef841d324633"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, ISourceFile file, IMessageSink messageSink, int startIndex=0)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Les2Parser</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; tokens, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> messageSink, int startIndex=0)</td></tr>
 <tr class="separator:a8993a6bf92adda6f2cf9ef841d324633"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3bd542db7f45e1890140a2fb42177efd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3bd542db7f45e1890140a2fb42177efd"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, ISourceFile file, int startIndex=0)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, int startIndex=0)</td></tr>
 <tr class="separator:a3bd542db7f45e1890140a2fb42177efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a838433ac15910a21cd5ad01ec6021a57"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2Parser.html#a838433ac15910a21cd5ad01ec6021a57">Start</a> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; separator)</td></tr>
 <tr class="memdesc:a838433ac15910a21cd5ad01ec6021a57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top-level rule: expects a sequence of statements followed by EOF <a href="#a838433ac15910a21cd5ad01ec6021a57">More...</a><br /></td></tr>
@@ -159,7 +159,7 @@ virtual IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">L
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a6a05f49cb443eb1c503a0552c587dd0f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a05f49cb443eb1c503a0552c587dd0f"></a>
-override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> eofToken, ISourceFile file, int startIndex=0)</td></tr>
+override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (IList&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; list, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> eofToken, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, int startIndex=0)</td></tr>
 <tr class="separator:a6a05f49cb443eb1c503a0552c587dd0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a949799b933df41bab5f8b20d5a199eca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a949799b933df41bab5f8b20d5a199eca"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (int type)</td></tr>
@@ -168,7 +168,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MissingExpr</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> tok)</td></tr>
 <tr class="separator:af0248251bd620022587d6abb98b194e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a801b89bf0af9e5ff92929ff4ca526f31"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a801b89bf0af9e5ff92929ff4ca526f31"></a>
-Symbol&#160;</td><td class="memItemRight" valign="bottom"><b>ToSuffixOpName</b> (object symbol)</td></tr>
+<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ToSuffixOpName</b> (object symbol)</td></tr>
 <tr class="separator:a801b89bf0af9e5ff92929ff4ca526f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6262ff8de4a0ee2b527838fd52153d23"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6262ff8de4a0ee2b527838fd52153d23"></a>
 <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrefixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
@@ -234,7 +234,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:27 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

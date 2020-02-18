@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['hasspecialname',['HasSpecialName',['../classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708',1,'Loyc::Syntax::LNode']]],
-  ['hastokenizer',['HasTokenizer',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#a423c32c87da703adfc474562a07a1634',1,'Loyc::Syntax::IParsingService']]]
+  ['globaldefaultformatter',['GlobalDefaultFormatter',['../classLoyc_1_1Localize.html#a02661e1ac1f33ee5963ace629147c6c2',1,'Loyc::Localize']]],
+  ['globaldefaultlocalizer',['GlobalDefaultLocalizer',['../classLoyc_1_1Localize.html#aa9bd6fc30aaa3ea4eb5a47d9703cde15',1,'Loyc::Localize']]]
 ];

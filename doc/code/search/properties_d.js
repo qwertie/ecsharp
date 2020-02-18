@@ -1,16 +1,13 @@
 var searchData=
 [
-  ['parent',['Parent',['../interfaceLeMP_1_1IMacroContext.html#a681a62874a05eee15058bd1723403ce4',1,'LeMP::IMacroContext']]],
-  ['predusesla',['PredUsesLA',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html#aedb279eff153f7afcecab906ed30e5db',1,'Loyc::LLParserGenerator::AndPred']]],
-  ['prefercustomliterals',['PreferCustomLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#ae7981dc3d82b96c262a7ec9d1266e025',1,'Loyc::Syntax::Les::Les3Lexer']]],
-  ['preferplaincsharp',['PreferPlainCSharp',['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a25ce68115957207f001a40e48598cf63',1,'Loyc::Ecs::EcsPrinterOptions']]],
-  ['prefixnotationonly',['PrefixNotationOnly',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a8a5caf1355d6234487b61e94fc08f2cd',1,'Loyc::Syntax::Les::Les3PrinterOptions']]],
-  ['preopenednamespaces',['PreOpenedNamespaces',['../classLeMP_1_1MacroProcessor.html#ac7d649b15f5b12c664854825151a5fc1',1,'LeMP::MacroProcessor']]],
-  ['printer',['Printer',['../classLoyc_1_1Syntax_1_1LNode.html#a091721bc13bdbb204412aa414e7967e3',1,'Loyc::Syntax::LNode']]],
-  ['printseverityat',['PrintSeverityAt',['../classLoyc_1_1ConsoleMessageSink.html#a49dee4bb03921423d485c6b782b0270c',1,'Loyc::ConsoleMessageSink']]],
-  ['printtriviaexplicitly',['PrintTriviaExplicitly',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a1144f90bc6df15281a5e6dbe399e46a8',1,'Loyc::Syntax::Les::Les2PrinterOptions']]],
-  ['prior',['Prior',['../classLoyc_1_1Collections_1_1VListBlock.html#a2d182adfa580c9bad2a83ff7f283f638',1,'Loyc::Collections::VListBlock']]],
-  ['priorcount',['PriorCount',['../classLoyc_1_1Collections_1_1VListBlock.html#a8fb4d8a9e1a8956c2a7e2787c2c9d51b',1,'Loyc::Collections::VListBlock']]],
-  ['priorisowned',['PriorIsOwned',['../classLoyc_1_1Collections_1_1VListBlock.html#af463776794eda5255e20c7c2fafe1d1b',1,'Loyc::Collections::VListBlock']]],
-  ['priority',['Priority',['../classLoyc_1_1Threading_1_1ThreadEx.html#ab7710ceca0ca124b0264f3e1c6b64aad',1,'Loyc::Threading::ThreadEx']]]
+  ['obeyrawtext',['ObeyRawText',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a9f7844e452992ab3c505267b87e17b84',1,'Loyc.Syntax.Les.Les2PrinterOptions.ObeyRawText()'],['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a754510aac360410da6733859a24e4d4a',1,'Loyc.Syntax.Les.Les3PrinterOptions.ObeyRawText()'],['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#acfbfceed2431d2a77bc9e7f971ea6ab3',1,'Loyc.Ecs.EcsPrinterOptions.ObeyRawText()']]],
+  ['objectcache',['ObjectCache',['../classLoyc_1_1Collections_1_1CG.html#ae8b66458987172996d592a43fc89b936',1,'Loyc::Collections::CG']]],
+  ['observercount',['ObserverCount',['../classLoyc_1_1Collections_1_1AListBase.html#ada4081ed2d50384439b8e243ef042c1b',1,'Loyc::Collections::AListBase']]],
+  ['offset',['Offset',['../structLoyc_1_1Collections_1_1NegList.html#ac34af17088a1696f2bcf410d095a82cc',1,'Loyc.Collections.NegList.Offset()'],['../structLoyc_1_1Collections_1_1NegListSource.html#ae010ea7a68e5acbb84bb8a6b82746c11',1,'Loyc.Collections.NegListSource.Offset()']]],
+  ['omitcomments',['OmitComments',['../interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a7aaf609e5336f5dfe1a6e58c915b3479',1,'Loyc::Syntax::ILNodePrinterOptions']]],
+  ['omitmissingarguments',['OmitMissingArguments',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a4b33a94a5f1e20af667912431fcc6c34',1,'Loyc.Syntax.Les.Les2PrinterOptions.OmitMissingArguments()'],['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a3cf649c2262372e74cadc8977caec65a',1,'Loyc.Ecs.EcsPrinterOptions.OmitMissingArguments()']]],
+  ['omitspacetrivia',['OmitSpaceTrivia',['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#ae0b39464fad1466f3a4bd4d198361a1c',1,'Loyc.Syntax.Les.Les2PrinterOptions.OmitSpaceTrivia()'],['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a5cfe61c504b61649d934ecf16be523ea',1,'Loyc.Syntax.Les.Les3PrinterOptions.OmitSpaceTrivia()'],['../classLoyc_1_1Ecs_1_1EcsPrinterOptions.html#a3768c538fe26b772805c86f0215672af',1,'Loyc.Ecs.EcsPrinterOptions.OmitSpaceTrivia()']]],
+  ['omitunknowntrivia',['OmitUnknownTrivia',['../interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a580345f4292a6b97e663ffe3bf1d5024',1,'Loyc::Syntax::ILNodePrinterOptions']]],
+  ['one',['One',['../interfaceLoyc_1_1Math_1_1IOneProvider.html#a6f15f26bbb80f7c8b5af90bac3bede18',1,'Loyc::Math::IOneProvider']]],
+  ['originallist',['OriginalList',['../structLoyc_1_1Collections_1_1NegList.html#a8e3e00d046d2c436ff6405c7fdde22a4',1,'Loyc.Collections.NegList.OriginalList()'],['../structLoyc_1_1Collections_1_1NegListSource.html#ab4f5ea5a41e400cd4d4638832488bc64',1,'Loyc.Collections.NegListSource.OriginalList()']]]
 ];

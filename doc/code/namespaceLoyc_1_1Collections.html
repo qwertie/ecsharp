@@ -96,9 +96,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Collections Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc.), collection implementations (Loyc.Collections.DList&lt;T&gt;, Loyc.Collections.WeakValueDictionary&lt;K,V&gt;, etc.), extension methods (<a class="el" href="classLoyc_1_1Collections_1_1LCExt.html" title="Extension methods for Loyc Collection interfaces (such as IListSource&lt;T&gt;).">Loyc.Collections.LCExt</a>, <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html" title="Additional extension methods for IEnumerable&lt;T&gt;, IReadOnlyCollection&lt;T&gt;, and ICollection&lt;T&gt;, beyond what LINQ provides. ">Loyc.Collections.EnumerableExt</a>, etc.), helper classes (Loyc.Collections.EmptyList&lt;T&gt;, (Loyc.Collections.Repeated&lt;T&gt;, etc.), and adapter classes (Loyc.Collections.ListSlice&lt;T&gt;, Loyc.Collections.BufferedSequence&lt;T&gt;, etc.).  
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
+<tr class="memitem:namespaceLoyc_1_1Collections_1_1Impl"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections_1_1Impl.html">Impl</a></td></tr>
+<tr class="memdesc:namespaceLoyc_1_1Collections_1_1Impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains helper classes and base classes for implementing collections (Loyc.Collections.Impl.InternalList&lt;T&gt;, Loyc.Collections.Impl.ListExBase&lt;T&gt;, Loyc.Collections.Impl.ListSourceBase&lt;T&gt;, etc.) Also contains the <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a> and <a class="el" href="classLoyc_1_1Collections_1_1CPTrie.html" title="Compact patricia tree class that stores keys as byte arrays. This class is intended to be use as a ba...">CPTrie</a> node classes, which perhaps should not be <code>public</code>...<br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLoyc_1_1Collections_1_1MutableListExtensionMethods"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections_1_1MutableListExtensionMethods.html">MutableListExtensionMethods</a></td></tr>
+<tr class="memdesc:namespaceLoyc_1_1Collections_1_1MutableListExtensionMethods"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains extension methods for ICollection&lt;T&gt; and IList&lt;T&gt; that are possibly ambiguous when included in the same namespace as extension methods for IReadOnlyCollection&lt;T&gt; and IReadOnlyList&lt;T&gt;.<br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -114,13 +123,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A reverse view of an <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>. <a href="structLoyc_1_1Collections_1_1AListReverseView.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListStatisticTracker.html">AListStatisticTracker</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class efficiently lets you keep track of simple commutative statistics (such as total, average, sum of squares, and min/max) derived from the items of AList&lt;T&gt; and its variants (<a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. ">BMultiMap</a>). <a href="classLoyc_1_1Collections_1_1AListStatisticTracker.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class efficiently lets you keep track of simple commutative statistics (such as total, average, sum of squares, and min/max) derived from the items of AList&lt;T&gt; and its variants (<a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. ">BMultiMap</a>). <a href="classLoyc_1_1Collections_1_1AListStatisticTracker.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html">AListStatisticTrackerBase</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class that helps efficiently keep track of statistics about the contents of one or more <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase&lt;K, T&gt;</a> objects (including derived classes such as <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a> and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. ">BMultiMap</a>). Usually you'll use one of the derived classes instead, e.g. AListSumTracker&lt;K,T&gt;. <a href="classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class that helps efficiently keep track of statistics about the contents of one or more <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html">AListBase&lt;K, T&gt;</a> objects (including derived classes such as <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a> and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. ">BMultiMap</a>). Usually you'll use one of the derived classes instead, e.g. AListSumTracker&lt;K,T&gt;. <a href="classLoyc_1_1Collections_1_1AListStatisticTrackerBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListSumTracker.html">AListSumTracker</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class incrementally recomputes the sum of an AList&lt;T&gt; (or its variants - <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. ">BMultiMap</a>). <a href="classLoyc_1_1Collections_1_1AListSumTracker.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class incrementally recomputes the sum of an AList&lt;T&gt; (or its variants - <a class="el" href="classLoyc_1_1Collections_1_1BList.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list...">BList</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke...">BDictionary</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html" title="An sorted dictionary that allows multiple values to be associated with a single key. ">BMultiMap</a>). <a href="classLoyc_1_1Collections_1_1AListSumTracker.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ArrayOf4.html">ArrayOf4</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,13 +146,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An sorted in-memory list that is efficient for all operations and offers indexed access to its list.  <a href="classLoyc_1_1Collections_1_1BList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html">BMultiMap</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable.  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An sorted dictionary that allows multiple values to be associated with a single key.  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BufferedSequence.html">BufferedSequence</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: This class wraps an IEnumerator&lt;T&gt; or IEnumerable&lt;T&gt; into an IListSource&lt;T&gt;, lazily reading the sequence as TryGet is called. <a href="classLoyc_1_1Collections_1_1BufferedSequence.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: This class wraps an IEnumerator&lt;T&gt; or IEnumerable&lt;T&gt; into an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>, lazily reading the sequence as TryGet is called. <a href="classLoyc_1_1Collections_1_1BufferedSequence.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html">CG</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains global functions of <a class="el" href="namespaceLoyc_1_1Collections.html">Loyc.Collections</a> that don't belong in any specific class. <a href="classLoyc_1_1Collections_1_1CG.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains global functions of <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc.), collection implementations (Loyc.Collections.DList&lt;T&gt;, Loyc.Collections.WeakValueDictionary&lt;K,V&gt;, etc.), extension methods (Loyc.Collections.LCExt, Loyc.Collections.EnumerableExt, etc.), helper classes (Loyc.Collections.EmptyList&lt;T&gt;, (Loyc.Collections.Repeated&lt;T&gt;, etc.), and adapter classes (Loyc.Collections.ListSlice&lt;T&gt;, Loyc.Collections.BufferedSequence&lt;T&gt;, etc.). ">Loyc.Collections</a> that don't belong in any specific class. <a href="classLoyc_1_1Collections_1_1CG.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CollectionAsReadOnly.html">CollectionAsReadOnly</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a read-only wrapper that implements ICollection(T) and IReadOnlyCollection(T), returned from <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#af4e97d9384d74c5263190f62e83f8c57" title="Treats any ICollection{T} object to IReadOnlyCollection{T}.">EnumerableExt.AsReadOnly&lt;T&gt;</a>. <a href="classLoyc_1_1Collections_1_1CollectionAsReadOnly.html#details">More...</a><br /></td></tr>
@@ -183,8 +192,14 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EmptyList.html">EmptyList</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: EmptyList&lt;T&gt;.Value is a read-only empty list. <a href="classLoyc_1_1Collections_1_1EmptyList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EmptySequenceException.html">EmptySequenceException</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown by methods or properties that require a non-empty sequence but were provided with an empty sequence. <a href="classLoyc_1_1Collections_1_1EmptySequenceException.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html">EnumerableExt</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Additional extension methods for IEnumerable&lt;T&gt;, IReadOnlyCollection&lt;T&gt;, and ICollection&lt;T&gt;, beyond what LINQ provides.  <a href="classLoyc_1_1Collections_1_1EnumerableExt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerationException.html">EnumerationException</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown by an enumerator when it detects that the collection was modified after enumeration started but before it finished. <a href="classLoyc_1_1Collections_1_1EnumerationException.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumeratorBase.html">EnumeratorBase</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class to help you implement the standard IEnumerator{T} interface. All you have to do is override MoveNext() and, when successful, set the Current property. <a href="classLoyc_1_1Collections_1_1EnumeratorBase.html#details">More...</a><br /></td></tr>
@@ -197,18 +212,197 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Heap.html">Heap</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IAdd.html">IAdd</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interface for depositing items. Includes only an Add(T) method. <a href="interfaceLoyc_1_1Collections_1_1IAdd.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IAddRange.html">IAddRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interface for the AddRange method, part of IListEx&lt;T&gt; and ICollectionEx&lt;T&gt;, for collection types that can add multiple items in one method call. <a href="interfaceLoyc_1_1Collections_1_1IAddRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html">IArray</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface models the capabilities of an array: getting and setting elements by index, but not adding or removing elements. <a href="interfaceLoyc_1_1Collections_1_1IArray.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IArraySink.html">IArraySink</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a write-only array. <a href="interfaceLoyc_1_1Collections_1_1IArraySink.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IAutoCreatePool.html">IAutoCreatePool</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a pool of objects in which an object is automatically created when requested by its key. <a href="interfaceLoyc_1_1Collections_1_1IAutoCreatePool.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IAutoSizeArray.html">IAutoSizeArray</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An auto-sizing array is a list structure that allows you to modify the element at any index, including indices that don't yet exist; the collection automatically adds missing indices. <a href="interfaceLoyc_1_1Collections_1_1IAutoSizeArray.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IBinumerable.html">IBinumerable</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for a collection that can return IBinumerator&lt;T&gt;s pointing to the beginning and end of the collection. <a href="interfaceLoyc_1_1Collections_1_1IBinumerable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IBinumerator.html">IBinumerator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extends the "enumerator" concept to allow backward enumeration. <a href="interfaceLoyc_1_1Collections_1_1IBinumerator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A bidirectional range. Allows you to read or remove the first or last element in a range. <a href="interfaceLoyc_1_1Collections_1_1IBRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IBRangeEx.html">IBRangeEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A bidirectional range that can perform operations such as intersection and overlap tests on pairs of ranges of the same type. <a href="interfaceLoyc_1_1Collections_1_1IBRangeEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A read-only list of characters plus a <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html#a3b9800219b8e6e1e4ac0594cd8d09b64" title="Returns a substring from the character source. If some of the requested characters are past the end o...">Slice(int,int)</a> method. <a href="interfaceLoyc_1_1Collections_1_1ICharSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html">ICollectionAndReadOnly</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is meant to be implemented by read-only sequence types that originally implemented ICollection&lt;T&gt; and want to now implement IReadOnlyCollection&lt;T&gt;. It is recommended to implement ICollectionAndSource&lt;T&gt; instead, but the latter requires you to implement a couple of additional methods. <a href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionAndSource.html">ICollectionAndSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is to be implemented by read-only sequence types that still want to be compatible with APIs that accept ICollection&lt;T&gt;. (writable collections should implement ICollectionImpl&lt;T&gt; instead.)  <a href="interfaceLoyc_1_1Collections_1_1ICollectionAndSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html">ICollectionEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is intended to be implemented by editable collection classes that are not indexable lists nor dictionaries. <a href="interfaceLoyc_1_1Collections_1_1ICollectionEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionImpl.html">ICollectionImpl</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is intended to be implemented by editable collection classes that are not indexable lists nor dictionaries. It is recommended to implement ICollectionEx&lt;T&gt; instead, but the latter requires more effort. <a href="interfaceLoyc_1_1Collections_1_1ICollectionImpl.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html">ICollectionSink</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a write-only collection: you can modify it, but you cannot learn what it contains. <a href="interfaceLoyc_1_1Collections_1_1ICollectionSink.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSource.html">ICollectionSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A variation of IReadOnlyCollection that provides the <a class="el" href="interfaceLoyc_1_1Collections_1_1IContains.html#af18fb028bdd55ed86fdebf069622e491" title="Returns true if and only if the collection contains the specified item.">Contains()</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ICollectionSource.html#a5b39bfe772dce668223b14f6f838a2dc" title="Copies the elements of the collection to an Array, starting at a particular array index...">CopyTo()</a> methods from ICollection. <a href="interfaceLoyc_1_1Collections_1_1ICollectionSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IContains.html">IContains</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html">ICount</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the Count property found in nearly all collection interfaces. <a href="interfaceLoyc_1_1Collections_1_1ICount.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IDeque.html">IDeque</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a double-ended queue that allows items to be added or removed at the beginning or end. <a href="interfaceLoyc_1_1Collections_1_1IDeque.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryAndReadOnly.html">IDictionaryAndReadOnly</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is meant to be implemented by read-only dictionary classes that originally implemented IDictionary&lt;K, V&gt; and now want to add its read-only version, IReadOnlyDictionary&lt;K, V&gt;. <a href="interfaceLoyc_1_1Collections_1_1IDictionaryAndReadOnly.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combines <code>IDictionary</code>, <code>IReadOnlyDictionary</code>, and <code>IDictonarySink</code> with a few additional methods. <a href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryImpl.html">IDictionaryImpl</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is intended to be implemented by all <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collections that implement IDictionary&lt;K,V&gt;. It combines the original IDictionary&lt;K,V&gt; interface with its component interfaces IReadOnlyDictionary&lt;K,V&gt; and <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html">IDictionarySink&lt;K,V&gt;</a>. <a href="interfaceLoyc_1_1Collections_1_1IDictionaryImpl.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html">IDictionarySink</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a write-only dictionary class. <a href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A forward range. Allows you to read the first element from the range or skip it. The forward range lays the foundation for <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange&lt;T&gt;</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange&lt;T&gt;</a>. <a href="interfaceLoyc_1_1Collections_1_1IFRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html">IIsEmpty</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the IsEmpty property that tells you if a collection is empty. <a href="interfaceLoyc_1_1Collections_1_1IIsEmpty.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is to be used by read-only sequences that nevertheless wish to be compatible with APIs that accept IList&lt;T&gt;. (writable collections should implement IListImpl&lt;T&gt; instead.)  <a href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndReadOnly.html">IListAndReadOnly</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is meant to be implemented by read-only sequence classes that originally implemented IList&lt;T&gt; and want to now implement IReadOnlyList&lt;T&gt; and IReadOnlyCollection&lt;T&gt;. It is recommended to implement IListAndListSource&lt;T&gt; instead, but the latter requires you to implement more methods.  <a href="interfaceLoyc_1_1Collections_1_1IListAndReadOnly.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListEx.html">IListEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface combines the original IList(T) interface with others - IListSource(T), ISinkList(T), IArray(T) - and some additional methods (e.g. RemoveAll, InsertRange).  <a href="interfaceLoyc_1_1Collections_1_1IListEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListImpl.html">IListImpl</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is intended to be implemented by all <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collections that implement IList&lt;T&gt;. It combines the original IList&lt;T&gt; interface with its component interfaces IReadOnlyList&lt;T&gt; and <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSink.html">IListSink&lt;T&gt;</a>, plus a little bit of additional functionality in <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. <a href="interfaceLoyc_1_1Collections_1_1IListImpl.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListRangeMethods.html">IListRangeMethods</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The batch-operation methods of IListEx&lt;T&gt;, mainly for collection types that can add or remove multiple items in one method call. <a href="interfaceLoyc_1_1Collections_1_1IListRangeMethods.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSink.html">IListSink</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a write-only indexable list class. <a href="interfaceLoyc_1_1Collections_1_1IListSink.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A read-only list indexed by an integer. <a href="interfaceLoyc_1_1Collections_1_1IListSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IMBinumerator.html">IMBinumerator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mutable bidirectional enumerator interface. Please note that the "Remove" method always moves to the next item, even though the Binumerator is capable of moving backward. <a href="interfaceLoyc_1_1Collections_1_1IMBinumerator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IMBRange.html">IMBRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mutable bidirectional range. <a href="interfaceLoyc_1_1Collections_1_1IMBRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IMEnumerator.html">IMEnumerator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mutable enumerator interface. Provides a "Remove" method like Java iterators have, and allows you to modify the current item. <a href="interfaceLoyc_1_1Collections_1_1IMEnumerator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IMFRange.html">IMFRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mutable forward range. <a href="interfaceLoyc_1_1Collections_1_1IMFRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IMRange.html">IMRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mutable random-access range. <a href="interfaceLoyc_1_1Collections_1_1IMRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1IndexedAList.html">IndexedAList</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple wrapper around <a class="el" href="classLoyc_1_1Collections_1_1AList.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List&lt;T&gt;...">AList</a> that includes an AListIndexer&lt;K,T&gt; that can be used to find items relatively quickly in a large list. When an index is built and the list is large, it accelerates IndexOf(item), Contains(item) and <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717" title="Remove the item with the specified key if present.">Remove(item)</a>.  <a href="classLoyc_1_1Collections_1_1IndexedAList.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegArray.html">INegArray</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface models the capabilities of an array: getting and setting elements by index, but not adding or removing elements. This interface is the counterpart to <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> for lists whose minimum index is not (necessarily) zero.  <a href="interfaceLoyc_1_1Collections_1_1INegArray.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegAutoSizeArray.html">INegAutoSizeArray</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An auto-sizing array is a list structure that allows you to modify the element at any index, including indexes that don't yet exist; the collection automatically adds missing indexes. <a href="interfaceLoyc_1_1Collections_1_1INegAutoSizeArray.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegDeque.html">INegDeque</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a Deque that supports negative indexes. In this kind of Deque, pushing and popping elements does not affect the indexes of the other elements in the collection. <a href="interfaceLoyc_1_1Collections_1_1INegDeque.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This interface is the counterpart to <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> for lists whose minimum index is not (necessarily) zero. <a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html">INotifyListChanging</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event that notifies listeners of dynamic changes to an indexed list, such as when items get added and removed or the whole list is refreshed.  <a href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1InvertibleSet.html">InvertibleSet</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An immutable set that can be inverted. For example, an <code><a class="el" href="classLoyc_1_1Collections_1_1InvertibleSet.html" title="An immutable set that can be inverted. For example, an InvertibleSet&lt;int&gt; could contain &quot;everything e...">InvertibleSet</a>&lt;int&gt;</code> could contain "everything except 4 and 10", or it could contain a positive set such as "1, 2, and 3". <a href="classLoyc_1_1Collections_1_1InvertibleSet.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>InvertibleSetTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IOptimize.html">IOptimize</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for an <a class="el" href="interfaceLoyc_1_1Collections_1_1IOptimize.html#aee0a38560919e286ab1d054e40069c12" title="Optimizes the data structure to consume less memory or storage space.">Optimize()</a> method. <a href="interfaceLoyc_1_1Collections_1_1IOptimize.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IPop.html">IPop</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a collection that produces a sequence of items, and can return the next item without popping it (the Peek operation). <a href="interfaceLoyc_1_1Collections_1_1IPop.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1IPopExt.html">IPopExt</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IPriorityQueue.html">IPriorityQueue</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a priority queue, in which Pop() always returns the largest or smallest item. <a href="interfaceLoyc_1_1Collections_1_1IPriorityQueue.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IPush.html">IPush</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a collection that accepts a sequence of items. <a href="interfaceLoyc_1_1Collections_1_1IPush.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IQueue.html">IQueue</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a FIFO (first-in-first-out) queue (or a priority queue if IPriorityQueue&lt;ThisAssembly&gt; is also implemented). <a href="interfaceLoyc_1_1Collections_1_1IQueue.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A random-access range, also known as a "slice". Allows you to narrow down the range like <a class="el" href="interfaceLoyc_1_1Collections_1_1IBRange.html">IBRange&lt;T&gt;</a> does, and also provides random access via <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. <a href="interfaceLoyc_1_1Collections_1_1IRange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRangeEx.html">IRangeEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A random-access range that can perform operations such as intersection and overlap tests on pairs of ranges of the same type. <a href="interfaceLoyc_1_1Collections_1_1IRangeEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISetImm.html">ISetImm</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An immutable set of type SetT with elements of type T. <a href="interfaceLoyc_1_1Collections_1_1ISetImm.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISetOperations.html">ISetOperations</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set-combining operations: With, Without, Union, Intersect, Except, Xor. <a href="interfaceLoyc_1_1Collections_1_1ISetOperations.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><b>ISetTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structLoyc_1_1Collections_1_1Set.html" title="An immutable set.">Set</a> testing operations.<br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseList.html">ISparseList</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a sparse list that allows insertion and removal of items and empty spaces. In a sparse list, some spaces can be "clear" meaning that they have no value. <a href="interfaceLoyc_1_1Collections_1_1ISparseList.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListEx.html">ISparseListEx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A sparse list that supports additional methods including <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListEx.html#a1b7c2541b4dc68331cb0dcdb4a11432c" title="Inserts another sparse list into this one.">InsertRange(int, ISparseListSource&lt;T&gt;)</a>. <a href="interfaceLoyc_1_1Collections_1_1ISparseListEx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html">ISparseListSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a read-only indexed list in which parts of the index space may be unused or "clear". <a href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IStack.html">IStack</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a LIFO (last-in-first-out) stack. <a href="interfaceLoyc_1_1Collections_1_1IStack.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html">KeyAlreadyExistsException</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An exception thrown by dictionary objects when they are asked to "add" a key-value pair that already exists. <a href="classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1KeyCollection.html">KeyCollection</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: this is a read-only collection of Keys read from a generic IDictionary. It is a modified version of Dictionary{TKey, TValue}.<a class="el" href="classLoyc_1_1Collections_1_1KeyCollection.html" title="Adapter: this is a read-only collection of Keys read from a generic IDictionary. It is a modified ver...">KeyCollection</a> from the Mono project, changed to use IDictionary instead of Dictionary. <a href="classLoyc_1_1Collections_1_1KeyCollection.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html">LCExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <a class="el" href="namespaceLoyc.html">Loyc</a> Collection interfaces (such as IListSource&lt;T&gt;). <a href="classLoyc_1_1Collections_1_1LCExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Collection interfaces (such as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>). <a href="classLoyc_1_1Collections_1_1LCExt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html">LCInterfaces</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection interfaces <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html">LinqToLists</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class enhances LINQ-to-Objects with extension methods that preserve the interface (e.g. Take(IList&lt;int&gt;) returns a struct that implements IList&lt;int&gt;) or have higher performance than the ones in System.Linq.Enumerable.  <a href="classLoyc_1_1Collections_1_1LinqToLists.html#details">More...</a><br /></td></tr>
@@ -216,8 +410,11 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListAsListSource.html">ListAsListSource</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper type returned from <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ac4c80a49adb7d5fc0d0725759632a456" title="Adapter: treats any IList{T} object as IListSource{T}.">LCExt.AsListSource&lt;T&gt;</a>.  <a href="classLoyc_1_1Collections_1_1ListAsListSource.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains information about how a collection is about to change. <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html">ListExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, IListSource&lt;T&gt;, and for related mutable interfaces such as IArray&lt;T&gt;.  <a href="classLoyc_1_1Collections_1_1ListExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods and helper methods for List&lt;T&gt;, IList&lt;T&gt;, IReadOnlyList&lt;T&gt;, arrays, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>, and for related mutable interfaces such as IArray&lt;T&gt;.  <a href="classLoyc_1_1Collections_1_1ListExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice.html">ListSlice</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are returned from ListExt.Slice&lt;T&gt;  <a href="structLoyc_1_1Collections_1_1ListSlice.html#details">More...</a><br /></td></tr>
@@ -226,7 +423,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a read-only wrapper that implements IList(T) and IListSource(T), returned from <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ac1caecbf8238f4acc5a0aa5f62b4fa16" title="Converts any IListSource{T} object to a read-only IList{T}.">LCExt.AsList&lt;T&gt;</a>. <a href="classLoyc_1_1Collections_1_1ListSourceAsList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListSourceAsSparse.html">ListSourceAsSparse</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter from IListSource&lt;T&gt; to ISparseListSource&lt;T&gt;. <a href="classLoyc_1_1Collections_1_1ListSourceAsSparse.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> to ISparseListSource&lt;T&gt;. <a href="classLoyc_1_1Collections_1_1ListSourceAsSparse.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListSourceDebugView.html">ListSourceDebugView</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This helper class gives a nice view of a custom collection within the debugger.  <a href="classLoyc_1_1Collections_1_1ListSourceDebugView.html#details">More...</a><br /></td></tr>
@@ -259,10 +456,10 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: provides a view of an IList&lt;T&gt; in which the Count is the same, but the minimum index is not necessarily zero. Returned from LCExt.AsNegList&lt;T&gt;(IList&lt;T&gt;,int).  <a href="structLoyc_1_1Collections_1_1NegList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegListSlice</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a random-access range for a slice of an INegListSource&lt;T&gt;. <a href="structLoyc_1_1Collections_1_1NegListSlice.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource&lt;T&gt;</a>. <a href="structLoyc_1_1Collections_1_1NegListSlice.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html">NegListSource</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: provides a view of an IListSource&lt;T&gt; in which the Count is the same, but the minimum index is not necessarily zero. Returned from LCExt.AsNegList&lt;T&gt;(IListSource&lt;T&gt;,int).  <a href="structLoyc_1_1Collections_1_1NegListSource.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: provides a view of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> in which the Count is the same, but the minimum index is not necessarily zero. Returned from LCExt.AsNegList&lt;T&gt;(IListSource&lt;T&gt;,int).  <a href="structLoyc_1_1Collections_1_1NegListSource.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NestedEnumerable.html">NestedEnumerable</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper type. You pass a cloneable <code>Frame</code> object to the constructor, and then a copy of this <code>Frame</code> is used to construct a new NestedEnumerator&lt;Frame,T&gt; each time the user calls GetEnumerator. <a href="structLoyc_1_1Collections_1_1NestedEnumerable.html#details">More...</a><br /></td></tr>
@@ -274,7 +471,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a range of integers of a specified data type. <a href="structLoyc_1_1Collections_1_1NumRange.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1RangeEnumerator.html">RangeEnumerator</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct: enumerates through a forward range (IFRange&lt;T&gt;). <a href="structLoyc_1_1Collections_1_1RangeEnumerator.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct: enumerates through a forward range (<a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange&lt;T&gt;</a>), calling the range methods through R instead of through <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange&lt;T&gt;</a>.  <a href="structLoyc_1_1Collections_1_1RangeEnumerator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1RangeExt.html">RangeExt</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension/helper methods for ranges. <a href="classLoyc_1_1Collections_1_1RangeExt.html#details">More...</a><br /></td></tr>
@@ -295,7 +492,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a reversed of an IList&lt;T&gt;. TODO: unit tests. <a href="structLoyc_1_1Collections_1_1ReversedList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ReversedListSource.html">ReversedListSource</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: reversed view of IListSource&lt;T&gt; returned from <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a11b9640c0e1e07722a5110c0148a8ec9" title="Returns a reversed view of a read-only list.">LinqToLists.Reverse&lt;T&gt;</a>. <a href="classLoyc_1_1Collections_1_1ReversedListSource.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: reversed view of <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> returned from <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a11b9640c0e1e07722a5110c0148a8ec9" title="Returns a reversed view of a read-only list.">LinqToLists.Reverse&lt;T&gt;</a>. <a href="classLoyc_1_1Collections_1_1ReversedListSource.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1SelectCollection.html">SelectCollection</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class for <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html" title="This class enhances LINQ-to-Objects with extension methods that preserve the interface (e...">LinqToLists</a>. <a href="classLoyc_1_1Collections_1_1SelectCollection.html#details">More...</a><br /></td></tr>
@@ -307,13 +504,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: provides a modified view of an IList by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IList&lt;T&gt;,Func&lt;T,TResult&gt;)  <a href="classLoyc_1_1Collections_1_1SelectList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1SelectListSource.html">SelectListSource</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: provides a modified view of an IListSource by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  <a href="classLoyc_1_1Collections_1_1SelectListSource.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: provides a modified view of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  <a href="classLoyc_1_1Collections_1_1SelectListSource.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyCollection.html">SelectReadOnlyCollection</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class for <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html" title="This class enhances LINQ-to-Objects with extension methods that preserve the interface (e...">LinqToLists</a>. <a href="classLoyc_1_1Collections_1_1SelectReadOnlyCollection.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html">SelectReadOnlyList</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: provides a modified view of an IListSource by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  <a href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class: provides a modified view of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> by transforming each element on-demand. Objects of this type are returned from LinqToLists.Select&lt;T,TResult&gt;(IListSource&lt;T&gt;,Func&lt;T,TResult&gt;)  <a href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Set.html">Set</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An immutable set. <a href="structLoyc_1_1Collections_1_1Set.html#details">More...</a><br /></td></tr>
@@ -324,7 +521,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>SimpleCacheTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Slice__.html">Slice_</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a random-access range for a slice of an IListSource&lt;T&gt;. <a href="structLoyc_1_1Collections_1_1Slice__.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: a random-access range for a slice of an <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. <a href="structLoyc_1_1Collections_1_1Slice__.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1SparseAList.html">SparseAList</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A sparse A-List that implements ISparseList&lt;T&gt;. <a href="classLoyc_1_1Collections_1_1SparseAList.html#details">More...</a><br /></td></tr>
@@ -334,6 +531,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1UpCastSource.html">UpCastSource</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class for treating a collection of a derived type as a collection of a base type or interface. <a href="classLoyc_1_1Collections_1_1UpCastSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ValueCollection.html">ValueCollection</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: this is a read-only collection of Values read from a generic IDictionary. It is a modified version of <code>Dictionary{TKey, TValue}.<a class="el" href="classLoyc_1_1Collections_1_1ValueCollection.html" title="Adapter: this is a read-only collection of Values read from a generic IDictionary. It is a modified version of Dictionary{TKey, TValue}.ValueCollection from the Mono project, changed to use IDictionary instead of Dictionary. ">ValueCollection</a></code> from the Mono project, changed to use IDictionary instead of Dictionary.  <a href="classLoyc_1_1Collections_1_1ValueCollection.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList. ">VList</a> represents a reference to a reverse-order <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure. ">FVList</a>.  <a href="structLoyc_1_1Collections_1_1VList.html#details">More...</a><br /></td></tr>
@@ -356,6 +556,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WeakKeyReference.html">WeakKeyReference</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides a weak reference to an object of the given type to be used in a WeakDictionary along with the given comparer. <a href="classLoyc_1_1Collections_1_1WeakKeyReference.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WeakValueDictionary.html">WeakValueDictionary</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A dictionary in which the values are weak. When a value has been garbage- collected, the dictionary acts as if the key is not present (except the Remove() method, which saves time by not checking whether the value is dead.)  <a href="classLoyc_1_1Collections_1_1WeakValueDictionary.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WList.html">WList</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLoyc_1_1Collections_1_1WList.html" title="WList is the mutable variant of the VList data structure. ">WList</a> is the mutable variant of the <a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList. ">VList</a> data structure.  <a href="classLoyc_1_1Collections_1_1WList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -368,6 +571,16 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a37d24c820f1a59fe73c6eecee5687a32"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32">DictEditMode</a> { <br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32a2d67a16bc732d3b6a4a245d1a866996c">DictEditMode.Retrieve</a> = 0, 
+<a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32a22f12efabdd21ae885a5fa4cc04c9cdc">DictEditMode.ReplaceIfPresent</a> = 1, 
+<a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32a9ed5e57327e6a026f97d80a241955516">DictEditMode.AddIfNotPresent</a> = 2, 
+<br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32abbbe4763739c476985364059d62b8153">DictEditMode.AddOrReplace</a> = 3
+<br />
+ }<tr class="memdesc:a37d24c820f1a59fe73c6eecee5687a32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper enum for IDictionaryEx&lt;K, V&gt;.GetAndEdit. <a href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a37d24c820f1a59fe73c6eecee5687a32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3f241a3b553681db7ce9ce14147e4ee"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee">AListOperation</a> { <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717">AListOperation.Remove</a> = -1, 
 <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea2d67a16bc732d3b6a4a245d1a866996c">AListOperation.Retrieve</a> = 0, 
@@ -396,11 +609,16 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac2ada228d258f5c2a0e33fb6275a0c5b"><td class="memItemLeft" align="right" valign="top">delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections.html#ac2ada228d258f5c2a0e33fb6275a0c5b">ListChangingHandler&lt; T &gt;</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; sender, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt; args)</td></tr>
+<tr class="memdesc:ac2ada228d258f5c2a0e33fb6275a0c5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the method that handles the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">INotifyListChanging&lt;T&gt;.ListChanging</a> event. <a href="#ac2ada228d258f5c2a0e33fb6275a0c5b">More...</a><br /></td></tr>
+<tr class="separator:ac2ada228d258f5c2a0e33fb6275a0c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7fa73bd45aaa73f658f228eb2619f9a"><td class="memItemLeft" align="right" valign="top">delegate <a class="el" href="namespaceLoyc_1_1Collections.html#af0ffc4d7615f186f5aa815a344723f35">XfAction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Collections.html#aa7fa73bd45aaa73f658f228eb2619f9a">VListTransformer&lt; T &gt;</a> (int i, ref T item)</td></tr>
 <tr class="memdesc:aa7fa73bd45aaa73f658f228eb2619f9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">User-supplied list transformer function. <a href="#aa7fa73bd45aaa73f658f228eb2619f9a">More...</a><br /></td></tr>
 <tr class="separator:aa7fa73bd45aaa73f658f228eb2619f9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc.), collection implementations (Loyc.Collections.DList&lt;T&gt;, Loyc.Collections.WeakValueDictionary&lt;K,V&gt;, etc.), extension methods (<a class="el" href="classLoyc_1_1Collections_1_1LCExt.html" title="Extension methods for Loyc Collection interfaces (such as IListSource&lt;T&gt;).">Loyc.Collections.LCExt</a>, <a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html" title="Additional extension methods for IEnumerable&lt;T&gt;, IReadOnlyCollection&lt;T&gt;, and ICollection&lt;T&gt;, beyond what LINQ provides. ">Loyc.Collections.EnumerableExt</a>, etc.), helper classes (Loyc.Collections.EmptyList&lt;T&gt;, (Loyc.Collections.Repeated&lt;T&gt;, etc.), and adapter classes (Loyc.Collections.ListSlice&lt;T&gt;, Loyc.Collections.BufferedSequence&lt;T&gt;, etc.). </p>
+</div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a class="anchor" id="ab3f241a3b553681db7ce9ce14147e4ee"></a>
 <div class="memitem">
 <div class="memproto">
@@ -420,7 +638,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Indicates the way an add operation (such as <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a9f860b86cfd51fb72d5887a65d9c3054" title="Adds, removes, or replaces an item in the list.">BList&lt;T&gt;.Do</a> should behave when an item being added to a set or list is a duplicate of an item that is already present, or when the key of a key-value pair being added to a dictionary is a duplicate of a key that is already present in the dictionary.</p>
-<p>All the "add" operations are deliberately listed last, so that AListBase&lt;K,T&gt;.DoSingleOperation can use a greater-than operator to figure out whether an item may be added or not. The numeric values 0 through 3 are based on DictEditMode.</p>
+<p>All the "add" operations are deliberately listed last, so that AListBase&lt;K,T&gt;.DoSingleOperation can use a greater-than operator to figure out whether an item may be added or not. The numeric values 0 through 3 are based on <a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32" title="Helper enum for IDictionaryEx&lt;K, V&gt;.GetAndEdit.">DictEditMode</a>.</p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717"></a>Remove&#160;</td><td class="fielddoc">
 <p>Remove the item with the specified key if present.</p>
@@ -444,7 +662,43 @@ Functions</h2></td></tr>
 <p>A new item will be added unconditionally, without affecting existing elements, in no particular order with respect to existing items that have the same key.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab3f241a3b553681db7ce9ce14147e4eea10b5a86a2450131a5ed04bd2a160c8cd"></a>AddOrThrow&#160;</td><td class="fielddoc">
-<p>The item will be added if its key is not already present, but KeyAlreadyExistsException or InvalidOperationException will be thrown if the new item is equal to an existing element. If this exception occurs during an AddRange() operation, some of the items may have already been added successfully, and the changes will not be rolled back unless otherwise specified in the documentation of the method that performs the add operation.</p>
+<p>The item will be added if its key is not already present, but <a class="el" href="classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html" title="An exception thrown by dictionary objects when they are asked to &quot;add&quot; a key-value pair that already ...">KeyAlreadyExistsException</a> or InvalidOperationException will be thrown if the new item is equal to an existing element. If this exception occurs during an AddRange() operation, some of the items may have already been added successfully, and the changes will not be rolled back unless otherwise specified in the documentation of the method that performs the add operation.</p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a37d24c820f1a59fe73c6eecee5687a32"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc_1_1Collections.html#a37d24c820f1a59fe73c6eecee5687a32">Loyc.Collections.DictEditMode</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Helper enum for <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35" title="Combines a get and change operation into a single method call. You rarely need to call this method di...">IDictionaryEx&lt;K, V&gt;.GetAndEdit</a>.</p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a37d24c820f1a59fe73c6eecee5687a32a2d67a16bc732d3b6a4a245d1a866996c"></a>Retrieve&#160;</td><td class="fielddoc">
+<p>Do not change the collection.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a37d24c820f1a59fe73c6eecee5687a32a22f12efabdd21ae885a5fa4cc04c9cdc"></a>ReplaceIfPresent&#160;</td><td class="fielddoc">
+<p>Replace an existing pair if present, or do nothing if no matching key.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a37d24c820f1a59fe73c6eecee5687a32a9ed5e57327e6a026f97d80a241955516"></a>AddIfNotPresent&#160;</td><td class="fielddoc">
+<p>Add a new item if the key doesn't match an existing pair, or do nothing if it does.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a37d24c820f1a59fe73c6eecee5687a32abbbe4763739c476985364059d62b8153"></a>AddOrReplace&#160;</td><td class="fielddoc">
+<p>Insert a key-value pair, replacing an existing one if the key already exists.</p>
 </td></tr>
 </table>
 
@@ -487,6 +741,41 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ac2ada228d258f5c2a0e33fb6275a0c5b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">delegate <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.ListChangingHandler&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>sender</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Represents the method that handles the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">INotifyListChanging&lt;T&gt;.ListChanging</a> event.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sender</td><td>The collection that changed.</td></tr>
+    <tr><td class="paramname">args</td><td>Information about the change.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="aa7fa73bd45aaa73f658f228eb2619f9a"></a>
 <div class="memitem">
 <div class="memproto">
@@ -527,7 +816,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:08 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

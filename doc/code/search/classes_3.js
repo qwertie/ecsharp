@@ -3,6 +3,8 @@ var searchData=
   ['defaulterrorbranch',['DefaultErrorBranch',['../classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html',1,'Loyc::LLParserGenerator']]],
   ['defaultnodeprinterwriter',['DefaultNodePrinterWriter',['../classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html',1,'Loyc::Syntax::Les']]],
   ['descendantsframe',['DescendantsFrame',['../structLoyc_1_1Syntax_1_1DescendantsFrame.html',1,'Loyc::Syntax']]],
+  ['dictionarybase',['DictionaryBase',['../classLoyc_1_1Collections_1_1Impl_1_1DictionaryBase.html',1,'Loyc::Collections::Impl']]],
+  ['dictionarybase_3c_20k_2c_20v_20_3e',['DictionaryBase&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1DictionaryBase.html',1,'Loyc::Collections::Impl']]],
   ['dictionarydebugview',['DictionaryDebugView',['../classLoyc_1_1Collections_1_1DictionaryDebugView.html',1,'Loyc::Collections']]],
   ['dictionaryext',['DictionaryExt',['../classLoyc_1_1Collections_1_1DictionaryExt.html',1,'Loyc::Collections']]],
   ['dlist',['DList',['../classLoyc_1_1Collections_1_1DList.html',1,'Loyc::Collections']]],

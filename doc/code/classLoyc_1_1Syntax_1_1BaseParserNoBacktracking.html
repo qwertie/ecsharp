@@ -94,13 +94,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html">Loyc</a> LL(k) Parser Generator) and receive tokens from any IEnumerator&lt;Token&gt;.  
+<p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator) and receive tokens from any IEnumerator&lt;Token&gt;.  
  <a href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/Parsing/BaseParserNoBacktracking.cs'>/Core/Loyc.Syntax/Parsing/BaseParserNoBacktracking.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html">Loyc</a> LL(k) Parser Generator) and receive tokens from any IEnumerator&lt;Token&gt;. </p>
+<div class="textblock"><p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator) and receive tokens from any IEnumerator&lt;Token&gt;. </p>
 <p>This base class for LLLPG parsers simply requires an enumerator to work, and it has a small buffer to hold lookahead tokens. Old tokens are forgotten, so this base class does not support backtracking (i.e. syntactic predicates), but it can save memory. Please use BaseParserForList&lt;Tok,La&gt; if your input sequence comes in the form of a list. </p>
 <p>This version of <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol...">BaseParser</a> has Enumerator as a generic parameter. Compared to using IEnumerator{Token} directly, this can increase performance in case Enumerator is a value type (e.g. <code>List&lt;Token&gt;.Enumerator</code>). </p>
 <p>(I wrote this class by mistake... I actually forgot about backtracking!) </p>
@@ -117,7 +117,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:12 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:25 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

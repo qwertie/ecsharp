@@ -93,6 +93,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Collections.MutableListExtensionMethods Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Contains extension methods for ICollection&lt;T&gt; and IList&lt;T&gt; that are possibly ambiguous when included in the same namespace as extension methods for IReadOnlyCollection&lt;T&gt; and IReadOnlyList&lt;T&gt;. 
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -107,11 +110,16 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LinqToLists.html">LinqToLists</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Contains extension methods for ICollection&lt;T&gt; and IList&lt;T&gt; that are possibly ambiguous when included in the same namespace as extension methods for IReadOnlyCollection&lt;T&gt; and IReadOnlyList&lt;T&gt;.</p>
+<p>This namespace exists because of Microsoft's decision to define no relationship between IReadOnlyCollection&lt;T&gt;/IReadOnlyList&lt;T&gt; on the one hand and ICollection&lt;T&gt;/IList&lt;T&gt; on the other. If one extension method accepts <code>IReadOnlyList</code> and another accepts <code>List</code> then both methods become unusable on a class that implements both, such as List&lt;T&gt;. For <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>'s own collections this problem is solved by implementing an interface like IListAndReadOnly&lt;T&gt; and a corresponding extension method that accepts that interface, but this solution can't help with List&lt;T&gt; or T[]. </p>
+<p>Therefore, this namespace was created for the sole purpose of holding the incompatible extension methods. </p>
+<p>This does not contain <em>all</em> extension methods for mutable lists. Specifically, it does not include extension methods that <em>don't</em> apply to read-only collections. </p>
+</div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:10 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

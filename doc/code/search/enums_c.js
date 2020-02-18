@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['tokenkind',['TokenKind',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903',1,'Loyc::Syntax::Lexing']]]
+  ['severity',['Severity',['../namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e',1,'Loyc']]],
+  ['spaceopt',['SpaceOpt',['../namespaceLoyc_1_1Ecs.html#af6777f19c2bd33b3656b36d293a61a40',1,'Loyc::Ecs']]]
 ];

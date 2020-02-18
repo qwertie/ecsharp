@@ -1,6 +1,7 @@
 var searchData=
 [
   ['passive',['Passive',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85',1,'LeMP']]],
+  ['prefixnotation',['PrefixNotation',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a531100057c5cfdf34cfc72170c4bb7ba',1,'Loyc::Syntax']]],
   ['priorityfallback',['PriorityFallback',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a138988fcf70e07affa310f6a6a69ff8d',1,'LeMP']]],
   ['priorityfallbackmin',['PriorityFallbackMin',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a03517381d93013b68e8706d60f65cf0c',1,'LeMP']]],
   ['priorityinternalfallback',['PriorityInternalFallback',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ab78ffa29cc2191841095b8993455c05f',1,'LeMP']]],

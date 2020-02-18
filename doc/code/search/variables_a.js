@@ -8,6 +8,7 @@ var searchData=
   ['left',['Left',['../structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295',1,'Loyc::Syntax::Precedence']]],
   ['lo',['Lo',['../structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694',1,'Loyc::Syntax::Precedence']]],
   ['local',['Local',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html#add471dc4111b34c1be879e8e1ed7b2a9',1,'Loyc::LLParserGenerator::AndPred']]],
+  ['localizer',['Localizer',['../classLoyc_1_1Localize.html#aa44d91f1fdb4b4adf5a4927f8ea59e4c',1,'Loyc::Localize']]],
   ['lock',['Lock',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a076549f188e595b63d8aff571aea3391',1,'Loyc::Syntax::CodeSymbols']]],
   ['logexceptionerrorsink',['LogExceptionErrorSink',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a1fbcd1f42ea2ebe33b7ee53481fd73e6',1,'Loyc.Syntax.Lexing.BaseLexer.LogExceptionErrorSink()'],['../classLoyc_1_1Syntax_1_1BaseParser.html#a4bc3ed5ed870748ecf00786db0bd5cbd',1,'Loyc.Syntax.BaseParser.LogExceptionErrorSink()']]],
   ['lt',['LT',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a6c7d4e2fdc70cf90e64f89bea2c45779',1,'Loyc::Syntax::CodeSymbols']]]

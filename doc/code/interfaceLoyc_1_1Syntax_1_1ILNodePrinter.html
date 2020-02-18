@@ -120,10 +120,10 @@ Inheritance diagram for Loyc.Syntax.ILNodePrinter:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a94bb4f1e780ce1a791bab9f341aed8f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#a94bb4f1e780ce1a791bab9f341aed8f4">Print</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, IMessageSink sink=null, ParsingMode mode=null, ILNodePrinterOptions options=null)</td></tr>
+<tr class="memitem:a94bb4f1e780ce1a791bab9f341aed8f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#a94bb4f1e780ce1a791bab9f341aed8f4">Print</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode=null, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
 <tr class="memdesc:a94bb4f1e780ce1a791bab9f341aed8f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes the specified syntax tree to a StringBuilder in the syntax supported by this object. <a href="#a94bb4f1e780ce1a791bab9f341aed8f4">More...</a><br /></td></tr>
 <tr class="separator:a94bb4f1e780ce1a791bab9f341aed8f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae63ffa3a06801cb9bc653cac824a51ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#ae63ffa3a06801cb9bc653cac824a51ff">Print</a> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; nodes, StringBuilder target, IMessageSink sink=null, ParsingMode mode=null, ILNodePrinterOptions options=null)</td></tr>
+<tr class="memitem:ae63ffa3a06801cb9bc653cac824a51ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinter.html#ae63ffa3a06801cb9bc653cac824a51ff">Print</a> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; nodes, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> mode=null, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a> options=null)</td></tr>
 <tr class="memdesc:ae63ffa3a06801cb9bc653cac824a51ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes a list of syntax trees to a StringBuilder in the syntax supported by this object. <a href="#ae63ffa3a06801cb9bc653cac824a51ff">More...</a><br /></td></tr>
 <tr class="separator:ae63ffa3a06801cb9bc653cac824a51ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -147,19 +147,19 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IMessageSink&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
           <td class="paramname"><em>sink</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">ParsingMode&#160;</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
           <td class="paramname"><em>mode</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">ILNodePrinterOptions&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
           <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
@@ -177,7 +177,7 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramname">target</td><td>An output buffer, to which output is appended.</td></tr>
     <tr><td class="paramname">sink</td><td>An object used to print warning and error messages. If this is null, messages are sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates the context in which the node(s) to be printed should be understood (e.g. is it a statement or an expression?).</td></tr>
-    <tr><td class="paramname">options</td><td>A set of options to control printer behavior. If null, an appropriate default set of options should be used. Some languages may support additional option interfaces beyond ILNodePrinterOptions.</td></tr>
+    <tr><td class="paramname">options</td><td>A set of options to control printer behavior. If null, an appropriate default set of options should be used. Some languages may support additional option interfaces beyond <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand.">ILNodePrinterOptions</a>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -207,19 +207,19 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IMessageSink&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
           <td class="paramname"><em>sink</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">ParsingMode&#160;</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a>&#160;</td>
           <td class="paramname"><em>mode</em> = <code>null</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">ILNodePrinterOptions&#160;</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html">ILNodePrinterOptions</a>&#160;</td>
           <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
         </tr>
         <tr>
@@ -233,11 +233,11 @@ Public Member Functions</h2></td></tr>
 <p>Serializes a list of syntax trees to a StringBuilder in the syntax supported by this object.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">nodes</td><td><a class="el" href="namespaceLoyc_1_1Syntax.html">Syntax</a> trees to print.</td></tr>
+    <tr><td class="paramname">nodes</td><td><a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a> trees to print.</td></tr>
     <tr><td class="paramname">target</td><td>An output buffer, to which output is appended.</td></tr>
     <tr><td class="paramname">sink</td><td>An object used to print warning and error messages. If this is null, messages are sent to MessageSink.Default.</td></tr>
     <tr><td class="paramname">mode</td><td>Indicates the context in which the node(s) to be printed should be understood (e.g. is it a statement or an expression?).</td></tr>
-    <tr><td class="paramname">options</td><td>A set of options to control printer behavior. If null, an appropriate default set of options should be used. Some languages may support additional option interfaces beyond ILNodePrinterOptions.</td></tr>
+    <tr><td class="paramname">options</td><td>A set of options to control printer behavior. If null, an appropriate default set of options should be used. Some languages may support additional option interfaces beyond <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand.">ILNodePrinterOptions</a>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -251,7 +251,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 17 2020 19:38:13 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Feb 17 2020 22:06:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.11
 </small></address>

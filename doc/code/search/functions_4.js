@@ -1,6 +1,7 @@
 var searchData=
 [
   ['eliminatenamedargs',['EliminateNamedArgs',['../classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337',1,'Loyc::StringExt']]],
+  ['end',['End',['../interfaceLoyc_1_1Collections_1_1IBinumerable.html#a5ab365ef7db4707dec6b887c4269620a',1,'Loyc::Collections::IBinumerable']]],
   ['endremap',['EndRemap',['../classLoyc_1_1Syntax_1_1LineRemapper.html#a2ba3dc1ddbecb109cd4317227eff218f',1,'Loyc::Syntax::LineRemapper']]],
   ['endswith',['EndsWith',['../classLoyc_1_1StringBuilderExt.html#a9aea19fcf610a9eceaee876cf191e3e5',1,'Loyc::StringBuilderExt']]],
   ['ensureimmutable',['EnsureImmutable',['../classLoyc_1_1Collections_1_1VListBlock.html#a70c51be7a71c9b0ce5afe1d23005ba43',1,'Loyc::Collections::VListBlock']]],
