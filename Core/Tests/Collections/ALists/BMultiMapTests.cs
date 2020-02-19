@@ -46,7 +46,7 @@ namespace Loyc.Collections.Tests
 			// Constructor parameters (null, null) cause the value comparer to
 			// pretend all values are equal. This causes Contains() and Remove()
 			// to malfunction in specific ways as this test shows.
-			var map = new BMultiMap<int, string>(null, null, _nodeSize);
+			var map = new BMultiMap<int, string>(null, null, 4);
 
 			map.Add(1, "one");
 			map.Add(2, "two");
@@ -61,7 +61,7 @@ namespace Loyc.Collections.Tests
 			ExpectList(map, P(1, "one"), P(2, "tew"), P(2, "too"), P(2, "to"), P(2, "two"));
 
 			Assert.IsTrue(map[2].Remove("two"));
-			ExpectList(map, P(1, "one"), P(2, "tew"), P(2, "to"), P(2, "two"));
+			ExpectList(map, P(1, "one"), P(2, "too"), P(2, "to"), P(2, "two"));
 			Assert.IsTrue(map[2].Remove("not actually in collection"));
 			ExpectList(map, P(1, "one"), P(2, "to"), P(2, "two"));
 		}

@@ -52,7 +52,7 @@ namespace Loyc.Collections
 	/// nevertheless wish to be compatible with APIs that accept <see cref="IList{T}"/>.
 	/// (writable collections should implement <see cref="IListImpl{T}"/> instead.)
 	/// </summary>
-	public interface IListAndListSource<T> : IListSource<T>, IList<T>, ICollectionAndSource<T> { }
+	public interface IListAndListSource<T> : IListAndReadOnly<T>, IListSource<T>, IList<T>, ICollectionAndSource<T> { }
 
 	/// <summary>This interface is intended to be implemented by all Loyc collections 
 	/// that implement <see cref="IList{T}"/>. It combines the original 
