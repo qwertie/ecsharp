@@ -12,7 +12,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=27.0.3
+    - set SEMVER=27.0.4
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
@@ -71,7 +71,7 @@ deploy:
     - provider: NuGet
       server:
       api_key:
-          secure: DHTp3wMjKqyca2PWftol2wq7DxE9KdL8AizHVIS14T4DSSMXgc0bIiCGvvA8SkTH
+          secure: Oa0lAafvnEc49af1ZoeqWCl2LgSf18vM389etR/CEwoaheeD37bJZ06ZIGgEaJto
       skip_symbols: false         # Whether to not publish symbol pkgs (src/pdb)
       artifact: /.*\.nupkg/
       on:

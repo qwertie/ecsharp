@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -37,10 +37,6 @@ namespace Loyc.VisualStudio
 		[FileExtension(".les3")]
 		[ContentType("LES3")]
 		internal static FileExtensionToContentTypeDefinition _1 = null;
-		[Export]
-		[FileExtension(".was")]
-		[ContentType("LES3")]
-		internal static FileExtensionToContentTypeDefinition _2 = null;
 		[Export]
 		[FileExtension(".lemp")]
 		[ContentType("LES3")]
