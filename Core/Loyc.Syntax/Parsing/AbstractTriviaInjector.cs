@@ -98,9 +98,9 @@ namespace Loyc.Syntax
 		/// <summary>Initializes the <see cref="SortedTrivia"/> property.</summary>
 		public AbstractTriviaInjector(IListSource<Trivia> sortedTrivia) { SortedTrivia = sortedTrivia; }
 
-		/// <summary>Derived class should associate the given list of trivia with the 
-		/// specified node. Leading trivia will be attached to a given node before 
-		/// trailing trivia.</summary>
+		/// <summary>Derived class translates a list of trivia (tokens) into appropriate 
+		/// trivia attributes. This will be called for leading trivia before trailing 
+		/// trivia.</summary>
 		/// <param name="node">The node.</param>
 		/// <param name="trivia">Trivia to be associated with <c>node</c>.</param>
 		/// <param name="loc">Location of the trivia. For a given node, the base class
@@ -117,11 +117,11 @@ namespace Loyc.Syntax
 		/// <remarks>This method may STILL called for a given node when there is no trivia 
 		/// associated with that node, IF the node is at the top level or its sibling 
 		/// nodes in the same parent have associated trivia.</remarks>
-		protected abstract VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		protected abstract VList<LNode> GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
 
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			var newAttrs = AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);
+			var newAttrs = GetAttachedTrivia(node, trivia, loc, parent, indexInParent);
 			if (loc == TriviaLocation.Leading)
 				return node.PlusAttrsBefore(newAttrs);
 			else
@@ -161,9 +161,11 @@ namespace Loyc.Syntax
 		/// <summary>Returns true if the trivia represents a newline, false otherwise.</summary>
 		protected abstract bool IsNewline(Trivia trivia);
 
-		/// <summary>A method called to create a virtual node to apply trivia to an empty source file.</summary>
+		/// <summary>A method called to create a virtual node, in order to apply trivia to a 
+		/// source file that is completely empty except for trivia.</summary>
 		/// <remarks>Default implementation attaches all trivia to a "missing" node 
-		/// (zero-length identifier). If this method returns null then the result is discarded.</remarks>
+		/// (zero-length identifier). If this method returns null, the source file will truly 
+		/// be empty (containing no trivia either).</remarks>
 		protected virtual LNode GetEmptyResultSet()
 		{
 			if (SortedTrivia.Count == 0)
@@ -287,7 +289,7 @@ namespace Loyc.Syntax
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
 
 				// Attach leading trivia to current node
-				var newAttrs = AttachTriviaTo(ref node, triviaList, TriviaLocation.Leading, parent, indexInParent);
+				var newAttrs = GetAttachedTrivia(node, triviaList, TriviaLocation.Leading, parent, indexInParent);
 
 				if (!(prevIndexInParent < -1 && indexInParent <= -1))
 					node = node.PlusAttrsBefore(newAttrs);
