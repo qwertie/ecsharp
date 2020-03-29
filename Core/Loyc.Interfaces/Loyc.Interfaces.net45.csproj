@@ -163,6 +163,7 @@
     </Compile>
     <Compile Include="Collections\ICharSource.cs" />
     <Compile Include="Concrete\BaseDictionary.cs" />
+    <Compile Include="Concrete\Either.cs" />
     <Compile Include="Concrete\EmptySourceFile.cs" />
     <Compile Include="Concrete\Exceptions.cs" />
     <Compile Include="Concrete\KeyCollection.cs" />
