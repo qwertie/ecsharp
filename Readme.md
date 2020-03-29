@@ -33,9 +33,10 @@ If you just want the [core libraries](http://core.loyc.net/), you can find them 
 How to build
 ------------
 
-Open Loyc.sln in Visual Studio, set the build configuration to Debug.NET45, and build it!
+Open Loyc.netfx.sln in Visual Studio (or Loyc.netstd.sln for the .NET Standard edition), set the build configuration to Debug.NET45, and build it!
 
-If Visual Studio complains about OxyPlot (and NuGet Restore isn't working), unload the LoycCore.Benchmarks project (nothing depends on it)
+If Visual Studio complains about OxyPlot, the easiest fix is to unload the LoycCore.Benchmarks project (nothing depends on it).
+To fix it properly, open Core\Loyc.netstd.sln, right-click the solution, choose "Restore NuGet packages", build the solution (just to make sure it worked), and then return to the original solution.
 
 What's the deal with the binaries?
 ----------------------------------
