@@ -6,6 +6,16 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.7.1.2: March 29, 2020 ###
+
+- Fix regressions in EC# parser:
+  - A variable declaration inside `case` (`case T x:`) could not be parsed
+  - The optimized code path was broken such that a variable declaration
+    like `T $x` could not be parsed
+- Fix formatting in EC# printer:
+  - Case statements did not always render nicely
+  - Brace-expression could start with an unwanted space
+
 ### v2.7.0: February 17, 2020 ###
 
 #### EC# (parser and printer):
