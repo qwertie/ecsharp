@@ -161,7 +161,7 @@ namespace Loyc.Syntax.Les {
 				"(" list:ExprList(ref endMarker) c:=")"
 				{
 					e = MarkCall(F.Call(e, list, e.Range.StartIndex, c.EndIndex));
-					if (endMarker == TT.Semicolon) { e.Style = NodeStyle.Statement | NodeStyle.Alternate; };
+					if (endMarker == TT.Semicolon) { e.Style = NodeStyle.StatementBlock | NodeStyle.Alternate; };
 				}
 			|	// Indexer / square brackets
 				{var args = (new VList!LNode { e });}
@@ -199,7 +199,7 @@ namespace Loyc.Syntax.Les {
 				{$result = F.Literal(tree, o.StartIndex, c.EndIndex);}
 			|	// {braces}
 				o:"{" list:=StmtList c:"}" 
-				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
+				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.StatementBlock);}
 			|	o:"[" list:=ExprList c:"]"
 				{$result = F.Call(S.Array, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);}
 			|	// (parens) - possibly a tuple

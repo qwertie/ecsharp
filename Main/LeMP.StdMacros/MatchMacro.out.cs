@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -14,6 +14,7 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;
+using LeMP.CSharp7.To.OlderVersions;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
@@ -80,9 +81,9 @@ namespace LeMP
 						//  handler: the list of statements underneath `case`
 						var handler = new VList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
 					
-						if (@case.Calls(S.Case) && @case.Args.Count > 0) {
+						if (@case .Calls(S.Case) && @case .Args.Count > 0) {
 							var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
-							foreach (var pattern in @case.Args)
+							foreach (var pattern in @case .Args)
 								outputs.Add(codeGen.GenCodeForPattern(pattern));
 						} else {	// default:
 							// Note: the extra {braces} around the handler are rarely 
@@ -91,7 +92,7 @@ namespace LeMP
 							// by the same name, which is illegal unless we add braces.
 							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.StatementBlock));
 							if (next_i < contents.Count)
-								context.Sink.Error(contents[next_i], "The default branch must be the final branch in a 'match' statement.");
+								context.Sink.Error(@contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
 					}
 					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToVList().AsLNode(S.Braces), LNode.Literal(false)));
@@ -101,7 +102,7 @@ namespace LeMP
 		}
 	
 		static bool IsCaseLabel(LNode @case) {
-			if (@case.Calls(CodeSymbols.Case) || @case.Calls(CodeSymbols.Label, 1) && @case.Args[0].IsIdNamed((Symbol) "'default")) return true;
+			if (@case .Calls(CodeSymbols.Case) || @case .Calls(CodeSymbols.Label, 1) && @case .Args[0].IsIdNamed((Symbol) "'default")) return true;
 			return false;
 		}
 	

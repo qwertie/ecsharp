@@ -35,13 +35,13 @@ namespace Loyc.Syntax
 		/// suffix, or other operator), or that it should be printed with operator 
 		/// notation if possible.</summary>
 		Operator = 1,
+		[Obsolete("This was renamed to StatementBlock")] Statement = StatementBlock,
 		/// <summary>The node's immediate children (and/or the node itself) should be 
 		/// printed in statement notation, if possible in the context in which it is 
 		/// located.</summary>
 		/// <remarks>Used to mark braced blocks. In LES, marks a call in which ';'
 		/// is used as the argument separator.</remarks>
 		StatementBlock = 2,
-		[Obsolete("This was renamed to StatementBlock")] Statement = 2,
 		/// <summary>A language-specific special notation should be used for this
 		/// node. In LESv3, the parser puts this style on block call nodes (e.g. 
 		/// <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>

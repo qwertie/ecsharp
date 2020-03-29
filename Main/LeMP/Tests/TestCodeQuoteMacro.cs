@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,7 @@ namespace LeMP.Tests
 			TestEcs("q = quote({ while (Foo<T>) Yay(); });",
 				   @"q = LNode.Call(CodeSymbols.While, LNode.List(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) ""Foo""), LNode.Id((Symbol) ""T""))).SetStyle(NodeStyle.Operator), LNode.Call((Symbol) ""Yay"")));");
 			TestEcs("q = quote({ if (true) { Yay(); } });",
-				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""))).SetStyle(NodeStyle.Statement)));");
+				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""))).SetStyle(NodeStyle.StatementBlock)));");
 			TestEcs("q = quote { Yay(); break; };",
 				   @"q = LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break)));");
 			TestEcs("q = quote { $(dict[key]) = 1; };",

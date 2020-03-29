@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.7.1.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -37,7 +37,7 @@ namespace LeMP
 				return null;
 		
 			var output = new WList<LNode>();
-			var @var = MaybeAddTempVarDecl(context, args[0], output);
+			var var = MaybeAddTempVarDecl(context, args[0], output);
 		
 			var ifClauses = new List<Pair<LNode, LNode>>();
 			var cmc = new CodeMatchContext { 
@@ -53,23 +53,23 @@ namespace LeMP
 				//          && (x = tmp9.Args[0]) != null // this will never be null, but we want to put it the assignment in the 'if' statement
 				//          && 1.Equals(tmp9.Args[1].Value) && (y = var.Args[1]) != null) { ... }
 				LNode testExpr = null;
-				if (@case.Key.Count > 0) {
-					if (cmc.IsMultiCase = @case.Key.Count > 1) {
+				if (@case .Key.Count > 0) {
+					if (cmc.IsMultiCase = @case .Key.Count > 1) {
 						cmc.UsageCounters.Clear();
-						testExpr = @case.Key.Aggregate((LNode) null, (test, pattern) => {
-							test = LNode.MergeBinary(test, cmc.MakeTopTestExpr(pattern, @var), S.Or);
+						testExpr = @case .Key.Aggregate((LNode) null, (test, pattern) => {
+							test = LNode.MergeBinary(test, cmc.MakeTopTestExpr(pattern, var), S.Or);
 							return test;
 						});
-						foreach (var pair in cmc.UsageCounters.Where(p => p.Value < @case.Key.Count)) {
+						foreach (var pair in cmc.UsageCounters.Where(p => p.Value < @case .Key.Count)) {
 							if (cmc.NodeVars.ContainsKey(pair.Key))
 								cmc.NodeVars[pair.Key] = true;
 							if (cmc.ListVars.ContainsKey(pair.Key))
 								cmc.ListVars[pair.Key] = true;
 						}
 					} else
-						testExpr = cmc.MakeTopTestExpr(@case.Key[0], @var);
+						testExpr = cmc.MakeTopTestExpr(@case .Key[0], var);
 				}
-				var handler = @case.Value.AsLNode(S.Braces);
+				var handler = @case .Value.AsLNode(S.Braces);
 				if (cmc.ThenClause.Count > 0)
 					handler = LNode.MergeLists(F.Braces(cmc.ThenClause), handler, S.Braces);
 				ifClauses.Add(Pair.Create(testExpr, handler));
@@ -164,11 +164,11 @@ namespace LeMP
 			public IMacroContext Context;
 			public bool IsMultiCase;	// true if building a case statement with multiple patterns
 			public WList<LNode> Tests = new WList<LNode>();	// list of tests involved in matching the current pattern
-			internal LNode MakeTopTestExpr(LNode pattern, LNode @var)
+			internal LNode MakeTopTestExpr(LNode pattern, LNode var)
 			{
 				DuplicateDetector.Clear();
 				Tests.Clear();
-				MakeTestExpr(pattern, @var);
+				MakeTestExpr(pattern, var);
 			
 				LNode result = null;
 				foreach (var test in Tests)

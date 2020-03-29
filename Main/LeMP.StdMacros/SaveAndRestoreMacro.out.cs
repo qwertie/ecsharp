@@ -1,4 +1,4 @@
-// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using Loyc;
 using Loyc.Syntax;
+using LeMP.CSharp7.To.OlderVersions;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP

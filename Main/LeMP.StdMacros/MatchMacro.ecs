@@ -7,6 +7,7 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;
+using LeMP.CSharp7.To.OlderVersions;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc;
 using Loyc.Syntax;
+using LeMP.CSharp7.To.OlderVersions;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP

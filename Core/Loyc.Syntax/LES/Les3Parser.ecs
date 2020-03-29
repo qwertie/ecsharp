@@ -328,7 +328,7 @@ partial class Les3Parser
 			{endMarker := default(TT);}
 			stmts:ExprList(ref endMarker, isBracedBlock: true)
 		"}" 
-		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.Statement);};
+		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock);};
 
 	ContinuatorKeyword returns [Token result] : &{[Hoist] IsContinuator(LT($LI).Value)} result:TT.Id;
 

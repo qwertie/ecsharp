@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.1.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -309,7 +309,7 @@ namespace LeMP.Les3.To.CSharp
 		{
 			if (node.ArgCount > 1)
 				return null;
-			return Les2.@var(node, context);
+			return Les2.var(node, context);
 		}
 		[LexicalMacro(".for (Init, Test, Increment) {Body...};", 
 		"Represents the standard C/C++/C#/Java 'for' statement", "#for", Mode = MacroMode.Passive)] 
@@ -398,7 +398,7 @@ namespace LeMP.Les3.To.CSharp
 					// returns: #if(cond1, {...}, #if(cond2, {...}, #elsif(cond3, {...}), #else({...})))
 					LNode @else = clause.WithTarget(S.If);
 					if (args.Count > 3)
-						@else = @else.WithArgs(@else.Args.AddRange(args, excludeSubList: first3));
+						@else = @else .WithArgs(@else .Args.AddRange(args, excludeSubList: first3));
 					return node.WithArgs(first3.WithoutLast(1).Add(@else));
 				}
 				if (clause.Calls(S.Else, 1) && args.Count == 3)
@@ -465,7 +465,7 @@ namespace LeMP.Les3.To.CSharp
 	
 		[LexicalMacro(".default; .default { Code... }", "The default label in a switch statement.", 
 		"#default", Mode = MacroMode.Passive)] 
-		public static LNode defaultCase(LNode node, IMacroContext context)
+		public static LNode @defaultCase(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 0)
 				return node.With(S.Label, LNode.Id(S.Default, node)).SetBaseStyle(NodeStyle.Default);

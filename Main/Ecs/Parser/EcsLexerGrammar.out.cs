@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 2.7.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -802,10 +802,10 @@ namespace Loyc.Ecs.Parser
 		void IdUniLetter()
 		{
 			int la0, la1;
-			// Line 150: ( &{@char.IsLetter(LA0->@char)} (128..65278) | [\\] [u] HexDigit HexDigit HexDigit HexDigit | [\\] [U] HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit )
+			// Line 150: ( &{@char .IsLetter(LA0->@char)} (128..65278) | [\\] [u] HexDigit HexDigit HexDigit HexDigit | [\\] [U] HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit )
 			la0 = LA0;
 			if (la0 >= 128 && la0 <= 65278) {
-				Check(char.IsLetter((char) LA0), "Expected @char.IsLetter(LA0->@char)");
+				Check(char.IsLetter((char) LA0), "Expected @char .IsLetter(LA0->@char)");
 				Skip();
 			} else {
 				la1 = LA(1);

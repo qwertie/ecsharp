@@ -1,4 +1,4 @@
-﻿//
+//
 // A file for playing around with Enhanced C# and LeMP
 // 
 #importMacros(Loyc.LLPG);
