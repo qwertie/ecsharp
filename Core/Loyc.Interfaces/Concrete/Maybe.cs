@@ -63,9 +63,11 @@ namespace Loyc
 
 		/// <summary>Converts <see cref="Maybe{T}"/> to T, returning a default value if <see cref="HasValue"/> is false.</summary>
 		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
-		public T Or(T defaultValue) 
-			{ return _hasValue ? _value : defaultValue; }
-		
+		public T Or(T defaultValue) => _hasValue ? _value : defaultValue;
+		/// <summary>Converts <see cref="Maybe{T}"/> to T, calling a factory function if <see cref="HasValue"/> is false.</summary>
+		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
+		public T Or(Func<T> getDefaultValue) => _hasValue ? _value : getDefaultValue();
+
 		public void Then(Action<T> then) { if (_hasValue) then(_value); }
 		public R Then<R>(Func<T, R> then, Func<R> @else)  { return _hasValue ? then(_value) : @else(); }
 		public R Then<R>(Func<T, R> then, R defaultValue) { return _hasValue ? then(_value) : defaultValue; }

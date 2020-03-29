@@ -40,8 +40,17 @@ namespace Loyc
 	{
 		T Value { get; }
 	}
+	
+	/// <summary>Interface for things that have a mutable Value property.</summary>
 	public interface IHasMutableValue<T> : IHasValue<T>
 	{
 		new T Value { get; set; }
+	}
+
+	/// <summary>Represents a type that holds a single value of one of two types (L or R).</summary>
+	public interface IEither<L, R>
+	{
+		Maybe<L> Left { get; }
+		Maybe<R> Right { get; }
 	}
 }
