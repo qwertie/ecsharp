@@ -26,10 +26,10 @@ namespace Loyc.Syntax
 	/// This class provides access to all properties of all three types of nodes,
 	/// in order to make this class easier to access from plain C#, and to avoid
 	/// unnecessary downcasting in some cases. In fact, you never need to use the
-	/// derived classes; you can think of them simply as a way of optimizing the
-	/// implementation.
+	/// derived classes; you can think of them simply as a way that the implementation
+	/// is optimized.
 	/// <para/>
-	/// Loyc nodes are always immutable.
+	/// Loyc nodes are immutable (except the <see cref="Style"/> property).
 	///
 	/// <h3>Important properties</h3>
 	/// 
