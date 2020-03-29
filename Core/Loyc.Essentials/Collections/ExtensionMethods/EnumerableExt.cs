@@ -36,17 +36,21 @@ namespace Loyc.Collections
 			}
 		}
 
-		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int IndexWhere<T>(this IEnumerable<T> list, Func<T, bool> pred)
+		/// <summary>Gets the lowest index at which a condition is true, or null if nowhere.</summary>
+		public static int? FirstIndexWhere<T>(this IEnumerable<T> list, Func<T, bool> pred)
 		{
 			int i = 0;
-			foreach (var item in list) {
+			foreach (var item in list)
+			{
 				if (pred(item))
 					return i;
 				i++;
 			}
-			return -1;
+			return null;
 		}
+		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+		[Obsolete("Please use FirstIndexWhere, which returns null if nothing matches")]
+		public static int IndexWhere<T>(this IEnumerable<T> list, Func<T, bool> pred) => FirstIndexWhere(list, pred) ?? -1;
 
 		public static int IndexOfMin(this IEnumerable<int> source)
 		{

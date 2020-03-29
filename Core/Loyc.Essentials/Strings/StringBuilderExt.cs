@@ -1,4 +1,4 @@
-﻿using Loyc.Collections;
+using Loyc.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,25 +69,35 @@ namespace Loyc
 		}
 
 		/// <summary>Gets the index of a character in a StringBuilder</summary>
-		/// <returns>Index of the first instance of the specified character in the string, or -1 if not found</returns>
-		public static int IndexOf(this StringBuilder sb, char value, int startIndex = 0)
+		/// <returns>Index of the first instance of the specified character in the string, or null if not found</returns>
+		public static int? FirstIndexOf(this StringBuilder sb, char value, int startIndex = 0)
 		{
 			for (int i = startIndex; i < sb.Length; i++)
 				if (sb[i] == value)
 					return i;
 			return -1;
 		}
+		/// <summary>Gets the index of a character in a StringBuilder</summary>
+		/// <returns>Index of the first instance of the specified character in the string, or -1 if not found</returns>
+		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int")]
+		public static int IndexOf(this StringBuilder sb, char value, int startIndex = 0) =>
+			FirstIndexOf(sb, value, startIndex) ?? -1;
 
 		/// <summary>Gets the index of a substring in a StringBuilder</summary>
-		/// <returns>Index of the first instance of the specified substring in the StringBuilder, or -1 if not found</returns>
-		public static int IndexOf(this StringBuilder sb, UString searchStr, int startIndex = 0, bool ignoreCase = false)
+		/// <returns>Index of the first instance of the specified substring in the StringBuilder, or null if not found</returns>
+		public static int? FirstIndexOf(this StringBuilder sb, UString searchStr, int startIndex = 0, bool ignoreCase = false)
 		{
 			var stopAt = sb.Length - searchStr.Length;
 			for (int i = startIndex; i <= stopAt; i++)
 				if (SubstringEqualHelper(sb, i, searchStr, ignoreCase))
 					return i;
-			return -1;
+			return null;
 		}
+		/// <summary>Gets the index of a substring in a StringBuilder</summary>
+		/// <returns>Index of the first instance of the specified substring in the StringBuilder, or -1 if not found</returns>
+		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int")]
+		public static int IndexOf(this StringBuilder sb, UString searchStr, int startIndex = 0, bool ignoreCase = false) =>
+			FirstIndexOf(sb, searchStr, startIndex, ignoreCase) ?? -1;
 
 		/// <summary>Gets the index of a character in a StringBuilder</summary>
 		/// <returns>Index of the last instance of the specified character in the StringBuilder, or -1 if not found</returns>

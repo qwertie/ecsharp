@@ -1,4 +1,4 @@
-﻿// This file is part of the Loyc project. Licence: LGPL
+// This file is part of the Loyc project. Licence: LGPL
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -154,25 +154,23 @@ namespace Loyc.Collections
 			list.TryGet(index, out fail);
 			return !fail;
 		}
-		
+
 		/// <summary>Determines the index of a specific value.</summary>
-		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
-		/// <remarks>
-		/// At first, this method was a member of IListSource itself, just in 
-		/// case the source might have some kind of fast lookup logic (e.g. binary 
-		/// search) or custom comparer. However, since the item to find is an "in" 
-		/// argument, it would prevent IListSource from being marked covariant when
-		/// I upgrade to C# 4.
-		/// </remarks>
-		public static int IndexOf<T>(this IReadOnlyList<T> list, T item)
+		/// <returns>The index of the value, if found, or null if it was not found.</returns>
+		public static int? FirstIndexOf<T>(this IReadOnlyList<T> list, T item)
 		{
 			int count = list.Count;
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			for (int i = 0; i < count; i++)
 				if (comparer.Equals(item, list[i]))
 					return i;
-			return -1;
+			return null;
 		}
+
+		/// <summary>Determines the index of a specific value.</summary>
+		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
+		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int.")]
+		public static int IndexOf<T>(this IReadOnlyList<T> list, T item) => FirstIndexOf(list, item) ?? -1;
 
 		public static void CopyTo<T>(this IReadOnlyList<T> c, T[] array, int arrayIndex)
 		{
@@ -189,21 +187,29 @@ namespace Loyc.Collections
 				array[arrayIndex + i] = c[i];
 		}
 
-		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int IndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
+		/// <summary>Gets the lowest index at which a condition is true, or null if nowhere.</summary>
+		public static int? FirstIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
 		{
 			for (int i = 0, c = source.Count; i < c; i++)
 				if (pred(source[i]))
 					return i;
-			return -1;
+			return null;
 		}
-		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
+		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int.")]
+		public static int IndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred) => FirstIndexWhere(source, pred) ?? -1;
+
+		/// <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
+		public static int? FinalIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
 		{
 			for (int i = source.Count-1; i >= 0; i--)
 				if (pred(source[i]))
 					return i;
-			return -1;
+			return null;
 		}
+		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+		[Obsolete("Please use FinalIndexOf. This method will be changed later to return nullable int.")]
+		public static int LastIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred) =>
+			FinalIndexWhere(source, pred) ?? -1;
 	}
 }

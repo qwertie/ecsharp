@@ -768,7 +768,7 @@ namespace Loyc.Collections
 		/// </remarks>
 		public virtual int IndexOf(T item)
 		{
-			return LinearScanFor(item, 0, EqualityComparer<T>.Default);
+			return FirstIndexOf(item, 0, EqualityComparer<T>.Default) ?? -1;
 		}
 
 		/// <summary>Returns true if-and-only-if the specified item exists in the list.</summary>

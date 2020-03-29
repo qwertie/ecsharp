@@ -749,16 +749,16 @@ namespace Loyc.Collections.MutableListExtensionMethods
 			return low ^ invert;
 		}
 
+		/// <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
+		public static int? FinalIndexWhere<T>(this IList<T> list, Func<T, bool> pred) => LCInterfaces.FinalIndexWhere(list.AsListSource(), pred);
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred)
-		{
-			return LCInterfaces.LastIndexWhere(list.AsListSource(), pred);
-		}
+		[Obsolete("Please use FinalIndexOf. This method will be changed later to return nullable int.")]
+		public static int LastIndexWhere<T>(this IList<T> list, Func<T, bool> pred) => LCInterfaces.FinalIndexWhere(list.AsListSource(), pred) ?? -1;
+		/// <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
+		public static int? FinalIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred) => LCInterfaces.FinalIndexWhere(list, pred);
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		public static int LastIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred)
-		{
-			return LCInterfaces.LastIndexWhere(list, pred);
-		}
+		[Obsolete("Please use FinalIndexOf. This method will be changed later to return nullable int.")]
+		public static int LastIndexWhere<T>(this IListAndListSource<T> list, Func<T, bool> pred) => LCInterfaces.FinalIndexWhere(list, pred) ?? -1;
 
 		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
 		public static T[] Randomized<T>(this IList<T> list)

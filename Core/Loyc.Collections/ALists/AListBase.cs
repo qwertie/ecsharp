@@ -619,10 +619,11 @@ namespace Loyc.Collections
 		/// <param name="item">Item to find</param>
 		/// <param name="startIndex">Index of first element against which to compare the item.</param>
 		/// <param name="comparer">Comparison object (e.g. <see cref="EqualityComparer{T}.Default"/>.)</param>
-		/// <returns>Index of the matching item, or -1 if no matching item was found.</returns>
+		/// <returns>Index of the matching item, or null if no matching item was found.</returns>
 		/// <exception cref="ArgumentOutOfRangeException">when startIndex > Count</exception>
-		public int LinearScanFor(T item, int startIndex, EqualityComparer<T> comparer)
+		public int? FirstIndexOf(T item, int startIndex, EqualityComparer<T> comparer = null)
 		{
+			comparer = comparer ?? EqualityComparer<T>.Default;
 			bool ended = false;
 			var it = GetEnumerator(startIndex);
 			for (uint i = 0; i < _count; i++)
@@ -632,9 +633,11 @@ namespace Loyc.Collections
 				if (comparer.Equals(item, current))
 					return (int)i;
 			}
-			return -1;
+			return null;
 		}
-		
+		[Obsolete("Please use FirstIndexOf instead, which returns null if item is not found")]
+		public int LinearScanFor(T item, int startIndex, EqualityComparer<T> comparer = null) => FirstIndexOf(item, startIndex, comparer) ?? -1;
+
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			LCInterfaces.CopyTo(this, array, arrayIndex);
