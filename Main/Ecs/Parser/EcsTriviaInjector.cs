@@ -51,13 +51,13 @@ namespace Loyc.Ecs.Parser
 
 		protected override VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			int nli;
+			int? nli;
 			if (loc == TriviaLocation.Trailing && indexInParent == 1 && parent != null && parent.Calls(CodeSymbols.If, 3) && 
-				(nli = trivia.LastIndexWhere(t => t.Type() == TokenType.Newline)) != -1) {
+				(nli = trivia.FinalIndexWhere(t => t.Type() == TokenType.Newline)) != null) {
 				// The 'else' keyword is invisible here, but it often appears on a line by 
 				// itself; remove a newline to avoid creating a blank line when printing.
 				var triviaSans = new DList<Token>(trivia);
-				triviaSans.RemoveAt(nli);
+				triviaSans.RemoveAt(nli.Value);
 				trivia = triviaSans;
 			}
 			return base.AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);

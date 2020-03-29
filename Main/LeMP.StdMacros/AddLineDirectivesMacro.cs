@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -89,9 +89,8 @@ namespace LeMP
 						// unless inserting #line default which we can just put at the beginning
 						int insertIndex = 0;
 						if (sourceLineWas > 0) {
-							insertIndex = node.Attrs.IndexWhere(n => n.Range.Start.Line == sourceLineWas && n.Range.Source == node.Range.Source);
-							if (insertIndex == -1)
-								insertIndex = node.Attrs.Count;
+							insertIndex = node.Attrs.FirstIndexWhere(n => n.Range.Start.Line == sourceLineWas && n.Range.Source == node.Range.Source) 
+								?? node.Attrs.Count;
 						}
 						node = node.WithAttrs(node.Attrs.Insert(insertIndex, trivia));
 					}

@@ -35,6 +35,8 @@ How to build
 
 Open Loyc.sln in Visual Studio, set the build configuration to Debug.NET45, and build it!
 
+If Visual Studio complains about OxyPlot (and NuGet Restore isn't working), unload the LoycCore.Benchmarks project (nothing depends on it)
+
 What's the deal with the binaries?
 ----------------------------------
 

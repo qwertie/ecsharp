@@ -369,11 +369,11 @@ namespace Loyc.LLParserGenerator
 				var next = (alts.Mode == LoopMode.Star ? alts : alts.Next);
 
 				if (next == alts) {
-					int badArm = alts.Arms.IndexWhere(arm => arm.IsNullable);
-					if (badArm > -1) {
+					int? badArm = alts.Arms.FirstIndexWhere(arm => arm.IsNullable);
+					if (badArm != null) {
 						LLPG.Output(Error, alts,
 							alts.Arms.Count == 1 ? "The contents of this loop are nullable; the parser could loop forever without consuming any input."
-							: string.Format("Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm + 1));
+							    : string.Format("Arm #{0} of this loop is nullable; the parser could loop forever without consuming any input.", badArm.Value + 1));
 					}
 				}
 

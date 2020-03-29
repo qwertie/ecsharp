@@ -22,15 +22,15 @@ namespace LeMP
 			"#class", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode AlgebraicDataType(LNode classDecl, IMacroContext context)
 		{
-			int i;
+			int? i;
 			matchCode(classDecl) {
 				case {
-					[$(..attrs[(i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1])]
+					[$(..attrs[(i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null])]
 					class $baseName : $(..baseTypes) {
 						$(..body);
 					}
 				}:
-					attrs = attrs.RemoveAt(i);
+					attrs = attrs.RemoveAt(i.Value);
 					var adt = new AltType(attrs, baseName, baseTypes, null);
 					adt.ScanClassBody(body);
 					var output = new VList<LNode>();
@@ -117,7 +117,7 @@ namespace LeMP
 			public void ScanClassBody(VList<LNode> body)
 			{
 				foreach (var stmt in body) {
-					int i;
+					int? i;
 					matchCode (stmt) {
 					case { [$(..attrs)] alt $altName($(..parts));                     }, 
 						 { [$(..attrs)] alt $altName($(..parts)) { $(..childBody); }  }:
@@ -132,9 +132,9 @@ namespace LeMP
 						child.AddParts(parts);
 						child.ScanClassBody(childBody);
 						_children.Add(child);
-					case [$(..attrs[(i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1])] 
+					case [$(..attrs[(i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null])] 
 					     #cons($_, this, #($(..parts)), $(..rest[rest.Count <= 1])):
-						attrs.RemoveAt(i);
+						attrs.RemoveAt(i.Value);
 						_constructorAttrs.AddRange(attrs);
 						if (rest.Count > 0 && rest[0].Calls(S.Braces))
 							_extraConstrLogic.AddRange(rest[0].Args);

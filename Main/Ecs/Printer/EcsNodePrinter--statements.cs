@@ -260,11 +260,11 @@ namespace Loyc.Ecs
 			if (kind == null)
 				return SPResult.Fail;
 
-			int ai;
+			int? ai;
 			var old_n = _n;
-			if (kind == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
+			if (kind == S.Alias && (ai = _n.Attrs.FirstIndexWhere(a => a.IsIdNamed(S.FilePrivate))) != null) {
 				// Cause "[#filePrivate] #alias x = y;" to print as "using x = y;"
-				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai)).WithTarget(S.UsingStmt);
+				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai.Value)).WithTarget(S.UsingStmt);
 				kind = S.UsingStmt;
 			}
 

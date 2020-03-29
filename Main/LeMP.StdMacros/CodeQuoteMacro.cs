@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using System;
@@ -214,7 +214,8 @@ namespace LeMP
 		{
 			var dict = new Dictionary<T, Symbol>();
 			var list = type.GetFields(BindingFlags.Static | BindingFlags.Public)
-				.Where(field => typeof(T).IsAssignableFrom(field.FieldType) && field.IsInitOnly);
+				.Where(field => typeof(T).IsAssignableFrom(field.FieldType) && field.IsInitOnly 
+					&& field.GetCustomAttribute<ObsoleteAttribute>() == null);
 			foreach (var field in list)
 				if (filter == null || filter(field))
 					dict[(T)field.GetValue(null)] = GSymbol.Get(field.Name);

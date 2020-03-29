@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.6.8.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -197,20 +197,20 @@ namespace LeMP
 					VList<LNode> attrs, incs, inits;
 					if (stmt.Calls(CodeSymbols.Braces))
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
-					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.SwitchStmt, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
+					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.Switch, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
 						return ProcessBlockCallStmt(stmt, 1);
 					else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fixed, 2) && (init = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
 						init = EliminateSequenceExpressionsInExecStmt(init);
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						if (init.CallsMin(__numrunSequence, 1)) {
-							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(init.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.Fixed, LNode.List(init.Args.Last, block)))).SetStyle(NodeStyle.StatementBlock);
+							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(init.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.Fixed, LNode.List(init.Args.Last, block)))).SetStyle(NodeStyle.Statement);
 						} else
 							return stmt.WithArgChanged(1, block);
 					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.While, 2) && (cond = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
 						cond = BubbleUpBlocks(cond);
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						if (cond.CallsMin(__numrunSequence, 1)) {
-							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList), LNode.Missing, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(cond.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.If, LNode.List(cond.Args.Last, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.StatementBlock)));
+							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList), LNode.Missing, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(cond.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.If, LNode.List(cond.Args.Last, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.Statement)));
 						} else
 							return stmt.WithArgChanged(1, block);
 					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.DoWhile, 2) && (block = stmt.Args[0]) != null && (cond = stmt.Args[1]) != null) {
@@ -221,7 +221,7 @@ namespace LeMP
 							var bodyStmts = block.AsList(S.Braces);
 							bodyStmts.AddRange(cond.Args.WithoutLast(1));
 							bodyStmts.Add(LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, cond.Args.Last)).SetStyle(NodeStyle.Operator));
-							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id(CodeSymbols.Bool), LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, LNode.Literal(true))))))), continue_N, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(bodyStmts)).SetStyle(NodeStyle.StatementBlock)));
+							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id(CodeSymbols.Bool), LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, LNode.Literal(true))))))), continue_N, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(bodyStmts)).SetStyle(NodeStyle.Statement)));
 						} else
 							return stmt.WithArgChanged(0, block);
 					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.For, 4) && stmt.Args[0].Calls(CodeSymbols.AltList) && (cond = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (block = stmt.Args[3]) != null) {
@@ -232,7 +232,7 @@ namespace LeMP
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						collection = BubbleUpBlocks(collection);
 						if (collection.CallsMin(__numrunSequence, 1)) {
-							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(collection.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.ForEach, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(type, loopVar)), collection.Args.Last, block)))).SetStyle(NodeStyle.StatementBlock);
+							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(collection.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.ForEach, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(type, loopVar)), collection.Args.Last, block)))).SetStyle(NodeStyle.Statement);
 						} else {
 							return stmt.WithArgChanged(stmt.Args.Count - 1, block);
 						}
@@ -290,12 +290,12 @@ namespace LeMP
 					if (cond_apos.CallsMin(__numrunSequence, 1)) {
 						var preCond = cond_apos.Args.WithoutLast(1);
 						cond = cond_apos.Args.Last;
-						stmt = LNode.Call(CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(init)), LNode.Missing, LNode.Call(CodeSymbols.AltList, LNode.List(inc)), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preCond).Add(LNode.Call(CodeSymbols.If, LNode.List(cond, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.StatementBlock)));
+						stmt = LNode.Call(CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(init)), LNode.Missing, LNode.Call(CodeSymbols.AltList, LNode.List(inc)), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preCond).Add(LNode.Call(CodeSymbols.If, LNode.List(cond, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.Statement)));
 					} else {
 						stmt = LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(init)), cond, LNode.Call(CodeSymbols.AltList, LNode.List(inc)), block));
 					}
 					if (preInit.Count != 0) {
-						stmt = LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preInit).Add(stmt)).SetStyle(NodeStyle.StatementBlock);
+						stmt = LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preInit).Add(stmt)).SetStyle(NodeStyle.Statement);
 					}
 					return stmt;
 				} else {
@@ -327,7 +327,7 @@ namespace LeMP
 				if (ProcessBlockCallStmt2(ref partialStmt, out advanceSequence, childStmts)) {
 					stmt = partialStmt.PlusArgs(childStmts);
 					if (advanceSequence.Count != 0)
-						return LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(advanceSequence).Add(stmt)).SetStyle(NodeStyle.StatementBlock);
+						return LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(advanceSequence).Add(stmt)).SetStyle(NodeStyle.Statement);
 					return stmt;	// only the child statements changed
 				} else
 					return stmt;	// no changes
@@ -378,7 +378,7 @@ namespace LeMP
 				
 					LNode methodName = F.Id(KeyNameComponentOf(fieldName).Name + "_initializer");
 					expr = LNode.Call(methodName);
-					return LNode.Call(LNode.List(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(retType, methodName, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(statements).Add(LNode.Call(CodeSymbols.Return, LNode.List(finalResult)))).SetStyle(NodeStyle.StatementBlock)));
+					return LNode.Call(LNode.List(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(retType, methodName, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(statements).Add(LNode.Call(CodeSymbols.Return, LNode.List(finalResult)))).SetStyle(NodeStyle.Statement)));
 				} else
 					return null;	// most common case
 			}
@@ -476,11 +476,11 @@ namespace LeMP
 					args = args.SmartSelect(arg => BubbleUpBlocks(arg));
 				}
 			
-				int lastRunSeq = args.LastIndexWhere(a => a.CallsMin(__numrunSequence, 1));
+				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(__numrunSequence, 1)) ?? -1;
 				if (lastRunSeq >= 0) {
 					// last index of #runSequence that is not marked pure
-					int lastRunSeqImpure = args.First(lastRunSeq + 1).LastIndexWhere(a => 
-					a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null);
+					int lastRunSeqImpure = args.First(lastRunSeq + 1).FinalIndexWhere(a => 
+					a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
 				
 					if (lastRunSeq > 0 && 
 					(args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or)) || args.Count == 3 && target.IsIdNamed(S.QuestionMark)))

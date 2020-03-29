@@ -169,7 +169,6 @@ namespace Loyc.Collections
 
 		/// <summary>Determines the index of a specific value.</summary>
 		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
-		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int.")]
 		public static int IndexOf<T>(this IReadOnlyList<T> list, T item) => FirstIndexOf(list, item) ?? -1;
 
 		public static void CopyTo<T>(this IReadOnlyList<T> c, T[] array, int arrayIndex)
@@ -196,7 +195,7 @@ namespace Loyc.Collections
 			return null;
 		}
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
-		[Obsolete("Please use FirstIndexOf. This method will be changed later to return nullable int.")]
+		[Obsolete("Please use FirstIndexWhere. This method will be changed later to return nullable int.")]
 		public static int IndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred) => FirstIndexWhere(source, pred) ?? -1;
 
 		/// <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
@@ -208,7 +207,7 @@ namespace Loyc.Collections
 			return null;
 		}
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
-		[Obsolete("Please use FinalIndexOf. This method will be changed later to return nullable int.")]
+		[Obsolete("Please use FinalIndexWhere. This method will be changed later to return nullable int.")]
 		public static int LastIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred) =>
 			FinalIndexWhere(source, pred) ?? -1;
 	}

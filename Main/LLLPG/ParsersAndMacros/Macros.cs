@@ -236,11 +236,11 @@ namespace Loyc.LLPG
 			
 			var attrs = node.Attrs;
 			if (!retValIsRule) {
-				int i_rule = attrs.IndexWhere(n => n.IsIdNamed(_hash_token) || n.IsIdNamed(_hash_rule));
-				if (i_rule == -1)
+				int? i_rule = attrs.FinalIndexWhere(n => n.IsIdNamed(_hash_token) || n.IsIdNamed(_hash_rule));
+				if (i_rule == null)
 					return null;
-				isToken |= attrs[i_rule].IsIdNamed(_hash_token);
-				attrs.RemoveAt(i_rule);
+				isToken |= attrs[i_rule.Value].IsIdNamed(_hash_token);
+				attrs.RemoveAt(i_rule.Value);
 			} else
 				returnType = F.Void;
 
