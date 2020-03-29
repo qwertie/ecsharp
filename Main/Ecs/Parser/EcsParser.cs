@@ -222,7 +222,7 @@ namespace Loyc.Ecs.Parser
 						return StmtCat.IdStmt;
 					} else if (la1k == TokenKind.Operator) {
 						var la1 = LA(1);
-						if (la1 != TT.QuestionMark && la1 != TT.LT && la1 != TT.Mul && la1 != TT.Power) { 
+						if (la1 != TT.QuestionMark && la1 != TT.LT && la1 != TT.Mul && la1 != TT.Power && la1 != TT.Substitute) { 
 							return StmtCat.IdStmt;
 						}
 					} else if (la1k == TokenKind.LParen && LA(3) == TT.Semicolon) {

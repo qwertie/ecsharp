@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -149,6 +149,15 @@ namespace LeMP.Tests
 					if (code.CallsMin(CodeSymbols.Of, 1)) { } 
 					else Nope();
 				");
+			TestEcs(@"matchCode (stmt) {
+					case { alt $altName; }: 
+						WriteLine(altName.ToString());
+					}",
+				@"{
+					LNode altName;
+					if (stmt.Calls(CodeSymbols.Var, 2) && stmt.Args[0].IsIdNamed((Symbol) ""alt"") && (altName = stmt.Args[1]) != null)
+						WriteLine(altName.ToString());
+				}");
 		}
 	}
 }

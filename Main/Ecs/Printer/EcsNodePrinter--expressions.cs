@@ -558,7 +558,7 @@ namespace Loyc.Ecs
 
 			if (braceMode ?? true)
 			{
-				PrintBracedBlock(_n, NewlineOpt.BeforeOpenBraceInExpr, 
+				PrintBracedBlock(_n, 0, 
 					mode: braceMode == null ? BraceMode.Initializer : BraceMode.Normal);
 			}
 			else

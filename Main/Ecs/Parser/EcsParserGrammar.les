@@ -1196,6 +1196,7 @@ namespace Loyc.Ecs.Parser
 			TT.Set; TT.LBrace;
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma; TT.EOF;
 			TT.At; // @{...} token literal (property)
+			TT.Colon; // case Type Name:
 		});
 		@[static, readonly] ExpectedAfterTypeAndName::array!(HashSet!TT) = (new array!(HashSet!TT) {
 			ExpectedAfterTypeAndName_InExpr;

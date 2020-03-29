@@ -105,6 +105,7 @@ namespace Loyc.Ecs.Tests
 		public void EcsSubstitutionVarDecls()
 		{
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));
+			Stmt(@"Foo $x;", F.Var(Foo, Operator(F.Call(S.Substitute, x))));
 			Stmt(@"$(a(b)) x;", F.Vars(F.Call(S.Substitute, F.Call(a, b)), x));
 			Stmt(@"$Foo $x;", F.Vars(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x)));
 			Stmt(@"Foo<$x> $a;", F.Vars(F.Of(Foo, F.Call(S.Substitute, x)), F.Call(S.Substitute, a)));
@@ -581,6 +582,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Foo] default:",      Attr(Foo, F.Call(S.Label, F.Id(S.Default))));
 			Stmt("[Foo] case x:",       Attr(Foo, F.Call(S.Case, x)));
 			Stmt("partial case x:",     Attr(partialWA, F.Call(S.Case, x)));
+			var braces_Foo_x = F.Braces(F.Var(Foo, Operator(F.Call(S.Substitute, x)))).SetStyle(NodeStyle.OneLiner);
+			Stmt("if ({ Foo $x; })\n  Foo();", F.Call(S.If, braces_Foo_x, OnNewLine(F.Call(Foo)))); ;
 		}
 
 		[Test]
@@ -609,6 +612,14 @@ namespace Loyc.Ecs.Tests
 						F.Call(S.Label, F.Id(S.Default)), zero)),
 					one));
 			Stmt("Foo = switch (x) {\ncase a:\n  1;\ndefault:\n  0;\n} + 1;", tree);
+		}
+
+		[Test]
+		public void CaseStmts()
+		{
+			Stmt("case Foo x:", F.Call(S.Case, F.Var(Foo, x)));
+			Stmt("case Foo $x:", F.Call(S.Case, F.Var(Foo, Operator(F.Call(S.Substitute, x)))));
+			Stmt("case { Foo $x; }:", F.Call(S.Case, F.Braces(F.Var(Foo, Operator(F.Call(S.Substitute, x)))).SetStyle(NodeStyle.OneLiner)));
 		}
 
 		[Test]

@@ -954,7 +954,7 @@ namespace Loyc.Ecs
 				{
 					if (first) first = false;
 					else WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(arg, StartStmt);
+					PrintExpr(arg, StartExpr, (_flags & Ambiguity.OneLiner) | Ambiguity.AllowUnassignedVarDecl);
 				}
 			}
 			_out.Write(':', true);
