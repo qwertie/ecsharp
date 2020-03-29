@@ -12,7 +12,7 @@ namespace Loyc.Syntax
 	/// beginning and end indices of a range in that file.
 	/// </summary>
     [DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
-	public struct SourceRange : IEquatable<SourceRange>
+	public struct SourceRange : IEquatable<SourceRange>, ISourceRange
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
 

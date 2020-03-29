@@ -207,9 +207,11 @@
     <Compile Include="MiscInterfaces.cs" />
     <Compile Include="Concrete\Symbol.cs" />
     <Compile Include="Syntax\IIndexPositionMapper.cs" />
+    <Compile Include="Syntax\ILineColumnFile.cs" />
     <Compile Include="Syntax\ILNode.cs" />
     <Compile Include="Syntax\ILNodePrinterOptions.cs" />
     <Compile Include="Syntax\ISourceFile.cs" />
+    <Compile Include="Syntax\ISourceRange.cs" />
     <Compile Include="Syntax\NodeStyle.cs" />
     <Compile Include="Concrete\SourcePos.cs" />
     <Compile Include="Concrete\SourceRange.cs" />

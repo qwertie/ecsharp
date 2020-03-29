@@ -12,7 +12,7 @@ namespace Loyc.Syntax
 	/// in case anyone might want position without a filename.</summary>
 	/// <remarks>Numbering starts at one for both Line and PosInLine. 
 	/// Line=0 signifies nowhere in particular, or an unknown location.</remarks>
-	public class LineAndCol
+	public class LineAndCol : ILineAndColumn
 	{
 		protected LineAndCol() { }
 		public LineAndCol(int Line, int PosInLine)
@@ -22,6 +22,7 @@ namespace Loyc.Syntax
 		protected int _posInLine;
 		public int Line { get { return _line; } }
 		public int PosInLine { get { return _posInLine; } }
+		public int Column { get { return _posInLine; } }
 		
 		public override string ToString()
 		{
@@ -51,7 +52,7 @@ namespace Loyc.Syntax
 	/// Line and column numbering both start at one (1). Line=0 signifies nowhere 
 	/// in particular. Instances are immutable.
 	/// </remarks>
-	public class SourcePos : LineAndCol
+	public class SourcePos : LineAndCol, ILineColumnFile
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)
