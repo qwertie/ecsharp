@@ -770,7 +770,7 @@ namespace LeMP
 							for (j = i + 1; j < foundMacros.Count; j++)
 								if (foundMacros[j].Attr.Priority != p)
 									break;
-							var newNode = ApplyMacrosFound2(s, foundMacros.Slice(i, j - i));
+							var newNode = ApplyMacrosFound2(s, ((IList<InternalMacroInfo>)foundMacros).Slice(i, j - i));
 							if (newNode != null)
 								return newNode;
 						}
@@ -778,7 +778,7 @@ namespace LeMP
 					}
 				}
 			}
-			return ApplyMacrosFound2(s, foundMacros.Slice(0));
+			return ApplyMacrosFound2(s, ((IList<InternalMacroInfo>)foundMacros).Slice(0));
 		}
 
 		private MacroResult? ApplyMacrosFound2(CurNodeState s, ListSlice<InternalMacroInfo> foundMacros)

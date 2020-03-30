@@ -42,6 +42,8 @@ namespace Loyc.Collections.Impl
 		#endregion
 
 		/// <summary>Stores the highest key that applies to the node with the same index.</summary>
+		/// <remarks>The highest key of the rightmost node is not tracked (can't remember 
+		/// why not - maybe just because it is traditional not to track it in B+ trees.)</remarks>
 		protected K[] _highestKey;
 
 		public override long CountSizeInBytes(int sizeOfT, int sizeOfK) =>
@@ -140,12 +142,26 @@ namespace Loyc.Collections.Impl
 							flagParent = true;
 						}
 					}
+					else if (i + 1 == LocalCount && i > 0 && _children[i].Node.LocalCount == 0)
+					{   // (2020/03 fix) The last item in the last node was removed, so the highest 
+						// key of this node may have decreased. AssertValid() failed in the parent
+						// on rare occasions when the max node size was 3, because the parent node 
+						// could have a _highestKey value that was too high. No malfunctions were 
+						// observed as a result, and I'm hard pressed to think of anything that 
+						// could go wrong when the highest-key value is too high but lower than the 
+						// next sibling. Note: don't update _highestKey[i] here because the highest 
+						// key of the final node is never tracked.
+						Debug.Assert(sizeChange == -1);
+						flagParent = true;
+						op.AggregateChanged |= 1;
+						op.AggregateKey = GetHighestKey(_children[i - 1].Node);
+					}
 
 					if (splitLeft.IsUndersized)
 						flagParent |= HandleUndersized(i, tob);
 
 					if (flagParent)
-						splitLeft = this;
+						splitLeft = this; // inform parent about highest-key change or undersized node
 					else
 						splitLeft = null;
 				}

@@ -9,8 +9,11 @@ namespace Loyc.Collections
 {
 	public static partial class ListExt
 	{
-		public static ROLSlice<TList, T> Slice<TList, T>(this TList list, int start, int count = int.MaxValue) where TList : IReadOnlyList<T>
-			=> new ROLSlice<TList, T>(list, start, count);
+		// C# generally can't infer the arguments
+		//public static ROLSlice<TList, T> Slice<TList, T>(this TList list, int start, int count = int.MaxValue) where TList : IReadOnlyList<T>
+		//	=> new ROLSlice<TList, T>(list, start, count);
+		public static ROLSlice<IReadOnlyList<T>, T> Slice<T>(this IReadOnlyList<T> list, int start, int count = int.MaxValue)
+			=> new ROLSlice<IReadOnlyList<T>, T>(list, start, count);
 	}
 
 	/// <summary>Adapter: a random-access range for a slice of an <see cref="IReadOnlyList{T}"/>.</summary>
