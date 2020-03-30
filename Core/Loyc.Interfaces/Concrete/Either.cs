@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loyc.Concrete
+namespace Loyc
 {
 	/// <summary>Holds a single value of one of two types (L or R).</summary>
 	/// <remarks>For efficiency, this is a struct, but this makes it possible
