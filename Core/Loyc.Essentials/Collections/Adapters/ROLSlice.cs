@@ -2,43 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Collections;
 using Loyc.Math;
 
 namespace Loyc.Collections
 {
 	public static partial class ListExt
 	{
-		public static IRange<T> AsRange<T>(this IListSource<T> list)
-		{
-			var range = (list as IRange<T>);
-			if (range != null)
-				return range;
-			return new Slice_<T>(list, 0, int.MaxValue); // boxed
-		}
-		[Obsolete("The object is already a range; the AsRange() method is a no-op.")]
-		public static IRange<T> AsRange<T>(this IRange<T> list)
-		{
-			return list;
-		}
+		public static ROLSlice<TList, T> Slice<TList, T>(this TList list, int start, int count = int.MaxValue) where TList : IReadOnlyList<T>
+			=> new ROLSlice<TList, T>(list, start, count);
 	}
 
-	/// <summary>Adapter: a random-access range for a slice of an 
-	/// <see cref="IListSource{T}"/>.</summary>
+	/// <summary>Adapter: a random-access range for a slice of an <see cref="IReadOnlyList{T}"/>.</summary>
 	/// <typeparam name="T">Item type in the list</typeparam>
-	/// <remarks>
-	/// This type was supposed to be called simply <c>Slice</c>, but this was not
-	/// allowed because in plain C#, "CS0542: member names cannot be the same as 
-	/// their enclosing type" and of course, this type contains the Slice() method
-	/// from IListSource.
-	/// </remarks>
-	public struct Slice_<T> : IRange<T>, ICloneable<Slice_<T>>, IIsEmpty
+	/// <typeparam name="TList">List type</typeparam>
+	public struct ROLSlice<TList, T> : IListSource<T>, IRange<T>, ICloneable<ROLSlice<TList,T>> where TList : IReadOnlyList<T>
 	{
-		[Obsolete("I doubt anyone is using this.")]
-		public static readonly Slice_<T> Empty = new Slice_<T>();
-
-		IListSource<T> _list;
+		TList _list;
 		int _start, _count;
-		
+
 		/// <summary>Initializes a slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
 		/// <remarks>The (start, count) range is allowed to be invalid, as long
@@ -50,7 +32,7 @@ namespace Loyc.Collections
 		/// slice is reduced to <c>list.Count - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public Slice_(IListSource<T> list, int start, int count = int.MaxValue)
+		public ROLSlice(TList list, int start, int count = int.MaxValue)
 		{
 			_list = list;
 			_start = start;
@@ -60,7 +42,7 @@ namespace Loyc.Collections
 			if (count > _list.Count - start)
 				_count = System.Math.Max(_list.Count - start, 0);
 		}
-		public Slice_(IListSource<T> list)
+		public ROLSlice(TList list)
 		{
 			_list = list;
 			_start = 0;
@@ -86,7 +68,8 @@ namespace Loyc.Collections
 
 		public T PopFirst(out bool empty)
 		{
-			if (_count != 0) {
+			if (_count != 0)
+			{
 				empty = false;
 				_count--;
 				return _list[_start++];
@@ -96,7 +79,8 @@ namespace Loyc.Collections
 		}
 		public T PopLast(out bool empty)
 		{
-			if (_count != 0) {
+			if (_count != 0)
+			{
 				empty = false;
 				_count--;
 				return _list[_start + _count];
@@ -105,51 +89,49 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
-		IFRange<T> ICloneable<IFRange<T>>.Clone() { return Clone(); }
-		IBRange<T> ICloneable<IBRange<T>>.Clone() { return Clone(); }
-		IRange<T>  ICloneable<IRange<T>> .Clone() { return Clone(); }
-		public Slice_<T> Clone() { return this; }
+		ROLSlice<TList, T> ICloneable<ROLSlice<TList, T>>.Clone() => this;
+		IRange<T> ICloneable<IRange<T>>.Clone() => this;
+		IFRange<T> ICloneable<IFRange<T>>.Clone() => this;
+		IBRange<T> ICloneable<IBRange<T>>.Clone() => this;
 
-		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public RangeEnumerator<Slice_<T>,T> GetEnumerator()
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		public RangeEnumerator<ROLSlice<TList, T>, T> GetEnumerator()
 		{
-			return new RangeEnumerator<Slice_<T>, T>(this);
+			return new RangeEnumerator<ROLSlice<TList, T>, T>(this);
 		}
 
 		public T this[int index]
 		{
-			get { 
+			get {
 				if ((uint)index < (uint)_count)
 					return _list[_start + index];
-				throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException(nameof(index));
 			}
 		}
 		public T this[int index, T defaultValue]
 		{
 			get {
-				if ((uint)index < (uint)_count) {
-					bool fail;
-					var r = _list.TryGet(_start + index, out fail);
-					return fail ? defaultValue : r;
-				}
+				if ((uint)index < (uint)_count)
+					return _list[_start + index];
 				return defaultValue;
 			}
 		}
 		public T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_count)
-				return _list.TryGet(_start + index, out fail);
-			fail = true;
-			return default(T);
+			int i = _start + index;
+			if (!(fail = (uint)index >= (uint)_count || (uint)i >= (uint)_list.Count))
+				return _list[i];
+			else
+				return default(T);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public Slice_<T> Slice(int start, int count = int.MaxValue)
+		IRange<T> IListSource<T>.Slice(int start, int count) => Slice(start, count);
+		public ROLSlice<TList, T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0) throw new ArgumentException("The start index was below zero.");
 			if (count < 0) throw new ArgumentException("The count was below zero.");
-			var slice = new Slice_<T>();
+			var slice = new ROLSlice<TList, T>();
 			slice._list = this._list;
 			slice._start = this._start + start;
 			slice._count = count;

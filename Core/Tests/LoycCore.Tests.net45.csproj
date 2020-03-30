@@ -185,6 +185,7 @@
     <Compile Include="Essentials\HashTagsTests.cs" />
     <Compile Include="Essentials\ListExtTests.cs" />
     <Compile Include="Essentials\LocalizeTests.cs" />
+    <Compile Include="Essentials\SliceTests.cs" />
     <Compile Include="Math\MathExTests.cs" />
     <Compile Include="Essentials\PrintHelpersTests.cs" />
     <Compile Include="Essentials\SymbolTests.cs" />

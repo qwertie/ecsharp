@@ -39,7 +39,7 @@ namespace Loyc.Collections.Tests
 					AreEqual(_expect[k], _dict[k]);
 				} else {
 					AreEqual(default(V), v);
-					Throws<KeyNotFoundException>(() => { var _ = _dict[k]; });
+					ThrowsAny<KeyNotFoundException>(() => { var _ = _dict[k]; });
 				}
 			}
 		}

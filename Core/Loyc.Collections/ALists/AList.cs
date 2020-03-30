@@ -805,7 +805,7 @@ namespace Loyc.Collections
 			return cov_RemoveSection(start, count);
 		}
 
-		public new ListSlice<T> Slice(int start, int length)
+		public new ListSlice<T> Slice(int start, int length = int.MaxValue)
 		{
 			return new ListSlice<T>(this, start, length);
 		}

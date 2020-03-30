@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -597,10 +597,10 @@ namespace Loyc
 			wrapped = GoInterface<IAmbig>.ForceFrom(new Ambig());
 
 			int a = 0;
-			Assert.Throws<MissingMethodException>(delegate() { wrapped.Strings("1", "2"); });
-			Assert.Throws<MissingMethodException>(delegate() { wrapped.RefMismatch(1, 2); });
-			Assert.Throws<MissingMethodException>(delegate() { wrapped.RefMismatch2(ref a, 2); });
-			Assert.Throws<MissingMethodException>(delegate() { wrapped.AmbigLarger(1); });
+			Assert.ThrowsAny<MissingMethodException>(delegate() { wrapped.Strings("1", "2"); });
+			Assert.ThrowsAny<MissingMethodException>(delegate() { wrapped.RefMismatch(1, 2); });
+			Assert.ThrowsAny<MissingMethodException>(delegate() { wrapped.RefMismatch2(ref a, 2); });
+			Assert.ThrowsAny<MissingMethodException>(delegate() { wrapped.AmbigLarger(1); });
 		}
 
 		private void AssertThrows<Type>(Action @delegate) where Type:Exception

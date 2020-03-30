@@ -255,9 +255,9 @@ namespace Loyc.Collections.Tests
 				Assert.AreEqual(0, list[i1 - 1]);
 				if (_testExceptions)
 				{
-					Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = list[i1]; });
-					Assert.Throws<ArgumentOutOfRangeException>(() => { list.ClearSpace(0, -1); });
-					Assert.Throws<ArgumentOutOfRangeException>(() => { list.ClearSpace(-1, 10); });
+					Assert.ThrowsAny<ArgumentOutOfRangeException>(() => { var _ = list[i1]; });
+					Assert.ThrowsAny<ArgumentOutOfRangeException>(() => { list.ClearSpace(0, -1); });
+					Assert.ThrowsAny<ArgumentOutOfRangeException>(() => { list.ClearSpace(-1, 10); });
 				}
 				list.ClearSpace(i0, i2 - i0);
 				Assert.AreEqual(i2, list.Count);

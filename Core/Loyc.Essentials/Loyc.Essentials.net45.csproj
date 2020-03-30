@@ -164,6 +164,7 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\Adapters\ROLSlice.cs" />
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
     <Compile Include="Collections\ExtensionMethods\IPush, IPop.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToLists.out.cs">

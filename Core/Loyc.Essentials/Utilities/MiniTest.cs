@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Loyc.Math;
 using System.Collections;
@@ -536,7 +536,7 @@ namespace Loyc.MiniTest
 		/// <param name="code">A method to run</param>
 		/// <param name="message">The message that will be displayed on failure</param>
 		/// <param name="args">Arguments to be used in formatting the message</param>
-		public static Exception Throws(Type expectedExceptionType, Action code, string message, params object[] args)
+		public static Exception ThrowsAny(Type expectedExceptionType, Action code, string message, params object[] args)
 		{
 			try {
 				code();
@@ -549,18 +549,28 @@ namespace Loyc.MiniTest
 			return null; // normally unreachable
 		}
 		
-		public static Exception Throws(Type expectedExceptionType, Action code)
+		public static Exception ThrowsAny(Type expectedExceptionType, Action code)
 		{
-			return Throws(expectedExceptionType, code, null, null);
+			return ThrowsAny(expectedExceptionType, code, null, null);
 		}
 
+		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
 		public static T Throws<T>(Action code, string message, params object[] args) where T : Exception
 		{
-			return (T)Throws(typeof(T), code, message, args);
+			return (T)ThrowsAny(typeof(T), code, message, args);
 		}
+		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
 		public static T Throws<T>(Action code) where T : Exception
 		{
-			return (T)Throws(typeof(T), code);
+			return (T)ThrowsAny(typeof(T), code);
+		}
+		public static T ThrowsAny<T>(Action code, string message, params object[] args) where T : Exception
+		{
+			return (T)ThrowsAny(typeof(T), code, message, args);
+		}
+		public static T ThrowsAny<T>(Action code) where T : Exception
+		{
+			return (T)ThrowsAny(typeof(T), code);
 		}
 
 		/// <summary>
@@ -571,7 +581,7 @@ namespace Loyc.MiniTest
 		/// <param name="args">Arguments to be used in formatting the message</param>
 		public static Exception Catch(Action code, string message, params object[] args)
 		{
-			return Throws(typeof(Exception), code, message, args);
+			return ThrowsAny(typeof(Exception), code, message, args);
 		}
 
 		/// <summary>
@@ -581,7 +591,7 @@ namespace Loyc.MiniTest
 		/// <param name="code">A TestDelegate</param>
 		public static Exception Catch(Action code)
 		{
-			return Throws(typeof(Exception), code);
+			return ThrowsAny(typeof(Exception), code);
 		}
 
 		/// <summary>

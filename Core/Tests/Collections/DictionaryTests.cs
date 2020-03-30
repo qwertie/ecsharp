@@ -66,7 +66,7 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(value, null);
 			Assert.AreEqual(1, dict["A"]);
 			Assert.AreEqual(2, dict[1]);
-			Assert.Throws(typeof(KeyNotFoundException), () => { var _ = dict["C"]; });
+			Assert.ThrowsAny(typeof(KeyNotFoundException), () => { var _ = dict["C"]; });
 			dict.Clear();
 			ExpectSet(dict);
 
@@ -94,7 +94,7 @@ namespace Loyc.Collections.Tests
 			Assert.IsFalse(Remove(dict, 2.0, 2.0));
 			Assert.IsTrue(Remove(dict, 2.0, null));
 			ExpectSet(dict, P("2", null), P(2F, null), P(2UL, "You're a 2ul!"));
-			Assert.Throws(typeof(ArgumentException), () => dict.Add("2", 2));
+			Assert.ThrowsAny(typeof(ArgumentException), () => dict.Add("2", 2));
 			Assert.IsNull(dict["2"]);
 			dict["2"] = 2;
 			Assert.AreEqual(2, dict["2"]);

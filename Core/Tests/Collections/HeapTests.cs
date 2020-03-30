@@ -23,7 +23,7 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(7, heap.Pop());
 			Assert.AreEqual(6, heap.Pop());
 			Assert.AreEqual(1, heap.Pop());
-			Assert.Throws<EmptySequenceException>(() => heap.Pop());
+			Assert.ThrowsAny<EmptySequenceException>(() => heap.Pop());
 		}
 
 		[Test]
@@ -37,7 +37,7 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(6, heap.Pop());
 			Assert.AreEqual(9, heap.Pop());
 			Assert.AreEqual(11, heap.Pop());
-			Assert.Throws<EmptySequenceException>(() => heap.Pop());
+			Assert.ThrowsAny<EmptySequenceException>(() => heap.Pop());
 		}
 
 		[Test]
