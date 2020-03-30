@@ -179,6 +179,7 @@
     <Compile Include="Collections\VLists\VListTests.cs" />
     <Compile Include="Collections\VLists\WListTests.cs" />
     <Compile Include="Essentials\BaisTests.cs" />
+    <Compile Include="Essentials\Either.cs" />
     <Compile Include="Essentials\ExtensionsTests.cs" />
     <Compile Include="Essentials\GTests.cs" />
     <Compile Include="Essentials\HashTagsTests.cs" />
