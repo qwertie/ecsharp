@@ -47,10 +47,15 @@ namespace Loyc
 		new T Value { get; set; }
 	}
 
-	/// <summary>Represents a type that holds a single value of one of two types (L or R).</summary>
-	public interface IEither<L, R>
+	public interface IMaybe<out T> : IHasValue<T>
 	{
-		Maybe<L> Left { get; }
-		Maybe<R> Right { get; }
+		bool HasValue { get; }
+	}
+
+	/// <summary>Represents a type that holds a single value of one of two types (L or R).</summary>
+	public interface IEither<out L, out R>
+	{
+		IMaybe<L> Left { get; }
+		IMaybe<R> Right { get; }
 	}
 }

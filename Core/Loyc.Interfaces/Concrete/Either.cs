@@ -30,15 +30,38 @@ namespace Loyc
 			_left = default(L);
 			_right = value;
 		}
+		private Either(bool hasLeft, L left, R right)
+		{
+			_hasLeft = hasLeft;
+			_left = left;
+			_right = right;
+		}
 
 		private readonly L _left;
 		private readonly R _right;
 		private readonly bool _hasLeft;
+
 		public Maybe<L> Left => _hasLeft ? _left : new Maybe<L>();
 		public Maybe<R> Right => _hasLeft ? new Maybe<R>() : _right;
-		public object Value => _hasLeft ? (object) _left : _right;
+		public object Value => _hasLeft ? (object)_left : _right;
+
+		IMaybe<L> IEither<L, R>.Left => Left;
+		IMaybe<R> IEither<L, R>.Right => Right;
 
 		public static implicit operator Either<L, R>(L value) => NewLeft(value);
 		public static implicit operator Either<L, R>(R value) => NewRight(value);
+
+		/// <summary>Does an upcast, e.g. Either{string,ArgumentException} to Either{object,Exception}.
+		/// C# does not allow defining conversion operators to take generic 
+		/// parameters, so you'll have to put up with this hassle instead.</summary>
+		/// <remarks>
+		/// Sadly, automatically upcasting value types to reference types doesn't seem possible.
+		/// </remarks>
+		public static Either<L, R> Upcast<L2, R2>(Either<L2,R2> x)
+			where L2 : L 
+			where R2 : R
+			=> new Either<L, R>(x._hasLeft, x._left, x._right);
+		public Either<L2, R2> Select<L2, R2>(Func<L, L2> selectL, Func<R, R2> selectR)
+			=> _hasLeft ? new Either<L2, R2>(selectL(_left)) : selectR(_right);
 	}
 }
