@@ -51,7 +51,7 @@ namespace Loyc.Utilities
 		}
 		public double Variance()
 		{
-			return (SumOfSquares * Count - SumTotal * SumTotal) / (Count * (Count - 1));
+			return (SumOfSquares * Count - SumTotal * SumTotal) / ((double)Count * (Count - 1));
 		}
 		public double StdDeviation()
 		{

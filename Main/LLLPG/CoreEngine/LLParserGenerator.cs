@@ -990,8 +990,6 @@ namespace Loyc.LLParserGenerator
 		/// looking ahead further (it is the responsibility of 
 		/// <see cref="PredictionAnalysisVisitor.ComputePredictionTree"/> to do so).
 		/// <para/>
-		/// This class is derived from GetCanonical just to inherit some code from it.
-		/// <para/>
 		/// What to do with and-predicates? It's a tricky question. And-predicates 
 		/// are not used nearly as often as normal terminals and nonterminals, yet 
 		/// they can produce the most complicated prediction code. Consider Alts

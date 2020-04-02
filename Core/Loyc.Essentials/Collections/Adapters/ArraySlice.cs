@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Collections.Impl;
 using Loyc.Math;
 
 namespace Loyc.Collections.MutableListExtensionMethods
@@ -100,9 +101,9 @@ namespace Loyc.Collections
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public RangeEnumerator<ArraySlice<T>,T> GetEnumerator()
+		public InternalList.Enumerator<T> GetEnumerator()
 		{
-			return new RangeEnumerator<ArraySlice<T>,T>(this);
+			return new InternalList.Enumerator<T>(_list, _start, _start + _count);
 		}
 
 		public T this[int index]
