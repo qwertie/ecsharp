@@ -95,7 +95,7 @@ namespace LeMP
 				output.Add(F.Call(S.Var, ListExt.Single(F.Id("LNode")).Concat(
 				cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
 			if (cmc.ListVars.Count > 0) {
-				LNode type = LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator);
+				LNode type = LNode.Id((Symbol) "LNodeList");
 				output.Add(F.Call(S.Var, ListExt.Single(type).Concat(
 				cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
 			}
@@ -159,7 +159,7 @@ namespace LeMP
 			public Dictionary<Symbol, int> UsageCounters = new Dictionary<Symbol, int>();
 			// The boolean value indicates whether the variable needs initialization due to multi-case
 			public Dictionary<Symbol, bool> NodeVars = new Dictionary<Symbol, bool>();	// LNode vars to declare
-			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>();	// VList<LNode> vars to declare
+			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>();	// LNodeList vars to declare
 			public VList<LNode> ThenClause = new VList<LNode>();	// stuff to do at the start of the {block} inside the if-statement
 			public IMacroContext Context;
 			public bool IsMultiCase;	// true if building a case statement with multiple patterns
@@ -354,9 +354,9 @@ namespace LeMP
 						var varArgStartLit = F.Literal(i);
 						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
 						if (i + 1 == patternArgs.Count)
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit)))))))).SetStyle(NodeStyle.Operator);
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call((Symbol) "LNodeList", LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit)))))))).SetStyle(NodeStyle.Operator);
 						else
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call((Symbol) "LNodeList", LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
 					}
 				
 					// Add an extra condition on the $(...list) if requested by user
