@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
@@ -202,7 +202,7 @@ namespace Loyc.LLParserGenerator
 		/// <returns>A method definition for the rule.</returns>
 		/// <remarks>To generate the default method, simply call 
 		/// <see cref="Rule.CreateMethod(VList{LNode})"/>.</remarks>
-		LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody);
+		LNode CreateRuleMethod(Rule rule, LNodeList methodBody);
 
 		/// <summary>Generates the try-wrapper for a recognizer rule.</summary>
 		/// <remarks>

@@ -385,7 +385,7 @@ namespace Loyc.LLParserGenerator
 			return LeMP.StandardMacros.NextStatementMayBeReachable(stmt);
 		}
 
-		public virtual LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody)
+		public virtual LNode CreateRuleMethod(Rule rule, LNodeList methodBody)
 		{
 			return rule.CreateMethod(methodBody);
 		}

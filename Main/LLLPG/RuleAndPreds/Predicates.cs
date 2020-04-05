@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -213,7 +213,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public VList<LNode> Params = VList<LNode>.Empty; // Params.Args is a list of parameters
+		public LNodeList Params = VList<LNode>.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 
 		public override bool IsNullable
@@ -939,9 +939,9 @@ namespace Loyc.LLParserGenerator
 	public partial class ActionPred : ZeroWidthPred
 	{
 		public ActionPred(LNode action) : base(action) { Statements = LNode.List(action); }
-		public ActionPred(LNode basis, VList<LNode> action) : base(basis) { Statements = action; }
+		public ActionPred(LNode basis, LNodeList action) : base(basis) { Statements = action; }
 
-		public VList<LNode> Statements;
+		public LNodeList Statements;
 
 		public override string ToString() { return "{..}"; }
 	}

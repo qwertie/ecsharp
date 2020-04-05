@@ -27,7 +27,8 @@ namespace Loyc.Syntax
 	/// A disadvantage of this approach is that C# does not support user-defined conversions to 
 	/// interfaces. Therefore, conversion to IReadOnlyList will box the wrapper instead of the 
 	/// underlying implementation. Ugh.
-	/// 
+	/// <para/>
+	/// This change is issue #100: https://github.com/qwertie/ecsharp/issues/100
 	/// </remarks>
 	public struct LNodeList : IListAndListSource<LNode>, ICloneable<LNodeList>, IEquatable<LNodeList>
 	{

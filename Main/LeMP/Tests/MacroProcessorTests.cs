@@ -134,7 +134,7 @@ namespace LeMP
 		}
 
 		public StringBuilder Output;
-		public VList<LNode> Results;
+		public LNodeList Results;
 
 		protected override void WriteOutput(InputOutput io)
 		{

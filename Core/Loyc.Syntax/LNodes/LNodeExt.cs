@@ -633,6 +633,7 @@ namespace Loyc.Syntax
 		public static FVList<LNode> ToFVList(this LNodeList list) => list.ToVList().ToFVList();
 		public static WList<LNode> ToWList(this LNodeList list) => list.ToVList().ToWList();
 		public static LNodeList ToLNodeList(this WList<LNode> list) => new LNodeList(list.ToVList());
+		public static LNodeList ToLNodeList(this VList<LNode> list) => new LNodeList(list);
 
 		#endregion
 	}

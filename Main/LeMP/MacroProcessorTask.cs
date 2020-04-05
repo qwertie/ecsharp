@@ -128,7 +128,7 @@ namespace LeMP
 
 		#region Public entry points: ProcessFileWithThreadAbort(), ProcessFile(), ProcessRoot()
 
-		public VList<LNode> ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
+		public LNodeList ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
 		{
 			if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
 				return ProcessFile(io, onProcessed);
@@ -153,7 +153,7 @@ namespace LeMP
 				return io.Output;
 			}
 		}
-		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
+		public LNodeList ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
 			using (ParsingService.SetDefault(io.InputLang ?? ParsingService.Default)) {
 				try {
@@ -175,7 +175,7 @@ namespace LeMP
 		}
 
 		/// <summary>Top-level macro applicator.</summary>
-		public VList<LNode> ProcessRoot(LNodeList stmts)
+		public LNodeList ProcessRoot(LNodeList stmts)
 		{
 			PreProcess(ref stmts, null, true, true, true, false);
 			return stmts;
@@ -453,7 +453,7 @@ namespace LeMP
 				return DropRemainingNodesRequested;
 			}
 			
-			public void StartListItem(VList<LNode> list, int index, bool areAttributes)
+			public void StartListItem(LNodeList list, int index, bool areAttributes)
 			{
 				OldAndRemainingNodes = list;
 				CurrentNodeIndex = index;

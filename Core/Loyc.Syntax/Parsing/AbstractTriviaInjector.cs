@@ -117,7 +117,7 @@ namespace Loyc.Syntax
 		/// <remarks>This method may STILL called for a given node when there is no trivia 
 		/// associated with that node, IF the node is at the top level or its sibling 
 		/// nodes in the same parent have associated trivia.</remarks>
-		protected abstract VList<LNode> GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		protected abstract LNodeList GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
 
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{

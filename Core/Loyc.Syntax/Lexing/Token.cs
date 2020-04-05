@@ -118,9 +118,9 @@ namespace Loyc.Syntax.Lexing
 
 		/// <summary>Converts this list of <see cref="Token"/> to a list of <see cref="LNode"/>.</summary>
 		/// <remarks>See <see cref="Token.ToLNode(ISourceFile)"/> for more information.</remarks>
-		public VList<LNode> ToLNodes()
+		public LNodeList ToLNodes()
 		{
-			VList<LNode> list = VList<LNode>.Empty;
+			var list = LNodeList.Empty;
 			foreach (var item in (DList<Token>)this)
 				list.Add(item.ToLNode(File));
 			return list;
