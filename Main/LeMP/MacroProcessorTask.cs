@@ -144,7 +144,7 @@ namespace LeMP
 					if (ex == null && onProcessed != null)
 						onProcessed(io);
 				} else {
-					io.Output = new VList<LNode>(F.Id("processing_thread_timed_out"));
+					io.Output = new LNodeList(F.Id("processing_thread_timed_out"));
 					thread.Abort();
 					thread.Join(timeout);
 				}
@@ -165,7 +165,7 @@ namespace LeMP
 				  catch (PathTooLongException) { } // Path.* may throw
 
 				var input = ParsingService.Default.Parse(io.Text, io.FileName, _sink, io.ParsingMode, io.PreserveComments ?? true);
-				var inputRV = new VList<LNode>(input);
+				var inputRV = new LNodeList(input);
 
 				io.Output = ProcessRoot(inputRV);
 				if (onProcessed != null)
@@ -374,7 +374,7 @@ namespace LeMP
 			// (B) the old version of the current node that is being processed now,
 			// and (C) remaining nodes. Only (C) matters, but we keep the whole 
 			// list here to avoid computing a separate sublist for each iteration 
-			// through a given VList<LNode>.
+			// through a given LNodeList.
 			//     If a macro returns #splice($(...SpliceNodes)), the situation 
 			// gets more complex, because we have to treat the spliced nodes plus 
 			// the remaining nodes (C) as a single list if a macro ever asks for 
@@ -385,7 +385,7 @@ namespace LeMP
 			//     To simplify the implementation of ApplyMacrosToList, the 
 			// NodeQueue is created after a macro produces any modified output
 			// or after a macro sets DropRemainingNodesRequested.
-			public VList<LNode> OldAndRemainingNodes;
+			public LNodeList OldAndRemainingNodes;
 			public int CurrentNodeIndex;
 			public DList<Pair<LNode, int>> NodeQueue;
 
@@ -407,7 +407,7 @@ namespace LeMP
 				}
 			}
 			// Puts contents of a #splice into NodeQueue and returns the first item of the splice.
-			public LNode EnqueueSplice(VList<LNode> spliced, int maxExpansionsInner, int maxExpansions)
+			public LNode EnqueueSplice(LNodeList spliced, int maxExpansionsInner, int maxExpansions)
 			{
 				//Debug.Assert(!IsTarget); should be true except that IsTarget may not have been set yet
 				MaybeCreateNodeQueue(maxExpansions, ref NodeQueue);
@@ -878,10 +878,10 @@ namespace LeMP
 			}
 		}
 
-		VList<LNode> ApplyMacrosToList(VList<LNode> list, int maxExpansions, bool areAttributes)
+		LNodeList ApplyMacrosToList(LNodeList list, int maxExpansions, bool areAttributes)
 		{
 			DList<Pair<LNode, int>> nodeQueue = null;
-			VList<LNode> results;
+			LNodeList results;
 			LNode result = null;
 			
 			// Share as much of the original VList as is left unchanged
@@ -914,7 +914,7 @@ namespace LeMP
 			_s.NodeQueue = null;
 			return results;
 		}
-		private void Add(ref VList<LNode> results, LNode result)
+		private void Add(ref LNodeList results, LNode result)
 		{
 			if (result.Calls(S.Splice))
 				results.AddRange(result.Args);
@@ -928,7 +928,7 @@ namespace LeMP
 				return null;
 
 			bool changed = false;
-			VList<LNode> old;
+			LNodeList old;
 			var newAttrs = ApplyMacrosToList(old = node.Attrs, maxExpansions, true);
 			_s.IsAttribute = false;
 			if (newAttrs != old)

@@ -29,7 +29,7 @@ namespace LeMP
 			// end, a macro cannot decide 100% reliably whether or not it is necessary to 
 			// add one (mainly because we don't have proper reachability analysis, just the 
 			// heuristic NextStatementMayBeReachable())
-			VList<LNode> rest;
+			LNodeList rest;
 			LNode varDecl, bracedHandler = ValidateOnStmt(node, context, out rest, out varDecl);
 			if (bracedHandler == null)
 				return null;

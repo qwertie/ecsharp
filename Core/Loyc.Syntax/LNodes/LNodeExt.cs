@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 		/// %trailing, this method combines those lists into a single list.</remarks>
 		public static LNodeList GetTrailingTrivia(this LNodeList attrs)
 		{
-			var trivia = VList<LNode>.Empty;
+			var trivia = LNodeList.Empty;
 			foreach (var a in attrs)
 				if (a.Calls(S.TriviaTrailing))
 					trivia.AddRange(a.Args);

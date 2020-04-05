@@ -1,4 +1,4 @@
-// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -39,7 +39,7 @@ namespace LeMP
 			// end, a macro cannot decide 100% reliably whether or not it is necessary to 
 			// add one (mainly because we don't have proper reachability analysis, just the 
 			// heuristic NextStatementMayBeReachable())
-			VList<LNode> rest;
+			LNodeList rest;
 			LNode varDecl, bracedHandler = ValidateOnStmt(node, context, out rest, out varDecl);
 			if (bracedHandler == null)
 				return null;

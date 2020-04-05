@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +23,7 @@ namespace LeMP
 			"Wraps the code that follows this macro in a try-finally statement, with the specified block as the 'finally' block.")]
 		public static LNode on_finally(LNode node, IMacroContext context)
 		{
-			VList<LNode> rest;
+			LNodeList rest;
 			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			if (on_handler == null || firstArg != null)
 				return null;
@@ -39,7 +39,7 @@ namespace LeMP
 			"The first argument to on_throw is optional and represents the desired name of the exception variable.")]
 		public static LNode on_throw(LNode node, IMacroContext context)
 		{
-			VList<LNode> rest;
+			LNodeList rest;
 			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			if (on_handler == null)
 				return null;
@@ -54,7 +54,7 @@ namespace LeMP
 			"on_throw_catch", "on_error_catch")]
 		public static LNode on_throw_catch(LNode node, IMacroContext context)
 		{
-			VList<LNode> rest;
+			LNodeList rest;
 			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			return TransformOnCatch(node, firstArg, F.Braces(rest), on_handler);
 		}
@@ -72,7 +72,7 @@ namespace LeMP
 			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F.Missing, on_handler));
 		}
 
-		private static LNode ValidateOnStmt(LNode node, IMacroContext context, out VList<LNode> restOfStmts, out LNode firstArg)
+		private static LNode ValidateOnStmt(LNode node, IMacroContext context, out LNodeList restOfStmts, out LNode firstArg)
 		{
 			var a = node.Args;
 			LNode on_handler;
@@ -86,7 +86,7 @@ namespace LeMP
 				return null;
 			if (context.RemainingNodes.Count == 0)
 				context.Sink.Warning(node, "{0} should not be the final statement of a block.", node.Name);
-			restOfStmts = new VList<LNode>(context.RemainingNodes);
+			restOfStmts = new LNodeList(context.RemainingNodes);
 			context.DropRemainingNodes = true;
 			return on_handler;
 		}

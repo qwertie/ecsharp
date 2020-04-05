@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +28,7 @@ namespace LeMP
 			stmts = stmts.SmartSelect(stmt => 
 				stmt.ReplaceRecursive(expr => {
 					if (expr.Calls(S.Dot, 1))
-						return expr.WithArgs(new VList<LNode>(tmp, expr.Args.Last));
+						return expr.WithArgs(LNode.List(tmp, expr.Args.Last));
 					else if (expr.IsIdNamed("#"))
 						return tmp;
 					return null;

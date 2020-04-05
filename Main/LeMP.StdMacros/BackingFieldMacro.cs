@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using System;
@@ -91,7 +91,7 @@ namespace LeMP
 
 			prop = prop.WithAttrs(prop.Attrs.RemoveAt(i)).WithArgChanged(3, newBody);
 			prop.Style &= ~NodeStyle.OneLiner; // avoid collapsing output to one line
-			return F.Call(S.Splice, new VList<LNode>(field, prop));
+			return F.Call(S.Splice, new LNodeList(field, prop));
 		}
 
 		static Symbol ChooseFieldName(Symbol propName)

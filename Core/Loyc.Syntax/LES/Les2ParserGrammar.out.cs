@@ -1,4 +1,4 @@
-// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.7.1.0
+// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Les {
 
 	public partial class Les2Parser
 	{
-		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>)) {
+		public LNodeList ExprList(LNodeList list = default(LNodeList)) {
 			var endMarker = default(TT);
 			return (ExprList(ref endMarker, list));
 		}
@@ -42,9 +42,9 @@ namespace Loyc.Syntax.Les {
 		}
 	
 	
-		public VList<LNode> StmtList()
+		public LNodeList StmtList()
 		{
-			VList<LNode> result = default(VList<LNode>);
+			LNodeList result = default(LNodeList);
 			var endMarker = TT.Semicolon;
 			result = ExprList(ref endMarker);
 			return result;
@@ -52,7 +52,7 @@ namespace Loyc.Syntax.Les {
 	
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		public virtual VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
+		public virtual LNodeList ExprList(ref TokenType endMarker, LNodeList list = default(LNodeList))
 		{
 			TT la0;
 			LNode e = default(LNode);
@@ -147,7 +147,7 @@ namespace Loyc.Syntax.Les {
 		{
 			TT la0, la1;
 			Token at = default(Token);
-			VList<LNode> attrs = default(VList<LNode>);
+			LNodeList attrs = default(LNodeList);
 			LNode e = default(LNode);
 			Token t = default(Token);
 			// line 92
@@ -192,7 +192,7 @@ namespace Loyc.Syntax.Les {
 						{
 							var id = MatchAny();
 							// line 102
-							var args = VList<LNode>.Empty;
+							var args = LNodeList.Empty;
 							args.Add(Expr(P.SuperExpr));
 							// Line 104: (Particle)*
 							for (;;) {
@@ -280,7 +280,7 @@ namespace Loyc.Syntax.Les {
 						if (context.CanParse(P.Of)) {
 							lit_excl = MatchAny();
 							// line 144
-							var args = new VList<LNode> { 
+							var args = new LNodeList { 
 								e
 							};
 							int endIndex;
@@ -328,7 +328,7 @@ namespace Loyc.Syntax.Les {
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
-			VList<LNode> list = default(VList<LNode>);
+			LNodeList list = default(LNodeList);
 			Token lit_lsqb = default(Token);
 			// Line 160: (TT.LParen ExprList TT.RParen | TT.LBrack ExprList TT.RBrack)
 			la0 = (TT) LA0;
@@ -345,7 +345,7 @@ namespace Loyc.Syntax.Les {
 				}
 			} else {
 				// line 167
-				var args = new VList<LNode> { 
+				var args = new LNodeList { 
 					e
 				};
 				lit_lsqb = Match((int) TT.LBrack);

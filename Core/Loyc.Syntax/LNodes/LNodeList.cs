@@ -89,10 +89,10 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public LNode Last => _list.Last;
 
-		[Obsolete("Use Left() instead")]
+		[Obsolete("Use Initial() instead")]
 		public LNodeList First(int count) => _list.First(count);
-		public LNodeList Left(int count) => _list.First(count);
-		public LNodeList Right(int count) => count > _list.Count ? this : new LNodeList(_list.Slice(_list.Count - count));
+		public LNodeList Initial(int count) => _list.First(count);
+		public LNodeList Final(int count) => count > _list.Count ? this : new LNodeList(_list.Slice(_list.Count - count));
 
 		public LNodeList WithoutLast(int count) => _list.WithoutLast(count);
 

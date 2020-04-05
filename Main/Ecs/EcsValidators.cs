@@ -666,7 +666,7 @@ namespace Loyc.Ecs
 			return false;
 		}
 
-		private static bool AreValidLinqClauses(VList<LNode> parts, int i, Pedantics p)
+		private static bool AreValidLinqClauses(LNodeList parts, int i, Pedantics p)
 		{
 			for (; i < parts.Count; i++)
 				if (LinqClauseKind(parts[i], p) == null)

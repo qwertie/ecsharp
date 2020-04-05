@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -148,14 +148,14 @@ namespace LeMP
 				prop = ProcessArgContractAttributes(prop, 2, rw);
 			
 				// Remove contract attributes from the property and store in a list
-				VList<LNode> cAttrs = LNode.List();
+				LNodeList cAttrs = LNode.List();
 				prop = prop.WithArgChanged(0, GrabContractAttrs(prop.Args[0], ref cAttrs, ContractAppliesTo.Getter));
 				prop = GrabContractAttrs(prop, ref cAttrs);
 			
 				// Find the getter and setter
 				LNode getter = null, setter = null;
 				int getterIndex = -1, setterIndex = -1;
-				VList<LNode> getterAttrs = LNode.List(), setterAttrs = LNode.List();
+				LNodeList getterAttrs = LNode.List(), setterAttrs = LNode.List();
 				bool isLambdaProperty = !braces.Calls(S.Braces);
 				if (isLambdaProperty) {
 					if (cAttrs.Count == 0)
@@ -221,10 +221,10 @@ namespace LeMP
 			return fn;
 		}
 	
-		static LNode GrabContractAttrs(LNode node, ref VList<LNode> cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
+		static LNode GrabContractAttrs(LNode node, ref LNodeList cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
 		{
 			if (node.HasAttrs) {
-				VList<LNode> cAttrs2 = cAttrs;	// because lambdas cannot access cAttrs directly
+				LNodeList cAttrs2 = cAttrs;	// because lambdas cannot access cAttrs directly
 				var r = node.WithAttrs(attr => {
 					if ((PropertyContractInterpretation(attr) & kinds) != 0) {
 						cAttrs2.Add(attr);
@@ -309,7 +309,7 @@ namespace LeMP
 		// Helper class encapsulating the low-level behavior of contract attributes.
 		private class CodeContractRewriter
 		{
-			internal VList<LNode> PrependStmts;
+			internal LNodeList PrependStmts;
 			private LNode ReturnType;
 			private LNode FullMethodName;
 			private IMacroContext Context;
@@ -318,7 +318,7 @@ namespace LeMP
 				ReturnType = returnType;
 				FullMethodName = fullMethodName;
 				Context = context;
-				PrependStmts = new VList<LNode>();
+				PrependStmts = new LNodeList();
 			}
 		
 			// Looks for contract attributes in a list and creates statements that 
@@ -327,7 +327,7 @@ namespace LeMP
 			// argument, or null if the attributes are attached to the return value or 
 			// the entire method. Returns the attribute list with contract attributes 
 			// removed.
-			internal VList<LNode> Process(VList<LNode> attributes, LNode variableName, bool isPropSetter = false)
+			internal LNodeList Process(LNodeList attributes, LNode variableName, bool isPropSetter = false)
 			{
 				return attributes.SmartWhere(attr => {
 					LNode exceptionType = null;
@@ -373,7 +373,7 @@ namespace LeMP
 				}
 			}
 		
-			void ProcessRequiresAttribute(VList<LNode> conditions, Symbol mode, LNode variableName)
+			void ProcessRequiresAttribute(LNodeList conditions, Symbol mode, LNode variableName)
 			{
 				// Create a "Contract.Requires()" check for each provided condition.
 				foreach (var condition_ in conditions)
@@ -395,7 +395,7 @@ namespace LeMP
 				}
 			}
 		
-			void ProcessEnsuresAttribute(VList<LNode> conditions, Symbol mode, LNode exceptionType, LNode variableName)
+			void ProcessEnsuresAttribute(LNodeList conditions, Symbol mode, LNode exceptionType, LNode variableName)
 			{
 				// Create a "Contract.Whatever()" check for each provided condition.
 				bool haveCCRewriter = _haveCCRewriter && mode != sy_ensuresAssert && mode != sy_ensuresFinally;

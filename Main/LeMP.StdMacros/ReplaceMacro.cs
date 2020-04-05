@@ -111,7 +111,7 @@ namespace LeMP
 		public static LNode Replace(LNode stmt, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			CheckParam.IsNotNull("stmt", stmt);
-			return Replace(new VList<LNode>(stmt), patterns, out replacementCount)[0];
+			return Replace(new LNodeList(stmt), patterns, out replacementCount)[0];
 		}
 
 		static LNode TryReplaceHere(LNode node, Pair<LNode, LNode>[] patterns, MMap<Symbol, LNode> temp)
@@ -201,7 +201,7 @@ namespace LeMP
 			return null;
 		}
 
-		private static LNode RegisterSimpleMacro(VList<LNode> attrs, LNode macroName, VList<LNode> args, LNode body, IMacroContext context)
+		private static LNode RegisterSimpleMacro(LNodeList attrs, LNode macroName, LNodeList args, LNode body, IMacroContext context)
 		{
 			MacroMode mode, modes = 0;
 			var leftoverAttrs = attrs.SmartWhere(attr =>
@@ -241,7 +241,7 @@ namespace LeMP
 			return F.Splice();
 		}
 
-		private static void WarnAboutMissingDollarSigns(VList<LNode> argList, IMacroContext context, LNode pattern, LNode replacement)
+		private static void WarnAboutMissingDollarSigns(LNodeList argList, IMacroContext context, LNode pattern, LNode replacement)
 		{
 			// Warn if a name appears in both pattern and replacement but uses $ in only one of the two.
 			Dictionary<Symbol, LNode> pVars = ScanForVariables(pattern), rVars = ScanForVariables(replacement);

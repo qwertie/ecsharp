@@ -25,14 +25,14 @@ namespace LeMP
 			if (node.ArgCount != 0)
 				return null;
 			int sourceLine = -1;
-			var list0 = new VList<LNode>(context.RemainingNodes);
+			var list0 = new LNodeList(context.RemainingNodes);
 			var list1 = context.PreProcess(list0);
 			var list2 = AddLineDirectives(list1, true, ref sourceLine);
 			context.DropRemainingNodes = true;
 			return F.Call(S.Splice, list2);
 		}
 
-		static VList<LNode> AddLineDirectives(VList<LNode> nodes, bool stmtContext, ref int sourceLine_)
+		static LNodeList AddLineDirectives(LNodeList nodes, bool stmtContext, ref int sourceLine_)
 		{
 			int sourceLine = sourceLine_;
 			nodes = nodes.SmartSelect(node => {

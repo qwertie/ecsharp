@@ -1,4 +1,4 @@
-version: 2.7.2.{build}
+version: 2.8.0.{build}
 
 # Try to fix "The project file ... is not supported by MSBuild and cannot be built."
 image: Visual Studio 2017
@@ -12,7 +12,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=27.2.0
+    - set SEMVER=28.0.0
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }

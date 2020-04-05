@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +28,7 @@ namespace LeMP
 			return UseSymbolsCore(input.Attrs, args_body.A, args_body.B, context, inType);
 		}
 
-		public static LNode UseSymbolsCore(VList<LNode> symbolAttrs, VList<LNode> options, VList<LNode> body, IMacroContext context, bool inType)
+		public static LNode UseSymbolsCore(LNodeList symbolAttrs, LNodeList options, LNodeList body, IMacroContext context, bool inType)
 		{
 			// Decode options (TODO: invent a simpler approach)
 			string prefix = "sy_";
@@ -48,7 +48,7 @@ namespace LeMP
 
 			// Replace all symbols while collecting a list of them
 			var symbols = new Dictionary<Symbol, LNode>();
-			VList<LNode> output = body.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
+			LNodeList output = body.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
 				if (!inType && n.ArgCount == 3) {
 					// Since we're outside any type, we must avoid creating symbol 
 					// fields. When we cross into a type then we can start making

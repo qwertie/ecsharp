@@ -41,7 +41,7 @@ namespace Loyc.LLParserGenerator
 		protected static AndPred AndNot(Pred test) { return Pred.AndNot(test); }
 		protected static AndPred AndNot(string ident) { return Pred.AndNot(LNode.Id(ident)); }
 		protected static RuleRef Call(Rule rule, params LNode[] args) { 
-			return new RuleRef(null, rule) { Params = new VList<LNode>(args) };
+			return new RuleRef(null, rule) { Params = LNode.List(args) };
 		}
 
 		protected static Seq Seq(string s) { return Pred.Seq(s); }

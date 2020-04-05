@@ -417,9 +417,9 @@ namespace LeMP.Prelude.Les
 		{
 			var args = node.Args;
 			if (node.ArgCount == 2 && args.Last.Calls(_while, 1)) {
-				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[1].Args[0]));
+				return node.With(S.DoWhile, new LNodeList(node.Args[0], node.Args[1].Args[0]));
 			} else if (node.ArgCount == 3 && args.TryGet(1, null).IsIdNamed(_while)) {
-				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[2]));
+				return node.With(S.DoWhile, new LNodeList(node.Args[0], node.Args[2]));
 			}
 			return null;
 		}
@@ -451,7 +451,7 @@ namespace LeMP.Prelude.Les
 			if (!elseKW.IsIdNamed(_else))
 				return Reject(sink, elseKW, "'{0}': expected else clause or end-of-statement marker", isUnless ? "unless" : "if");
 			if (@else.IsId && args.Count > 4)
-				@else = LNode.Call(@else.Name, new VList<LNode>(args.Slice(4)), node);
+				@else = LNode.Call(@else.Name, new LNodeList(args.Slice(4)), node);
 			return node.With(S.If, cond, then, @else);
 		}
 
@@ -480,7 +480,7 @@ namespace LeMP.Prelude.Les
 		public static LNode @case(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount >= 2 && node.Args.Last.Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.WithArgs(node.Args.WithoutLast(1)), node.Args.Last));
+				return F.Call(S.Splice, new LNodeList(node.WithArgs(node.Args.WithoutLast(1)), node.Args.Last));
 			if (node.ArgCount >= 1)
 				return node.WithTarget(S.Case);
 			return null;
@@ -492,7 +492,7 @@ namespace LeMP.Prelude.Les
 			if (node.IsId)
 				return node.With(S.Label, F.Id(S.Default)).SetBaseStyle(NodeStyle.Default);
 			else if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.With(S.Label, new VList<LNode>(F.Id(S.Default))).SetBaseStyle(NodeStyle.Default), node.Args[0]));
+				return F.Call(S.Splice, new LNodeList(node.With(S.Label, new LNodeList(F.Id(S.Default))).SetBaseStyle(NodeStyle.Default), node.Args[0]));
 			return null;
 		}
 

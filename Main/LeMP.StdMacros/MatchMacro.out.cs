@@ -79,7 +79,7 @@ namespace LeMP
 							}
 						}
 						//  handler: the list of statements underneath `case`
-						var handler = new VList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
+						var handler = new LNodeList(contents.Slice(case_i + 1, next_i - (case_i + 1)));
 					
 						if (@case .Calls(S.Case) && @case .Args.Count > 0) {
 							var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
@@ -223,8 +223,8 @@ namespace LeMP
 		{
 			protected IMacroContext _context;
 			protected LNode _input;
-			protected VList<LNode> _handler;
-			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, VList<LNode> handler)
+			protected LNodeList _handler;
+			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, LNodeList handler)
 			{
 				_context = context;
 				_input = input;
@@ -252,7 +252,7 @@ namespace LeMP
 				// Get the parts of the pattern, e.g. `$x is T(sp)` => varBinding=x, isType=T, sp is returned
 				bool refExistingVar;
 				LNode varBinding, cmpExpr, isType, inRange, propName;
-				VList<LNode> subPatterns, conditions;
+				LNodeList subPatterns, conditions;
 				GetPatternComponents(pattern, out propName, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
 			
 				if (defaultPropName == null) {	// Outermost pattern
@@ -326,7 +326,7 @@ namespace LeMP
 			void GetPatternComponents(LNode pattern, out LNode propName, 
 				out LNode varBinding, out bool refExistingVar, 
 				out LNode cmpExpr, out LNode isType, out LNode inRange, 
-				out VList<LNode> subPatterns, out VList<LNode> conditions)
+				out LNodeList subPatterns, out LNodeList conditions)
 			{
 				// Format: PropName: is DerivedClass name(...) in Range
 				// Here's a typical pattern (case expr):
@@ -346,7 +346,7 @@ namespace LeMP
 				//   inRange = quote(Range);
 				//   conds will have "conds" pushed to the front.
 				// 
-				subPatterns = VList<LNode>.Empty;
+				subPatterns = LNodeList.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
 			
 				propName = varBinding = cmpExpr = isType = inRange = null;
@@ -358,7 +358,7 @@ namespace LeMP
 					propName = pattern[0]; pattern = pattern[1];
 				}
 				// Deconstruct `pattern && condition` (iteratively)
-				conditions = VList<LNode>.Empty;
+				conditions = LNodeList.Empty;
 				while (pattern.Calls(S.And, 2)) {
 					conditions.Add(pattern.Args.Last);
 					pattern = pattern.Args[0];

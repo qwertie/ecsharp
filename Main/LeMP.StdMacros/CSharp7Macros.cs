@@ -24,7 +24,7 @@ namespace LeMP.CSharp7.To.OlderVersions
 
 		static readonly Symbol TupleMakers = (Symbol)"StandardMacros.TupleMakers";
 		static readonly Symbol DefaultTupleMaker = (Symbol)"StandardMacros.DefaultTupleMaker";
-		static readonly LNode id_Tuple = LNode.Id("Tuple"), Tuple_Create = LNode.Call(S.Dot, new VList<LNode>(id_Tuple, LNode.Id("Create")));
+		static readonly LNode id_Tuple = LNode.Id("Tuple"), Tuple_Create = LNode.Call(S.Dot, LNode.List(id_Tuple, LNode.Id("Create")));
 
 		static IList<Pair<LNode, LNode>> MaybeInitTupleMakers(IDictionary<object, object> properties)
 		{

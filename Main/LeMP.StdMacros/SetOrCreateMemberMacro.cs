@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using System;
@@ -29,7 +29,7 @@ namespace LeMP
 				return null;
 			var args = fn.Args[2].Args;
 
-			VList<LNode> propOrFieldDecls = VList<LNode>.Empty;
+			LNodeList propOrFieldDecls = LNodeList.Empty;
 			Dictionary<Symbol, LNode> assignments = null;
 			for (int i = 0; i < args.Count; i++) {
 				var arg = args[i];
@@ -126,7 +126,7 @@ namespace LeMP
 				paramName = ChooseArgName(fieldName);
 				if (defaultValue != null) { // initializer is Args[4]
 					newArg = LNode.Call(S.Var, LNode.List(type, F.Assign(paramName, defaultValue)), arg);
-					propOrFieldDecl = arg.WithArgs(arg.Args.First(4));
+					propOrFieldDecl = arg.WithArgs(arg.Args.Initial(4));
 				} else {
 					newArg = LNode.Call(S.Var, LNode.List(type, F.Id(paramName)), arg);
 					propOrFieldDecl = arg;
@@ -164,14 +164,14 @@ namespace LeMP
 			return false;
 		}
 
-		private static void DSOCM_DistributeAttributes(VList<LNode> attrs, ref LNode newArg, ref LNode propOrFieldDecl)
+		private static void DSOCM_DistributeAttributes(LNodeList attrs, ref LNode newArg, ref LNode propOrFieldDecl)
 		{
 			// Some word attributes like `public` and `static` move to the field
 			// or property, as well as named parameters representing an attribute 
 			// target `field:` or `property:`; all others belong on the argument. 
 			// Example: given `[A] [field: B] public params T _arg = value`, we want 
 			// a field `[B] public T arg` and a parameter `[A] params T arg = value`.
-			VList<LNode> argAttrs = VList<LNode>.Empty, fieldAttrs = VList<LNode>.Empty;
+			LNodeList argAttrs = LNodeList.Empty, fieldAttrs = LNodeList.Empty;
 			foreach (var attr in attrs) {
 				var name = attr.Name;
 				if (attr.IsId && (FieldCreationAttributes.Contains(name) || name == S.Readonly))

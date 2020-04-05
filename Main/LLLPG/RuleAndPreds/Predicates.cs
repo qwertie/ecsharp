@@ -213,7 +213,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public LNodeList Params = VList<LNode>.Empty; // Params.Args is a list of parameters
+		public LNodeList Params = LNodeList.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 
 		public override bool IsNullable

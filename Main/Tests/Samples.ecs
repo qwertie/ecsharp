@@ -208,8 +208,8 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	};
 	rule LNode List() @{
 		("("|TT.SpaceLParen) ")"
-		{return F.List(VList<LNode>.Empty, $"(".StartIndex, $")".EndIndex);}
-	|	{var parts = VList<LNode>.Empty;}
+		{return F.List(LNode.List(), $"(".StartIndex, $")".EndIndex);}
+	|	{var parts = LNode.List();}
 		("("|TT.SpaceLParen) target:Atom [parts+=Atom]* ")" 
 		{return F.Call($target, $parts, $"(".StartIndex, $")".EndIndex);}
 	};

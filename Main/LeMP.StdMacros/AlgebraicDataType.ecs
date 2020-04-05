@@ -33,7 +33,7 @@ namespace LeMP
 					attrs = attrs.RemoveAt(i.Value);
 					var adt = new AltType(attrs, baseName, baseTypes, null);
 					adt.ScanClassBody(body);
-					var output = new VList<LNode>();
+					var output = new LNodeList();
 					adt.GenerateOutput(ref output);
 					return quote(#splice($(..output)));
 			}
@@ -48,7 +48,7 @@ namespace LeMP
 			// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
 			// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
 
-			public AltType(private VList<LNode> _classAttrs, public LNode TypeName, public VList<LNode> BaseTypes, public AltType ParentType)
+			public AltType(private LNodeList _classAttrs, public LNode TypeName, public LNodeList BaseTypes, public AltType ParentType)
 			{
 				//matchCode (TypeName) {
 				//	case $stem<$(..a)>, $stem: 
@@ -59,8 +59,8 @@ namespace LeMP
 				//}
 				{	// Above matchCode expanded:
 					LNode stem;
-					VList<LNode> a = default(VList<LNode>);
-					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new VList<LNode>(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
+					LNodeList a = default(LNodeList);
+					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new LNodeList(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
 						_typeNameStem = stem;
 						_genericArgs = a.ToWList();
 					} else {
@@ -105,16 +105,16 @@ namespace LeMP
 			LNode TypeNameWithoutAttrs; // TypeName with type-param attributes (e.g. #in #out #where) removed
 			List<AltType> _children = new List<AltType>();
 			internal List<AdtParam> Parts = new List<AdtParam>();
-			VList<LNode> _constructorAttrs;
-			VList<LNode> _extraConstrLogic;
-			VList<LNode> _classBody = new VList<LNode>();
+			LNodeList _constructorAttrs;
+			LNodeList _extraConstrLogic;
+			LNodeList _classBody = new LNodeList();
 
-			public void AddParts(VList<LNode> parts)
+			internal void AddParts(LNodeList parts)
 			{
 				foreach (var part in parts)
 					Parts.Add(new AdtParam(part, this));
 			}
-			public void ScanClassBody(VList<LNode> body)
+			internal void ScanClassBody(LNodeList body)
 			{
 				foreach (var stmt in body) {
 					int? i;
@@ -145,7 +145,7 @@ namespace LeMP
 				}
 			}
 			// Generates a class declaration for the current alt and its subtypes
-			public void GenerateOutput(ref VList<LNode> list)
+			internal void GenerateOutput(ref LNodeList list)
 			{
 				bool isAbstract = _classAttrs.Any(a => a.IsIdNamed(S.Abstract));
 				
@@ -158,7 +158,7 @@ namespace LeMP
 				if (baseParts.Count > 0)
 					initialization.Insert(0, F.Call(S.Base, baseParts.Select(p => p.NameId)));
 
-				var args = new VList<LNode>(allParts.Select(p => p.OriginalDecl));
+				var args = new LNodeList(allParts.Select(p => p.OriginalDecl));
 				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
 					_constructorAttrs.Add(F.Id(S.Public));
 				LNode constructor = quote {
@@ -168,7 +168,7 @@ namespace LeMP
 					});
 				};
 
-				var outBody = new VList<LNode>();
+				var outBody = new LNodeList();
 				outBody.Add(constructor);
 				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));
 				outBody.AddRange(baseParts.Select(p => GetWithFn(p, isAbstract, S.Override, allParts)));
@@ -197,7 +197,7 @@ namespace LeMP
 				foreach (var child in _children)
 					child.GenerateOutput(ref list);
 			}
-			public LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
+			internal LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
 			{
 				int totalParts = allParts.Count();
 				var withField = F.Id("With" + part.NameId.Name);
@@ -210,7 +210,7 @@ namespace LeMP
 						args.Add(otherPart.NameId);
 				}
 				
-				var attrs = new VList<LNode>(F.Id(S.Public));
+				var attrs = new LNodeList(F.Id(S.Public));
 				if (isAbstract)
 					attrs.Add(F.Id(S.Abstract));
 				if (virtualOverride != null && (!isAbstract || virtualOverride == S.Override))
@@ -236,7 +236,7 @@ namespace LeMP
 		// Info about one parameter of one ADT
 		class AdtParam
 		{
-			public AdtParam(public LNode OriginalDecl, public AltType ContainingType)
+			internal AdtParam(internal LNode OriginalDecl, internal AltType ContainingType)
 			{
 				if (!OriginalDecl.Calls(S.Var, 2))
 					throw new LogException(OriginalDecl, "alt: Expected a variable declaration");
@@ -248,15 +248,15 @@ namespace LeMP
 					throw new LogException(NameId, "alt: Expected a simple variable name");
 			}
 
-			public readonly LNode Type;
-			public readonly LNode NameId;
+			internal readonly LNode Type;
+			internal readonly LNode NameId;
 			
-			public LNode GetFieldDecl() {
+			internal LNode GetFieldDecl() {
 				return quote {
 					public $Type $NameId { get; private set; }
 				};
 			}
-			public LNode GetItemDecl(int itemNum) {
+			internal LNode GetItemDecl(int itemNum) {
 				LNode ItemN = F.Id("Item" + itemNum);
 				// ItemN properties are used by the code generated for pattern matching
 				return quote {

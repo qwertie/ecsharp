@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -24,11 +24,11 @@ namespace Loyc.LLParserGenerator
 		[ThreadStatic] 
 		static AntlrStyleParser _parser;
 	
-		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
+		public new static LNodeList ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{
 			return Parse(tokens, tokens.File, sink);
 		}
-		public new static VList<LNode> Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public new static LNodeList Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
 				_parser = new AntlrStyleParser(tokenTree, file, messages);
@@ -268,9 +268,9 @@ namespace Loyc.LLParserGenerator
 		}
 	
 	
-		public VList<LNode> RulesAndStuff()
+		public LNodeList RulesAndStuff()
 		{
-			VList<LNode> result = default(VList<LNode>);
+			LNodeList result = default(LNodeList);
 			// Line 176: ( Rule | HostCall | HostBlock )
 			switch ((TT) LA0) {
 			case TT.At: case TT.AttrKeyword: case TT.LBrack:

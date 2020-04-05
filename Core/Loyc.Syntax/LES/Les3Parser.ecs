@@ -57,7 +57,7 @@ partial class Les3Parser
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
+		public LNodeList ExprList(LNodeList list = default(LNodeList))
 		{
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, list);
@@ -81,11 +81,12 @@ partial class Les3Parser
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
 	[LL(1)]
-	public ExprList[ref TokenType endMarker, VList<LNode> list = default(VList<LNode>), bool isBracedBlock = false] returns [VList<LNode> result] :
+	public ExprList[ref TokenType endMarker, LNodeList list = default(LNodeList), bool isBracedBlock = false] returns [LNodeList result] :
 		NewlinesOpt
 		(e:TopExpr)?
 		ErrorTokensOpt
-		[	( &{isBracedBlock} {Error(0, "Unexpected closing bracket");} (")"|"]") )?
+		greedy[
+			( &{isBracedBlock} {Error(0, "Unexpected closing bracket");} (")"|"]") )?
 			end:(","|"\n"|";")
 			{CheckEndMarker(ref endMarker, ref end);}
 			NewlinesOpt
@@ -123,7 +124,7 @@ partial class Les3Parser
 	[LL(1)] // Simplify the output
 	protected TopExpr returns [LNode result] :
 		{int startIndex = LT0.StartIndex;}
-		{var attrs = new VList<LNode>();}
+		{var attrs = new LNodeList();}
 		(	// @Attribute
 			"@" {CheckForSpace(false, "Unexpected space after `@`");}
 			(	"@" 
@@ -179,7 +180,7 @@ partial class Les3Parser
 			|	// ! operator (generic 'of)
 				&{[Local] context.CanParse(P.Of)}
 				"!"
-				{var args = new VList<LNode> { e }; int endIndex;}
+				{var args = new LNodeList { e }; int endIndex;}
 				(	"(" args=ExprList[args] c:=")"  {endIndex = c.EndIndex;}
 				/	T:=Expr[P.Of]                   {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
@@ -216,7 +217,7 @@ partial class Les3Parser
 		:	// call(function)
 			result:CallArgs[e]
 		|	// Indexer / square brackets
-			{var args = new VList<LNode> { e };}
+			{var args = new LNodeList { e };}
 			lb:="[" args=ExprList[args] rb:="]"
 			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, rb.EndIndex, lb.StartIndex, rb.EndIndex, NodeStyle.Operator);}
 		;
@@ -277,10 +278,10 @@ partial class Les3Parser
 
 	// Token lists (TODO: add unit tests)
 	[LL(1), #new]
-	TokenList   returns [VList<LNode> result] @init {$result = LNode.List();} :
+	TokenList   returns [LNodeList result] @init {$result = LNode.List();} :
 		greedy( result+=TokenListParticle )*;
 	[LL(1)]
-	TokenListEx returns [VList<LNode> result] :
+	TokenListEx returns [LNodeList result] :
 		( t:(","|";") {$result.Add(F.Id(t));} 
 		| result+=TokenListParticle
 		)*;
@@ -297,7 +298,7 @@ partial class Les3Parser
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
 	////////////////////////////////////////////////////////////////////////////
 
-	KeywordExpression returns [LNode result] @init {var args = new VList<LNode>();} :
+	KeywordExpression returns [LNode result] @init {var args = new LNodeList();} :
 		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 

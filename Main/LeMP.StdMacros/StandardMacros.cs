@@ -195,7 +195,7 @@ namespace LeMP
 			if (args.Slice(0, args.Count - 1).Any(n => n.IsCall))
 				return Reject(sink, node, "All arguments to ##() or concat() must be identifiers or literals (except the last one)");
 
-			VList<LNode> attrs = node.Attrs;
+			LNodeList attrs = node.Attrs;
 			LNode arg = null;
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < args.Count; i++)

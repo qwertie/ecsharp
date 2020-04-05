@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +29,7 @@ namespace LeMP
 			if (fn.ArgCount != 4 || !(fwd = fn.Args[3]).Calls(S.Forward, 1) || !(args = fn.Args[2]).Calls(S.AltList))
 				return null;
 
-			VList<LNode> argList = GetArgNamesFromFormalArgList(args, formalArg =>
+			LNodeList argList = GetArgNamesFromFormalArgList(args, formalArg =>
 				context.Write(Severity.Error, formalArg, "'==>': Expected a variable declaration here"));
 
 			LNode target = GetForwardingTarget(fn.Args[1], fwd);
@@ -40,10 +40,10 @@ namespace LeMP
 			return fn.WithArgChanged(3, body);
 		}
 
-		internal static VList<LNode> GetArgNamesFromFormalArgList(LNode args, Action<LNode> onError)
+		internal static LNodeList GetArgNamesFromFormalArgList(LNode args, Action<LNode> onError)
 		{
-			VList<LNode> formalArgs = args.Args;
-			VList<LNode> argList = VList<LNode>.Empty;
+			LNodeList formalArgs = args.Args;
+			LNodeList argList = LNodeList.Empty;
 			foreach (var formalArg in formalArgs)
 			{
 				if (!formalArg.Calls(S.Var, 2)) {
@@ -79,9 +79,9 @@ namespace LeMP
 			{
 				var body2 = body.WithArgs(stmt => {
 					if (stmt.Calls(S.get, 1) && (target = GetForwardingTarget(name, stmt.Args[0])) != null)
-						return stmt.WithArgs(new VList<LNode>(F.Braces(F.Call(S.Return, target))));
+						return stmt.WithArgs(new LNodeList(F.Braces(F.Call(S.Return, target))));
 					if (stmt.Calls(S.set, 1) && (target = GetForwardingTarget(name, stmt.Args[0])) != null)
-						return stmt.WithArgs(new VList<LNode>(F.Braces(F.Call(S.Assign, target, F.Id(S.value)))));
+						return stmt.WithArgs(new LNodeList(F.Braces(F.Call(S.Assign, target, F.Id(S.value)))));
 					return stmt;
 				});
 				if (body2 != body)

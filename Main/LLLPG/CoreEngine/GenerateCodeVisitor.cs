@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 				if (!_recognizerMode)
 					AddUserAction(pred.Statements);
 			}
-			private void AddUserAction(VList<LNode> actions)
+			private void AddUserAction(LNodeList actions)
 			{
 				int i = _target.Count;
 

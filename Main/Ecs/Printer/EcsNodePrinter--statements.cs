@@ -590,7 +590,7 @@ namespace Loyc.Ecs
 				}
 			}
 		}
-		private void PrintArgList(VList<LNode> args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
 			var flags = _flags & Ambiguity.OneLiner;
 			if (allowUnassignedVarDecl)
@@ -607,7 +607,7 @@ namespace Loyc.Ecs
 		{
 			PrintArgs(args.Args, _flags, omitMissingArguments, separator);
 		}
-		private void PrintArgs(VList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(LNodeList args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			for (int i = 0; i < args.Count; i++)
 			{

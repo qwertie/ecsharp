@@ -158,7 +158,7 @@ namespace TextEditor
 
 			protected override void WriteOutput(InputOutput io)
 			{
-				VList<LNode> results = io.Output;
+				LNodeList results = io.Output;
 
 				Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", io.OutOptions.NewlineString,
 					io.FileName, typeof(Compiler).Assembly.GetName().Version.ToString());

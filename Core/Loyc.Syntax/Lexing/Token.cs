@@ -458,7 +458,7 @@ namespace Loyc.Syntax.Lexing
 					r = new SourceRange(file, StartIndex, System.Math.Max(EndIndex, c.Last.EndIndex) - StartIndex);
 				return LNode.Call(kSym, c.ToLNodes(), r, Style);
 			} else if (IsOpenerOrCloser(kind) || Value == WhitespaceTag.Value) {
-				return LNode.Call(kSym, VList<LNode>.Empty, r, Style);
+				return LNode.Call(kSym, LNodeList.Empty, r, Style);
 			} else if (kind == TokenKind.Id && (id = this.Value as Symbol) != null) {
 				return LNode.Id(id, r, Style);
 			} else {

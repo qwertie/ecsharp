@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;	// For Symbol
-using Loyc.Collections;	// For VList<LNode>
+using Loyc.Collections;	// For .Single()
 using Loyc.Syntax;	// For LNode
 using Loyc.Ecs;	// For EcsLanguageService
 using S = Loyc.Syntax.CodeSymbols;
@@ -42,7 +42,7 @@ namespace LeMP
 		static IEnumerable<LNode> GetNamespaces(LNode multiName) {
 			{
 				LNode outerNamespace;
-				VList<LNode> args;
+				LNodeList args;
 				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
 					args = multiName.Args;
 					// Allow Namespace { stuff; } as alternate notation; just ignore the braces

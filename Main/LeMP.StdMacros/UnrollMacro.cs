@@ -44,7 +44,7 @@ namespace LeMP
 			return null;
 		}
 		
-		public static LNode unroll(LNode var, VList<LNode> cases, LNode body, IMessageSink sink)
+		public static LNode unroll(LNode var, LNodeList cases, LNode body, IMessageSink sink)
 		{
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;

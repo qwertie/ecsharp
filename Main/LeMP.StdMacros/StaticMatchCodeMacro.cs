@@ -35,7 +35,7 @@ namespace LeMP
 				return null; // handled by normal matchCode macro
 
 			var args_body = context.GetArgsAndBody(false);
-			VList<LNode> args = args_body.Item1, body = args_body.Item2;
+			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1)
 				return Reject(context, args[1], "Expected only one expression to match");
 

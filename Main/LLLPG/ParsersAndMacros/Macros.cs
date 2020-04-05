@@ -148,12 +148,12 @@ namespace Loyc.LLPG
 		public static LNode LllpgMacro(LNode node, IMacroContext context, 
 			Symbol expectedCodeGenMode, Func<LNode, IPGCodeGenHelper> makeCodeGenHelper, bool isDefault = false)
 		{
-			VList<LNode> args, body;
+			LNodeList args, body;
 			LNode tokenTree = null, codeGenOptions = null;
 
 			if (node.ArgCount >= 1 && (tokenTree = node.Args.Last).Value is TokenTree) {
 				args = node.Args.WithoutLast(1);
-				body = VList<LNode>.Empty;
+				body = LNodeList.Empty;
 			} else {
 				tokenTree = null;
 				var p = context.GetArgsAndBody(orRemainingNodes: true);
@@ -197,7 +197,7 @@ namespace Loyc.LLPG
 				if (LeMP.Prelude.Les.Macros.IsComplexId(name))
 					name = F.Call(name); // def requires an argument list
 				
-				VList<LNode> args = name.Args;
+				LNodeList args = name.Args;
 				name = name.Target;
 				
 				LNode newBody = ParseRuleBody(node.Args[1], context);
@@ -254,7 +254,7 @@ namespace Loyc.LLPG
 			if (newBody != null)
 				// #rule($returnType, $name, $args, $newBody)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
-					new VList<LNode> { returnType, name, args, newBody }, 
+					LNode.List(returnType, name, args, newBody),
 					node.Range, node.Style).WithAttrs(attrs);
 			else
 				return null;

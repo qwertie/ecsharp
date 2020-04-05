@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -159,7 +159,7 @@ namespace Loyc.LLParserGenerator
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
 					F.Var(SetType, setName,
-						ApiCall(method, new VList<LNode>(args.Select(a => F.Literal(a))), true)));
+						ApiCall(method, LNode.List(args.Select(a => F.Literal(a))), true)));
 		}
 
 		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)

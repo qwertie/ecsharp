@@ -40,18 +40,18 @@ namespace Loyc.Syntax.Les {
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
 
-		@[public] rule StmtList()::VList!LNode @{
+		@[public] rule StmtList()::LNodeList @{
 			{endMarker := TT.Semicolon;}
 			result:ExprList(ref endMarker)
 		};
-		@[public] fn ExprList(list::VList!LNode = default(VList!LNode))::VList!LNode {
+		@[public] fn ExprList(list::LNodeList = default(LNodeList))::LNodeList {
 			endMarker := default(TT);
 			return (ExprList(ref endMarker, list));
 		};
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		@[public, virtual] rule ExprList(ref endMarker::TokenType, list::VList!LNode = default(VList!LNode))::VList!LNode @{
+		@[public, virtual] rule ExprList(ref endMarker::TokenType, list::LNodeList = default(LNodeList))::LNodeList @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			{if (LT0.Value `'is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
@@ -99,7 +99,7 @@ namespace Loyc.Syntax.Les {
 			(	e:Expr(StartStmt)
 			/	// Superexpression
 				id:=TT.Id // identifier
-				{var args = VList!LNode.Empty;}
+				{var args = LNodeList.Empty;}
 				args+=Expr(P.SuperExpr)
 				[	{
 						if ((LA0 -> TT) == TT.LParen) {
@@ -141,7 +141,7 @@ namespace Loyc.Syntax.Les {
 			|	// Generic!arguments
 				&{@[Local] context.CanParse(P.Of)}
 				"!"
-				{var args = (new VList!LNode { e }); endIndex::int;}
+				{var args = (new LNodeList { e }); endIndex::int;}
 				(	"(" args=ExprList(args) c:=")" {endIndex = c.EndIndex;}
 				/	T:=Expr(P.Of)                  {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
@@ -164,7 +164,7 @@ namespace Loyc.Syntax.Les {
 					if (endMarker == TT.Semicolon) { e.Style = NodeStyle.StatementBlock | NodeStyle.Alternate; };
 				}
 			|	// Indexer / square brackets
-				{var args = (new VList!LNode { e });}
+				{var args = (new LNodeList { e });}
 				"[" args=ExprList(args) c:="]"
 				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex, $"[".StartIndex, $"[".EndIndex, NodeStyle.Operator);}
 			)

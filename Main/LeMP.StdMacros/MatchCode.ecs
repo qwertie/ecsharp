@@ -23,7 +23,7 @@ namespace LeMP
 				return null; // this case is handled by static_matchCode macro
 
 			var args_body = context.GetArgsAndBody(false);
-			VList<LNode> args = args_body.Item1, body = args_body.Item2;
+			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1 || body.Count < 1)
 				return null;
 			var cases = GetCases(body, context.Sink);
@@ -106,7 +106,7 @@ namespace LeMP
 		/// <returns>The first item in each pair is a list of the cases associated
 		/// with a single handler (for `default:`, the list is empty). The second 
 		/// item is the handler code.</returns>
-		static internal VList<Pair<LNodeList,LNodeList>> GetCases(VList<LNode> body, IMessageSink sink)
+		static internal VList<Pair<LNodeList,LNodeList>> GetCases(LNodeList body, IMessageSink sink)
 		{
 			var pairs = VList<Pair<LNodeList,LNodeList>>.Empty;
 			for (int i = 0; i < body.Count; i++)
@@ -152,7 +152,7 @@ namespace LeMP
 			// The boolean value indicates whether the variable needs initialization due to multi-case
 			public Dictionary<Symbol, bool> NodeVars = new Dictionary<Symbol, bool>(); // LNode vars to declare
 			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>(); // LNodeList vars to declare
-			public VList<LNode> ThenClause = new VList<LNode>(); // stuff to do at the start of the {block} inside the if-statement
+			public LNodeList ThenClause = new LNodeList(); // stuff to do at the start of the {block} inside the if-statement
 			public IMacroContext Context;
 			public bool IsMultiCase; // true if building a case statement with multiple patterns
 			public WList<LNode> Tests = new WList<LNode>(); // list of tests involved in matching the current pattern
@@ -296,7 +296,7 @@ namespace LeMP
 					Context.Sink.Error(pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
 
-			private int GetFixedArgCount(VList<LNode> patternArgs, out int? varArgAt)
+			private int GetFixedArgCount(LNodeList patternArgs, out int? varArgAt)
 			{
 				varArgAt = null;
 				int argc = 0;
@@ -312,7 +312,7 @@ namespace LeMP
 				return argc;
 			}
 
-			private void MakeArgListTests(VList<LNode> patternArgs, ref LNode candidate)
+			private void MakeArgListTests(LNodeList patternArgs, ref LNode candidate)
 			{
 				// Note: at this point we can assume that the quantity of 
 				// arguments has already been checked and is not too small.

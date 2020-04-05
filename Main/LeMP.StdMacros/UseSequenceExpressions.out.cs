@@ -36,7 +36,7 @@ namespace LeMP
 			return null;
 		}
 	
-		public static VList<LNode> MaybeRemoveNoOpFromRunSeq(VList<LNode> runSeq)
+		public static LNodeList MaybeRemoveNoOpFromRunSeq(LNodeList runSeq)
 		{
 			// Delete final no-op in case of e.g. Foo()::id; => #runSequence(var id = Foo(); id)
 			if (runSeq.Count > 1 && runSeq.Last.IsId)
@@ -111,7 +111,7 @@ namespace LeMP
 					*/
 					LNode result = EliminateSequenceExpressions(stmt, isDeclContext);
 					if (result != stmt) {
-						VList<LNode> results;
+						LNodeList results;
 						if (result.Calls(__numrunSequence)) {
 							results = MaybeRemoveNoOpFromRunSeq(result.Args);
 							return results;
@@ -262,10 +262,10 @@ namespace LeMP
 				return stmt;
 			}
 		
-			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, VList<LNode> init, LNode cond, VList<LNode> inc, LNode block)
+			LNode ESEInForLoop(LNode stmt, LNodeList attrs, LNodeList init, LNode cond, LNodeList inc, LNode block)
 			{
 				// TODO: handle multi-int and multi-inc
-				var preInit = VList<LNode>.Empty;
+				var preInit = LNodeList.Empty;
 				var init_apos = init.SmartSelect(init1 => {
 					init1 = EliminateSequenceExpressionsInExecStmt(init1);
 					if (init1.CallsMin(__numrunSequence, 1)) {
@@ -323,8 +323,8 @@ namespace LeMP
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
 			{
 				List<LNode> childStmts = stmt.Args.Slice(childStmtsStartAt).ToList();
-				LNode partialStmt = stmt.WithArgs(stmt.Args.First(childStmtsStartAt));
-				VList<LNode> advanceSequence;
+				LNode partialStmt = stmt.WithArgs(stmt.Args.Initial(childStmtsStartAt));
+				LNodeList advanceSequence;
 				if (ProcessBlockCallStmt2(ref partialStmt, out advanceSequence, childStmts)) {
 					stmt = partialStmt.PlusArgs(childStmts);
 					if (advanceSequence.Count != 0)
@@ -337,7 +337,7 @@ namespace LeMP
 			// This is called to process the two parts of a block call, e.g.
 			// #if(cond, {T}, {F}) => partialStmt = #if(cond); childStmts = {{T}, {F}}
 			// Returns true if anything changed (i.e. sequence expr detected)
-			bool ProcessBlockCallStmt2(ref LNode partialStmt, out VList<LNode> advanceSequence, List<LNode> childStmts)
+			bool ProcessBlockCallStmt2(ref LNode partialStmt, out LNodeList advanceSequence, List<LNode> childStmts)
 			{
 				// Process the child statement(s)
 				bool childChanged = false;
@@ -480,7 +480,7 @@ namespace LeMP
 				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(__numrunSequence, 1)) ?? -1;
 				if (lastRunSeq >= 0) {
 					// last index of #runSequence that is not marked pure
-					int lastRunSeqImpure = args.First(lastRunSeq + 1).FinalIndexWhere(a => 
+					int lastRunSeqImpure = args.Initial(lastRunSeq + 1).FinalIndexWhere(a => 
 					a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
 				
 					if (lastRunSeq > 0 && 
