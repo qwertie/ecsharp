@@ -47,7 +47,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>, ICloneable
+	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>, IPop<T>, ICloneable
 	{
 		internal VListBlock<T> _block;
 		internal int _localCount;
@@ -209,6 +209,28 @@ namespace Loyc.Collections
 				return _block == null;
 			}
 		}
+		/// <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
+		/// <param name="isEmpty">When the list is empty, this is set to true and default(T) is returned.</param>
+		public T TryPop(out bool isEmpty)
+		{
+			if (!(isEmpty = _block == null))
+			{
+				T item = Last;
+				this = WithoutLast(1);
+				return item;
+			}
+			return default(T);
+		}
+
+		/// <summary>Gets the last item in the list (at index Count-1).</summary>
+		/// <param name="isEmpty">When the list is empty, this is set to true and default(T) is returned.</param>
+		public T TryPeek(out bool isEmpty)
+		{
+			if (!(isEmpty = _block == null))
+				return Last;
+			return default(T);
+		}
+
 		/// <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
 		public T Pop()
 		{

@@ -78,88 +78,67 @@ namespace Loyc.Syntax
 
 		public static IdNode Id(Symbol name, LNode prototype) { return new StdIdNode(name, prototype); }
 		public static IdNode Id(string name, LNode prototype) { return new StdIdNode(GSymbol.Get(name), prototype); }
-		public static IdNode Id(VList<LNode> attrs, Symbol name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, name, prototype); }
-		public static IdNode Id(VList<LNode> attrs, string name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), prototype); }
+		public static IdNode Id(LNodeList attrs, Symbol name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, name, prototype); }
+		public static IdNode Id(LNodeList attrs, string name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), prototype); }
 		public static LiteralNode Literal(object value, LNode prototype) { return new StdLiteralNode(value, prototype); }
-		public static LiteralNode Literal(VList<LNode> attrs, object value, LNode prototype) { return new StdLiteralNode(value, prototype); }
-		public static CallNode Call(Symbol name, LNode prototype) { return new StdSimpleCallNode(name, VList<LNode>.Empty, prototype); }
-		public static CallNode Call(LNode target, LNode prototype) { return new StdComplexCallNode(target, VList<LNode>.Empty, prototype); }
-		public static CallNode Call(Symbol name, VList<LNode> args, LNode prototype) { return new StdSimpleCallNode(name, args, prototype); }
-		public static CallNode Call(LNode target, VList<LNode> args, LNode prototype) { return new StdComplexCallNode(target, args, prototype); }
-		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, LNode prototype) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
-		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
+		public static LiteralNode Literal(LNodeList attrs, object value, LNode prototype) { return new StdLiteralNode(value, prototype); }
+		public static CallNode Call(Symbol name, LNode prototype) { return new StdSimpleCallNode(name, LNodeList.Empty, prototype); }
+		public static CallNode Call(LNode target, LNode prototype) { return new StdComplexCallNode(target, LNodeList.Empty, prototype); }
+		public static CallNode Call(Symbol name, LNodeList args, LNode prototype) { return new StdSimpleCallNode(name, args, prototype); }
+		public static CallNode Call(LNode target, LNodeList args, LNode prototype) { return new StdComplexCallNode(target, args, prototype); }
+		public static CallNode Call(LNodeList attrs, Symbol name, LNodeList args, LNode prototype) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
+		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
 		public static CallNode Trivia(Symbol name, object value, LNode prototype) { return new StdTriviaNode(name, value, prototype); }
 
 		public static IdNode Id(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(name, range, style); }
 		public static IdNode Id(string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(GSymbol.Get(name), range, style); }
-		public static IdNode Id(VList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, name, range, style); }
-		public static IdNode Id(VList<LNode> attrs, string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range, style); }
+		public static IdNode Id(LNodeList attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, name, range, style); }
+		public static IdNode Id(LNodeList attrs, string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range, style); }
 		public static LiteralNode Literal(object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, range, style); }
-		public static LiteralNode Literal(VList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNodeWithAttrs(attrs, value, range, style); }
-		public static CallNode Call(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, VList<LNode>.Empty, range, style); }
-		public static CallNode Call(Symbol name, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, VList<LNode>.Empty, range, targetStart, targetEnd, style); }
-		public static CallNode Call(LNode target, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, VList<LNode>.Empty, range, style); }
-		public static CallNode Call(Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, style); }
-		public static CallNode Call(Symbol name, VList<LNode> args, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, targetStart, targetEnd, style); }
-		public static CallNode Call(LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, range, style); }
-		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
-		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
+		public static LiteralNode Literal(LNodeList attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNodeWithAttrs(attrs, value, range, style); }
+		public static CallNode Call(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, range, style); }
+		public static CallNode Call(Symbol name, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, range, targetStart, targetEnd, style); }
+		public static CallNode Call(LNode target, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, LNodeList.Empty, range, style); }
+		public static CallNode Call(Symbol name, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, style); }
+		public static CallNode Call(Symbol name, LNodeList args, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, targetStart, targetEnd, style); }
+		public static CallNode Call(LNode target, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, range, style); }
+		public static CallNode Call(LNodeList attrs, Symbol name, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
+		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
 		public static CallNode Trivia(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, range, style); }
 
 		public static IdNode Id(Symbol name, ISourceFile file = null) { return new StdIdNode(name, new SourceRange(file)); }
 		public static IdNode Id(string name, ISourceFile file = null) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file)); }
-		public static IdNode Id(VList<LNode> attrs, Symbol name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file)); }
-		public static IdNode Id(VList<LNode> attrs, string name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file)); }
+		public static IdNode Id(LNodeList attrs, Symbol name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file)); }
+		public static IdNode Id(LNodeList attrs, string name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file)); }
 		public static LiteralNode Literal(object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file), style); }
-		public static LiteralNode Literal(VList<LNode> attrs, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file), style); }
-		public static CallNode Call(Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, VList<LNode>.Empty, new SourceRange(file), style); }
-		public static CallNode Call(LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, VList<LNode>.Empty, new SourceRange(file), style); }
-		public static CallNode Call(Symbol name, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file), style); }
-		public static CallNode Call(LNode target, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file), style); }
-		public static CallNode Call(VList<LNode> attrs, Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, VList<LNode>.Empty, new SourceRange(file), style); }
-		public static CallNode Call(VList<LNode> attrs, LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, VList<LNode>.Empty, new SourceRange(file), style); }
-		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file), style); }
-		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file), style); }
+		public static LiteralNode Literal(LNodeList attrs, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, new SourceRange(file), style); }
+		public static CallNode Call(Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, new SourceRange(file), style); }
+		public static CallNode Call(LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, LNodeList.Empty, new SourceRange(file), style); }
+		public static CallNode Call(Symbol name, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file), style); }
+		public static CallNode Call(LNode target, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file), style); }
+		public static CallNode Call(LNodeList attrs, Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, LNodeList.Empty, new SourceRange(file), style); }
+		public static CallNode Call(LNodeList attrs, LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, LNodeList.Empty, new SourceRange(file), style); }
+		public static CallNode Call(LNodeList attrs, Symbol name, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file), style); }
+		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file), style); }
 		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file), style); }
 
 		/// <summary>Used by the <c>quote {...}</c> macro.</summary>
 		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);
 
 		// List creation with null check (even in release builds)
-		public static VList<LNode> List() { return new VList<LNode>(); }
-		public static VList<LNode> List(LNode item_0) {
-			if (item_0 == null) throw new ArgumentNullException("item_0");
-			return new VList<LNode>(item_0);
-		}
-		public static VList<LNode> List(LNode item_0, LNode item_1) {
-			if (item_0 == null) throw new ArgumentNullException("item_0");
-			if (item_1 == null) throw new ArgumentNullException("item_1");
-			return new VList<LNode>(item_0, item_1);
-		}
-		public static VList<LNode> List(params LNode[] list) { return List(new VList<LNode>(list)); }
-		public static VList<LNode> List(IEnumerable<LNode> list) { return List(new VList<LNode>(list)); }
-		public static VList<LNode> List(VList<LNode> list) {
-			int i = 0;
-			foreach (var n in list.ToFVList()) { // FVList enumerate faster
-				i++;
-				if (n == null) throw new ArgumentNullException("list[" + (list.Count - i) + "]");
-			}
-			return list;
-		}
+		public static LNodeList List() { return new LNodeList(); }
+		public static LNodeList List(LNode item_0) => new LNodeList(item_0);
+		public static LNodeList List(LNode item_0, LNode item_1) => new LNodeList(item_0, item_1);
+		public static LNodeList List(params LNode[] list) => new LNodeList(list);
+		public static LNodeList List(IEnumerable<LNode> list) => new LNodeList(list);
+		public static LNodeList List(VList<LNode> list) => new LNodeList(list);
 
-		// It's difficult to enforce "nulls not allowed" with high performance,
-		// especially since often what's being done is creating a new node with
-		// the same list as an old node. Compromise: only check in debug builds.
-		// This is called by node types that accept lists of args or attrs.
+		// "nulls not allowed" is now enforced by LNodeList, but just to be sure...
 		[Conditional("DEBUG")]
-		protected static void NoNulls(VList<LNode> list, string propName)
+		protected static void NoNulls(LNodeList list, string propName)
 		{
-			int i = 0;
-			foreach (var n in list.ToFVList()) { // FVList enumerate faster
-				i++;
-				if (n == null) throw new ArgumentNullException(propName,
-					string.Format("Attempted to construct an LNode with a null reference at {0}[{1}].", propName, list.Count - i));
-			}
+			foreach (var node in ((VList<LNode>)list).ToFVList()) // FVList enumerates faster
+				Debug.Assert(node != null);
 		}
 
 		#endregion
@@ -265,7 +244,7 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Returns the attribute list for this node.</summary>
-		public virtual VList<LNode> Attrs { get { return VList<LNode>.Empty; } }
+		public virtual LNodeList Attrs { get { return LNodeList.Empty; } }
 
 		/// <summary>Returns true if the node is immutable, and false if any part of it can be edited.
 		/// Currently, mutable nodes are not implemented.</summary>
@@ -373,7 +352,7 @@ namespace Loyc.Syntax
 		/// statements in a braced block, and if the target is ">=" then Args 
 		/// represents the two arguments to the ">=" operator.
 		/// </remarks>
-		public abstract VList<LNode> Args { get; }
+		public abstract LNodeList Args { get; }
 
 		public virtual CallNode WithTarget(LNode target) { return With(target, Args); }
 		public virtual CallNode WithTarget(Symbol name) { return With(name, Args); }
@@ -382,14 +361,14 @@ namespace Loyc.Syntax
 		/// call, a new node is created using this node as its target. Otherwise,
 		/// the existing argument list is replaced.</summary>
 		/// <param name="args">New argument list</param>
-		public abstract CallNode WithArgs(VList<LNode> args);
+		public abstract CallNode WithArgs(LNodeList args);
 
 		/// <summary>Creates a <see cref="CallNode"/> with the same attributes and 
 		/// <see cref="Range"/>, but a different target and argument list. If the 
 		/// current node is not a CallNode, it becomes one (the Range, Style and 
 		/// attributes of the current node are kept, but the Kind, Value, and 
 		/// Name are discarded.)</summary>
-		public virtual CallNode With(LNode target, VList<LNode> args)
+		public virtual CallNode With(LNode target, LNodeList args)
 		{
 			if (target == null) throw new ArgumentNullException("target");
 			if (Target == target && Args == args)
@@ -407,7 +386,7 @@ namespace Loyc.Syntax
 		/// current node is not a CallNode, it becomes one (the Range, Style and 
 		/// attributes of the current node are kept, but the Kind, Value, and 
 		/// Name are discarded.)</summary>
-		public virtual CallNode With(Symbol target, VList<LNode> args)
+		public virtual CallNode With(Symbol target, LNodeList args)
 		{
 			var attrs = Attrs;
 			if (attrs.Count == 0)
@@ -415,7 +394,7 @@ namespace Loyc.Syntax
 			else
 				return new StdSimpleCallNodeWithAttrs(attrs, target, args, this);
 		}
-		public CallNode With(Symbol target, params LNode[] args) { return With(target, new VList<LNode>(args)); }
+		public CallNode With(Symbol target, params LNode[] args) { return With(target, new LNodeList(args)); }
 
 		#endregion
 
@@ -441,20 +420,20 @@ namespace Loyc.Syntax
 			return copy;
 		}
 
-		public virtual LNode WithoutAttrs() { return WithAttrs(VList<LNode>.Empty); }
-		public abstract LNode WithAttrs(VList<LNode> attrs);
+		public virtual LNode WithoutAttrs() { return WithAttrs(LNodeList.Empty); }
+		public abstract LNode WithAttrs(LNodeList attrs);
 
-		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new VList<LNode>(attrs)); }
-		public CallNode WithArgs(params LNode[] args) { return WithArgs(new VList<LNode>(args)); }
+		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new LNodeList(attrs)); }
+		public CallNode WithArgs(params LNode[] args) { return WithArgs(new LNodeList(args)); }
 		public LNode PlusAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
 		public LNode PlusAttrs(IEnumerable<LNode> attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
 		public LNode PlusAttrs(params LNode[] attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
-		public LNode PlusAttrs(VList<LNode> attrs) { return attrs.IsEmpty ? this : WithAttrs(Attrs.AddRange(attrs)); }
-		public LNode PlusAttrsBefore(VList<LNode> attrs) { return attrs.IsEmpty ? this : WithAttrs(attrs.AddRange(Attrs)); }
+		public LNode PlusAttrs(LNodeList attrs) { return attrs.IsEmpty ? this : WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrsBefore(LNodeList attrs) { return attrs.IsEmpty ? this : WithAttrs(attrs.AddRange(Attrs)); }
 		public LNode PlusAttrsBefore(params LNode[] attrs) { return WithAttrs(Attrs.InsertRange(0, attrs)); }
 		public LNode PlusAttrBefore(LNode attr) { return WithAttrs(Attrs.Insert(0, attr)); }
 		public LNode PlusArg(LNode arg) { return WithArgs(Args.Add(arg)); }
-		public LNode PlusArgs(VList<LNode> args) { return args.IsEmpty ? this : WithArgs(Args.AddRange(args)); }
+		public LNode PlusArgs(LNodeList args) { return args.IsEmpty ? this : WithArgs(Args.AddRange(args)); }
 		public LNode PlusArgs(IEnumerable<LNode> args) { return WithArgs(Args.AddRange(args)); }
 		public LNode PlusArgs(params LNode[] args) { return WithArgs(Args.AddRange(args)); }
 		public LNode WithArgChanged(int index, Func<LNode, LNode> selector)
@@ -580,7 +559,7 @@ namespace Loyc.Syntax
 		public virtual object TriviaValue
 		{
 			get {
-				VList<LNode> args = Args;
+				LNodeList args = Args;
 				if (args.Count >= 1)
 					return args[0].Value;
 				return NoValue.Value;
@@ -595,7 +574,7 @@ namespace Loyc.Syntax
 		/// <summary>Compares two lists of nodes for structural equality.</summary>
 		/// <param name="mode">Whether to pay attention to <see cref="Style"/> and trivia attributes</param>
 		/// <remarks>Position information is not compared.</remarks>
-		public static bool Equals(VList<LNode> a, VList<LNode> b, CompareMode mode = CompareMode.Normal)
+		public static bool Equals(LNodeList a, LNodeList b, CompareMode mode = CompareMode.Normal)
 		{
 			if (a.Count != b.Count)
 				return false;
@@ -691,7 +670,7 @@ namespace Loyc.Syntax
 			return false;
 		}
 
-		public VList<LNode> PAttrs()
+		public LNodeList PAttrs()
 		{
 			return Attrs.SmartWhere(a => !a.IsTrivia);
 		}
@@ -761,7 +740,7 @@ namespace Loyc.Syntax
 			else if (node2.Calls(listName))
 				return node2.WithSplicedArgs(0, node1, listName);
 			else
-				return LNode.Call(listName, new VList<LNode>(node1, node2));
+				return LNode.Call(listName, new LNodeList(node1, node2));
 		}
 
 		/// <summary>Combines two nodes using a binary operator or function.</summary>
@@ -780,7 +759,7 @@ namespace Loyc.Syntax
 				int start = System.Math.Min(r1.StartIndex, r2.StartIndex);
 				r1 = new SourceRange(r1.Source, start, System.Math.Max(r1.EndIndex, r2.EndIndex) - start);
 			}
-			return Call(binaryOpName, new VList<LNode>(node1, node2), r1);
+			return Call(binaryOpName, new LNodeList(node1, node2), r1);
 		}
 
 		/// <summary>Converts a sequence of the same operator (e.g. `x+y+z`) to a list (e.g. x, y, z).</summary>

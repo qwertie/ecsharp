@@ -1038,7 +1038,7 @@ namespace Loyc.Ecs.Parser
 		};
 		
 		@[LL(1)]
-		@[private] rule QueryBody(ref parts::VList!LNode) @{
+		@[private] rule QueryBody(ref parts::LNodeList) @{
 			greedy[parts+=QueryBodyClause]*
 			(	parts+=LinqGroupClause
 			|	parts+=LinqSelectClause

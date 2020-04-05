@@ -14,23 +14,23 @@ namespace Loyc.Syntax
 	{
 		#region Trivia management
 
-		public static VList<LNode> GetTrivia(this LNode node) { return GetTrivia(node.Attrs); }
-		public static VList<LNode> GetTrivia(this VList<LNode> attrs)
+		public static LNodeList GetTrivia(this LNode node) { return GetTrivia(node.Attrs); }
+		public static LNodeList GetTrivia(this LNodeList attrs)
 		{
-			var trivia = VList<LNode>.Empty;
+			var trivia = LNodeList.Empty;
 			foreach (var a in attrs)
 				if (a.IsTrivia)
 					trivia.Add(a);
 			return trivia;
 		}
 		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
-		public static VList<LNode> GetTrailingTrivia(this LNode node) { return GetTrailingTrivia(node.Attrs); }
+		public static LNodeList GetTrailingTrivia(this LNode node) { return GetTrailingTrivia(node.Attrs); }
 		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
 		/// <remarks>Trailing trivia is represented by a call to <c>%trailing</c> in
 		/// a node's attribute list; each argument to %trailing represents one
 		/// piece of trivia. If the attribute list has multiple calls to 
 		/// %trailing, this method combines those lists into a single list.</remarks>
-		public static VList<LNode> GetTrailingTrivia(this VList<LNode> attrs)
+		public static LNodeList GetTrailingTrivia(this LNodeList attrs)
 		{
 			var trivia = VList<LNode>.Empty;
 			foreach (var a in attrs)
@@ -39,7 +39,7 @@ namespace Loyc.Syntax
 			return trivia;
 		}
 		/// <summary>Removes a node's trailing trivia and adds a new list of trailing trivia.</summary>
-		public static LNode WithTrailingTrivia(this LNode node, VList<LNode> trivia)
+		public static LNode WithTrailingTrivia(this LNode node, LNodeList trivia)
 		{
 			return node.WithAttrs(WithTrailingTrivia(node.Attrs, trivia));
 		}
@@ -47,7 +47,7 @@ namespace Loyc.Syntax
 		/// <remarks>This method has a side-effect of recreating the %trailing
 		/// node, if there is one, at the end of the attribute list. If <c>trivia</c>
 		/// is empty then all calls to %trailing are removed.</remarks>
-		public static VList<LNode> WithTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
+		public static LNodeList WithTrailingTrivia(this LNodeList attrs, LNodeList trivia)
 		{
 			var attrs2 = WithoutTrailingTrivia(attrs);
 			if (trivia.IsEmpty)
@@ -55,26 +55,26 @@ namespace Loyc.Syntax
 			return attrs2.Add(LNode.Call(S.TriviaTrailing, trivia));
 		}
 		/// <summary>Gets a new list with any %trailing attributes removed.</summary>
-		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs)
+		public static LNodeList WithoutTrailingTrivia(this LNodeList attrs)
 		{
-			return attrs.Transform((int i, ref LNode attr) => attr.Calls(S.TriviaTrailing) ? XfAction.Drop : XfAction.Keep);
+			return attrs.SmartWhere(attr => !attr.Calls(S.TriviaTrailing));
 		}
 		/// <summary>Gets a new list with any %trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
-		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs, out VList<LNode> trailingTrivia)
+		public static LNodeList WithoutTrailingTrivia(this LNodeList attrs, out LNodeList trailingTrivia)
 		{
-			var trailingTrivia2 = VList<LNode>.Empty;
-			attrs = attrs.Transform((int i, ref LNode attr) => {
+			var trailingTrivia2 = LNodeList.Empty;
+			attrs = attrs.SmartWhere(attr => {
 				if (attr.Calls(S.TriviaTrailing)) {
 					trailingTrivia2.AddRange(attr.Args);
-					return XfAction.Drop;
+					return false;
 				}
-				return XfAction.Keep;
+				return true;
 			});
 			trailingTrivia = trailingTrivia2; // cannot use `out` parameter within lambda method
 			return attrs;
 		}
 		/// <summary>Adds additional trailing trivia to a node.</summary>
-		public static LNode PlusTrailingTrivia(this LNode node, VList<LNode> trivia)
+		public static LNode PlusTrailingTrivia(this LNode node, LNodeList trivia)
 		{
 			return node.WithAttrs(PlusTrailingTrivia(node.Attrs, trivia));
 		}
@@ -92,18 +92,18 @@ namespace Loyc.Syntax
 		/// node at the end of the attribute list, and if there are multiple %trailing
 		/// lists, consolidating them into a single list, but only if the specified <c>trivia</c> 
 		/// list is not empty.</remarks>
-		public static VList<LNode> PlusTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
+		public static LNodeList PlusTrailingTrivia(this LNodeList attrs, LNodeList trivia)
 		{
 			if (trivia.IsEmpty)
 				return attrs;
-			VList<LNode> oldTrivia;
+			LNodeList oldTrivia;
 			attrs = WithoutTrailingTrivia(attrs, out oldTrivia);
 			return attrs.Add(LNode.Call(S.TriviaTrailing, oldTrivia.AddRange(trivia)));
 		}
 		/// <summary>Adds additional trailing trivia to an attribute list.</summary>
-		public static VList<LNode> PlusTrailingTrivia(this VList<LNode> attrs, LNode trivia)
+		public static LNodeList PlusTrailingTrivia(this LNodeList attrs, LNode trivia)
 		{
-			VList<LNode> oldTrivia;
+			LNodeList oldTrivia;
 			attrs = WithoutTrailingTrivia(attrs, out oldTrivia);
 			return attrs.Add(LNode.Call(S.TriviaTrailing, oldTrivia.Add(trivia)));
 		}
@@ -113,9 +113,9 @@ namespace Loyc.Syntax
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(listIdentifier)</c>, otherwise returning a one-item list 
 		/// of nodes with <c>block</c> as the only item.</summary>
-		public static VList<LNode> AsList(this LNode block, Symbol listIdentifier)
+		public static LNodeList AsList(this LNode block, Symbol listIdentifier)
 		{
-			return block.Calls(listIdentifier) ? block.Args : new VList<LNode>(block);
+			return block.Calls(listIdentifier) ? block.Args : new LNodeList(block);
 		}
 
 		/// <summary>Converts a list of LNodes to a single LNode by using the list 
@@ -124,7 +124,7 @@ namespace Loyc.Syntax
 		/// <param name="listIdentifier">Target of the node that is created if <c>list</c>
 		/// does not contain exactly one item. Typical values include "'{}" and "#splice".</param>
 		/// <remarks>This is the reverse of the operation performed by <see cref="AsList(LNode,Symbol)"/>.</remarks>
-		public static LNode AsLNode(this VList<LNode> list, Symbol listIdentifier)
+		public static LNode AsLNode(this LNodeList list, Symbol listIdentifier)
 		{
 			if (list.Count == 1)
 				return list[0];
@@ -138,14 +138,14 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public static VList<LNode> WithSpliced(this VList<LNode> list, int index, LNode node, Symbol listName = null)
+		public static LNodeList WithSpliced(this LNodeList list, int index, LNode node, Symbol listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.InsertRange(index, node.Args);
 			else
 				return list.Insert(index, node);
 		}
-		public static VList<LNode> WithSpliced(this VList<LNode> list, LNode node, Symbol listName = null)
+		public static LNodeList WithSpliced(this LNodeList list, LNode node, Symbol listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.AddRange(node.Args);
@@ -177,7 +177,7 @@ namespace Loyc.Syntax
 			LNode _;
 			return WithoutAttrNamed(self, name, out _);
 		}
-		public static VList<LNode> Without(this VList<LNode> list, LNode node)
+		public static LNodeList Without(this LNodeList list, LNode node)
 		{
 			int i = list.Count;
 			foreach (var item in list.ToFVList()) {
@@ -201,12 +201,12 @@ namespace Loyc.Syntax
 			else
 				return self;
 		}
-		public static VList<LNode> WithoutNodeNamed(this VList<LNode> a, Symbol name)
+		public static LNodeList WithoutNodeNamed(this LNodeList a, Symbol name)
 		{
 			LNode _;
 			return WithoutNodeNamed(a, name, out _);
 		}
-		public static VList<LNode> WithoutNodeNamed(this VList<LNode> list, Symbol name, out LNode removedNode)
+		public static LNodeList WithoutNodeNamed(this LNodeList list, Symbol name, out LNode removedNode)
 		{
 			removedNode = null;
 			for (int i = 0, c = list.Count; i < c; i++)
@@ -221,7 +221,7 @@ namespace Loyc.Syntax
 		{
 			return self.Args.NodeNamed(name);
 		}
-		public static int IndexWithName(this VList<LNode> self, Symbol name, int resultIfNotFound = -1)
+		public static int IndexWithName(this LNodeList self, Symbol name, int resultIfNotFound = -1)
 		{
 			int i = 0;
 			foreach (LNode node in self)
@@ -231,7 +231,7 @@ namespace Loyc.Syntax
 					i++;
 			return resultIfNotFound;
 		}
-		public static LNode NodeNamed(this VList<LNode> self, Symbol name)
+		public static LNode NodeNamed(this LNodeList self, Symbol name)
 		{
 			foreach (LNode node in self)
 				if (node.Name == name)
@@ -325,7 +325,7 @@ namespace Loyc.Syntax
 		/// In EC#, the quote(...) macro can be used to create the LNode object for 
 		/// a pattern.
 		/// </remarks>
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
 		{
 			// [$capture] (...)
 			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs))
@@ -337,7 +337,7 @@ namespace Loyc.Syntax
 			{
 				captures = captures ?? new MMap<Symbol, LNode>();
 				AddCapture(captures, sub.Name, candidate);
-				unmatchedAttrs = VList<LNode>.Empty; // The attrs (if any) were captured
+				unmatchedAttrs = LNodeList.Empty; // The attrs (if any) were captured
 				return true;
 			}
 
@@ -362,7 +362,7 @@ namespace Loyc.Syntax
 				return true;
 		}
 
-		private static bool ListMatches(VList<LNode> candidates, VList<LNode> patterns, ref MMap<Symbol, LNode> captures, ref VList<LNode> unmatchedAttrs)
+		private static bool ListMatches(LNodeList candidates, LNodeList patterns, ref MMap<Symbol, LNode> captures, ref LNodeList unmatchedAttrs)
 		{
 			if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
 				return false;
@@ -382,7 +382,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
 		{
 			MMap<Symbol, LNode> captures2 = null;
 			var matched = MatchesPattern(candidate, pattern, ref captures2, out unmatchedAttrs);
@@ -391,8 +391,7 @@ namespace Loyc.Syntax
 		}
 		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures)
 		{
-			VList<LNode> unmatchedAttrs;
-			return MatchesPattern(candidate, pattern, out captures, out unmatchedAttrs);
+			return MatchesPattern(candidate, pattern, out captures, out var _);
 		}
 
 		static void AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items)
@@ -409,9 +408,9 @@ namespace Loyc.Syntax
 			captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
 		}
 
-		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref VList<LNode> trivia)
+		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref LNodeList trivia)
 		{
-			VList<LNode> unmatchedAttrs;
+			LNodeList unmatchedAttrs;
 			if (!MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs))
 				return false;
 			if (unmatchedAttrs.Any(a => !a.IsTrivia))
@@ -420,7 +419,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
+		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
 		{
 			if (pattern.HasPAttrs()) {
 				unmatchedAttrs = LNode.List();
@@ -456,7 +455,7 @@ namespace Loyc.Syntax
 			return null;
 		}
 
-		static bool MatchThenParams(VList<LNode> cArgs, VList<LNode> pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref VList<LNode> attrs)
+		static bool MatchThenParams(LNodeList cArgs, LNodeList pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref LNodeList attrs)
 		{
 			// This helper function of MatchesPattern() is called when pArgs is followed 
 			// by a $(params capture). cArgs is the list of candidate.Args that have not 
@@ -481,7 +480,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		static bool CaptureGroup(ref int c, ref int p, VList<LNode> cArgs, VList<LNode> pArgs, ref MMap<Symbol, LNode> captures, ref VList<LNode> attrs)
+		static bool CaptureGroup(ref int c, ref int p, LNodeList cArgs, LNodeList pArgs, ref MMap<Symbol, LNode> captures, ref LNodeList attrs)
 		{
 			Debug.Assert(IsParamsCapture(pArgs[p]));
 			// The goal now is to find a sequence of nodes in cArgs that matches
@@ -586,7 +585,7 @@ namespace Loyc.Syntax
 		public static IListSource<ILNode> GetTrailingTrivia(this ILNode node)
 		{
 			if (node is LNode) {
-				VList<LNode> list = GetTrailingTrivia((LNode)node);
+				LNodeList list = GetTrailingTrivia((LNode)node);
 				if (list.IsEmpty)
 					return EmptyList<ILNode>.Value; // avoid boxing in the common case
 				return list;
@@ -608,7 +607,7 @@ namespace Loyc.Syntax
 			if (node is LNode n)
 				return n;
 
-			var attrs = VList<LNode>.Empty;
+			var attrs = LNodeList.Empty;
 			for (int i = node.Min; i < -1; i++)
 				attrs.Add(ToLNode(node[i]));
 
@@ -618,13 +617,22 @@ namespace Loyc.Syntax
 				case LNodeKind.Literal:
 					return LNode.Literal(attrs, node.Value, node.Range, node.Style);
 				default:
-					var args = VList<LNode>.Empty;
+					var args = LNodeList.Empty;
 					for (int i = 0, max = node.Max; i <= max; i++)
 						args.Add(ToLNode(node[i]));
 					var target = ToLNode(node.Target);
 					return LNode.Call(attrs, target, args, node.Range, node.Style);
 			}
 		}
+
+		#endregion
+
+		#region Backward compatibility with VList<LNode>
+
+		public static VList<LNode> ToVList(this LNodeList list) => list;
+		public static FVList<LNode> ToFVList(this LNodeList list) => list.ToVList().ToFVList();
+		public static WList<LNode> ToWList(this LNodeList list) => list.ToVList().ToWList();
+		public static LNodeList ToLNodeList(this WList<LNode> list) => new LNodeList(list.ToVList());
 
 		#endregion
 	}

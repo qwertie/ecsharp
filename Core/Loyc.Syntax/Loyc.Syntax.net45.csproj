@@ -130,6 +130,7 @@
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
     <Compile Include="LNodes\ILNodePrinter.cs" />
+    <Compile Include="LNodes\LNodeList.cs" />
     <Compile Include="LNodes\LNodePrintingOptions.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />

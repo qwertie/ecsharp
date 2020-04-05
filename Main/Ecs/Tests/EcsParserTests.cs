@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +42,7 @@ namespace Loyc.Ecs.Tests
 				var preprocessed = new EcsPreprocessor(lexer, true);
 				var treeified = new TokensToTree(preprocessed, false);
 				var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
-				VList<LNode> results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
+				LNodeList results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
 
 				// Inject comments
 				var injector = new EcsTriviaInjector(preprocessed.TriviaList, preprocessed.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");

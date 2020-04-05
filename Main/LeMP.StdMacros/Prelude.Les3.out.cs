@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -358,7 +358,7 @@ namespace LeMP.Les3.To.CSharp
 					}
 				}
 			}
-			if (a.ToVList() != node.Args)
+			if (a.ToLNodeList() != node.Args)
 				return node.WithArgs(a.ToVList());
 			return null;
 		}
@@ -398,7 +398,7 @@ namespace LeMP.Les3.To.CSharp
 					// returns: #if(cond1, {...}, #if(cond2, {...}, #elsif(cond3, {...}), #else({...})))
 					LNode @else = clause.WithTarget(S.If);
 					if (args.Count > 3)
-						@else = @else .WithArgs(@else .Args.AddRange(args, excludeSubList: first3));
+						@else = @else .WithArgs(@else .Args.AddRange(args.Slice(3)));
 					return node.WithArgs(first3.WithoutLast(1).Add(@else));
 				}
 				if (clause.Calls(S.Else, 1) && args.Count == 3)

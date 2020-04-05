@@ -47,5 +47,19 @@ namespace Loyc.Syntax
 			ExpectList(LNode.FlattenBinaryOpSeq(expr, S.Mul, false), new[] { a, b, F.Call(S.Mul, c, two) });
 			ExpectList(LNode.FlattenBinaryOpSeq(expr, S.Mul, true), new[] { F.Call(S.Mul, a, b), c, two });
 		}
+
+		[Test]
+		public void NoNullChildrenAllowed()
+		{
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call((LNode)null, LNode.Missing));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List((LNode)null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List((LNode)null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), CodeSymbols.Sub, LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusAttr(null));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusArg(null));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusAttr(null));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusArg(null));
+		}
 	}
 }

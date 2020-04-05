@@ -86,7 +86,7 @@ namespace LeMP
 				}
 				return quote {
 					do
-						$(outputs.ToVList().AsLNode(S.Braces));
+						$(outputs.ToLNodeList().AsLNode(S.Braces));
 					while (false);
 				};
 			}
@@ -441,14 +441,14 @@ namespace LeMP
 						finalOutput = new WList<LNode> { 
 							quote {
 								if ($cond) 
-									$(finalOutput.ToVList().AsLNode(S.Braces));
+									$(finalOutput.ToLNodeList().AsLNode(S.Braces));
 							}
 						};
 					}
 					else
 						finalOutput.Insert(0, code);
 				}
-				return finalOutput.ToVList().AsLNode(S.Braces);
+				return finalOutput.ToLNodeList().AsLNode(S.Braces);
 			}
 		}
 

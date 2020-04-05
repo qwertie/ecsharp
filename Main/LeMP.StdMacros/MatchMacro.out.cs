@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -95,7 +95,7 @@ namespace LeMP
 								context.Sink.Error(@contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
 					}
-					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToVList().AsLNode(S.Braces), LNode.Literal(false)));
+					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToLNodeList().AsLNode(S.Braces), LNode.Literal(false)));
 				}
 			}
 			return null;
@@ -444,12 +444,12 @@ namespace LeMP
 						end = start;
 					
 						finalOutput = new WList<LNode> { 
-							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToVList().AsLNode(S.Braces)))
+							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToLNodeList().AsLNode(S.Braces)))
 						};
 					} else
 						finalOutput.Insert(0, code);
 				}
-				return finalOutput.ToVList().AsLNode(S.Braces);
+				return finalOutput.ToLNodeList().AsLNode(S.Braces);
 			}
 		}
 	

@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -91,7 +91,7 @@ namespace LeMP
 			}
 			LNode[] _arrayOf1 = new LNode[1];
 		
-			public VList<LNode> EliminateSequenceExpressions(VList<LNode> stmts, bool isDeclContext)
+			public LNodeList EliminateSequenceExpressions(LNodeList stmts, bool isDeclContext)
 			{
 				return stmts.SmartSelectMany(stmt => {
 					/*
@@ -402,7 +402,7 @@ namespace LeMP
 							Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
 						
-						} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
+						} else if ((attrs = expr.Attrs).IsEmpty | true && ((LNodeList) attrs).NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 							if (varType.IsIdNamed(S.Missing))
 								Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
 							result = LNode.Call(LNode.List(_trivia_pure), (Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName.PlusAttrs(LNode.List(LNode.Id(CodeSymbols.Out)))));
@@ -454,7 +454,7 @@ namespace LeMP
 			// Bubbles up a call. The returned pair consists of 
 			// 1. A sequence of statements to run before the call
 			// 2. The call with all (outer) #runSequences removed
-			Pair<VList<LNode>, LNode> BubbleUp_GeneralCall2(LNode expr)
+			Pair<LNodeList, LNode> BubbleUp_GeneralCall2(LNode expr)
 			{
 				var target = expr.Target;
 				var args = expr.Args;
@@ -527,7 +527,7 @@ namespace LeMP
 			// Creates a temporary for an LValue (left side of `=`, or `ref` parameter)
 			// e.g. f(x).Foo becomes f(x_N).Foo, and `var x_N = x` is added to `stmtSequence`,
 			// where N is a unique integer for the temporary variable.
-			LNode MaybeCreateTemporaryForLValue(LNode expr, ref VList<LNode> stmtSequence)
+			LNode MaybeCreateTemporaryForLValue(LNode expr, ref LNodeList stmtSequence)
 			{
 				{
 					LNode _, lhs;
@@ -555,7 +555,7 @@ namespace LeMP
 				}
 			}
 		
-			LNode ConvertVarDeclToRunSequence(VList<LNode> attrs, LNode varType, LNode varName, LNode initValue)
+			LNode ConvertVarDeclToRunSequence(LNodeList attrs, LNode varType, LNode varName, LNode initValue)
 			{
 				initValue = BubbleUpBlocks(initValue);
 				varType = varType ?? F.Missing;

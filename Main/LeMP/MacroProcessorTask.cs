@@ -175,7 +175,7 @@ namespace LeMP
 		}
 
 		/// <summary>Top-level macro applicator.</summary>
-		public VList<LNode> ProcessRoot(VList<LNode> stmts)
+		public VList<LNode> ProcessRoot(LNodeList stmts)
 		{
 			PreProcess(ref stmts, null, true, true, true, false);
 			return stmts;
@@ -183,7 +183,7 @@ namespace LeMP
 
 		// This is called either at the root node, or by a macro that wants to 
 		// preprocess its children (see IMacroContext.PreProcess()).
-		LNode PreProcess(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool resetProperties, bool areAttributesOrIsTarget)
+		LNode PreProcess(ref LNodeList list, LNode single, bool asRoot, bool resetOpenNamespaces, bool resetProperties, bool areAttributesOrIsTarget)
 		{
 			if (single == null && list.Count == 0)
 				return null; // no-op requested
@@ -285,14 +285,14 @@ namespace LeMP
 				get { var st = _task._ancestorStack; return st[st.Count - 2, null]; }
 			}
 
-			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
+			public LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
 			{
 				_task.PreProcess(ref input, null, asRoot, resetOpenNamespaces, resetProperties, areAttributes);
 				return input;
 			}
 			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false)
 			{
-				VList<LNode> empty = new VList<LNode>();
+				LNodeList empty = LNodeList.Empty;
 				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, resetProperties, isTarget);
 			}
 			

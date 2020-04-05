@@ -89,7 +89,7 @@ namespace LeMP
 		/// <param name="replacementCount">Number of replacements that occurred.</param>
 		/// <returns>The result of applying the replacements.</returns>
 		/// <remarks><see cref="LNodeExt.MatchesPattern"/> is used for matching.</remarks>
-		public static VList<LNode> Replace(VList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
+		public static LNodeList Replace(LNodeList stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			// This list is used to support simple token replacement in TokenTrees
 			_tokenTreeRepls = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -135,8 +135,7 @@ namespace LeMP
 		}
 		static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
 		{
-			VList<LNode> attrs;
-			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out attrs)) {
+			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out LNodeList attrs)) {
 				foreach (var pair in captures) {
 					var input = pair.Value.AsList(S.Splice);
 					int c;
@@ -207,7 +206,7 @@ namespace LeMP
 			MacroMode mode, modes = 0;
 			var leftoverAttrs = attrs.SmartWhere(attr =>
 			{
-				if (attr.IsId && Loyc.Compatibility.EnumStatic.TryParse(attr.Name.Name, out mode))
+				if (attr.IsId && Enum.TryParse(attr.Name.Name, out mode))
 				{
 					modes |= mode;
 					return false;
@@ -229,8 +228,7 @@ namespace LeMP
 			var macroInfo = new MacroInfo(null, lma, (candidate, context2) =>
 			{
 				MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
-				VList<LNode> unmatchedAttrs;
-				if (candidate.MatchesPattern(pattern, ref captures, out unmatchedAttrs))
+				if (candidate.MatchesPattern(pattern, ref captures, out LNodeList unmatchedAttrs))
 				{
 					return ReplaceCaptures(replacement, captures).PlusAttrsBefore(unmatchedAttrs);
 				}

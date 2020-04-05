@@ -76,7 +76,7 @@ namespace LeMP
 			public this(public IMacroContext Context) {}
 			LNode[] _arrayOf1 = new LNode[1];
 			
-			public VList<LNode> EliminateSequenceExpressions(VList<LNode> stmts, bool isDeclContext)
+			public LNodeList EliminateSequenceExpressions(LNodeList stmts, bool isDeclContext)
 			{
 				return stmts.SmartSelectMany(stmt => {
 					/*
@@ -422,7 +422,7 @@ namespace LeMP
 						result = expr;
 
 					// A variable declaration with no initializer and an `out` attribute attached
-					case { [$(...(attrs [#.NodeNamed(S.Out) != null]))]
+					case { [$(...(attrs [((LNodeList)#).NodeNamed(S.Out) != null]))]
 							$varType $(varName [#.IsId]); }:
 						if (varType.IsIdNamed(S.Missing))
 							Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
@@ -475,7 +475,7 @@ namespace LeMP
 			// Bubbles up a call. The returned pair consists of 
 			// 1. A sequence of statements to run before the call
 			// 2. The call with all (outer) #runSequences removed
-			Pair<VList<LNode>, LNode> BubbleUp_GeneralCall2(LNode expr)
+			Pair<LNodeList, LNode> BubbleUp_GeneralCall2(LNode expr)
 			{
 				var target = expr.Target;
 				var args = expr.Args;
@@ -548,7 +548,7 @@ namespace LeMP
 			// Creates a temporary for an LValue (left side of `=`, or `ref` parameter)
 			// e.g. f(x).Foo becomes f(x_N).Foo, and `var x_N = x` is added to `stmtSequence`,
 			// where N is a unique integer for the temporary variable.
-			LNode MaybeCreateTemporaryForLValue(LNode expr, ref VList<LNode> stmtSequence)
+			LNode MaybeCreateTemporaryForLValue(LNode expr, ref LNodeList stmtSequence)
 			{
 				matchCode (expr) {
 					case $lhs.$_, $lhs<$(..._)>:
@@ -574,7 +574,7 @@ namespace LeMP
 				}
 			}
 
-			LNode ConvertVarDeclToRunSequence(VList<LNode> attrs, LNode varType, LNode varName, LNode initValue)
+			LNode ConvertVarDeclToRunSequence(LNodeList attrs, LNode varType, LNode varName, LNode initValue)
 			{
 				initValue = BubbleUpBlocks(initValue);
 				varType ??= F.Missing;

@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using System;
@@ -47,14 +47,13 @@ namespace LeMP
 				context.Write(Severity.Error, node, "The `default:` case must be the last one, because the cases are tested in the order they appear, so no case after `default:` can be matched.");
 
 			MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
-			foreach (Pair<VList<LNode>, VList<LNode>> pair in cases)
+			foreach (Pair<LNodeList, LNodeList> pair in cases)
 			{
-				var patterns = pair.Key.IsEmpty ? new VList<LNode>((LNode)null) : pair.Key;
+				var patterns = pair.Key.IsEmpty ? new VList<LNode>((LNode)null) : new VList<LNode>(pair.Key);
 				foreach (var pattern in patterns)
 				{
 					captures.Clear();
-					VList<LNode> _;
-					if (pattern == null || LNodeExt.MatchesPattern(expression, pattern, ref captures, out _)) {
+					if (pattern == null || LNodeExt.MatchesPattern(expression, pattern, ref captures, out LNodeList _)) {
 						captures[_hash] = expression; // define $#
 						captures.Remove(__);
 						return ReplaceCaptures(pair.Value.AsLNode(S.Splice), captures);
@@ -80,8 +79,7 @@ namespace LeMP
 			LNode candidate = context.PreProcess(AutoStripBraces(node[0]));
 			LNode pattern = AutoStripBraces(node[1]);
 			MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
-			VList<LNode> _;
-			if (LNodeExt.MatchesPattern(candidate, pattern, ref captures, out _)) {
+			if (LNodeExt.MatchesPattern(candidate, pattern, ref captures, out LNodeList _)) {
 				SetSyntaxVariables(captures, context);
 				return F.True;
 			}

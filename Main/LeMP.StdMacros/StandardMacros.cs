@@ -477,7 +477,7 @@ namespace LeMP
 		public static LNode macro_scope(LNode node, IMacroContext context)
 		{
 			var args = node.Args;
-			VList<LNode> results;
+			LNodeList results;
 			if (args.Count == 1 && args[0].Calls(S.Braces)) {
 				node = context.PreProcessChildren();
 				results = node.Args;

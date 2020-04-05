@@ -107,7 +107,7 @@ namespace LeMP
 		/// <param name="resetProperties">If true, <see cref="ScopedProperties"/>
 		/// is reset to contain only predefined properties.</param>
 		/// <remarks>The node(s)</remarks>
-		VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
+		LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
 		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false);
 
@@ -180,7 +180,7 @@ namespace LeMP
 		public static Pair<VList<LNode>, VList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
 		{
 			var node = ctx.CurrentNode();
-			var args = node.Args;
+			VList<LNode> args = node.Args;
 			LNode last = null;
 			VList<LNode> body = new VList<LNode>();
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {

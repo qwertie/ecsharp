@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -114,9 +114,9 @@ namespace LeMP
 		/// <returns>The first item in each pair is a list of the cases associated
 		/// with a single handler (for `default:`, the list is empty). The second 
 		/// item is the handler code.</returns>
-		static internal VList<Pair<VList<LNode>, VList<LNode>>> GetCases(VList<LNode> body, IMessageSink sink)
+		static internal VList<Pair<LNodeList, LNodeList>> GetCases(VList<LNode> body, IMessageSink sink)
 		{
-			var pairs = VList<Pair<VList<LNode>, VList<LNode>>>.Empty;
+			var pairs = VList<Pair<LNodeList, LNodeList>>.Empty;
 			for (int i = 0; i < body.Count; i++)
 			{
 				bool isDefault;
@@ -127,10 +127,10 @@ namespace LeMP
 				} else
 				if ((isDefault = IsDefaultLabel(body[i])) || body[i].CallsMin(S.Case, 1))
 				{
-					var alts = isDefault ? VList<LNode>.Empty : body[i].Args.SmartSelect(AutoStripBraces);
+					var alts = isDefault ? LNodeList.Empty : body[i].Args.SmartSelect(AutoStripBraces);
 					int bodyStart = ++i;
 					for (; i < body.Count && !IsDefaultLabel(body[i]) && !body[i].CallsMin(S.Case, 1); i++) { }
-					var handler = new VList<LNode>(body.Slice(bodyStart, i - bodyStart));
+					var handler = new LNodeList(body.Slice(bodyStart, i - bodyStart));
 					pairs.Add(Pair.Create(alts, handler));
 					i--;	// counteract i++ when loop repeats (redo)
 				} else
