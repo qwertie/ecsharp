@@ -1,4 +1,4 @@
-// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,7 +17,7 @@ namespace Loyc.Collections
 	/// <summary>
 	/// Helper class: provides a modified view of an IList by transforming each element 
 	/// on-demand. Objects of this type are returned from 
-	/// <see cref="LinqToLists.Select{T,TResult}(IList{T},Func{T,TResult})"/>
+	/// <see cref="MutableListExtensionMethods.LinqToLists.Select{T,TResult}(IList{T},Func{T,TResult})"/>
 	/// </summary>
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>

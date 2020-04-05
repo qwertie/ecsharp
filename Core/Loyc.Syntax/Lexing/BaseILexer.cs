@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ namespace Loyc.Syntax.Lexing
 	/// <see cref="ILexer{Token}"/>. You should use this base class if you want to 
 	/// wrap your lexer in a postprocessor such as <see cref="IndentTokenGenerator"/> 
 	/// or <see cref="TokensToTree"/>. It can also be used with the <see 
-	/// cref="LinqToLists.Buffered"/> extension method to help feed data to your parser.
+	/// cref="EnumerableExt.Buffered"/> extension method to help feed data to your parser.
 	/// </summary>
 	/// <remarks>
 	/// Important: the derived class must call <see cref="AfterNewline()"/> after

@@ -20,8 +20,7 @@ namespace Loyc.Collections
 	/// <para/>
 	/// For example, the <see cref="Enumerable.Last{T}"/> extension 
 	/// method scans the entire list before returning the last item, while 
-	/// <see cref="Last{T}(IReadOnlyList{T})"/> and <see cref="Last{T}(IList{T})"/> simply
-	/// return the last item directly.
+	/// <see cref="Last{T}(IReadOnlyList{T})"/> simply returns the last item directly.
 	/// </remarks>
 	public static partial class LinqToLists
 	{
