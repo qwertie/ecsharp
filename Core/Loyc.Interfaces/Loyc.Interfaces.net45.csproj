@@ -124,7 +124,6 @@
     <Compile Include="Concrete\RangeEnumerator.cs" />
     <Compile Include="Concrete\UString.cs" />
     <Compile Include="Concrete\ValueCollection.cs" />
-    <Compile Include="Concrete\WeakReference.cs" />
     <Compile Include="Concrete\WeakValueDictionary.cs" />
     <Compile Include="IHasLocation.cs" />
     <Compile Include="Concrete\Localize.cs" />
@@ -149,7 +148,6 @@
     <Compile Include="Collections\Extended interfaces.cs" />
     <Compile Include="Collections\ICollectionSource.cs" />
     <Compile Include="Collections\Other interfaces.cs" />
-    <Compile Include="Compatibility\IReadOnlyCollections.cs" />
     <Compile Include="Geometry\IPoint.cs" />
     <Compile Include="Geometry\IPoint3.cs" />
     <Compile Include="Geometry\IRectangle.cs" />

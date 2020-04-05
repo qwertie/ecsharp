@@ -589,7 +589,7 @@ namespace Loyc.Syntax
 				VList<LNode> list = GetTrailingTrivia((LNode)node);
 				if (list.IsEmpty)
 					return EmptyList<ILNode>.Value; // avoid boxing in the common case
-				return list.UpCast<LNode, ILNode>();
+				return list;
 			} else {
 				VList<ILNode> list = VList<ILNode>.Empty;
 				foreach (ILNode a in node.Attrs()) {

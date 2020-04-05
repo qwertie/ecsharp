@@ -217,9 +217,7 @@ namespace Loyc.Collections.Impl
 			return i;
 		}
 		
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected bool PrepareToInsert(int i, IAListTreeObserver<K, T> tob)
 		{
 			AutoClone(ref _children[i].Node, this, tob);

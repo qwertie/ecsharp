@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -175,7 +175,7 @@ namespace MiniTestRunner.Model
 		{
 			var taskEx = task as ITaskEx;
 			if (_options.RunTestsOnLoad && task is AssemblyScanTask)
-				StartTesting(_assemblies.Where(a => a.Row.Task == task).Select(a => a.Row).Upcast<RowModel, TaskRowModel>());
+				StartTesting(_assemblies.Where(a => a.Row.Task == task).Select(a => a.Row));
 			// Could be a bottleneck because QueuedAndRunningTasks() copies the whole
 			// list (although Any() often terminates after an iteration or two).
 			if (_options.AutoUnload && taskEx != null &&

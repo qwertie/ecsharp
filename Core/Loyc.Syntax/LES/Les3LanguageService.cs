@@ -25,7 +25,7 @@ namespace Loyc.Syntax.Les
 		}
 		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
-			Print(nodes.Upcast<ILNode, LNode>(), target, sink, mode, options);
+			Print(nodes, target, sink, mode, options);
 		}
 		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{

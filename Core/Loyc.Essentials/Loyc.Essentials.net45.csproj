@@ -134,7 +134,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SelectCollection.ecs</DependentUpon>
     </Compile>
-    <Compile Include="Compatibility\Contract.Assert.cs" />
     <Compile Include="Compatibility\Enum.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
     <Compile Include="MessageSinks\LogException.cs" />

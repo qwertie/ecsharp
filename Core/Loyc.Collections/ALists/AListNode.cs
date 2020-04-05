@@ -226,9 +226,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="parent">Parent node (used by tob)</param>
 		/// <param name="tob">Tree observer (null if none)</param>
 		/// <returns>True if the node was unfrozen</returns>
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public static bool AutoClone(ref AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
 		{
 			if (node.IsFrozen) {

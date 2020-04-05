@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -108,7 +108,6 @@ namespace Loyc
 			Assert.AreEqual(GSymbol.GetById(-876543210), null);
 		}
 
-#if !DotNet35
 		private static void RunParallel(int parallelCount, Action action)
 		{
 			System.Threading.Tasks.Parallel.Invoke(
@@ -128,6 +127,5 @@ namespace Loyc
 					GSymbol.Get(i.ToString());
 			});
 		}
-#endif
 	}
 }

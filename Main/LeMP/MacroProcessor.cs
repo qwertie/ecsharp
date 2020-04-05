@@ -211,13 +211,6 @@ namespace LeMP
 				new MacroProcessorTask(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 		}
 		
-		#if DotNet3 || DotNet2 // Parallel mode requires .NET 4 Tasks
-		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
-		{
-			ProcessSynchronously(sourceFiles, onProcessed);
-		}
-		#else
-
 		/// <summary>Processes source files in parallel. All files are fully 
 		/// processed before the method returns.</summary>
 		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
@@ -242,8 +235,6 @@ namespace LeMP
 			}
 			return tasks;
 		}
-
-		#endif
 
 		#endregion
 

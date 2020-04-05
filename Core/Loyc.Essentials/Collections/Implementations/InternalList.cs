@@ -274,17 +274,13 @@ namespace Loyc.Collections.Impl
 
         public T this[int index]
 		{
-			#if DotNet45
 	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			get { 
 				Debug.Assert((uint)index < (uint)_count);
 				return _array[index];
 			}
-			#if DotNet45
 	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			set {
 				Debug.Assert((uint)index < (uint)_count);
 				_array[index] = value;
@@ -292,9 +288,7 @@ namespace Loyc.Collections.Impl
 		}
         public T this[int index, T defaultValue]
 		{
-			#if DotNet45
 	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get {
 				if ((uint)index < (uint)_count)
 					return _array[index];

@@ -51,11 +51,7 @@ namespace Loyc.Collections
 	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface more quickly.
 	/// </remarks>
-	#if !DotNet2 && !DotNet3
 	public interface IListSource<out T> : IReadOnlyList<T>
-	#else
-	public interface IListSource<T> : IReadOnlyList<T>
-	#endif
 	{
 		/// <summary>Gets the item at the specified index, and does not throw an
 		/// exception on failure.</summary>

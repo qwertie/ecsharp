@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -165,9 +166,7 @@ namespace Loyc.Syntax.Lexing
 		public int InputPosition
 		{
 			get { return _inputPosition; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			protected set
 			{
 				_inputPosition = value;
@@ -215,9 +214,7 @@ namespace Loyc.Syntax.Lexing
 
 		/// <summary>Increments InputPosition. Called by LLLPG when prediction 
 		/// already verified the input (and caller doesn't save LA(0))</summary>
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected void Skip()
 		{
 			Debug.Assert(_inputPosition <= _charSource.Count);
@@ -304,9 +301,7 @@ namespace Loyc.Syntax.Lexing
 				InputPosition++;
 			return la;
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected int Match(int a)
 		{
 			int la = LA0;

@@ -8,10 +8,8 @@ using Loyc;
 using Loyc.Collections.Impl;
 using System.Drawing;
 using System.Reflection;
-#if !DotNet35
 using OxyPlot;
 using OxyPlot.Axes;
-#endif
 
 namespace Benchmark
 {
@@ -40,7 +38,6 @@ namespace Benchmark
 			_graph = graph;
 			_where = null;
 
-			#if !DotNet35
 			graph.InitDefaultModel = (id, plotModel) =>
 			{
 				plotModel.LegendPosition = LegendPosition.TopLeft;
@@ -56,7 +53,6 @@ namespace Benchmark
 			RunListSizeBenchmarks(_graph, "Bytes used per list", "Total heap bytes", false);
 			RunDictionarySizeBenchmarks(_graph, "Bytes per dictionary pair", "Bytes used per 16-byte item", true);
 			RunDictionarySizeBenchmarks(_graph, "Bytes per dictionary", "Total heap bytes", false);
-			#endif
 
 			Run(b, 30);
 			Run(b, 100);

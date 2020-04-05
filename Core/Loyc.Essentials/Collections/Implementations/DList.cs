@@ -171,17 +171,13 @@ namespace Loyc.Collections
 
 		public T this[int index]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			get {
 				CheckIndex(index);
 				return _dlist[index];
 			}
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			set {
 				CheckIndex(index);
@@ -190,15 +186,11 @@ namespace Loyc.Collections
 		}
 		public T this[int index, T defaultValue]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			get { return _dlist[index, defaultValue]; }
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		private void CheckIndex(int index)
 		{
 			if ((uint)index >= (uint)_dlist.Count) 
@@ -293,24 +285,16 @@ namespace Loyc.Collections
 
 		public T First
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { return _dlist.First; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			set { _dlist.First = value; }
 		}
 		public T Last
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { return _dlist.Last; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			set { _dlist.Last = value; }
 		}
 		public bool IsEmpty

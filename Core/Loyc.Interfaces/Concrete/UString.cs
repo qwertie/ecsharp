@@ -247,9 +247,7 @@ namespace Loyc
 		/// <exception cref="IndexOutOfRangeException">Oops.</exception>
 		public char this[int index]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { 
 				if ((uint)index >= (uint)_count)
 					ThrowIndexOutOfRange(index);
@@ -260,9 +258,7 @@ namespace Loyc
 		/// or a default value if the specified index was out of range.</summary>
 		public char this[int index, char defaultValue]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get {
 				if ((uint)index < (uint)_count)
 					return _str[_start + index];
@@ -508,9 +504,7 @@ namespace Loyc
 			return SubstringEqualHelper(_str, _start + Length - what.Length, what, ignoreCase);
 		}
 		
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		static bool SubstringEqualHelper(string _str, int _start, UString what, bool ignoreCase = false)
 		{
 			if (ignoreCase)

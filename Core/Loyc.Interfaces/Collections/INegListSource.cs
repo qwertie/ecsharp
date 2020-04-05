@@ -13,11 +13,7 @@ namespace Loyc.Collections
 	/// for (int i = list.Min; i &lt;= list.Max; i++) { ... }
 	/// </code>
 	/// </remarks>
-	#if DotNet2 || DotNet3
-	public interface INegListSource<T> : IReadOnlyCollection<T>
-	#else
 	public interface INegListSource<out T> : IReadOnlyCollection<T>
-	#endif
 	{
 		/// <summary>Returns the minimum valid index in the collection.</summary>
 		int Min { get; }

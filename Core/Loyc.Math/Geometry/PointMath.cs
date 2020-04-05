@@ -131,18 +131,6 @@ namespace Loyc.Geometry
 		{
 			return new System.Drawing.PointF(p.X, p.Y);
 		}
-		#if DotNet3 || DotNet4
-		/// <summary>Converts a Loyc point to BCL type.</summary>
-		public static System.Windows.Point AsBCL(this Point<double> p)
-		{
-			return new System.Windows.Point(p.X, p.Y);
-		}
-		/// <summary>Converts a Loyc vector to BCL type.</summary>
-		public static System.Windows.Vector AsBCL(this Vector<double> p)
-		{
-			return new System.Windows.Vector(p.X, p.Y);
-		}
-		#endif
 		/// <summary>Converts a BCL point to a Loyc point.</summary>
 		public static Point<int> AsLoyc(this System.Drawing.Point p)
 		{
@@ -153,18 +141,6 @@ namespace Loyc.Geometry
 		{
 			return new Point<float>(p.X, p.Y);
 		}
-		#if DotNet3 || DotNet4
-		/// <summary>Converts a BCL point to a Loyc point.</summary>
-		public static Point<double> AsLoyc(this System.Windows.Point p)
-		{
-			return new Point<double>(p.X, p.Y);
-		}
-		/// <summary>Converts a BCL Vector to a Loyc point.</summary>
-		public static Vector<double> AsLoyc(this System.Windows.Vector p)
-		{
-			return new Vector<double>(p.X, p.Y);
-		}
-		#endif
 		/// <summary>Converts a BCL point to a Loyc vector.</summary>
 		public static Vector<int> AsLoycVector(this System.Drawing.Point p)
 		{
@@ -175,13 +151,6 @@ namespace Loyc.Geometry
 		{
 			return new Vector<float>(p.X, p.Y);
 		}
-		#if DotNet3 || DotNet4
-		/// <summary>Converts a BCL point to a Loyc vector.</summary>
-		public static Vector<double> AsLoycVector(this System.Windows.Point p)
-		{
-			return new Vector<double>(p.X, p.Y);
-		}
-		#endif
 		/// <summary>Constructs a <see cref="LineSegment{T}"/> from two points.</summary>
 		public static LineSegment<T> To<T>(this Point<T> a, Point<T> b) where T : IConvertible, IEquatable<T>
 		{
@@ -219,27 +188,6 @@ namespace Loyc.Geometry
 			_onePointF[0] = pt;
 			return _onePointF;
 		}
-
-		#if DotNet3 || DotNet4
-		public static PointF Transform(this System.Drawing.Drawing2D.Matrix matrix, PointF point)
-		{
-			var a = AsArray(point);
-			matrix.TransformPoints(a);
-			return a[0];
-		}
-		public static Point<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Point<float> point)
-		{
-			var a = AsArray(point.AsBCL());
-			matrix.TransformPoints(a);
-			return a[0].AsLoyc();
-		}
-		public static Vector<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Vector<float> vec)
-		{
-			var a = AsArray(vec.AsBCL());
-			matrix.TransformVectors(a);
-			return a[0].AsLoycVector();
-		}
-		#endif
 
 		// In cases where we don't have optimized extension methods, do not require 
 		// users to manually fall back on overloaded operators.

@@ -52,7 +52,7 @@ namespace Loyc.Utilities
 		internal static readonly ModuleBuilder ModuleBuilder;
 		internal static readonly ModuleHandle ModuleHandle;
 
-		#if DotNet3 || DotNet4
+		#if DotNet4
 		// Ability to save is useful for debugging, but after saving, the assembly
 		// is frozen and you cannot define additional wrappers!
 		static readonly bool Savable = true;
@@ -62,7 +62,7 @@ namespace Loyc.Utilities
 		{
 			// Create a single assembly and module to hold all generated classes.
 			var name = new AssemblyName { Name = "GoInterfaceGeneratedClasses" };
-			#if DotNet3 || DotNet4
+			#if DotNet4
 				AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, 
 					Savable ? AssemblyBuilderAccess.RunAndSave : AssemblyBuilderAccess.Run);
 				if (Savable)
@@ -615,7 +615,7 @@ namespace Loyc.Utilities
 		#region GenerateWrapperClass & related (higher-level code generation)
 
 		static Type CreateType(TypeBuilder tb) =>
-			#if DotNet3 || DotNet4
+			#if DotNet4
 				tb.CreateType(); // .NET Framework 3/4
 			#else
 				tb.CreateTypeInfo().AsType(); // .NET Standard 1.1/2.0

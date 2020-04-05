@@ -36,11 +36,6 @@ namespace Loyc.Tests
 
 		public static void Main(string[] args)
 		{
-			#if DotNet3 || DotNet4
-			// Workaround for MS bug: Assert(false) will not fire in debugger
-			Debug.Listeners.Clear();
-			Debug.Listeners.Add( new DefaultTraceListener() );
-			#endif
 			if (RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null) > 0)
 				// Let the outside world know that something went wrong (e.g. Travis CI)
 				Environment.ExitCode = 1;

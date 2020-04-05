@@ -910,15 +910,7 @@ namespace Loyc.Syntax
 
 		ILNode INegListSource<ILNode>.this[int index] { get { return this[index]; } }
 		ILNode INegListSource<ILNode>.TryGet(int index, out bool fail) { return TryGet(index, out fail); }
-		#if DotNet3
-		IEnumerator<ILNode> IEnumerable<ILNode>.GetEnumerator()
-		{
-			for (int i = Min; i <= Max; i++)
-				yield return this[i];
-		}
-		#else
 		IEnumerator<ILNode> IEnumerable<ILNode>.GetEnumerator() { return GetEnumerator(); }
-		#endif
 		IRange<ILNode> INegListSource<ILNode>.Slice(int start, int count)
 		{
 			return new NegListSlice<ILNode>(this, start, count);
