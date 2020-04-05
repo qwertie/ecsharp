@@ -57,10 +57,12 @@ namespace Loyc
 		/// <remarks>
 		/// Sadly, automatically upcasting value types to reference types doesn't seem possible.
 		/// </remarks>
-		public static Either<L, R> Upcast<L2, R2>(Either<L2,R2> x)
+		public static Either<L, R> From<L2, R2>(Either<L2,R2> x)
 			where L2 : L 
 			where R2 : R
 			=> new Either<L, R>(x._hasLeft, x._left, x._right);
+
+		/// <summary>Converts an Either to another with different types.</summary>
 		public Either<L2, R2> Select<L2, R2>(Func<L, L2> selectL, Func<R, R2> selectR)
 			=> _hasLeft ? new Either<L2, R2>(selectL(_left)) : selectR(_right);
 	}

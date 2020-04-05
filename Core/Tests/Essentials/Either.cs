@@ -48,8 +48,8 @@ namespace Loyc
 		{
 			Either<string, ArgumentException> s = "Hi";
 			Either<string, ArgumentException> e = new ArgumentException();
-			var s2 = Either<object, Exception>.Upcast(s);
-			var e2 = Either<object, Exception>.Upcast(e);
+			var s2 = Either<object, Exception>.From(s);
+			var e2 = Either<object, Exception>.From(e);
 			Assert.AreEqual("Hi", s2.Value);
 			Assert.IsTrue(e2.Value is ArgumentException);
 			
