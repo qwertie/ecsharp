@@ -895,7 +895,7 @@ namespace LeMP
 				result = ApplyMacros(input, maxExpansions, false, false, ref nodeQueue);
 				if (result != null)
 				{
-					results = list.First(i);
+					results = list.Initial(i);
 					Add(ref results, result);
 					// restore possibly-clobbered state
 					_s.StartListItem(list, i, areAttributes);

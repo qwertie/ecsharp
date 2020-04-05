@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.2.0
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -169,9 +169,9 @@ namespace LeMP.Les3.To.CSharp
 						LNode args = LNode.Missing;
 						{
 							LNode name_apos;
-							VList<LNode> args_apos;
+							LNodeList args_apos;
 							if (name.CallsMin(CodeSymbols.IndexBracks, 1) && (name_apos = name.Args[0]) != null) {
-								args_apos = new VList<LNode>(name.Args.Slice(1));
+								args_apos = new LNodeList(name.Args.Slice(1));
 								name = name_apos;
 								args = LNode.Call(CodeSymbols.AltList, LNode.List(args_apos));
 							}
@@ -237,7 +237,7 @@ namespace LeMP.Les3.To.CSharp
 		
 			{
 				LNode getExpr, init = null, name, tmp_12 = null, tmp_13 = null, tmp_14, tmp_15, type;
-				VList<LNode> content;
+				LNodeList content;
 				if (node.Args.Count == 2 && (tmp_12 = node.Args[0]) != null && tmp_12.Calls(CodeSymbols.Colon, 2) && (name = tmp_12.Args[0]) != null && (type = tmp_12.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true || node.Args.Count == 3 && (tmp_13 = node.Args[0]) != null && tmp_13.Calls(CodeSymbols.Colon, 2) && (name = tmp_13.Args[0]) != null && (type = tmp_13.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true && node.Args[2].Calls((Symbol) "#initially", 1) && (init = node.Args[2].Args[0]) != null) {
 					LNode args = GetArgList(ref name);
 					var newBody = LNode.List();

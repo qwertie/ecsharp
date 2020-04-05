@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -20,7 +20,8 @@ namespace Loyc.Collections
 	/// <para/>
 	/// For example, the <see cref="Enumerable.Last{T}"/> extension 
 	/// method scans the entire list before returning the last item, while 
-	/// <see cref="Last{T}(IReadOnlyList{T})"/> simply returns the last item directly.
+	/// <see cref="Last{T}(IReadOnlyList{T})"/> and <see cref="Last{T}(IList{T})"/> simply
+	/// return the last item directly.
 	/// </remarks>
 	public static partial class LinqToLists
 	{

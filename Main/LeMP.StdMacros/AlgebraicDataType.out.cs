@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.7.2.0
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -32,7 +32,7 @@ namespace LeMP
 			int? i;
 			{
 				LNode baseName;
-				VList<LNode> attrs, baseTypes, body;
+				LNodeList attrs, baseTypes, body;
 				if ((attrs = classDecl.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && classDecl.Calls(CodeSymbols.Class, 3) && (baseName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && classDecl.Args[2].Calls(CodeSymbols.Braces)) {
 					baseTypes = classDecl.Args[1].Args;
 					body = classDecl.Args[2].Args;
@@ -134,7 +134,7 @@ namespace LeMP
 					int? i;
 					{
 						LNode altName;
-						VList<LNode> attrs, childBody = default(VList<LNode>), parts, rest;
+						LNodeList attrs, childBody = default(LNodeList), parts, rest;
 						if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 3) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true || (attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 4) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true && stmt.Args[3].Calls(CodeSymbols.Braces) && (childBody = stmt.Args[3].Args).IsEmpty | true) {
 							LNode genericAltName = altName;
 							if (altName.CallsMin(CodeSymbols.Of, 1)) { } else if (_genericArgs.Count > 0)
@@ -143,7 +143,7 @@ namespace LeMP
 							child.AddParts(parts);
 							child.ScanClassBody(childBody);
 							_children.Add(child);
-						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new VList<LNode>(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
+						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new LNodeList(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
 							parts = stmt.Args[2].Args;
 							attrs.RemoveAt(i.Value);
 							_constructorAttrs.AddRange(attrs);

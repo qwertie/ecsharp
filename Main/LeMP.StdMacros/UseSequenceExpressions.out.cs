@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.7.2.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -195,7 +195,7 @@ namespace LeMP
 			{
 				{
 					LNode block, collection, cond, init, initValue, loopVar, name, tmp_11, tmp_12, type;
-					VList<LNode> attrs, incs, inits;
+					LNodeList attrs, incs, inits;
 					if (stmt.Calls(CodeSymbols.Braces))
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
 					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.SwitchStmt, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
@@ -242,7 +242,7 @@ namespace LeMP
 						if (initValue_apos != initValue) {
 							{
 								LNode last;
-								VList<LNode> stmts;
+								LNodeList stmts;
 								if (initValue_apos.CallsMin((Symbol) "#runSequence", 1) && (last = initValue_apos.Args[initValue_apos.Args.Count - 1]) != null) {
 									stmts = initValue_apos.Args.WithoutLast(1);
 									return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
@@ -397,7 +397,7 @@ namespace LeMP
 				if (!stmtContext) {
 					{
 						LNode tmp_14, value, varName, varType;
-						VList<LNode> attrs;
+						LNodeList attrs;
 						if (expr.Calls(CodeSymbols.Braces)) {
 							Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
@@ -417,7 +417,7 @@ namespace LeMP
 				if (result == null) {
 					{
 						LNode args, code, value, varName;
-						VList<LNode> attrs;
+						LNodeList attrs;
 						if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
 							result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
 						
@@ -566,7 +566,7 @@ namespace LeMP
 					varName_apos = varName_apos.PlusAttr(@ref);
 				{
 					LNode resultValue;
-					VList<LNode> stmts;
+					LNodeList stmts;
 					if (initValue.CallsMin((Symbol) "#runSequence", 1) && (resultValue = initValue.Args[initValue.Args.Count - 1]) != null) {
 						stmts = initValue.Args.WithoutLast(1);
 						var newVarDecl = LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(varType, LNode.Call(CodeSymbols.Assign, LNode.List(varName, resultValue))));

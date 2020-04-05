@@ -89,7 +89,7 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public LNode Last => _list.Last;
 
-		[Obsolete("Use Initial() instead")]
+		[Obsolete("Please call Initial() instead (this was renamed for consistency; `First` is usually a property that returns the first item)")]
 		public LNodeList First(int count) => _list.First(count);
 		public LNodeList Initial(int count) => _list.First(count);
 		public LNodeList Final(int count) => count > _list.Count ? this : new LNodeList(_list.Slice(_list.Count - count));
