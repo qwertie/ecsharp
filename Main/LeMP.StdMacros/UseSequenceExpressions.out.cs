@@ -317,7 +317,7 @@ namespace LeMP
 						args[i] = part.WithArgChanged(lasti, EliminateSequenceExpressionsInChildStmt(part.Args[lasti]));
 					}
 				}
-				return stmt.WithArgs(args.ToVList());
+				return stmt.WithArgs(args.ToLNodeList());
 			}
 		
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
@@ -550,7 +550,7 @@ namespace LeMP
 								args[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 							}
 						}
-						return expr.WithArgs(args.ToVList());
+						return expr.WithArgs(args.ToLNodeList());
 					}
 				}
 			}

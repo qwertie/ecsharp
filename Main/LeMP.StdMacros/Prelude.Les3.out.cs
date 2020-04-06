@@ -359,7 +359,7 @@ namespace LeMP.Les3.To.CSharp
 				}
 			}
 			if (a.ToLNodeList() != node.Args)
-				return node.WithArgs(a.ToVList());
+				return node.WithArgs(a.ToLNodeList());
 			return null;
 		}
 	

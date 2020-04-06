@@ -22,9 +22,6 @@ namespace Loyc.Syntax.Les
 		public object Value { get; set; }
 		/// <summary>A prefix or suffix on the literal that represents some 
 		/// additional meaning.</summary>
-		/// <remarks>In LESv3, this field becomes the sole parameter <c>s</c> 
-		/// of a <c>`%literalType`(s)</c> attribute attached to the <see cref="LNode"/>
-		/// that represents the literal.</remarks>
 		public Symbol TypeMarker { get; set; }
 
 		public bool Equals(CustomLiteral rhs)

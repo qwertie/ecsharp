@@ -137,7 +137,7 @@ namespace Loyc.Syntax
 		[Conditional("DEBUG")]
 		protected static void NoNulls(LNodeList list, string propName)
 		{
-			foreach (var node in ((VList<LNode>)list).ToFVList()) // FVList enumerates faster
+			foreach (var node in list.ToVList().ToFVList()) // FVList enumerates faster
 				Debug.Assert(node != null);
 		}
 

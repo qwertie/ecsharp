@@ -581,7 +581,7 @@ namespace LeMP.Prelude.Les
 			if (finallyCode != null)
 				clauses.Add(F.Call(S.Finally, finallyCode));
 			clauses.Insert(0, node.Args[0]);
-			return node.With(S.Try, clauses.ToVList());
+			return node.With(S.Try, clauses.ToLNodeList());
 		}
 		
 		public static LNode AutoRemoveParens(LNode node)

@@ -73,7 +73,7 @@ namespace Loyc.LLParserGenerator
 					_classBody.SpliceAdd(method, S.Splice);
 				}
 
-				method = CGH.CreateRuleMethod(rule, _target.ToVList());
+				method = CGH.CreateRuleMethod(rule, _target.ToLNodeList());
 				if (!rule.IsRecognizer)
 					method = F.OnNewLine(method);
 				_classBody.SpliceAdd(method, S.Splice);

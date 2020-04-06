@@ -140,7 +140,7 @@ namespace Loyc.LLParserGenerator
 			if (IsRecognizer)
 				methodBody.Add(F.Call(S.Return, F.True));
 			parts.Add(F.OnNewLine(F.Braces(methodBody)));
-			return method.WithArgs(parts.ToVList());
+			return method.WithArgs(parts.ToLNodeList());
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

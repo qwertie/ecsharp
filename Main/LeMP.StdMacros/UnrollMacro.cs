@@ -94,7 +94,7 @@ namespace LeMP
 				if (r.C == 0 && !r.A.Name.StartsWith("_"))
 					sink.Write(Severity.Warning, var, "Replacement variable '{0}' was never used", r.A);
 			
-			return body.With(S.Splice, output.ToVList());
+			return body.With(S.Splice, output.ToLNodeList());
 		}
 		class UnrollCtx // helper class for unroll
 		{

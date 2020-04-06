@@ -4265,7 +4265,7 @@ namespace Loyc.Ecs.Parser
 						tparams[i] = tparams[i].PlusAttrs(wheres);
 						wheres.Clear();
 					}
-					name = name.WithArgs(tparams.ToVList());
+					name = name.WithArgs(tparams.ToLNodeList());
 					if ((list.Count > 0)) {
 						Error(list[0].Value, "There is no type parameter named '{0}'", list[0].Key);
 					}
