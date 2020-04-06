@@ -20,9 +20,8 @@ build_script:
 
     # Build the Loyc libraries in release mode, for all possible configurations.
     - msbuild /p:Configuration=Release Loyc.netstd.sln
+    - msbuild /p:Configuration=Release Loyc.netfx.sln
     - msbuild /p:Configuration=Release.NET45 Loyc.netfx.sln
-    - msbuild /p:Configuration=Release.NET4 Loyc.netfx.sln
-    - msbuild /p:Configuration=Release.NET35 Loyc.netfx.sln
 
 after_build:
     # Package the Core libraries:
