@@ -64,7 +64,9 @@ namespace Loyc.Utilities
 	/// richer; for example, it supports exceptions properly. If an exception is
 	/// thrown from within a nested iterator, the outer iterator is unable to catch
 	/// the exception; it will be thrown directly into whatever foreach loop (or
-	/// other code) that is enumerating the sequence.
+	/// other code) that is enumerating the sequence. On the other hand, async is
+	/// impoverished, since it can only produce a single output. Also, it is 
+	/// difficult to control how and when async methods are executed.
 	/// <para/>
 	/// This class solves the same problem as <see cref="Loyc.Collections.NestedEnumerator{F,T}"/> in
 	/// a way that is very easy to use. You should use <see cref="Loyc.Collections.NestedEnumerator{F,T}"/>
