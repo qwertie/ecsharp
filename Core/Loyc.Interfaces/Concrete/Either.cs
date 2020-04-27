@@ -65,5 +65,28 @@ namespace Loyc
 		/// <summary>Converts an Either to another with different types.</summary>
 		public Either<L2, R2> Select<L2, R2>(Func<L, L2> selectL, Func<R, R2> selectR)
 			=> _hasLeft ? new Either<L2, R2>(selectL(_left)) : selectR(_right);
+		
+		/// <summary>Transforms <c>Left</c> with the given selector, if <c>Left.HasValue</c>. Otherwise, returns Right unchanged.</summary>
+		public Either<L2, R> MapLeft<L2>(Func<L, L2> selectL)
+			=> _hasLeft ? new Either<L2, R>(selectL(_left)) : new Either<L2, R>(_right);
+		
+		/// <summary>Transforms <c>Right</c> with the given selector, if <c>Right.HasValue</c>. Otherwise, returns Left unchanged.</summary>
+		public Either<L, R2> MapRight<R2>(Func<R, R2> selectR)
+			=> !_hasLeft ? new Either<L, R2>(selectR(_right)) : new Either<L, R2>(_left);
+
+		/// <summary>Runs actionL if <c>Left.HasValue</c>. Equivalent to <c>Left.Then(actionL)</c>, but also returns <c>this</c>.</summary>
+		public Either<L, R> IfLeft(Action<L> actionL) {
+			if (_hasLeft)
+				actionL(_left);
+			return this;
+		}
+
+		/// <summary>Runs actionR if <c>Right.HasValue</c>. Equivalent to <c>Right.Then(actionL)</c>, but also returns <c>this</c>.</summary>
+		public Either<L, R> IfRight(Action<R> actionR)
+		{
+			if (!_hasLeft)
+				actionR(_right);
+			return this;
+		}
 	}
 }
