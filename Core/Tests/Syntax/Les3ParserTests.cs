@@ -69,7 +69,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void OtherParseErrors()
 		{
-			Test(Mode.Stmt, 1, "u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"u")));
+			Test(Mode.Stmt, 1, "_u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"_u")));
 			Test(Mode.Stmt, 1, "Foo(", F.Call(Foo));
 			Test(Mode.Stmt, 1, "{Foo", F.Braces(Foo));
 			Test(Mode.Stmt, 1, "{Foo(x", F.Braces(F.Call(Foo, x)));
@@ -85,6 +85,8 @@ namespace Loyc.Syntax.Les
 			// semicolons are allowed after args
 			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
 			Test(Mode.Stmt, 0, "Foo(a; b;)", F.Call(Foo, a, b));
+
+			Test(Mode.Expr, 2, ".`foo`", F.Id("foo"));
 		}
 
 		[Test]
@@ -93,6 +95,17 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "a - 2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
 			// This was parsed as (a - 2) ** b
 			Test(Mode.Stmt, 0, "a -2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
+		}
+
+		[Test(Fails = "TODO")]
+		public void LineContinuators()
+		{
+			// issue 86: https://github.com/qwertie/ecsharp/issues/86
+		}
+
+		[Test(Fails = "TODO")]
+		public void TokenLists()
+		{
 		}
 
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string text, params LNode[] expected)

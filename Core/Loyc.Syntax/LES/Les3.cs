@@ -14,6 +14,7 @@ using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
 using Loyc.Collections.Impl;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Threading;
 
 namespace Loyc.Syntax.Les
 {
@@ -58,15 +59,22 @@ namespace Loyc.Syntax.Les
 		}
 		protected override bool SupportDotIndents() { return true; }
 
+		protected Dictionary<Pair<UString, bool>, Symbol> _typeMarkers = new Dictionary<Pair<UString, bool>, Symbol>();
+
 		object ParseLiteral2(UString typeMarker, UString parsedText, bool isNumericLiteral)
 		{
 			if (SkipValueParsing)
 				return null;
+
+			var pair = Pair.Create(typeMarker, isNumericLiteral);
+			if (!_typeMarkers.TryGetValue(pair, out Symbol typeMarkerSym))
+				_typeMarkers[pair] = typeMarkerSym = (Symbol)(isNumericLiteral ? "_" + (string)typeMarker : typeMarker);
+			
 			if (PreferCustomLiterals)
-				return new CustomLiteral(parsedText.ToString(), (Symbol)typeMarker.ToString());
+				return new CustomLiteral(parsedText.ToString(), typeMarkerSym);
 			else {
 				string syntaxError;
-				var result = ParseLiteral(typeMarker, parsedText, isNumericLiteral, out syntaxError);
+				var result = ParseLiteral(typeMarkerSym, parsedText, out syntaxError);
 				if (syntaxError != null) {
 					var pos = new SourceRange(SourceFile, _startPosition, InputPosition - _startPosition);
 					ErrorSink.Write(Severity.Error, pos, syntaxError);
@@ -75,22 +83,17 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		public static object ParseLiteral(UString typeMarker, UString parsedText, bool isNumericLiteral, out string syntaxError)
+		public static object ParseLiteral(Symbol typeMarker, UString parsedText, out string syntaxError)
 		{
 			syntaxError = null;
-			if (typeMarker.Length == 0) {
-				if (isNumericLiteral) {
-					// Optimize the most common case: a one-digit integer
-					if (parsedText.Length == 1) {
-						Debug.Assert(char.IsDigit(parsedText[0]));
-						return CG.Cache((int)(parsedText[0] - '0'));
-					}
-					typeMarker = "n"; // number
-				} else {
-					syntaxError = null;
-					return parsedText.ToString();
+			if (typeMarker.Name == "_") {
+				// Optimize the most common case: a one-digit integer
+				if (parsedText.Length == 1) {
+					Debug.Assert(char.IsDigit(parsedText[0]));
+					return CG.Cache((int)(parsedText[0] - '0'));
 				}
-			}
+			} else if (typeMarker == GSymbol.Empty)
+				return parsedText.ToString();
 			return ParseNonStringLiteral(typeMarker, parsedText, out syntaxError);
 		}
 
@@ -130,17 +133,18 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		protected static Dictionary<UString, Func<UString, object>> LiteralParsers = InitLiteralParsers();
-		protected static Dictionary<UString, Func<UString, object>> InitLiteralParsers()
+		static readonly Symbol _null = (Symbol)"null";
+		protected static Dictionary<Symbol, Func<UString, object>> LiteralParsers = InitLiteralParsers();
+		protected static Dictionary<Symbol, Func<UString, object>> InitLiteralParsers()
 		{
-			var dict = new Dictionary<UString, Func<UString, object>>();
+			var dict = new Dictionary<Symbol, Func<UString, object>>();
 			Func<UString, object> i32 = s => { long n; return ParseSigned(s, out n) && (int)n == n ? (object)(int)n : null; };
 			Func<UString, object> u32 = s => { long n; return ParseSigned(s, out n) && (uint)n == n ? (object)(uint)n : null; };
 			Func<UString, object> i64 = s => { long n; return ParseSigned(s, out n) ? (object)(long)n : null; };
 			Func<UString, object> u64 = s => { ulong n; return ParseULong(s, out n) ? (object)(ulong)n : null; };
 			Func<UString, object> u   = s => { ulong n; return ParseULong(s, out n) ? ((uint)n == n ? (object)(uint)n : (object)(ulong)n) : null; };
 			Func<UString, object> big = s => { BigInteger n; return ParseBigInt(s, out n) ? (object)n : null; };
-			Func<UString, object> f32 = s => { double n; return ParseDouble(s, out n) && n >= float.MinValue && n <= float.MaxValue ? (object)(float)n : null; };
+			Func<UString, object> f32 = s => { double n; return ParseDouble(s, out n) ? (object)(float)n : null; };
 			Func<UString, object> f64 = s => { double n; return ParseDouble(s, out n) ? (object)n : null; };
 			Func<UString, object> dec = s => {
 				// TODO: support decimal properly
@@ -153,22 +157,26 @@ namespace Loyc.Syntax.Les
 				return null;
 			};
 
-			dict["u32"] = u32;
-			dict["i32"] = i32;
-			dict["u64"] = dict["ul"] = dict["uL"] = dict["UL"] = dict["Ul"] = u64;
-			dict["u"]   = dict["U"] = u;
-			dict["i64"] = dict["l"] = dict["L"] = i64;
-			dict["f32"] = dict["f"] = dict["F"] = f32;
-			dict["f64"] = dict["d"] = dict["D"] = f64;
-			dict["m"] = dec;
-			dict["z"] = big;
-			dict["s"] = s => (Symbol)s;
-			dict["re"] = s => {
+			dict[(Symbol)"_u32"] = u32;
+			dict[(Symbol)"_i32"] = i32;
+			dict[(Symbol)"_u64"] = dict[(Symbol)"_ul"] = dict[(Symbol)"_UL"] = u64;
+			dict[(Symbol)"_uL"]  = dict[(Symbol)"_Ul"] = u64;
+			dict[(Symbol)"_u"]   = dict[(Symbol)"_U"] = u;
+			dict[(Symbol)"_i64"] = dict[(Symbol)"_l"] = dict[(Symbol)"_L"] = i64;
+			dict[(Symbol)"_f32"] = dict[(Symbol)"_f"] = dict[(Symbol)"_F"] = f32;
+			dict[(Symbol)"_f64"] = dict[(Symbol)"_d"] = dict[(Symbol)"_D"] = f64;
+			dict[(Symbol)"_m"] = dec;
+			dict[(Symbol)"_z"] = big;
+			dict[(Symbol)"s"] = s => (Symbol)s;
+			dict[(Symbol)"re"] = s => {
 				try { return new System.Text.RegularExpressions.Regex((string)s); }
 				catch { return new CustomLiteral(s, (Symbol)"re"); }
 			};
-			dict["n"]  = GeneralNumberParser;
-			dict["@@"] = ParseSingletonLiteral;
+			dict[(Symbol)"_"]  = GeneralNumberParser;
+			dict[(Symbol)"@@"] = ParseSingletonLiteral;
+			dict[(Symbol)"bool"] = text => text.Equals("true", true) ? true : 
+			                               text.Equals("false", true) ? false : (object)null;
+			dict[_null] = text => null; // special-case logic in ParseNonStringLiteral
 			return dict;
 		}
 
@@ -241,6 +249,18 @@ namespace Loyc.Syntax.Les
 		private static bool ParseDouble(UString s, out double d)
 		{
 			d = double.NaN;
+			char first = s[0, '\0'];
+			if (!(first >= '0' && first <= '9')) {
+				if (s.Equals("nan", ignoreCase: true))
+					return true;
+				else if (s.Equals("inf", ignoreCase: true)) {
+					d = double.PositiveInfinity;
+					return true;
+				} else if (s.Equals("-inf", ignoreCase: true)) {
+					d = double.NegativeInfinity;
+					return true;
+				}
+			}
 			bool negative;
 			int radix = GetSignAndRadix(ref s, out negative);
 			if (radix == 0)
@@ -275,15 +295,18 @@ namespace Loyc.Syntax.Les
 			return radix;
 		}
 
-		private static object ParseNonStringLiteral(UString typeMarker, UString parsedText, out string syntaxError)
+		private static object ParseNonStringLiteral(Symbol typeMarker, UString parsedText, out string syntaxError)
 		{
 			syntaxError = null;
 			Func<UString, object> parser;
 			object value = null;
 			if (LiteralParsers.TryGetValue(typeMarker, out parser)) {
 				value = parser(parsedText);
-				if (value == null)
+				if (value == null) {
+					if (typeMarker == _null && parsedText.IsEmpty)
+						return null; // success
 					syntaxError = "Syntax error in '{0}' literal".Localized(typeMarker);
+				}
 			}
 			return value ?? new CustomLiteral(parsedText.ToString(), (Symbol)typeMarker.ToString());
 		}

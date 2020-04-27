@@ -102,6 +102,10 @@ namespace Loyc.Syntax
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdIdNode(name, new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
+		public LNode Id(Symbol name, Token t)
+		{
+			return new StdIdNode(name, new SourceRange(_file, t.StartIndex, t.Length));
+		}
 		public LNode Id(Token t)
 		{
 			return new StdIdNode(t.Value as Symbol ?? GSymbol.Get((t.Value ?? "").ToString()),

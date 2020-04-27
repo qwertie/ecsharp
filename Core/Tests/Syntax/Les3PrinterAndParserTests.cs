@@ -18,25 +18,14 @@ namespace Loyc.Syntax.Les
 		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
 		protected LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
 		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
-		protected LNode _(string name) { return F.Id(name); }
-		protected LNode _(Symbol name) { return F.Id(name); }
+		protected LNode _(string name) => F.Id(name);
+		protected LNode _(Symbol name) => F.Id(name);
 
-		protected LNode Op(LNode node)
-		{
-			return node.SetBaseStyle(NodeStyle.Operator);
-		}
-		protected LNode KeywordExpr(LNode node)
-		{
-			return node.SetBaseStyle(NodeStyle.Special);
-		}
-		protected LNode OnNewLine(LNode node)
-		{
-			return node.PlusAttrBefore(F.TriviaNewline);
-		}
-		protected LNode NewlineAfter(LNode node)
-		{
-			return node.PlusTrailingTrivia(F.TriviaNewline);
-		}
+		protected LNode Op(LNode node) => node.SetBaseStyle(NodeStyle.Operator);
+		protected LNode KeywordExpr(LNode node) => node.SetBaseStyle(NodeStyle.Special);
+		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
+		private LNode AppendStatement(LNode stmt) => stmt.PlusAttrBefore(F.Id(S.TriviaAppendStatement));
+		protected LNode NewlineAfter(LNode node) => node.PlusTrailingTrivia(F.TriviaNewline);
 
 		#region Literals
 		// Note: The most rigorous testing may be done in the Lexer tests,
@@ -54,8 +43,8 @@ namespace Loyc.Syntax.Les
 			Exact("0b1011101",  F.Literal(0x5D).WithStyle(NodeStyle.BinaryLiteral));
 			Exact("0x2.E8",     F.Literal(0x2E8/256.0).WithStyle(NodeStyle.HexLiteral));
 			Exact("0b10.11101", F.Literal(0x2E8/256.0).WithStyle(NodeStyle.BinaryLiteral));
-			Exact("@@inf.f",     F.Literal(float.PositiveInfinity).WithStyle(NodeStyle.HexLiteral));
-			Exact("@@-inf.d",    F.Literal(double.NegativeInfinity).WithStyle(NodeStyle.HexLiteral));
+			Exact(@"_f""inf""", F.Literal(float.PositiveInfinity).WithStyle(NodeStyle.HexLiteral));
+			Exact(@"_d""-inf""",F.Literal(double.NegativeInfinity).WithStyle(NodeStyle.HexLiteral));
 			// TODO: more tests for printer, especially of hex/binary literals... random numbers? denormals?
 		}
 
@@ -112,12 +101,12 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void NamedFloatLiteral()
 		{
-			Exact("@@-inf.f", F.Literal(float.NegativeInfinity));
-			Exact("@@inf.f", F.Literal(float.PositiveInfinity));
-			Exact("@@nan.f", F.Literal(float.NaN));
-			Exact("@@-inf.d", F.Literal(double.NegativeInfinity));
-			Exact("@@inf.d", F.Literal(double.PositiveInfinity));
-			Exact("@@nan.d", F.Literal(double.NaN));
+			Exact(@"_f""-inf""", F.Literal(float.NegativeInfinity));
+			Exact(@"_f""inf""", F.Literal(float.PositiveInfinity));
+			Exact(@"_f""nan""", F.Literal(float.NaN));
+			Exact(@"_d""-inf""", F.Literal(double.NegativeInfinity));
+			Exact(@"_d""inf""", F.Literal(double.PositiveInfinity));
+			Exact(@"_d""nan""", F.Literal(double.NaN));
 		}
 
 		[Test]
@@ -126,14 +115,14 @@ namespace Loyc.Syntax.Les
 			Exact(@"special""!""",      F.Literal(new CustomLiteral("!", (Symbol)"special")));
 			Exact(@"special'''!'''",    F.Literal(new CustomLiteral("!", (Symbol)"special")).SetBaseStyle(NodeStyle.TQStringLiteral));
 			Exact(@"@@unknown-literal", F.Literal(new CustomLiteral("unknown-literal", (Symbol)"@@")));
-			Exact(@"123.5f00bar",       F.Literal(new CustomLiteral("123.5", (Symbol)"f00bar")));
+			Exact(@"123.5f00bar",       F.Literal(new CustomLiteral("123.5", (Symbol)"_f00bar")));
 			Exact(@"f00bar""0x1234""",  F.Literal(new CustomLiteral("0x1234", (Symbol)"f00bar")));
 			Exact(@"`WTF!\n`""0x1234""",F.Literal(new CustomLiteral("0x1234", (Symbol)"WTF!\n")));
 			// Backquotes added due to 'e' in error which resembles an exponent
-			Exact(@"123.5`error`",      F.Literal(new CustomLiteral("123.5", (Symbol)"error")));
+			Exact(@"123.4`exact`",      F.Literal(new CustomLiteral("123.4", (Symbol)"_exact")));
 			// Parses OK but printer currently prints as in string form
-			Stmt (@"0x123special",      F.Literal(new CustomLiteral("0x123", (Symbol)"special")).SetBaseStyle(NodeStyle.HexLiteral));
-			Stmt (@"0x1234`f00bar`",    F.Literal(new CustomLiteral("0x1234", (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
+			Stmt(@"0x123special",      F.Literal(new CustomLiteral("0x123", (Symbol)"_special")).SetBaseStyle(NodeStyle.HexLiteral));
+			Stmt (@"0x1234`f00bar`",    F.Literal(new CustomLiteral("0x1234", (Symbol)"_f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
 		}
 
 		[Test]
@@ -141,13 +130,13 @@ namespace Loyc.Syntax.Les
 		{
 			Exact("-x", F.Call(S.Sub, x));
 			Exact("-2", F.Call(S.Sub, two));
-			Exact("n\"-2\"", F.Literal(-2));
-			Stmt("n\"-111222333444\"", F.Literal(-111222333444));
-			Exact("L\"-2\"", F.Literal(-2L));
-			Stmt("n\"-2.0\"", F.Literal(-2.0));
-			Stmt("d\"-2\"", F.Literal(-2.0));
-			Exact("f\"-2\"", F.Literal(-2.0f));
-			Stmt("f\"-2.0\"", F.Literal(-2.0f));
+			Exact("_\"-2\"", F.Literal(-2));
+			Stmt("_\"-111222333444\"", F.Literal(-111222333444));
+			Exact("_L\"-2\"", F.Literal(-2L));
+			Stmt("_\"-2.0\"", F.Literal(-2.0));
+			Stmt("_d\"-2\"", F.Literal(-2.0));
+			Exact("_f\"-2\"", F.Literal(-2.0f));
+			Stmt("_f\"-2.0\"", F.Literal(-2.0f));
 		}
 
 		[Test]
@@ -156,7 +145,7 @@ namespace Loyc.Syntax.Les
 			Exact(@"123z", F.Literal(new BigInteger(123)));
 			// TODO: add underscores in printer
 			Stmt (@"9_876_543_210z", F.Literal(new BigInteger(9876543210)));
-			Exact("z\"-2\"", F.Literal(new BigInteger(-2)));
+			Exact("_z\"-2\"", F.Literal(new BigInteger(-2)));
 		}
 		
 		#endregion
@@ -244,8 +233,7 @@ namespace Loyc.Syntax.Les
 			// Error: Operator `'|` cannot be used as a prefix operator
 			// Error: Operator "'*" cannot be mixed with the infix operator to its left.Add parentheses to clarify the code's meaning
 			Test(Mode.Expr, 2, "?? a + b", F.Call(S.Add, F.Call(S.NullCoalesce, a), b));
-			// Need parens to even check the error, or the parser treats the dot as whitespace
-			Test(Mode.Expr, 1, "(. a)", F.Tuple());
+			Test(Mode.Stmt, 2, "(a; . b)", F.Call(S.Dot, F.Tuple(a), b));
 		}
 
 		[Test]
@@ -523,7 +511,7 @@ namespace Loyc.Syntax.Les
 			Exact("@Foo (a)(b)",       F.Attr(Foo, F.Call(F.InParens(a), b)));
 			Exact("@123 Foo(x)",       F.Attr(F.Literal(123), F.Call(Foo, x)));
 			Exact("@'!' Foo(x)",       F.Attr(F.Literal('!'), F.Call(Foo, x)));
-			Exact("@n\"-12\" Foo(x)",  F.Attr(F.Literal(-12), F.Call(Foo, x)));
+			Exact("@_\"-12\" Foo(x)",  F.Attr(F.Literal(-12), F.Call(Foo, x)));
 		}
 
 		[Test]
@@ -551,10 +539,16 @@ namespace Loyc.Syntax.Les
 		{
 			Stmt("@Foo (a) (b)", F.Attr(Foo, F.Call(F.InParens(a), b)));
 			Stmt("@Foo(a, b) (c)", F.Attr(F.Call(Foo, a, b), F.InParens(c)));
-			// Dotted attribute names are still not supported (must use parens)
-			Exact("@(Foo.a(b)) +c", F.Attr(F.Call(F.Dot(Foo, a), b), F.Call(S.Add, c)));
-			Test(Mode.Stmt, 2, "@Foo.a(b) +c", F.Attr(Foo, F.Call(S.Add, F.Call(a, b), c)));
 		}
+
+		[Test]
+		public void CompactExpressionAttributes()
+		{
+			Exact("@(Foo.a(b)) +c", F.Attr(F.Call(F.Dot(Foo, a), b), F.Call(S.Add, c)));
+			Stmt("@Foo.a(b) +x", F.Attr(F.Call(F.Dot(Foo, a), b), F.Call(S.Add, x)));
+			Stmt("@a+b +c", F.Attr(F.Call(S.Add, a, b), F.Call(S.Add, c)));
+		}
+
 
 		#endregion
 
@@ -568,7 +562,6 @@ namespace Loyc.Syntax.Les
 			Exact(".on_catch Foo()",   KeywordExpr(F.Call("#on_catch", F.Call(Foo))));
 			Exact("#on_catch(Foo())",              F.Call("#on_catch", F.Call(Foo)));
 			Test(Mode.Exact, 0, ".return\nFoo()", KeywordExpr(F.Call("#return")), F.Call(Foo));
-			Test(Mode.Expr, 1, ".`foo`");
 			Exact(".return (x + 1)",   KeywordExpr(F.Call("#return", F.InParens(F.Call(S.Add, x, one)))));
 			Exact(".return x + 1",     KeywordExpr(F.Call("#return", F.Call(S.Add, x, one))));
 			Exact(".if Foo {\n  a\n}", KeywordExpr(F.Call("#if", Foo, F.Braces(a))));
@@ -661,18 +654,30 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Token lists Prefix notation demarcated with single-quote (')
-
 		[Test]
-		public void BasicPrefixNotation()
+		public void BasicTokenTrees()
 		{
 			// TODO: add printer support
-			Stmt("' a 2 'z'", F.Call(S.SingleQuote, a, two, F.Literal('z')));
-			Stmt("' + x 1", F.Call(S.SingleQuote, _(S.Add), x, one));
-			Stmt("' ()", F.Call(S.SingleQuote, F.Call(S.Parens)));
+			Test(Mode.Stmt, 0, "(' a 2 'z')", F.Tuple(a, two, F.Literal('z')));
+			Test(Mode.Stmt, 0, "Foo(' + x 1)", F.Call(Foo, _(S.Add), x, one));
+			Test(Mode.Stmt, 0, "' ()", F.Call(S.Parens));
+			Test(Mode.Stmt, 0, "[' (. a b)]", F.Call(S.Array, F.Call(S.Parens, _(S.Dot), a, b)));
+			Test(Mode.Stmt, 0, "' (. a b)", F.Call(S.Parens, _(S.Dot), a, b));
 		}
 
-		#endregion
+		[Test]
+		public void MoreTokenTrees()
+		{
+			// If ' is used in a braces context, each node after the first gets %appendStatement 
+			// trivia because newline is expected between nodes inside braces
+			Test(Mode.Stmt, 0, "{ ' a 2 'z' }", F.Braces(a, two, F.Literal('z'))); // NodeStyle.OneLiner | NodeStyle.Compact | NodeStyle.Alternate
+			if (this is Les3ParserTests) // Les3PrinterTests isn't designed to handle %appendStatement at root level
+				Test(Mode.Stmt, 0, "' a 2 'z'", a, AppendStatement(two), AppendStatement(F.Literal('z')));
+
+			// Switch back to normal parsing mode using [...] or {...}
+			Test(Mode.Stmt, 0, "Foo(' a[2 + 1] * { b('z') })",
+				F.Call(Foo, a, F.Call(S.Array, F.Call(S.Add, two, one)), _(S.Mul), F.Braces(F.Call(b, F.Literal('z')))));
+		}
 
 		[Test]
 		public void PrinterSpacingMinefield()
@@ -680,7 +685,7 @@ namespace Loyc.Syntax.Les
 			// LESv3 changed; `-` is no longer challenging. We could remove these tests.
 			Exact("-2", F.Call(S.Sub, two));
 			Exact("-2.5", F.Call(S.Sub, F.Literal(2.5)));
-			Exact("+n\"-2\"", F.Call(S.Add, F.Literal(-2)));
+			Exact("+_\"-2\"", F.Call(S.Add, F.Literal(-2)));
 			Exact("+-2", F.Call("'+-", F.Literal(2)));
 			Exact("-(2.5)", F.Call(S.Sub, F.InParens(F.Literal(2.5))));
 			Exact("-x** +x", F.Call(S.Exp, F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)));
@@ -690,7 +695,8 @@ namespace Loyc.Syntax.Les
 			Exact("2 . x", F.Dot(two, x));
 			Exact("1 . 2", F.Dot(one, two));
 			Exact("1 x. 2", F.Call("'x.", one, two));
-			Exact("@@inf.d . Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+			Exact(@"_d""inf"" . Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+			Exact(@"@@a.b . Foo", F.Dot(F.Literal(new CustomLiteral("a.b", (Symbol)"@@")), Foo));
 			Exact("0x2 . Ep0", F.Dot(two.WithStyle(NodeStyle.HexLiteral), F.Id("Ep0")));
 		}
 
@@ -744,13 +750,12 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TriviaTest_Appending()
 		{
-			var append = F.Id(S.TriviaAppendStatement);
 			LNode[] stmts = {
 				F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner)
 			};
 			Test(Mode.Exact, 0, "{ a(); b() }", stmts);
 			stmts = new[] {
-				F.Call(a), F.Call(b), F.Call(c).PlusAttr(append)
+				F.Call(a), F.Call(b), AppendStatement(F.Call(c))
 			};
 			Test(Mode.Exact, 0, "a()\nb(); c()", stmts);
 		}
@@ -774,26 +779,60 @@ namespace Loyc.Syntax.Les
 					NewlineAfter(F.Call(a)),
 					NewlineAfter(F.Call(b)),
 					NewlineAfter(F.Call(c))));
+			Test(Mode.Exact, 0, "a()\n\n\nb()",
+				NewlineAfter(F.Call(a)),
+				OnNewLine(F.Call(b)));
 		}
 
+		[Test]
 		public void TriviaTest_BlankLinesBetweenArgs()
 		{
 			Exact("Foo(\n  a, \n  b, \n  c)",
 				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(c)));
 
-			Exact("Foo(\n  a, \n  \n  b, \n  // see?\n  c)",
+			Exact("Foo(\n  a,\n  \n  b, \n  // see?\n  c)",
 				F.Call(Foo, NewlineAfter(OnNewLine(a)),
-					NewlineAfter(OnNewLine(b)),
-					c.PlusAttr(F.Trivia(S.TriviaSLComment, " see?"))));
+					OnNewLine(b),
+					c.PlusAttrs(F.TriviaNewline, F.Trivia(S.TriviaSLComment, " see?"))));
+		}
 
-			// TODO: this fails in printer because the newline after Foo cannot
-			// be printed before '(' and is suppressed. Solution will be to wait
-			// until after '(' before printing trivia attached to Foo, but this
-			// is not easy to accomplish.
-			//Test("Foo(\n  \n  a, \n  \n  b, \n  \n  c)",
-			//	F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
-			//		NewlineAfter(OnNewLine(b)),
-			//		OnNewLine(c)));
+		public void StrategicallyPlacedNewlines()
+		{
+			Test(Mode.Stmt, 0, "{\n\nFoo(x, 1) +\n\na\n\n- b\n\n}", F.Call(NewlineAfter(_(S.Braces)),
+				NewlineAfter(F.Call(NewlineAfter(_(S.Add)), F.Call(Foo, x, one), OnNewLine(a))),
+				NewlineAfter(F.Call(S._Negate, b))));
+			// 2020/04 Newline is not allowed before "," or ";" or ")" or "]"
+			Test(Mode.Stmt, 0, "{\nFoo(\n\nx,\n\n2) + a\n\n-\n\nb\n\n}", F.Braces(
+				NewlineAfter(F.Call(S.Add, F.Call(NewlineAfter(Foo), OnNewLine(x), OnNewLine(OnNewLine(two))), a)),
+				NewlineAfter(F.Call(NewlineAfter(_(S._Negate)), OnNewLine(b)))));
+		}
+
+		[Test(Fails = "TODO: Printer support")]
+		public void CompactModeTests()
+		{
+			var semicolon = F.Id(S.Semicolon);
+			Exact("Foo(. )", F.Call(Foo).SetBaseStyle(NodeStyle.Compact));
+			Exact("Foo(. 1 x)", F.Call(Foo, one, x).SetBaseStyle(NodeStyle.Compact));
+			Exact("Foo(. (x + 2) [a, b])", F.Call(Foo, F.Call(S.Add, x, two), F.Call(S.Array, a, b)).SetBaseStyle(NodeStyle.Compact));
+			Exact("Foo(. 1 a; b 1)", F.Call(Foo, one, a, semicolon, b, one).SetBaseStyle(NodeStyle.Compact));
+		}
+		
+		[Test(Fails = "TODO: Printer support")]
+		public void CompactModeTests2()
+		{
+			// In Julia you can use newline as a row separator:
+			//   [a b
+			//    c d]
+			// This isn't supported in LES3 because it adds significant complexity. It would 
+			// require compact square brackets to be treated differently from normal square
+			// brackets, since newlines are filtered out of the latter.
+			var semicolon = F.Id(S.Semicolon);
+			Stmt("[. a b, c x]", F.Call(S.Array, a, b, c, x));
+			Exact("[. 1 a; b c]", F.Call(S.Array, one, a, semicolon, b, c));
+			Exact("[. a b;\n  c 1]", F.Call(S.Array, a, b, semicolon, OnNewLine(c), one));
+			Exact("Foo(. 1 a;\n  b 1)", F.Call(Foo, one, a, semicolon, OnNewLine(b), one).SetBaseStyle(NodeStyle.Compact));
+			Stmt("[. a b;\n  c x\n  ]", 
+				F.Call(S.Array, a, b, semicolon, OnNewLine(c), NewlineAfter(x)));
 		}
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)

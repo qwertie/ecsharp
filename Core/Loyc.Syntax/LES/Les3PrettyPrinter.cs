@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -40,9 +40,9 @@ namespace Loyc.Syntax.Les
 		{
 			SB.Append((char)kind);
 		}
-		protected override LesColorCode ColorCodeForId(Symbol name)
+		protected override LesColorCode ColorCodeForId(UString name)
 		{
-			if (LNode.IsSpecialName(name.Name) || Continuators.ContainsKey(name))
+			if (LNode.IsSpecialName(name.ToString()) || Continuators.ContainsKey((Symbol) name.ToString()))
 				return LesColorCode.SpecialId;
 			else
 				return LesColorCode.Id;

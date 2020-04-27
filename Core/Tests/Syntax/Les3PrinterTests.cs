@@ -17,19 +17,20 @@ namespace Loyc.Syntax.Les
 		{
 			// There are certain instances of CustomLiteral that the parser will 
 			// not produce, which come out as ordinary literals when printed:
-			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"n")));
-			Exact("1234.5f00bar", F.Literal(new CustomLiteral("1234.5", (Symbol)"f00bar")));
-			Exact(@"0x1234`f00bar`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"0x1234`WTF!\n`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"_")));
+			Exact("1234.5f00bar", F.Literal(new CustomLiteral("1234.5", (Symbol)"_f00bar")));
+			Exact(@"123.5`exact`", F.Literal(new CustomLiteral(123.5, (Symbol)"_exact")));
+			Exact(@"0x1234`f00bar`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234`WTF!\n`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
 			Exact(@"re""[hH]ello!""", F.Literal(new CustomLiteral(
 				new System.Text.RegularExpressions.Regex("[hH]ello!"), (Symbol)"re")));
 			// Support in parser planned soon
 			Exact("123456789012345678901234567890z", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
 			// Ensure we can't trick printer into printing non-number as number
-			Exact(@"f00bar""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"f00bar")));
-			Exact(@"n""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"n")));
-			Exact(@"n""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"n")));
-			Exact(@"n""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"n")));
+			Exact(@"_f00bar""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"_f00bar")));
+			Exact(@"_""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"_")));
+			Exact(@"_""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"_")));
+			Exact(@"_""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"_")));
 		}
 
 		[Test]
@@ -74,6 +75,19 @@ namespace Loyc.Syntax.Les
 			Exact("x Foo 1 == a", F.Call(S.Eq, Op(F.Call("'Foo", x, one)), a));
 			Exact(".. `'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
 			Exact(".. a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+		}
+
+		[Test(Fails = "Hard to make this work in the printer")]
+		public void Thing()
+		{
+			// TODO: this fails in printer because the newline after Foo cannot
+			// be printed before '(' and is suppressed. Solution will be to wait
+			// until after '(' before printing trivia attached to Foo, but this
+			// is not easy to accomplish.
+			Stmt("Foo(\n  \n  a, \n  \n  b, \n  \n  c)",
+				F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
+					NewlineAfter(OnNewLine(b)),
+					OnNewLine(c)));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)

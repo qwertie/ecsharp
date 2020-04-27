@@ -193,8 +193,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "'!!." operator
 		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "'<-" operator
-		public static readonly Symbol SingleQuote = GSymbol.Get("'");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
-		public static readonly Symbol Parens = GSymbol.Get("'()");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
+		public static readonly Symbol Parens = GSymbol.Get("'()");         //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly"); //!< "#readonly" e.g. readonly int X; <=> [#readonly] #var(#int, X);
 		public static readonly Symbol Const = GSymbol.Get("#const");       //!< "#const"    e.g. const int X = 1; <=> [#const] #var(#int, X = 1);

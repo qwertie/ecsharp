@@ -59,9 +59,9 @@ public partial class Les3Lexer
 		)?
 		{return ParseLiteral2(suffix, numberText, true);};
 
-	DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* greedy('_')? ;
+	DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* ;
 	[inline] HexDigit  : '0'..'9' | 'a'..'f' | 'A'..'F' ;
-	HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* greedy('_')? ;
+	HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* ;
 	
 	DecNumber :
 		(DecDigits | '.' DecDigits =>)
@@ -124,7 +124,8 @@ public partial class Les3Lexer
 		{$result = ParseOp(out _type);};
 	
 	token SQOperator returns [object result] : 
-		"'" LettersOrPunc* 
+		"'"
+		(LettersOrPunc+ { _type = TT.SingleQuoteOp; })?
 		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
 		("'" { _type = TT.Literal; return ParseSQStringValue(true); })?
 		{return (Symbol)Text();};
@@ -139,6 +140,7 @@ public partial class Les3Lexer
 		NormalId
 		{return (Symbol)("#" + CharSource.Slice(int sp = _startPosition + 1, InputPosition - sp));};
 
+	[LL(3)]
 	token Id returns [object result] :
 		{object boolOrNull = NoValue.Value;}
 		idtext:IdCore[ref boolOrNull]
@@ -200,7 +202,7 @@ public partial class Les3Lexer
 		/ {_type = TT.Literal;}    value:TQString
 		/ {_type = TT.Literal;}    value:DQString
 		/ {_type = TT.Literal;}    value:SQString
-		/ {_type = TT.SingleQuoteOp;} value:SQOperator
+		/ {_type = TT.SingleQuote;} value:SQOperator
 		/ {_type = TT.Comma;}      ',' { value = @@`',`; }
 		/ {_type = TT.Semicolon;}  ';' { value = @@`';`; }
 		/ {_type = TT.LParen;}     '(' {_brackStack.Add(_type);}

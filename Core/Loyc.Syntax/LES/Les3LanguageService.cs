@@ -66,6 +66,7 @@ namespace Loyc.Syntax.Les
 		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
 		{
 			if (preserveComments) {
+				// Filter out whitespace, including some newlines (those directly inside square brackets or parentheses)
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);
 				var results = Parse(saver.Buffered(), input.SourceFile, msgs, inputType);
 				var injector = new StandardTriviaInjector(saver.TriviaList, input.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
