@@ -12,7 +12,7 @@ namespace Loyc
 		[Test]
 		public void BasicChecks()
 		{
-			Assert.AreEqual(null, GSymbol.Get(null));
+			Assert.AreEqual(GSymbol.Empty, GSymbol.Get(null));
 			Assert.AreEqual(0, GSymbol.Get("").Id);
 			Assert.AreEqual(GSymbol.Empty, GSymbol.GetById(0));
 
@@ -61,8 +61,8 @@ namespace Loyc
 			Assert.AreEqual(s1c, p1.GetIfExists("c"));
 			Assert.AreEqual(3, p1.TotalCount);
 			Assert.AreEqual(null, p2.GetIfExists("c"));
-			Assert.AreEqual(c, p2.GetGlobalOrCreateHere("c"));
-			Assert.AreEqual(p2, p2.GetGlobalOrCreateHere("$!unique^&*").Pool);
+			//Assert.AreEqual(c, p2.GetGlobalOrCreateHere("c"));
+			//Assert.AreEqual(p2, p2.GetGlobalOrCreateHere("$!unique^&*").Pool);
 		}
 
 		public class ShapeType : Symbol
