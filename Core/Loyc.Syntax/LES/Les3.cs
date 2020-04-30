@@ -490,11 +490,11 @@ namespace Loyc.Syntax.Les
 			return missing;
 		}
 
-		protected Les3PrecedenceMap _prec = Les3PrecedenceMap.Default;
+		protected Les3PrecedenceMap _precMap = Les3PrecedenceMap.Default;
 
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
-			var prec = _prec.Find(OperatorShape.Prefix, t.Value);
+			var prec = _precMap.Find(OperatorShape.Prefix, t.Value);
 			if (prec == LesPrecedence.Illegal)
 				ErrorSink.Write(Severity.Error, F.Id(t),
 					"Operator `{0}` cannot be used as a prefix operator", t.Value);
@@ -518,15 +518,15 @@ namespace Loyc.Syntax.Les
 			if (opTok.Type() == TokenType.Id) {
 				var opTok2 = LT(li + 1);
 				if (opTok2.Type() == TokenType.NormalOp && opTok.EndIndex == opTok2.StartIndex)
-					prec = _prec.Find(OperatorShape.Infix, opTok2.Value);
+					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value);
 				else {
 					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
 					// (bacause it's shared with LESv2 which doesn't have them)
 					// TODO: improve performance by avoiding this concat
-					prec = _prec.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
+					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
 				}
 			} else
-				prec = _prec.Find(OperatorShape.Infix, opTok.Value);
+				prec = _precMap.Find(OperatorShape.Infix, opTok.Value);
 			bool result = context.CanParse(prec);
 			if (!context.CanMixWith(prec))
 				Error(li, "Operator \"{0}\" cannot be mixed with the infix operator to its left. Add parentheses to clarify the code's meaning.", LT(li).Value);

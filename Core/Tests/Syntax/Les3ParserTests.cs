@@ -86,7 +86,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
 			Test(Mode.Stmt, 0, "Foo(a; b;)", F.Call(Foo, a, b));
 
-			Test(Mode.Expr, 1, ".`foo`", F.Id("foo"));
+			Test(Mode.Expr, 1, ".`Foo`", F.Dot(F.Missing, Foo));
 		}
 
 		[Test]

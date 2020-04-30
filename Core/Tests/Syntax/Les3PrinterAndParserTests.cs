@@ -208,7 +208,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 1, "? a ?? b", F.Call(S.NullCoalesce, F.Call(S.QuestionMark, a), b));
 
 			Test(Mode.Expr, 1, "?? a + b", F.Call(S.NullCoalesce, F.Call(S.Add, a, b)));
-			Test(Mode.Stmt, 2, "(a; . b)", F.Call(S.Dot, F.Tuple(a), b));
+			Test(Mode.Stmt, 1, "(a; . b)", F.Tuple(a, F.Call(_("#b"))));
 		}
 
 		[Test]
@@ -765,11 +765,14 @@ namespace Loyc.Syntax.Les
 			// Challenges involving `.`
 			Exact("x.x", F.Dot(x, x));
 			Exact("x. 2", F.Dot(x, two));
-			Exact("2 . x", F.Dot(two, x));
 			Exact("1 . 2", F.Dot(one, two));
 			Exact("1 x. 2", F.Call("'x.", one, two));
-			Exact(@"_d""inf"" . Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
-			Exact("0x2 . Ep0", F.Dot(two.WithStyle(NodeStyle.HexLiteral), F.Id("Ep0")));
+			// This used to have to be formatted as "2 . x" until issue #108
+			Exact("2 .x", F.Dot(two, x));
+			Exact(@"_d""inf"" .Foo", F.Dot(F.Literal(double.PositiveInfinity), Foo));
+			Exact("0x2 .Ep0", F.Dot(two.WithStyle(NodeStyle.HexLiteral), F.Id("Ep0")));
+			// This space used to cause trouble for the parser (issue #108)
+			Stmt("a .b!T", F.Dot(a, F.Of(b, T)));
 		}
 
 		[Test]
@@ -920,7 +923,11 @@ namespace Loyc.Syntax.Les
 			Stmt("(. 1 a;\n  b 1)", F.Tuple(one, a, semicolon, OnNewLine(b), one));
 			Stmt("[. a b;\n  c x\n  ]", 
 				F.Call(S.Array, a, b, semicolon, OnNewLine(c), NewlineAfter(x)));
-			
+
+			// A tab or newline acts like a space (a comment would too, except that `./*` parses as a 3-char operator)
+			Stmt("[.\ta b c!x]", F.Call(S.Array, a, b, F.Of(c, x)));
+			Stmt("[.\na b x!T]", F.Call(S.Array, OnNewLine(a), b, F.Of(x, T)));
+
 			// Decided not to support this either (figuring out what the trivia should be is... nontrivial)
 			//Stmt("{\n  . a b\n  c x+1\n}", F.Braces(           a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, one)), AppendStatement(semicolon)));
 			//Stmt("{.\n  a b\n  c x+2\n}", F.Braces(semicolon, a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, two)), AppendStatement(semicolon)));

@@ -1,9 +1,9 @@
 #ecs;
 #importMacros(Loyc.LLPG);
-using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
+using System(, .Text, .Linq, .Collections.Generic, .Diagnostics, .Runtime.CompilerServices);
 using Loyc;               // for IMessageSink, Symbol, etc.
 using Loyc.Collections;   // many handy interfaces & classes
-using Loyc.Collections.Impl;
+using Loyc.Collections.Impl; // For InternalList
 using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
 
@@ -51,10 +51,6 @@ partial class Les3Parser
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, firstItem, isBracedBlock: false);
 		}
-		bool IsSpaceBefore(int li)
-		{
-			return LT(li).StartIndex > LT(li-1).EndIndex;
-		}
 		void CheckForSpace(bool expectSpace, string errorMsg)
 		{
 			if ((LT0.StartIndex == LT(-1).EndIndex) == expectSpace) {
@@ -63,6 +59,8 @@ partial class Les3Parser
 			}
 		}
 		bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		bool IsConjoinedToken(int li) => LT(li-1).EndIndex == LT(li).StartIndex;
 	}
 
 	// Note: we're not saving newlines/trivia here - we rely on `StandardTriviaInjector` for that
@@ -81,6 +79,7 @@ partial class Les3Parser
 
 	[LL(1)]
 	protected NextExpression[ref TokenType separatorType, out Token separator, bool isBracedBlock] returns [LNode result] :
+		(";"|","|TopExpr) =>
 		{ separator = default(Token); }
 		(	result:TopExpr[compactMode: false]
 		/	{ result = F.Id(S.Missing, LT0); }
@@ -115,15 +114,15 @@ partial class Les3Parser
 		{ if (firstItem != null) list.Add(firstItem); }
 		NewlinesOpt
 		(	&!{isBracedBlock}
-			&{LT($LI).EndIndex < LT($LI+1).StartIndex}
+			&!{IsConjoinedToken($LI+1)}
 			"."
 			greedy(list+=CompactExpression)*
 			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
-		|	"'"
+		/	"'"
 			TokenListEx
 			{ list.AddRange($TokenListEx); }
 			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
-		|	{ var separator = default(Token); }
+		/	{ var separator = default(Token); }
 			(	(";"|","|TopExpr) =>
 				list+=NextExpression[ref separatorType, out separator, isBracedBlock]
 			)*
@@ -148,7 +147,10 @@ partial class Les3Parser
 	public ExprListLazy[Holder<TokenType> separatorType] returns [IEnumerable<LNode> result] :
 		{ bool isBracedBlock = true; } // hard-coded so we don't have to deal with compact expression lists
 		NewlinesOpt
-		(	"." { Error(0, "Expected a statement here"); } )?
+		greedy(
+			&!{IsConjoinedToken($LI+1)}
+			"." { Error(0, "Expected a statement here"); }
+		)?
 		(	"'"
 			TokenListEx
 			{
@@ -156,7 +158,7 @@ partial class Les3Parser
 					yield return item;
 			}
 		|	{ var separator = default(Token); }
-			(	(";"|","|TopExpr) =>
+			(	
 				NextExpression[ref separatorType.Value, out separator, isBracedBlock]
 				{
 					yield return $NextExpression;
@@ -179,7 +181,9 @@ partial class Les3Parser
 			//)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
-			(TopExpr[compactMode] | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);})
+			(	e:TopExpr[compactMode]
+			|	("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);}
+			)
 		)
 		{
 			if (treeDef.Type() == TT.TreeDef) {
@@ -210,42 +214,46 @@ partial class Les3Parser
 	Expr[Precedence context, bool compactMode] returns [LNode result] :
 		{ int startIndex = LT0.StartIndex; }
 		{ var attrs = LNode.List(); }
-		(	// @Attribute
-			&!{["An attribute cannot appear mid-expression in a compact expression list."] compactMode && context != Precedence.MinValue}
-			"@" 
-			(	"@" // archaic: now only one @ is required to suppress %inParens trivia
-			/	&{LT($LI-1).EndIndex == LT($LI).StartIndex}
+		(	"@"
+			&!{["An attribute cannot appear mid-expression in a compact expression list."]
+			   compactMode && context != Precedence.MinValue}
+			
+			// If the next token is conjoined we should be able to assume it's an expression,
+			// so we can simplify the output with gates (=>):
+			(	&{IsConjoinedToken($LI)} "@"
+			/	&{IsConjoinedToken($LI)}
+				=>
 				attrs+=Expr[Precedence.MinValue, compactMode: true]
-			)?  // @ without an expression is used to suppress %inParens trivia
-			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
-			NewlinesOpt
+			)?
+			(=> NewlinesOpt)
 		)*
-		(	&!{["A compact list cannot directly contain a keyword expression. Surround it with parentheses."] compactMode}
+		(	&{(TT)LA(1) == TT.Id && !compactMode}
 			// Dot-keyword expression
 			e:KeywordExpression
-		|	{Precedence prec;}
+		/	("."|PrefixExpr) => // This forces the &{predicates} on KeywordExpression to be checked during prediction
+			{ Precedence prec; }
 			e:PrefixExpr[context, compactMode]
-			// Note: it's better to repeat &{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+			// Note: it's better to repeat &{[Local] !compactMode || IsConjoinedToken($LI)}
 			//       over and over rather than suffer the lousy code generation that happens if the loop is a
 			//       separate choice from the alts.
 			greedy(
 				// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
-				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
 			|	// Infix operator
-				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] CanParse(context, $LI, out prec)}
 				opName:=InfixOperatorName[out Token op, compactMode]
 				rhs:=Expr(prec, compactMode)
 				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// Suffix operator
-				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
-				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
+				&{[Local] context.CanParse(_precMap.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:TT.PreOrSufOp
-				{e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+				{e = F.Call(_precMap.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
 			|	// ! operator (generic 'of)
-				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Of)}
 				"!"
 				{ LNodeList args; }
@@ -255,7 +263,7 @@ partial class Les3Parser
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 			|	// .keyword
-				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Primary)}
 				kw:=TT.Keyword
 				{
@@ -265,24 +273,6 @@ partial class Les3Parser
 			)*
 		)
 		{ return attrs.IsEmpty ? e : e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); };
-
-	// This example produces horribly complicated code
-	//ExprBad[Precedence context] returns [LNode result] :
-	//	TT.Id
-	//	greedy(
-	//		&{[Local] A}
-	//		(	// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
-	//			&{[Local] B}
-	//			"(" ")"
-	//		|	// Infix operator
-	//			&{[Local] C}
-	//			("." | &{X} ":" | &{Y} TT.Id)
-	//			ExprBad[prec]
-	//		|	// ! operator (generic 'of)
-	//			&{[Local] E}
-	//			"!" "(" ")"
-	//		)
-	//	)*;
 
 	InfixOperatorName[out Token op, bool compactMode] returns [Symbol result]
 		:	op=(TT.NormalOp|TT.Assignment|".") "\n"*      {$result = (Symbol) op.Value;}
@@ -408,15 +398,17 @@ partial class Les3Parser
 	////////////////////////////////////////////////////////////////////////////
 
 	KeywordExpression returns [LNode result] @init {var args = new LNodeList();} :
-		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
+		&{IsConjoinedToken($LI+1)}
+		"." word:TT.Id 
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 
 		/	args+=Expr[Precedence.MinValue, compactMode: false] )
 		greedy( "\n"? args+=BracedBlock )?
 		greedy( args+=Continuator )*
 		{
-			int endIndex = args.IsEmpty ? kw.EndIndex : args.Last.Range.EndIndex;
-			$result = MarkSpecial(F.Call(keyword, args, kw.StartIndex, endIndex, kw.StartIndex, kw.EndIndex));
+			var keyword = GSymbol.Get("#" + word.Value.ToString());
+			int endIndex = args.IsEmpty ? word.EndIndex : args.Last.Range.EndIndex;
+			$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, endIndex, $".".StartIndex, word.EndIndex));
 		}
 		(=>); // Simplify output by not considering what comes afterward
 

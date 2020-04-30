@@ -978,13 +978,6 @@ namespace Loyc.Syntax.Les
 			
 			StartToken(LesColorCode.Operator, startSet, endSet);
 			
-			if (opName == S.Dot && SB.LastOrDefault(' ').IsOneOf(' ', '\t', '\n')) {
-				// If there is a space before the dot and there is an identifier 
-				// after the dot, we will need another space so it doesn't get 
-				// reparsed as a keyword.
-				_curSet |= Chars.Id;
-			}
-
 			SB.Append(opName.Name, skipApostrophe, opName.Name.Length - skipApostrophe);
 
 			bool newlineSafe = isBinaryOp && opName.Name.Any(c => Les3PrecedenceMap.IsOpChar(c));

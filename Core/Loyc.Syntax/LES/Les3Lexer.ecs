@@ -7,6 +7,7 @@ using Loyc.Syntax.Lexing; // For BaseLexer
 
 namespace Loyc.Syntax.Les; // braces around the rest of the file are optional
 
+[@`%C#PPRawText`("#pragma warning disable 162, 642")]
 using TT = TokenType; // Abbreviate TokenType as TT
 using P = LesPrecedence;
 using S = CodeSymbols;
@@ -137,14 +138,6 @@ public partial class Les3Lexer
 
 	// Identifiers, keywords and named literals --------------------------------
 
-	token Keyword returns [object result] :
-		'.'
-		// Check that the character before '.' is not an identifier character;
-		// LLLPG makes faster code in NextToken if we delay the check until after '.'
-		&{[Hoist] InputPosition < 2-$LI || !Try_ScanIdContChar($LI-2)}
-		NormalId
-		{return (Symbol)("#" + CharSource.Slice(int sp = _startPosition + 1, InputPosition - sp));};
-
 	[LL(3)]
 	token Id returns [object result] :
 		{ UString idText; }
@@ -212,7 +205,6 @@ public partial class Les3Lexer
 		/ {_type = TT.TreeDef;}    ("@." IdStartChar => value:TreeDefOrBackRef)
 		/ {_type = TT.BackRef;}    value:TreeDefOrBackRef
 		/ {_type = TT.At;}         '@' { value = @@`'@`; }
-		/ {_type = TT.Keyword;}    value:Keyword
 		/                          value:Operator
 		/ error _ {_type = TT.Unknown;}
 		)

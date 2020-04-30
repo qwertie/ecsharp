@@ -92,16 +92,6 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void TestKeywords()
-		{
-			Case(".if .If", A(TT.Keyword, TT.Keyword), _("#if"), _("#If"));
-			Case("A.kw 5.kw", A(TT.Id, TT.Dot, TT.Id, TT.Literal, TT.Dot, TT.Id), _("A"), _("'."), _("kw"), 5, _("'."), _("kw"));
-			Case("x'.abc.de", A(TT.Id, TT.Dot, TT.Id, TT.Dot, TT.Id), _("x'"), _("'."), _("abc"), _("'."), _("de"));
-			// Keywords now allow continuation characters like ' and digits
-			Case(".kw'123!", A(TT.Keyword, TT.Not), _("#kw'123"), _("'!"));
-		}
-
-		[Test]
 		public void TestNormalStrings()
 		{
 			Case(@"""Testing""'!'", A(TT.Literal, TT.Literal), "Testing", '!');
@@ -435,6 +425,10 @@ namespace Loyc.Syntax.Les
 			Case(@"false bool""true""", A(TT.Literal, TT.Literal), false, true);
 			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), new Error(CL("null?", "null")));
 			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), CL("nonbool", "true"), new Error(CL("nonnull", "null")));
+			Case(".if .If", A(TT.Dot, TT.Id, TT.Dot, TT.Id), _("'."), _("if"), _("'."), _("If"));
+			Case("A.kw 5.kw", A(TT.Id, TT.Dot, TT.Id, TT.Literal, TT.Dot, TT.Id), _("A"), _("'."), _("kw"), 5, _("'."), _("kw"));
+			Case("x'.abc.de", A(TT.Id, TT.Dot, TT.Id, TT.Dot, TT.Id), _("x'"), _("'."), _("abc"), _("'."), _("de"));
+			Case(".kw'123!", A(TT.Dot, TT.Id, TT.Not), _("'."), _("kw'123"), _("'!"));
 		}
 
 		[Test]
@@ -465,7 +459,7 @@ namespace Loyc.Syntax.Les
 			Case(@"\()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
 			Case("'abc'", A(TT.Literal), new Error(CL("abc", "char")));
 			Case("'' ''", A(TT.Literal, TT.Literal), new Error(CL("", "char")), new Error(CL("", "char")));
-			Case(".kw '", A(TT.Keyword, TT.SingleQuote), _("#kw"), _("'"));
+			Case("x '", A(TT.Id, TT.SingleQuote), _("x"), _("'"));
 		}
 
 		[Test]
@@ -476,7 +470,7 @@ namespace Loyc.Syntax.Les
 			Case(" .\n. ", A(TT.Dot, TT.Newline), _("'."), null);
 			Case(".   .  . Hello", A(TT.Id), _("Hello"));
 			Case(".\t.\t.\tHello\n.. Goodbye", A(TT.Id, TT.Newline, TT.NormalOp, TT.Id), _("Hello"), null, _("'.."), _("Goodbye"));
-			Case(". .Hello",  A(TT.Keyword), _("#Hello"));
+			Case(". .Hello",  A(TT.Dot, TT.Id), _("'."), _("Hello"));
 			Case(". ..Hello", A(TT.NormalOp, TT.Id), _("'.."), _("Hello"));
 		}
 
