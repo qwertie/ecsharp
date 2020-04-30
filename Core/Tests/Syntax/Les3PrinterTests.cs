@@ -57,27 +57,31 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void ImmiscibilityErrors()
+		public void PrinterImmiscibilityErrors()
 		{
 			Exact("a & b | c", F.Call(S.OrBits, F.Call(S.AndBits, a, b), c));
-			Exact("x & `'==`(Foo, 0)", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
-			Exact("`'&`(x, Foo) == 0", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
+			Exact("x & (@ Foo == 0)", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
+			Exact("(@ x & Foo) == 0", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
 			Exact("x >> 1 == a", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
-			Exact("x >> `'+`(a, 1)", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
-			Exact("x << `'-`(a, 2)", F.Call(S.Shl, x, F.Call(S.Sub, a, two)));
-			Exact("`'>>`(x, a) + 1", F.Call(S.Add, F.Call(S.Shr, x, a), one));
-			Exact("`'>>`(x, a) * 2", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
+			Exact("x >> (@ a + 1)", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
+			Exact("x << (@ a - 2)", F.Call(S.Shl, x, F.Call(S.Sub, a, two)));
+			Exact("(@ x >> a) + 1", F.Call(S.Add, F.Call(S.Shr, x, a), one));
+			Exact("(@ x >> a) * 2", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
 			Exact("x >> a**1", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
+
+			Exact(".. (@ a & b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
+			Exact(".. a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 			// No longer classified as immiscible
 			Exact("x >> a / 2", F.Call(S.Shr, x, F.Call(S.Div, a, two)));
 			Exact("a * 2 >> x", F.Call(S.Shr, F.Call(S.Mul, a, two), x));
-
-			Exact("x Foo `'*`(a, b)", Op(F.Call("'Foo", x, F.Call(S.Mul, a, b))));
-			Exact("(@ a + b) Foo c", Op(F.Call("'Foo", F.Call(S.Add, a, b), c)));
+			// Uppercase word ops: immiscibility was cancelled for issue #106 backquoted operators;
+			// the only remaining immiscibility is << >> combined with WORD ops...
+			// a couple of these weren't errors anyway.
+			Exact("(@ a >> b) Foo x", Op(F.Call("'Foo", F.Call(S.Shr, a, b), x)));
+			Exact("x Foo a * b", Op(F.Call("'Foo", x, F.Call(S.Mul, a, b))));
+			Exact("(@ a + b) Foo c", Op(F.Call("'Foo", F.Call(S.Add, a, b), c))); // huh?????
 			Exact("x Foo a**b", Op(F.Call("'Foo", x, F.Call(S.Exp, a, b))));
 			Exact("x Foo 1 == a", F.Call(S.Eq, Op(F.Call("'Foo", x, one)), a));
-			Exact(".. `'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact(".. a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions options, string expected, params LNode[] inputs)

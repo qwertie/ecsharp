@@ -170,7 +170,7 @@ namespace Loyc.Syntax.Les
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
-			if (first >= 'A' && first <= 'Z')
+			if (isInfix && first >= 'A' && first <= 'Z')
 				return table[symbol] = P.UpperWord;
 
 			// Default precedence is used for anything else (lowercase word ops)

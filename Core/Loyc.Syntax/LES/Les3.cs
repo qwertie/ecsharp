@@ -521,7 +521,7 @@ namespace Loyc.Syntax.Les
 					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value);
 				else {
 					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
-					// (bacause it's shared with LESv2 which doesn't have them)
+					// (because it's shared with LESv2 which doesn't have them)
 					// TODO: improve performance by avoiding this concat
 					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
 				}

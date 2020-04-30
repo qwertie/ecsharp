@@ -250,8 +250,13 @@ partial class Les3Parser
 			|	// Suffix operator
 				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(_precMap.Find(OperatorShape.Suffix, LT($LI).Value))}
-				t:TT.PreOrSufOp
+				t:=TT.PreOrSufOp
 				{e = F.Call(_precMap.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+			|	// Suffix unit
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
+				&{[Local] context.CanParse(P.SuffixWord)}
+				unit:=TT.BQId
+				{e = F.Call(S.IS, e, F.Id(unit), e.Range.StartIndex, unit.EndIndex, unit.StartIndex, unit.EndIndex, NodeStyle.Operator);}
 			|	// ! operator (generic 'of)
 				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Of)}
@@ -318,7 +323,7 @@ partial class Les3Parser
 	PrefixExpr[Precedence context, bool compactMode] returns [LNode result] 
 		:	// Prefix operator
 			&{!compactMode || LT(0).EndIndex == LT(1).StartIndex}
-			op:(TT.NormalOp|"!"|":"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
+			op:(TT.NormalOp|"!"|":"|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
 			NewlinesOpt
 			e:Expr[PrefixPrecedenceOf(op), compactMode]
 			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}

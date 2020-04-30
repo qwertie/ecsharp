@@ -922,8 +922,6 @@ namespace Loyc.Syntax.Les
 					return false;
 			}
 			bool allowed = IsAllowedHere(prec);
-			if (!allowed && IsAllowedHere(LesPrecedence.Primary))
-				return false;
 			parens |= AddParenIf(!allowed);
 
 			switch (shape) {

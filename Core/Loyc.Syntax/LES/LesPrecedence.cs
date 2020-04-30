@@ -249,10 +249,10 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Primary      = new Precedence(100);             // . :: x() x[] x++ x--
 		public static readonly Precedence NullDot      = new Precedence(95);              // ?. (in LESv2, :: is NullDot, in LESv3 it's Primary)
 		public static readonly Precedence Power        = new Precedence(91, 90);          // ** (right-associative as in Python)
-		public static readonly Precedence SuffixWord   = new Precedence(85, 111, 85, 85); // LES3 suffix 'word operators
-		public static readonly Precedence Prefix       = new Precedence(111, 80, 80, 80); // most prefix operators, e.g. - ~ *
+		public static readonly Precedence Prefix       = new Precedence(111, 85, 85, 85); // most prefix operators, e.g. - ~ *
+		public static readonly Precedence SuffixWord   = new Precedence(80, 111, 80, 80); // LES3 suffix 'word operators and `units`
 		public static readonly Precedence Multiply     = new Precedence(75);              // * / %
-		public static readonly Precedence UpperWord    = new Precedence(111, 70, 65, 75); // LES3 uppercase WORD_OP or unary 'WORD_OP
+		public static readonly Precedence UpperWord    = new Precedence(70);              // LES3 uppercase WORD_OP or unary 'WORD_OP
 		public static readonly Precedence Shift        = new Precedence(70, 70, 65, 70);  // >> <<
 		public static readonly Precedence Other        = new Precedence(70, 70, 55, 75);  // LES2 `WORD` or `word` operator
 		public static readonly Precedence Add          = new Precedence(65);              // + -

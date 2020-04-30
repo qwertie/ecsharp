@@ -457,8 +457,8 @@ namespace Loyc.Syntax.Les
 			Case("0xFF_0000_0000_0000_0000U", A(TT.Literal), new Error(CL("0xFF_0000_0000_0000_0000", "_U")));
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), new Error(CL("0xFFFF_FFFF_0000_0000", "_L")));
 			Case(@"\()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
-			Case("'abc'", A(TT.Literal), new Error(CL("abc", "char")));
-			Case("'' ''", A(TT.Literal, TT.Literal), new Error(CL("", "char")), new Error(CL("", "char")));
+			Case("'abc'", A(TT.PreOrSufOp, TT.SingleQuote), _("'abc"), _("'"));
+			Case("'' ''", A(TT.SingleQuote, TT.Literal, TT.SingleQuote), _("'"), ' ', _("'"));
 			Case("x '", A(TT.Id, TT.SingleQuote), _("x"), _("'"));
 		}
 

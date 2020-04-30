@@ -197,6 +197,73 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void PrefixOps()
+		{
+			Exact("-a * b", F.Call(S.Mul, F.Call(S._Negate, a), b));
+			Stmt("-x** +x / ~x + &x & *x && !x == ^x;",
+				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div,
+					F.Call(S._Negate, F.Call(S.Exp, x, F.Call(S._UnaryPlus, x))),
+					F.Call(S.NotBits, x)),
+					F.Call(S._AddressOf, x)),
+					F.Call(S._Dereference, x)),
+					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
+			Stmt("`'-`(x)** +x / ~x + &x & *x && !x == ^x;",
+				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
+					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
+					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
+					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
+			Exact("=> a = %b", F.Call(S.Lambda, F.Call(S.Assign, a, F.Call(S.Mod, b))));
+			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
+			Exact("/x", F.Call(S.Div, x));
+			Exact(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
+			Exact(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
+			Exact("> Foo", Op(F.Call(S.GT, Foo)));
+			Exact("=> a && b", F.Call(S.Lambda, F.Call(S.And, a, b)));
+		}
+
+		[Test]
+		public void PrefixColon()
+		{
+			// It's unclear whether the colon should have ultra-high precedence,
+			// as in Ruby, or ultra-low precedence as the binary : operator does.
+			// So... I arbitrarily picked Ruby.
+			Exact(@":Foo", F.Call(S.Colon, Foo));
+			Exact(@":Foo + 1", F.Call(S.Add, F.Call(S.Colon, Foo), one));
+			Exact(@"1 + ::Foo::x", F.Call(S.Add, one, F.Call(S.ColonColon, F.Call(S.ColonColon, Foo), x)));
+		}
+
+		[Test]
+		public void PunctuationBasedSuffixOps()
+		{
+			Stmt("a++ + ++a", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
+			Stmt(@"a.b --", F.Call(S.PostDec, F.Call(S.Dot, a, b)));
+			Stmt(@"a + b -<>-", F.Call(S.Add, a, F.Call(@"'suf-<>-", b)));
+			// Ensure printer isn't confused by "suf" prefix which also appears on suffix operators
+			Exact(@"suffix(x)", F.Call(@"suffix", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"#suffix(x)", F.Call(@"#suffix", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"a!! !!", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
+			Exact(@"!!a!!", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
+		}
+
+		[Test]
+		public void SubtractNegativeLiteral()
+		{
+			Expr("a-b", F.Call(S.Sub, a, b));
+			Expr("x-2", F.Call(S.Sub, x, F.Literal(2)));
+		}
+
+		[Test]
+		public void DollarSignOnlyAtStartOfOperator()
+		{
+			Stmt(@"a-$b", F.Call(S.Sub, a, F.Call(S.Substitute, b)));
+			Stmt(@"-$b", F.Call(S.Sub, F.Call(S.Substitute, b)));
+			Exact(@"`'-$`(b)", F.Call("'-$", b));
+			Exact(@"$-b", F.Call("'$-", b));
+			Stmt(@"a-$-b", F.Call(S.Sub, a, F.Call("'$-", b)));
+			Exact(@"a - $-b", F.Call(S.Sub, a, F.Call("'$-", b)));
+		}
+
+		[Test]
 		public void InvalidPrefixOperators()
 		{
 			Test(Mode.Expr, 1, "? Foo", F.Call("'?", Foo));
@@ -258,6 +325,10 @@ namespace Loyc.Syntax.Les
 			Stmt (@"`'#`(x)", Op(F.Call(_(@"'#"), x)));
 		}
 
+		#endregion
+
+		#region Fancy operators: word ops, combo ops, 'unaryApostrophe ops, backquoted suffixes
+
 		[Test]
 		public void WordOperators()
 		{
@@ -308,9 +379,41 @@ namespace Loyc.Syntax.Les
 			Exact("2 * x 'inclusive", F.Call(S.Mul, two, F.Call(_("'sufinclusive"), x)));
 			Exact("a.b 'suffix", F.Call(_("'sufsuffix"), F.Dot(a, b)));
 			Exact("2**x 'inclusive", F.Call(_("'sufinclusive"), F.Call(S.Exp, two, x)));
-			Exact("'prefix a**b 'suffix", F.Call(_("'prefix"), F.Call(_("'sufsuffix"), F.Call(S.Exp, a, b))));
+			Exact("'prefix a**b 'suffix", F.Call(_("'sufsuffix"), F.Call(_("'prefix"), F.Call(S.Exp, a, b))));
+			Exact("-x 'suffix", F.Call(_("'sufsuffix"), F.Call(S._Negate, x)));
 			Exact(@"x 'fer", Op(F.Call(@"'suffer", x)));
+
+			// Apostrophe operators are "'" IdStartChar+; apostrophe and digits are not allowed
+			Expr("'sin'abs x", Op(F.Call(_("'sin"), Op(F.Call(_("'abs"), x)))));
+			Expr("'foo2", Op(F.Call(_("'foo"), two)));
+
+			// Unlike binary word operators, uppercase doesn't change the precedence of 'apostrophe ops.
+			// Uppercase binary word ops are immiscible with `+ - << >> * / %`; make sure this rule is
+			// not applied to single-quoted ops.
+			Exact("a + b 'POST", F.Call(S.Add, a, F.Call(_("'sufPOST"), b)));
+			Exact("a * b 'POST", F.Call(S.Mul, a, F.Call(_("'sufPOST"), b)));
+			Exact("'PRE a + b", F.Call(S.Add, F.Call(_("'PRE"), a), b));
+			Exact("'PRE a * b", F.Call(S.Mul, F.Call(_("'PRE"), a), b));
 		}
+
+		[Test]
+		public void BackquotedSuffixes()
+		{
+			Expr("x`Foo`", Op(F.Call(S.IS, x, Foo)));
+			Expr("`x``Foo`", Op(F.Call(S.IS, x, Foo)));
+			Expr("ft * 12`in/ft`", F.Call(S.Mul, _("ft"), Op(F.Call(S.IS, F.Literal(12), _("in/ft")))));
+			Expr("size: int`bytes`", F.Call(S.Colon, _("size"), Op(F.Call(S.IS, _("int"), _("bytes")))));
+			Expr("(x`x`, a`a` / b`b`)", F.Call(S.Tuple, Op(F.Call(S.IS, x, x)), F.Call(S.Div, Op(F.Call(S.IS, a, a)), Op(F.Call(S.IS, b, b)))));
+
+			var innerExpr = F.Call(S.Add, _("baseSpeed"), F.Call(S.IS, F.Call(S.Div, _("dDist"), _("dTime")), _("m/s")));
+			Expr("baseSpeed + dDist / dTime IS `m/s`", innerExpr);
+			var expr = F.Call(S.And, _("flag"), F.Call(S.LT, innerExpr, _("max")));
+			Expr("flag && baseSpeed + dDist / dTime IS `m/s` < max", expr);
+		}
+
+		#endregion
+
+		#region Precedence tests
 
 		[Test]
 		public void PrecedenceChecks()
@@ -323,6 +426,7 @@ namespace Loyc.Syntax.Les
 			Exact("a | b ^ c | x", F.Call("'|", F.Call("'^", F.Call("'|", a, b), c), x));
 			Exact("a & b | c ^ x", F.Call("'^", F.Call("'|", F.Call("'&", a, b), c), x));
 		}
+
 		[Test]
 		public void PrecedenceChecks_ArrowOps()
 		{
@@ -356,42 +460,6 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void PrefixOps()
-		{
-			Exact("-a * b", F.Call(S.Mul, F.Call(S._Negate, a), b));
-			Stmt("-x** +x / ~x + &x & *x && !x == ^x;",
-				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div,
-					F.Call(S._Negate, F.Call(S.Exp, x, F.Call(S._UnaryPlus, x))),
-					F.Call(S.NotBits, x)),
-					F.Call(S._AddressOf, x)),
-					F.Call(S._Dereference, x)),
-					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
-			Stmt("`'-`(x)** +x / ~x + &x & *x && !x == ^x;",
-				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
-					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
-					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
-					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
-			Exact("=> a = %b", F.Call(S.Lambda, F.Call(S.Assign, a, F.Call(S.Mod, b))));
-			Exact("$a / $*b", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
-			Exact("/x", F.Call(S.Div, x));
-			Exact(@"- -a", F.Call(S.Sub, F.Call(S.Sub, a)));
-			Exact(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
-			Exact("> Foo", Op(F.Call(S.GT, Foo)));
-			Exact("=> a && b", F.Call(S.Lambda, F.Call(S.And, a, b)));
-		}
-
-		[Test]
-		public void PrefixColon()
-		{
-			// It's unclear whether the colon should have ultra-high precedence,
-			// as in Ruby, or ultra-low precedence as the binary : operator does.
-			// So... I arbitrarily picked Ruby.
-			Exact(@":Foo", F.Call(S.Colon, Foo));
-			Exact(@":Foo + 1", F.Call(S.Add, F.Call(S.Colon, Foo), one));
-			Exact(@"1 + ::Foo::x", F.Call(S.Add, one, F.Call(S.ColonColon, F.Call(S.ColonColon, Foo), x)));
-		}
-
-		[Test]
 		public void PrecedenceOverrideEffect()
 		{
 			// The precedence override effect is something weird that prefix operators do.
@@ -416,37 +484,6 @@ namespace Loyc.Syntax.Les
 		public void PrecedenceChallenge()
 		{
 			Exact("a.b::(@ x.c)", F.Call(S.ColonColon, F.Dot(a, b), F.Dot(x, c)));
-		}
-
-		[Test]
-		public void SuffixOps()
-		{
-			Stmt("a++ + ++a", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a.b --", F.Call(S.PostDec, F.Call(S.Dot, a, b)));
-			Stmt(@"a + b -<>-", F.Call(S.Add, a, F.Call(@"'suf-<>-", b)));
-			// Ensure printer isn't confused by "suf" prefix which also appears on suffix operators
-			Exact(@"suffix(x)", F.Call(@"suffix", x).SetBaseStyle(NodeStyle.Operator));
-			Exact(@"#suffix(x)", F.Call(@"#suffix", x).SetBaseStyle(NodeStyle.Operator));
-			Exact(@"a!! !!", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
-			Exact(@"!!a!!", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
-		}
-
-		[Test]
-		public void SubtractNegativeLiteral()
-		{
-			Expr("a-b", F.Call(S.Sub, a, b));
-			Expr("x-2", F.Call(S.Sub, x, F.Literal(2)));
-		}
-
-		[Test]
-		public void DollarSignOnlyAtStartOfOperator()
-		{
-			Stmt (@"a-$b",     F.Call(S.Sub, a, F.Call(S.Substitute, b)));
-			Stmt (@"-$b",      F.Call(S.Sub, F.Call(S.Substitute, b)));
-			Exact(@"`'-$`(b)", F.Call("'-$", b));
-			Exact(@"$-b",      F.Call("'$-", b));
-			Stmt (@"a-$-b",    F.Call(S.Sub, a, F.Call("'$-", b)));
-			Exact(@"a - $-b",  F.Call(S.Sub, a, F.Call("'$-", b)));
 		}
 
 		#endregion
@@ -586,7 +623,7 @@ namespace Loyc.Syntax.Les
 		public void AttributesInMiddleOfExpression2()
 		{
 			Exact("a foo @x b", Op(F.Call(_("'foo"), a, b.PlusAttr(x))));
-			Exact("'prefix@T x 'suffix", F.Call(_("'prefix"), F.Call(_("'sufsuffix"), x).PlusAttr(T)));
+			Stmt("'prefix@T x 'suffix", F.Call(_("'sufsuffix"), F.Call(_("'prefix"), x.PlusAttr(T))));
 			Stmt("@T Foo.@a.b c", F.Dot(Foo, c.PlusAttr(F.Dot(a, b))).PlusAttr(T));
 		}
 
@@ -702,6 +739,8 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		#region Token Trees and Compact Expression Lists
+
 		[Test]
 		public void BasicTokenTrees()
 		{
@@ -752,6 +791,78 @@ namespace Loyc.Syntax.Les
 				newline));
 		}
 
+		public void CompactModeTests()
+		{
+			var semicolon = F.Id(S.Semicolon);
+			Stmt("Foo(. )", F.Call(Foo).SetBaseStyle(NodeStyle.Compact));
+			Stmt("Foo(. 1 x)", F.Call(Foo, one, x).SetBaseStyle(NodeStyle.Compact));
+			Stmt("Foo(. (x + 2) [a, b])", F.Call(Foo, F.Call(S.Add, x, two), F.Call(S.Array, a, b)).SetBaseStyle(NodeStyle.Compact));
+			Stmt("Foo(. 1 a; b 1)", F.Call(Foo, one, a, semicolon, b, one).SetBaseStyle(NodeStyle.Compact));
+		}
+
+		[Test]//(Fails = "TODO: Printer support")]
+		public void CompactModeTests2()
+		{
+			// In Julia you can use newline as a row separator:
+			//   [a b
+			//    c d]
+			// This isn't supported in LES3 because it adds significant complexity. It would 
+			// require compact square brackets to be treated differently from normal square
+			// brackets, since newlines are filtered out of the latter.
+			var semicolon = F.Id(S.Semicolon);
+			Stmt("[. a b, c x]", F.Call(S.Array, a, b, c, x));
+			Stmt("[. @1 a @2 b @x c]", F.Call(S.Array, a.PlusAttr(one), b.PlusAttr(two), c.PlusAttr(x)));
+			Stmt("[. @1 a @2 @x b c]", F.Call(S.Array, a.PlusAttr(one), b.PlusAttrs(two, x), c));
+			Stmt("[. 1 a; b c]", F.Call(S.Array, one, a, semicolon, b, c));
+			Stmt("[. a b;\n  c 1]", F.Call(S.Array, a, b, semicolon, OnNewLine(c), one));
+			Stmt("Foo(. 1 a;\n  b 1)", F.Call(Foo, one, a, semicolon, OnNewLine(b), one).SetBaseStyle(NodeStyle.Compact));
+			Stmt("(. 1 a;\n  b 1)", F.Tuple(one, a, semicolon, OnNewLine(b), one));
+			Stmt("[. a b;\n  c x\n  ]",
+				F.Call(S.Array, a, b, semicolon, OnNewLine(c), NewlineAfter(x)));
+
+			// A tab or newline acts like a space (a comment would too, except that `./*` parses as a 3-char operator)
+			Stmt("[.\ta b c!x]", F.Call(S.Array, a, b, F.Of(c, x)));
+			Stmt("[.\na b x!T]", F.Call(S.Array, OnNewLine(a), b, F.Of(x, T)));
+
+			// Decided not to support this either (figuring out what the trivia should be is... nontrivial)
+			//Stmt("{\n  . a b\n  c x+1\n}", F.Braces(           a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, one)), AppendStatement(semicolon)));
+			//Stmt("{.\n  a b\n  c x+2\n}", F.Braces(semicolon, a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, two)), AppendStatement(semicolon)));
+			//Stmt("{. a b\n  c x }", F.Braces(a, b, semicolon, OnNewLine(c), x).SetBaseStyle(NodeStyle.Compact));
+			//Stmt("{. a b\n  ; c x }", F.Braces(a, b, semicolon, semicolon, OnNewLine(c), x).SetBaseStyle(NodeStyle.Compact));
+			//Stmt("{. a b;\n\n  c x }", F.Braces(a, b, semicolon, OnNewLine(OnNewLine(c)), x).SetBaseStyle(NodeStyle.Compact));
+			//Stmt("{. a b;\n  c x\n  }",
+			//	F.Call(S.Array, a, b, semicolon, OnNewLine(c), x.PlusTrailingTrivia(F.TriviaNewline)));
+		}
+
+		#endregion
+
+		#region Directed acyclic graphs (subtree definitions and backreferences)
+
+		[Test]
+		public void TreeDefsAndBackRefs()
+		{
+			// @. does NOT suppress %inParens (to avoid having to check for TreeDef tokens in parser)
+			Expr("(@.x Foo)", F.InParens(Foo));
+
+			var subexpr = F.Call(S.Add, a, F.Call(Foo, one));
+			Expr("(@.x a + Foo(1)) * @@x", F.Call(S.Mul, F.InParens(subexpr), subexpr));
+			Expr("(@.x a + Foo(@.y 1)) * @@x + @@y", F.Call(S.Add, F.Call(S.Mul, F.InParens(subexpr), subexpr), one));
+		}
+
+		[Test]
+		public void TreeDefAndBackRefErrors()
+		{
+			Expr("@@x", F.Missing, 1);
+			Expr("Foo(@.x x) * Foo(@.x x)", F.Call(S.Mul, F.Call(Foo, x), F.Call(Foo, x)), 1);
+			Expr("(@.x Foo) * @@xx", F.Call(S.Mul, F.InParens(Foo), F.Missing), 1);
+			// Syntax error (currently produces 2 errors which seems high)
+			Expr("a + @.x b", F.Call(S.Add, a, F.Missing), 2);
+		}
+
+		#endregion
+
+		#region Printer-related challenges
+
 		[Test]
 		public void PrinterSpacingMinefield()
 		{
@@ -798,6 +909,10 @@ namespace Loyc.Syntax.Les
 			Expr("1..2", Op(F.Call(S.DotDot, one, two)));
 			Expr("1.*. 2", Op(F.Call(_("'.*."), one, two)));
 		}
+
+		#endregion
+
+		#region Trivia tests
 
 		[Test]
 		public void TriviaTest_Comments()
@@ -895,69 +1010,7 @@ namespace Loyc.Syntax.Les
 				NewlineAfter(F.Call(NewlineAfter(_(S._Negate)), OnNewLine(b)))));
 		}
 
-		public void CompactModeTests()
-		{
-			var semicolon = F.Id(S.Semicolon);
-			Stmt("Foo(. )", F.Call(Foo).SetBaseStyle(NodeStyle.Compact));
-			Stmt("Foo(. 1 x)", F.Call(Foo, one, x).SetBaseStyle(NodeStyle.Compact));
-			Stmt("Foo(. (x + 2) [a, b])", F.Call(Foo, F.Call(S.Add, x, two), F.Call(S.Array, a, b)).SetBaseStyle(NodeStyle.Compact));
-			Stmt("Foo(. 1 a; b 1)", F.Call(Foo, one, a, semicolon, b, one).SetBaseStyle(NodeStyle.Compact));
-		}
-
-		[Test]//(Fails = "TODO: Printer support")]
-		public void CompactModeTests2()
-		{
-			// In Julia you can use newline as a row separator:
-			//   [a b
-			//    c d]
-			// This isn't supported in LES3 because it adds significant complexity. It would 
-			// require compact square brackets to be treated differently from normal square
-			// brackets, since newlines are filtered out of the latter.
-			var semicolon = F.Id(S.Semicolon);
-			Stmt("[. a b, c x]", F.Call(S.Array, a, b, c, x));
-			Stmt("[. @1 a @2 b @x c]", F.Call(S.Array, a.PlusAttr(one), b.PlusAttr(two), c.PlusAttr(x)));
-			Stmt("[. @1 a @2 @x b c]", F.Call(S.Array, a.PlusAttr(one), b.PlusAttrs(two, x), c));
-			Stmt("[. 1 a; b c]", F.Call(S.Array, one, a, semicolon, b, c));
-			Stmt("[. a b;\n  c 1]", F.Call(S.Array, a, b, semicolon, OnNewLine(c), one));
-			Stmt("Foo(. 1 a;\n  b 1)", F.Call(Foo, one, a, semicolon, OnNewLine(b), one).SetBaseStyle(NodeStyle.Compact));
-			Stmt("(. 1 a;\n  b 1)", F.Tuple(one, a, semicolon, OnNewLine(b), one));
-			Stmt("[. a b;\n  c x\n  ]", 
-				F.Call(S.Array, a, b, semicolon, OnNewLine(c), NewlineAfter(x)));
-
-			// A tab or newline acts like a space (a comment would too, except that `./*` parses as a 3-char operator)
-			Stmt("[.\ta b c!x]", F.Call(S.Array, a, b, F.Of(c, x)));
-			Stmt("[.\na b x!T]", F.Call(S.Array, OnNewLine(a), b, F.Of(x, T)));
-
-			// Decided not to support this either (figuring out what the trivia should be is... nontrivial)
-			//Stmt("{\n  . a b\n  c x+1\n}", F.Braces(           a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, one)), AppendStatement(semicolon)));
-			//Stmt("{.\n  a b\n  c x+2\n}", F.Braces(semicolon, a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, two)), AppendStatement(semicolon)));
-			//Stmt("{. a b\n  c x }", F.Braces(a, b, semicolon, OnNewLine(c), x).SetBaseStyle(NodeStyle.Compact));
-			//Stmt("{. a b\n  ; c x }", F.Braces(a, b, semicolon, semicolon, OnNewLine(c), x).SetBaseStyle(NodeStyle.Compact));
-			//Stmt("{. a b;\n\n  c x }", F.Braces(a, b, semicolon, OnNewLine(OnNewLine(c)), x).SetBaseStyle(NodeStyle.Compact));
-			//Stmt("{. a b;\n  c x\n  }",
-			//	F.Call(S.Array, a, b, semicolon, OnNewLine(c), x.PlusTrailingTrivia(F.TriviaNewline)));
-		}
-
-		[Test]
-		public void TreeDefsAndBackRefs()
-		{
-			// @. does NOT suppress %inParens (to avoid having to check for TreeDef tokens in parser)
-			Expr("(@.x Foo)", F.InParens(Foo));
-
-			var subexpr = F.Call(S.Add, a, F.Call(Foo, one));
-			Expr("(@.x a + Foo(1)) * @@x", F.Call(S.Mul, F.InParens(subexpr), subexpr));
-			Expr("(@.x a + Foo(@.y 1)) * @@x + @@y", F.Call(S.Add, F.Call(S.Mul, F.InParens(subexpr), subexpr), one));
-		}
-
-		[Test]
-		public void TreeDefAndBackRefErrors()
-		{
-			Expr("@@x", F.Missing, 1);
-			Expr("Foo(@.x x) * Foo(@.x x)", F.Call(S.Mul, F.Call(Foo, x), F.Call(Foo, x)), 1);
-			Expr("(@.x Foo) * @@xx", F.Call(S.Mul, F.InParens(Foo), F.Missing), 1);
-			// Syntax error (currently produces 2 errors)
-			Expr("a + @.x b", F.Call(S.Add, a, F.Missing), 2);
-		}
+		#endregion
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)
 		{

@@ -126,8 +126,6 @@ public partial class Les3Lexer
 	token SQOperator returns [object result] : 
 		"'"
 		(IdStartChar+ { _type = TT.PreOrSufOp; })?
-		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
-		("'" { _type = TT.Literal; return ParseSQStringValue(true); })?
 		{ return (Symbol) Text(); };
 
 	token TreeDefOrBackRef returns [object result] : 

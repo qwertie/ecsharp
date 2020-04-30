@@ -24,9 +24,13 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 1, "x >> a + 1;",   F.Call(S.Add, F.Call(S.Shr, x, a), one));
 			Test(Mode.Expr, 1, "x << 1 - 1",    F.Call(S.Sub, F.Call(S.Shl, x, one), one));
 			Test(Mode.Expr, 1, "1 + x << a;",   F.Call(S.Add, one, F.Call(S.Shl, x, a)));
-			Test(Mode.Expr, 1, "a MOD b * c",   F.Call("'MOD", a, F.Call(S.Mul, b, c)));
-			Test(Mode.Expr, 1, "a MOD b - c",   F.Call(S.Sub, F.Call("'MOD", a, b), c));
-			Test(Mode.Expr, 1, "a + b MOD c",   F.Call(S.Add, a, F.Call("'MOD", b, c)));
+			// Uppercase word ops: immiscibility was cancelled for issue #106 backquoted operators.
+			// The only remaining error is mixing shift (>> <<) with UpperCaseWords.
+			Test(Mode.Expr, 0, "a MOD b * c",   F.Call("'MOD", a, F.Call(S.Mul, b, c)));
+			Test(Mode.Expr, 0, "a MOD b - c",   F.Call(S.Sub, F.Call("'MOD", a, b), c));
+			Test(Mode.Expr, 0, "a + b MOD c",   F.Call(S.Add, a, F.Call("'MOD", b, c)));
+			Test(Mode.Expr, 1, "a >> b REM c",  F.Call("'REM", F.Call(S.Shr, a, b), c));
+			Test(Mode.Expr, 1, "a REM b << c",  F.Call(S.Shl, F.Call("'REM", a, b), c));
 		}
 
 		[Test]
