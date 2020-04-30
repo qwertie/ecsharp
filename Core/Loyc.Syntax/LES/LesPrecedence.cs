@@ -47,7 +47,7 @@ namespace Loyc.Syntax.Les
 	/// to a static field of this class. All binary operators are left-associative 
 	/// unless otherwise specified.
 	/// <ol>
-	/// <li>Substitute: prefix $ . :</li>
+	/// <li>Substitute: prefix $ . : (note: prefix-dot is not allowed in LES3)</li>
 	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
 	/// <li>NullDot: binary ?. :: (in LESv2, :: is NullDot, in LESv3 it's Primary)</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
@@ -248,11 +248,13 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Of           = new Precedence(106, 105);        // List!T
 		public static readonly Precedence Primary      = new Precedence(100);             // . :: x() x[] x++ x--
 		public static readonly Precedence NullDot      = new Precedence(95);              // ?. (in LESv2, :: is NullDot, in LESv3 it's Primary)
-		public static readonly Precedence Prefix       = new Precedence(111, 90, 90, 90); // most prefix operators, e.g. - ~ *
-		public static readonly Precedence Power        = new Precedence(86, 85);          // **
-		public static readonly Precedence Multiply     = new Precedence(75);              // * /
+		public static readonly Precedence Power        = new Precedence(91, 90);          // ** (right-associative as in Python)
+		public static readonly Precedence SuffixWord   = new Precedence(85, 111, 85, 85); // LES3 suffix 'word operators
+		public static readonly Precedence Prefix       = new Precedence(111, 80, 80, 80); // most prefix operators, e.g. - ~ *
+		public static readonly Precedence Multiply     = new Precedence(75);              // * / %
+		public static readonly Precedence UpperWord    = new Precedence(111, 70, 65, 75); // LES3 uppercase WORD_OP or unary 'WORD_OP
 		public static readonly Precedence Shift        = new Precedence(70, 70, 65, 70);  // >> <<
-		public static readonly Precedence Other        = new Precedence(70, 70, 55, 75);  // WORD_OP (`word` in LES2)
+		public static readonly Precedence Other        = new Precedence(70, 70, 55, 75);  // LES2 `WORD` or `word` operator
 		public static readonly Precedence Add          = new Precedence(65);              // + -
 		public static readonly Precedence RangePrefix  = new Precedence(111, 60, 60, 60); // .. ..< (prefix)
 		public static readonly Precedence Range        = new Precedence(60);              // .. ..<
@@ -277,5 +279,6 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Triangle     = new Precedence(-5);              // |> <|
 		public static readonly Precedence TrianglePrefix = new Precedence(111, -5);       // |> <| (prefix)
 		public static readonly Precedence SuperExpr    = new Precedence(-10);             // LES2 only
+		public static readonly Precedence Illegal      = new Precedence(62);              // Used to reserve prefix operators for future use
 	}
 }

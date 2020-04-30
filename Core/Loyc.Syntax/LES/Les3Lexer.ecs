@@ -51,11 +51,10 @@ public partial class Les3Lexer
 	token Number returns [object result] :
 		('\u2212')? // '−'
 		(HexNumber / BinNumber / DecNumber)
-		{UString numberText = Text();}
-		(	{_startPosition = InputPosition;} // as expected by IdCore
-			{object boolOrNull = NoValue.Value;}
-			suffix:IdCore[ref boolOrNull]
-			{PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);}
+		{UString numberText = Text(), suffix = UString.Empty;}
+		(	{ int suffixStart = InputPosition; }
+			NormalId
+			{suffix = Text(suffixStart);}
 		)?
 		{return ParseLiteral2(suffix, numberText, true);};
 
@@ -85,7 +84,7 @@ public partial class Les3Lexer
 	
 	// Strings ---------------------------------------------------------------
 		
-	token SQString returns [object result] :
+	token SQChar returns [object result] :
 		{bool parseNeeded = false;}
 		'\'' ('\\' _ {parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')) '\'' 
 		{return ParseSQStringValue(parseNeeded);};
@@ -94,7 +93,7 @@ public partial class Les3Lexer
 		{bool parseNeeded = false;}
 		(	'"' [ '\\' _ {parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
 			('"' / {parseNeeded = true;}) )
-		{return ParseStringValue(parseNeeded, isTripleQuoted: false);};
+		{return (string) ParseStringValue(parseNeeded, isTripleQuoted: false);};
 	
 	[LL(4)] token TQString returns [object result] :
 		{bool parseNeeded = true;}
@@ -102,7 +101,7 @@ public partial class Les3Lexer
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
 		| {_style = NodeStyle.TQStringLiteral;}
 			"'''"       nongreedy(Newline(true) / _)* "'''" )
-		{return ParseStringValue(parseNeeded, isTripleQuoted: true);};
+		{return (string) ParseStringValue(parseNeeded, isTripleQuoted: true);};
 
 	BQString [out bool parseNeeded]:
 		{parseNeeded = false;}
@@ -125,10 +124,16 @@ public partial class Les3Lexer
 	
 	token SQOperator returns [object result] : 
 		"'"
-		(LettersOrPunc+ { _type = TT.SingleQuoteOp; })?
+		(IdStartChar+ { _type = TT.PreOrSufOp; })?
 		// Note: SQString has higher priority in the grammar; this rule is not called if it's a proper character
 		("'" { _type = TT.Literal; return ParseSQStringValue(true); })?
-		{return (Symbol)Text();};
+		{ return (Symbol) Text(); };
+
+	token TreeDefOrBackRef returns [object result] : 
+		'@' ('@'|'.') 
+		{ int idStart = InputPosition; }
+		greedy(IdContChar)+
+		{ return null; }; // The parser can get the text from the SourceFile
 
 	// Identifiers, keywords and named literals --------------------------------
 
@@ -142,37 +147,31 @@ public partial class Les3Lexer
 
 	[LL(3)]
 	token Id returns [object result] :
-		{object boolOrNull = NoValue.Value;}
-		idtext:IdCore[ref boolOrNull]
-		(	{saveAndRestore(_startPosition); _startPosition = InputPosition;}
+		{ UString idText; }
+		(	BQString[out bool parseNeeded] { idText = ParseStringValue(parseNeeded, false); }
+		|	NormalId                       { idText = Text(); }
+		)
+		(	{ saveAndRestore(_startPosition); }
+			{ _startPosition = InputPosition; }
 			(value:TQString / value:DQString)
-			{
-				_type = TT.Literal;
-				PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
-				return ParseLiteral2(idtext, value.ToString(), false);
+			{ _type = TT.Literal; }
+			{ return ParseLiteral2(idText, value.ToString(), false); }
+		/	{
+				if (_type != TT.BQId) // normal identifier
+				{
+					if (idText == "true")  { _type = TT.Literal; return G.BoxedTrue; }
+					if (idText == "false") { _type = TT.Literal; return G.BoxedFalse; }
+					if (idText == "null")  { _type = TT.Literal; return null; }
+				}
+				return (Symbol) idText;
 			}
-		)?
-		{return boolOrNull != NoValue.Value ? boolOrNull : (Symbol) idtext;};
+		);
 
 	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z'|'#';
 	[recognizer { bool ScanIdContChar(); }]
-	token IdContChar : IdStartChar | '0'..'9' | '\'' &!("''");
+	token IdContChar : IdStartChar | '0'..'9' | '\'' &!{[Hoist] LA($LI) == '\'' && LA($LI+1) == '\'' };
 
-	NormalId : IdStartChar greedy(IdContChar)*;
-
-	token IdCore[ref object boolOrNull] returns [UString result] :
-		( BQString[out bool parseNeeded] {$result = ParseStringValue(parseNeeded, false);}
-		| NormalId {
-			$result = Text();
-			if ($result == "true")  { _type = TT.Literal; boolOrNull = G.BoxedTrue; }
-			if ($result == "false") { _type = TT.Literal; boolOrNull = G.BoxedFalse; }
-			if ($result == "null")  { _type = TT.Literal; boolOrNull = null; }
-		  }
-		);
-
-
-	token SpecialLiteral returns [object result] :
-		"@@" LettersOrPunc+ {return ParseAtAtLiteral(Text());};
+	private NormalId : IdStartChar greedy(IdContChar)*;
 
 	// Shebang (optional feature) --------------------------------------------
 
@@ -192,7 +191,6 @@ public partial class Les3Lexer
 			}
 		}
 		( {_type = TT.Shebang;}    value:Shebang
-		/ {_type = TT.Literal;}    value:SpecialLiteral
 		/ {_type = TT.BQId;}       ('`' => value:Id)
 		/ {_type = TT.Id;}         value:Id
 		/ {_type = TT.Newline;}    value:Newline
@@ -201,7 +199,7 @@ public partial class Les3Lexer
 		/ {_type = TT.Literal;}    value:Number
 		/ {_type = TT.Literal;}    value:TQString
 		/ {_type = TT.Literal;}    value:DQString
-		/ {_type = TT.Literal;}    value:SQString
+		/ {_type = TT.Literal;}    value:SQChar
 		/ {_type = TT.SingleQuote;} value:SQOperator
 		/ {_type = TT.Comma;}      ',' { value = @@`',`; }
 		/ {_type = TT.Semicolon;}  ';' { value = @@`';`; }
@@ -211,6 +209,8 @@ public partial class Les3Lexer
 		/ {_type = TT.RBrack;}     ']' {PopBrackStack(TT.LBrack, #TOS == TT.LParen);}
 		/ {_type = TT.LBrace;}     '{' {_brackStack.Add(_type);}
 		/ {_type = TT.RBrace;}     '}' {PopBrackStack(_, #TOS != TT.LBrace);}
+		/ {_type = TT.TreeDef;}    ("@." IdStartChar => value:TreeDefOrBackRef)
+		/ {_type = TT.BackRef;}    value:TreeDefOrBackRef
 		/ {_type = TT.At;}         '@' { value = @@`'@`; }
 		/ {_type = TT.Keyword;}    value:Keyword
 		/                          value:Operator

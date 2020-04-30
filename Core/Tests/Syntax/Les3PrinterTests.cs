@@ -17,12 +17,15 @@ namespace Loyc.Syntax.Les
 		{
 			// There are certain instances of CustomLiteral that the parser will 
 			// not produce, which come out as ordinary literals when printed:
-			Exact("1234", F.Literal(new CustomLiteral("1234", (Symbol)"_")));
-			Exact("1234.5f00bar", F.Literal(new CustomLiteral("1234.5", (Symbol)"_f00bar")));
-			Exact(@"123.5`exact`", F.Literal(new CustomLiteral(123.5, (Symbol)"_exact")));
-			Exact(@"0x1234`f00bar`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"0x1234`WTF!\n`",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"re""[hH]ello!""", F.Literal(new CustomLiteral(
+			Exact("1234",                  F.Literal(new CustomLiteral("1234", (Symbol)"_")));
+			Exact("1234.5f00bar",          F.Literal(new CustomLiteral("1234.5", (Symbol)"_f00bar")));
+			Exact(@"_exact""123.5""",      F.Literal(new CustomLiteral(123.5, (Symbol)"_exact")));
+			Exact(@"_f00bar""0x1234""",    F.Literal(new CustomLiteral(0x1234, (Symbol)"_f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"`_WTF!\n`""0x1234""",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234g00",            F.Literal(new CustomLiteral(0x1234, (Symbol)"_g00")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234woo",            F.Literal(new CustomLiteral(0x1234, (Symbol)"_woo")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"_poo""0x1234""", F.Literal(new CustomLiteral(0x1234, (Symbol)"_poo")).SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"re""[hH]ello!""",      F.Literal(new CustomLiteral(
 				new System.Text.RegularExpressions.Regex("[hH]ello!"), (Symbol)"re")));
 			// Support in parser planned soon
 			Exact("123456789012345678901234567890z", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
@@ -70,30 +73,17 @@ namespace Loyc.Syntax.Les
 			Exact("a * 2 >> x", F.Call(S.Shr, F.Call(S.Mul, a, two), x));
 
 			Exact("x Foo `'*`(a, b)", Op(F.Call("'Foo", x, F.Call(S.Mul, a, b))));
-			Exact("`'+`(a, b) Foo c", Op(F.Call("'Foo", F.Call(S.Add, a, b), c)));
+			Exact("(@ a + b) Foo c", Op(F.Call("'Foo", F.Call(S.Add, a, b), c)));
 			Exact("x Foo a**b", Op(F.Call("'Foo", x, F.Call(S.Exp, a, b))));
 			Exact("x Foo 1 == a", F.Call(S.Eq, Op(F.Call("'Foo", x, one)), a));
 			Exact(".. `'&`(a, b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
 			Exact(".. a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
-		[Test(Fails = "Hard to make this work in the printer")]
-		public void Thing()
-		{
-			// TODO: this fails in printer because the newline after Foo cannot
-			// be printed before '(' and is suppressed. Solution will be to wait
-			// until after '(' before printing trivia attached to Foo, but this
-			// is not easy to accomplish.
-			Stmt("Foo(\n  \n  a, \n  \n  b, \n  \n  c)",
-				F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
-					NewlineAfter(OnNewLine(b)),
-					OnNewLine(c)));
-		}
-
-		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)
+		protected override MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions options, string expected, params LNode[] inputs)
 		{
 			var messages = new MessageHolder();
-			var options = new Les3PrinterOptions { IndentString = "  " };
+			options = options ?? new Les3PrinterOptions { IndentString = "  " };
 			if (parseErrors == 0) {
 				if (mode == Mode.Exact) {
 					var result = Les3LanguageService.Value.Print(inputs, messages, ParsingMode.Statements, options);
@@ -104,23 +94,25 @@ namespace Loyc.Syntax.Les
 					var _ = Les3LanguageService.Value.Parse(expected, msgs: messages);
 					if (messages.List.All(msg => msg.Severity < Severity.Error))
 						foreach (LNode input in inputs)
-							DoPrinterTest(input);
+							DoPrinterTest(input, mode, options);
 				}
 			}
 			return messages;
 		}
 
-		private void DoPrinterTest(LNode input)
+		private void DoPrinterTest(LNode input, Mode mode, LNodePrinterOptions options)
 		{
 			var messages = new MessageHolder();
-			var printed = Les3LanguageService.Value.Print(input, messages, null);
+			var printed = Les3LanguageService.Value.Print(input, messages, mode == Mode.Expr ? ParsingMode.Expressions : null, options);
 			Assert.AreEqual(0, messages.List.Count);
 			var reparsed = Les3LanguageService.Value.Parse(printed, msgs: messages);
 			if (messages.List.Count != 0)
 				Assert.Fail("Printed node «{0}» causes error on parsing: {1}", printed, messages.List[0].Formatted);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(input, reparsed[0],
-				"Printed node «{0}» is different from original node.\n  Old: «{1}»\n  New: «{2}»", printed, input, reparsed[0]);
+				"Printed node «{0}» is different from original node.\n  Original: «{1}»\n  Reparsed: «{2}»", printed,
+					LNode.Printer.Print(input, null, null, new LNodePrinterOptions { PrintTriviaExplicitly = true }),
+					LNode.Printer.Print(reparsed[0], null, null, new LNodePrinterOptions { PrintTriviaExplicitly = true }));
 		}
 
 		#region Pretty printer tests

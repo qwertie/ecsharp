@@ -123,7 +123,9 @@
     <Compile Include="LES\Les3Printer.cs" />
     <Compile Include="LES\Les3.cs" />
     <Compile Include="LES\CustomLiteral.cs" />
+    <Compile Include="LES\Les3PrinterOptions.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
+    <Compile Include="Lexing\TokenTree.cs" />
     <Compile Include="Lexing\TriviaSaver.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
     <Compile Include="Lexing\WhitespaceFilter.cs" />

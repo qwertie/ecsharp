@@ -86,7 +86,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
 			Test(Mode.Stmt, 0, "Foo(a; b;)", F.Call(Foo, a, b));
 
-			Test(Mode.Expr, 2, ".`foo`", F.Id("foo"));
+			Test(Mode.Expr, 1, ".`foo`", F.Id("foo"));
 		}
 
 		[Test]
@@ -108,7 +108,7 @@ namespace Loyc.Syntax.Les
 		{
 		}
 
-		protected override MessageHolder Test(Mode mode, int errorsExpected, string text, params LNode[] expected)
+		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions printerOptions, string text, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
 			var results = Les3LanguageService.Value.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();

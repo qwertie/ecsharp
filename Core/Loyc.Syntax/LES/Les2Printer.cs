@@ -122,9 +122,9 @@ namespace Loyc.Syntax.Les
 		private bool AutoPrintPrefixOrSuffixOp(ILNode node, Precedence context)
 		{
 			Symbol bareName;
-			if (Les2PrecedenceMap.IsSuffixOperatorName(node.Name, out bareName)) {
+			if (Les2PrecedenceMap.ResemblesSuffixOperator(node.Name, out bareName) && Les2PrecedenceMap.IsNaturalOperator(bareName.Name)) {
 				var prec = GetPrecedenceIfOperator(node, bareName, OperatorShape.Suffix, context);
-				if (prec == null || prec.Value == LesPrecedence.Other)
+				if (prec == null)
 					return false;
 				Print(node[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence);
@@ -230,7 +230,7 @@ namespace Loyc.Syntax.Les
 				_out.Indent();
 				bool anyNewlines = false;
 				foreach (var stmt in args) {
-					if (stmt.AttrNamed(S.TriviaAppendStatement) == null && !_isOneLiner) {
+					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null) && !_isOneLiner) {
 						_out.Newline();
 						anyNewlines = true;
 					} else

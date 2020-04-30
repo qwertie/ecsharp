@@ -39,6 +39,8 @@ partial class Les3Parser
 	alias("\n" = TT.Newline);
 
 	members {
+		Dictionary<UString, LNode> _sharedTrees;
+
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
@@ -49,18 +51,18 @@ partial class Les3Parser
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, firstItem, isBracedBlock: false);
 		}
-		public bool IsSpaceBefore(int li)
+		bool IsSpaceBefore(int li)
 		{
 			return LT(li).StartIndex > LT(li-1).EndIndex;
 		}
-		public void CheckForSpace(bool expectSpace, string errorMsg)
+		void CheckForSpace(bool expectSpace, string errorMsg)
 		{
 			if ((LT0.StartIndex == LT(-1).EndIndex) == expectSpace) {
 				var location = new SourceRange(SourceFile, LT0.StartIndex);
 				ErrorSink.Write(Severity.Error, location, errorMsg);
 			}
 		}
-		public bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
+		bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
 	}
 
 	// Note: we're not saving newlines/trivia here - we rely on `StandardTriviaInjector` for that
@@ -80,7 +82,6 @@ partial class Les3Parser
 	[LL(1)]
 	protected NextExpression[ref TokenType separatorType, out Token separator, bool isBracedBlock] returns [LNode result] :
 		{ separator = default(Token); }
-		
 		(	result:TopExpr[compactMode: false]
 		/	{ result = F.Id(S.Missing, LT0); }
 		)
@@ -130,6 +131,7 @@ partial class Les3Parser
 				if (separator.Type() == TT.Comma)
 					list.Add(F.Id(S.Missing, separator));
 			}
+		|	error { Error(0, "Expected an expression here"); } TokenListEx
 		)
 		{ return LNode.List(list); };
 
@@ -141,18 +143,13 @@ partial class Les3Parser
 				Error(_errorPosition - InputPosition, "Expected end of expression (',', ';', etc.)");
 		};
 
-	// Lazy version of ExprList is used for parsing the top-level code in a streaming way
+	// Lazy version of ExprList is used for parsing the top-level code in a streaming way.
 	[LL(1)]
-	public ExprListLazy[Holder<TokenType> separatorType, bool isBracedBlock = true] returns [IEnumerable<LNode> result] :
+	public ExprListLazy[Holder<TokenType> separatorType] returns [IEnumerable<LNode> result] :
+		{ bool isBracedBlock = true; } // hard-coded so we don't have to deal with compact expression lists
 		NewlinesOpt
-		(	&!{isBracedBlock}
-			&{LT($LI).EndIndex < LT($LI+1).StartIndex}
-			"."
-			greedy(CompactExpression { 
-				yield return $CompactExpression;
-				break; // workaround for LLLPG not understanding difference between `return` and `yield return`
-			})*
-		|	"'"
+		(	"." { Error(0, "Expected a statement here"); } )?
+		(	"'"
 			TokenListEx
 			{
 				foreach (var item in $TokenListEx)
@@ -174,17 +171,7 @@ partial class Les3Parser
 
 	[LL(1)] // Simplify the output
 	protected TopExpr[bool compactMode] returns [LNode result] :
-		{int startIndex = LT0.StartIndex;}
-		{var attrs = new LNodeList();}
-		(	// @Attribute
-			"@" {CheckForSpace(false, "Unexpected space after `@`");}
-			(	"@"
-			|	attr:=Expr[Precedence.MinValue, compactMode: true]
-				{attrs.Add(attr);}
-			)
-			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
-			NewlinesOpt
-		)*
+		treeDef:TT.TreeDef?
 		(	e:Expr[Precedence.MinValue, compactMode]
 			//greedy(
 			//	":" (("\n"|")"|"]"|"}"|EOF) =>)
@@ -194,8 +181,19 @@ partial class Les3Parser
 			nongreedy(_)+ 
 			(TopExpr[compactMode] | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);})
 		)
-		{if (!attrs.IsEmpty) { e = e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); }}
-		{$result = e;};
+		{
+			if (treeDef.Type() == TT.TreeDef) {
+				UString treeId = treeDef.Value?.ToString() ?? treeDef.SourceText(SourceFile.Text).Slice(2);
+				_sharedTrees = _sharedTrees ?? new Dictionary<UString, LNode>();
+				try {
+					_sharedTrees.Add(treeId, e);
+				} catch (Exception) {
+					ErrorSink.Error(treeDef.Range(SourceFile), "'@.{0}' was already defined at {1}", 
+									treeId, _sharedTrees[treeId].Range.Start);
+				}
+			}
+			return e;
+		};
 
 	////////////////////////////////////////////////////////////////////////////
 	// Normal Expressions
@@ -210,6 +208,18 @@ partial class Les3Parser
 
 	[LL(1)] // simplifies output a lot
 	Expr[Precedence context, bool compactMode] returns [LNode result] :
+		{ int startIndex = LT0.StartIndex; }
+		{ var attrs = LNode.List(); }
+		(	// @Attribute
+			&!{["An attribute cannot appear mid-expression in a compact expression list."] compactMode && context != Precedence.MinValue}
+			"@" 
+			(	"@" // archaic: now only one @ is required to suppress %inParens trivia
+			/	&{LT($LI-1).EndIndex == LT($LI).StartIndex}
+				attrs+=Expr[Precedence.MinValue, compactMode: true]
+			)?  // @ without an expression is used to suppress %inParens trivia
+			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
+			NewlinesOpt
+		)*
 		(	&!{["A compact list cannot directly contain a keyword expression. Surround it with parentheses."] compactMode}
 			// Dot-keyword expression
 			e:KeywordExpression
@@ -244,8 +254,17 @@ partial class Les3Parser
 				/	T:=Expr[P.Of, compactMode]   { args = LNode.List(e, T); endIndex = T.Range.EndIndex; }
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
+			|	// .keyword
+				&{[Local] !compactMode || LT($LI-1).EndIndex == LT($LI).StartIndex}
+				&{[Local] context.CanParse(P.Primary)}
+				kw:=TT.Keyword
+				{
+					var id = F.Id(kw.Value.ToString().Substring(1), kw.StartIndex + 1, kw.EndIndex);
+					e = F.Dot(e, id, e.Range.StartIndex, kw.EndIndex);
+				}
 			)*
-		)	{return e;};
+		)
+		{ return attrs.IsEmpty ? e : e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); };
 
 	// This example produces horribly complicated code
 	//ExprBad[Precedence context] returns [LNode result] :
@@ -322,13 +341,14 @@ partial class Les3Parser
 	//   - simple calls are also handled here, as a space optimization
 	// - a { block } in braces
 	// - a [ list  ] in square brackets
+	// - a @@backReference
 	Particle[bool compactMode = false] returns [LNode result]
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=TT.Literal // literal
 			{$result = F.Literal(lit);}
 		//|	// ' token list
-		//	op:=TT.SingleQuoteOp TokenList
+		//	op:=TT.SingleQuote TokenList
 		//	{$result = F.Call((Symbol)op.Value, $TokenList, op.StartIndex, 
 		//	                  $TokenList.IsEmpty ? op.EndIndex : $TokenList.Last.Range.EndIndex);}
 		|	// {statements; in; braces}
@@ -346,6 +366,16 @@ partial class Les3Parser
 					$result = saveParens ? F.InParens(list[0], $"(".StartIndex, $")".EndIndex) : list[0];
 				};
 			}
+		|	backRef:=TT.BackRef { 
+				UString treeId = backRef.Value?.ToString() ?? backRef.SourceText(SourceFile.Text).Slice(2);
+				LNode tree = null;
+				if (_sharedTrees?.TryGetValue(treeId, out tree) == true)
+					$result = tree;
+				else {
+					$result = MissingExpr(backRef);
+					Error(-1, "There is no previous definition for '@.{0}'", treeId);
+				}
+			}
 		|	error {
 				$result = MissingExpr(LT0, "Expected a particle (id, literal, {braces} or (parens)).");
 			};
@@ -360,7 +390,8 @@ partial class Les3Parser
 		greedy( result+=TokenListParticle )*;
 	[LL(1)]
 	TokenListEx returns [LNodeList result] :
-		( t:(","|";") { $result.Add(F.Id(t)); } 
+		( t:=(","|";") { $result.Add(F.Id(t)); } 
+		| t:="\n"      { $result.Add(F.Id(@@`'\n`, t)); }
 		| result+=TokenListParticle
 		)*;
 	[LL(1)]

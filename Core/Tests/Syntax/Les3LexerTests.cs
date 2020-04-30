@@ -79,16 +79,16 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestSQOperators()
 		{
-			var sqOperator = TT.SingleQuoteOp;
+			var sqOperator = TT.PreOrSufOp;
 			Case("x'y", A(TT.Id), _("x'y"));
 			Case("x 'y", A(TT.Id, sqOperator), _("x"), _("'y"));
-			Case("x 'abcABC123", A(TT.Id, sqOperator), _("x"), _("'abcABC123"));
-			Case("'>s 0", A(sqOperator, TT.Literal), _("'>s"), 0);
-			Case("'~!#$%^&*-_=+| '<>./?abc123ABC", A(sqOperator, sqOperator), _("'~!#$%^&*-_=+|"), _("'<>./?abc123ABC"));
-			Case(@"'{ } '", A(sqOperator, TT.LBrace, TT.RBrace, sqOperator),
+			Case("x 'abcABC123", A(TT.Id, sqOperator, TT.Literal), _("x"), _("'abcABC"), 123);
+			Case("'>s 0", A(TT.SingleQuote, TT.NormalOp, TT.Id, TT.Literal), _("'"), _("'>"), _("s"), 0);
+			Case("'s+0", A(sqOperator, TT.NormalOp, TT.Literal), _("'s"), _("'+"), 0);
+			Case(@"'{ } '", A(TT.SingleQuote, TT.LBrace, TT.RBrace, TT.SingleQuote),
 				_("'"), null, null, _("'"));
-			Case(@"'hello++;'%GOODBYE$", A(sqOperator, TT.Semicolon, sqOperator),
-				_("'hello++"), _("';"), _("'%GOODBYE$"));
+			Case(@"'hello++;'GOODBYE", A(sqOperator, TT.PreOrSufOp, TT.Semicolon, sqOperator),
+				_("'hello"), _("'++"), _("';"), _("'GOODBYE"));
 		}
 
 		[Test]
@@ -357,7 +357,7 @@ namespace Loyc.Syntax.Les
 			Case(@"123e456i32", A(TT.Literal), new Error(CL("123e456", "_i32")));
 			// Empty type marker should be treated the same as no type marker
 			Case("``'''123'''", A(TT.Literal), "123");
-			Case("123``",       A(TT.Literal), 123);
+			Case("123``",       A(TT.Literal, TT.BQId), 123, _(""));
 			// PURE EVIL. "MOST NEFARIOUS" AWARD.
 			Case(@"_""\x31\x32\x33""", A(TT.Literal), 123);
 		}
@@ -383,29 +383,24 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void TestCustomAtAtLiterals()
+		public void TestBackRefAndTreeDef()
 		{
-			Case(@"@@foo@@is$a!common%word@@around@@here",
-				A(TT.Literal, TT.Literal, TT.Literal, TT.Literal),
-				AtAt("foo"), AtAt("is$a!common%word"), AtAt("around"), AtAt("here"));
-			Case(@"@@/?:.$", A(TT.Literal), AtAt("/?:.$"));
-			Case(@"@@+-*/", A(TT.Literal), AtAt("+-*/"));
-			Case(@"@@+- //x", A(TT.Literal, TT.SLComment), AtAt("+-"), WS);
-			Case(@"@@+-//x", A(TT.Literal), AtAt("+-//x"));
+			Case(@"@@foo@@IS_a!common@@word@@around@@here",
+				A(TT.BackRef, TT.BackRef, TT.Not, TT.Id, TT.BackRef, TT.BackRef, TT.BackRef),
+				null, null, _("'!"), _("common"), null, null, null);
+			Case(@"@.az09'@@az09'", A(TT.TreeDef, TT.BackRef), null, null);
 		}
 		CustomLiteral AtAt(string s) { return new CustomLiteral(s, _("@@")); }
 
 		[Test]
 		public void OtherSpecialLiterals()
 		{
-			// @@ means "special literal"; if the text after @@ is not recognized
-			// as a special literal, then it is treated as a symbol.
-			Case("@@true @@false @@null", A(TT.Literal, TT.Literal, TT.Literal), true, false, null);
-			Case("`inf.d`@@inf.d", A(TT.BQId, TT.Literal), _("inf.d"), double.PositiveInfinity);
-			Case("`inf.f`@@inf.f", A(TT.BQId, TT.Literal), _("inf.f"), float.PositiveInfinity);
-			Case("`nan.d`@@nan.d", A(TT.BQId, TT.Literal), _("nan.d"), double.NaN);
-			Case("`nan.f`@@nan.f", A(TT.BQId, TT.Literal), _("nan.f"), float.NaN);
-			Case("@@-inf.d @@-inf.f", A(TT.Literal, TT.Literal), double.NegativeInfinity, float.NegativeInfinity);
+			Case("true false null", A(TT.Literal, TT.Literal, TT.Literal), true, false, null);
+			Case(@"`inf`_d""inf""", A(TT.BQId, TT.Literal), _("inf"), double.PositiveInfinity);
+			Case(@"`inf`_f""inf""", A(TT.BQId, TT.Literal), _("inf"), float.PositiveInfinity);
+			Case(@"_d""nan""", A(TT.Literal), double.NaN);
+			Case(@"_f""nan""", A(TT.Literal), float.NaN);
+			Case(@"_d""-inf"" _f""-inf""", A(TT.Literal, TT.Literal), double.NegativeInfinity, float.NegativeInfinity);
 		}
 
 		[Test]
@@ -436,7 +431,10 @@ namespace Loyc.Syntax.Les
 			Case("1L 2UL 3u 4f 5d 6m", A(TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				1L, 2UL, 3u, 4f, 5d, 6m);
 			Case(@"null `null`""""", A(TT.Literal, TT.Literal), null, null);
+			Case(@"null""""", A(TT.Literal), new object[] { null });
 			Case(@"false bool""true""", A(TT.Literal, TT.Literal), false, true);
+			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), new Error(CL("null?", "null")));
+			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), CL("nonbool", "true"), new Error(CL("nonnull", "null")));
 		}
 
 		[Test]
@@ -457,7 +455,7 @@ namespace Loyc.Syntax.Les
 		{
 			Case("\0", A(TT.Unknown), (object)null);
 			Case("x=\"Hello\n", A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("'="), new Error("Hello"), null);
-			Case("'\n'o'\"pq\n?", A(TT.SingleQuoteOp, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
+			Case("'\n'o'\"pq\n?", A(TT.SingleQuote, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
 			                      _("'"), null, 'o', new Error("pq"), null, _("'?"));
 			Case("0x!0b", A(TT.Literal, TT.Not, TT.Literal), new Error(CL("0x", "_")), _("'!"), new Error(CL("0b", "_")));
 			Case("0b102", A(TT.Literal), new Error(CL("0b102", "_")));
@@ -467,9 +465,7 @@ namespace Loyc.Syntax.Les
 			Case(@"\()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
 			Case("'abc'", A(TT.Literal), new Error(CL("abc", "char")));
 			Case("'' ''", A(TT.Literal, TT.Literal), new Error(CL("", "char")), new Error(CL("", "char")));
-			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), new Error(CL("null?", "null")));
-			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), new Error(CL("nonbool", "true")), new Error(CL("nonnull", "null")));
-			Case(".kw '", A(TT.Keyword, TT.SingleQuoteOp), _("#kw"), _("'"));
+			Case(".kw '", A(TT.Keyword, TT.SingleQuote), _("#kw"), _("'"));
 		}
 
 		[Test]

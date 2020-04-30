@@ -41,15 +41,15 @@ namespace Loyc.Syntax.Les
 		{
 			// Gotta be careful how we print operators that appear to start comments,
 			// and suffix operators used as prefix/infix.
-			Stmt(@"a +/* b;",    AsOperator(F.Call(_("'+/*"), a, b)));
-			Stmt(@"a `'>s` b;",  AsOperator(F.Call(_("'>s"), a, b)));
-			Stmt(@"a `'/*` b;",  AsOperator(F.Call(_("'/*"), a, b)));
-			Stmt(@"a `'//` b;",  AsOperator(F.Call(_("'//"), a, b)));
-			Stmt(@"a `'_++` b;", AsOperator(F.Call(S.PostInc, a, b)));
-			Stmt(@"`'_++` b;",   AsOperator(F.Call(S.PostInc, b)));
-			Stmt(@"`'/\\` b;",     AsOperator(F.Call(_("'/\\"), b)));
-			Stmt(@"a `':` b();",   AsOperator(F.Call(S.Colon, a, F.Call(b))));
-			Stmt(@"if @a++(b);",  AsStyle(NodeStyle.Special, F.Call(_("if"), AsOperator(F.Call(_("a++"), F.Call(b))))));
+			Stmt(@"a +/* b;",    Op(F.Call(_("'+/*"), a, b)));
+			Stmt(@"a `'>s` b;",  Op(F.Call(_("'>s"), a, b)));
+			Stmt(@"a `'/*` b;",  Op(F.Call(_("'/*"), a, b)));
+			Stmt(@"a `'//` b;",  Op(F.Call(_("'//"), a, b)));
+			Stmt(@"a `'_++` b;", Op(F.Call(S.PostInc, a, b)));
+			Stmt(@"`'_++` b;",   Op(F.Call(S.PostInc, b)));
+			Stmt(@"`'/\\` b;",     Op(F.Call(_("'/\\"), b)));
+			Stmt(@"a `':` b();",   Op(F.Call(S.Colon, a, F.Call(b))));
+			Stmt(@"if @a++(b);",  F.Call(_("if"), Op(F.Call(_("a++"), F.Call(b)))).SetBaseStyle(NodeStyle.Special));
 		}
 
 		[Test]
@@ -99,7 +99,7 @@ namespace Loyc.Syntax.Les
 				Assert.Fail("Printed node «{0}» causes error on parsing: {1}", printed, messages.List[0].Formatted);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(input, reparsed[0],
-				"Printed node «{0}» is different from original node.\n  Old: «{1}»\n  New: «{2}»", printed, input, reparsed[0]);
+				"Printed node «{0}» is different from original node.\n  Original: «{1}»\n  Reparsed: «{2}»", printed, input, reparsed[0]);
 		}
 	}
 }

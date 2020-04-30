@@ -23,13 +23,12 @@ namespace Loyc.Syntax.Les
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
-		PreOrSufOp = TokenKind.Operator + 1,  // ++, --, !!
+		PreOrSufOp = TokenKind.Operator + 1,  // ++, --, !! and in LES3 only, 'sqOp
 		PrefixOp   = TokenKind.Operator + 2,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for 'of: A!(B,C) => @'of(A, B, C)
 		Colon      = TokenKind.Operator + 8, // LESv3 only, where : is a special line suffix
 		SingleQuote = TokenKind.Operator + 9, // LESv3 only: '
-		SingleQuoteOp = TokenKind.Operator + 9, // LESv3 only: 'name
 		BQOperator = TokenKind.Operator + 255, // No longer used in LESv3; `foo` is redefined as an identifier
 		Comma = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
@@ -41,6 +40,8 @@ namespace Loyc.Syntax.Les
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
 		RBrace     = TokenKind.RBrace,
+		TreeDef    = TokenKind.Other + 1, // LES3 only: @.xyz123
+		BackRef    = TokenKind.Other + 2, // LES3 only: @@xyz123
 		Unknown    = TokenKind.Other,
 	}
 

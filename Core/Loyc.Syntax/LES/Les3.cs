@@ -52,6 +52,10 @@ namespace Loyc.Syntax.Les
 		{
 			return CharSource.Slice(_startPosition, InputPosition - _startPosition);
 		}
+		protected UString Text(int startPosition)
+		{
+			return CharSource.Slice(startPosition, InputPosition - startPosition);
+		}
 
 		protected sealed override void AfterNewline() // sealed to avoid virtual call
 		{
@@ -97,7 +101,7 @@ namespace Loyc.Syntax.Les
 			return ParseNonStringLiteral(typeMarker, parsedText, out syntaxError);
 		}
 
-		protected string ParseStringValue(bool parseNeeded, bool isTripleQuoted)
+		protected UString ParseStringValue(bool parseNeeded, bool isTripleQuoted)
 		{
 			if (SkipValueParsing)
 				return null;
@@ -447,6 +451,7 @@ namespace Loyc.Syntax.Les
 			foreach (var stmt in ExprListLazy(separator))
 				yield return stmt;
 			Match((int) EOF, (int) separator.Value);
+			_sharedTrees = null;
 		}
 
 		// Method required by base class for error messages
@@ -490,7 +495,7 @@ namespace Loyc.Syntax.Les
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
 			var prec = _prec.Find(OperatorShape.Prefix, t.Value);
-			if (prec == LesPrecedence.Other)
+			if (prec == LesPrecedence.Illegal)
 				ErrorSink.Write(Severity.Error, F.Id(t),
 					"Operator `{0}` cannot be used as a prefix operator", t.Value);
 			return prec;
