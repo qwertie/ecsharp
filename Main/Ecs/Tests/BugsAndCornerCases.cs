@@ -79,6 +79,10 @@ namespace Loyc.Ecs.Tests
 			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shr)), F.List(F.Var(Foo, x), F.Var(F.Int32, a)), 
 			                            F.Braces(F.Call(S.Return, F.Call(S.Shr, x, a)))));
 			Stmt("static int operator>>(Foo x, int a) {\n  return x >> a;\n}", stmt);
+
+			// https://github.com/qwertie/ecsharp/issues/90
+			Expr("({\n  Foo;\n})", F.InParens(F.Braces(Foo)));
+			Stmt("({\n  stuff;\n});", F.InParens(F.Braces(_("stuff"))));
 		}
 
 		[Test]
