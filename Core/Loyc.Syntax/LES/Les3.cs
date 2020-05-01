@@ -448,6 +448,7 @@ namespace Loyc.Syntax.Les
 		/// this Holder is set to the separator between them: Comma or Semicolon.</param>
 		public IEnumerable<LNode> Start(Holder<TokenType> separator)
 		{
+			_listContextName = "top level";
 			foreach (var stmt in ExprListLazy(separator))
 				yield return stmt;
 			Match((int) EOF, (int) separator.Value);

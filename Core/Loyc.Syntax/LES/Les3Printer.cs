@@ -143,8 +143,8 @@ namespace Loyc.Syntax.Les
 		// - If one statement ends with a keyword expression and the next begins
 		//   with braces, a semicolon is required after the first statement to avoid
 		//   the possibility that the braces will be parsed as part of the keyword
-		//   expression (alternative: begin the second statement with @@).
-		// - %newline must be ignored in some cases because a newline in 
+		//   expression (alternative: begin the second statement with `@ `).
+		// - `%newline` must be ignored in some cases because a newline in 
 		//   certain places will inadvertantly end the current statement early.
 		//   Also, single-line comments sometimes cannot end with a newline and
 		//   must use two backslashes to end the comment instead: \\
@@ -190,7 +190,8 @@ namespace Loyc.Syntax.Les
 			NewlineUnsafe = 0,
 			NewlineSafeAfter = 1,
 			NewlineSafeBefore = 2,
-			StatementLevel = NewlineSafeBefore | NewlineSafeAfter,
+			NewlineSensitive = 4,
+			StatementLevel = NewlineSafeBefore | NewlineSafeAfter | NewlineSensitive,
 			AutoDetect = 8,
 		}
 
@@ -286,6 +287,7 @@ namespace Loyc.Syntax.Les
 
 		private bool HasTargetIdWithoutPAttrs(ILNode node)
 		{
+			Debug.Assert(node.IsCall());
 			var t = node.Target;
 			if (!t.IsId())
 				return false;
@@ -729,7 +731,7 @@ namespace Loyc.Syntax.Les
 			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
 				case NodeStyle.Special:
-					if (!TryToPrintCallAsKeywordExpression(node))
+					if (!TryToPrintCallAsKeywordExpression(node, node.IsParenthesizedExpr() || (_nlContext & NewlineContext.NewlineSensitive) != 0))
 						goto case NodeStyle.PrefixNotation;
 					break;
 				case NodeStyle.PrefixNotation:
@@ -842,6 +844,7 @@ namespace Loyc.Syntax.Les
 				PS.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 
+		// For printing at the top level, or in a braced block where newlines are significant
 		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
 		{
 			bool anyNewlines = false;
@@ -861,7 +864,7 @@ namespace Loyc.Syntax.Les
 					next = args[i + 1, null];
 					append = next != null ? ShouldAppendStmt(next) : false;
 					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
-					Print(stmt, Precedence.MinValue, suffix: semicolon ? ";" : null);
+					Print(stmt, Precedence.MinValue, suffix: semicolon ? ";" : null, NewlineContext.StatementLevel);
 				}
 			}
 			return anyNewlines;
@@ -1052,11 +1055,14 @@ namespace Loyc.Syntax.Les
 		// statement afterward begins with braces.
 		int _endIndexOfKeywordExpr;
 
-		private bool TryToPrintCallAsKeywordExpression(ILNode node)
+		private bool TryToPrintCallAsKeywordExpression(ILNode node, bool allowComma)
 		{
-			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
+			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) 
+				|| !IsKeywordExpression(node, out int exprListSize, out ILNode braces)
+				|| !allowComma && exprListSize > 1)
 				return false;
-
+			
+			// Print @attributes and .keyword
 			var args = node.Args();
 			var target = node.Target;
 			int parens = PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe);
@@ -1066,22 +1072,20 @@ namespace Loyc.Syntax.Les
 			if (args.Count == 0)
 				return true;
 
-			Space();
-			Print(args[0], LesPrecedence.SuperExpr);
-
-			if (args.Count > 1)
-			{
-				int i = 1;
-				var part = args[i];
-				if (part.Calls(CodeSymbols.Braces)) {
-					Space();
-					PrintBracedBlock(part);
-					i++;
-				}
-				for (; i < args.Count; i++) {
-					Space();
-					PrintContinuator(part = args[i]);
-				}
+			// Print the rest: arg1, arg2 { $(..braces.Args()) } continuators
+			int i;
+			for (i = 0; i < exprListSize; i++) {
+				Space();
+				Print(args[i], Precedence.MinValue, suffix: i + 1 != exprListSize ? "," : null);
+			}
+			if (braces != null) {
+				Space();
+				Print(braces, LesPrecedence.Substitute);
+				i++;
+			}
+			for (; i < args.Count; i++) {
+				Space();
+				PrintContinuator(args[i]);
 			}
 
 			_endIndexOfKeywordExpr = SB.Length;
@@ -1120,22 +1124,26 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private bool IsKeywordExpression(ILNode node)
+		private bool IsKeywordExpression(ILNode node, out int exprListSize, out ILNode bracedBlock)
 		{
+			bracedBlock = null;
+			exprListSize = 1;
+
 			if (!HasTargetIdWithoutPAttrs(node) || !IsAcceptableKeyword(node.Name.Name))
 				return false;
 			var args = node.Args();
 			if (args.Count <= 1)
 				return true;
-			var block = args[1];
-			if (!HasTargetIdWithoutPAttrs(block))
-				return false;
-			int i = block.Calls(S.Braces) ? 2 : 1;
-			for (; i < args.Count; i++)
-				if (!IsContinuator(args[i]))
-					return false;
 
-			Debug.Assert(node.Target.IsId());
+			int i;
+			for (i = args.Count - 1; i > 0; i--)
+				if (!IsContinuator(args[i]))
+					break;
+			if (i > 0 && args[i].Calls(S.Braces) && HasTargetIdWithoutPAttrs(args[i])) {
+				bracedBlock = args[i];
+				i--;
+			}
+			exprListSize = i + 1;
 			return true;
 		}
 

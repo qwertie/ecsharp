@@ -505,15 +505,28 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void Braces()
+		{
+			Expr("{\n  b(c);\n} + {\n  ;\n  Foo()\n}", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
+			Stmt(@"{ ""key"": ""value"", {""KEY"": ""VALUE""} }", F.Braces(
+				F.Call(S.Colon, F.Literal("key"), F.Literal("value")), F.Braces(
+				F.Call(S.Colon, F.Literal("KEY"), F.Literal("VALUE")))));
+			Exact("{\n  0 : zero\n  1 : one\n}", F.Braces(
+				F.Call(S.Colon, zero, _("zero")), F.Call(S.Colon, one, _("one"))));
+			Stmt("{\n  1 : one;\n  2 : two;\n}", F.Braces(
+				F.Call(S.Colon, one, _("one")), F.Call(S.Colon, two, _("two"))));
+			// Using commas in a braced block is a bit awkward since a newline counts 
+			// as a semicolon and you can't mix two separator types.
+			Stmt("{\n  2 : two,\n  4 : four }", F.Braces(
+				F.Call(S.Colon, F.Literal(2), _("two")), F.Call(S.Colon, F.Literal(4), _("four"))));
+		}
+
+		[Test]
 		public void Stmts()
 		{
 			Test(Mode.Stmt, -1, "a;\nb;\nc", a, b, c);
 			Stmt("a.b(c)", F.Call(F.Dot(a, b), c));
-			Expr("{\n  b(c);\n} + {\n  ;\n  Foo()\n}", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
 			Stmt("a.{\n  b;\n  c;\n}()", F.Call(F.Dot(a, F.Braces(b, c))));
-			Stmt(@"{ ""key"": ""value"", {""KEY"": ""VALUE""} }", F.Braces(
-				F.Call(S.Colon, F.Literal("key"), F.Literal("value")), F.Braces(
-				F.Call(S.Colon, F.Literal("KEY"), F.Literal("VALUE")))));
 		}
 
 		[Test]
@@ -735,6 +748,36 @@ namespace Loyc.Syntax.Les
 			Exact("abc.foo", F.Dot(F.Id("abc"), F.Id("foo")));
 			// was formerly an error (issue #108)
 			Test(Mode.Stmt, 0, "123 .foo", F.Dot(F.Literal(123), _("foo")));
+		}
+
+		[Test]
+		public void LegalCommasInKeywordStatements()
+		{
+			Test(Mode.Exact, 0, ".print a, b", KeywordExpr(F.Call("#print", a, b)));
+			Test(Mode.Exact, 0, ".using a, b {\n  c\n}", KeywordExpr(F.Call("#using", a, b, F.Braces(c))));
+			Test(Mode.Exact, 0, ".foo a, {\n  b\n}, {\n  c\n} { }", 
+				KeywordExpr(F.Call("#foo", a, F.Braces(b), F.Braces(c), F.Braces())));
+			Test(Mode.Exact, 0, "{\n  .print a, b\n}", F.Braces(KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Exact, 0, "{\n  .eat x\n  .poo a, b\n}", F.Braces(KeywordExpr(F.Call("#eat", x)), KeywordExpr(F.Call("#poo", a, b))));
+			Test(Mode.Exact, 0, "(.print a, b)", F.InParens(KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Stmt,  0, "(x; .print a, b)", F.Tuple(x, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Exact, 0, "(x; #print(a, c);)", F.Tuple(x, KeywordExpr(F.Call("#print", a, c))));
+			Test(Mode.Stmt,  0, "[x; .print a, b]", F.Call(S.Array, x, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Exact, 0, "[x, #print(a, c)]", F.Call(S.Array, x, KeywordExpr(F.Call("#print", a, c))));
+			Test(Mode.Stmt,  0, "Foo(x; .print a, b)", F.Call(Foo, x, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Exact, 0, "Foo(x, #print(a, c))", F.Call(Foo, x, KeywordExpr(F.Call("#print", a, c))));
+		}
+
+		[Test]
+		public void IllegalCommasInKeywordStatements()
+		{
+			Test(Mode.Stmt, 1, "(T, .print a, b)", F.Tuple(T, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Stmt, 1, "[T, .print a, b]", F.Call(S.Array, T, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Stmt, 1, "[.lineto a, b]",   F.Call(S.Array,    KeywordExpr(F.Call("#lineto", a, b))));
+			Test(Mode.Stmt, 1, "Foo(T, .print a, b)", F.Call(Foo, T, KeywordExpr(F.Call("#print", a, b))));
+			Test(Mode.Stmt, 1, "Foo(.moveto a, b)",   F.Call(Foo,    KeywordExpr(F.Call("#moveto", a, b))));
+			Test(Mode.Stmt, 1, "{\n  a : b,\n  .input a, b }", F.Braces(F.Call(S.Colon, a, b), KeywordExpr(F.Call("#input", a, b))));
+			Test(Mode.Stmt, 1, "x, .input a, b", x, KeywordExpr(AppendStatement(F.Call("#input", a, b))));
 		}
 
 		#endregion
@@ -999,14 +1042,16 @@ namespace Loyc.Syntax.Les
 					OnNewLine(c)));
 		}
 
+		[Test(Fails = "Hard to do this right in the printer")]
 		public void StrategicallyPlacedNewlines()
 		{
 			Test(Mode.Stmt, 0, "{\n\nFoo(x, 1) +\n\na\n\n- b\n\n}", F.Call(NewlineAfter(_(S.Braces)),
 				NewlineAfter(F.Call(NewlineAfter(_(S.Add)), F.Call(Foo, x, one), OnNewLine(a))),
 				NewlineAfter(F.Call(S._Negate, b))));
 			// 2020/04 Newline is not allowed before "," or ";" or ")" or "]"
-			Test(Mode.Stmt, 0, "{\nFoo(\n\nx,\n\n2) + a\n\n-\n\nb\n\n}", F.Braces(
-				NewlineAfter(F.Call(S.Add, F.Call(NewlineAfter(Foo), OnNewLine(x), OnNewLine(OnNewLine(two))), a)),
+			Test(Mode.Stmt, 0, 
+				"{\nFoo(\n\nx,\n\n2) + a\n\n-\n\nb\n\n}", F.Braces(
+				NewlineAfter(F.Call(S.Add, F.Call(NewlineAfter(Foo), OnNewLine(NewlineAfter(x)), OnNewLine(two)), a)),
 				NewlineAfter(F.Call(NewlineAfter(_(S._Negate)), OnNewLine(b)))));
 		}
 

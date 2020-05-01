@@ -40,16 +40,21 @@ partial class Les3Parser
 
 	members {
 		Dictionary<UString, LNode> _sharedTrees;
+		
+		// These two variables are used for detecting and reporting a "comma is not allowed"
+		// error in case of ambiguous input like `Foo(.keyword y, z)`
+		bool _isCommaSeparatedListContext;
+		string _listContextName;
 
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public LNodeList ExprList(LNode firstItem = null)
+		public LNodeList ExprList(string listContextName, LNode firstItem = null, bool presumeCommaSeparated = true)
 		{
 			var endMarker = default(TT);
-			return ExprList(ref endMarker, firstItem, isBracedBlock: false);
+			return ExprList(listContextName, ref endMarker, firstItem, presumeCommaSeparated, isBracedBlock: false);
 		}
 		void CheckForSpace(bool expectSpace, string errorMsg)
 		{
@@ -99,7 +104,7 @@ partial class Les3Parser
 						separatorType = curSepType;
 					} else if (!(separatorType == TT.Semicolon && curSepType == TT.EOF)) {
 						Error(-1, "Unexpected separator: {0} should be {1}",
-							ToString((int) curSepType), ToString((int) separatorType));
+							ToString((int) separator.Type()), ToString((int) separatorType));
 					}
 				}
 			}
@@ -109,9 +114,19 @@ partial class Les3Parser
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
 	[LL(1)]
-	public ExprList[ref TokenType separatorType, LNode firstItem = null, bool isBracedBlock = false] returns [LNodeList result] :
-		{ var list = InternalList<LNode>.Empty; }
-		{ if (firstItem != null) list.Add(firstItem); }
+	public ExprList[string listContextName, ref TokenType separatorType, LNode firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false] returns [LNodeList result] :
+		{
+			bool oldCommaSeparatedContext = _isCommaSeparatedListContext;
+			string oldListContext = _listContextName;
+			_isCommaSeparatedListContext = presumeCommaSeparated;
+			_listContextName = listContextName;
+			on_return {
+				_isCommaSeparatedListContext = oldCommaSeparatedContext;
+				_listContextName = oldListContext;
+			}
+			var list = InternalList<LNode>.Empty;
+			if (firstItem != null) list.Add(firstItem);
+		}
 		NewlinesOpt
 		(	&!{isBracedBlock}
 			&!{IsConjoinedToken($LI+1)}
@@ -124,6 +139,7 @@ partial class Les3Parser
 			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
 		/	{ var separator = default(Token); }
 			(	(";"|","|TopExpr) =>
+				{ _isCommaSeparatedListContext = presumeCommaSeparated ? separatorType != TT.Semicolon : separatorType == TT.Comma; }
 				list+=NextExpression[ref separatorType, out separator, isBracedBlock]
 			)*
 			{
@@ -263,7 +279,7 @@ partial class Les3Parser
 				"!"
 				{ LNodeList args; }
 				{ int endIndex; }
-				(	"(" args=ExprList[e] c:=")"  { endIndex = c.EndIndex; }
+				(	"(" args=ExprList["argument list", e] c:=")"  { endIndex = c.EndIndex; }
 				/	T:=Expr[P.Of, compactMode]   { args = LNode.List(e, T); endIndex = T.Range.EndIndex; }
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
@@ -308,13 +324,13 @@ partial class Les3Parser
 		:	// call(function)
 			result:CallArgs[e]
 		|	// Indexer / square brackets
-			lb:="[" args:ExprList[e] rb:="]"
+			lb:="[" args:ExprList["square brackets", e] rb:="]"
 			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, rb.EndIndex, lb.StartIndex, rb.EndIndex, NodeStyle.Operator);}
 		;
 
 	CallArgs[LNode target] returns [LNode result] : 
-		{var endMarker = default(TokenType);}
-		"(" args:ExprList[ref endMarker] ")" 
+		{ var endMarker = default(TokenType); }
+		"(" args:ExprList["argument list", ref endMarker] ")" 
 		{
 			$result = MarkCall(F.Call(target, args, target.Range.StartIndex, $")".EndIndex).SetBaseStyle(NodeStyle.PrefixNotation));
 			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; }
@@ -352,8 +368,8 @@ partial class Les3Parser
 			result:SquareBracketList
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
-			"(" {bool saveParens = !compactMode && (TT)LA0 != TT.At;}
-			list:=ExprList[ref endMarker]
+			"(" { bool saveParens = !compactMode && (TT)LA0 != TT.At; }
+			list:=ExprList["parentheses", ref endMarker, presumeCommaSeparated: false]
 			")" {
 				if (endMarker != default(TT) || list.Count != 1) {
 					$result = F.Call(S.Tuple, list, $"(".StartIndex, $")".EndIndex, $"(".StartIndex, $"(".EndIndex);
@@ -376,7 +392,7 @@ partial class Les3Parser
 			};
 
 	SquareBracketList returns [LNode result] : 
-		"[" list:=ExprList "]"
+		"[" list:=ExprList["square brackets"] "]"
 		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
 
 	// Token lists (TODO: add unit tests)
@@ -398,6 +414,15 @@ partial class Les3Parser
 		/	t:=TT.Literal                    { return F.Literal(t); }
 		/	t:=(~(","|";"|"\n"|")"|"]"|"}")) { return F.Id(t); };
 
+	BracedBlock returns [LNode result] : 
+		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
+		"{" 
+			{ endMarker := default(TT); }
+			greedy("\n")? // Avoid causing an expectation that ";" is the list separator
+			stmts:ExprList["braced block", ref endMarker, isBracedBlock: true, presumeCommaSeparated: false]
+		"}" 
+		{ return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock); };
+
 	////////////////////////////////////////////////////////////////////////////
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
 	////////////////////////////////////////////////////////////////////////////
@@ -407,9 +432,11 @@ partial class Les3Parser
 		"." word:TT.Id 
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 
-		/	args+=Expr[Precedence.MinValue, compactMode: false] )
+		/	args+=Expr[Precedence.MinValue, compactMode: false]
+			args+=CommaContinuator[(Symbol)word.Value]*
+		)
 		greedy( "\n"? args+=BracedBlock )?
-		greedy( args+=Continuator )*
+		greedy( args+=Continuator[(Symbol)word.Value] )*
 		{
 			var keyword = GSymbol.Get("#" + word.Value.ToString());
 			int endIndex = args.IsEmpty ? word.EndIndex : args.Last.Range.EndIndex;
@@ -417,7 +444,17 @@ partial class Les3Parser
 		}
 		(=>); // Simplify output by not considering what comes afterward
 
-	Continuator returns [LNode result] :
+	CommaContinuator[Symbol word] returns [LNode result] :
+		"," {
+			if (_isCommaSeparatedListContext)
+				Error(-1, "Please add parentheses around the '.{1}' expression. Otherwise, a comma is not allowed " +
+					"because it is unclear whether the comma separates items of the '{0}' or the .{1} expression.",
+					_listContextName, word);
+		}
+		"\n"? 
+		result:TopExpr[compactMode: false];
+
+	Continuator[Symbol word] returns [LNode result] :
 		"\n"?
 		kw:ContinuatorKeyword  {var opName = Continuators[kw.Value];}
 		(=>) // simplify output by preventing an unneeded check in KeywordExpression
@@ -428,14 +465,6 @@ partial class Les3Parser
 			    {$result = F.Call(opName, e, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
 			/	{$result = F.Call(opName, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);})
 		);
-
-	BracedBlock returns [LNode result] : 
-		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
-		"{" 
-			{endMarker := default(TT);}
-			stmts:ExprList(ref endMarker, isBracedBlock: true)
-		"}" 
-		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock);};
 
 	ContinuatorKeyword returns [Token result] : &{[Hoist] IsContinuator(LT($LI).Value)} result:TT.Id;
 
