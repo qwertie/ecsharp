@@ -120,7 +120,7 @@ namespace Loyc.VisualStudio
 			"raise", "with",
 			// other
 			"let"
-		}.Select(GSymbol.Get));
+		}.Select(n => GSymbol.Get(n)));
 
 		protected override ILexer<Token> PrepareLexer(ILexer<Token> lexer, ICharSource file, int position)
 		{
@@ -196,7 +196,7 @@ namespace Loyc.VisualStudio
 			var results = new DList<ITagSpan<ClassificationTag>>();
 			var parser = new MyLesParser(tokens, sourceFile, TraceMessageSink.Value, results);
 			var endMarker = default(TokenType);
-			var _ = parser.ExprList(ref endMarker, isBracedBlock: true);
+			var _ = parser.ExprList("", ref endMarker, isBracedBlock: true);
 
 			results.Sort((t1, t2) => t1.Span.Start.Position.CompareTo(t2.Span.Start.Position));
 			return results;

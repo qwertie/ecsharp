@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -120,7 +120,7 @@ namespace Loyc.VisualStudio
 			"raise", "with",
 			// other
 			"let"
-		}.Select(GSymbol.Get));
+		}.Select(n => GSymbol.Get(n)));
 
 		protected override ILexer<Token> PrepareLexer(ILexer<Token> lexer, ICharSource file, int position)
 		{
