@@ -538,9 +538,13 @@ namespace Loyc.Ecs.Tests
 		{
 			LNode cast = _(S.Cast), operator_cast = Attr(trivia_operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
+			
 			LNode stmt = Attr(@static, F.Fn(F.Bool, Attr(trivia_operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
-			Stmt("static bool operator==(T a, T b) { }", stmt);
 			Expr("static #fn(bool, operator==, #([] T a, [] T b), { })", stmt);
+			Stmt("static bool operator==(T a, T b) { }", stmt);
+			stmt = stmt.WithArgChanged(1, _(S.Eq)); // in this context it should still print as an operator
+			Stmt("static bool operator==(T a, T b) { }", stmt, Mode.PrinterTest);
+			
 			stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a) { }", stmt);
 			Expr("static implicit #fn(T, operator`'cast`, #([] Foo a), { })", stmt);

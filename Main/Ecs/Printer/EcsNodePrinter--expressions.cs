@@ -963,7 +963,8 @@ namespace Loyc.Ecs
 				PrintLiteral();
 			else {
 				var mode = IdPrintMode.Normal;
-				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null)
+				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null 
+					|| (_n.Name.Name.StartsWith("'") && (_flags & Ambiguity.InDefinitionName) != 0))
 					mode = IdPrintMode.Operator;
 				if (_n.BaseStyle == NodeStyle.VerbatimId)
 					mode = IdPrintMode.Verbatim;
