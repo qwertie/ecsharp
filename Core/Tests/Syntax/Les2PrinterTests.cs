@@ -66,7 +66,7 @@ namespace Loyc.Syntax.Les
 			Exact("x `Foo` a**b;",   F.Call(Foo, x, F.Call(S.Exp, a, b))   .SetStyle(NodeStyle.Operator));
 			Exact("x `Foo` 1 == a;", F.Call(S.Eq, F.Call(Foo, x, one).SetStyle(NodeStyle.Operator), a));
 			Exact(".. @'&(a, b) && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact(".. a & b && c;",   F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+			Exact("..a & b && c;",   F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
 		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)

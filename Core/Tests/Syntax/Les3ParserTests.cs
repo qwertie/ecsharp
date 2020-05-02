@@ -115,15 +115,22 @@ namespace Loyc.Syntax.Les
 		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions printerOptions, string text, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = Les3LanguageService.Value.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
+			var les3 = Les3LanguageService.Value;
+			var results = les3.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
 				messages.WriteListTo(ConsoleMessageSink.Value);
 				AreEqual(errorsExpected, messages.List.Count, 
 					"Error count was {0} for «{1}»", messages.List.Count, text); // fail
 			}
-			for (int i = 0; i < expected.Length; i++)
-				AreEqual(expected[i], results.TryGet(i, null));
+			for (int i = 0; i < expected.Length; i++) {
+				LNode expect = expected[i], actual = results.TryGet(i, null);
+				if (!expect.Equals(actual)) {
+					var options = new Les3PrinterOptions { PrintTriviaExplicitly = true, IndentString = "  " };
+					AreEqual(les3.Print(expect, null, null, options), les3.Print(actual, null, null, options));
+					AreEqual(expect, actual);
+				}
+			}
 			AreEqual(expected.Length, results.Count, "Got more result nodes than expected");
 			return messages;
 		}

@@ -192,8 +192,8 @@ public partial class Les3Lexer
 		/ {_type = TT.Literal;}    value:DQString
 		/ {_type = TT.Literal;}    value:SQChar
 		/ {_type = TT.SingleQuote;} value:SQOperator
-		/ {_type = TT.Comma;}      ',' { value = @@`',`; }
-		/ {_type = TT.Semicolon;}  ';' { value = @@`';`; }
+		/ {_type = TT.Comma;}      ',' { value = S.Comma; }
+		/ {_type = TT.Semicolon;}  ';' { value = S.Semicolon; }
 		/ {_type = TT.LParen;}     '(' {_brackStack.Add(_type);}
 		/ {_type = TT.RParen;}     ')' {PopBrackStack(TT.LParen, #TOS == TT.LBrack);}
 		/ {_type = TT.LBrack;}     '[' {_brackStack.Add(_type);}

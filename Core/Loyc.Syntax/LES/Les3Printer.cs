@@ -864,7 +864,7 @@ namespace Loyc.Syntax.Les
 					next = args[i + 1, null];
 					append = next != null ? ShouldAppendStmt(next) : false;
 					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
-					Print(stmt, Precedence.MinValue, suffix: semicolon ? ";" : null, NewlineContext.StatementLevel);
+					Print(stmt, Precedence.MinValue, semicolon ? ";" : null, NewlineContext.StatementLevel);
 				}
 			}
 			return anyNewlines;

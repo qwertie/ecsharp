@@ -251,25 +251,25 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Power        = new Precedence(91, 90);          // ** (right-associative as in Python)
 		public static readonly Precedence Prefix       = new Precedence(111, 85, 85, 85); // most prefix operators, e.g. - ~ *
 		public static readonly Precedence SuffixWord   = new Precedence(80, 111, 80, 80); // LES3 suffix 'word operators and `units`
-		public static readonly Precedence Multiply     = new Precedence(75);              // * / %
-		public static readonly Precedence UpperWord    = new Precedence(70);              // LES3 uppercase WORD_OP or unary 'WORD_OP
-		public static readonly Precedence Shift        = new Precedence(70, 70, 65, 70);  // >> <<
-		public static readonly Precedence Other        = new Precedence(70, 70, 55, 75);  // LES2 `WORD` or `word` operator
-		public static readonly Precedence Add          = new Precedence(65);              // + -
-		public static readonly Precedence RangePrefix  = new Precedence(111, 60, 60, 60); // .. ..< (prefix)
-		public static readonly Precedence Range        = new Precedence(60);              // .. ..<
+		public static readonly Precedence RangePrefix  = new Precedence(111, 75, 75, 75); // .. ..< (prefix)
+		public static readonly Precedence Range        = new Precedence(75);              // .. ..< ^^
+		public static readonly Precedence Multiply     = new Precedence(70);              // * / %
+		public static readonly Precedence UpperWord    = new Precedence(65);              // LES3 uppercase WORD_OP or unary 'WORD_OP
+		public static readonly Precedence Shift        = new Precedence(65, 65, 60, 65);  // >> <<
+		public static readonly Precedence Other        = new Precedence(65, 65, 55, 70);  // LES2 `WORD` or `word` operator
+		public static readonly Precedence Add          = new Precedence(60);              // + -
 		public static readonly Precedence Squiggly     = new Precedence(55);              // ~ ~> <~
 		public static readonly Precedence SquigglyPrefix = new Precedence(111,55,55,55);  // ~> <~ (prefix)
 		public static readonly Precedence AndBits      = new Precedence(52, 52, 35, 52);  // &   (LES3 precedence)
 		public static readonly Precedence OrBits       = new Precedence(50, 50, 35, 52);  // | ^ (LES3 precedence)
 		public static readonly Precedence OrIfNull     = new Precedence(45);              // ??
 		public static readonly Precedence Compare      = new Precedence(40);              // == != > < >= <=
-		public static readonly Precedence AndBitsLES2  = new Precedence(36, 36, 35, 46);  // &   (LES2 precedence)
-		public static readonly Precedence OrBitsLES2   = new Precedence(35, 35, 35, 46);  // | ^ (LES2 precedence)
+		public static readonly Precedence AndBitsLES2  = new Precedence(37, 37, 35, 52);  // &   (LES2 precedence)
+		public static readonly Precedence OrBitsLES2   = new Precedence(35, 35, 35, 52);  // | ^ (LES2 precedence)
 		public static readonly Precedence Arrow        = new Precedence(31, 30);          // -> <-
 		public static readonly Precedence ArrowPrefix  = new Precedence(111, 30, 30, 30); // -> <- (prefix)
 		public static readonly Precedence And          = new Precedence(25);              // &&
-		public static readonly Precedence Or           = new Precedence(20);              // ||
+		public static readonly Precedence Or           = new Precedence(20);              // || ^^
 		public static readonly Precedence IfElse       = new Precedence(16, 15);          // ? : :> <:   a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
 		public static readonly Precedence ColonArrowPrefix = new Precedence(111, 15);     // :> <: (prefix)
 		public static readonly Precedence Assign       = new Precedence(28, 10, 10, 10);  // =      label : (b = (c ? (d : e)))
@@ -279,6 +279,6 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Triangle     = new Precedence(-5);              // |> <|
 		public static readonly Precedence TrianglePrefix = new Precedence(111, -5);       // |> <| (prefix)
 		public static readonly Precedence SuperExpr    = new Precedence(-10);             // LES2 only
-		public static readonly Precedence Illegal      = new Precedence(62);              // Used to reserve prefix operators for future use
+		public static readonly Precedence Illegal      = new Precedence(58);              // Used to reserve prefix operators for future use
 	}
 }

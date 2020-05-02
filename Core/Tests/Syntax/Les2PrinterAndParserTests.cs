@@ -87,13 +87,14 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void RangeOps()
 		{
-			Exact("a >= b .. c;",   F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
-			Exact("a >= b ..< c;",  F.Call(S.GE, a, F.Call("'..<", b, c)));
-			Exact("a + b ... c;",   F.Call(S.DotDotDot, F.Call(S.Add, a, b), c));
-			Exact("a .< b + c;",    F.Call("'.<", a, F.Call(S.Add, b, c)));
-			Stmt(".. a + b == c;",  F.Call(S.Eq, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
-			Exact("x >> a .. b;",   F.Call(S.DotDot, F.Call(S.Shr, x, a), b));
-			Exact("a.b!!.c .?. 1;", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
+			Exact("a >= b..c;",     F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a >= b..<c;",    F.Call(S.GE, a, F.Call("'..<", b, c)));
+			Exact("a + b...c;",     F.Call(S.Add, a, F.Call(S.DotDotDot, b, c)));
+			Exact("@'+(a, b)...c;", F.Call(S.DotDotDot, F.Call(S.Add, a, b), c));
+			Exact("a.<b + c;",      F.Call(S.Add, F.Call("'.<", a, b), c));
+			Stmt("..a + b == c;",   F.Call(S.Eq, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Exact("x >> a..b;",     F.Call(S.Shr, x, F.Call(S.DotDot, a, b)));
+			Exact("a.b!!.c.?.1;", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 		}
 
 		[Test]

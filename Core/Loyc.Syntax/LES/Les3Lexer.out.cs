@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 
 	public partial class Les3Lexer {
-		static readonly Symbol sy__apos_comma = (Symbol) "',", sy__apos_semi = (Symbol) "';", sy__aposx40 = (Symbol) "'@";
+		static readonly Symbol sy__aposx40 = (Symbol) "'@";
 	
 		void DotIndent()
 		{
@@ -999,7 +999,7 @@ namespace Loyc.Syntax.Les
 						_type = TT.Comma;
 						Skip();
 						// line 195
-						value = sy__apos_comma;
+						value = S.Comma;
 					}
 					break;
 				case ';':
@@ -1008,7 +1008,7 @@ namespace Loyc.Syntax.Les
 						_type = TT.Semicolon;
 						Skip();
 						// line 196
-						value = sy__apos_semi;
+						value = S.Semicolon;
 					}
 					break;
 				case '(':

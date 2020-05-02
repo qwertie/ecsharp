@@ -69,8 +69,8 @@ namespace Loyc.Syntax.Les
 			Exact("(@ x >> a) * 2", F.Call(S.Mul, F.Call(S.Shr, x, a), two));
 			Exact("x >> a**1", F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
 
-			Exact(".. (@ a & b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
-			Exact(".. a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
+			Exact("..(@ a & b) && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
+			Exact("..a & b && c", F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 			// No longer classified as immiscible
 			Exact("x >> a / 2", F.Call(S.Shr, x, F.Call(S.Div, a, two)));
 			Exact("a * 2 >> x", F.Call(S.Shr, F.Call(S.Mul, a, two), x));

@@ -880,6 +880,18 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void CSharp8RangeOps()
+		{
+			Expr("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Expr("a..b * ..c", F.Call(S.Mul, F.Call(S.DotDot, a, b), F.Call(S.DotDot, c)));
+			Expr("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Expr("a..*b", F.Call(S.DotDot, a, F.Call(S._Dereference, b)));
+			// TODO: .. suffix operator
+			//Expr("a..", F.Call(S.DotDot, a));
+			//Expr("Foo[x..]", F.Call(S.IndexBracks, Foo, F.Call(S.DotDot, x)));
+		}
+
+		[Test]
 		public void CSharp7OtherFeatures()
 		{
 			// None of this syntax is new in EC#. Notes:

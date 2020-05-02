@@ -1265,8 +1265,8 @@ namespace Loyc.Ecs
 				AllowChangeParentheses = true;
 			SpaceOptions = SpaceOpt.Default;
 			NewlineOptions = NewlineOpt.Default;
-			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
-			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
+			SpaceAroundInfixStopPrecedence = EP.Forward.Hi + 1;
+			SpaceAfterPrefixStopPrecedence = EP.Forward.Hi + 1;
 			ObeyRawText = true;
 		}
 

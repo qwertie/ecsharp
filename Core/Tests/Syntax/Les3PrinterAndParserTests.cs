@@ -450,13 +450,14 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void PrecedenceChecks_RangeOps()
 		{
-			Exact("a >= b .. c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
-			Exact("a .. b.c ... x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
-			Exact("a ..< b ?? b ... c", F.Call("'??", F.Call("'..<", a, b), F.Call("'...", b, c)));
-			Exact("a ..< b + c ... x", F.Call("'...", F.Call("'..<", a, F.Call(S.Add, b, c)), x));
-			Exact("a .. b ~ b .<*>. c", F.Call("'~", F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
-			Exact(".. a + b && c", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
-			Exact("a.b!!.c .?. 1", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
+			Exact("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a..b.c...x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
+			Exact("a..<b ?? b...c", F.Call("'??", F.Call("'..<", a, b), F.Call("'...", b, c)));
+			Exact("a..<b + c...x", F.Call(S.Add, F.Call("'..<", a, b), F.Call("'...", c, x)));
+			Exact("a..<(@ b + c)...x", F.Call("'...", F.Call("'..<", a, F.Call(S.Add, b, c)), x));
+			Exact("a..b ~ b.<*>.c", F.Call("'~", F.Call("'..", a, b), F.Call("'.<*>.", b, c)));
+			Exact("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Exact("a.b!!.c.?. 1", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 		}
 
 		[Test]
@@ -948,9 +949,13 @@ namespace Loyc.Syntax.Les
 			Expr ("1*.2", Op(F.Call(S.Mul, one, F.Literal(0.2))));
 			Exact("1*. 2", Op(F.Call(_("'*."), one, two)));
 			Expr ("1.*.2", Op(F.Call(_("'.*"), one, F.Literal(0.2))));
-			// TODO: Shouldn't the printer print this as "1..2"? It's using "1 .. 2"
+			// Special logic here: 1+.2 means 1 + 0.2 but 1..2 means 1 .. 2
+			// The printer prints 1 .. 2 to avoid any confusion.
 			Expr("1..2", Op(F.Call(S.DotDot, one, two)));
+			Expr("1...2", Op(F.Call(S.DotDotDot, one, two)));
+			Expr("1.. .2", Op(F.Call(S.DotDot, one, F.Literal(0.2))));
 			Expr("1.*. 2", Op(F.Call(_("'.*."), one, two)));
+			Expr("1.*.2", Op(F.Call(_("'.*"), one, F.Literal(0.2))));
 		}
 
 		#endregion
