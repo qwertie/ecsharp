@@ -120,8 +120,8 @@ namespace Loyc.Syntax.Les
 				{ S.LE,          P.Compare    }, // <=
 				{ S.GE,          P.Compare    }, // >=
 				{ S.Eq,          P.Compare    }, // ==
-				{ S.NotEq,         P.Compare    }, // !=
-				{ S._RightArrow, P.Arrow      }, // ->
+				{ S.NotEq,       P.Compare    }, // !=
+				{ S.RightArrow,  P.Arrow      }, // ->
 				{ S.LeftArrow,   P.Arrow      }, // <-
 				{ S.And,         P.And        }, // &&
 				{ S.Or,          P.Or         }, // ||

@@ -104,6 +104,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Is = GSymbol.Get("'is");             //!< "'is":   @'is(x,string) <=> x is string, @'is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("'cast");         //!< "'cast": @'cast(x,int) <=> (int)x <=> x(-> int)
 		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
+		[Obsolete("This was renamed to RightArrow")]
 		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
 		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "::" Scope resolution operator in many languages
 		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "=>" used to define an anonymous function
@@ -192,7 +193,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "'!!" operator
 		public static readonly Symbol SufBangBang = GSymbol.Get(@"'suf!!"); //!< "'suf!!" operator
 		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "'!!." operator
-		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
+		public static readonly Symbol RightArrow = GSymbol.Get(@"'->");    //!< "'->" operator: a->b
+		[Obsolete("This was renamed to RightArrow")]
+		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< "'->" operator: a->b
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "'<-" operator
 		public static readonly Symbol Parens = GSymbol.Get("'()");         //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 

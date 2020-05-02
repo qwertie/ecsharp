@@ -102,9 +102,9 @@ namespace LeMP.Tests
 		[Test]
 		public void TestDefineFn()
 		{
-			TestEcs(@"replace NL() { Console.WriteLine(); } NL(); NL();",
-					@"Console.WriteLine(); Console.WriteLine();");
 			TestLes(@"define WL() { Console.WriteLine(); }; WL(); WL();",
+					@"Console.WriteLine(); Console.WriteLine();");
+			TestEcs(@"define NL() => Console.WriteLine(); NL(); NL();",
 					@"Console.WriteLine(); Console.WriteLine();");
 			TestEcs(@"define Methods($T) { void F($T arg) {} void G($T arg) {} } Methods(int); Methods(List<int>);",
 					@"void F(int arg) {} void G(int arg) {} void F(List<int> arg) {} void G(List<int> arg) {}");
@@ -124,6 +124,19 @@ namespace LeMP.Tests
 				Assert.IsTrue(_msgHolder.List.All(msg => msg.Severity == Severity.Warning));
 				_msgHolder.WriteListTo(TraceMessageSink.Value);
 			}
+		}
+
+		[Test]
+		public void TestDefineIdentifier()
+		{
+			TestEcs(@"define WL { Console.WriteLine; } WL(122);",
+					@"Console.WriteLine(122);");
+			TestEcs(@"define WL => Console.WriteLine; WL(123);",
+					@"Console.WriteLine(123);");
+			TestLes(@"define WL { Console.WriteLine; }; WL(124);",
+					@"Console.WriteLine(124);");
+			TestLes(@"#define WL { Console.WriteLine; }; WL(125);",
+					@"Console.WriteLine(125);");
 		}
 	}
 }

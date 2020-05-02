@@ -12,12 +12,15 @@ namespace LeMP.Tests
 	public class PreludeMacroTests_Les3
 	{
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
+		int _alternator;
 
-		public void Test(string input, string output, int maxExpand = 0xFFFF)
+		public void Test(string input, string output, int maxExpand = 0xFFFF, ILNodePrinter printer = null)
 		{
-			using (LNode.SetPrinter(EcsLanguageService.Value))
+			using (LNode.SetPrinter(printer ?? EcsLanguageService.Value))
 			using (ParsingService.SetDefault(Les3LanguageService.Value))
-				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.Prelude.Les3");
+				TestCompiler.Test(input, output, _sink, maxExpand,
+					// LeMP.Prelude.Les3 is set up as an alias; both namespaces should work
+					(++_alternator & 1) != 0 ? "LeMP.Les3.To.CSharp" : "LeMP.Prelude.Les3");
 		}
 
 		[Test]
@@ -210,26 +213,45 @@ namespace LeMP.Tests
 		}
 
 		[Test]
-		public void OtherPreludeDeclarations()
+		public void FunctionDefinitions()
 		{
-			Test("@pub Foo: int = 0;",
-				 "public int Foo = 0;");
-			Test("@public Foo: int = 0;",
-				 "public int Foo = 0;");
+			// Old style (required for operator definitions)
 			Test("@extern .fn NoOp(x: int);",
 				 " extern  void NoOp(int x);");
 			Test("@static .fn Name(Arg1, Arg2): RetType {};",
 				 " static RetType Name(Arg1, Arg2) {}");
 			Test(".fn Spit(times: int = 1) {};",
 				 "void Spit(int times = 1) {}");
+			Test(".fn Foo() { this(false); base(true); }",
+				 "void Foo() { this(false); base(true); }");
+			Test("@static .fn (x: Complex) + (y: Complex) : Complex => Complex.new(x.real + y.real, x.imm + y.imm);",
+				 "static Complex operator+ ((Complex x), (Complex y)) => Complex.@new(x.real + y.real, x.imm + y.imm);",
+				 printer: EcsLanguageService.WithPlainCSharpPrinter);
+
+			// Quick style
+			Test("@static Exit() => Application.Exit()",
+				"static void Exit() => Application.Exit();");
+			Test("@static Exit() => { Application.Exit(); }",
+				"static void Exit() { Application.Exit(); }");
+			Test("Square(N: int): int => N * N;",
+				"int Square(int N) => N * N;");
+			Test("Square(x: int|float): int|float => x * x;",
+				"#fn(int | float, Square, #(#var(int | float, x)), x * x);");
+		}
+
+		[Test]
+		public void OtherPreludeDeclarations()
+		{
+			Test("@pub Foo: int = 0;",
+				 "public int Foo = 0;");
+			Test("@public Foo: int = 0;",
+				 "public int Foo = 0;");
 			// TODO: support multiple args in keyword-expressions
 			//Test("@protected .var X=0, Y=0",
 			//	 "protected var X = 0, Y = 0;");
 			Test("@protected @internal X: Int32 = 0;",
 				 "protected internal Int32 X = 0;");
 			// In EC#, this(...) prints as #this(...) if not inside a method
-			Test(".fn Foo() { this(false); base(true); }",
-				 "void Foo() { this(false); base(true); }");
 			Test("@internal .cons Foo() { base(17); .return; }",
 				 " internal Foo() : base(17) { return; }");
 			Test("@public .cons Foo() { this(null); .return; }",

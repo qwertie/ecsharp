@@ -215,44 +215,103 @@ namespace LeMP.Prelude.Les
 		//   (def $name($args)) `where` (name 
 		// };
 
+		[LexicalMacro("NameOfFunction(Args...) -> Type => Body; NameOfFunction(Args...) ==> ForwardingTarget",
+			"Defines a function (also known as a method).",
+			"'=>", "'==>", Mode = MacroMode.Passive)]
+		public static LNode quickFunction(LNode node, IMessageSink sink)
+		{
+			// Recognizes Name(Args...) => Body
+			// and        Name(Args...) ==> Body
+			if (node.ArgCount == 2)
+			{
+				bool isForwarding = node.Calls("'==>");
+				LNode sig = node[0], body = node[1];
+				if (!sig.HasSpecialName)
+					return NewFunctionNode(node, sig, null, body, sink, isForwarding);
+			}
+			return null;
+		}
+
+		[LexicalMacro("NameOfFunction(Args...): Type => Body; NameOfFunction(Args...): Type ==> ForwardingTarget",
+			"Defines a function (also known as a method).", "':")]
+		public static LNode quickFunctionWithColon(LNode node, IMessageSink sink)
+		{
+			// Recognizes Name(Args...) : (Type =>  Body)
+			// and        Name(Args...) : (Type ==> Body)
+			if (node.ArgCount == 2)
+			{
+				LNode sig = node[0], rhs = node[1];
+				bool isForwarding = rhs.Calls(S.Forward, 2);
+				if (isForwarding || rhs.Calls(S.Lambda, 2))
+				{
+					LNode type = rhs[0];
+					LNode body = rhs[1];
+					if (!sig.HasSpecialName)
+						return NewFunctionNode(node, sig, type, body, sink, isForwarding);
+				}
+			}
+			return null;
+		}
+
 		[LexicalMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name(Args...): ReturnType { Body }; fn Name ==> ForwardingTarget",
 			"Defines a function (also known as a method).",
 			"fn", "def")]
 		public static LNode @fn(LNode node, IMessageSink sink)
 		{
-			return DefOrConstructor(node, sink, false);
+			return FnOrCons(node, sink, false);
 		}
 		[LexicalMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
 		public static LNode cons(LNode node, IMessageSink sink)
 		{
-			return DefOrConstructor(node, sink, true);
+			return FnOrCons(node, sink, true);
 		}
-		public static LNode DefOrConstructor(LNode node, IMessageSink sink, bool isCons)
+		public static LNode FnOrCons(LNode node, IMessageSink sink, bool isCons)
 		{
 			var parts = node.Args;
-			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
-			if (!parts.Count.IsInRange(1, 2) || !sig.IsCall || (body != null && !body.Calls(S.Braces)))
+			LNode rest = parts.TryGet(0, null), body = parts.TryGet(1, null);
+			if (!parts.Count.IsInRange(1, 2) || !rest.IsCall || (body != null && !body.Calls(S.Braces)))
 				return null;
-			
-			LNode forwardTo = null, retVal = null;
-			if (sig.Calls(S.Forward, 2) || sig.Calls("'|>>", 2)) {
-				forwardTo = sig.Args[1];
-				sig = sig.Args[0];
+
+			// Recognize Name(Args...) : (Type =>  Body)
+			// and       Name(Args...) : (Type ==> Body)
+			// and       Name(Args...) : Type
+			LNode type = null, sig = null;
+			if (rest.Calls(S.Colon, 2))
+			{
+				sig = rest[0];
+				rest = rest[1];
+			}
+			// Recognize TypeOrSig => Body
+			// and       TypeOrSig ==> Body
+			bool isForwarding = rest.Calls(S.Forward, 2);
+			if (isForwarding || rest.Calls(S.Lambda, 2))
+			{
 				if (body != null)
-					return Reject(sink, sig.Target, "Cannot use ==> and a method body {...} at the same time.");
+					return Reject(sink, rest.Target, "Cannot use '{0}' and a body {...} at the same time.", type.Name.Name.Substring(1));
+				body = rest[1];
+				rest = rest[0];
 			}
-			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.Colon, 2) || sig.Calls(S.ColonColon, 2)) {
-				retVal = sig.Args[1];
-				sig = sig.Args[0];
+			if (sig == null)
+				sig = rest;
+			else
+				type = rest;
+			// Recognize Sig::Type
+			if (sig.Calls(S.ColonColon, 2) && type == null)
+			{
+				type = sig[1];
+				sig = sig[0];
 			}
-			if (retVal != null && retVal.Calls(S.Braces) && body == null) {
-				body = retVal;
-				retVal = F.Missing;
-			}
-			var name = sig.Target ?? sig;
+			return NewFunctionNode(node, sig, type, body, sink, isForwarding, isCons);
+		}
+		public static LNode NewFunctionNode(LNode range, LNode sig, LNode retVal, LNode body, IMessageSink sink, bool isForwarding, bool isCons = false)
+		{
+			if (!sig.IsCall)
+				return null;
+
+			var name = sig.Target;
 			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.AltList) : F.List();
+			var argList = sig.WithTarget(S.AltList);
 
 			if (retVal == null)
 				retVal = isCons ? F.Missing : F.Void;
@@ -260,12 +319,13 @@ namespace LeMP.Prelude.Les
 				return Reject(sink, retVal, "A constructor cannot have a return type");
 
 			Symbol kind = isCons ? S.Constructor : S.Fn;
-			if (body != null)
-				return node.With(kind, retVal, name, argList, body);
-			else if (forwardTo != null)
-				return node.With(kind, retVal, name, argList, F.Call(S.Forward, forwardTo));
-			else
-				return node.With(kind, retVal, name, argList);
+			if (body != null) {
+				if (isForwarding)
+					return range.With(kind, retVal, name, argList, F.Call(S.Forward, body));
+				else
+					return range.With(kind, retVal, name, argList, body);
+			} else
+				return range.With(kind, retVal, name, argList);
 		}
 
 		// Syntax I'm using:
@@ -284,7 +344,7 @@ namespace LeMP.Prelude.Les
 			if (parts.Count != 2 || !body.Calls(S.Braces))
 				return RejectIfNormal(sink, node, "A property definition must have the form prop(Name, { Body }), or prop(Name::type, { Body })");
 
-			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
+			if (sig.Calls(S.RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
 				name = sig.Args[0];
 				retVal = sig.Args[1];
 			} else {

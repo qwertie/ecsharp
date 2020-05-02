@@ -274,7 +274,7 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence ColonArrowPrefix = new Precedence(111, 15);     // :> <: (prefix)
 		public static readonly Precedence Assign       = new Precedence(28, 10, 10, 10);  // =      label : (b = (c ? (d : e)))
 		public static readonly Precedence LowerKeyword = new Precedence(6, 5, 5, 5);      // keyword, e.g. (a = b) implies (a knows (b = c));
-		public static readonly Precedence Lambda       = new Precedence(52, 0, 0, 0);     // =>
+		public static readonly Precedence Lambda       = new Precedence(48, 0, 0, 0);     // =>
 		public static readonly Precedence LambdaPrefix = new Precedence(111, 0, 0, 0);    // > => (prefix)
 		public static readonly Precedence Triangle     = new Precedence(-5);              // |> <|
 		public static readonly Precedence TrianglePrefix = new Precedence(111, -5);       // |> <| (prefix)

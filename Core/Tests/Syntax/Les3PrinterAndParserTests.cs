@@ -431,7 +431,7 @@ namespace Loyc.Syntax.Les
 		public void PrecedenceChecks_ArrowOps()
 		{
 			Exact("a <- b <- c",         F.Call(S.LeftArrow, a, F.Call(S.LeftArrow, b, c)));
-			Exact("a -> a * b",          F.Call(S._RightArrow, a, F.Call(S.Mul, a, b)));
+			Exact("a -> a * b",          F.Call(S.RightArrow, a, F.Call(S.Mul, a, b)));
 			Exact("c && a <- b > 1",     F.Call(S.And, c, F.Call(S.LeftArrow, a, F.Call(S.GT, b, one))));
 			Exact("a | b -> b | c -> x", F.Call("'->", F.Call(S.OrBits, a, b), F.Call("'->", F.Call(S.OrBits, b, c), x)));
 			Exact("a <- b && b <- c",    F.Call(S.And, F.Call("'<-", a, b), F.Call("'<-", b, c)));
@@ -485,6 +485,16 @@ namespace Loyc.Syntax.Les
 		public void PrecedenceChallenge()
 		{
 			Exact("a.b::(@ x.c)", F.Call(S.ColonColon, F.Dot(a, b), F.Dot(x, c)));
+		}
+
+		[Test]
+		public void Functions()
+		{
+			LNode intOrFloat = F.Call(S.OrBits, _("int"), _("float"));
+			Exact("Square(x : int | float) : int | float => x * x",
+				F.Call(S.Colon,
+					F.Call("Square", F.Call(S.Colon, x, intOrFloat)),
+					F.Call(S.Lambda, intOrFloat, F.Call(S.Mul, x, x))));
 		}
 
 		#endregion
