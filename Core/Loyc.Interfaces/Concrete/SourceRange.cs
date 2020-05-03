@@ -91,7 +91,11 @@ namespace Loyc.Syntax
 		}
 		public override string ToString()
 		{
-			return string.Format("{0}[{1}..{2}]", _source.FileName, _startIndex, _startIndex + _length);
+			if (StartIndex <= 0)
+				return string.Format("{0}({1}..{2})", Source.FileName, StartIndex, EndIndex);
+			SourcePos start = Start, end = End;
+			return string.Format(Length > 1 ? "{0}({1},{2},{3},{4})" : "{0}({1},{2})",
+				Source.FileName, start.Line, start.PosInLine, end.Line, end.PosInLine);
 		}
 
 		public bool Contains(SourceRange inner)
