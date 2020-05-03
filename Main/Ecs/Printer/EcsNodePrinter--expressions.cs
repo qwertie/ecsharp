@@ -54,7 +54,7 @@ namespace Loyc.Ecs
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
-			P(S.PtrArrow, EP.Primary), P(S.NullDot, EP.NullDot),
+			P(S.RightArrow, EP.Primary), P(S.NullDot, EP.NullDot),
 			P(S.Exp, EP.Power),        P(S.Mul, EP.Multiply),
 			P(S.Div, EP.Multiply),     P(S.Mod, EP.Multiply),
 			P(S.Add, EP.Add),          P(S.Sub, EP.Add),        P(S.NotBits, EP.Add),

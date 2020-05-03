@@ -454,7 +454,7 @@ namespace Loyc.Ecs
 			S.NotBits, S.Not, S.Mod, S.XorBits, S.AndBits, S.And, S.Mul, S.Exp, S.Add, S.PreInc,
 			S.Sub, S.PreDec, S.Eq, S.NotEq, S.Sub, S.PreDec, S.Eq, S.NotEq, /*"{}", "[]",*/ S.OrBits, S.Or, S.Backslash,
 			S.Semicolon, S.Colon, S.Comma, S.Dot, S.DotDot, S.LT, S.Shl, S.GT, S.Shr, S.Div,
-			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.Forward, S.PtrArrow, S.Substitute,
+			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.Forward, S.RightArrow, S.Substitute,
 			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, S.ShrAssign, S.ShlAssign,
 			S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
 			S.ConcatAssign, S.ExpAssign

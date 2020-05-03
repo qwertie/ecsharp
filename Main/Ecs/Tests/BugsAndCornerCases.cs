@@ -92,8 +92,8 @@ namespace Loyc.Ecs.Tests
 			Expr(@"a.([] -b).c",     F.Dot(a, F.Call(S._Negate, b), c));
 			Expr(@"a.([] -b.c)",     F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
 			Expr(@"a::([] -b)",      F.Call(S.ColonColon, a, F.Call(S._Negate, b)));
-			Expr(@"a.b->c",          F.Call(S.PtrArrow, F.Dot(a, b), c));
-			Expr(@"a->([] b.c)",     F.Call(S.PtrArrow, a, F.Dot(b, c)));
+			Expr(@"a.b->c",          F.Call(S.RightArrow, F.Dot(a, b), c));
+			Expr(@"a->([] b.c)",     F.Call(S.RightArrow, a, F.Dot(b, c)));
 			Expr(@"a.(-b)(c)",       F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
 			// The printer should revert to prefix notation in certain cases in 
 			// order to faithfully represent the original tree.

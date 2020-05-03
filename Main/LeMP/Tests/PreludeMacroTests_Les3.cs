@@ -224,9 +224,8 @@ namespace LeMP.Tests
 				 "void Spit(int times = 1) {}");
 			Test(".fn Foo() { this(false); base(true); }",
 				 "void Foo() { this(false); base(true); }");
-			Test("@static .fn (x: Complex) + (y: Complex) : Complex => Complex.new(x.real + y.real, x.imm + y.imm);",
-				 "static Complex operator+ ((Complex x), (Complex y)) => Complex.@new(x.real + y.real, x.imm + y.imm);",
-				 printer: EcsLanguageService.WithPlainCSharpPrinter);
+			Test("@static .fn `'+`(x: Complex, y: Complex) : Complex => Complex.new(x.real + y.real, x.imm + y.imm);",
+				 "static Complex operator+ (Complex x, Complex y) => Complex.@new(x.real + y.real, x.imm + y.imm);");
 
 			// Quick style
 			Test("@static Exit() => Application.Exit()",

@@ -250,7 +250,9 @@ namespace LeMP
 			var lma = new LexicalMacroAttribute(syntax, "", macroName.Name.Name);
 			var macroInfo = new MacroInfo(null, lma, UserDefinedMacro)
 			{
-				Mode = args != null ? modes : modes | MacroMode.MatchIdentifier
+				// Note: in MatchIdentifier mode we also need Passive because, for example, if we're
+				// registered to match Foo, LeMP also calls our macro for `Foo(x)` and we return null.
+				Mode = args != null ? modes : modes | MacroMode.MatchIdentifier | MacroMode.Passive
 			};
 			context.RegisterMacro(macroInfo);
 			

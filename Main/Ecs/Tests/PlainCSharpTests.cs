@@ -313,7 +313,7 @@ namespace Loyc.Ecs.Tests
 			//TODO
 			//Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
 
-			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
+			var amp_b_c = F.Call(S._AddressOf, F.Call(S.RightArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
 			Stmt("fixed (int* a = &b->c)\n  Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, ChildStmt(F.Call(Foo, a))));
 			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
