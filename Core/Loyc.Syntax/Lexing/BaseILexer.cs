@@ -114,7 +114,7 @@ namespace Loyc.Syntax.Lexing
 		/// useful for posting source code on "bad" blog software or forums that 
 		/// do not preseve indentation.</remarks>
 		protected virtual bool SupportDotIndents() { return false; }
-		
+
 		/// <summary>The lexer must call this method exactly once after it advances 
 		/// past each newline, even inside comments and strings. This method keeps
 		/// the <see cref="BaseLexer{C}.LineNumber"/>, <see cref="BaseLexer{C}.LineStartAt"/>,
@@ -131,10 +131,9 @@ namespace Loyc.Syntax.Lexing
 		/// when a newline is encountered inside a multiline comment.</param>
 		/// <param name="skipIndent">This method normally scans indentation after 
 		/// the newline character, in order to update the <see cref="IndentString"/> 
-		/// and <see cref="IndentLevel"/> properties. If this parameter is true,
-		/// the <see cref="BaseLexer{C}.InputPosition"/> will also be increased, skipping past
-		/// those initial spaces. If <c>supportDotIndent</c> is also true, the
-		/// <see cref="BaseLexer{C}.InputPosition"/> will also skip past the dot indent, if any.</param>
+		/// and <see cref="IndentLevel"/> properties. If this parameter is true, the
+		/// <see cref="BaseLexer{C}.InputPosition"/> will also be increased, skipping past
+		/// those initial spaces.</param>
 		protected void AfterNewline(bool ignoreIndent, bool skipIndent)
 		{
 			base.AfterNewline();

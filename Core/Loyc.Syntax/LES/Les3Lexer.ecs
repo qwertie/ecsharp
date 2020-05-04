@@ -36,16 +36,19 @@ public partial class Les3Lexer
 
 	token Newline[bool ignoreIndent = false] returns [object result] :
 		( '\r' '\n'? | '\n' )
-		{AfterNewline(ignoreIndent, skipIndent: false);}
+		(=>) {AfterNewline(ignoreIndent, skipIndent: true);}
+		greedy('|')?
 		// Tokens with WhitespaceTag are filtered out by WhitepaceFilter.
 		// We want to filter out newlines inside parentheses and square brackets.
-		{return _brackStack.Last == TokenType.LBrace ? null : WhitespaceTag.Value;};
+		// Also filter out the newline if it was followed by a '|' continuator.
+		{ return _brackStack.Last == TokenType.LBrace && $'|' != '|' ? null : WhitespaceTag.Value; };
 	token SLComment returns [object result] :
 		"//" nongreedy(_)* (@"\\" | ('\r'|'\n'|EOF) =>)
-		{return WhitespaceTag.Value;};
+		{ return WhitespaceTag.Value; };
 	[LL(3)] token MLComment returns [object result] :
-		"/*" nongreedy(MLComment / Newline(true) / _)* "*/"
-		{return WhitespaceTag.Value;};
+		"/*" (=>) // The gate => clarifies that an unclosed comment like /*/EOF is not an Operator
+		nongreedy(MLComment / Newline(true) / _)* "*/"
+		{ return WhitespaceTag.Value; };
 		
 	// Numbers ---------------------------------------------------------------
 	

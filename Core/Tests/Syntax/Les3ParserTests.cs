@@ -113,10 +113,32 @@ namespace Loyc.Syntax.Les
 			Assert.AreEqual(les3.Parse("\"\"\"!\"\"\"").Single().BaseStyle, NodeStyle.TDQStringLiteral);
 		}
 
-		[Test(Fails = "TODO")]
+		[Test]
 		public void LineContinuators()
 		{
 			// issue 86: https://github.com/qwertie/ecsharp/issues/86
+			Test(Mode.Stmt, 0, "a =\n|b",  F.Call(S.Assign, a, OnNewLine(b)));
+			Test(Mode.Stmt, 0, "b\n| = c", F.Call(OnNewLine(F.Id(S.Assign)), b, c));
+			Test(Mode.Stmt, 0, "b\n|= c",  F.Call(OnNewLine(F.Id(S.Assign)), b, c));
+			Test(Mode.Stmt, 0, "Foo(\n| a, b)", F.Call(Foo, OnNewLine(a), b));
+			Test(Mode.Stmt, 0, "{\n  MoveTo(x, a)\n  | .LineTo(x, b)\n}", F.Braces(
+				F.Call(F.Call(OnNewLine(F.Id(S.Dot)), F.Call("MoveTo", x, a), F.Id("LineTo")), x, b)));
+			var stmt = OnNewLine(F.Call(
+				S.If, NewlineAfter(F.Call(S.GT, a, b)),
+					OnNewLine(NewlineAfter(F.Call(
+						F.Id(S.Braces).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " comment")),
+						F.Call(_("aIsBigger"))))),
+					OnNewLine(F.Call("#else", 
+						F.Braces(F.Call(Foo))))));
+			Test(Mode.Stmt, 0, @"
+				.if a > b
+				|
+				{   // comment
+					aIsBigger()
+				}
+				|
+				else { Foo() }",
+				stmt);
 		}
 
 		[Test(Fails = "TODO")]

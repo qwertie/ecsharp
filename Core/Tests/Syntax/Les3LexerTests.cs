@@ -460,6 +460,10 @@ namespace Loyc.Syntax.Les
 			Case("'abc'", A(TT.PreOrSufOp, TT.SingleQuote), _("'abc"), _("'"));
 			Case("'' ''", A(TT.SingleQuote, TT.Literal, TT.SingleQuote), _("'"), ' ', _("'"));
 			Case("x '", A(TT.Id, TT.SingleQuote), _("x"), _("'"));
+			Case("x/*/",  A(TT.Id, TT.MLComment), _("x"), new Error(WS));
+			Case("/*EOF", A(TT.MLComment), new Error(WS));
+			Case("/*",    A(TT.MLComment), new Error(WS));
+			Case("/*/",   A(TT.MLComment), new Error(WS));
 		}
 
 		[Test]
