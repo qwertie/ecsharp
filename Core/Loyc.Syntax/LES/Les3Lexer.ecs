@@ -75,13 +75,13 @@ public partial class Les3Lexer
 			'.' greedy( HexDigits )? 
 			greedy( ('p'|'P') ('+'|'-')? DecDigits )?
 		)?
-		;
+		{ _style = NodeStyle.HexLiteral; };
 	BinNumber :
 		'0' ('b'|'B')
 		(DecDigits | '.' DecDigits =>)
 		( '.' DecDigits )?
 		greedy( ('p'|'P') ('+'|'-')? DecDigits )?
-		;
+		{ _style = NodeStyle.BinaryLiteral; };
 	
 	// Strings ---------------------------------------------------------------
 		

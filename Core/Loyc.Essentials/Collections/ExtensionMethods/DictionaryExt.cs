@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Loyc.Collections
 {
@@ -9,6 +8,58 @@ namespace Loyc.Collections
 	/// <see cref="IDictionary{K,V}"/> and <see cref="IDictionaryEx{K, V}"/>.</summary>
 	public static partial class DictionaryExt
 	{
+		/// <summary>Adds a key/value pair to the dictionary if the key is not already present,
+		/// and returns the existing or new value.</summary>
+		/// <returns>The existing value (if the key already existed) or the new value.</returns>
+		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+		public static V GetOrAdd<K, V>(this IDictionary<K, V> dict, K key, V value)
+		{
+			if (dict.TryGetValue(key, out V existing))
+				return existing;
+			dict.Add(key, value);
+			return value;
+		}
+		/// <summary>Adds a key/value pair to the dictionary if the key is not already present, by 
+		/// using the specified function to obtain a value, and returns the existing or new value.</summary>
+		/// <returns>The existing value (if the key already existed) or the new value.</returns>
+		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+		public static V GetOrAdd<K, V>(this IDictionary<K, V> dict, K key, Func<K, V> valueFactory)
+		{
+			if (dict.TryGetValue(key, out V value))
+				return value;
+			value = valueFactory(key);
+			dict.Add(key, value);
+			return value;
+		}
+		
+		/// <summary>Uses the specified functions either to add a key/value pair to the dictionary 
+		/// if the key does not already exist, or to update a key/value pair in the dictionary if 
+		/// the key already exists.</summary>
+		/// <returns>The new value associated with the key, which is either the result of addValueFactory or 
+		/// updateValueFactory.</returns>
+		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+		public static V AddOrUpdate<K, V>(this IDictionary<K, V> dict, K key, Func<K, V> addValueFactory, Func<K, V, V> updateValueFactory)
+		{
+			if (dict.TryGetValue(key, out V value))
+				dict[key] = value = updateValueFactory(key, value);
+			else
+				dict.Add(key, value = addValueFactory(key));
+			return value;
+		}
+		/// <summary>Adds a key/value pair to the dictionary if the key does not already exist, or, 
+		/// if it does, updates a key/value pair in the dictionary using the specified function.</summary>
+		/// <returns>The new value associated with the key, which is either addValue or the result 
+		/// of updateValueFactory.</returns>
+		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+		public static V AddOrUpdate<K, V>(this IDictionary<K, V> dict, K key, V addValue, Func<K, V, V> updateValueFactory)
+		{
+			if (dict.TryGetValue(key, out V value))
+				dict[key] = value = updateValueFactory(key, value);
+			else
+				dict.Add(key, value = addValue);
+			return value;
+		}
+
 		/// <summary>An alternate version TryGetValue that returns a default value 
 		/// if the key was not found in the dictionary, and that does not throw if 
 		/// the key is null.</summary>
@@ -131,8 +182,7 @@ namespace Loyc.Collections
 		/// pair with that key from the dictionary.</summary>
 		public static Maybe<V> GetAndRemove<K, V>(this IDictionary<K, V> dict, K key)
 		{
-			if (dict.TryGetValue(key, out V value))
-			{
+			if (dict.TryGetValue(key, out V value)) {
 				dict.Remove(key);
 				return value;
 			}

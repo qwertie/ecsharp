@@ -186,6 +186,28 @@ namespace Loyc.Collections
 		{
 			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
 		}
+
+		public static T[] ConcatNow<T>(this T[] a, T[] b)
+		{
+			T[] @out = new T[a.Length + b.Length];
+			Array.Copy(a, @out, a.Length);
+			Array.Copy(b, 0, @out, a.Length, b.Length);
+			return @out;
+		}
+		public static T[] ConcatNow<T>(this IReadOnlyList<T> a, IReadOnlyList<T> b)
+		{
+			int aCount = a.Count;
+			T[] @out = new T[aCount + b.Count];
+			for (int out_i = 0, a_i = 0; out_i < @out.Length; out_i++) {
+				if (a_i >= aCount) {
+					a_i = 0;
+					a = b;
+					aCount = b.Count;
+				}
+				@out[out_i] = a[a_i];
+			}
+			return @out;
+		}
 		
 		/// <summary>Returns a reversed view of a read-only list.</summary>
 		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>

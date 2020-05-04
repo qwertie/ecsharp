@@ -335,6 +335,8 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			}
+			// line 78
+			_style = NodeStyle.HexLiteral;
 		}
 	
 		void BinNumber()
@@ -369,6 +371,8 @@ namespace Loyc.Syntax.Les
 					DecDigits();
 				}
 			}
+			// line 84
+			_style = NodeStyle.BinaryLiteral;
 		}
 	
 		object SQChar()

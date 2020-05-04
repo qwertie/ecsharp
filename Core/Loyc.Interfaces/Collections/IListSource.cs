@@ -51,7 +51,7 @@ namespace Loyc.Collections
 	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface more quickly.
 	/// </remarks>
-	public interface IListSource<out T> : IReadOnlyList<T>
+	public interface IListSource<out T> : IReadOnlyList<T>, IIndexed<int, T>
 	{
 		/// <summary>Gets the item at the specified index, and does not throw an
 		/// exception on failure.</summary>

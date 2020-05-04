@@ -99,7 +99,7 @@ namespace Loyc.Collections
 	/// of <see cref="IListImpl{T}"/>.) Variables should not have this type (except in
 	/// disambiguation methods, which immediately cast the variable to another type).
 	/// </remarks>
-	public interface IDictionaryAndReadOnly<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V> { }
+	public interface IDictionaryAndReadOnly<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V>, IIndexed<K, V> { }
 
 	/// <summary>This interface is intended to be implemented by all Loyc collections 
 	/// that implement <see cref="IDictionary{K,V}"/>. It combines the original 

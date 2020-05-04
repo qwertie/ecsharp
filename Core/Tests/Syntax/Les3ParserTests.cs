@@ -101,6 +101,18 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "a -2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
 		}
 
+		[Test]
+		public void LiteralStylesArePreserved()
+		{
+			var les3 = Les3LanguageService.Value;
+			Assert.AreEqual(les3.Parse("0x3333").Single().BaseStyle, NodeStyle.HexLiteral);
+			Assert.AreEqual(les3.Parse("0b1011").Single().BaseStyle, NodeStyle.BinaryLiteral);
+			Assert.AreEqual(les3.Parse("123456").Single().BaseStyle, NodeStyle.Default);
+			Assert.AreEqual(les3.Parse("\"!!\"").Single().BaseStyle, NodeStyle.Default);
+			Assert.AreEqual(les3.Parse("'''!'''").Single().BaseStyle, NodeStyle.TQStringLiteral);
+			Assert.AreEqual(les3.Parse("\"\"\"!\"\"\"").Single().BaseStyle, NodeStyle.TDQStringLiteral);
+		}
+
 		[Test(Fails = "TODO")]
 		public void LineContinuators()
 		{

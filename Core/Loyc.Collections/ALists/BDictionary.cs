@@ -453,18 +453,14 @@ namespace Loyc.Collections
 				return false;
 		}
 
-		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
-		public bool AddIfNotPresent(K key, ref V value)
-		{
-			return AddIfNotPresent(ref key, ref value);
-		}
+		public bool AddIfNotPresent(K key, ref V value) => AddIfNotPresent(ref key, ref value);
 		/// <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
 		/// <returns>True if the pair was added, false if it was retrieved.</returns>
 		public bool AddIfNotPresent(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
-		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
+		[Obsolete("Please use another overload or the GetOrAdd extension method")]
 		public bool AddIfNotPresent(ref KeyValuePair<K, V> pair)
 		{
 			K k = pair.Key;
@@ -472,7 +468,7 @@ namespace Loyc.Collections
 			return !GetAndEdit(ref k, ref v, DictEditMode.AddIfNotPresent);
 		}
 
-		[Obsolete("Please use SetAndGet")]
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGetOldValue(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
@@ -482,16 +478,21 @@ namespace Loyc.Collections
 		/// <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</param>
 		/// <returns>True if the new pair was added, false if it was replaced.</returns>
 		/// <inheritdoc cref="SetAndGetOldValue(ref K, ref V)"/>
+		public bool GetAndSet(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
+		}
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGet(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
 		}
-		[Obsolete("Please use SetAndGet extension method")]
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGetOldValue(K key, ref V value)
 		{
-			return SetAndGetOldValue(ref key, ref value);
+			return GetAndSet(ref key, ref value);
 		}
-		[Obsolete("Please use SetAndGet extension method")]
+		[Obsolete("Please use GetAndSet() instead")]
 		public bool SetAndGetOldValue(ref KeyValuePair<K,V> pair)
 		{
 			K k = pair.Key;

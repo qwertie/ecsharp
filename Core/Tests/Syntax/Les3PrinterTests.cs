@@ -134,32 +134,32 @@ namespace Loyc.Syntax.Les
 			// The text in these tests indicates where each token should begin and 
 			// end; the text is used to derive a "raw" test (which checks the
 			// underlying control codes) and an HTML test. The end marker for
-			// normal tokens is {0}, but for {Id} it is {/Id} so that the HTML test
+			// normal tokens is {/}, but for {Id} it is {/Id} so that the HTML test
 			// (in which there is no <span> for identifiers) can easily remove both
 			// {Id} and {/Id} from the string.
-			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0})", F.Call(Foo, F.Null), htmlTest: false);
-			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{0})", F.Call(Foo, F.Null), rawTest: false);
-			TestPrettyPrint("{KeywordLiteral}true{0} {Comment}/* hello */{0}", F.True.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " hello ")));
-			TestPrettyPrint("{Id}x{/Id} {Operator}={0} {String}'x'{0}", F.Call(S.Assign, x, F.Literal('x')));
-			TestPrettyPrint("{Id}x{/Id} {Operator}+={0} {Number}123{0}", F.Call(S.AddAssign, x, F.Literal(123)));
-			TestPrettyPrint("{Id}Babies{/Id} {Operator}like{0} {String}'''Shiny objects'''{0}",
+			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{/})", F.Call(Foo, F.Null), htmlTest: false);
+			TestPrettyPrint("{Id}Foo{/Id}({KeywordLiteral}null{/})", F.Call(Foo, F.Null), rawTest: false);
+			TestPrettyPrint("{KeywordLiteral}true{/} {Comment}/* hello */{/}", F.True.PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " hello ")));
+			TestPrettyPrint("{Id}x{/Id} {Operator}={/} {String}'x'{/}", F.Call(S.Assign, x, F.Literal('x')));
+			TestPrettyPrint("{Id}x{/Id} {Operator}+={/} {Number}123{/}", F.Call(S.AddAssign, x, F.Literal(123)));
+			TestPrettyPrint("{Id}Babies{/Id} {Operator}like{/} {String}'''Shiny objects'''{/}",
 				F.Call((Symbol)"'like", F.Id("Babies"), F.Literal("Shiny objects").SetBaseStyle(NodeStyle.TQStringLiteral)));
-			TestPrettyPrint("{Id}x{/Id}[{CustomLiteral}s\"index\"{0}]{Operator}++{0}",
+			TestPrettyPrint("{Id}x{/Id}[{CustomLiteral}s\"index\"{/}]{Operator}++{/}",
 				F.Call(S.PostInc, F.Call(S.IndexBracks, x, F.Literal((Symbol)"index"))));
-			TestPrettyPrint("{Id}Foo{/Id}{Operator}.{0}{Id}x{/Id}()", F.Call(F.Dot(Foo, x)));
+			TestPrettyPrint("{Id}Foo{/Id}{Operator}.{/}{Id}x{/Id}()", F.Call(F.Dot(Foo, x)));
 		}
 
 		public void PrettyPrinterAttributes()
 		{
-			TestPrettyPrint("{Attribute}@{0}({Id}Foo{/Id}{Closer}(){0}) x", x.PlusAttr(F.Call(Foo)));
+			TestPrettyPrint("{Attribute}@{/}({Id}Foo{/Id}{Closer}(){/}) x", x.PlusAttr(F.Call(Foo)));
 			
 			// The HTML writer extends the attribute coloring to the token afterward
 			// if it is an identifier or a number.
-			TestPrettyPrint("{Attribute}@Foo{0} {Attribute}@123{0} {Number}1234.5{0}", 
+			TestPrettyPrint("{Attribute}@Foo{/} {Attribute}@123{/} {Number}1234.5{/}", 
 				F.Literal(1234.5).PlusAttr(Foo).PlusAttr(F.Literal(123)), rawTest: false, htmlTest: true);
 		}
 
-		static object[] ControlCodeTable = AddEnumPairs(typeof(LesColorCode), new List<object> { '\0' }).ToArray();
+		static object[] ControlCodeTable = AddEnumPairs(typeof(LesColorCode), new List<object> { "/", '\0' }).ToArray();
 		static List<object> AddEnumPairs(Type type, List<object> list)
 		{
 			foreach (IConvertible value in Enum.GetValues(type)) {
@@ -171,8 +171,7 @@ namespace Loyc.Syntax.Les
 		static object[] HtmlCodeTable = GetHtmlCodeTable().ToArray();
 		static List<object> GetHtmlCodeTable()
 		{
-			var list = new List<object>();
-			list.Add("</span>");
+			var list = new List<object> { "/", "</span>" };
 			foreach (IConvertible value in Enum.GetValues(typeof(LesColorCode))) {
 				var cssClass = Les3PrettyPrinter.DefaultCssClassTable[value.ToInt32(null)];
 				if (cssClass != null) {
@@ -187,11 +186,11 @@ namespace Loyc.Syntax.Les
 		{
 			if (rawTest) {
 				// Raw output test: must add {Opener}, {Closer} and {Separator} markers,
-				// change {EndId} to {0} and remove excess {0}s
-				var pretty2 = pretty.Replace("(", "{Opener}({0}").Replace("[", "{Opener}[{0}").Replace("{{", "{Opener}{{{0}")
-									.Replace(")", "{Closer}){0}").Replace("]", "{Closer}]{0}").Replace("}}", "{Closer}}}{0}")
-									.Replace("{/Id}", "{0}").Replace(",", "{Separator},{0}").Replace(";", "{Separator};{0}");
-				var pretty3 = (pretty2.EndsWith("{0}") ? pretty2.Substring(0, pretty2.Length - 3) : pretty2).Replace("{0}{", "{");
+				// change {EndId} to {/} and remove excess {/}s
+				var pretty2 = pretty.Replace("(", "{Opener}({/}").Replace("[", "{Opener}[{/}").Replace("{{", "{Opener}{{{/}")
+									.Replace(")", "{Closer}){/}").Replace("]", "{Closer}]{/}").Replace("}}", "{Closer}}}{/}")
+									.Replace("{/Id}", "{/}").Replace(",", "{Separator},{/}").Replace(";", "{Separator};{/}");
+				var pretty3 = (pretty2.EndsWith("{/}") ? pretty2.Substring(0, pretty2.Length - 3) : pretty2).Replace("{/}{", "{");
 				var expected = pretty3.FormatCore(ControlCodeTable);
 				var pp = new Les3PrettyPrinter();
 				StringBuilder result = pp.Print(node);

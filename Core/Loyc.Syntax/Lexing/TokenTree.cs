@@ -34,24 +34,19 @@ namespace Loyc.Syntax.Lexing
 
 		public readonly ISourceFile File;
 
-		IToken<int> IListSource<IToken<int>>.TryGet(int index, out bool fail)
-		{
-			return TryGet(index, out fail);
-		}
+		IToken<int> IListSource<IToken<int>>.TryGet(int index, out bool fail) => TryGet(index, out fail);
 		IRange<IToken<int>> IListSource<IToken<int>>.Slice(int start, int count)
 		{
 			return new UpCastListSource<Token, IToken<int>>(this).Slice(start, count);
 		}
-		IToken<int> IReadOnlyList<IToken<int>>.this[int index]
-		{
-			get { return this[index]; }
-		}
+		IToken<int> IReadOnlyList<IToken<int>>.this[int index] => this[index];
+		IToken<int> IIndexed<int, IToken<int>>.this[int index] => this[index];
 		IEnumerator<IToken<int>> IEnumerable<IToken<int>>.GetEnumerator()
 		{
 			return Enumerable.Cast<IToken<int>>(this).GetEnumerator();
 		}
 		/// <summary>Gets a deep (recursive) clone of the token tree.</summary>
-		public new TokenTree Clone() { return Clone(true); }
+		public new TokenTree Clone() => Clone(true);
 		public TokenTree Clone(bool deep)
 		{
 			return new TokenTree(File, ((DList<Token>)this).Select(t => {
@@ -62,10 +57,7 @@ namespace Loyc.Syntax.Lexing
 
 		#region ToString, Equals, GetHashCode
 
-		public override string ToString()
-		{
-			return ToString(Token.ToStringStrategy);
-		}
+		public override string ToString() => ToString(Token.ToStringStrategy);
 		public string ToString(Func<Token, string> toStringStrategy = null)
 		{
 			StringBuilder sb = new StringBuilder();

@@ -32,6 +32,27 @@ namespace Loyc.Collections
 		bool TrySet(int index, T value);
 	}
 
+	/// <summary>Represents the essence of a dictionary, which returns a value given a key.</summary>
+	/// <typeparam name="K">Input type</typeparam>
+	/// <typeparam name="V">Output type. A class can use <see cref="Maybe{V}"/> here 
+	/// to define an indexer that returns nothing, instead of throwing, when it fails.</typeparam>
+	public interface IIndexed<in K, out V>
+	{
+		/// <summary>Gets the value associated with the specified key.</summary>
+		/// <exception cref="KeyNotFoundException">The key was not found. This exception will not be
+		/// thrown if this indexer provides the implementation of <see cref="ISafeIndexed{K, V}"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">The class implements <see cref="IReadOnlyList{V}"/>
+		/// and the key is an integer index that is outside the valid range.</exception>
+		/// <exception cref="IndexOutOfRangeException">The object is an array or other list,
+		/// and the key is an integer index that is outside the valid range.</exception>
+		V this[K key] { get; }
+	}
+
+	/// <summary>A variation of IIndexed whose indexer promises never to throw.</summary>
+	public interface ISafeIndexed<in K, V> : IIndexed<K, Maybe<V>>
+	{
+	}
+
 	/// <summary>Interface for an Optimize() method.</summary>
 	public interface IOptimize
 	{

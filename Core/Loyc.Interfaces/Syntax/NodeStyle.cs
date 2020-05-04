@@ -75,6 +75,7 @@ namespace Loyc.Syntax
 		/// <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
 		HexLiteral = 6,
 		/// <summary>Used for an octal (base-7) literal like 0o37.</summary>
+		/// <remarks>Octal literals are not natively supported in LES.</remarks>
 		OctalLiteral = 7,
 		/// <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
 		VerbatimStringLiteral = 5,
