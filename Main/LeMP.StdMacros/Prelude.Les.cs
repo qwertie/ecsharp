@@ -174,24 +174,9 @@ namespace LeMP.Prelude.Les
 		{
 			return id.HasSimpleHead() || IsDefinitionId(id.Target, allowDots);
 		}
-		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
-		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
-		// form X!Y!Z, i.e. @'of(@'of(...), ...) is not allowed. $Substitution is allowed.
 		public static bool IsComplexId(LNode id, bool allowOf = true)
 		{
-			if (id.IsCall) {
-				if (id.Name == S.Of) {
-					if (allowOf)
-						return (id.HasSimpleHead() || IsComplexId(id.Target, false)) && id.Args.All(a => IsComplexId(a));
-					return false;
-				} else if (id.Calls(S.Dot, 2)) {
-					return id.Args.Last.IsId && IsComplexId(id.Args[0]);
-				} else if (id.Calls(S.Substitute, 1)) {
-					return true;
-				} else
-					return false;
-			} else
-				return id.IsId;
+			return Loyc.Ecs.EcsValidators.IsComplexIdentifier(id);
 		}
 
 		// Method decl syntaxes:
@@ -344,7 +329,7 @@ namespace LeMP.Prelude.Les
 			if (parts.Count != 2 || !body.Calls(S.Braces))
 				return RejectIfNormal(sink, node, "A property definition must have the form prop(Name, { Body }), or prop(Name::type, { Body })");
 
-			if (sig.Calls(S.RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
+			if (sig.Calls(S.RightArrow, 2) || sig.Calls(S.ColonColon, 2) || sig.Calls(S.Colon, 2)) {
 				name = sig.Args[0];
 				retVal = sig.Args[1];
 			} else {
@@ -749,7 +734,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"arg<: value", "Represents a named argument.", "':", "'<:")]
+		[LexicalMacro(@"arg<: value", "Represents a named argument.", "'<:")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[0].IsId) {
@@ -865,7 +850,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "'=", "':=", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public static LNode ColonColonInit(LNode node, IMessageSink sink)
+		public static LNode VarDecl2(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
 			if (a.Count == 2) {
@@ -875,7 +860,22 @@ namespace LeMP.Prelude.Les
 			}
 			return null;
 		}
-		
+		[LexicalMacro("Name: Type = Value", "Defines a variable or field in the current scope.", "':", Mode = MacroMode.Normal | MacroMode.Passive)]
+		public static LNode VarDecl3(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2)
+			{
+				LNode name = a[0], rest = a[1];
+				if (name.IsId)
+					if (rest.Calls(S.Assign, 2))
+						return node.With(S.Var, rest[0], F.Call(S.Assign, name, rest[1]));
+					else if (IsComplexId(rest))
+						return node.With(S.Var, rest, name);
+			}
+			return null;
+		}
+
 		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @ref(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Ref); }
 		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.", Mode = MacroMode.MatchIdentifier)]

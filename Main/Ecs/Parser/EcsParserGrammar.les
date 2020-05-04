@@ -125,7 +125,7 @@ namespace Loyc.Ecs.Parser
 
 		// LLLPG is unaware of this overload, but when I write DataType(),
 		// it unwittingly invokes it.
-		@[public] fn DataType(afterAsOrIs::bool = false)::LNode {
+		@[public] fn DataType(afterAsOrIs: bool = false): LNode {
 			brack::opt!Token;
 			var type = DataType(afterAsOrIs, out brack);
 			if (brack != null) {

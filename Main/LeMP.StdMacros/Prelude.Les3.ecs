@@ -139,13 +139,6 @@ namespace LeMP.Les3.To.CSharp
 		{
 			return Les2.FnOrCons(node, context, true);
 		}
-		[LexicalMacro("prop Name::Type { get {Body...} set {Body...} }",
-			"Defines a property. The getter and setter are optional, but there must be at least one of them.",
-			"#prop", "#property", Mode = MacroMode.Passive)]
-		public static LNode Prop_Les2Style(LNode node, IMacroContext context)
-		{
-			return Les2.prop(node, context);
-		}
 		[LexicalMacro("Name: Type get {Body...} set {Body...}; Name: Type get _ set _",
 			"Defines a property. The getter and setter are optional, but there must be at least one of them.",
 			"'get", "'set", Mode = MacroMode.Passive)]

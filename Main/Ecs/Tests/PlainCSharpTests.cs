@@ -828,7 +828,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("using x = (Foo, Foo);", UsingAlias(F.Call(S.Assign, x, F.Tuple(Foo, Foo))));
 			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(Foo, a), F.Var(Foo, b))));
 			Stmt("using x = (Foo a, Foo b);", stmt);
-			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), a), F.Var(F.Of(_(S.QuestionMark), Foo), b))));
+			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), a), F.Var(F.Of(_(S.Array), Foo), b))));
 			Stmt("using x = (Foo? a, Foo[] b);", stmt);
 		}
 
