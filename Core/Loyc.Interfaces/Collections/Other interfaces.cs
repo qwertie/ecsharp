@@ -85,7 +85,7 @@ namespace Loyc.Collections
 		public static Maybe<V> TryGet<K, V>(this ITryGet<K, V> self, K key)
 		{
 			V value = self.TryGet(key, out bool fail);
-			return fail ? default : new Maybe<V>(value);
+			return fail ? default(Maybe<V>) : new Maybe<V>(value);
 		}
 
 		/// <summary>Returns the value at the specified key or index, or the specified
