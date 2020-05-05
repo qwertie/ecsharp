@@ -47,7 +47,7 @@ namespace Loyc.Collections
 		void CopyTo(T[] array, int arrayIndex);
 	}
 
-	public static partial class LCExt
+	public static partial class CollectionSource
 	{
 		/// <summary>Converts the collection to an array.</summary>
 		public static T[] ToArray<T>(this ICollectionSource<T> list)

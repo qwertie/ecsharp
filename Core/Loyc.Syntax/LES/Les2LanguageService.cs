@@ -87,8 +87,7 @@ namespace Loyc.Syntax.Les
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
 			bool exprMode = inputType == ParsingMode.Expressions;
-			char _ = '\0';
-			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
+			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255).HasValue) {
 				Les2Parser parser = _parser;
 				if (parser == null)
 					_parser = parser = new Les2Parser(input, file, msgs);

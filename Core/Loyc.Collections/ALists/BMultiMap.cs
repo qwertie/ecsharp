@@ -43,7 +43,7 @@ namespace Loyc.Collections
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
 	[Serializable]
-	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>
+	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>, IIndexed<K, BMultiMap<K, V>.ValueList>
 	{
 		#region Constructors
 

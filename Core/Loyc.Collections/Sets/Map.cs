@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,7 +32,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MapOrMMap<K, V> : IReadOnlyCollection<KeyValuePair<K, V>>, IEqualityComparer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, V>
+	public class MapOrMMap<K, V> : IReadOnlyCollection<KeyValuePair<K, V>>, IEqualityComparer<KeyValuePair<K, V>>, IReadOnlyDictionary<K, V>, ITryGet<K, V>, IIndexed<K, V>
 	{
 		internal InternalSet<KeyValuePair<K, V>> _set;
 		// compares keys; never null (if user specifies null, ValueComparer<K>.Default is used)
@@ -99,6 +99,13 @@ namespace Loyc.Collections
 			value = kvp.Value;
 			return result;
 		}
+		V ITryGet<K, V>.TryGet(K key, out bool fail)
+		{
+			var kvp = new KeyValuePair<K, V>(key, default(V));
+			fail = !_set.Find(ref kvp, Comparer);
+			return kvp.Value;
+		}
+
 		public V this[K key]
 		{
 			get {

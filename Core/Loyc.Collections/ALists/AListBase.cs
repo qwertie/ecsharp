@@ -142,7 +142,7 @@ namespace Loyc.Collections
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
 	[Serializable]
-	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>, ITryGet<int, T>, IIndexed<int, T>
 	{
 		#region Data members
 

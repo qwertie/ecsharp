@@ -8,6 +8,8 @@ namespace Loyc.Collections
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
+	using Loyc;
+	using System.Windows.Input;
 
 	/// <summary>
 	/// An sorted dictionary that is efficient for all operations and offers 
@@ -37,8 +39,9 @@ namespace Loyc.Collections
 	/// instead (but note that BList does allow duplicate keys).
 	/// </remarks>
 	[Serializable]
-	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>, 
-		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K,V>>, IDictionaryEx<K,V>, IReadOnlyDictionary<K, V>, IDictionarySink<K, V>
+	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>,
+		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K, V>>, 
+		IDictionaryEx<K, V>, IReadOnlyDictionary<K, V>, IDictionarySink<K, V>, IIndexed<K, V>
 	{
 		#region Constructors
 
@@ -346,10 +349,16 @@ namespace Loyc.Collections
 			return base.DoSingleOperation(ref op) < 0;
 		}
 
+		V ITryGet<K, V>.TryGet(K key, out bool fail) // enable TryGet extension methods (in TryGetExt)
+		{
+			var op = new AListSingleOperation<K, KeyValuePair<K, V>>() { Key = key };
+			OrganizedRetrieve(ref op);
+			fail = !op.Found;
+			return op.Item.Value;
+		}
 		public bool TryGetValue(K key, out V value)
 		{
-			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
-			op.Key = key;
+			var op = new AListSingleOperation<K, KeyValuePair<K, V>>() { Key = key };
 			OrganizedRetrieve(ref op);
 			value = op.Item.Value;
 			return op.Found;
@@ -358,8 +367,7 @@ namespace Loyc.Collections
 		public V this[K key]
 		{
 			get {
-				V value;
-				if (!TryGetValue(key, out value))
+				if (!TryGetValue(key, out V value))
 					throw new KeyNotFoundException();
 				return value;
 			}

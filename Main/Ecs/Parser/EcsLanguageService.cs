@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -99,8 +99,7 @@ namespace Loyc.Ecs
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			char _ = '\0';
-			if (file.Text.TryGet(255, ref _) || inputType == ParsingMode.FormalArguments || 
+			if (file.Text.TryGet(255).HasValue || inputType == ParsingMode.FormalArguments || 
 				inputType == ParsingMode.Types || inputType == ParsingMode.Expressions)
 			{
 				EcsParser parser = _parser;

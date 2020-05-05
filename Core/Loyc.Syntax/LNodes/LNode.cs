@@ -887,8 +887,8 @@ namespace Loyc.Syntax
 
 		#region Explicit interface implementations (INegListSource<ILNode>)
 
-		ILNode INegListSource<ILNode>.this[int index] { get { return this[index]; } }
-		ILNode INegListSource<ILNode>.TryGet(int index, out bool fail) { return TryGet(index, out fail); }
+		ILNode IIndexed<int, ILNode>.this[int index] { get { return this[index]; } }
+		ILNode ITryGet<int, ILNode>.TryGet(int index, out bool fail) { return TryGet(index, out fail); }
 		IEnumerator<ILNode> IEnumerable<ILNode>.GetEnumerator() { return GetEnumerator(); }
 		IRange<ILNode> INegListSource<ILNode>.Slice(int start, int count)
 		{

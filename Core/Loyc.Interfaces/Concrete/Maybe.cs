@@ -11,10 +11,13 @@ namespace Loyc
 		/// <summary>Returns <c>new Maybe&lt;T>(value)</c>. (exists for type inference)</summary>
 		public static Maybe<T> Value<T>(T value) { return new Maybe<T>(value); }
 
+		/// <summary>Converts <see cref="Maybe{T}"/> to a <see cref="Nullable{T}"/> having the same HasValue property.</summary>
 		public static T? AsNullable<T>(this Maybe<T> val) where T : struct 
 			{ return val.HasValue ? val.Value : (T?)null; }
+		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this Nullable<T> val) where T : struct 
 			{ return val.HasValue ? val.Value : Maybe<T>.NoValue; }
+		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this T val) where T : class
 			{ return val != null ? val : Maybe<T>.NoValue; }
 	}
@@ -68,8 +71,11 @@ namespace Loyc
 		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
 		public T Or(Func<T> getDefaultValue) => _hasValue ? _value : getDefaultValue();
 
+		/// <summary>Runs a function if and only if <see cref="HasValue"/>.</summary>
 		public void Then(Action<T> then) { if (_hasValue) then(_value); }
+		/// <summary>Runs one of two functions depending on whether <see cref="HasValue"/>.</summary>
 		public R Then<R>(Func<T, R> then, Func<R> @else)  { return _hasValue ? then(_value) : @else(); }
+		/// <summary>Runs a function if and only if <see cref="HasValue"/>, returning a default value otherwise.</summary>
 		public R Then<R>(Func<T, R> then, R defaultValue) { return _hasValue ? then(_value) : defaultValue; }
 	}
 }

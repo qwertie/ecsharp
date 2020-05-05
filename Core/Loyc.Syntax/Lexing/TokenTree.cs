@@ -34,7 +34,7 @@ namespace Loyc.Syntax.Lexing
 
 		public readonly ISourceFile File;
 
-		IToken<int> IListSource<IToken<int>>.TryGet(int index, out bool fail) => TryGet(index, out fail);
+		IToken<int> ITryGet<int, IToken<int>>.TryGet(int index, out bool fail) => TryGet(index, out fail);
 		IRange<IToken<int>> IListSource<IToken<int>>.Slice(int start, int count)
 		{
 			return new UpCastListSource<Token, IToken<int>>(this).Slice(start, count);

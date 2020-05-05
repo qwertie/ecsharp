@@ -126,7 +126,7 @@ namespace Loyc.Ecs.Parser
 								"Missing #if clause before '{0}'", t);
 							_ifRegions.Push(Pair.Create(t, false));
 						}
-						bool isElif = t.Type() == TokenType.PPelif, hasExpr = tree_.HasIndex(0);
+						bool isElif = t.Type() == TokenType.PPelif, hasExpr = tree_.TryGet(0).HasValue;
 						if (hasExpr != isElif)
 							Error(t, isElif ? "Missing condition on #elif" : "Unexpected tokens after #else");
 						bool cond_ = true;

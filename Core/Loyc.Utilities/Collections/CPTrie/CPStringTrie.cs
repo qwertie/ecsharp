@@ -1,4 +1,4 @@
-﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+// http://www.codeproject.com/KB/recipes/cptrie.aspx
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +12,7 @@ namespace Loyc.Collections
 	/// store a large numbers of keys with common prefixes; maximum efficiency is
 	/// achieved when the associated values are all (or almost all) null.</remarks>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>
-	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>
+	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>, IIndexed<string, TValue>
 	{
 		public CPStringTrie() { }
 		public CPStringTrie(CPStringTrie<TValue> clone) : base(clone) { }

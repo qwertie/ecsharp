@@ -1,4 +1,4 @@
-﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+// http://www.codeproject.com/KB/recipes/cptrie.aspx
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -44,7 +44,7 @@ namespace Loyc.Collections.Impl
 	/// was not found). If it is unsigned, convert the key returned by the
 	/// enumerator to UInt64.
 	/// </remarks>
-	public class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>, IReadOnlyDictionary<int, TValue>, IReadOnlyDictionary<long, TValue>
+	public class CPIntTrie<TValue> : CPTrie<TValue>, IDictionary<int, TValue>, IDictionary<long, TValue>, IReadOnlyDictionary<int, TValue>, IReadOnlyDictionary<long, TValue>, IIndexed<long, TValue>, IIndexed<int, TValue>
 	{
 		private static ScratchBuffer<byte[]> _intScratchBuffer;
 
