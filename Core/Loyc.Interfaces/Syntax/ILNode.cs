@@ -51,7 +51,7 @@ namespace Loyc.Syntax
 		/// <inheritdoc cref="LNode.Target"/>
 		ILNode Target { get; }
 		/// <inheritdoc cref="LNode.Range"/>
-		SourceRange Range { get; }
+		ISourceRange Range { get; }
 		/// <inheritdoc cref="LNode.Style"/>
 		NodeStyle Style { get; set; }
 		/// <summary>Returns true if <c>Kind == LNodeKind.Call</c>, <c>Name == name</c>, 

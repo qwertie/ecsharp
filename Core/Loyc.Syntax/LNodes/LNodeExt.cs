@@ -613,15 +613,15 @@ namespace Loyc.Syntax
 
 			switch (node.Kind) {
 				case LNodeKind.Id:
-					return LNode.Id(attrs, node.Name, node.Range, node.Style);
+					return LNode.Id(attrs, node.Name, new SourceRange(node.Range), node.Style);
 				case LNodeKind.Literal:
-					return LNode.Literal(attrs, node.Value, node.Range, node.Style);
+					return LNode.Literal(attrs, node.Value, new SourceRange(node.Range), node.Style);
 				default:
 					var args = LNodeList.Empty;
 					for (int i = 0, max = node.Max; i <= max; i++)
 						args.Add(ToLNode(node[i]));
 					var target = ToLNode(node.Target);
-					return LNode.Call(attrs, target, args, node.Range, node.Style);
+					return LNode.Call(attrs, target, args, new SourceRange(node.Range), node.Style);
 			}
 		}
 

@@ -177,6 +177,7 @@
     <Compile Include="SourceFiles\LineRemapper.cs" />
     <Compile Include="SourceFiles\SourceFile.cs" />
     <Compile Include="SourceFiles\StreamCharSource.cs" />
+    <Compile Include="SourceFiles\SourceRange.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

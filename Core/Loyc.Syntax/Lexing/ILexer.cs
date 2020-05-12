@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -75,7 +75,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { return Lexer.FileName; }
 		}
-		public SourcePos IndexToLine(int index)
+		public ILineColumnFile IndexToLine(int index)
 		{
 			return Lexer.IndexToLine(index);
 		}

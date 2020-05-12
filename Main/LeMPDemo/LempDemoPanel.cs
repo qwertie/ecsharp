@@ -183,7 +183,7 @@ namespace TextEditor
 
 			var lvi = new ListViewItem(new string[] {
 				pos != null ? pos.Line.ToString() : "",
-				pos != null ? pos.PosInLine.ToString() : "",
+				pos != null ? pos.Column.ToString() : "",
 				severity.ToString(), msg
 			});
 			lvi.BackColor = severity >= Severity.Error ? Color.Pink : 
@@ -192,13 +192,13 @@ namespace TextEditor
 			messageList.Items.Add(lvi);
 		}
 
-		private SourcePos GetSourcePos(object context)
+		private ILineColumnFile GetSourcePos(object context)
 		{
 			context = MessageSink.LocationOf(context);
-			if (context is SourcePos)
-				return (SourcePos)context;
-			if (context is SourceRange)
-				return ((SourceRange)context).Start;
+			if (context is ILineColumnFile)
+				return (ILineColumnFile)context;
+			if (context is ISourceRange)
+				return ((ISourceRange)context).Start();
 			return null;
 		}
 

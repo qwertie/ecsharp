@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 	/// </summary>
 	public class LNodeFactory
 	{
-		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(null));
+		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(EmptySourceFile.Unknown));
 		
 		private LNode _emptyList, _emptySplice, _emptyTuple;
 		public LNode Missing { get { return Missing_; } } // allow access through class reference

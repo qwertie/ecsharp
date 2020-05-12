@@ -11,7 +11,7 @@ namespace Loyc.Syntax
 	/// Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
 	/// beginning and end indices of a range in that file.
 	/// </summary>
-    [DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
+	[DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
 	public struct SourceRange : IEquatable<SourceRange>, ISourceRange
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
@@ -21,6 +21,16 @@ namespace Loyc.Syntax
 			_source = source;
 			_startIndex = beginIndex;
 			_length = length;
+		}
+		public SourceRange(ISourceRange range)
+		{
+			if (range is SourceRange range2)
+				this = range2;
+			else {
+				_source = range.Source;
+				_startIndex = range.StartIndex;
+				_length = range.Length;
+			}
 		}
 		//public SourceRange(ISourceFile source, Lexing.Token token)
 		//{
@@ -34,36 +44,16 @@ namespace Loyc.Syntax
 		private int _length;
 
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
-		public int StartIndex     { [DebuggerStepThrough] get { return _startIndex; } }
-		public int EndIndex       { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
-		public int Length         { [DebuggerStepThrough] get { return _length; } }
+		public int StartIndex { [DebuggerStepThrough] get { return _startIndex; } }
+		public int EndIndex { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
+		public int Length { [DebuggerStepThrough] get { return _length; } }
 
-		public UString SourceText
-		{
-			get {
-				if (EndIndex <= StartIndex) return "";
-				if (StartIndex >= _source.Text.Count) return Localize.Localized("(not available)");
-				return Source.Text.Slice(StartIndex, EndIndex - StartIndex);
-			}
-		}
+		public UString SourceText => SourceRangeExt.SourceText(this);
 
-		public SourcePos Start
-		{
-			get { 
-				if (Source == null)
-					return SourcePos.Nowhere;
-				return Source.IndexToLine(StartIndex);
-			}
-		}
-		public SourcePos End
-		{
-			get { 
-				if (Source == null)
-					return SourcePos.Nowhere;
-				return Source.IndexToLine(EndIndex);
-			}
-		}
+		public ILineColumnFile Start => SourceRangeExt.Start(this);
+		public ILineColumnFile End => SourceRangeExt.End(this);
 
+		[Obsolete("I never ended up using this. Anyone else using it?")]
 		public char this[int subIndex]
 		{
 			get {

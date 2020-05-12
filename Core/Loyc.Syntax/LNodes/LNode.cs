@@ -199,6 +199,8 @@ namespace Loyc.Syntax
 		/// </remarks>
 		[DebuggerDisplay("{ToString()}")]
 		public virtual SourceRange Range { get { return (SourceRange)RAS; } }
+		ISourceRange ILNode.Range => Range;
+
 		/// <summary>Returns the source file (shortcut for <c><see cref="Range"/>.Source</c>).</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public ISourceFile Source { get { return RAS.Source; } }

@@ -68,7 +68,7 @@ namespace Loyc
 	/// <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
 	/// which indicates where the error occurs. If the message relates to a text
 	/// file or source code, the location is typically indicated with an object of
-	/// type <see cref="Loyc.Syntax.SourceRange"/> or <see cref="Loyc.Syntax.LNode"/>.</typeparam>
+	/// type <see cref="Loyc.Syntax.ISourceRange"/> or <see cref="Loyc.Syntax.ILNode"/>.</typeparam>
 	/// <seealso cref="MessageSink"/>
 	/// <seealso cref="ConsoleMessageSink"/>
 	/// <seealso cref="TraceMessageSink"/>

@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Loyc.Syntax
 {
@@ -25,13 +28,13 @@ namespace Loyc.Syntax
 		public static ILineColumnFile Start<SourceRange>(this SourceRange range) where SourceRange : ISourceRange
 		{
 			if (range.Source == null)
-				return SourcePos.Nowhere;
+				return LineColumnFile.Nowhere;
 			return range.Source.IndexToLine(range.StartIndex);
 		}
 		public static ILineColumnFile End<SourceRange>(this SourceRange range) where SourceRange : ISourceRange
 		{
 			if (range.Source == null)
-				return SourcePos.Nowhere;
+				return LineColumnFile.Nowhere;
 			return range.Source.IndexToLine(range.EndIndex);
 		}
 	}

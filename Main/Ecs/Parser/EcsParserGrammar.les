@@ -1842,7 +1842,7 @@ namespace Loyc.Ecs.Parser
 		};
 		fn ColumnOf(index::int)::int
 		{
-			return _sourceFile.IndexToLine(index).PosInLine;
+			return _sourceFile.IndexToLine(index).Column;
 		};
 
 		// break, continue, return, throw --------------------------------------

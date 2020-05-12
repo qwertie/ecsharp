@@ -164,7 +164,6 @@
     <Compile Include="Syntax\ISourceRange.cs" />
     <Compile Include="Syntax\NodeStyle.cs" />
     <Compile Include="Concrete\SourcePos.cs" />
-    <Compile Include="Concrete\SourceRange.cs" />
     <Compile Include="Concrete\SavedThreadLocal.cs" />
     <Compile Include="Concrete\ScratchBuffer.cs" />
     <Compile Include="Syntax\ParsingMode.cs" />

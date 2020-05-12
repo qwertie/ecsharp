@@ -74,17 +74,18 @@ namespace Loyc.Syntax
 			get { return _startingPos == null ? null : _startingPos.FileName; }
 		}
 
-		protected SourcePos NewSourcePos(int Line, int PosInLine)
+		protected LineColumnFile NewSourcePos(int Line, int PosInLine)
 		{
 			if (_startingPos == null)
-				return new SourcePos(string.Empty, Line, PosInLine);
+				return new LineColumnFile(string.Empty, Line, PosInLine);
 			else if (Line <= 1)
-				return new SourcePos(_startingPos.FileName, _startingPos.Line, _startingPos.PosInLine-1 + PosInLine);
+				return new LineColumnFile(_startingPos.FileName, _startingPos.Line, _startingPos.Column-1 + PosInLine);
 			else
-				return new SourcePos(_startingPos.FileName, _startingPos.Line + Line-1, PosInLine);
+				return new LineColumnFile(_startingPos.FileName, _startingPos.Line + Line-1, PosInLine);
 		}
 
-		public SourcePos IndexToLine(int index)
+		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
+		public LineColumnFile IndexToLine(int index)
 		{
 			if (index < 0)
 				return NewSourcePos(index + 1, 1);
@@ -117,13 +118,13 @@ namespace Loyc.Syntax
 			else
 				return _lineOffsets[lineNo];
 		}
-		public int LineToIndex(LineAndCol pos)
+		public int LineToIndex(ILineAndColumn pos)
 		{
 			int lineIndex = LineToIndex(pos.Line);
-			if (pos.PosInLine > 0)
-				lineIndex += pos.PosInLine - 1;
+			if (pos.Column > 0)
+				lineIndex += pos.Column - 1;
 			if (_startingPos != null && pos.Line == _startingPos.Line)
-				return lineIndex + (_startingPos.PosInLine - 1);
+				return lineIndex + (_startingPos.Column - 1);
 			else
 				return lineIndex;
 		}

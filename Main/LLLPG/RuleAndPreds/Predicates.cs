@@ -187,7 +187,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var pos = Basis.Range.Start;
 			if (pos.Line < 1) return ToString();
-			return string.Format("({0},{1}) {2}", pos.Line, pos.PosInLine, ToString());
+			return string.Format("({0},{1}) {2}", pos.Line, pos.Column, ToString());
 		}
 
 		/// <summary>Optional. If this predicate represents the matching code for a 

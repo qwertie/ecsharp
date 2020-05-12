@@ -354,7 +354,7 @@ namespace Loyc.Ecs.Parser
 	
 		int ColumnOf(int index)
 		{
-			return _sourceFile.IndexToLine(index).PosInLine;
+			return _sourceFile.IndexToLine(index).Column;
 		}
 	
 		LNode MissingHere()

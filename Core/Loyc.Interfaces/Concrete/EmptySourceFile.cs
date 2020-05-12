@@ -31,15 +31,16 @@ namespace Loyc.Syntax
 			get { return UString.Empty; }
 		}
 
-		public SourcePos IndexToLine(int index)
+		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
+		public LineColumnFile IndexToLine(int index)
 		{
-			return SourcePos.Nowhere;
+			return LineColumnFile.Nowhere;
 		}
 		public int LineToIndex(int lineNo)
 		{
 			return -1;
 		}
-		public int LineToIndex(LineAndCol pos)
+		public int LineToIndex(ILineAndColumn pos)
 		{
 			return -1;
 		}

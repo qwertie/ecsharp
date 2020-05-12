@@ -4,32 +4,48 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.MiniTest;
 using Loyc.Utilities;
+using System.ComponentModel;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Holds a line number (Line) and a position in the line (PosInLine).
+	/// <summary>This just helps end-users to discover the name change 
+	/// SourcePos.PosInLine => ILineAndColumn.Column during upgrades</summary>
+	public static class SourcePosIsObsolete
+	{
+		
+		[Obsolete("The name has changed to \"Column\"")]
+		public static int PosInLine(this ILineAndColumn c) => c.Column;
+	}
+
+	/// <summary>Please use the new name of this class: LineAndColumn.
+	/// Holds a line number (Line) and a position in the line (Column).
 	/// This class isn't really needed in Loyc but is separated from SourcePos 
 	/// in case anyone might want position without a filename.</summary>
-	/// <remarks>Numbering starts at one for both Line and PosInLine. 
+	/// <remarks>Numbering starts at one for both Line and Column. 
 	/// Line=0 signifies nowhere in particular, or an unknown location.</remarks>
+	[Obsolete("Please use the new name of this class: LineAndColumn")]
 	public class LineAndCol : ILineAndColumn
 	{
 		protected LineAndCol() { }
-		public LineAndCol(int Line, int PosInLine)
-			{ _line = Line; _posInLine = PosInLine; }// this.FileName = FileName; }
+		public LineAndCol(int Line, int Column)
+			{ _line = Line; _column = Column; }// this.FileName = FileName; }
 
 		protected int _line;
-		protected int _posInLine;
+		protected int _column;
+		
 		public int Line { get { return _line; } }
-		public int PosInLine { get { return _posInLine; } }
-		public int Column { get { return _posInLine; } }
+		public int Column { get { return _column; } }
+		
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("This has been renamed to Column")]
+		public int PosInLine { get { return _column; } }
 		
 		public override string ToString()
 		{
 			if (Line <= 0)
 				return "Nowhere";
 			else
-				return string.Format("{0}:{1}", Line, PosInLine);
+				return string.Format("{0}:{1}", Line, Column);
 		}
 
 		public override bool Equals(object obj)
@@ -37,22 +53,24 @@ namespace Loyc.Syntax
 			LineAndCol other = obj as LineAndCol;
 			if (other == null)
 				return false;
-			return other._line == _line && other._posInLine == _posInLine;
+			return other._line == _line && other._column == _column;
 		}
 		public override int GetHashCode()
 		{
-			return (_line << 4) ^ _posInLine;
+			return (_line << 4) ^ _column;
 		}
 		public static LineAndCol Nowhere = new LineAndCol();
 	}
 
-	/// <summary>Holds a filename (FileName), a line number (Line) and a position in 
-	/// the line (PosInLine), representing a position in a source code file.</summary>
+	/// <summary>Please use the new name of this class: LineColumnFile.
+	/// Holds a filename (FileName), a line number (Line) and a position in 
+	/// the line (Column), representing a position in a source code file.</summary>
 	/// <remarks>
 	/// Line and column numbering both start at one (1). Line=0 signifies nowhere 
 	/// in particular. Instances are immutable.
 	/// </remarks>
-	public class SourcePos : LineAndCol, ILineColumnFile
+	[Obsolete("Please use the new name of this class: LineColumnFile")]
+	public class SourcePos : LineAndColumn, ILineColumnFile
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)
@@ -66,7 +84,7 @@ namespace Loyc.Syntax
 			if (Line <= 0)
 				return "Nowhere";
 			else
-				return string.Format("{0}({1},{2})", FileName, Line, PosInLine);
+				return string.Format("{0}({1},{2})", FileName, Line, Column);
 		}
 		public override bool Equals(object obj)
 		{
@@ -79,6 +97,30 @@ namespace Loyc.Syntax
 		{
 			return base.GetHashCode() ^ _fileName.GetHashCode();
 		}
-		new public static SourcePos Nowhere = new SourcePos();
+		new public static LineColumnFile Nowhere = new LineColumnFile();
+	}
+
+	#pragma warning disable 618 // Obsoleteness warning
+
+	/// <summary>This is the new (and recommended) name for LineAndCol. It
+	/// holds a line number (Line) and a position in the line (Column).
+	/// Numbering starts at one for both Line and Column.</summary>
+	public class LineAndColumn : LineAndCol
+	{
+		protected LineAndColumn() { }
+		public LineAndColumn(int Line, int Column)
+			{ _line = Line; _column = Column; }// this.FileName = FileName; }
+	}
+
+	/// <summary>This is the new (and recommended) name for SourcePos. It's named 
+	/// after what it contains: a line number, column number and file name.
+	/// Numbering starts at one for both Line and Column.</summary>
+	public class LineColumnFile : SourcePos
+	{
+		internal LineColumnFile() { }
+		public LineColumnFile(int Line, int PosInLine, string FileName)
+			: base(FileName, Line, PosInLine) { }
+		public LineColumnFile(string FileName, int Line, int PosInLine)
+			: base(FileName, Line, PosInLine) { }
 	}
 }
