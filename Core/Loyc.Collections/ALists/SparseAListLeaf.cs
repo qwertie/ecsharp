@@ -18,7 +18,7 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public class SparseAListLeaf<T> : AListLeafBase<int, T>
 	{
-		[DebuggerDisplay("Offset = {Offset}, Item = {Item}")]
+		[Serializable, DebuggerDisplay("Offset = {Offset}, Item = {Item}")]
 		protected internal struct Entry
 		{
 			public Entry(uint offset, T item) { Offset = offset; Item = item; }

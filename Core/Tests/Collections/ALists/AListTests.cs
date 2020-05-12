@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.MiniTest;
@@ -75,6 +77,17 @@ namespace Loyc.Collections.Tests
 			list.RemoveAll(item => true);
 			alist.RemoveAll(item => true);
 			ExpectList(alist, list);
+		}
+
+		[Test]
+		public void AListIsSerializable()
+		{
+			var alist = NewList(100, out List<int> list);
+			var stream = new MemoryStream();
+			new BinaryFormatter().Serialize(stream, alist);
+			stream.Position = 0;
+			var alist2 = (AList)new BinaryFormatter().Deserialize(stream);
+			ExpectList(alist, alist2);
 		}
 	}
 

@@ -5,6 +5,7 @@ namespace Loyc.Collections.Impl
 	using System.Linq;
 	using System.Diagnostics;
 
+	[Serializable]
 	public abstract class AListLeafBase<K, T> : AListNode<K, T>, IReadOnlyList<T>
 	{
 		public abstract int IndexOf(T item, int startIndex);

@@ -7,6 +7,7 @@ using System.Diagnostics;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>Internal node of <see cref="AList{T}"/> and <see cref="SparseAList{T}"/>.</summary>
+	[Serializable]
 	internal class AListInner<T> : AListInnerBase<int, T>
 	{
 		#region Constructors and boilerplate
