@@ -856,7 +856,7 @@ namespace Loyc.LLParserGenerator
 		public AndPred(LNode basis, object pred, bool not, bool local)
 			: base(basis) { Pred = pred; Not = not; Local = local; }
 
-		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA")); // $LA
 		internal static readonly LNode SubstituteLI = F.Call(S.Substitute, F.Id("LI")); // $LI
 

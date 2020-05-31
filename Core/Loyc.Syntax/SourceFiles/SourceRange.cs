@@ -14,7 +14,7 @@ namespace Loyc.Syntax
 	[DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
 	public struct SourceRange : IEquatable<SourceRange>, ISourceRange
 	{
-		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
+		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Synthetic, -1, 0);
 
 		public SourceRange(ISourceFile source, int beginIndex = -1, int length = 0)
 		{

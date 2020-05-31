@@ -19,7 +19,7 @@ namespace LeMP.Prelude.Les
 	[ContainsMacros]
 	public static partial class Macros
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		internal static LNode Reject(IMessageSink error, LNode at, string msg)
 		{

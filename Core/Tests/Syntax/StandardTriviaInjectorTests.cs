@@ -14,7 +14,7 @@ namespace Loyc.Syntax
 	[TestFixture]
 	public class StandardTriviaInjectorTests : Assert
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		static Token T(TT type, int startIndex, int length, object value) {
 			return new Token((int)type, startIndex, length, value);

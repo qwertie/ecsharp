@@ -12,7 +12,7 @@ namespace Loyc.Syntax
 	[TestFixture]
 	public class LNodeTests : TestHelpers
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), Foo = F.Id("Foo");
 		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
 

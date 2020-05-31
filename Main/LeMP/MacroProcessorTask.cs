@@ -507,7 +507,7 @@ namespace LeMP
 		// These aren't really macros, but they are installed like macros so that
 		// no extra overhead is required to detect them.
 
-		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		[LexicalMacro("#importMacros(namespace);", 
 			"LeMP will look for macros in the specified namespace. Only applies within the current braced block. Note: normal C# `using` statements also import macros.", 
