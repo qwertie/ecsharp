@@ -75,6 +75,7 @@ namespace Loyc.Syntax
 		public int OriginalIndex { get; }
 	}
 
+	#pragma warning disable 618 // [Obsolete] warning
 	/// <summary>This is a tuple of a FileName, Line, Column, and OriginalIndex.</summary>
 	public class LineColumnFileAndIndex : SourcePosAndIndex
 	{

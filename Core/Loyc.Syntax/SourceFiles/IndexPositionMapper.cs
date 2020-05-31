@@ -43,7 +43,7 @@ namespace Loyc.Syntax
 		/// will be considered to have the file name and line number specified by 
 		/// this object. If this is null, IndexToLine() will return a blank file 
 		/// name ("").</param>
-		public IndexPositionMapper(CharSource source, SourcePos startingPos = null)
+		public IndexPositionMapper(CharSource source, ILineColumnFile startingPos = null)
 		{
 			Reset(source, startingPos);
 		}
@@ -57,11 +57,11 @@ namespace Loyc.Syntax
 		// this[_lineOffsets[2]] would be the first character of the third line.
 		protected InternalList<int> _lineOffsets = InternalList<int>.Empty;
 		protected bool _offsetsComplete = false;
-		protected SourcePos _startingPos = null;
+		protected ILineColumnFile _startingPos = null;
 
 		/// <summary>Reinitializes the object (as though the constructor were called again).</summary>
-		protected void Reset(CharSource source, string fileName) { Reset(source, new SourcePos(fileName, 1, 1)); }
-		protected void Reset(CharSource source, SourcePos startingPos = null)
+		protected void Reset(CharSource source, string fileName) { Reset(source, new LineColumnFile(fileName, 1, 1)); }
+		protected void Reset(CharSource source, ILineColumnFile startingPos = null)
 		{
 			_source = source;
 			_lineOffsets = InternalList<int>.Empty;

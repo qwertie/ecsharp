@@ -165,7 +165,7 @@ namespace Loyc.Syntax.Les
 		public void LiteralKeywords()
 		{
 			Exact(@"x(`true`, `false`, `null`)", F.Call(x, F.Id("true"), F.Id("false"), F.Id("null")));
-			Expr (@"x( true,   false,   null)", F.Call(x, F.Literal(true), F.Literal(false), F.Literal(null)));
+			Expr (@"x( true,   false,   null)", F.Call(x, F.Literal(true), F.Literal(false), F.Null));
 		}
 
 		[Test]

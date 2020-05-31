@@ -10,6 +10,7 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc;
 using System.Diagnostics;
+using Loyc.Syntax.Les;
 
 namespace Loyc.Syntax
 {
@@ -127,44 +128,57 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
 
-	internal class StdLiteralNode : LiteralNode
+	internal struct SimpleValue<V> : ILiteralValueProvider
 	{
-		public StdLiteralNode(object value, LNode ras) 
-			: base(ras) { _value = value; }
-		public StdLiteralNode(object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		V _value;
+		public SimpleValue(V value) => _value = value;
+		public UString GetTextValue(SourceRange range) => default(UString);
+		public Symbol GetTypeMarker(SourceRange range) => null;
+		public object GetValue(SourceRange range) => _value;
+	}
+	
+	internal class StdLiteralNode<TValue> : LiteralNode where TValue : ILiteralValueProvider
+	{
+		public StdLiteralNode(TValue value, LNode ras) 
+			: base(ras) { _value = value;  }
+		public StdLiteralNode(TValue value, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(range, style) { _value = value; }
 
 		public override Symbol Name { get { return GSymbol.Empty; } }
 		
-		protected object _value;
-		public override object Value { get { return _value; } }
-		public override LiteralNode WithValue(object value) { var copy = cov_Clone(); copy._value = value; return copy; }
+		protected TValue _value;
+		public override object Value => _value.GetValue(Range);
+		public override UString TextValue => _value.GetTextValue(Range);
+		public override Symbol TypeMarker => _value.GetTypeMarker(Range);
+
+		public override LiteralNode WithValue(object value) => cov_Clone(new SimpleValue<object>(value));
 		
-		public override LNode Clone() { return cov_Clone(); }
-		public virtual StdLiteralNode cov_Clone() { return new StdLiteralNode(_value, this); }
+		public override LNode Clone() => cov_Clone(_value);
+		public virtual StdLiteralNode<Value2> cov_Clone<Value2>(Value2 value) where Value2 : ILiteralValueProvider => new StdLiteralNode<Value2>(value, this);
 
 		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs.Count == 0) return this;
-			return new StdLiteralNodeWithAttrs(attrs, _value, this);
+			return new StdLiteralNodeWithAttrs<TValue>(attrs, _value, this);
 		}
 	}
-	internal class StdLiteralNodeWithAttrs : StdLiteralNode
+
+	internal class StdLiteralNodeWithAttrs<Value> : StdLiteralNode<Value> where Value : ILiteralValueProvider
 	{
 		LNodeList _attrs;
-		public StdLiteralNodeWithAttrs(LNodeList attrs, object value, LNode ras) 
+		public StdLiteralNodeWithAttrs(LNodeList attrs, Value value, LNode ras)
 			: base(value, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdLiteralNodeWithAttrs(LNodeList attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdLiteralNodeWithAttrs(LNodeList attrs, Value value, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(value, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
-		public override StdLiteralNode cov_Clone() { return new StdLiteralNodeWithAttrs(_attrs, _value, this); }
+		public override StdLiteralNode<Value2> cov_Clone<Value2>(Value2 value) => new StdLiteralNodeWithAttrs<Value2>(_attrs, value, this);
 
 		public override LNodeList Attrs { get { return _attrs; } }
 		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs == Attrs) return this;
-			if (attrs.Count == 0) return new StdLiteralNode(_value, this);
-			return new StdLiteralNodeWithAttrs(attrs, _value, this);
+			if (attrs.Count == 0) return new StdLiteralNode<Value>(_value, this);
+			return new StdLiteralNodeWithAttrs<Value>(attrs, _value, this);
 		}
 		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
 		{
@@ -174,6 +188,7 @@ namespace Loyc.Syntax
 			return WithAttrs(newAttrs);
 		}
 	}
+
 
 	internal abstract class StdCallNode : CallNode
 	{

@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 		// Common literals
 		public LNode @true { get { return Literal(true); } }
 		public LNode @false { get { return Literal(false); } }
-		public LNode @null { get { return Literal(null); } }
+		public LNode @null { get { return Literal((object)null); } }
 		public LNode @void { get { return Literal(@void.Value); } }
 		public LNode int_0 { get { return Literal(0); } }
 		public LNode int_1 { get { return Literal(1); } }
@@ -70,7 +70,7 @@ namespace Loyc.Syntax
 
 		public LNode True { get { return Literal(true); } }
 		public LNode False { get { return Literal(false); } }
-		public LNode Null { get { return Literal(null); } }
+		public LNode Null { get { return Literal((object)null); } }
 
 		LNode _newline = null;
 		public LNode TriviaNewline { get { return _newline = _newline ?? Id(S.TriviaNewline); } }
@@ -112,14 +112,14 @@ namespace Loyc.Syntax
 				new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
-		public LNode Literal(object value, int startIndex = -1, int endIndex = -1)
+		public LNode Literal<V>(V value, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdLiteralNode(value, new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode Literal(Token t)
 		{
-			return new StdLiteralNode(t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+			return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(t.Value), new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
 		/// <summary>Creates a trivia node named <c>"%" + suffix</c> with the 

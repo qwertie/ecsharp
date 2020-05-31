@@ -13,7 +13,7 @@ namespace Loyc.Syntax
 	{
 		new protected CharSource _source;
 
-		public SourceFile(CharSource source, SourcePos startingPos = null) : base(source, startingPos) { _source = source; }
+		public SourceFile(CharSource source, ILineColumnFile startingPos = null) : base(source, startingPos) { _source = source; }
 		public SourceFile(CharSource source, string fileName) : base(source, fileName) { _source = source; }
 
 		public CharSource Text
@@ -29,7 +29,7 @@ namespace Loyc.Syntax
 	[Obsolete("Please use SourceFile<ICharSource> instead.")]
 	public class SourceFile : SourceFile<ICharSource>
 	{
-		public SourceFile(ICharSource source, SourcePos startingPos = null) : base(source, startingPos) { }
+		public SourceFile(ICharSource source, ILineColumnFile startingPos = null) : base(source, startingPos) { }
 		public SourceFile(ICharSource source, string fileName) : base(source, fileName) { }
 	} 
 }

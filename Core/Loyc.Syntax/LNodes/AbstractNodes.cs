@@ -21,7 +21,7 @@ namespace Loyc.Syntax
 		public abstract override Symbol Name { get; }
 		public abstract override LNode WithName(Symbol name);
 		
-		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return NoValue.Value; } }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value => NoValue.Value;
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNodeList Args { get { return LNodeList.Empty; } }
@@ -98,7 +98,9 @@ namespace Loyc.Syntax
 		{
 			return WithTarget(Target.WithName(name));
 		}
-		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return NoValue.Value; } }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value => NoValue.Value;
+		[EditorBrowsable(EditorBrowsableState.Never)] public override UString TextValue => default(UString);
+		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol TypeMarker => null;
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is a CallNode, cannot change Value."); }
 		public abstract override LNode Target { get; }
 		public abstract override LNodeList Args { get; }

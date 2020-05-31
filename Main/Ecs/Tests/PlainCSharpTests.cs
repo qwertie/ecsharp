@@ -17,8 +17,8 @@ namespace Loyc.Ecs.Tests
 			Expr("0.5",      F.Literal(0.5));
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"""hi""",  F.Literal("hi"));
-			Expr("null",     F.Literal(null));
-			Expr("true",     F.Literal(true));
+			Expr("null",     F.Null);
+			Expr("true",     F.True);
 		}
 
 		[Test]
@@ -37,9 +37,9 @@ namespace Loyc.Ecs.Tests
 			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
 			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
 			Expr("0xff",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
-			Expr("null",     F.Literal(null));
-			Expr("false",    F.Literal(false));
-			Expr("true",     F.Literal(true));
+			Expr("null",     F.Null);
+			Expr("false",    F.False);
+			Expr("true",     F.True);
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"'\0'",    F.Literal('\0'));
 			Expr("'\uFEFF'", F.Literal('\uFEFF'));
@@ -91,7 +91,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a++ + a--",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
 			Expr("a ? b : c",           F.Call(S.QuestionMark, a, b, c));
 			Expr("a is Foo ? a as Foo : b", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
-			Expr("a == null ? default : b", F.Call(S.QuestionMark, F.Call(S.Eq, a, F.Literal(null)), _(S.Default), b));
+			Expr("a == null ? default : b", F.Call(S.QuestionMark, F.Call(S.Eq, a, F.Null), _(S.Default), b));
 		}
 
 		[Test]
@@ -424,15 +424,15 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("Foo? a = 0, b;",        F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero), b));
 			Stmt("Foo? a = b ? c : null;", F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a,
-			                              F.Call(S.QuestionMark, b, c, F.Literal(null)))));
+			                              F.Call(S.QuestionMark, b, c, F.Null))));
 			// Note: To simplify the parser, EC# cannot parse the standalone
 			//       statement "Foo ? a = 0 : b;" - you must use parentheses.
 			Stmt("(Foo? a = 0, b);",      F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero)), b));
 			Stmt("(Foo ? a = 0 : b);",    F.InParens(F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, zero), b)));
 			Stmt("(Foo? a = b ? c : null);", F.InParens(
-				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))))));
+				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Null)))));
 			Stmt("(Foo ? a = b ? c : null : 0);", F.InParens(
-				F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))), zero)));
+				F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Null)), zero)));
 		}
 
 		[Test]

@@ -37,7 +37,7 @@ namespace Loyc.Syntax.Les
 			Expr("x", x);
 			Expr("x()", F.Call(x));
 			Expr(@"x(1, ""Hello"", '!', 1.0)", F.Call(x, one, F.Literal("Hello"), F.Literal('!'), F.Literal(1.0)));
-			Expr(@"x(@true, @false, @null)",   F.Call(x, F.Literal(true), F.Literal(false), F.Literal(null)));
+			Expr(@"x(@true, @false, @null)",   F.Call(x, F.Literal(true), F.Literal(false), F.Null));
 			Expr("Foo(a, b, c)", F.Call(Foo, a, b, c));
 			Expr("Foo(a(b, c), b(c))", F.Call(Foo, F.Call(a, b, c), F.Call(b, c)));
 		}

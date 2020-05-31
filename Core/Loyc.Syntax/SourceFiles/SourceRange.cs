@@ -43,6 +43,12 @@ namespace Loyc.Syntax
 		private int _startIndex;
 		private int _length;
 
+		/// <summary>Returns the source file of which this range is a part.
+		/// If this <see cref="SourceRange"/> represents a "synthetic" syntax tree 
+		/// (created programmatically), the source file may be an empty "dummy" 
+		/// object such as <see cref="EmptySourceFile"/>. In this case, the 
+		/// <see cref="Length"/> should be zero.
+		/// </summary>
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
 		public int StartIndex { [DebuggerStepThrough] get { return _startIndex; } }
 		public int EndIndex { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
@@ -66,7 +72,7 @@ namespace Loyc.Syntax
 		{
 			return a._source == b._source && a._startIndex == b._startIndex && a._length == b._length;
 		}
-		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
+		public static bool operator !=(SourceRange a, SourceRange b) => !(a == b);
 
 		public bool Equals(SourceRange other) => this == other;
 		public override bool Equals(object obj)
@@ -83,9 +89,9 @@ namespace Loyc.Syntax
 		{
 			if (StartIndex <= 0)
 				return string.Format("{0}({1}..{2})", Source.FileName, StartIndex, EndIndex);
-			SourcePos start = Start, end = End;
+			ILineColumnFile start = Start, end = End;
 			return string.Format(Length > 1 ? "{0}({1},{2},{3},{4})" : "{0}({1},{2})",
-				Source.FileName, start.Line, start.PosInLine, end.Line, end.PosInLine);
+				Source.FileName, start.Line, start.Column, end.Line, end.Column);
 		}
 
 		public bool Contains(SourceRange inner)
