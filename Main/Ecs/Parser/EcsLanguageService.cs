@@ -64,21 +64,21 @@ namespace Loyc.Ecs
 		{
 			get { return true; }
 		}
-		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
+		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			return new EcsLexer(text, fileName, msgs);
+			return new EcsLexer(text, fileName, msgs) { SpacesPerTab = options.SpacesPerTab };
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			var lexer = Tokenize(text, fileName, msgs);
-			return Parse(lexer, msgs, inputType, preserveComments);
+			var lexer = Tokenize(text, fileName, msgs, options);
+			return Parse(lexer, msgs, options);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, IParsingOptions options)
 		{
-			var preprocessed = new EcsPreprocessor(input, preserveComments);
+			var preprocessed = new EcsPreprocessor(input, options.PreserveComments);
 			var treeified = new TokensToTree(preprocessed, false);
-			var results = Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);
-			if (preserveComments) {
+			var results = Parse(treeified.Buffered(), input.SourceFile, msgs, options);
+			if (options.PreserveComments) {
 				var injector = new EcsTriviaInjector(preprocessed.TriviaList, input.SourceFile, 
 					(int)TokenType.Newline, "/*", "*/", "//");
 				return injector.Run(results.GetEnumerator()).Buffered();
@@ -89,7 +89,7 @@ namespace Loyc.Ecs
 		[ThreadStatic]
 		static EcsParser _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, IParsingOptions options)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -99,6 +99,7 @@ namespace Loyc.Ecs
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
+			var inputType = options.Mode;
 			if (file.Text.TryGet(255).HasValue || inputType == ParsingMode.FormalArguments || 
 				inputType == ParsingMode.Types || inputType == ParsingMode.Expressions)
 			{
