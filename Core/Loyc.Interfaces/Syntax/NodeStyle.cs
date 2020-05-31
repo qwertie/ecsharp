@@ -30,7 +30,8 @@ namespace Loyc.Syntax
 		/// suffix, or other operator), or that it should be printed with operator 
 		/// notation if possible.</summary>
 		Operator = 1,
-		[Obsolete("This was renamed to StatementBlock")] Statement = StatementBlock,
+		[Obsolete("This was renamed to StatementBlock")]
+		Statement = StatementBlock,
 		/// <summary>The node's immediate children (and/or the node itself) should be 
 		/// printed in statement notation, if possible in the context in which it is 
 		/// located.</summary>
