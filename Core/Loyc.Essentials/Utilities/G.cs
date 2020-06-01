@@ -10,6 +10,8 @@ using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections;
+using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Loyc
 {
@@ -113,7 +115,7 @@ namespace Loyc
 		}
 		/// <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
 		/// of this method, except that the action has a return value.</summary>
-		public static T With<T>(this T obj, Func<T, T> action)
+		public static R With<T,R>(this T obj, Func<T, R> action)
 		{
 			return action(obj);
 		}
@@ -129,6 +131,7 @@ namespace Loyc
 
 		public static readonly object BoxedFalse = false;      //!< Singleton false cast to object.
 		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
+		[Obsolete("Probably no one is using this")]
 		public static readonly object BoxedVoid = new @void(); //!< Singleton void cast to object.
 
 		private class ComparisonFrom<T> where T : IComparable<T> 
@@ -217,8 +220,8 @@ namespace Loyc
 			return changed ? sb.ToString() : text;
 		}
 
-		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 
-		/// evaluated even in a Release build.</summary>
+		/// <summary>Same as <c>Debug.Assert</c> except that the argument is evaluated 
+		/// even in a Release build. However, no assertion happens in a release build.</summary>
 		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);
@@ -231,7 +234,8 @@ namespace Loyc
 		/// there is no entity name for the given character, e.g. 
 		/// <c>BareHtmlEntityNameForAscii('"') == "quot"</c>.
 		/// </summary><remarks>
-		/// The complete entity name is an ampersand (&amp;) plus <c>BareHtmlEntityNameForAscii(c) + ";"</c>.
+		/// A complete HTML entity name begins with an ampersand (&amp;) and ends with 
+		/// semicolon, but these characters are not included in this method's output.
 		/// Some HTML entities have multiple names; this function returns one of them.
 		/// There is a name in this table for all ASCII punctuation characters.
 		/// </remarks>
@@ -324,6 +328,9 @@ namespace Loyc
 
 		#region ShiftLeft and ShiftRight for floating point
 
+		/// <summary>Multiplies a number by a power of two</summary>
+		/// <param name="num">Input number</param>
+		/// <param name="amount">Exponent on the power of two</param>
 		public static double ShiftLeft(double num, int amount)
 		{
 			ulong bits = (ulong)DoubleToInt64Bits(num);
@@ -359,6 +366,9 @@ namespace Loyc
 			return (long)bits >= 0 ? double.PositiveInfinity : double.NegativeInfinity;
 		}
 
+		/// <summary>Divides a number by a power of two</summary>
+		/// <param name="num">Input number</param>
+		/// <param name="amount">Exponent on the power of two</param>
 		public static double ShiftRight(double num, int amount)
 		{
 			ulong bits = (ulong)DoubleToInt64Bits(num);
@@ -393,6 +403,10 @@ namespace Loyc
 
 		#endregion
 
+		/// <summary>Converts a base-64 character into a number from 0 to 63.</summary>
+		/// <param name="digit">Input character</param>
+		/// <param name="digit62">One or more characters that correspond to an output of 62</param>
+		/// <param name="digit63">One or more characters that correspond to an output of 63</param>
 		public static int DecodeBase64Digit(char digit, string digit62 = "+-.~", string digit63 = "/_,")
 		{
 			if (digit >= 'A' && digit <= 'Z') return digit - 'A';
@@ -403,6 +417,10 @@ namespace Loyc
 			return -1;
 		}
 
+		/// <summary>Converts a number from 0 to 63 into a base-64 character.</summary>
+		/// <param name="digit">Input number</param>
+		/// <param name="digit62">Character to return if the input is 62</param>
+		/// <param name="digit63">Character to return if the input is 63</param>
 		public static char EncodeBase64Digit(int digit, char digit62 = '+', char digit63 = '/')
 		{
 			digit &= 63;
@@ -413,5 +431,12 @@ namespace Loyc
 			else
 				return digit == 62 ? digit62 : digit63;
 		}
+
+		/// <summary>GetMethodInfo(() => M(args)) gets the MethodInfo object corresponding to M.</summary>
+		public static MethodInfo GetMethodInfo(Expression<Action> shape) => ((MethodCallExpression)shape.Body).Method;
+		
+		/// <summary>GetGenericMethodInfo(() => M(args)) gets the unspecialized MethodInfo object 
+		/// corresponding to the generic method M.</summary>
+		public static MethodInfo GetGenericMethodDefinition(Expression<Action> shape) => GetMethodInfo(shape).GetGenericMethodDefinition();
 	}
 }

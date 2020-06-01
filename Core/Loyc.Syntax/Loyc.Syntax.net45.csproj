@@ -132,6 +132,7 @@
     <Compile Include="Lexing\WhitespaceFilter.cs" />
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
+    <Compile Include="LNodes\ILiteralValueProvider.cs" />
     <Compile Include="LNodes\LiteralValue.cs" />
     <Compile Include="LNodes\ILNodePrinter.cs" />
     <Compile Include="LNodes\LNodeList.cs" />

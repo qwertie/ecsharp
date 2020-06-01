@@ -26,7 +26,7 @@ namespace Loyc.Syntax
 		Symbol TypeMarker { get; }
 	}
 
-	/// <summary>Bundles the optional original text of a value with an optional in-memory form of it.</summary>
+	/// <summary>Bundles the optional original text of a value with an in-memory form of it.</summary>
 	/// <remarks>
 	/// <see cref="ILNode"/> objects that do not represent literals will have a Value property 
 	/// that returns <see cref="NoValue.Value"/>. Also, the TextValue and TypeMarker for a value 
@@ -35,18 +35,18 @@ namespace Loyc.Syntax
 	/// value it represents is not known, in which case the Value may be a copy of the TextValue.
 	/// <para/>
 	/// If this object represents a literal, Value should never be <see cref="NoValue.Value"/>, 
-	/// and it should not be null unless null is the actual value of the literal.
+	/// and it should only be null if null is the actual value of the literal.
 	/// <para/>
 	/// In all, a literal may have the the following valid combinations of properties:
 	/// <ul>
-	/// <li>TextValue.IsNull, null TypeMarker, valid Value: this combination often occurs when
+	/// <li>Just a value (TextValue.IsNull, null TypeMarker): this combination often occurs when
 	///     nodes created programmatically and have never been in text form before, but it 
 	///     may also occur if the parser isn't designed to preserve input text, or if the
 	///     syntax is nonstandard and there is no benefit in preserving the text. Keep in
 	///     mind that the TypeMarker dictates constraints on syntax, not just type, so if a 
-	///     language uses an unusual literal syntax the most reasonable thing is often to
+	///     language uses an unusual literal syntax, the most reasonable thing is often to
 	///     parse the text and not include it in the Loyc tree.</li>
-	/// <li>TextValue.IsNull, non-null TypeMarker, valid Value: this combination can be used
+	/// <li>Value and TypeMarker (TextValue.IsNull is true): this combination can be used
 	///     to disambiguate when one type corresponds to multiple TypeMarkers. For example,
 	///     the literal 123 has the generic numeric type marker "_". This may be stored as 
 	///     a 32-bit integer in the Loyc tree, but suppose that an attempt is made to store

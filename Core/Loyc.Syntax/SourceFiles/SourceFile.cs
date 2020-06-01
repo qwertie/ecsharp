@@ -26,7 +26,7 @@ namespace Loyc.Syntax
 		}
 	}
 
-	[Obsolete("Please use SourceFile<ICharSource> instead.")]
+	[Obsolete("Please use SourceFile<ICharSource> or SourceFile<UString> instead.")]
 	public class SourceFile : SourceFile<ICharSource>
 	{
 		public SourceFile(ICharSource source, ILineColumnFile startingPos = null) : base(source, startingPos) { }

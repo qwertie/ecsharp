@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -80,15 +80,25 @@ namespace Loyc
 		{
 			throw new ArgumentNullException(argName);
 		}
+		// This exists because conventional wisdom holds that methods which throw are not inlined
+		static void ThrowArgumentException(string message)
+		{
+			throw new ArgumentException(message);
+		}
 		public static void Arg(string argName, bool condition, object argValue)
 		{
 			if (!condition)
-				throw new ArgumentException("Invalid argument ({0} = '{1}')".Localized(argName, argValue));
+				ThrowArgumentException("Invalid argument ({0} = '{1}')".Localized(argName, argValue));
 		}
 		public static void Arg(string argName, bool condition)
 		{
 			if (!condition)
-				throw new ArgumentException("Invalid value for '{0}'".Localized(argName));
+				ThrowArgumentException("Invalid value for '{0}'".Localized(argName));
+		}
+		public static void Is(bool condition, string errorMessage)
+		{
+			if (!condition)
+				ThrowArgumentException(errorMessage);
 		}
 	}
 }

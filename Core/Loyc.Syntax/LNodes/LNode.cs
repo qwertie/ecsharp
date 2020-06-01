@@ -80,8 +80,18 @@ namespace Loyc.Syntax
 		public static IdNode Id(string name, LNode prototype) { return new StdIdNode(GSymbol.Get(name), prototype); }
 		public static IdNode Id(LNodeList attrs, Symbol name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, name, prototype); }
 		public static IdNode Id(LNodeList attrs, string name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), prototype); }
-		public static LiteralNode Literal<V>(V value, LNode prototype) { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), prototype); }
-		public static LiteralNode Literal<V>(LNodeList attrs, V value, LNode prototype) { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), prototype); }
+		public static LiteralNode Literal<V>(V value, LNode prototype) {
+			Debug.Assert(!typeof(ILiteralValueProvider).IsAssignableFrom(typeof(V)));
+			return typeof(V).IsValueType ? new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), prototype)
+			     : (LiteralNode) new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), prototype);
+		}
+		public static LiteralNode Literal<V>(LNodeList attrs, V value, LNode prototype) {
+			Debug.Assert(!typeof(ILiteralValueProvider).IsAssignableFrom(typeof(V)));
+			return typeof(V).IsValueType ? new StdLiteralNodeWithAttrs<SimpleValue<V>>(attrs, new SimpleValue<V>(value), prototype)
+			     : (LiteralNode)new StdLiteralNodeWithAttrs<SimpleValue<object>>(attrs, new SimpleValue<object>(value), prototype);
+		}
+		public static LiteralNode Literal(object value, LNode prototype) => new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), prototype);
+		public static LiteralNode Literal(LNodeList attrs, object value, LNode prototype) => new StdLiteralNodeWithAttrs<SimpleValue<object>>(attrs, new SimpleValue<object>(value), prototype);
 		public static CallNode Call(Symbol name, LNode prototype) { return new StdSimpleCallNode(name, LNodeList.Empty, prototype); }
 		public static CallNode Call(LNode target, LNode prototype) { return new StdComplexCallNode(target, LNodeList.Empty, prototype); }
 		public static CallNode Call(Symbol name, LNodeList args, LNode prototype) { return new StdSimpleCallNode(name, args, prototype); }
@@ -94,11 +104,19 @@ namespace Loyc.Syntax
 		public static IdNode Id(string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(GSymbol.Get(name), range, style); }
 		public static IdNode Id(LNodeList attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, name, range, style); }
 		public static IdNode Id(LNodeList attrs, string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range, style); }
-		public static LiteralNode Literal<V>(V value, SourceRange range, NodeStyle style = NodeStyle.Default) { Debug.Assert(!typeof(ILiteralValueProvider).IsAssignableFrom(typeof(V))); return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), range, style); }
-		public static LiteralNode Literal(SourceRange range, LiteralValue value, NodeStyle style = NodeStyle.Default) => new StdLiteralNode<LiteralValue>(value, range, style);
+		public static LiteralNode Literal<V>(V value, SourceRange range, NodeStyle style = NodeStyle.Default) {
+			Debug.Assert(!typeof(ILiteralValueProvider).IsAssignableFrom(typeof(V)));
+			return typeof(V).IsValueType ? new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), range, style) 
+				 : (LiteralNode) new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), range, style);
+		}
+		public static LiteralNode Literal<V>(LNodeList attrs, V value, SourceRange range, NodeStyle style = NodeStyle.Default) {
+			Debug.Assert(!typeof(ILiteralValueProvider).IsAssignableFrom(typeof(V)));
+			return typeof(V).IsValueType ? new StdLiteralNodeWithAttrs<SimpleValue<V>>(attrs, new SimpleValue<V>(value), range, style)
+				 : (LiteralNode)new StdLiteralNodeWithAttrs<SimpleValue<object>>(attrs, new SimpleValue<object>(value), range, style);
+		}
+		public static LiteralNode Literal(object value, SourceRange range, NodeStyle style = NodeStyle.Default) => new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), range, style);
+		public static LiteralNode Literal(LNodeList attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) => new StdLiteralNodeWithAttrs<SimpleValue<object>>(attrs, new SimpleValue<object>(value), range, style);
 		public static LiteralNode Literal<P>(SourceRange range, P valueProvider, NodeStyle style = NodeStyle.Default) where P: ILiteralValueProvider => new StdLiteralNode<P>(valueProvider, range, style);
-		public static LiteralNode Literal<V>(LNodeList attrs, V value, SourceRange range, NodeStyle style = NodeStyle.Default) => new StdLiteralNodeWithAttrs<SimpleValue<V>>(attrs, new SimpleValue<V>(value), range, style);
-		public static LiteralNode Literal(LNodeList attrs, SourceRange range, LiteralValue value, NodeStyle style = NodeStyle.Default) => new StdLiteralNodeWithAttrs<LiteralValue>(attrs, value, range, style);
 		public static LiteralNode Literal<P>(LNodeList attrs, SourceRange range, P valueProvider, NodeStyle style = NodeStyle.Default) where P : ILiteralValueProvider => new StdLiteralNodeWithAttrs<P>(attrs, valueProvider, range, style);
 		public static CallNode Call(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, range, style); }
 		public static CallNode Call(Symbol name, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, range, targetStart, targetEnd, style); }
@@ -114,10 +132,11 @@ namespace Loyc.Syntax
 		public static IdNode Id(string name, ISourceFile file = null) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file)); }
 		public static IdNode Id(LNodeList attrs, Symbol name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file)); }
 		public static IdNode Id(LNodeList attrs, string name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file)); }
-		public static LiteralNode Literal<V>(V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) where V: struct { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file), style); }
-		public static LiteralNode Literal<V>(LNodeList attrs, V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file), style); }
-		// This overload is needed so that `LNode.Literal(null)` still works, which is important since the `quote` macro can produce that expression
+		public static LiteralNode Literal<V>(V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) => Literal(value, new SourceRange(file), style);
+		public static LiteralNode Literal<V>(LNodeList attrs, V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) => Literal(attrs, value, new SourceRange(file), style);
+		// This overload is required for `LNode.Literal(null)` to work (the `quote` macro can produce that expression)
 		public static LiteralNode Literal(object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) => new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), new SourceRange(file), style);
+		public static LiteralNode Literal(LNodeList attrs, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) => new StdLiteralNodeWithAttrs<SimpleValue<object>>(attrs, new SimpleValue<object>(value), new SourceRange(file), style);
 		public static CallNode Call(Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, new SourceRange(file), style); }
 		public static CallNode Call(LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, LNodeList.Empty, new SourceRange(file), style); }
 		public static CallNode Call(Symbol name, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file), style); }

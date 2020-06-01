@@ -11,6 +11,7 @@ namespace Loyc.Syntax.Les
 	/// <remarks>This structure is used as the value of an LESv3 token to 
 	/// represent non-standard numbers and strings such as <c>1.1unum</c> 
 	/// and <c>bytes"ab cd"</c></remarks>
+	[Obsolete("LNode now has native support for custom literals, see https://github.com/qwertie/ecsharp/issues/110")]
 	public struct CustomLiteral : IEquatable<CustomLiteral>
 	{
 		public CustomLiteral(object value, Symbol typeMarker)

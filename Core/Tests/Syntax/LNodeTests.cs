@@ -61,5 +61,60 @@ namespace Loyc.Syntax
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusAttr(null));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusArg(null));
 		}
+
+		[Test]
+		public void Test_SimpleLiteral()
+		{
+			var source = new SourceFile<UString>(" 123 ", "x.txt");
+			var attr = LNode.List(LNode.Missing);
+			var lit111 = LNode.Literal(111, EmptySourceFile.Synthetic, NodeStyle.HexLiteral);
+			var lit112 = LNode.Literal(attr, 112, EmptySourceFile.Synthetic, NodeStyle.HexLiteral);
+			var lit123 = LNode.Literal(123, new SourceRange(source, 1, 3), NodeStyle.BinaryLiteral);
+			var lit125 = LNode.Literal(attr, 125, new SourceRange(source, 1, 3), NodeStyle.OctalLiteral);
+			var lit455 = LNode.Literal(455, lit123);
+			var lit456 = LNode.Literal(attr, 456, lit125);
+			Assert.AreEqual(111, lit111.Value);
+			Assert.AreEqual(112, lit112.Value);
+			Assert.AreEqual(123, lit123.Value);
+			Assert.AreEqual(125, lit125.Value);
+			Assert.AreEqual(455, lit455.Value);
+			Assert.AreEqual(456, lit456.Value);
+			Assert.AreEqual(0, lit111.AttrCount);
+			Assert.AreEqual(1, lit112.AttrCount);
+			Assert.AreEqual(0, lit123.AttrCount);
+			Assert.AreEqual(1, lit125.AttrCount);
+			Assert.AreEqual(0, lit455.AttrCount);
+			Assert.AreEqual(1, lit456.AttrCount);
+			Assert.AreEqual(NodeStyle.HexLiteral,    lit111.Style);
+			Assert.AreEqual(NodeStyle.HexLiteral,    lit112.Style);
+			Assert.AreEqual(NodeStyle.BinaryLiteral, lit123.Style);
+			Assert.AreEqual(NodeStyle.OctalLiteral,  lit125.Style);
+			Assert.AreEqual(NodeStyle.BinaryLiteral, lit455.Style);
+			Assert.AreEqual(NodeStyle.OctalLiteral,  lit456.Style);
+			Assert.AreEqual(default(UString), lit111.TextValue);
+			Assert.AreEqual(default(UString), lit112.TextValue);
+			Assert.AreEqual(default(UString), lit123.TextValue);
+			Assert.AreEqual(default(UString), lit456.TextValue);
+			Assert.AreEqual(null, lit111.TypeMarker);
+			Assert.AreEqual(null, lit112.TypeMarker);
+			Assert.AreEqual(null, lit123.TypeMarker);
+			Assert.AreEqual(null, lit456.TypeMarker);
+		}
+		
+		[Test]
+		public void Test_CustomLiteral()
+		{
+			var source = new SourceFile<UString>("111z _\"0x123'456\"", "x.txt");
+			var lit111 = LNode.Literal(new SourceRange(source, 0, 4), new SerializedLiteral("111", (Symbol)"_z"), NodeStyle.Default);
+			var lit123 = LNode.Literal(new SourceRange(source, 5, 9), new ParsedLiteral(0x123456, 7, 9, (Symbol)"_"), NodeStyle.HexLiteral);
+			Assert.AreEqual((UString)"111", lit111.Value);
+			Assert.AreEqual(0x123456, lit123.Value);
+			Assert.AreEqual(NodeStyle.Default, lit111.Style);
+			Assert.AreEqual(NodeStyle.HexLiteral, lit123.Style);
+			Assert.AreEqual((UString)"111", lit111.TextValue);
+			Assert.AreEqual((UString)"0x123'456", lit123.TextValue);
+			Assert.AreEqual((Symbol)"_z", lit111.TypeMarker);
+			Assert.AreEqual((Symbol)"_", lit123.TypeMarker);
+		}
 	}
 }

@@ -8,6 +8,8 @@ using Loyc.Collections;
 using Loyc.Collections.MutableListExtensionMethods;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Syntax.Lexing;
+using System.Xml.Schema;
+using System.Reflection;
 
 namespace Loyc.Syntax
 {
@@ -18,7 +20,7 @@ namespace Loyc.Syntax
 	public class LNodeFactory
 	{
 		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(EmptySourceFile.Unknown));
-		
+
 		private LNode _emptyList, _emptySplice, _emptyTuple;
 		public LNode Missing { get { return Missing_; } } // allow access through class reference
 
@@ -74,7 +76,7 @@ namespace Loyc.Syntax
 
 		LNode _newline = null;
 		public LNode TriviaNewline { get { return _newline = _newline ?? Id(S.TriviaNewline); } }
-		
+
 		/// <summary>Adds a leading newline to the node if the first attribute isn't a newline.</summary>
 		/// <remarks>By convention, in Loyc languages, top-level nodes and nodes within 
 		/// braces have an implicit newline, such that a leading blank line appears
@@ -95,7 +97,7 @@ namespace Loyc.Syntax
 		public LNode Id(string name, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdIdNode(GSymbol.Get(name), new SourceRange(_file, startIndex, endIndex-startIndex));
+			return new StdIdNode(GSymbol.Get(name), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode Id(Symbol name, int startIndex = -1, int endIndex = -1)
 		{
@@ -112,15 +114,49 @@ namespace Loyc.Syntax
 				new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
-		public LNode Literal<V>(V value, int startIndex = -1, int endIndex = -1)
+		/// <summary>Creates a literal specialized to hold the provided value.</summary>
+		/// <remarks>Unlike other overloads, this one does not have special logic for <see cref="ILiteralValueProvider"/>.</remarks>
+		public LNode Literal<V>(V value, int startIndex = -1, int endIndex = -1, NodeStyle style = 0)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return LNode.Literal(value, new SourceRange(_file, startIndex, endIndex - startIndex), style);
 		}
+		/// <summary>Creates a literal to hold the provided value or <see cref="ILiteralValueProvider"/>.</summary>
+		public LNode Literal(object value, int startIndex = -1, int endIndex = -1, NodeStyle style = 0)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return NewLiteral(value, new SourceRange(_file, startIndex, endIndex - startIndex), style);
+		}
+		/// <summary>Creates a literal from the information in the porovided <see cref="Token"/>,
+		/// with special logic when <see cref="Token.Value"/> is <see cref="ILiteralValueProvider"/>.</summary>
 		public LNode Literal(Token t)
 		{
-			return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(t.Value), new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+			var range = new SourceRange(_file, t.StartIndex, t.Length);
+			return NewLiteral(t.Value, range, t.Style);
 		}
+		
+		Dictionary<RuntimeTypeHandle, Func<object, SourceRange, NodeStyle, LiteralNode>> _literalFactories = new Dictionary<RuntimeTypeHandle, Func<object, SourceRange, NodeStyle, LiteralNode>>();
+		LiteralNode NewLiteral(object value, SourceRange range, NodeStyle style)
+		{
+			if (value == null)
+			{
+				return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(null), range, style);
+			}
+			else if (value is ILiteralValueProvider)
+			{
+				var type = value.GetType().TypeHandle;
+				if (!_literalFactories.TryGetValue(type, out var factory))
+				{
+					var method = G.GetGenericMethodDefinition(() => NewLiteralFromProvider<LiteralValue>(null, default(SourceRange), 0))
+								  .MakeGenericMethod(value.GetType());
+					factory = method.CreateDelegate<Func<object, SourceRange, NodeStyle, LiteralNode>>();
+				}
+				return factory(value, range, style);
+			}
+			else
+				return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), range, style);
+		}
+		static LiteralNode NewLiteralFromProvider<P>(object value, SourceRange range, NodeStyle style) where P : ILiteralValueProvider => new StdLiteralNode<P>((P)value, range, style);
 
 		/// <summary>Creates a trivia node named <c>"%" + suffix</c> with the 
 		/// specified Value attached.</summary>

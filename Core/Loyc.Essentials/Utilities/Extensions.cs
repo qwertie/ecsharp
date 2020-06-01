@@ -43,6 +43,12 @@ namespace Loyc
 		}
 	}
 
+	public static class ReflectionExt
+	{
+		public static D CreateDelegate<D>(this MethodInfo method) => (D) (object) method.CreateDelegate(typeof(D));
+		public static D CreateDelegate<D>(this MethodInfo method, object target) => (D) (object) method.CreateDelegate(typeof(D), target);
+	}
+
 	/// <summary>Extension methods for exceptions.</summary>
 	public static class ExceptionExt
 	{
