@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,11 +12,7 @@ namespace Loyc.Collections
 	/// <remarks>This design assumes that the values in the pool know their own 
 	/// key, so it implements IEnumerable{TValue} rather than 
 	/// IEnumerable{KeyValuePair{TKey,TValue}}.</remarks>
-	#if DotNet2 || DotNet3
-	public interface IAutoCreatePool<TKey, TValue> : IReadOnlyCollection<TValue>
-	#else
 	public interface IAutoCreatePool<in TKey, out TValue> : IReadOnlyCollection<TValue>
-	#endif
 	{
 		/// <summary>Gets or creates the value associated with the specified key.</summary>
 		/// <exception cref="ArgumentOutOfRangeException">The key was not valid

@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Loyc.Collections;
 
@@ -78,9 +79,7 @@ namespace Loyc.Syntax.Lexing
 		public new int InputPosition
 		{
 			get { return base.InputPosition; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			protected set { base.InputPosition = value; }
 		}
 
@@ -92,9 +91,7 @@ namespace Loyc.Syntax.Lexing
 		public new int LA(int i) { return base.LA(i); }
 
 		/// <inheritdoc/>
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public new void Skip() { base.Skip(); }
 		/// <inheritdoc/>
 		public new int LineStartAt { get { return base.LineStartAt; } }
@@ -107,9 +104,7 @@ namespace Loyc.Syntax.Lexing
 
 		public new int MatchAny() { return base.MatchAny(); }
 		public new int Match(HashSet<int> set) { return base.Match(set); }
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public new int Match(int a) { return base.Match(a); }
 		public new int Match(int a, int b) { return base.Match(a, b); }
 		public new int Match(int a, int b, int c) { return base.Match(a, b, c); }
@@ -200,7 +195,7 @@ namespace Loyc.Syntax.Lexing
 	public class LexerSourceFile<CharSource> : SourceFile<CharSource>, ISourceFile
 		where CharSource : ICharSource
 	{
-		public LexerSourceFile(CharSource source, SourcePos startingPos = null) : base(source, startingPos) { }
+		public LexerSourceFile(CharSource source, ILineColumnFile startingPos = null) : base(source, startingPos) { }
 		public LexerSourceFile(CharSource source, string fileName) : base(source, fileName) { }
 
 		/// <summary>Allows a lexer to record the index of the character after 

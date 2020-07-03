@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -130,7 +130,7 @@ namespace Loyc.LLParserGenerator
 		/// the rule name.</summary>
 		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public LNode CreateMethod(VList<LNode> methodBody)
+		public LNode CreateMethod(LNodeList methodBody)
 		{
 			LNode method = GetMethodSignature();
 			var parts = method.Args.ToWList();
@@ -140,7 +140,7 @@ namespace Loyc.LLParserGenerator
 			if (IsRecognizer)
 				methodBody.Add(F.Call(S.Return, F.True));
 			parts.Add(F.OnNewLine(F.Braces(methodBody)));
-			return method.WithArgs(parts.ToVList());
+			return method.WithArgs(parts.ToLNodeList());
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

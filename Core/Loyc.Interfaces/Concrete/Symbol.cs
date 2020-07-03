@@ -122,11 +122,11 @@ namespace Loyc
 
 		#endregion
 
-		public static explicit operator Symbol(string s) { return GSymbol.Get(s); }
-		public static explicit operator string(Symbol s) { return s.Name; }
+		public static explicit operator Symbol(string s) => s == null ? null : GSymbol.Get(s);
+		public static explicit operator string(Symbol s) => s.Name;
 		// TODO: switch to UString dictionary to avoid the need to call ToString().
-		public static explicit operator Symbol(UString s) { return GSymbol.Get(s.ToString()); }
-		public static explicit operator UString(Symbol s) { return s.Name; }
+		public static explicit operator Symbol(UString s) => GSymbol.Get(s);
+		public static explicit operator UString(Symbol s) => new UString(s.Name);
 		
 		/// <summary>Alias for <see cref="GSymbol.Get(string)"/>. This function was 
 		/// introduced to match the equivalent ES6 API <c>Symbol.for("string")</c></summary>
@@ -142,8 +142,8 @@ namespace Loyc
 	/// </remarks>
 	public class GSymbol
 	{
-		static public Symbol Get(string name) { return Pool.Get(name); }
-		static public Symbol GetIfExists(string name) { return Pool.GetIfExists(name); }
+		static public Symbol Get(UString name) => Pool.Get(name);
+		static public Symbol GetIfExists(UString name) => Pool.GetIfExists(name);
 		static public Symbol GetById(int id) { return Pool.GetById(id); }
 
 		static public readonly Symbol Empty;
@@ -177,11 +177,11 @@ namespace Loyc
 	/// Name is "") has an Id of 0, but in a private pool, "" is not treated 
 	/// differently than any other symbol so a new ID will be allocated for it.
 	/// </remarks>
-	public class SymbolPool : IAutoCreatePool<string, Symbol>, IReadOnlyCollection<Symbol>
+	public class SymbolPool : IAutoCreatePool<UString, Symbol>, IReadOnlyCollection<Symbol>
 	{
 		protected internal IDictionary<int, Symbol> _idMap; // created on-demand
-		protected internal IDictionary<string, Symbol> _map;
-		protected internal WeakValueDictionary<string, Symbol> _weakMap; // same as _map, or null
+		protected internal IDictionary<UString, Symbol> _map;
+		protected internal WeakValueDictionary<UString, Symbol> _weakMap; // same as _map, or null
 		protected internal int _nextId;
 		protected readonly int _poolId;
 		protected static int _nextPoolId = 1;
@@ -206,9 +206,9 @@ namespace Loyc
 		protected internal SymbolPool(int firstID, bool useStrongRefs, int poolId)
 		{
 			if (useStrongRefs)
-				_map = new Dictionary<string, Symbol>();
+				_map = new Dictionary<UString, Symbol>();
 			else
-				_map = _weakMap = new WeakValueDictionary<string,Symbol>();
+				_map = _weakMap = new WeakValueDictionary<UString, Symbol>();
 			_nextId = firstID;
 			_poolId = poolId;
 		}
@@ -228,15 +228,14 @@ namespace Loyc
 		/// generally doesn't matter, as Symbols are compared by reference, not by 
 		/// ID.
 		/// </remarks>
-		public Symbol Get(string name)
+		public Symbol Get(UString name)
 		{
-			Symbol result;
-			Get(name, out result);
+			Get(name, out Symbol result);
 			return result;
 		}
-		
+
 		/// <inheritdoc cref="Get(string)"/>
-		public Symbol this[string name] { get { return Get(name); } }
+		public Symbol this[UString name] { get { return Get(name); } }
 		
 		/// <summary>Creates a Symbol in this pool with a specific ID, or verifies 
 		/// that the requested Name-Id pair is present in the pool.</summary>
@@ -248,7 +247,7 @@ namespace Loyc
 		/// this exception if a Symbol with Id==1 is not named "a", or a Symbol with
 		/// Name=="a" does not have Id==1.</exception>
 		/// <returns>A symbol with the requested Name and Id.</returns>
-		public Symbol Get(string name, int id)
+		public Symbol Get(UString name, int id)
 		{
 			Symbol result;
 			Get(name, id, out result);
@@ -264,9 +263,9 @@ namespace Loyc
 		}
 
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
-		protected virtual void Get(string name, out Symbol sym)
+		protected virtual void Get(UString name, out Symbol sym)
 		{
-			if ((sym = GetIfExists(name)) == null && name != null)
+			if ((sym = GetIfExists(name)) == null)
 				lock (_map) {
 					if ((sym = GetIfExists(name)) != null)
 						// It is possible for another thread to have added 'name' to
@@ -278,24 +277,22 @@ namespace Loyc
 						while (_idMap.ContainsKey(_nextId))
 							_nextId++;
 
-					sym = AddSymbol(NewSymbol(_nextId, name));
+					sym = AddSymbol(NewSymbol(_nextId, name.ToString()));
 					_nextId++;
 				}
 		}
 
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
-		protected virtual void Get(string name, int id, out Symbol sym)
+		protected virtual void Get(UString name, int id, out Symbol sym)
 		{
-			if (name == null)
-				throw new ArgumentNullException("name");
-			else if ((sym = GetIfExists(name)) != null) {
+			if ((sym = GetIfExists(name)) != null) {
 				if (sym.Id != id)
 					throw new ArgumentException("Symbol already exists with a different ID than requested.");
 			} else lock (_map) {
 				AutoCreateIdMap();
 				if (_idMap.ContainsKey(id))
 					throw new ArgumentException("ID is already assigned to a different name than requested.");
-				sym = AddSymbol(NewSymbol(id, name));
+				sym = AddSymbol(NewSymbol(id, name.ToString()));
 			}
 		}
 		private void AutoCreateIdMap()
@@ -321,12 +318,10 @@ namespace Loyc
 		/// <param name="name">Symbol Name to find</param>
 		/// <returns>Returns the existing Symbol if found; returns null if the name 
 		/// was not found, or if the name itself was null.</returns>
-		public Symbol GetIfExists(string name)
+		public Symbol GetIfExists(UString name)
 		{
 			Symbol sym;
-			if (name == null)
-				return null;
-			else lock (_map) {
+			lock (_map) {
 				_map.TryGetValue(name, out sym);
 				
 				if (_weakMap != null)
@@ -342,6 +337,7 @@ namespace Loyc
 		/// otherwise, creates a Symbol in this pool.</summary>
 		/// <param name="name">Name of a symbol to get or create</param>
 		/// <returns>A symbol with the requested name</returns>
+		[Obsolete("I don't think this is being used. Let me know if I'm mistaken. qwertie256@gmail.com")]
 		public Symbol GetGlobalOrCreateHere(string name)
 		{
 			Symbol sym = GSymbol.Pool.GetIfExists(name);
@@ -436,11 +432,11 @@ namespace Loyc
 		{
 			_factory = factory;
 		}
-		public new SymbolE Get(string name)
+		public new SymbolE Get(UString name)
 		{
 			return (SymbolE)base.Get(name);
 		}
-		public new SymbolE Get(string name, int id)
+		public new SymbolE Get(UString name, int id)
 		{
 			return (SymbolE)base.Get(name, id);
 		}
@@ -448,7 +444,7 @@ namespace Loyc
 		{
  			return _factory(new Symbol(id, name, this));
 		}
-		public new SymbolE GetIfExists(string name)
+		public new SymbolE GetIfExists(UString name)
 		{
 			return (SymbolE)base.GetIfExists(name);
 		}

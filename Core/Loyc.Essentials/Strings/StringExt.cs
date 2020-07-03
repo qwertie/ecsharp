@@ -194,9 +194,6 @@ namespace Loyc
 			if (!containsNames)
 				return format;
 
-			if (((args.Length - highestIndex) & 1) == 0)
-				highestIndex++; // so that the number of args left is even
-
 			StringBuilder sb = new StringBuilder(format);
 			int correction = 0;
 			for (int i = 0; i < sb.Length - 1; i++)

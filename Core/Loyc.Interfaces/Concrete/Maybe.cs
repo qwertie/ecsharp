@@ -11,12 +11,29 @@ namespace Loyc
 		/// <summary>Returns <c>new Maybe&lt;T>(value)</c>. (exists for type inference)</summary>
 		public static Maybe<T> Value<T>(T value) { return new Maybe<T>(value); }
 
+		/// <summary>Converts <see cref="Maybe{T}"/> to a <see cref="Nullable{T}"/> having the same HasValue property.</summary>
 		public static T? AsNullable<T>(this Maybe<T> val) where T : struct 
 			{ return val.HasValue ? val.Value : (T?)null; }
+		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this Nullable<T> val) where T : struct 
 			{ return val.HasValue ? val.Value : Maybe<T>.NoValue; }
+		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this T val) where T : class
 			{ return val != null ? val : Maybe<T>.NoValue; }
+
+		/// <summary>Converts <see cref="IMaybe{T}"/> to T, returning a default value if <see cref="HasValue"/> is false.</summary>
+		/// <remarks>This is like the <c>??</c> operator of <c>T?</c>.</remarks>
+		public static T Or<M, T>(this M maybe, T defaultValue) where M : IMaybe<T> => maybe.HasValue ? maybe.Value : defaultValue;
+		/// <summary>Converts <see cref="IMaybe{T}"/> to T, calling a factory function if <see cref="HasValue"/> is false.</summary>
+		/// <remarks>This is like the <c>??</c> operator of <c>T?</c>.</remarks>
+		public static T Or<M, T>(this M maybe, Func<T> getDefaultValue) where M : IMaybe<T> => maybe.HasValue ? maybe.Value : getDefaultValue();
+
+		/// <summary>Runs a function if and only if <see cref="IMaybe{T}.HasValue"/>.</summary>
+		public static void Then<T>(this IMaybe<T> maybe, Action<T> then) { if (maybe.HasValue) then(maybe.Value); }
+		/// <summary>Runs one of two functions depending on whether <see cref="IMaybe{T}.HasValue"/>.</summary>
+		public static R Then<T, R>(this IMaybe<T> maybe, Func<T, R> then, Func<R> @else) => maybe.HasValue ? then(maybe.Value) : @else();
+		/// <summary>Runs a function if and only if <see cref="IMaybe{T}.HasValue"/>, returning a default value otherwise.</summary>
+		public static R Then<T, R>(this IMaybe<T> maybe, Func<T, R> then, R defaultValue) => maybe.HasValue ? then(maybe.Value) : defaultValue;
 	}
 
 	/// <summary>Same as <see cref="Nullable{T}"/> except that it behaves like a
@@ -61,15 +78,12 @@ namespace Loyc
 		public static implicit operator Maybe<T>(T value) { return new Maybe<T>(value); }
 		public static implicit operator Maybe<T>(NoValue _) { return new Maybe<T>(); }
 
+		// Although C# can now infer type parameters on an extension method like 
+		//    public static T Or<M,T>(this M m, T defVal) where M: IMaybe<T> => m.HasValue ? m.Value : defVal;
+		// This fails if M is Maybe<object> and T is string, so the following is also defined:
+
 		/// <summary>Converts <see cref="Maybe{T}"/> to T, returning a default value if <see cref="HasValue"/> is false.</summary>
 		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
 		public T Or(T defaultValue) => _hasValue ? _value : defaultValue;
-		/// <summary>Converts <see cref="Maybe{T}"/> to T, calling a factory function if <see cref="HasValue"/> is false.</summary>
-		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
-		public T Or(Func<T> getDefaultValue) => _hasValue ? _value : getDefaultValue();
-
-		public void Then(Action<T> then) { if (_hasValue) then(_value); }
-		public R Then<R>(Func<T, R> then, Func<R> @else)  { return _hasValue ? then(_value) : @else(); }
-		public R Then<R>(Func<T, R> then, R defaultValue) { return _hasValue ? then(_value) : defaultValue; }
 	}
 }

@@ -24,9 +24,13 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 1, "x >> a + 1;",   F.Call(S.Add, F.Call(S.Shr, x, a), one));
 			Test(Mode.Expr, 1, "x << 1 - 1",    F.Call(S.Sub, F.Call(S.Shl, x, one), one));
 			Test(Mode.Expr, 1, "1 + x << a;",   F.Call(S.Add, one, F.Call(S.Shl, x, a)));
-			Test(Mode.Expr, 1, "a MOD b * c",   F.Call("'MOD", a, F.Call(S.Mul, b, c)));
-			Test(Mode.Expr, 1, "a MOD b - c",   F.Call(S.Sub, F.Call("'MOD", a, b), c));
-			Test(Mode.Expr, 1, "a + b MOD c",   F.Call(S.Add, a, F.Call("'MOD", b, c)));
+			// Uppercase word ops: immiscibility was cancelled for issue #106 backquoted operators.
+			// The only remaining error is mixing shift (>> <<) with UpperCaseWords.
+			Test(Mode.Expr, 0, "a MOD b * c",   F.Call("'MOD", a, F.Call(S.Mul, b, c)));
+			Test(Mode.Expr, 0, "a MOD b - c",   F.Call(S.Sub, F.Call("'MOD", a, b), c));
+			Test(Mode.Expr, 0, "a + b MOD c",   F.Call(S.Add, a, F.Call("'MOD", b, c)));
+			Test(Mode.Expr, 1, "a >> b REM c",  F.Call("'REM", F.Call(S.Shr, a, b), c));
+			Test(Mode.Expr, 1, "a REM b << c",  F.Call(S.Shl, F.Call("'REM", a, b), c));
 		}
 
 		[Test]
@@ -69,7 +73,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void OtherParseErrors()
 		{
-			Test(Mode.Stmt, 1, "u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"u")));
+			Test(Mode.Stmt, 1, "_u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"_u")));
 			Test(Mode.Stmt, 1, "Foo(", F.Call(Foo));
 			Test(Mode.Stmt, 1, "{Foo", F.Braces(Foo));
 			Test(Mode.Stmt, 1, "{Foo(x", F.Braces(F.Call(Foo, x)));
@@ -85,6 +89,8 @@ namespace Loyc.Syntax.Les
 			// semicolons are allowed after args
 			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
 			Test(Mode.Stmt, 0, "Foo(a; b;)", F.Call(Foo, a, b));
+
+			Test(Mode.Expr, 1, ".`Foo`", F.Dot(F.Missing, Foo));
 		}
 
 		[Test]
@@ -95,18 +101,70 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "a -2 ** b", F.Call(S.Sub, a, F.Call(S.Exp, two, b)));
 		}
 
-		protected override MessageHolder Test(Mode mode, int errorsExpected, string text, params LNode[] expected)
+		[Test]
+		public void LiteralStylesArePreserved()
+		{
+			var les3 = Les3LanguageService.Value;
+			Assert.AreEqual(les3.Parse("0x3333").Single().BaseStyle, NodeStyle.HexLiteral);
+			Assert.AreEqual(les3.Parse("0b1011").Single().BaseStyle, NodeStyle.BinaryLiteral);
+			Assert.AreEqual(les3.Parse("123456").Single().BaseStyle, NodeStyle.Default);
+			Assert.AreEqual(les3.Parse("\"!!\"").Single().BaseStyle, NodeStyle.Default);
+			Assert.AreEqual(les3.Parse("'''!'''").Single().BaseStyle, NodeStyle.TQStringLiteral);
+			Assert.AreEqual(les3.Parse("\"\"\"!\"\"\"").Single().BaseStyle, NodeStyle.TDQStringLiteral);
+		}
+
+		[Test]
+		public void LineContinuators()
+		{
+			// issue 86: https://github.com/qwertie/ecsharp/issues/86
+			Test(Mode.Stmt, 0, "a =\n|b",  F.Call(S.Assign, a, OnNewLine(b)));
+			Test(Mode.Stmt, 0, "b\n| = c", F.Call(OnNewLine(F.Id(S.Assign)), b, c));
+			Test(Mode.Stmt, 0, "b\n|= c",  F.Call(OnNewLine(F.Id(S.Assign)), b, c));
+			Test(Mode.Stmt, 0, "Foo(\n| a, b)", F.Call(Foo, OnNewLine(a), b));
+			Test(Mode.Stmt, 0, "{\n  MoveTo(x, a)\n  | .LineTo(x, b)\n}", F.Braces(
+				F.Call(F.Call(OnNewLine(F.Id(S.Dot)), F.Call("MoveTo", x, a), F.Id("LineTo")), x, b)));
+			var stmt = OnNewLine(F.Call(
+				S.If, NewlineAfter(F.Call(S.GT, a, b)),
+					OnNewLine(NewlineAfter(F.Call(
+						F.Id(S.Braces).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " comment")),
+						F.Call(_("aIsBigger"))))),
+					OnNewLine(F.Call("#else", 
+						F.Braces(F.Call(Foo))))));
+			Test(Mode.Stmt, 0, @"
+				.if a > b
+				|
+				{   // comment
+					aIsBigger()
+				}
+				|
+				else { Foo() }",
+				stmt);
+		}
+
+		[Test(Fails = "TODO")]
+		public void TokenLists()
+		{
+		}
+
+		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions printerOptions, string text, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = Les3LanguageService.Value.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
+			var les3 = Les3LanguageService.Value;
+			var results = les3.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
 				messages.WriteListTo(ConsoleMessageSink.Value);
 				AreEqual(errorsExpected, messages.List.Count, 
 					"Error count was {0} for «{1}»", messages.List.Count, text); // fail
 			}
-			for (int i = 0; i < expected.Length; i++)
-				AreEqual(expected[i], results.TryGet(i, null));
+			for (int i = 0; i < expected.Length; i++) {
+				LNode expect = expected[i], actual = results.TryGet(i, null);
+				if (!expect.Equals(actual)) {
+					var options = new Les3PrinterOptions { PrintTriviaExplicitly = true, IndentString = "  " };
+					AreEqual(les3.Print(expect, null, null, options), les3.Print(actual, null, null, options));
+					AreEqual(expect, actual);
+				}
+			}
 			AreEqual(expected.Length, results.Count, "Got more result nodes than expected");
 			return messages;
 		}

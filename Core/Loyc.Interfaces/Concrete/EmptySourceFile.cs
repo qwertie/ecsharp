@@ -12,8 +12,10 @@ namespace Loyc.Syntax
 	/// </summary>
 	public class EmptySourceFile : ISourceFile
 	{
+		[Obsolete("Please use another instance, such as Synthetic or Unknown")]
 		public static readonly EmptySourceFile Default = new EmptySourceFile("");
-		public static readonly EmptySourceFile Unknown = new EmptySourceFile("Unknown");
+		public static readonly EmptySourceFile Synthetic = new EmptySourceFile("Synthetic".Localized());
+		public static readonly EmptySourceFile Unknown = new EmptySourceFile("Unknown".Localized());
 
 		public EmptySourceFile(string fileName)
 		{
@@ -31,15 +33,16 @@ namespace Loyc.Syntax
 			get { return UString.Empty; }
 		}
 
-		public SourcePos IndexToLine(int index)
+		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
+		public LineColumnFile IndexToLine(int index)
 		{
-			return SourcePos.Nowhere;
+			return LineColumnFile.Nowhere;
 		}
 		public int LineToIndex(int lineNo)
 		{
 			return -1;
 		}
-		public int LineToIndex(LineAndCol pos)
+		public int LineToIndex(ILineAndColumn pos)
 		{
 			return -1;
 		}

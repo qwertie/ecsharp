@@ -17,8 +17,8 @@ namespace Loyc.Ecs.Tests
 			Expr("0.5",      F.Literal(0.5));
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"""hi""",  F.Literal("hi"));
-			Expr("null",     F.Literal(null));
-			Expr("true",     F.Literal(true));
+			Expr("null",     F.Null);
+			Expr("true",     F.True);
 		}
 
 		[Test]
@@ -37,9 +37,9 @@ namespace Loyc.Ecs.Tests
 			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
 			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
 			Expr("0xff",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
-			Expr("null",     F.Literal(null));
-			Expr("false",    F.Literal(false));
-			Expr("true",     F.Literal(true));
+			Expr("null",     F.Null);
+			Expr("false",    F.False);
+			Expr("true",     F.True);
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"'\0'",    F.Literal('\0'));
 			Expr("'\uFEFF'", F.Literal('\uFEFF'));
@@ -91,7 +91,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a++ + a--",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
 			Expr("a ? b : c",           F.Call(S.QuestionMark, a, b, c));
 			Expr("a is Foo ? a as Foo : b", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
-			Expr("a == null ? default : b", F.Call(S.QuestionMark, F.Call(S.Eq, a, F.Literal(null)), _(S.Default), b));
+			Expr("a == null ? default : b", F.Call(S.QuestionMark, F.Call(S.Eq, a, F.Null), _(S.Default), b));
 		}
 
 		[Test]
@@ -313,7 +313,7 @@ namespace Loyc.Ecs.Tests
 			//TODO
 			//Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
 
-			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
+			var amp_b_c = F.Call(S._AddressOf, F.Call(S.RightArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
 			Stmt("fixed (int* a = &b->c)\n  Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, ChildStmt(F.Call(Foo, a))));
 			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
@@ -424,15 +424,15 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("Foo? a = 0, b;",        F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero), b));
 			Stmt("Foo? a = b ? c : null;", F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a,
-			                              F.Call(S.QuestionMark, b, c, F.Literal(null)))));
+			                              F.Call(S.QuestionMark, b, c, F.Null))));
 			// Note: To simplify the parser, EC# cannot parse the standalone
 			//       statement "Foo ? a = 0 : b;" - you must use parentheses.
 			Stmt("(Foo? a = 0, b);",      F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero)), b));
 			Stmt("(Foo ? a = 0 : b);",    F.InParens(F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, zero), b)));
 			Stmt("(Foo? a = b ? c : null);", F.InParens(
-				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))))));
+				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Null)))));
 			Stmt("(Foo ? a = b ? c : null : 0);", F.InParens(
-				F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))), zero)));
+				F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Null)), zero)));
 		}
 
 		[Test]
@@ -538,9 +538,13 @@ namespace Loyc.Ecs.Tests
 		{
 			LNode cast = _(S.Cast), operator_cast = Attr(trivia_operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
+			
 			LNode stmt = Attr(@static, F.Fn(F.Bool, Attr(trivia_operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
-			Stmt("static bool operator==(T a, T b) { }", stmt);
 			Expr("static #fn(bool, operator==, #([] T a, [] T b), { })", stmt);
+			Stmt("static bool operator==(T a, T b) { }", stmt);
+			stmt = stmt.WithArgChanged(1, _(S.Eq)); // in this context it should still print as an operator
+			Stmt("static bool operator==(T a, T b) { }", stmt, Mode.PrinterTest);
+			
 			stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a) { }", stmt);
 			Expr("static implicit #fn(T, operator`'cast`, #([] Foo a), { })", stmt);
@@ -824,7 +828,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("using x = (Foo, Foo);", UsingAlias(F.Call(S.Assign, x, F.Tuple(Foo, Foo))));
 			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(Foo, a), F.Var(Foo, b))));
 			Stmt("using x = (Foo a, Foo b);", stmt);
-			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), a), F.Var(F.Of(_(S.QuestionMark), Foo), b))));
+			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), a), F.Var(F.Of(_(S.Array), Foo), b))));
 			Stmt("using x = (Foo? a, Foo[] b);", stmt);
 		}
 
@@ -877,6 +881,18 @@ namespace Loyc.Ecs.Tests
 				"  public List<Foo> x;\n" +
 				"  public Foo(List < Foo > x) => this.x = x;\n" +
 				"}", stmt);
+		}
+
+		[Test]
+		public void CSharp8RangeOps()
+		{
+			Expr("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Expr("a..b * ..c", F.Call(S.Mul, F.Call(S.DotDot, a, b), F.Call(S.DotDot, c)));
+			Expr("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Expr("a..*b", F.Call(S.DotDot, a, F.Call(S._Dereference, b)));
+			// TODO: .. suffix operator
+			//Expr("a..", F.Call(S.DotDot, a));
+			//Expr("Foo[x..]", F.Call(S.IndexBracks, Foo, F.Call(S.DotDot, x)));
 		}
 
 		[Test]

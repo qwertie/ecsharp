@@ -125,6 +125,7 @@ namespace LeMP
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.Les3.To.CSharp.Macros));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.TestMacros));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.A.AliasTest));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.B.AliasTest));
@@ -134,7 +135,7 @@ namespace LeMP
 		}
 
 		public StringBuilder Output;
-		public VList<LNode> Results;
+		public LNodeList Results;
 
 		protected override void WriteOutput(InputOutput io)
 		{

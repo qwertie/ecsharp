@@ -378,13 +378,10 @@ namespace Loyc.Collections
 		/// <summary>Upcasts a sequence.</summary>
 		/// <remarks>In .NET 4+ this is a no-op that just returns <c>list</c>,
 		/// but in .NET 3.5 that's illegal, so this method creates an adapter.</remarks>
+		[Obsolete(".NET 4+ can upcast by itself without this method")]
 		public static IEnumerable<Base> Upcast<Base, Derived>(this IEnumerable<Derived> list) where Derived : class, Base
 		{
-			#if DotNet2 || DotNet3
-			return list.Select<Derived, Base>(o => o);
-			#else
 			return list;
-			#endif
 		}
 
 		/// <summary>Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})</summary>

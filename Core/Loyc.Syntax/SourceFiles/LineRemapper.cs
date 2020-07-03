@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,31 +45,42 @@ namespace Loyc.Syntax
 		{
 			return _obj.LineToIndex(lineNo);
 		}
-		public int LineToIndex(LineAndCol pos)
+		public int LineToIndex(ILineAndColumn pos)
 		{
-			if (pos is SourcePosAndIndex)
-				return (pos as SourcePosAndIndex).OriginalIndex;
+			if (pos is LineColumnFileAndIndex)
+				return (pos as LineColumnFileAndIndex).OriginalIndex;
 			return _obj.LineToIndex(pos);
 		}
-		public SourcePos IndexToLine(int index)
+		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
+		public ILineColumnFile IndexToLine(int index)
 		{
-			SourcePos pos = _obj.IndexToLine(index);
+			var pos = _obj.IndexToLine(index);
 			int line = pos.Line;
 			string fn = pos.FileName;
 			if (Remaps.Remap(ref line, ref fn))
-				return new SourcePosAndIndex(index, fn ?? FileName, line, pos.PosInLine);
+				return new LineColumnFileAndIndex(line, pos.Column, fn ?? FileName, index);
 			return pos;
 		}
 	}
 
-	/// <summary>A <see cref="SourcePos"/> that also includes the original index 
+	/// <summary>Please use the new name of this class, LineColumnFile.
+	/// This is a <see cref="LineColumnFile"/> that also includes the original index 
 	/// from which the Line and PosInLine were derived.</summary>
 	/// <remarks>Returned by <see cref="SourceFileWithLineRemaps.IndexToLine"/>.</remarks>
-	public class SourcePosAndIndex : SourcePos
+	[Obsolete("Please use the new name of this class: LineColumnFileAndIndex")]
+	public class SourcePosAndIndex : LineColumnFile
 	{
-		public SourcePosAndIndex(int originalIndex, string FileName, int Line, int PosInLine)
-			: base(FileName, Line, PosInLine) { OriginalIndex = originalIndex; }
-		public int OriginalIndex { get; private set; }
+		public SourcePosAndIndex(int originalIndex, string fileName, int line, int column)
+			: base(fileName, line, column) { OriginalIndex = originalIndex; }
+		public int OriginalIndex { get; }
+	}
+
+	#pragma warning disable 618 // [Obsolete] warning
+	/// <summary>This is a tuple of a FileName, Line, Column, and OriginalIndex.</summary>
+	public class LineColumnFileAndIndex : SourcePosAndIndex
+	{
+		public LineColumnFileAndIndex(int line, int column, string fileName, int originalIndex)
+			: base(originalIndex, fileName, line, column) { }
 	}
 
 	/// <summary>A small helper class for languages such as C# and C++ that permit 

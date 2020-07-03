@@ -5,6 +5,7 @@ using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.Math;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Collections
 {
@@ -102,43 +103,12 @@ namespace Loyc.Collections
 				array[arrayIndex++] = item;
 		}
 
-		public static T TryGet<T>(this T[] list, int index, T defaultValue)
-		{
-			if ((uint)index < (uint)list.Length)
-				return list[index];
-			return defaultValue;
-		}
-		public static Maybe<T> TryGet<T>(this T[] list, int index)
-		{
-			if ((uint)index < (uint)list.Length)
-				return list[index];
-			return Maybe<T>.NoValue;
-		}
-		public static T TryGet<T>(this List<T> list, int index, T defaultValue)
-		{
-			if ((uint)index < (uint)list.Count)
-				return list[index];
-			return defaultValue;
-		}
-		public static Maybe<T> TryGet<T>(this List<T> list, int index)
-		{
-			if ((uint)index < (uint)list.Count)
-				return list[index];
-			return Maybe<T>.NoValue;
-		}
-
-		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue)
-		{
-			return ((IListSource<T>)list).TryGet(index, defaultValue);
-		}
-		public static Maybe<T> TryGet<T>(this IListAndListSource<T> list, int index)
-		{
-			return ((IListSource<T>)list).TryGet(index);
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static T TryGet<T>(this IReadOnlyList<T> list, int index, T defaultValue)
 		{
 			return (uint)index < (uint)list.Count ? list[index] : defaultValue;
 		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Maybe<T> TryGet<T>(this IReadOnlyList<T> list, int index)
 		{
 			return (uint)index < (uint)list.Count ? list[index] : Maybe<T>.NoValue;
@@ -695,6 +665,14 @@ namespace Loyc.Collections.MutableListExtensionMethods
 			if ((uint)index < (uint)list.Count)
 				return list[index];
 			return Maybe<T>.NoValue;
+		}
+		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue)
+		{
+			return ListExt.TryGet(list, index, defaultValue);
+		}
+		public static Maybe<T> TryGet<T>(this IListAndListSource<T> list, int index)
+		{
+			return ListExt.TryGet(list, index);
 		}
 
 		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>

@@ -8,21 +8,20 @@ using Loyc.Collections;
 namespace Loyc.Syntax
 {
 	/// <summary>Contains <see cref="IndexToLine"/> method.</summary>
-	/// <seealso cref="IIndexPositionMapper"/>
-	public interface IIndexToLine
+	/// <remarks>
+	/// The FileName property gets the name of the file on which results returned by 
+	/// <see cref="IndexToLine(int)"/> are based. It is not guaranteed that <i>all</i> 
+	/// return values from <see cref="IndexToLine(int)"/> use this filename. 
+	/// For example, the file may have mappings to other files; see 
+	/// <see cref="SourceFileWithLineRemaps"/>.</remarks>
+	public interface IIndexToLine : IHasFileName
 	{
 		/// <summary>Returns the position in a source file of the specified index.</summary>
 		/// <remarks>If index is negative, this should return a SourcePos where 
 		/// Line and PosInLine are zero (signifying an unknown location). If index 
 		/// is beyond the end of the file, this should retun the final position in 
 		/// the file.</remarks>
-		SourcePos IndexToLine(int index);
-		
-		/// <summary>Gets the file name used in results returned by <see cref="IndexToLine(int)"/>.</summary>
-		/// <remarks>It is not guaranteed that <i>all</i> return values from 
-		/// <see cref="IndexToLine(int)"/> use this filename; for example, the
-		/// file may vary in mappings from <see cref="SourceFileWithLineRemaps"/>.</remarks>
-		string FileName { get; }
+		ILineColumnFile IndexToLine(int index);
 	}
 
 	/// <summary>
@@ -37,6 +36,6 @@ namespace Loyc.Syntax
 		/// an unknown location). If lineNo is larger than the largest line 
 		/// number, this method should return the index of end-of-file.</remarks>
 		int LineToIndex(int lineNo);
-		int LineToIndex(LineAndCol pos);
+		int LineToIndex(ILineAndColumn pos);
 	}
 }

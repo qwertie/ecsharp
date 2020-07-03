@@ -251,13 +251,13 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 		
-		protected VList<LNode> ParseHostCode(Token group, ParsingMode mode)
+		protected LNodeList ParseHostCode(Token group, ParsingMode mode)
 		{
 			var ch = group.Children;
 			if (ch != null) {
-				return new VList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, mode));
+				return LNode.List(_hostLanguage.Parse(ch, ch.File, ErrorSink, mode));
 			} else
-				return VList<LNode>.Empty;
+				return LNode.List();
 		}
 
 		protected LNode ParseHostBraces(Token p, int endIndex, ParsingMode mode)

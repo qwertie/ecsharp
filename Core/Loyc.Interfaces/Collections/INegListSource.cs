@@ -13,11 +13,7 @@ namespace Loyc.Collections
 	/// for (int i = list.Min; i &lt;= list.Max; i++) { ... }
 	/// </code>
 	/// </remarks>
-	#if DotNet2 || DotNet3
-	public interface INegListSource<T> : IReadOnlyCollection<T>
-	#else
-	public interface INegListSource<out T> : IReadOnlyCollection<T>
-	#endif
+	public interface INegListSource<out T> : IReadOnlyCollection<T>, ITryGet<int, T>, IIndexed<int, T>
 	{
 		/// <summary>Returns the minimum valid index in the collection.</summary>
 		int Min { get; }
@@ -25,31 +21,6 @@ namespace Loyc.Collections
 		/// <summary>Returns the maximum valid index in the collection.</summary>
 		/// <remarks>Count must equal Max-Min+1. If Count is 0, Max = Min-1</remarks>
 		int Max { get; }
-
-		/// <summary>Gets the item at the specified index.</summary>
-		/// <param name="index">An index in the range Min to Max.</param>
-		/// <exception cref="ArgumentOutOfRangeException">The index provided is not 
-		/// valid in this list.</exception>
-		/// <returns>The element at the specified index.</returns>
-		T this[int index] { get; }
-
-		/// <summary>Gets the item at the specified index, and does not throw an
-		/// exception on failure.</summary>
-		/// <param name="index">An index in the range Min to Max.</param>
-		/// <param name="fail">A flag that is set on failure. To improve
-		/// performance slightly, this flag is not cleared on success.</param>
-		/// <returns>The element at the specified index, or default(T) if the index
-		/// is not valid.</returns>
-		/// <remarks>In my original design, the caller could provide a value to 
-		/// return on failure, but this would not allow T to be marked as "out" in 
-		/// C# 4. For the same reason, we cannot have a ref/out T parameter.
-		/// Instead, the following extension methods are provided:
-		/// <code>
-		///     bool TryGet(int index, ref T value);
-		///     T TryGet(int, T defaultValue);
-		/// </code>
-		/// </remarks>
-		T TryGet(int index, out bool fail);
 
 		/// <summary>Returns a sub-range of this list.</summary>
 		IRange<T> Slice(int start, int count = int.MaxValue);
@@ -61,6 +32,7 @@ namespace Loyc.Collections
 		/// <param name="index">The index to access. Valid indexes are between Min and Max.</param>
 		/// <param name="value">A variable that will be changed to the retrieved value. If the index is not valid, this variable is left unmodified.</param>
 		/// <returns>True on success, or false if the index was not valid.</returns>
+		[Obsolete("Please use another overload (TryGetExt.TryGet()); this one will be deleted eventually")]
 		public static bool TryGet<T>(this INegListSource<T> list, int index, ref T value)
 		{
 			bool fail;
@@ -70,34 +42,7 @@ namespace Loyc.Collections
 			value = result;
 			return true;
 		}
-		
-		/// <summary>Tries to get a value from the list at the specified index.</summary>
-		/// <param name="index">The index to access. Valid indexes are between Min and Max.</param>
-		/// <param name="defaultValue">A value to return if the index is not valid.</param>
-		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-		public static T TryGet<T>(this INegListSource<T> list, int index, T defaultValue)
-		{
-			bool fail;
-			T result = list.TryGet(index, out fail);
-			if (fail)
-				return defaultValue;
-			else
-				return result;
-		}
 
-		/// <summary>Tries to get a value from the list at the specified index.</summary>
-		/// <param name="index">The index to access. Valid indexes are between Min and Max.</param>
-		/// <returns>The retrieved value, or <see cref="Maybe{T}.NoValue"/> if the index provided was not valid.</returns>
-		public static Maybe<T> TryGet<T>(this INegListSource<T> list, int index)
-		{
-			bool fail;
-			T result = list.TryGet(index, out fail);
-			if (fail)
-				return default(Maybe<T>);
-			else
-				return result;
-		}
-		
 		/// <summary>Determines the index of a specific value.</summary>
 		/// <returns>The index of the value, if found, or null if it was not found.</returns>
 		/// <remarks>

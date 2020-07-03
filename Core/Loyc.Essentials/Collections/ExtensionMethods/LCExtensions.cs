@@ -16,8 +16,8 @@ namespace Loyc.Collections
 	public static partial class LCExt
 	{
 		#region Conversion between Loyc and BCL collection interfaces
-		
-		#if false
+
+#if false
 		public static IteratorEnumerator<T> AsEnumerator<T>(this Iterator<T> it)
 		{
 			return new IteratorEnumerator<T>(it);
@@ -67,28 +67,18 @@ namespace Loyc.Collections
 				return listI;
 			return new EnumerableAsIterable<T>(list);
 		}
-		#endif
+#endif
 
+		[Obsolete(".NET 4+ can upcast by itself without this method")]
 		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
-			#if DotNet2 || DotNet3
-			if (source == null)
-				return null;
-			return new UpCastSource<T, TResult>(source);
-			#else
 			return source;
-			#endif
 		}
-		
+
+		[Obsolete(".NET 4+ can upcast by itself without this method")]
 		public static IListSource<TResult> UpCast<T, TResult>(this IListSource<T> source) where T : class, TResult
 		{
-			#if DotNet2 || DotNet3
-			if (source == null)
-				return null;
-			return new UpCastListSource<T, TResult>(source);
-			#else
 			return source;
-			#endif
 		}
 
 		#endregion

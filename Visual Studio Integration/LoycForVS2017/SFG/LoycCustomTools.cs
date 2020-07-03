@@ -189,16 +189,16 @@ namespace Loyc.VisualStudio
 			if (context is LNode) {
 				var range = ((LNode)context).Range;
 				line = range.Start.Line;
-				col = range.Start.PosInLine;
+				col = range.Start.Column;
 			} else if (context is SourcePos) {
 				line = ((SourcePos)context).Line;
-				col = ((SourcePos)context).PosInLine;
+				col = ((SourcePos)context).Column;
 			} else if (context is SourceRange) {
 				line = ((SourceRange)context).Start.Line;
-				col = ((SourceRange)context).Start.PosInLine;
+				col = ((SourceRange)context).Start.Column;
 			} else if (context is Pred) {
 				line = ((Pred)context).Basis.Range.Start.Line;
-				col = ((Pred)context).Basis.Range.Start.PosInLine;
+				col = ((Pred)context).Basis.Range.Start.Column;
 			} else
 				message2 = MessageSink.ContextToString(context) + ": " + message2;
 

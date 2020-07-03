@@ -44,7 +44,7 @@ namespace LeMP
 			return null;
 		}
 		
-		public static LNode unroll(LNode var, VList<LNode> cases, LNode body, IMessageSink sink)
+		public static LNode unroll(LNode var, LNodeList cases, LNode body, IMessageSink sink)
 		{
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -94,7 +94,7 @@ namespace LeMP
 				if (r.C == 0 && !r.A.Name.StartsWith("_"))
 					sink.Write(Severity.Warning, var, "Replacement variable '{0}' was never used", r.A);
 			
-			return body.With(S.Splice, output.ToVList());
+			return body.With(S.Splice, output.ToLNodeList());
 		}
 		class UnrollCtx // helper class for unroll
 		{

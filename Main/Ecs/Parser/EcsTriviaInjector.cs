@@ -49,7 +49,7 @@ namespace Loyc.Ecs.Parser
 		{
 		}
 
-		protected override VList<LNode> GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override LNodeList GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			int? nli;
 			if (loc == TriviaLocation.Trailing && indexInParent == 1 && parent != null && parent.Calls(CodeSymbols.If, 3) && 

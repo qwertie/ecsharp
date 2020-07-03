@@ -95,9 +95,9 @@ namespace Loyc.Syntax
 			SLCommentPrefix = slCommentPrefix;
 		}
 
-		protected override VList<LNode> GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override LNodeList GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			VList<LNode> newAttrs = VList<LNode>.Empty;
+			var newAttrs = LNode.List();
 			int i = 0;
 			if (loc == TriviaLocation.Leading) {
 				// leading trivia

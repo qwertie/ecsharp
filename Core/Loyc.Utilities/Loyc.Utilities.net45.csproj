@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Utilities</BaseIntermediateOutputPath>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET4</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -32,74 +32,28 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkSubset>
     </TargetFrameworkSubset>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <NoWarn>1591, 1573</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug.NET4|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Bin\Debug.NET4\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>1591, 1573</NoWarn>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <OutputPath>..\Bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Bin\Release.NET4\</OutputPath>
-    <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Bin\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
-    <NoWarn>1591, 1573</NoWarn>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <OutputPath>..\Bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>..\Bin\Release\Loyc.Utilities.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Bin\Debug.NET3\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;Loyc,DotNet3,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Debug.NET3\Loyc.Utilities.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <OutputPath>..\Bin\Release.NET3\</OutputPath>
-    <DefineConstants>TRACE;Loyc,DotNet3,CSharp4</DefineConstants>
-    <DocumentationFile>..\Bin\Release.NET3\Loyc.Utilities.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>1591, 1573</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Release.NET3\Loyc.Utilities.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -108,7 +62,6 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,DotNet45,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -122,9 +75,8 @@
     </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;Loyc,DotNet4,DotNet45,CSharp4</DefineConstants>
-    <DocumentationFile>..\Bin\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
+    <DocumentationFile>..\Bin\Release.NET45\Loyc.Utilities.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591, 1573</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -141,11 +93,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-    <Reference Include="Theraot.Core">
-      <HintPath>..\Lib\DotNet35\Theraot.Core.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyVersion.cs">

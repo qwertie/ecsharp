@@ -89,7 +89,7 @@ namespace LeMP
 		/// <param name="replacementCount">Number of replacements that occurred.</param>
 		/// <returns>The result of applying the replacements.</returns>
 		/// <remarks><see cref="LNodeExt.MatchesPattern"/> is used for matching.</remarks>
-		public static VList<LNode> Replace(VList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
+		public static LNodeList Replace(LNodeList stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			// This list is used to support simple token replacement in TokenTrees
 			_tokenTreeRepls = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -111,7 +111,7 @@ namespace LeMP
 		public static LNode Replace(LNode stmt, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			CheckParam.IsNotNull("stmt", stmt);
-			return Replace(new VList<LNode>(stmt), patterns, out replacementCount)[0];
+			return Replace(new LNodeList(stmt), patterns, out replacementCount)[0];
 		}
 
 		static LNode TryReplaceHere(LNode node, Pair<LNode, LNode>[] patterns, MMap<Symbol, LNode> temp)
@@ -135,8 +135,7 @@ namespace LeMP
 		}
 		static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
 		{
-			VList<LNode> attrs;
-			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out attrs)) {
+			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out LNodeList attrs)) {
 				foreach (var pair in captures) {
 					var input = pair.Value.AsList(S.Splice);
 					int c;
@@ -182,32 +181,52 @@ namespace LeMP
 		public static LNode define(LNode node, IMacroContext context)
 		{
 			var retType = node.Args[0, LNode.Missing].Name;
-			if (retType != _replace && retType != _define)
+			if (retType != _define)
 				return null;
-			LNode replaceKw, macroName, args, body;
-			if (EcsValidators.MethodDefinitionKind(node, out replaceKw, out macroName, out args, out body, allowDelegate: false) != S.Fn || body == null)
+			LNode defineKw, macroName, args, body;
+			if (EcsValidators.MethodDefinitionKind(node, out defineKw, out macroName, out args, out body, allowDelegate: false) != S.Fn || body == null)
 				return null;
 
 			return RegisterSimpleMacro(node.Attrs, macroName, args.Args, body, context);
 		}
 
-		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...} // LES2 syntax",
+		[LexicalMacro(@"define Name {...} // EC# syntax",
+			"Defines a local macro with the specified name that causes the specified identifier to be replaced with the specified syntax tree." +
+			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. ",
+			"#property", Mode = MacroMode.Passive)]
+		public static LNode defineId(LNode node, IMacroContext context)
+		{
+			if (node.Args[0, LNode.Missing].Name != _define)
+				return null;
+			LNode defineKw, macroId, args, body, initialValue;
+			if (!EcsValidators.IsPropertyDefinition(node, out defineKw, out macroId, out args, out body, out initialValue) 
+				|| body == null || args.ArgCount != 0 || initialValue != null)
+				return null;
+
+			return RegisterSimpleMacro(node.Attrs, macroId, null, body, context);
+		}
+
+		[LexicalMacro(@".define Name($arg1, $arg2, ...) {...} // LES3 syntax",
 			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
 			"The macro's arguments can be patterns; for example `replace Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`.",
 			"define", "#define", Mode = MacroMode.Passive)]
 		public static LNode define_LES(LNode node, IMacroContext context)
 		{
-			if (node.ArgCount == 2 && node.Args[0].IsCall && node.Args[1].Calls(S.Braces))
-				return RegisterSimpleMacro(node.Attrs, node.Args[0].Target, node.Args[0].Args, node.Args[1], context);
+			if (node.ArgCount == 2 && node.Args[1].Calls(S.Braces)) {
+				if (node.Args[0].IsCall)
+					return RegisterSimpleMacro(node.Attrs, node.Args[0].Target, node.Args[0].Args, node.Args[1], context);
+				if (node.Args[0].IsId)
+					return RegisterSimpleMacro(node.Attrs, node.Args[0], null, node.Args[1], context);
+			}
 			return null;
 		}
 
-		private static LNode RegisterSimpleMacro(VList<LNode> attrs, LNode macroName, VList<LNode> args, LNode body, IMacroContext context)
+		private static LNode RegisterSimpleMacro(LNodeList attrs, LNode macroName, LNodeList? args, LNode body, IMacroContext context)
 		{
 			MacroMode mode, modes = 0;
 			var leftoverAttrs = attrs.SmartWhere(attr =>
 			{
-				if (attr.IsId && Loyc.Compatibility.EnumStatic.TryParse(attr.Name.Name, out mode))
+				if (attr.IsId && Enum.TryParse(attr.Name.Name, out mode))
 				{
 					modes |= mode;
 					return false;
@@ -215,35 +234,42 @@ namespace LeMP
 				return true;
 			});
 
-			LNode pattern = F.Call(macroName, args).PlusAttrs(leftoverAttrs);
+			LNode pattern = (args == null ? macroName : F.Call(macroName, args.Value)).PlusAttrs(leftoverAttrs);
 			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice);
 			replacement.Style &= ~NodeStyle.OneLiner;
 
-			WarnAboutMissingDollarSigns(args, context, pattern, replacement);
+			if (args != null)
+				WarnAboutMissingDollarSigns(args.Value, context, pattern, replacement);
 
 			// Note: we could fill out the macro's Syntax and Description with the 
 			// pattern and replacement converted to strings, but it's generally a 
 			// waste of CPU time as those strings are usually not requested.
-			var lma = new LexicalMacroAttribute(
-				string.Concat(macroName.Name, "(", args.Count.ToString(), " args)"), "", macroName.Name.Name);
-			var macroInfo = new MacroInfo(null, lma, (candidate, context2) =>
+			var syntax = macroName.Name.Name;
+			if (args != null)
+				syntax = string.Concat(macroName.Name, "(", args.Value.Count.ToString(), " args)");
+			var lma = new LexicalMacroAttribute(syntax, "", macroName.Name.Name);
+			var macroInfo = new MacroInfo(null, lma, UserDefinedMacro)
+			{
+				// Note: in MatchIdentifier mode we also need Passive because, for example, if we're
+				// registered to match Foo, LeMP also calls our macro for `Foo(x)` and we return null.
+				Mode = args != null ? modes : modes | MacroMode.MatchIdentifier | MacroMode.Passive
+			};
+			context.RegisterMacro(macroInfo);
+			
+			return F.Splice(); // delete the `define` node from the output
+
+			LNode UserDefinedMacro(LNode candidate, IMacroContext context2)
 			{
 				MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
-				VList<LNode> unmatchedAttrs;
-				if (candidate.MatchesPattern(pattern, ref captures, out unmatchedAttrs))
+				if (candidate.MatchesPattern(pattern, ref captures, out LNodeList unmatchedAttrs))
 				{
 					return ReplaceCaptures(replacement, captures).PlusAttrsBefore(unmatchedAttrs);
 				}
 				return null;
-			})
-			{
-				Mode = modes
-			};
-			context.RegisterMacro(macroInfo);
-			return F.Splice();
+			}
 		}
 
-		private static void WarnAboutMissingDollarSigns(VList<LNode> argList, IMacroContext context, LNode pattern, LNode replacement)
+		private static void WarnAboutMissingDollarSigns(LNodeList argList, IMacroContext context, LNode pattern, LNode replacement)
 		{
 			// Warn if a name appears in both pattern and replacement but uses $ in only one of the two.
 			Dictionary<Symbol, LNode> pVars = ScanForVariables(pattern), rVars = ScanForVariables(replacement);

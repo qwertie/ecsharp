@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -19,11 +19,13 @@ namespace LeMP.Prelude.Les3
 	/// <summary>Defines the core, predefined constructs of LeMP for LES3 for .NET.</summary>
 	[ContainsMacros] 
 	public static partial class Macros {
+		static Symbol _myNamespace = (Symbol) typeof(Macros).Namespace;
+	
 		public static IEnumerable<MacroInfo> AliasedMacros()
 		{
-			var ns = (Symbol) "LeMP.Prelude.Les3";
 			return MacroInfo.GetMacros(typeof(LeMP.Les3.To.CSharp.Macros))
-			.Select(mi => new MacroInfo(ns, mi, mi.Macro));
+			.Concat(LeMP.Les3.To.CSharp.Macros.AliasedMacros())
+			.Select(mi => new MacroInfo(_myNamespace, mi, mi.Macro));
 		}
 	}
 }
@@ -37,7 +39,7 @@ namespace LeMP.Les3.To.CSharp
 	[ContainsMacros] 
 	public static partial class Macros {
 		static readonly Symbol sy_get = (Symbol) "get", sy_set = (Symbol) "set", sy__numprop = (Symbol) "#prop";
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 	
 		static readonly HashSet<string> _aliasedMacros = new HashSet<string>(new[] { 
 			
@@ -59,14 +61,19 @@ namespace LeMP.Les3.To.CSharp
 	
 		public static IEnumerable<MacroInfo> AliasedMacros()
 		{
-			var ns = (Symbol) "LeMP.Prelude.Les3";
+			var ns = (Symbol) typeof(Macros).Namespace;
 			var les2macros = MacroInfo.GetMacros(typeof(Les2), null, ns);
 			var list = (from m in les2macros where m.Names.Any(name => _aliasedMacros.Contains(name)) select m)
 		
 			.ToList();
+			// These macros are not listed in _aliasedMacros to avoid including extra macros 
+			// having the same name, e.g. defaultPseudoFunc and defaultCase both watch for
+			// things named `default`, but we only want to include one of them here.
 			list.Add(MacroInfoFor(LeMP.Prelude.Les.Macros.defaultPseudoFunc));
 			list.Add(MacroInfoFor(LeMP.Prelude.Les.Macros.castOperator));
 			list.Add(MacroInfoFor(LeMP.Prelude.Les.Macros.of));
+			list.Add(MacroInfoFor(LeMP.Prelude.Les.Macros.quickFunction));
+			list.Add(MacroInfoFor(LeMP.Prelude.Les.Macros.quickFunctionWithColon));
 			return list;
 		
 			MacroInfo MacroInfoFor(LexicalMacro f) => 
@@ -124,25 +131,19 @@ namespace LeMP.Les3.To.CSharp
 			}
 			return null;
 		}
-		[LexicalMacro(".fn Name(Args...) { Body... }; .fn Name(Args...): ReturnType { Body }; .fn Name(Args...): Type |>> ForwardingTarget", 
+		[LexicalMacro(".fn Name(Args...) { Body... }; .fn Name(Args...): ReturnType { Body }", 
 		"Defines a function (also known as a method).", 
 		"#fn", Mode = MacroMode.Passive)] 
 		public static LNode Fn(LNode node, IMacroContext context)
 		{
-			return Les2.DefOrConstructor(node, context, false);
+			return Les2.FnOrCons(node, context, false);
 		}
-		[LexicalMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.", 
+		[LexicalMacro(".cons ClassName(Args...) {Body...}", 
+		"Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.", 
 		"#cons", Mode = MacroMode.Passive)] 
 		public static LNode Cons(LNode node, IMacroContext context)
 		{
-			return Les2.DefOrConstructor(node, context, true);
-		}
-		[LexicalMacro("prop Name::Type { get {Body...} set {Body...} }", 
-		"Defines a property. The getter and setter are optional, but there must be at least one of them.", 
-		"#prop", "#property", Mode = MacroMode.Passive)] 
-		public static LNode Prop_Les2Style(LNode node, IMacroContext context)
-		{
-			return Les2.prop(node, context);
+			return Les2.FnOrCons(node, context, true);
 		}
 		[LexicalMacro("Name: Type get {Body...} set {Body...}; Name: Type get _ set _", 
 		"Defines a property. The getter and setter are optional, but there must be at least one of them.", 
@@ -169,9 +170,9 @@ namespace LeMP.Les3.To.CSharp
 						LNode args = LNode.Missing;
 						{
 							LNode name_apos;
-							VList<LNode> args_apos;
+							LNodeList args_apos;
 							if (name.CallsMin(CodeSymbols.IndexBracks, 1) && (name_apos = name.Args[0]) != null) {
-								args_apos = new VList<LNode>(name.Args.Slice(1));
+								args_apos = new LNodeList(name.Args.Slice(1));
 								name = name_apos;
 								args = LNode.Call(CodeSymbols.AltList, LNode.List(args_apos));
 							}
@@ -237,7 +238,7 @@ namespace LeMP.Les3.To.CSharp
 		
 			{
 				LNode getExpr, init = null, name, tmp_12 = null, tmp_13 = null, tmp_14, tmp_15, type;
-				VList<LNode> content;
+				LNodeList content;
 				if (node.Args.Count == 2 && (tmp_12 = node.Args[0]) != null && tmp_12.Calls(CodeSymbols.Colon, 2) && (name = tmp_12.Args[0]) != null && (type = tmp_12.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true || node.Args.Count == 3 && (tmp_13 = node.Args[0]) != null && tmp_13.Calls(CodeSymbols.Colon, 2) && (name = tmp_13.Args[0]) != null && (type = tmp_13.Args[1]) != null && node.Args[1].Calls(CodeSymbols.Braces) && (content = node.Args[1].Args).IsEmpty | true && node.Args[2].Calls((Symbol) "#initially", 1) && (init = node.Args[2].Args[0]) != null) {
 					LNode args = GetArgList(ref name);
 					var newBody = LNode.List();
@@ -358,7 +359,7 @@ namespace LeMP.Les3.To.CSharp
 					}
 				}
 			}
-			if (a.ToVList() != node.Args)
+			if (a.ToLNodeList() != node.Args)
 				return node.WithArgs(a.ToVList());
 			return null;
 		}
@@ -398,7 +399,7 @@ namespace LeMP.Les3.To.CSharp
 					// returns: #if(cond1, {...}, #if(cond2, {...}, #elsif(cond3, {...}), #else({...})))
 					LNode @else = clause.WithTarget(S.If);
 					if (args.Count > 3)
-						@else = @else .WithArgs(@else .Args.AddRange(args, excludeSubList: first3));
+						@else = @else .WithArgs(@else .Args.AddRange(args.Slice(3)));
 					return node.WithArgs(first3.WithoutLast(1).Add(@else));
 				}
 				if (clause.Calls(S.Else, 1) && args.Count == 3)

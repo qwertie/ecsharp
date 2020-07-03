@@ -1,4 +1,4 @@
-﻿//
+//
 // Contains the standard immutable node types, all of which have a name that 
 // starts with "Std".
 //
@@ -10,6 +10,7 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc;
 using System.Diagnostics;
+using Loyc.Syntax.Les;
 
 namespace Loyc.Syntax
 {
@@ -33,7 +34,7 @@ namespace Loyc.Syntax
 		public override LNode Clone() { return cov_Clone(); }
 		public virtual StdIdNode cov_Clone() { return new StdIdNode(_name, this); }
 
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs.Count == 0) return this;
 			return new StdIdNodeWithAttrs(attrs, _name, this);
@@ -41,16 +42,16 @@ namespace Loyc.Syntax
 	}
 	internal class StdIdNodeWithAttrs : StdIdNode
 	{
-		VList<LNode> _attrs;
-		public StdIdNodeWithAttrs(VList<LNode> attrs, Symbol name, LNode ras)
+		LNodeList _attrs;
+		public StdIdNodeWithAttrs(LNodeList attrs, Symbol name, LNode ras)
 			: base(name, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdIdNodeWithAttrs(VList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdIdNodeWithAttrs(LNodeList attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(name, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		
 		public override StdIdNode cov_Clone() { return new StdIdNodeWithAttrs(_attrs, _name, this); }
 
-		public override VList<LNode> Attrs { get { return _attrs; } }
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNodeList Attrs { get { return _attrs; } }
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdIdNode(_name, this);
@@ -92,13 +93,13 @@ namespace Loyc.Syntax
 		public sealed override Symbol Name { get { return _name; } }
 		public sealed override object TriviaValue { get { return _tokenValue; } }
 
-		public override VList<LNode> Args
+		public override LNodeList Args
 		{
 			get { 
 				if (_tokenValue != NoValue.Value) 
-					return new VList<LNode>(LNode.Literal(_tokenValue, this));
+					return new LNodeList(LNode.Literal(_tokenValue, this));
 				else
-					return new VList<LNode>();
+					return new LNodeList();
 			}
 		}
 		
@@ -110,7 +111,7 @@ namespace Loyc.Syntax
 		{
 			get { return new StdIdNode(_name, this); }
 		}
-		public override CallNode WithArgs(VList<LNode> args)
+		public override CallNode WithArgs(LNodeList args)
 		{
 			return LNode.Call(_name, args, this);
 		}
@@ -118,7 +119,7 @@ namespace Loyc.Syntax
 		public override LNode Clone() { return cov_Clone(); }
 		public virtual StdTriviaNode cov_Clone() { return new StdTriviaNode(_name, _tokenValue, this); }
 
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			return LNode.Call(attrs, _name, Args, this);
 		}
@@ -127,44 +128,57 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
 
-	internal class StdLiteralNode : LiteralNode
+	internal struct SimpleValue<V> : ILiteralValueProvider
 	{
-		public StdLiteralNode(object value, LNode ras) 
-			: base(ras) { _value = value; }
-		public StdLiteralNode(object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		V _value;
+		public SimpleValue(V value) => _value = value;
+		public UString GetTextValue(SourceRange range) => default(UString);
+		public Symbol GetTypeMarker(SourceRange range) => null;
+		public object GetValue(SourceRange range) => _value;
+	}
+	
+	internal class StdLiteralNode<TValue> : LiteralNode where TValue : ILiteralValueProvider
+	{
+		public StdLiteralNode(TValue value, LNode ras) 
+			: base(ras) { _value = value;  }
+		public StdLiteralNode(TValue value, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(range, style) { _value = value; }
 
 		public override Symbol Name { get { return GSymbol.Empty; } }
 		
-		protected object _value;
-		public override object Value { get { return _value; } }
-		public override LiteralNode WithValue(object value) { var copy = cov_Clone(); copy._value = value; return copy; }
-		
-		public override LNode Clone() { return cov_Clone(); }
-		public virtual StdLiteralNode cov_Clone() { return new StdLiteralNode(_value, this); }
+		protected TValue _value;
+		public override object Value => _value.GetValue(Range);
+		public override UString TextValue => _value.GetTextValue(Range);
+		public override Symbol TypeMarker => _value.GetTypeMarker(Range);
 
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LiteralNode WithValue(object value) => cov_Clone(new SimpleValue<object>(value));
+		
+		public override LNode Clone() => cov_Clone(_value);
+		public virtual StdLiteralNode<Value2> cov_Clone<Value2>(Value2 value) where Value2 : ILiteralValueProvider => new StdLiteralNode<Value2>(value, this);
+
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs.Count == 0) return this;
-			return new StdLiteralNodeWithAttrs(attrs, _value, this);
+			return new StdLiteralNodeWithAttrs<TValue>(attrs, _value, this);
 		}
 	}
-	internal class StdLiteralNodeWithAttrs : StdLiteralNode
+
+	internal class StdLiteralNodeWithAttrs<Value> : StdLiteralNode<Value> where Value : ILiteralValueProvider
 	{
-		VList<LNode> _attrs;
-		public StdLiteralNodeWithAttrs(VList<LNode> attrs, object value, LNode ras) 
+		LNodeList _attrs;
+		public StdLiteralNodeWithAttrs(LNodeList attrs, Value value, LNode ras)
 			: base(value, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdLiteralNodeWithAttrs(VList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdLiteralNodeWithAttrs(LNodeList attrs, Value value, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(value, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
-		public override StdLiteralNode cov_Clone() { return new StdLiteralNodeWithAttrs(_attrs, _value, this); }
+		public override StdLiteralNode<Value2> cov_Clone<Value2>(Value2 value) => new StdLiteralNodeWithAttrs<Value2>(_attrs, value, this);
 
-		public override VList<LNode> Attrs { get { return _attrs; } }
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNodeList Attrs { get { return _attrs; } }
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs == Attrs) return this;
-			if (attrs.Count == 0) return new StdLiteralNode(_value, this);
-			return new StdLiteralNodeWithAttrs(attrs, _value, this);
+			if (attrs.Count == 0) return new StdLiteralNode<Value>(_value, this);
+			return new StdLiteralNodeWithAttrs<Value>(attrs, _value, this);
 		}
 		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
 		{
@@ -175,35 +189,36 @@ namespace Loyc.Syntax
 		}
 	}
 
+
 	internal abstract class StdCallNode : CallNode
 	{
-		public StdCallNode(VList<LNode> args, LNode ras)
+		public StdCallNode(LNodeList args, LNode ras)
 			: base(ras) { _args = args; NoNulls(args, "Args"); }
-		public StdCallNode(VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+		public StdCallNode(LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(range, style) { _args = args; NoNulls(args, "Args"); }
 
-		protected VList<LNode> _args;
-		public override VList<LNode> Args { get { return _args; } }
+		protected LNodeList _args;
+		public override LNodeList Args { get { return _args; } }
 		
 		public sealed override int Max { get { return _args.Count - 1; } }
 	}
 
 	internal class StdSimpleCallNode : StdCallNode
 	{
-		public StdSimpleCallNode(Symbol name, VList<LNode> args, LNode ras)
+		public StdSimpleCallNode(Symbol name, LNodeList args, LNode ras)
 			: base(args, ras) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
-		public StdSimpleCallNode(Symbol name, VList<LNode> args, StdSimpleCallNode ras)
+		public StdSimpleCallNode(Symbol name, LNodeList args, StdSimpleCallNode ras)
 			: base(args, ras) { _name = name ?? GSymbol.Empty; _targetOffs = ras._targetOffs; _targetLen = ras._targetLen; }
-		public StdSimpleCallNode(Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdSimpleCallNode(Symbol name, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(args, range, style) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
-		public StdSimpleCallNode(Symbol name, VList<LNode> args, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) 
+		public StdSimpleCallNode(Symbol name, LNodeList args, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) 
 			: base(args, range, style)
 		{
 			_name = name ?? GSymbol.Empty;
 			_targetOffs = ClipUShort(targetStart - RAS.StartIndex);
 			_targetLen = ClipUShort(targetEnd - targetStart);
 		}
-		public StdSimpleCallNode(Loyc.Syntax.Lexing.Token targetToken, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+		public StdSimpleCallNode(Loyc.Syntax.Lexing.Token targetToken, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(args, range, style)
 		{
 			_name = (Symbol)(targetToken.Value ?? GSymbol.Empty); 
@@ -252,13 +267,14 @@ namespace Loyc.Syntax
 		{
 			get { return new StdIdNode(_name, new SourceRange(Source, RAS.StartIndex + _targetOffs, _targetLen)); }
 		}
-		public override CallNode WithArgs(VList<LNode> args)
+		public override CallNode WithArgs(LNodeList args)
 		{
 			if (args == _args)
 				return this;
-		    var copy = cov_Clone();
-		    copy._args = args;
-		    return copy;
+			var copy = cov_Clone();
+			copy._args = args;
+			NoNulls(args, nameof(Args));
+			return copy;
 		}
 
 		public override LNode Clone() { return cov_Clone(); }
@@ -280,7 +296,7 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs.Count == 0) return this;
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
@@ -292,20 +308,20 @@ namespace Loyc.Syntax
 
 	internal class StdSimpleCallNodeWithAttrs : StdSimpleCallNode
 	{
-		protected VList<LNode> _attrs;
-		public StdSimpleCallNodeWithAttrs(VList<LNode> attrs, Symbol name, VList<LNode> args, LNode ras) 
+		protected LNodeList _attrs;
+		public StdSimpleCallNodeWithAttrs(LNodeList attrs, Symbol name, LNodeList args, LNode ras) 
 			: base(name, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdSimpleCallNodeWithAttrs(VList<LNode> attrs, Symbol name, VList<LNode> args, StdSimpleCallNode ras)
+		public StdSimpleCallNodeWithAttrs(LNodeList attrs, Symbol name, LNodeList args, StdSimpleCallNode ras)
 			: base(name, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdSimpleCallNodeWithAttrs(VList<LNode> attrs, Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
+		public StdSimpleCallNodeWithAttrs(LNodeList attrs, Symbol name, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(name, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdSimpleCallNodeWithAttrs(VList<LNode> attrs, Loyc.Syntax.Lexing.Token targetToken, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+		public StdSimpleCallNodeWithAttrs(LNodeList attrs, Loyc.Syntax.Lexing.Token targetToken, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(targetToken, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdSimpleCallNode cov_Clone() { return new StdSimpleCallNodeWithAttrs(_attrs, _name, _args, this); }
 
-		public override VList<LNode> Attrs { get { return _attrs; } }
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNodeList Attrs { get { return _attrs; } }
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdSimpleCallNode(_name, _args, this);
@@ -322,9 +338,9 @@ namespace Loyc.Syntax
 
 	internal class StdComplexCallNode : StdCallNode
 	{
-		public StdComplexCallNode(LNode target, VList<LNode> args, LNode ras)
+		public StdComplexCallNode(LNode target, LNodeList args, LNode ras)
 			: base(args, ras) { CheckParam.IsNotNull("target", target); _target = target; }
-		public StdComplexCallNode(LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+		public StdComplexCallNode(LNode target, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(args, range, style) { CheckParam.IsNotNull("target", target); _target = target; }
 		protected LNode _target;
 		public override LNode Target { get { return _target; } }
@@ -338,19 +354,20 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public override CallNode WithArgs(VList<LNode> args)
+		public override CallNode WithArgs(LNodeList args)
 		{
 			if (args == _args)
 				return this;
 			var copy = cov_Clone();
 			copy._args = args;
+			NoNulls(args, nameof(Args));
 			return copy;
 		}
 
 		public override LNode Clone() { return cov_Clone(); }
 		public virtual StdComplexCallNode cov_Clone() { return new StdComplexCallNode(_target, _args, this); }
 
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs.Count == 0) return this;
 			return new StdComplexCallNodeWithAttrs(attrs, _target, _args, this);
@@ -359,16 +376,16 @@ namespace Loyc.Syntax
 
 	internal class StdComplexCallNodeWithAttrs : StdComplexCallNode
 	{
-		protected VList<LNode> _attrs;
-		public StdComplexCallNodeWithAttrs(VList<LNode> attrs, LNode target, VList<LNode> args, LNode ras)
+		protected LNodeList _attrs;
+		public StdComplexCallNodeWithAttrs(LNodeList attrs, LNode target, LNodeList args, LNode ras)
 			: base(target, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
-		public StdComplexCallNodeWithAttrs(VList<LNode> attrs, LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+		public StdComplexCallNodeWithAttrs(LNodeList attrs, LNode target, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(target, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdComplexCallNode cov_Clone() { return new StdComplexCallNodeWithAttrs(_attrs, _target, _args, this); }
 
-		public override VList<LNode> Attrs { get { return _attrs; } }
-		public override LNode WithAttrs(VList<LNode> attrs)
+		public override LNodeList Attrs { get { return _attrs; } }
+		public override LNode WithAttrs(LNodeList attrs)
 		{
 			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdComplexCallNode(_target, _args, this);

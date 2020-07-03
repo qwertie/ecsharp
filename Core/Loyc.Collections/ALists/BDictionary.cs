@@ -8,6 +8,8 @@ namespace Loyc.Collections
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
+	using Loyc;
+	using System.Windows.Input;
 
 	/// <summary>
 	/// An sorted dictionary that is efficient for all operations and offers 
@@ -37,8 +39,9 @@ namespace Loyc.Collections
 	/// instead (but note that BList does allow duplicate keys).
 	/// </remarks>
 	[Serializable]
-	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>, 
-		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K,V>>, IDictionaryEx<K,V>, IReadOnlyDictionary<K, V>, IDictionarySink<K, V>
+	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>,
+		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K, V>>, 
+		IDictionaryEx<K, V>, IReadOnlyDictionary<K, V>, IDictionarySink<K, V>, IIndexed<K, V>
 	{
 		#region Constructors
 
@@ -346,10 +349,16 @@ namespace Loyc.Collections
 			return base.DoSingleOperation(ref op) < 0;
 		}
 
+		V ITryGet<K, V>.TryGet(K key, out bool fail) // enable TryGet extension methods (in TryGetExt)
+		{
+			var op = new AListSingleOperation<K, KeyValuePair<K, V>>() { Key = key };
+			OrganizedRetrieve(ref op);
+			fail = !op.Found;
+			return op.Item.Value;
+		}
 		public bool TryGetValue(K key, out V value)
 		{
-			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
-			op.Key = key;
+			var op = new AListSingleOperation<K, KeyValuePair<K, V>>() { Key = key };
 			OrganizedRetrieve(ref op);
 			value = op.Item.Value;
 			return op.Found;
@@ -358,8 +367,7 @@ namespace Loyc.Collections
 		public V this[K key]
 		{
 			get {
-				V value;
-				if (!TryGetValue(key, out value))
+				if (!TryGetValue(key, out V value))
 					throw new KeyNotFoundException();
 				return value;
 			}
@@ -453,18 +461,14 @@ namespace Loyc.Collections
 				return false;
 		}
 
-		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
-		public bool AddIfNotPresent(K key, ref V value)
-		{
-			return AddIfNotPresent(ref key, ref value);
-		}
+		public bool AddIfNotPresent(K key, ref V value) => AddIfNotPresent(ref key, ref value);
 		/// <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
 		/// <returns>True if the pair was added, false if it was retrieved.</returns>
 		public bool AddIfNotPresent(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
-		[Obsolete("Please use another overload or the AddOrGetExisting extension method")]
+		[Obsolete("Please use another overload or the GetOrAdd extension method")]
 		public bool AddIfNotPresent(ref KeyValuePair<K, V> pair)
 		{
 			K k = pair.Key;
@@ -472,7 +476,7 @@ namespace Loyc.Collections
 			return !GetAndEdit(ref k, ref v, DictEditMode.AddIfNotPresent);
 		}
 
-		[Obsolete("Please use SetAndGet")]
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGetOldValue(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
@@ -482,16 +486,21 @@ namespace Loyc.Collections
 		/// <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</param>
 		/// <returns>True if the new pair was added, false if it was replaced.</returns>
 		/// <inheritdoc cref="SetAndGetOldValue(ref K, ref V)"/>
+		public bool GetAndSet(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
+		}
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGet(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace);
 		}
-		[Obsolete("Please use SetAndGet extension method")]
+		[Obsolete("This was renamed to GetAndSet")]
 		public bool SetAndGetOldValue(K key, ref V value)
 		{
-			return SetAndGetOldValue(ref key, ref value);
+			return GetAndSet(ref key, ref value);
 		}
-		[Obsolete("Please use SetAndGet extension method")]
+		[Obsolete("Please use GetAndSet() instead")]
 		public bool SetAndGetOldValue(ref KeyValuePair<K,V> pair)
 		{
 			K k = pair.Key;

@@ -15,8 +15,6 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Les
 {
-	// TODO: Verify # is treated as ident char or not depending on feedback
-	// TODO: Switch over from `#` to `.` prefix as the keyword marker?
 	public class Les3Printer
 	{
 		#region Properties
@@ -137,17 +135,16 @@ namespace Loyc.Syntax.Les
 		#region Special stuff to deal with tricky facts about LESv3
 		// Challenges of LESv3 (only some of which are dealt with in this section):
 		// - Spaces are required between certain tokens that would be merged without
-		//   the space character. For example, an @@at-at-literal requires a space
-		//   afterward if it is followed by a binary operator, and a number followed
-		//   by a dot operator should conservatively have a space before the dot. 
-		//   The need for a space is detected using flags in the Chars enum.
+		//   the space character. For example, a number followed by a dot operator 
+		//   should conservatively have a space before the dot. The need for a space 
+		//   is detected using flags in the Chars enum.
 		// - If a space appears before a dot operator, a space may also be required 
 		//   after the dot so that the parser doesn't see a keyword token.
 		// - If one statement ends with a keyword expression and the next begins
 		//   with braces, a semicolon is required after the first statement to avoid
 		//   the possibility that the braces will be parsed as part of the keyword
-		//   expression (alternative: begin the second statement with @@).
-		// - %newline must be ignored in some cases because a newline in 
+		//   expression (alternative: begin the second statement with `@ `).
+		// - `%newline` must be ignored in some cases because a newline in 
 		//   certain places will inadvertantly end the current statement early.
 		//   Also, single-line comments sometimes cannot end with a newline and
 		//   must use two backslashes to end the comment instead: \\
@@ -175,8 +172,7 @@ namespace Loyc.Syntax.Les
 			Dot = 16,
 			NumberStart = IdStart | Dot, // Numbers can start with dot (.) and charset overlaps Id. 
 			//NegativeNumberStart = Punc | Minus,  // Negative numbers no longer start with `-`, they start with Id
-			NumberEnd   = Id | BQId | Dot, // Numbers can end in backquotes (``), letters or digits, and '.' afterward could create ambiguity
-			IdAndPunc = Id | Punc | Dot,
+			NumberEnd = Id | Dot, // Numbers can end in letters or digits, and '.' afterward could create ambiguity
 			DoubleQuote = 32,
 			BQId = 64,                     // `backquoted identifier`
 			StringStart = DoubleQuote | Id | BQId, // A string can start with an Id so we can't put a string right after an Id
@@ -194,7 +190,8 @@ namespace Loyc.Syntax.Les
 			NewlineUnsafe = 0,
 			NewlineSafeAfter = 1,
 			NewlineSafeBefore = 2,
-			StatementLevel = NewlineSafeBefore | NewlineSafeAfter,
+			NewlineSensitive = 4,
+			StatementLevel = NewlineSafeBefore | NewlineSafeAfter | NewlineSensitive,
 			AutoDetect = 8,
 		}
 
@@ -224,7 +221,7 @@ namespace Loyc.Syntax.Les
 		protected void StartToken(LesColorCode kind, Chars startSet, Chars endSet)
 		{
 			if (_curSet == Chars.SLComment)
-				SB.Append(@"\\");
+				SB.Append(@"\\"); // terminate single-line comment in order to print something after it
 			Space((startSet & _curSet) != 0);
 			_curSet = endSet;
 			StartToken(kind);
@@ -290,6 +287,7 @@ namespace Loyc.Syntax.Les
 
 		private bool HasTargetIdWithoutPAttrs(ILNode node)
 		{
+			Debug.Assert(node.IsCall());
 			var t = node.Target;
 			if (!t.IsId())
 				return false;
@@ -304,33 +302,27 @@ namespace Loyc.Syntax.Les
 
 		public void VisitId(ILNode node)
 		{
-			PrintIdCore(node.Name, startToken: true);
+			PrintIdCore(node.Name.Name, startToken: true);
 		}
 
-		public static bool IsNormalIdentifier(Symbol name)
-		{
-			return Les2Printer.IsNormalIdentifier(name);
-		}
+		public static bool IsNormalIdentifier(UString name) => Les2Printer.IsNormalIdentifier(name);
 
-		public void PrintIdCore(Symbol name, bool startToken, bool forceQuote = false)
+		public void PrintIdCore(UString name, bool startToken, bool forceQuote = false)
 		{
-			if (forceQuote || !IsNormalIdentifier(name) || name == sy_true || name == sy_false || name == sy_null) {
+			if (forceQuote || !IsNormalIdentifier(name) || name == sy_true.Name || name == sy_false.Name || name == sy_null.Name) {
 				if (startToken)
 					StartToken(ColorCodeForId(name), Chars.BQId, Chars.BQId);
-				PrintStringCore('`', false, name.Name);
+				PrintStringCore('`', false, name);
 			} else {
 				if (startToken)
 					StartToken(ColorCodeForId(name), Chars.Id, Chars.Id);
-				SB.Append(name.Name);
+				SB.Append(name);
 			}
 		}
 
-		protected virtual LesColorCode ColorCodeForId(Symbol name)
-		{
-			return LesColorCode.Id;
-		}
+		protected virtual LesColorCode ColorCodeForId(UString name) => LesColorCode.Id;
 
-		private void PrintStringCore(char quoteType, bool tripleQuoted, string text, Symbol prefix = null)
+		private void PrintStringCore(char quoteType, bool tripleQuoted, UString text, UString prefix = default(UString))
 		{
 			if (prefix != null)
 				PrintIdCore(prefix, startToken: false);
@@ -343,11 +335,11 @@ namespace Loyc.Syntax.Les
 				SB.Append(quoteType);
 				SB.Append(quoteType);
 
+				UString fullText = text;
 				char a = '\0', b = '\0';
-				for (int i = 0; i < text.Length; i++)
-				{
-					char c = text[i], d;
-					if (c == quoteType && ((b == quoteType && a == quoteType) || i + 1 == text.Length)) {
+				for (; text.Length > 0; text = text.Slice(1)) {
+					char c = text[0], d;
+					if (c == quoteType && ((b == quoteType && a == quoteType) || text.Length == 1)) {
 						// Escape triple quote, or a quote at end-of-string
 						SB.Append('\\');
 						SB.Append(c);
@@ -356,8 +348,8 @@ namespace Loyc.Syntax.Les
 						SB.Append(@"\0/");
 					} else if (c == '\r') {
 						SB.Append(@"\r/");
-					} else if (c == '\\' && i + 2 < text.Length && text[i + 2] == '/' &&
-						((d = text[i + 1]) == 'r' || d == 'n' || d == 't' || d == '0' || d == '\\' || d == '\'' || d == '"')) {
+					} else if (c == '\\' && text.Length >= 3 && text[2] == '/' &&
+						((d = text[1]) == 'r' || d == 'n' || d == 't' || d == '0' || d == '\\' || d == '\'' || d == '"')) {
 						// avoid writing a false escape sequence
 						SB.Append(@"\\/");
 					} else if (c == '\n') {
@@ -370,6 +362,7 @@ namespace Loyc.Syntax.Les
 						SB.Length = startAt;
 						quoteType = '"';
 						tripleQuoted = false;
+						text = fullText;
 						goto restart;
 					} else {
 						SB.Append(c);
@@ -383,10 +376,9 @@ namespace Loyc.Syntax.Les
 			else 
 			{
 				// Normal double-quoted string
-				UString s = text;
 				for (;;) {
 					bool fail;
-					int c = s.PopFirst(out fail);
+					int c = text.PopFirst(out fail);
 					if (fail) break;
 
 					EscapeC flags = EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse;
@@ -431,20 +423,20 @@ namespace Loyc.Syntax.Les
 		static Dictionary<RuntimeTypeHandle,Action<Les3Printer, object, NodeStyle, Symbol>> LiteralPrinters = Dictionary(
 			// TODO: improve BigInteger support (ie. efficiency, support hex & binary, support digit separators
 			P<BigInteger>((p, value, style, tmarker) => p.PrintString(((BigInteger)value).ToString(), style, _Z, detectFormat: true)),
-			P<int>    ((p, value, style, tmarker) => p.PrintInteger((int)value, style, tmarker)),
+			P<int>    ((p, value, style, tmarker) => p.PrintInteger((int)value, style, tmarker ?? _number)),
 			P<long>   ((p, value, style, tmarker) => p.PrintInteger((long)value, style, tmarker ?? _L)),
 			P<uint>   ((p, value, style, tmarker) => p.PrintInteger((uint)value, style, tmarker ?? _U)),
 			P<ulong>  ((p, value, style, tmarker) => p.PrintInteger((ulong)value, style, tmarker ?? _UL)),
-			P<short>  ((p, value, style, tmarker) => p.PrintInteger((short)value,  style, tmarker ?? (Symbol)"i16")),
-			P<ushort> ((p, value, style, tmarker) => p.PrintInteger((ushort)value, style, tmarker ?? (Symbol)"u16")),
-			P<sbyte>  ((p, value, style, tmarker) => p.PrintInteger((sbyte)value,  style, tmarker ?? (Symbol)"i8")),
-			P<byte>   ((p, value, style, tmarker) => p.PrintInteger((byte)value,   style, tmarker ?? (Symbol)"u8")),
-			P<double> ((p, value, style, tmarker) => p.PrintDouble((double)value, style, tmarker ?? _D)),
+			P<short>  ((p, value, style, tmarker) => p.PrintInteger((short)value,  style, tmarker ?? (Symbol)"_i16")),
+			P<ushort> ((p, value, style, tmarker) => p.PrintInteger((ushort)value, style, tmarker ?? (Symbol)"_u16")),
+			P<sbyte>  ((p, value, style, tmarker) => p.PrintInteger((sbyte)value,  style, tmarker ?? (Symbol)"_i8")),
+			P<byte>   ((p, value, style, tmarker) => p.PrintInteger((byte)value,   style, tmarker ?? (Symbol)"_u8")),
+			P<double> ((p, value, style, tmarker) => p.PrintDouble((double)value, style, tmarker)),
 			P<float>  ((p, value, style, tmarker) => p.PrintFloat ((float)value, style, tmarker ?? _F)),
 			P<decimal>((p, value, style, tmarker) => p.PrintDouble((double)(decimal)value, style, tmarker ?? _M)),
 			P<bool>   ((p, value, style, tmarker) => p.WriteToken((bool)value? "true" : "false", LesColorCode.KeywordLiteral, Chars.Id)),
 			P<@void>  ((p, value, style, tmarker) => {
-				p.WriteToken("@@void", LesColorCode.CustomLiteral, Chars.At, Chars.IdAndPunc);
+				p.WriteToken("void\"\"", LesColorCode.CustomLiteral, Chars.Id, Chars.DoubleQuote);
 			}),
 			P<char>   ((p, value, style, tmarker) => {
 				p.StartToken(LesColorCode.String, Chars.SingleQuote);
@@ -452,28 +444,19 @@ namespace Loyc.Syntax.Les
 			}),
 			P<Symbol> ((p, value, style, tmarker) => {
 				p.StartToken(LesColorCode.CustomLiteral, Chars.StringStart, Chars.DoubleQuote);
-				p.PrintStringCore('"', false, value.ToString(), tmarker ?? _s);
-			}),
-			P<TokenTree> ((p, value, style, tmarker) => {
-				// TODO: change/remove this. LESv3 has no syntax for TokenTree
-				p.WriteToken("@@{", LesColorCode.Opener, Chars.At, Chars.Delimiter);
-				p.Space();
-				p.StartToken(LesColorCode.CustomLiteral);
-				p.SB.Append(((TokenTree)value).ToString(TokenExt.ToString));
-				p.Space();
-				p.WriteToken("}", LesColorCode.Closer, Chars.Delimiter, Chars.Delimiter);
+				p.PrintStringCore('"', false, value.ToString(), (tmarker ?? _s).Name);
 			}),
 			P<string>((p, value, style, tmarker) => p.PrintString((string)value, style, tmarker, detectFormat: true)));
 
-		protected static Symbol _s = GSymbol.Get("s");
-		protected static Symbol _F = GSymbol.Get("f");
-		protected static Symbol _D = GSymbol.Get("d");
-		protected static Symbol _M = GSymbol.Get("m");
-		protected static Symbol _U = GSymbol.Get("u");
-		protected static Symbol _L = GSymbol.Get("L");
-		protected static Symbol _UL = GSymbol.Get("uL");
-		protected static Symbol _Z = GSymbol.Get("z");
-		protected static Symbol _number = GSymbol.Get("n");
+		protected static Symbol _s = GSymbol.Get("s"); // symbol
+		protected static Symbol _F = GSymbol.Get("_f"); // float
+		protected static Symbol _D = GSymbol.Get("_d"); // double
+		protected static Symbol _M = GSymbol.Get("_m"); // decimal
+		protected static Symbol _U = GSymbol.Get("_u"); // uint
+		protected static Symbol _L = GSymbol.Get("_L"); // long
+		protected static Symbol _UL = GSymbol.Get("_uL"); // ulong
+		protected static Symbol _Z = GSymbol.Get("_z"); // BigInt
+		protected static Symbol _number = GSymbol.Get("_"); // number without explicit marker
 
 		#endregion
 
@@ -490,7 +473,7 @@ namespace Loyc.Syntax.Les
 
 			Action<Les3Printer, object, NodeStyle, Symbol> printHelper;
 			if (value == null) {
-				if (tmarker != null)
+				if (tmarker != null && tmarker.Name != "null")
 					MessageSink.Write(Severity.Warning, _n, "Les3Printer: type marker ('{0}') attached to 'null' is unprintable", tmarker);
 				WriteToken("null", LesColorCode.KeywordLiteral, Chars.Id);
 			} else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out printHelper)) {
@@ -511,130 +494,124 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		static Regex IsNumber = new Regex(@"^[0-9]+([.][0-9]+)?([eE][+\-]?[0-9]+)?$");
+		static Regex IsNumber = new Regex(@"^[0-9]+(_[0-9]+)*([.][0-9]+(_[0-9]+)*)?([eE][+\-]?[0-9]+)?$");
 
-		private void PrintString(string text, NodeStyle style, Symbol prefix, bool detectFormat)
+		private void PrintString(string text, NodeStyle stringStyle, Symbol typeMarker, bool detectFormat)
 		{
 			var kind = LesColorCode.String;
-			if (prefix != null) {
+			if (typeMarker != null) {
 				kind = LesColorCode.CustomLiteral;
 				if (detectFormat) {
-					// Detect if we should print it as a number or @@literal instead
-					if (IsNumber.IsMatch(text)) {
+					// Detect if we should print it as a number instead
+					if (IsValidNumericMarker(typeMarker, 0) && IsNumber.IsMatch(text)) {
 						WriteToken(text, kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-						char firstCh = prefix.Name.TryGet(0, '\0');
-						if (prefix != _number)
-							PrintIdCore(prefix, startToken: false, forceQuote: firstCh.IsOneOf('e', 'E'));
-						return;
-					} else if (prefix.Name == "@@" && Les3PrecedenceMap.IsExtendedOperatorToken(text)) {
-						WriteToken("@@", kind, Chars.At, Chars.IdAndPunc);
-						SB.Append(text);
+						SB.Append(typeMarker.Name.Slice(1));
 						return;
 					}
 				}
 			}
-			NodeStyle bs = (style & NodeStyle.BaseStyleMask);
+			NodeStyle bs = (stringStyle & NodeStyle.BaseStyleMask);
 			if (bs == NodeStyle.TQStringLiteral) {
 				StartToken(kind, Chars.SingleQuote);
-				PrintStringCore('\'', true, text, prefix);
+				PrintStringCore('\'', true, text, typeMarker?.Name);
 			} else {
 				StartToken(kind, Chars.StringStart, Chars.DoubleQuote);
-				PrintStringCore('"', bs == NodeStyle.TDQStringLiteral, text, prefix);
+				PrintStringCore('"', bs == NodeStyle.TDQStringLiteral, text, typeMarker?.Name);
 			}
 		}
 
-		void PrintInteger(long value, NodeStyle style, Symbol suffix)
+		void PrintInteger(long value, NodeStyle style, Symbol typeMarker)
 		{
 			bool negative = value < 0;
 			if (negative) {
-				StartToken(LesColorCode.Number, Chars.Id, Chars.NumberEnd);
-				PrintIdCore(suffix ?? _number, startToken: false);
+				StartToken(LesColorCode.Number, Chars.Id | Chars.BQId, Chars.NumberEnd);
+				PrintIdCore(typeMarker.Name, startToken: false);
 				SB.Append("\"-");
-				PrintIntegerCore((ulong)-value, style, suffix: null);
+				PrintIntegerCore((ulong)-value, style, SB);
+				SB.Append('\"');
+			} else {
+				PrintInteger((ulong)value, style, typeMarker);
+			}
+		}
+
+		void PrintInteger(ulong value, NodeStyle style, Symbol typeMarker)
+		{
+			Debug.Assert(typeMarker.Name.StartsWith("_"));
+			if (IsValidNumericMarker(typeMarker, style))
+			{
+				StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
+				PrintIntegerCore(value, style, SB);
+				SB.Append(typeMarker.Name.Substring(1));
+			}
+			else
+			{
+				StartToken(LesColorCode.Number, Chars.StringStart, Chars.DoubleQuote);
+				PrintStringCore('"', false, PrintIntegerCore(value, style, new StringBuilder()).ToString(), typeMarker.Name);
+			}
+		}
+		StringBuilder PrintIntegerCore(ulong value, NodeStyle style, StringBuilder sb)
+		{
+			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral)
+				return PrintHelpers.AppendIntegerTo(sb, value, "0x", 16, 4, '_');
+			else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral)
+				return PrintHelpers.AppendIntegerTo(sb, value, "0b", 2, 8, '_');
+			else
+				return PrintHelpers.AppendIntegerTo(sb, value, "", 10, 3, '_');
+		}
+
+		private bool IsValidNumericMarker(Symbol typeMarker, NodeStyle numericStyle)
+		{
+			if (typeMarker.Name.TryGet(0, '\0') != '_' || !IsNormalIdentifier(typeMarker.Name))
+				return false;
+			char firstChar = typeMarker.Name.TryGet(1, '\0');
+			bool isHex = (numericStyle & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral;
+			if (firstChar.IsOneOf('p', 'P'))
+				return !isHex;
+			else if (firstChar >= 'a' && firstChar <= 'f' || firstChar >= 'A' && firstChar <= 'F')
+				return !isHex && !firstChar.IsOneOf('e', 'E');
+			return true;
+		}
+
+		void PrintFloat(float value, NodeStyle style, Symbol typeMarker)
+		{
+			PrintDouble((double)value, style, typeMarker);
+		}
+		void PrintDouble(double value, NodeStyle style, Symbol typeMarker)
+		{
+			string asStr;
+			bool useStringStyle = value < 0;
+			if (double.IsNaN(value)) {
+				asStr = "nan";
+				useStringStyle = true;
+			} else if (double.IsPositiveInfinity(value)) {
+				asStr = "inf";
+				useStringStyle = true;
+			} else if (double.IsNegativeInfinity(value)) {
+				asStr = "-inf";
+				useStringStyle = true;
+			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
+				asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0x", 4, typeMarker == _F).ToString();
+			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral) {
+				asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0b", 1, typeMarker == _F).ToString();
+			} else {
+				asStr = DoubleToString_Decimal(value);
+			}
+
+			if (useStringStyle || typeMarker != null && !IsValidNumericMarker(typeMarker, style)) {
+				StartToken(LesColorCode.Number, Chars.Id, Chars.NumberEnd);
+				PrintIdCore((typeMarker ?? _D).Name, startToken: false);
+				SB.Append('\"');
+				SB.Append(asStr);
 				SB.Append('\"');
 			} else {
 				StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-				PrintIntegerCore((ulong)value, style, suffix);
-			}
-		}
-
-		void PrintInteger(ulong value, NodeStyle style, Symbol suffix)
-		{
-			StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-			PrintIntegerCore(value, style, suffix);
-		}
-		void PrintIntegerCore(ulong value, NodeStyle style, Symbol suffix)
-		{
-			bool forceQuote = false;
-			char suffix0 = '\0';
-			if (suffix != null && suffix.Name != "") {
-				suffix0 = suffix.Name[0];
-				forceQuote = suffix0 == '_';
-			}
-			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
-				PrintHelpers.AppendIntegerTo(SB, value, "0x", 16, 4, '_');
-				forceQuote |= suffix0 >= 'a' && suffix0 <= 'f' || suffix0 >= 'A' && suffix0 <= 'F';
-			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral)
-				PrintHelpers.AppendIntegerTo(SB, value, "0b", 2, 8, '_');
-			else
-				PrintHelpers.AppendIntegerTo(SB, value, "", 10, 3, '_');
-			if (suffix != null)
-				PrintIdCore(suffix, startToken: false, forceQuote: forceQuote);
-		}
-
-		const string NaNPrefix = "@@nan.";
-		const string PositiveInfinityPrefix = "@@inf.";
-		const string NegativeInfinityPrefix = "@@-inf.";
-
-		void PrintFloat(float value, NodeStyle style, Symbol suffix)
-		{
-			PrintDouble((double)value, style, suffix ?? _F);
-		}
-		void PrintDouble(double value, NodeStyle style, Symbol suffix)
-		{
-			bool isHex = false;
-			bool isNumber = false;
-			if (double.IsNaN(value)) {
-				WriteToken(NaNPrefix, LesColorCode.KeywordLiteral, Chars.At, Chars.IdAndPunc);
-			} else if (double.IsPositiveInfinity(value)) {
-				WriteToken(PositiveInfinityPrefix, LesColorCode.KeywordLiteral, Chars.At, Chars.IdAndPunc);
-			} else if (double.IsNegativeInfinity(value)) {
-				WriteToken(NegativeInfinityPrefix, LesColorCode.KeywordLiteral, Chars.At, Chars.IdAndPunc);
-			} else {
-				isNumber = true;
-				StartToken(LesColorCode.Number, value < 0 ? Chars.Id : Chars.NumberStart, Chars.NumberEnd);
-				string asStr;
-				if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral)
-					asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0x", 4, suffix == _F).ToString();
-				else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral)
-					asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0b", 1, suffix == _F).ToString();
-				else
-					asStr = DoubleToString_Decimal(value);
-
-				if (value < 0) {
-					PrintIdCore(suffix ?? _D, startToken: false);
-					SB.Append('\"');
-					SB.Append(asStr);
-					SB.Append('\"');
-					return;
+				SB.Append(asStr);
+				if (typeMarker == null || typeMarker == _number) {
+					if (!asStr.Contains(".") && !asStr.Contains("e"))
+						SB.Append(".0");
 				} else {
-					SB.Append(asStr);
-					if (suffix == _D) {
-						if (!asStr.Contains(".") && !asStr.Contains("e"))
-							SB.Append(".0");
-						return;
-					}
+					SB.Append(typeMarker.Name.Substring(1));
 				}
-			}
-			if (isNumber) {
-				char suffix0;
-				PrintIdCore(suffix, startToken: false, forceQuote: isHex && 
-					((suffix0 = suffix.Name.TryGet(0, '\0')) >= 'a' && suffix0 <= 'f' || suffix0 >= 'A' && suffix0 <= 'F'));
-			} else {
-				if (suffix == _F || IsNormalIdentifier(suffix))
-					SB.Append(suffix.Name);
-				else
-					MessageSink.Write(Severity.Warning, _n, "Les3Printer: cannot print type marker '{0}' on non-finite number", suffix);
 			}
 		}
 
@@ -753,36 +730,31 @@ namespace Loyc.Syntax.Les
 
 			switch (_o.PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle())
 			{
-				case NodeStyle.Operator:
-				case NodeStyle.StatementBlock:
-				case NodeStyle.Default:
-					// Figure out if this node can be treated as an operator and if 
-					// so, whether it's a suffix operator.
-					if (!HasTargetIdWithoutPAttrs(node))
-						goto default;
-
-					Symbol opName = node.Name;
-					if (!TryToPrintCallAsSpecialOperator(opName, node))
-					{
-						if (!node.ArgCount().IsInRange(1, 2))
-							goto default;
-						var shape = (OperatorShape)node.ArgCount();
-						if (node.ArgCount() == 1 && Les3PrecedenceMap.IsSuffixOperatorName(opName, out opName))
-							shape = OperatorShape.Suffix;
-
-						if (!PrintCallAsNormalOp(shape, opName, node, ref parens))
-							PrintPrefixNotation(node, ref parens);
-					}
-					break;
 				case NodeStyle.Special:
-					if (!TryToPrintCallAsKeywordExpression(node))
-						goto default;
+					if (!TryToPrintCallAsKeywordExpression(node, node.IsParenthesizedExpr() || (_nlContext & NewlineContext.NewlineSensitive) != 0))
+						goto case NodeStyle.PrefixNotation;
 					break;
 				case NodeStyle.PrefixNotation:
 					PrintPrefixNotation(node, ref parens);
 					break;
 				default:
-					PrintPrefixNotation(node, ref parens);
+					// Figure out if this node can be treated as an operator and if 
+					// so, whether it's a suffix operator.
+					if (!HasTargetIdWithoutPAttrs(node))
+						goto case NodeStyle.PrefixNotation;
+
+					Symbol opName = node.Name;
+					if (!TryToPrintCallAsSpecialOperator(opName, node))
+					{
+						if (!node.ArgCount().IsInRange(1, 2))
+							goto case NodeStyle.PrefixNotation;
+						var shape = (OperatorShape)node.ArgCount();
+						if (node.ArgCount() == 1 && Les3PrecedenceMap.ResemblesSuffixOperator(opName, out opName))
+							shape = OperatorShape.Suffix;
+
+						if (!PrintCallAsNormalOp(shape, opName, node, ref parens))
+							PrintPrefixNotation(node, ref parens);
+					}
 					break;
 			}
 			if (parens)
@@ -868,10 +840,11 @@ namespace Loyc.Syntax.Les
 
 		bool ShouldAppendStmt(ILNode node)
 		{
-			return (node.AttrNamed(S.TriviaAppendStatement) != null || _isOneLiner) &&
+			return (!_o.PrintTriviaExplicitly && node.AttrNamed(S.TriviaAppendStatement) != null || _isOneLiner) &&
 				PS.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 
+		// For printing at the top level, or in a braced block where newlines are significant
 		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
 		{
 			bool anyNewlines = false;
@@ -891,7 +864,7 @@ namespace Loyc.Syntax.Les
 					next = args[i + 1, null];
 					append = next != null ? ShouldAppendStmt(next) : false;
 					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
-					Print(stmt, Precedence.MinValue, suffix: semicolon ? ";" : null);
+					Print(stmt, Precedence.MinValue, semicolon ? ";" : null, NewlineContext.StatementLevel);
 				}
 			}
 			return anyNewlines;
@@ -933,7 +906,7 @@ namespace Loyc.Syntax.Les
 				if (name.Length == 2)
 					return true;
 			}
-			return Les3PrecedenceMap.IsNaturalOperatorToken(name.Slice(i));
+			return Les3PrecedenceMap.IsNaturalOperatorToken(name.Slice(i)) || IsNormalIdentifier(name.Slice(1));
 		}
 
 		// Prints an operator with a "normal" shape (infix, prefix or suffix)
@@ -942,19 +915,16 @@ namespace Loyc.Syntax.Les
 		{
 			// Check if this operator is allowed here. For example, if operator '+ 
 			// appears within an argument to '*, as in (2 + 3) * 5, it's not 
-			// allowed without parentheses. Also, unary word operators (e.g. 'foo) 
-			// are not supported.
-			Precedence prec = Les3PrecedenceMap.Default.Find(shape, opName, cacheWordOp: true, les3InfixOp: shape == OperatorShape.Infix);
+			// allowed without parentheses.
+			Precedence prec = Les3PrecedenceMap.Default.Find(shape, opName, cacheWordOp: true);
 			if (shape == OperatorShape.Infix) {
 				if (!CanBeBinaryOperator(opName.Name))
 					return false;
 			} else {
-				if (prec == LesPrecedence.Other || !CanBePrefixOperator(opName.Name))
+				if (prec == LesPrecedence.Illegal || !CanBePrefixOperator(opName.Name))
 					return false;
 			}
 			bool allowed = IsAllowedHere(prec);
-			if (!allowed && IsAllowedHere(LesPrecedence.Primary))
-				return false;
 			parens |= AddParenIf(!allowed);
 
 			switch (shape) {
@@ -996,24 +966,20 @@ namespace Loyc.Syntax.Les
 
 			// Determine Chars values which control sace characters before and after
 			char first = opName.Name[1], last = opName.Name[opName.Name.Length - 1];
-			Chars startSet;
+			Chars startSet, endSet = (last == '.' ? Chars.Dot | Chars.Punc : Chars.Punc);
+			int skipApostrophe = 1;
 			if (Les3PrecedenceMap.IsOpChar(first) || first == '$')
 				startSet = Chars.Punc | (first == '.' ? Chars.Dot : 0);
 			else {
 				Debug.Assert(Les2Lexer.IsIdStartChar(first));
 				startSet = Chars.IdStart;
+				endSet = Chars.IdStart;
+				skipApostrophe = isBinaryOp ? 1 : 0;
 			}
-			StartToken(LesColorCode.Operator, startSet,
-				Chars.Punc | (last == '.' ? Chars.Dot : 0));
-
-			if (opName == S.Dot && SB.LastOrDefault(' ').IsOneOf(' ', '\t', '\n')) {
-				// If there is a space before the dot and there is an identifier 
-				// after the dot, we will need another space so it doesn't get 
-				// reparsed as a keyword.
-				_curSet |= Chars.Id;
-			}
-
-			SB.Append(opName.Name, 1, opName.Name.Length - 1);
+			
+			StartToken(LesColorCode.Operator, startSet, endSet);
+			
+			SB.Append(opName.Name, skipApostrophe, opName.Name.Length - skipApostrophe);
 
 			bool newlineSafe = isBinaryOp && opName.Name.Any(c => Les3PrecedenceMap.IsOpChar(c));
 			if (target != null) {
@@ -1029,7 +995,7 @@ namespace Loyc.Syntax.Les
 			if (cond) {
 				WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
 				if (!forAttribute && !_o.AllowExtraParenthesis && _context != AttributeContext) {
-					WriteToken("@@", LesColorCode.Attribute, Chars.At);
+					WriteToken("@", LesColorCode.Attribute, Chars.At);
 					WriteOutsideToken(' ');
 				}
 				Space(_o.SpaceInsideGroupingParens);
@@ -1089,36 +1055,37 @@ namespace Loyc.Syntax.Les
 		// statement afterward begins with braces.
 		int _endIndexOfKeywordExpr;
 
-		private bool TryToPrintCallAsKeywordExpression(ILNode node)
+		private bool TryToPrintCallAsKeywordExpression(ILNode node, bool allowComma)
 		{
-			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
+			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) 
+				|| !IsKeywordExpression(node, out int exprListSize, out ILNode braces)
+				|| !allowComma && exprListSize > 1)
 				return false;
-
+			
+			// Print @attributes and .keyword
 			var args = node.Args();
 			var target = node.Target;
 			int parens = PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe);
-			WriteToken('.', LesColorCode.Keyword, Chars.IdAndPunc);
+			WriteToken('.', LesColorCode.Keyword, Chars.Dot | Chars.Id);
 			SB.Append(node.Name.Name, 1, node.Name.Name.Length-1);
 			PrintTrailingTrivia(target, 0, null, NewlineContext.NewlineUnsafe);
 			if (args.Count == 0)
 				return true;
 
-			Space();
-			Print(args[0], LesPrecedence.SuperExpr);
-
-			if (args.Count > 1)
-			{
-				int i = 1;
-				var part = args[i];
-				if (part.Calls(CodeSymbols.Braces)) {
-					Space();
-					PrintBracedBlock(part);
-					i++;
-				}
-				for (; i < args.Count; i++) {
-					Space();
-					PrintContinuator(part = args[i]);
-				}
+			// Print the rest: arg1, arg2 { $(..braces.Args()) } continuators
+			int i;
+			for (i = 0; i < exprListSize; i++) {
+				Space();
+				Print(args[i], Precedence.MinValue, suffix: i + 1 != exprListSize ? "," : null);
+			}
+			if (braces != null) {
+				Space();
+				Print(braces, LesPrecedence.Substitute);
+				i++;
+			}
+			for (; i < args.Count; i++) {
+				Space();
+				PrintContinuator(args[i]);
 			}
 
 			_endIndexOfKeywordExpr = SB.Length;
@@ -1157,22 +1124,26 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private bool IsKeywordExpression(ILNode node)
+		private bool IsKeywordExpression(ILNode node, out int exprListSize, out ILNode bracedBlock)
 		{
+			bracedBlock = null;
+			exprListSize = 1;
+
 			if (!HasTargetIdWithoutPAttrs(node) || !IsAcceptableKeyword(node.Name.Name))
 				return false;
 			var args = node.Args();
 			if (args.Count <= 1)
 				return true;
-			var block = args[1];
-			if (!HasTargetIdWithoutPAttrs(block))
-				return false;
-			int i = block.Calls(S.Braces) ? 2 : 1;
-			for (; i < args.Count; i++)
-				if (!IsContinuator(args[i]))
-					return false;
 
-			Debug.Assert(node.Target.IsId());
+			int i;
+			for (i = args.Count - 1; i > 0; i--)
+				if (!IsContinuator(args[i]))
+					break;
+			if (i > 0 && args[i].Calls(S.Braces) && HasTargetIdWithoutPAttrs(args[i])) {
+				bracedBlock = args[i];
+				i--;
+			}
+			exprListSize = i + 1;
 			return true;
 		}
 
@@ -1392,143 +1363,5 @@ namespace Loyc.Syntax.Les
 		}
 
 		#endregion
-	}
-
-	public class Les3PrinterOptions : LNodePrinterOptions
-	{
-		public Les3PrinterOptions() : this(null) { }
-		public Les3PrinterOptions(ILNodePrinterOptions options)
-		{
-			WarnAboutUnprintableLiterals = true;
-			SpaceAfterComma = true;
-			ForcedLineBreakThreshold = 120;
-			if (options != null)
-				CopyFrom(options);
-		}
-
-		public override bool CompactMode
-		{
-			get { return base.CompactMode; }
-			set {
-				if (base.CompactMode = value) {
-					SpacesBetweenAppendedStatements = false;
-					SpaceAroundInfixStopPrecedence = LesPrecedence.SuperExpr.Lo;
-					SpaceAfterPrefixStopPrecedence = LesPrecedence.SuperExpr.Lo;
-					SpaceInsideArgLists = false;
-					SpaceInsideGroupingParens = false;
-					SpaceInsideTuples = false;
-					SpaceInsideListBrackets = false;
-				} else {
-					SpacesBetweenAppendedStatements = true;
-					SpaceAroundInfixStopPrecedence = LesPrecedence.Range.Lo;
-					SpaceAfterPrefixStopPrecedence = LesPrecedence.Range.Lo;
-				}
-				SpaceAfterComma = value;
-				SpacesBetweenAppendedStatements = value;
-			}
-		}
-
-		/// <summary>Whether to print a space inside square brackets for lists <c>[ ... ]</c>.</summary>
-		public bool SpaceInsideListBrackets { get; set; }
-
-		/// <summary>Whether to print a space inside argument lists like <c>f( ... )</c>.</summary>
-		public bool SpaceInsideArgLists { get; set; }
-
-		/// <summary>Whether to print a space inside grouping parentheses <c>( ... )</c>.</summary>
-		public bool SpaceInsideGroupingParens { get; set; }
-
-		/// <summary>Whether to print a space inside tuples like <c>f( ...; )</c>.</summary>
-		public bool SpaceInsideTuples { get; set; }
-
-		/// <summary>Whether to print a space after each comma in an argument list.</summary>
-		/// <remarks>Initial value: true</remarks>
-		public bool SpaceAfterComma { get; set; }
-
-		/// <summary>Introduces extra parenthesis to express precedence, without
-		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
-		/// add the trivia attribute %inParens.)</remarks>
-		public bool AllowExtraParenthesis {
-			get { return base.AllowChangeParentheses; }
-			set { base.AllowChangeParentheses = value; }
-		}
-
-		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
-		public bool OmitSpaceTrivia { get; set; }
-
-		/// <summary>Whether to print a warning when an "unprintable" literal is 
-		/// encountered. In any case the literal is converted to a string, placed 
-		/// in double quotes and prefixed by the unqualified Type of the Value.</summary>
-		/// <remarks>Initial value: true</remarks>
-		public bool WarnAboutUnprintableLiterals { get; set; }
-		
-		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
-		/// When this option is false, raw text trivia is printed as a normal 
-		/// attribute.</summary>
-		public bool ObeyRawText { get; set; }
-
-		/// <summary>Whether to add a space between multiple statements printed on
-		/// one line (initial value: true).</summary>
-		public bool SpacesBetweenAppendedStatements = true;
-
-		/// <summary>If true, a semicolon is used in addition to the usual newline to 
-		/// terminate each expression inside braced blocks and at the top level.</summary>
-		/// <remarks>Regardless of this flag, a semicolon is forced to appear when a 
-		/// node uses <see cref="CodeSymbols.TriviaAppendStatement"/> to put multiple 
-		/// expressions on one line.</remarks>
-		public bool UseRedundantSemicolons { get; set; }
-
-		/// <summary>
-		/// Print purely in prefix notation, e.g. <c>`'+`(2,3)</c> instead of <c>2 + 3</c>.
-		/// </summary>
-		public bool PrefixNotationOnly { get; set; }
-
-		/// <summary>The printer avoids printing spaces around infix (binary) 
-		/// operators that have the specified precedence or higher.</summary>
-		/// <seealso cref="LesPrecedence"/>
-		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
-
-		/// <summary>The printer avoids printing spaces after prefix operators 
-		/// that have the specified precedence or higher.</summary>
-		public int SpaceAfterPrefixStopPrecedence = LesPrecedence.Multiply.Hi + 1;
-
-		/// <summary>Although the LES3 printer is not designed to insert line breaks
-		/// mid-expression or to keep lines under a certain length, this option can 
-		/// avoid extremely long lines in some cases, by (1) inserting line breaks 
-		/// after commas in argument lists, or after very long attribute lists, and 
-		/// (2) ignoring the <see cref="NodeStyle.OneLiner"/> flag or 
-		/// <see cref="CodeSymbols.TriviaAppendStatement"/> attribute when an 
-		/// expression within a braced block starts after this column on a line.
-		/// </summary>
-		/// <remarks>
-		/// The default value is 120.
-		/// <para/>
-		/// Setting the threshold to zero forces all "statements" (expressions 
-		/// in braces) to appear on a new line. Lines can still be arbitrarily long 
-		/// with this option, since breaks are only added at the end of expressions 
-		/// within a braced block.
-		/// </remarks>
-		public int ForcedLineBreakThreshold { get; set; }
-
-		char? _digitSeparator = '\'';
-		/// <summary>Sets the "thousands" or other digit separator for numeric 
-		/// literals. Valid values are null (to disable the separator), underscore (_) 
-		/// and single quote (').</summary>
-		/// <exception cref="ArgumentException">Invalid property value.</exception>
-		/// <remarks>
-		/// For decimal numbers, this value separates thousands (e.g. 12'345'678).
-		/// For hex numbers, it separates groups of four digits (e.g. 0x1234'5678).
-		/// For binary numbers, it separates groups of eight digits.
-		/// </remarks>
-		public char? DigitSeparator {
-			get { return _digitSeparator; }
-			set {
-				if (value.HasValue && value.Value != '_' && value.Value != '\'')
-					throw new ArgumentException("DigitSeparator must be '_' or single quote.".Localized());
-				_digitSeparator = value;
-			}
-		}
 	}
 }

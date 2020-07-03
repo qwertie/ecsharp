@@ -1,9 +1,4 @@
-using Loyc.Collections;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
 
 namespace Loyc.Syntax
 {
@@ -35,7 +30,8 @@ namespace Loyc.Syntax
 		/// suffix, or other operator), or that it should be printed with operator 
 		/// notation if possible.</summary>
 		Operator = 1,
-		[Obsolete("This was renamed to StatementBlock")] Statement = StatementBlock,
+		[Obsolete("This was renamed to StatementBlock")]
+		Statement = StatementBlock,
 		/// <summary>The node's immediate children (and/or the node itself) should be 
 		/// printed in statement notation, if possible in the context in which it is 
 		/// located.</summary>
@@ -43,8 +39,8 @@ namespace Loyc.Syntax
 		/// is used as the argument separator.</remarks>
 		StatementBlock = 2,
 		/// <summary>A language-specific special notation should be used for this
-		/// node. In LESv3, the parser puts this style on block call nodes (e.g. 
-		/// <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
+		/// node. In LES3, the parser puts this style on keyword expressions (e.g. 
+		/// <c>#if x {...}</c>).</summary>
 		Special = 3,
 		/// <summary>The node should be printed in prefix notation (even if it is 
 		/// not the natural notation to use). An example in EC# notation is 
@@ -55,8 +51,12 @@ namespace Loyc.Syntax
 		/// <remarks>In EC#, braced initializer blocks have this style. The EC# 
 		/// node printer will refuse to print a node with this style as a statement.</remarks>
 		Expression = 5,
-		/// <summary>Unassigned.</summary>
-		Reserved = 6,
+		/// <summary>The node's children should have a compact notation. In LES3, the 
+		/// Julia-style list or call notation has this style: <c>[. a b c 2+2]</c>.
+		/// When combined with NodeStyle.Alternate, this requests expression-tree 
+		/// notation like [' ...], which can only be used if the Loyc tree meets
+		/// certain constraints.</summary>
+		Compact = 6,
 		/// <summary>Use an older or backward-compatible notation.</summary>
 		/// <remarks>In EC#: prints lambda as delegate; forces old cast notation in EC#.</remarks>
 		OldStyle = 7,
@@ -76,6 +76,7 @@ namespace Loyc.Syntax
 		/// <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
 		HexLiteral = 6,
 		/// <summary>Used for an octal (base-7) literal like 0o37.</summary>
+		/// <remarks>Octal literals are not natively supported in LES.</remarks>
 		OctalLiteral = 7,
 		/// <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
 		VerbatimStringLiteral = 5,

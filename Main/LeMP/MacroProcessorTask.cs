@@ -128,7 +128,7 @@ namespace LeMP
 
 		#region Public entry points: ProcessFileWithThreadAbort(), ProcessFile(), ProcessRoot()
 
-		public VList<LNode> ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
+		public LNodeList ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
 		{
 			if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
 				return ProcessFile(io, onProcessed);
@@ -144,7 +144,7 @@ namespace LeMP
 					if (ex == null && onProcessed != null)
 						onProcessed(io);
 				} else {
-					io.Output = new VList<LNode>(F.Id("processing_thread_timed_out"));
+					io.Output = new LNodeList(F.Id("processing_thread_timed_out"));
 					thread.Abort();
 					thread.Join(timeout);
 				}
@@ -153,7 +153,7 @@ namespace LeMP
 				return io.Output;
 			}
 		}
-		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
+		public LNodeList ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
 			using (ParsingService.SetDefault(io.InputLang ?? ParsingService.Default)) {
 				try {
@@ -165,7 +165,7 @@ namespace LeMP
 				  catch (PathTooLongException) { } // Path.* may throw
 
 				var input = ParsingService.Default.Parse(io.Text, io.FileName, _sink, io.ParsingMode, io.PreserveComments ?? true);
-				var inputRV = new VList<LNode>(input);
+				var inputRV = new LNodeList(input);
 
 				io.Output = ProcessRoot(inputRV);
 				if (onProcessed != null)
@@ -175,7 +175,7 @@ namespace LeMP
 		}
 
 		/// <summary>Top-level macro applicator.</summary>
-		public VList<LNode> ProcessRoot(VList<LNode> stmts)
+		public LNodeList ProcessRoot(LNodeList stmts)
 		{
 			PreProcess(ref stmts, null, true, true, true, false);
 			return stmts;
@@ -183,7 +183,7 @@ namespace LeMP
 
 		// This is called either at the root node, or by a macro that wants to 
 		// preprocess its children (see IMacroContext.PreProcess()).
-		LNode PreProcess(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool resetProperties, bool areAttributesOrIsTarget)
+		LNode PreProcess(ref LNodeList list, LNode single, bool asRoot, bool resetOpenNamespaces, bool resetProperties, bool areAttributesOrIsTarget)
 		{
 			if (single == null && list.Count == 0)
 				return null; // no-op requested
@@ -285,14 +285,14 @@ namespace LeMP
 				get { var st = _task._ancestorStack; return st[st.Count - 2, null]; }
 			}
 
-			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
+			public LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
 			{
 				_task.PreProcess(ref input, null, asRoot, resetOpenNamespaces, resetProperties, areAttributes);
 				return input;
 			}
 			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false)
 			{
-				VList<LNode> empty = new VList<LNode>();
+				LNodeList empty = LNodeList.Empty;
 				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, resetProperties, isTarget);
 			}
 			
@@ -374,7 +374,7 @@ namespace LeMP
 			// (B) the old version of the current node that is being processed now,
 			// and (C) remaining nodes. Only (C) matters, but we keep the whole 
 			// list here to avoid computing a separate sublist for each iteration 
-			// through a given VList<LNode>.
+			// through a given LNodeList.
 			//     If a macro returns #splice($(...SpliceNodes)), the situation 
 			// gets more complex, because we have to treat the spliced nodes plus 
 			// the remaining nodes (C) as a single list if a macro ever asks for 
@@ -385,7 +385,7 @@ namespace LeMP
 			//     To simplify the implementation of ApplyMacrosToList, the 
 			// NodeQueue is created after a macro produces any modified output
 			// or after a macro sets DropRemainingNodesRequested.
-			public VList<LNode> OldAndRemainingNodes;
+			public LNodeList OldAndRemainingNodes;
 			public int CurrentNodeIndex;
 			public DList<Pair<LNode, int>> NodeQueue;
 
@@ -407,7 +407,7 @@ namespace LeMP
 				}
 			}
 			// Puts contents of a #splice into NodeQueue and returns the first item of the splice.
-			public LNode EnqueueSplice(VList<LNode> spliced, int maxExpansionsInner, int maxExpansions)
+			public LNode EnqueueSplice(LNodeList spliced, int maxExpansionsInner, int maxExpansions)
 			{
 				//Debug.Assert(!IsTarget); should be true except that IsTarget may not have been set yet
 				MaybeCreateNodeQueue(maxExpansions, ref NodeQueue);
@@ -453,7 +453,7 @@ namespace LeMP
 				return DropRemainingNodesRequested;
 			}
 			
-			public void StartListItem(VList<LNode> list, int index, bool areAttributes)
+			public void StartListItem(LNodeList list, int index, bool areAttributes)
 			{
 				OldAndRemainingNodes = list;
 				CurrentNodeIndex = index;
@@ -507,7 +507,7 @@ namespace LeMP
 		// These aren't really macros, but they are installed like macros so that
 		// no extra overhead is required to detect them.
 
-		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		[LexicalMacro("#importMacros(namespace);", 
 			"LeMP will look for macros in the specified namespace. Only applies within the current braced block. Note: normal C# `using` statements also import macros.", 
@@ -878,10 +878,10 @@ namespace LeMP
 			}
 		}
 
-		VList<LNode> ApplyMacrosToList(VList<LNode> list, int maxExpansions, bool areAttributes)
+		LNodeList ApplyMacrosToList(LNodeList list, int maxExpansions, bool areAttributes)
 		{
 			DList<Pair<LNode, int>> nodeQueue = null;
-			VList<LNode> results;
+			LNodeList results;
 			LNode result = null;
 			
 			// Share as much of the original VList as is left unchanged
@@ -895,7 +895,7 @@ namespace LeMP
 				result = ApplyMacros(input, maxExpansions, false, false, ref nodeQueue);
 				if (result != null)
 				{
-					results = list.First(i);
+					results = list.Initial(i);
 					Add(ref results, result);
 					// restore possibly-clobbered state
 					_s.StartListItem(list, i, areAttributes);
@@ -914,7 +914,7 @@ namespace LeMP
 			_s.NodeQueue = null;
 			return results;
 		}
-		private void Add(ref VList<LNode> results, LNode result)
+		private void Add(ref LNodeList results, LNode result)
 		{
 			if (result.Calls(S.Splice))
 				results.AddRange(result.Args);
@@ -928,7 +928,7 @@ namespace LeMP
 				return null;
 
 			bool changed = false;
-			VList<LNode> old;
+			LNodeList old;
 			var newAttrs = ApplyMacrosToList(old = node.Attrs, maxExpansions, true);
 			_s.IsAttribute = false;
 			if (newAttrs != old)

@@ -44,7 +44,7 @@ namespace Samples
 						$input := $input + 4
 						.br loop if $length = $length + -1
 					  }
-					  stop:
+					  :stop
 					}
 					sum // return value
 				  }", msgs: ConsoleMessageSink.Value);

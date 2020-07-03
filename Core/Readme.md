@@ -7,7 +7,7 @@ Contributors are welcome: more unit tests, code reviews, and new features are de
 
 Please visit http://core.loyc.net for documentation.
 
-**NOTE**: Development occurs primarily in the [Enhanced C# repository](https://github.com/loycnet/ecsharp), which contains the LoycCore repo as a "git subtree". However, `git subtree push` mysteriously stopped working which means that synchronization with this repo has become a manual process. As a result I would ask you **not to use that repo anymore**. We'll just do everything in ecsharp.
+**NOTE**: Development occurs primarily in the [Enhanced C# repository](https://github.com/qwertie/ecsharp), which contains the LoycCore repo as a "git subtree". However, `git subtree push` mysteriously stopped working which means that synchronization with this repo has become a manual process. As a result I would ask you **not to use that repo anymore**. We'll just do everything in ecsharp.
 
 Dependency tree
 ---------------
@@ -31,10 +31,6 @@ Low-level libraries on top:
                 +---------+----------+
                           |
                      Loyc.Utilities
-
-These projects use couple of tricks to support .NET 3.5, .NET 4 and .NET 4.5 in a single solution file. The tricks are documented here: http://stackoverflow.com/questions/5006397/targetting-multiple-net-framework-versions-by-using-different-project-configura/23705790#23705790
-
-Note: the versions of these libraries for .NET 3.5 depend on the compatibility library [Theraot.Core.dll](https://github.com/theraot/Theraot).
 
 Links
 -----

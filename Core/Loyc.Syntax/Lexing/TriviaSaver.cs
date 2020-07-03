@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,16 +7,18 @@ using Loyc.Collections;
 namespace Loyc.Syntax.Lexing
 {
 	/// <summary>A lexer wrapper that saves whitespace tokens into a list (<see cref="TriviaList"/>).</summary>
-	/// <remarks>Typically used with <seealso cref="StandardTriviaInjector"/>.</remarks>
+	/// <remarks>
+	/// This wrapper filters out all whitespace tokens (where <see cref="Token.Value"/> is 
+	/// <see cref="WhitespaceTag.Value"/>) and saves them in a list. It is typically used with 
+	/// <seealso cref="StandardTriviaInjector"/>.
+	/// </remarks>
 	public class TriviaSaver : LexerWrapper<Token>
 	{
 		/// <summary>Initializer.</summary>
 		/// <param name="lexer">Lexer to wrap.</param>
-		/// <param name="newlineTypeInt">This wrapper filters out and saves whitespace 
-		/// tokens (where <see cref="Token.Value"/> is <see cref="WhitespaceTag.Value"/>) 
-		/// but in some languages, newlines are not considered whitespace but they
-		/// still need to be saved in the trivia list. If the <see cref="Token.TypeInt"/> 
-		/// equals this value, the token is saved but NOT filtered out.</param>
+		/// <param name="newlineTypeInt">In some languages, newlines are not considered 
+		/// whitespace but they still need to be saved in the trivia list. If the 
+		/// <see cref="Token.TypeInt"/> equals this value, the token is saved but NOT filtered out.</param>
 		public TriviaSaver(ILexer<Token> lexer, int newlineTypeInt = int.MinValue) : base(lexer) { _newlineTypeInt = newlineTypeInt; }
 
 		int _newlineTypeInt;

@@ -22,7 +22,7 @@ namespace LeMP.Prelude
 	[ContainsMacros]
 	public static partial class BuiltinMacros
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		[LexicalMacro("noMacro(Code)", "Alias for `#noLexicalMacros`. Passes code through to the output language, without macro processing.",
 			Mode = MacroMode.NoReprocessing)]

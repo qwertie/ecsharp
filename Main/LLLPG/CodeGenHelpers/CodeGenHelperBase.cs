@@ -117,7 +117,7 @@ namespace Loyc.LLParserGenerator
 				} else if ((q = _definedAliases.Where(pair => replacement.Equals(pair.Value))).Any())
 					sink.Warning(replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
 				_definedAliases[alias] = replacement;
-				return LNode.Call(S.Splice, VList<LNode>.Empty); // erase alias from output
+				return LNode.Call(S.Splice, LNode.List()); // erase alias from output
 			}
 			return null;
 		}
@@ -385,7 +385,7 @@ namespace Loyc.LLParserGenerator
 			return LeMP.StandardMacros.NextStatementMayBeReachable(stmt);
 		}
 
-		public virtual LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody)
+		public virtual LNode CreateRuleMethod(Rule rule, LNodeList methodBody)
 		{
 			return rule.CreateMethod(methodBody);
 		}
@@ -399,7 +399,7 @@ namespace Loyc.LLParserGenerator
 
 			LNode method = rule.GetMethodSignature();
 			LNode retType = method.Args[0], name = method.Args[1], args = method.Args[2];
-			VList<LNode> forwardedArgs = ForwardedArgList(args);
+			LNodeList forwardedArgs = ForwardedArgList(args);
 			
 			LNode lookahead = F.Id("lookaheadAmt");
 			Debug.Assert(args.Calls(S.AltList));
@@ -413,7 +413,7 @@ namespace Loyc.LLParserGenerator
 			);
 			return method.WithArgs(retType, rule.TryWrapperName, args, body);
 		}
-		static VList<LNode> ForwardedArgList(LNode args)
+		static LNodeList ForwardedArgList(LNode args)
 		{
 			// translates an argument list like (int x, string y) to { x, y }
 			return args.Args.SmartSelect(arg => VarName(arg) ?? arg);
@@ -442,7 +442,7 @@ namespace Loyc.LLParserGenerator
 				// by truncating argument(s) at the call site.
 				int maxArgCount = target.Basis.CallsMin(S.Fn, 3) ? target.Basis.Args[2].ArgCount : 0;
 				if (@params.Count > maxArgCount)
-					@params = @params.First(maxArgCount);
+					@params = @params.Initial(maxArgCount);
 			}
 			LNode call = F.Call(target.Name, @params);
 			if (recognizerMode)

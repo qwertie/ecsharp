@@ -99,7 +99,7 @@ namespace Loyc.Ecs.Parser
 
 		public IListSource<LNode> ParseExprs(bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
-			var list = new VList<LNode>();
+			var list = LNode.List();
 			try {
 				ExprList(ref list, allowTrailingComma, allowUnassignedVarDecl);
 			} catch (Exception ex) { UnhandledException(ex); }
@@ -108,7 +108,7 @@ namespace Loyc.Ecs.Parser
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
-			var list = new VList<LNode>();
+			var list = LNode.List();
 			try {
 				StmtList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
@@ -492,10 +492,10 @@ namespace Loyc.Ecs.Parser
 
 		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl = false)
 		{
-			VList<LNode> list = default(VList<LNode>);
+			var list = default(LNodeList);
 			return SingleExprInside(group, stmtType, allowUnassignedVarDecl, ref list);
 		}
-		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl, ref VList<LNode> list)
+		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl, ref LNodeList list)
 		{
 			int oldCount = list.Count;
 			list = AppendExprsInside(group, list, false, allowUnassignedVarDecl);
@@ -513,7 +513,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return list[0];
 		}
-		protected VList<LNode> AppendExprsInside(Token group, VList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected LNodeList AppendExprsInside(Token group, LNodeList list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			if (Down(group.Children)) {
 				ExprList(ref list, allowTrailingComma, allowUnassignedVarDecl);
@@ -521,29 +521,29 @@ namespace Loyc.Ecs.Parser
 			}
 			return list;
 		}
-		protected void AppendInitializersInside(Token group, ref VList<LNode> list)
+		protected void AppendInitializersInside(Token group, ref LNodeList list)
 		{
 			if (Down(group.Children)) {
 				InitializerList(ref list);
 				Up();
 			}
 		}
-		protected VList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected LNodeList ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
-			return AppendExprsInside(t, new VList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
+			return AppendExprsInside(t, new LNodeList(), allowTrailingComma, allowUnassignedVarDecl);
 		}
-		private VList<LNode> StmtListInside(Token t)
+		private LNodeList StmtListInside(Token t)
 		{
-			var list = new VList<LNode>();
+			var list = new LNodeList();
 			if (Down(t.Children)) {
 				StmtList(ref list);
 				return Up(list);
 			}
 			return list;
  		}
-		private VList<LNode> InitializerListInside(Token t)
+		private LNodeList InitializerListInside(Token t)
 		{
-			var list = VList<LNode>.Empty;
+			var list = LNodeList.Empty;
 			AppendInitializersInside(t, ref list);
 			return list;
  		}

@@ -26,9 +26,9 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Forgets previously encountered operators to save memory.</summary>
 		public virtual void Reset() {
-			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.Primary);
-			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Other);
-			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.Other);
+			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.SuffixWord);
+			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Prefix);
+			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.LowerKeyword);
 			_suffixOpNames = null;
 		}
 
@@ -36,13 +36,13 @@ namespace Loyc.Syntax.Les
 		/// <param name="shape">Specifies which precedence table and rules to use 
 		/// (Prefix, Suffix or Infix). Note: when this is Suffix, "_" is not expected 
 		/// to be part of the name in <c>op</c>, i.e. op should be a Symbol like "'++" 
-		/// rather than "'_++" (see also <see cref="IsSuffixOperatorName"/>)</param>
+		/// rather than "'_++" (see also <see cref="ResemblesSuffixOperator"/>)</param>
 		/// <param name="op">Parsed form of the operator. op must be a Symbol, but 
 		/// the parameter has type object to avoid casting Token.Value in the parser.</param>
-		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true, bool les3InfixOp = false)
+		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true)
 		{
 			var pair = this[shape];
-			return FindPrecedence(pair.A, op, pair.B, cacheWordOp, les3InfixOp);
+			return FindPrecedence(pair.A, op, pair.B, cacheWordOp);
 		}
 
 		// Maps from Symbol to Precedence, paired with a default precedece for unrecognized operators
@@ -120,8 +120,8 @@ namespace Loyc.Syntax.Les
 				{ S.LE,          P.Compare    }, // <=
 				{ S.GE,          P.Compare    }, // >=
 				{ S.Eq,          P.Compare    }, // ==
-				{ S.NotEq,         P.Compare    }, // !=
-				{ S._RightArrow, P.Arrow      }, // ->
+				{ S.NotEq,       P.Compare    }, // !=
+				{ S.RightArrow,  P.Arrow      }, // ->
 				{ S.LeftArrow,   P.Arrow      }, // <-
 				{ S.And,         P.And        }, // &&
 				{ S.Or,          P.Or         }, // ||
@@ -135,7 +135,7 @@ namespace Loyc.Syntax.Les
 				{ (Symbol)"'<|", P.Triangle   }, // <|
 			}.AsImmutable();
 		
-		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp, bool les3InfixOp = false)
+		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp)
 		{
 			// You can see the official rules in the LesPrecedence documentation.
 			
@@ -149,33 +149,12 @@ namespace Loyc.Syntax.Les
 
 			string sym = symbol.ToString();
 			if (sym.Length <= 1 || sym[0] != '\'')
-				return @default; // empty or non-operator
+				return P.Other; // empty or non-operator
 
 			// Note: all one-character operators should have been found in the table
 			char first = sym[1], last = sym[sym.Length - 1];
+			
 			bool isInfix = table == this[OperatorShape.Infix].A;
-
-			if (les3InfixOp)
-			{
-				// Check for lowercase word prefix
-				int i = 1;
-				while (first >= 'a' && first <= 'z' || first == '_') {
-					if (++i == sym.Length) {
-						if (cacheWordOp)
-							table[symbol] = P.LowerKeyword;
-						return P.LowerKeyword;
-					}
-					first = sym[i];
-				}
-				
-				if (i + 1 == sym.Length) {
-					// After the word is a one-character op. See if it is in the table
-					var oneCharOp_ = GSymbol.Get("'" + first);
-					if (table.TryGetValue(oneCharOp_, out prec))
-						return prec;
-				}
-			}
-
 			if (isInfix && last == '=') {
 				if (first == '=' || first == '!')
 					return table[symbol] = P.Compare;
@@ -191,10 +170,10 @@ namespace Loyc.Syntax.Les
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
-			if (isInfix && char.IsLower(first))
-				return table[symbol] = P.LowerKeyword;
+			if (isInfix && first >= 'A' && first <= 'Z')
+				return table[symbol] = P.UpperWord;
 
-			// Default precedence is used for anything else
+			// Default precedence is used for anything else (lowercase word ops)
 			if (cacheWordOp)
 				return table[symbol] = @default;
 			return @default;
@@ -296,19 +275,18 @@ namespace Loyc.Syntax.Les
 			return _suffixOpNames[symbol] = GSymbol.Get("'suf" + symbol.ToString().Substring(1));
 		}
 
-		/// <summary>Decides whether the name appears to represent a suffix operator.</summary>
+		/// <summary>Decides whether the name resembles a suffix operator.</summary>
 		/// <param name="name">Potential operator name to evaluate.</param>
 		/// <param name="bareName">If the name begins with "'suf", this is the same name with
 		/// "suf" removed, otherwise it is set to <c>name</c> itself. This output is 
 		/// calculated even if the function returns false.</param>
 		/// <remarks>This method doesn't verify that the operator IS a legal suffix 
-		/// operator, just that it has the form of one. More specifically, when
-		/// the function returns true, IsNaturalOperator(bareName.Name) is true.</remarks>
-		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName)
+		/// operator, just that it has the form of one.</remarks>
+		public static bool ResemblesSuffixOperator(Symbol name, out Symbol bareName)
 		{
 			if (name.Name.StartsWith("'suf")) {
 				bareName = GSymbol.Get("'" + name.Name.Substring(4));
-				return IsNaturalOperator(bareName.Name);
+				return true;
 			} else {
 				bareName = name;
 				return false;
@@ -325,11 +303,17 @@ namespace Loyc.Syntax.Les
 		} }
 		public override void Reset() {
 			base.Reset();
-			this[OperatorShape.Infix].Item1[S.ColonColon] = LesPrecedence.Primary;
-			this[OperatorShape.Infix].Item1[S.AndBits] = LesPrecedence.AndBits;
-			this[OperatorShape.Infix].Item1[S.OrBits] = LesPrecedence.OrBits;
-			this[OperatorShape.Infix].Item1[S.XorBits] = LesPrecedence.OrBits;
-			this[OperatorShape.Prefix].Item1.Remove(S.Dot); // No prefix dot operator in LES3
+			var infixTable = this[OperatorShape.Infix].Item1;
+			infixTable[S.ColonColon] = LesPrecedence.Primary;
+			infixTable[S.AndBits] = LesPrecedence.AndBits;
+			infixTable[S.OrBits] = LesPrecedence.OrBits;
+			infixTable[S.XorBits] = LesPrecedence.OrBits;
+			var prefixTable = this[OperatorShape.Prefix].Item1;
+			prefixTable[S.Dot] = P.Illegal;
+			prefixTable[S.LT] = P.Illegal;
+			prefixTable[S.Assign] = P.Illegal;
+			prefixTable[S.OrBits] = P.Illegal;
+			prefixTable[S.QuestionMark] = P.Illegal;
 		}
 	}
 }

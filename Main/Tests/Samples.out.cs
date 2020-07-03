@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.7.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.7.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -568,10 +568,10 @@ public partial class SExprParser : BaseParserForList<Token, int>
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
 			// line 211
-			return F.List(VList<LNode>.Empty, lit_lpar.StartIndex, lit_rpar.EndIndex);
+			return F.List(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
 		} else {
 			// line 212
-			var parts = VList<LNode>.Empty;
+			var parts = LNode.List();
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
 			// Line 213: (Atom)*

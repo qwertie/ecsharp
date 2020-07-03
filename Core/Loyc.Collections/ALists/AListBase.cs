@@ -142,7 +142,7 @@ namespace Loyc.Collections
 	/// <typeparam name="T">Type of each element in the list. The derived class 
 	/// must implement the <see cref="GetKey"/> method that converts T to K.</typeparam>
 	[Serializable]
-	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>
+	public abstract partial class AListBase<K, T> : IListSource<T>, INotifyListChanging<T>, ITryGet<int, T>, IIndexed<int, T>
 	{
 		#region Data members
 
@@ -282,9 +282,7 @@ namespace Loyc.Collections
 		/// <summary>Retrieves the key K from an item T. This method is only needed by "B" lists.</summary>
 		protected internal abstract K GetKey(T item);
 
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected void CheckPoint()
 		{
 			//uint c;
@@ -294,9 +292,7 @@ namespace Loyc.Collections
 			if (_observer != null)
 				_observer.CheckPoint();
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected void AutoThrow()
 		{
 			if (_freezeMode != FreezeMode.NotFrozen) ThrowFrozen();

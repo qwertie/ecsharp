@@ -25,7 +25,7 @@ namespace Loyc.Syntax.Les
 		}
 		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
 		{
-			Print(nodes.Upcast<ILNode, LNode>(), target, sink, mode, options);
+			Print(nodes, target, sink, mode, options);
 		}
 		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
 		{
@@ -54,32 +54,33 @@ namespace Loyc.Syntax.Les
 		{
 			get { return false; }
 		}
-		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
+		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			return new Les3Lexer(text, fileName, msgs);
+			return new Les3Lexer(text, fileName, msgs) { SpacesPerTab = options.SpacesPerTab };
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			var lexer = Tokenize(text, fileName, msgs);
-			return Parse(lexer, msgs, inputType, preserveComments);
+			var lexer = Tokenize(text, fileName, msgs, options);
+			return Parse(lexer, msgs, options);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, IParsingOptions options)
 		{
-			if (preserveComments) {
+			if (options.PreserveComments) {
+				// Filter out whitespace, including some newlines (those directly inside square brackets or parentheses)
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);
-				var results = Parse(saver.Buffered(), input.SourceFile, msgs, inputType);
+				var results = Parse(saver.Buffered(), input.SourceFile, msgs, options);
 				var injector = new StandardTriviaInjector(saver.TriviaList, input.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
 				injector.SLCommentSuffix = @"\\";
 				return injector.Run(results.GetEnumerator()).Buffered();
 			} else {
-				return Parse(new WhitespaceFilter(input).Buffered(), input.SourceFile, msgs, inputType);
+				return Parse(new WhitespaceFilter(input).Buffered(), input.SourceFile, msgs, options);
 			}
 		}
 
 		[ThreadStatic]
 		static Les3Parser _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, IParsingOptions options)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -89,9 +90,8 @@ namespace Loyc.Syntax.Les
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = inputType == ParsingMode.Expressions;
-			char _ = '\0';
-			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
+			bool exprMode = options.Mode == ParsingMode.Expressions;
+			if (options.Mode == ParsingMode.Expressions || file.Text.TryGet(255).HasValue) {
 				Les3Parser parser = _parser;
 				if (parser == null)
 					_parser = parser = new Les3Parser(input.AsList(), file, msgs);
@@ -99,7 +99,7 @@ namespace Loyc.Syntax.Les
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
 				}
-				if (inputType == ParsingMode.Expressions)
+				if (options.Mode == ParsingMode.Expressions)
 					return parser.Start(new Holder<TokenType>(default(TokenType))).Buffered();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();

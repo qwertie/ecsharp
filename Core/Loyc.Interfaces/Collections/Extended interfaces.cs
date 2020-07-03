@@ -8,11 +8,7 @@ namespace Loyc.Collections
 	/// <summary>An interface for the AddRange method, part of <see cref="IListEx{T}"/>
 	/// and <see cref="ICollectionEx{T}"/>, for collection types that can add multiple 
 	/// items in one method call.</summary>
-	#if DotNet2 || DotNet3
-	public interface IAddRange<T> : ICount
-	#else
 	public interface IAddRange<in T> : ICount
-	#endif
 	{
 		void AddRange(IEnumerable<T> e);
 		void AddRange(IReadOnlyCollection<T> s);
@@ -32,11 +28,7 @@ namespace Loyc.Collections
 	/// <summary>The batch-operation methods of <see cref="IListEx{T}"/>, mainly
 	/// for collection types that can add or remove multiple items in one method 
 	/// call.</summary>
-	#if DotNet2 || DotNet3
-	public interface IListRangeMethods<T> : IAddRange<T>
-	#else
 	public interface IListRangeMethods<in T> : IAddRange<T>
-	#endif
 	{
 		void InsertRange(int index, IEnumerable<T> s);
 		void InsertRange(int index, IReadOnlyCollection<T> s);

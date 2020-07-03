@@ -73,13 +73,7 @@ namespace Loyc.LLParserGenerator
 
 		public static int Test_LLLPG()
 		{
-			Console.WriteLine("Running tests... (a small number of them are broken)");
-
-			#if DotNet3 || DotNet4
-			// Workaround for MS bug: Assert(false) will not fire in debugger
-			Debug.Listeners.Clear();
-			Debug.Listeners.Add( new DefaultTraceListener() );
-			#endif
+			Console.WriteLine("Running LLLPG tests...");
 
 			return RunTests.RunMany(
 				new LlpgParserTests(),

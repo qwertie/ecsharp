@@ -32,7 +32,7 @@ namespace Loyc.Collections
 {
 	/// <summary>
 	/// Adapter: provides a view of an <see cref="IList{T}"/> in which the Count is the same, but the 
-	/// minimum index is not necessarily zero. Returned from <see cref="LCExt.AsNegList{T}(IList{T},int)"/>.
+	/// minimum index is not necessarily zero. Returned from <see cref="LCExt.AsNegList{T}(IListSource{T},int)"/>.
 	/// </summary>
 	/// <remarks>This wrapper is a structure in order to offer high performance in 
 	/// certain scenarios.</remarks>

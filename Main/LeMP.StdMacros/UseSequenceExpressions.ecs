@@ -29,7 +29,7 @@ namespace LeMP
 			return null;
 		}
 
-		public static VList<LNode> MaybeRemoveNoOpFromRunSeq(VList<LNode> runSeq)
+		public static LNodeList MaybeRemoveNoOpFromRunSeq(LNodeList runSeq)
 		{
 			// Delete final no-op in case of e.g. Foo()::id; => #runSequence(var id = Foo(); id)
 			if (runSeq.Count > 1 && runSeq.Last.IsId)
@@ -76,7 +76,7 @@ namespace LeMP
 			public this(public IMacroContext Context) {}
 			LNode[] _arrayOf1 = new LNode[1];
 			
-			public VList<LNode> EliminateSequenceExpressions(VList<LNode> stmts, bool isDeclContext)
+			public LNodeList EliminateSequenceExpressions(LNodeList stmts, bool isDeclContext)
 			{
 				return stmts.SmartSelectMany(stmt => {
 					/*
@@ -96,7 +96,7 @@ namespace LeMP
 					*/
 					LNode result = EliminateSequenceExpressions(stmt, isDeclContext);
 					if (result != stmt) {
-						VList<LNode> results;
+						LNodeList results;
 						if (result.Calls(_#runSequence)) {
 							results = MaybeRemoveNoOpFromRunSeq(result.Args);
 							return results;
@@ -265,10 +265,10 @@ namespace LeMP
 				return stmt;
 			}
 
-			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, VList<LNode> init, LNode cond, VList<LNode> inc, LNode block)
+			LNode ESEInForLoop(LNode stmt, LNodeList attrs, LNodeList init, LNode cond, LNodeList inc, LNode block)
 			{
 				// TODO: handle multi-int and multi-inc
-				var preInit = VList<LNode>.Empty;
+				var preInit = LNodeList.Empty;
 				var init' = init.SmartSelect(init1 => {
 					init1 = EliminateSequenceExpressionsInExecStmt(init1);
 					if (init1.CallsMin(_#runSequence, 1)) {
@@ -341,7 +341,7 @@ namespace LeMP
 			{
 				List<LNode> childStmts = stmt.Args.Slice(childStmtsStartAt).ToList();
 				LNode partialStmt = stmt.WithArgs(stmt.Args.First(childStmtsStartAt));
-				VList<LNode> advanceSequence;
+				LNodeList advanceSequence;
 				if (ProcessBlockCallStmt2(ref partialStmt, out advanceSequence, childStmts)) {
 					stmt = partialStmt.PlusArgs(childStmts);
 					if (advanceSequence.Count != 0)
@@ -354,7 +354,7 @@ namespace LeMP
 			// This is called to process the two parts of a block call, e.g.
 			// #if(cond, {T}, {F}) => partialStmt = #if(cond); childStmts = {{T}, {F}}
 			// Returns true if anything changed (i.e. sequence expr detected)
-			bool ProcessBlockCallStmt2(ref LNode partialStmt, out VList<LNode> advanceSequence, List<LNode> childStmts)
+			bool ProcessBlockCallStmt2(ref LNode partialStmt, out LNodeList advanceSequence, List<LNode> childStmts)
 			{
 				// Process the child statement(s)
 				bool childChanged = false;
@@ -422,7 +422,7 @@ namespace LeMP
 						result = expr;
 
 					// A variable declaration with no initializer and an `out` attribute attached
-					case { [$(...(attrs [#.NodeNamed(S.Out) != null]))]
+					case { [$(...(attrs [((LNodeList)#).NodeNamed(S.Out) != null]))]
 							$varType $(varName [#.IsId]); }:
 						if (varType.IsIdNamed(S.Missing))
 							Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
@@ -475,7 +475,7 @@ namespace LeMP
 			// Bubbles up a call. The returned pair consists of 
 			// 1. A sequence of statements to run before the call
 			// 2. The call with all (outer) #runSequences removed
-			Pair<VList<LNode>, LNode> BubbleUp_GeneralCall2(LNode expr)
+			Pair<LNodeList, LNode> BubbleUp_GeneralCall2(LNode expr)
 			{
 				var target = expr.Target;
 				var args = expr.Args;
@@ -548,7 +548,7 @@ namespace LeMP
 			// Creates a temporary for an LValue (left side of `=`, or `ref` parameter)
 			// e.g. f(x).Foo becomes f(x_N).Foo, and `var x_N = x` is added to `stmtSequence`,
 			// where N is a unique integer for the temporary variable.
-			LNode MaybeCreateTemporaryForLValue(LNode expr, ref VList<LNode> stmtSequence)
+			LNode MaybeCreateTemporaryForLValue(LNode expr, ref LNodeList stmtSequence)
 			{
 				matchCode (expr) {
 					case $lhs.$_, $lhs<$(..._)>:
@@ -574,7 +574,7 @@ namespace LeMP
 				}
 			}
 
-			LNode ConvertVarDeclToRunSequence(VList<LNode> attrs, LNode varType, LNode varName, LNode initValue)
+			LNode ConvertVarDeclToRunSequence(LNodeList attrs, LNode varType, LNode varName, LNode initValue)
 			{
 				initValue = BubbleUpBlocks(initValue);
 				varType ??= F.Missing;

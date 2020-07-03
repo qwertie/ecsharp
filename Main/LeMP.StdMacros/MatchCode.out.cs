@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -29,7 +29,7 @@ namespace LeMP
 			if (node.AttrNamed(S.Static) != null)
 				return null;	// this case is handled by static_matchCode macro
 			var args_body = context.GetArgsAndBody(false);
-			VList<LNode> args = args_body.Item1, body = args_body.Item2;
+			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1 || body.Count < 1)
 				return null;
 			var cases = GetCases(body, context.Sink);
@@ -95,7 +95,7 @@ namespace LeMP
 				output.Add(F.Call(S.Var, ListExt.Single(F.Id("LNode")).Concat(
 				cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
 			if (cmc.ListVars.Count > 0) {
-				LNode type = LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator);
+				LNode type = LNode.Id((Symbol) "LNodeList");
 				output.Add(F.Call(S.Var, ListExt.Single(type).Concat(
 				cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
 			}
@@ -114,9 +114,9 @@ namespace LeMP
 		/// <returns>The first item in each pair is a list of the cases associated
 		/// with a single handler (for `default:`, the list is empty). The second 
 		/// item is the handler code.</returns>
-		static internal VList<Pair<VList<LNode>, VList<LNode>>> GetCases(VList<LNode> body, IMessageSink sink)
+		static internal VList<Pair<LNodeList, LNodeList>> GetCases(LNodeList body, IMessageSink sink)
 		{
-			var pairs = VList<Pair<VList<LNode>, VList<LNode>>>.Empty;
+			var pairs = VList<Pair<LNodeList, LNodeList>>.Empty;
 			for (int i = 0; i < body.Count; i++)
 			{
 				bool isDefault;
@@ -127,10 +127,10 @@ namespace LeMP
 				} else
 				if ((isDefault = IsDefaultLabel(body[i])) || body[i].CallsMin(S.Case, 1))
 				{
-					var alts = isDefault ? VList<LNode>.Empty : body[i].Args.SmartSelect(AutoStripBraces);
+					var alts = isDefault ? LNodeList.Empty : body[i].Args.SmartSelect(AutoStripBraces);
 					int bodyStart = ++i;
 					for (; i < body.Count && !IsDefaultLabel(body[i]) && !body[i].CallsMin(S.Case, 1); i++) { }
-					var handler = new VList<LNode>(body.Slice(bodyStart, i - bodyStart));
+					var handler = new LNodeList(body.Slice(bodyStart, i - bodyStart));
 					pairs.Add(Pair.Create(alts, handler));
 					i--;	// counteract i++ when loop repeats (redo)
 				} else
@@ -159,8 +159,8 @@ namespace LeMP
 			public Dictionary<Symbol, int> UsageCounters = new Dictionary<Symbol, int>();
 			// The boolean value indicates whether the variable needs initialization due to multi-case
 			public Dictionary<Symbol, bool> NodeVars = new Dictionary<Symbol, bool>();	// LNode vars to declare
-			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>();	// VList<LNode> vars to declare
-			public VList<LNode> ThenClause = new VList<LNode>();	// stuff to do at the start of the {block} inside the if-statement
+			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>();	// LNodeList vars to declare
+			public LNodeList ThenClause = new LNodeList();	// stuff to do at the start of the {block} inside the if-statement
 			public IMacroContext Context;
 			public bool IsMultiCase;	// true if building a case statement with multiple patterns
 			public WList<LNode> Tests = new WList<LNode>();	// list of tests involved in matching the current pattern
@@ -302,7 +302,7 @@ namespace LeMP
 					Context.Sink.Error(pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
 		
-			private int GetFixedArgCount(VList<LNode> patternArgs, out int? varArgAt)
+			private int GetFixedArgCount(LNodeList patternArgs, out int? varArgAt)
 			{
 				varArgAt = null;
 				int argc = 0;
@@ -318,7 +318,7 @@ namespace LeMP
 				return argc;
 			}
 		
-			private void MakeArgListTests(VList<LNode> patternArgs, ref LNode candidate)
+			private void MakeArgListTests(LNodeList patternArgs, ref LNode candidate)
 			{
 				// Note: at this point we can assume that the quantity of 
 				// arguments has already been checked and is not too small.
@@ -354,9 +354,9 @@ namespace LeMP
 						var varArgStartLit = F.Literal(i);
 						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
 						if (i + 1 == patternArgs.Count)
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit)))))))).SetStyle(NodeStyle.Operator);
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call((Symbol) "LNodeList", LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit)))))))).SetStyle(NodeStyle.Operator);
 						else
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call((Symbol) "LNodeList", LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
 					}
 				
 					// Add an extra condition on the $(...list) if requested by user

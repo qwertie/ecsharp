@@ -11,16 +11,26 @@ namespace Loyc.Syntax
 	/// Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
 	/// beginning and end indices of a range in that file.
 	/// </summary>
-    [DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
+	[DebuggerDisplay("{_source.FileName}[{_startIndex}, Length {_length}]")]
 	public struct SourceRange : IEquatable<SourceRange>, ISourceRange
 	{
-		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Default, -1, 0);
+		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Synthetic, -1, 0);
 
 		public SourceRange(ISourceFile source, int beginIndex = -1, int length = 0)
 		{
 			_source = source;
 			_startIndex = beginIndex;
 			_length = length;
+		}
+		public SourceRange(ISourceRange range)
+		{
+			if (range is SourceRange range2)
+				this = range2;
+			else {
+				_source = range.Source;
+				_startIndex = range.StartIndex;
+				_length = range.Length;
+			}
 		}
 		//public SourceRange(ISourceFile source, Lexing.Token token)
 		//{
@@ -33,37 +43,23 @@ namespace Loyc.Syntax
 		private int _startIndex;
 		private int _length;
 
+		/// <summary>Returns the source file of which this range is a part.
+		/// If this <see cref="SourceRange"/> represents a "synthetic" syntax tree 
+		/// (created programmatically), the source file may be an empty "dummy" 
+		/// object such as <see cref="EmptySourceFile"/>. In this case, the 
+		/// <see cref="Length"/> should be zero.
+		/// </summary>
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
-		public int StartIndex     { [DebuggerStepThrough] get { return _startIndex; } }
-		public int EndIndex       { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
-		public int Length         { [DebuggerStepThrough] get { return _length; } }
+		public int StartIndex { [DebuggerStepThrough] get { return _startIndex; } }
+		public int EndIndex { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
+		public int Length { [DebuggerStepThrough] get { return _length; } }
 
-		public UString SourceText
-		{
-			get {
-				if (EndIndex <= StartIndex) return "";
-				if (StartIndex >= _source.Text.Count) return Localize.Localized("(not available)");
-				return Source.Text.Slice(StartIndex, EndIndex - StartIndex);
-			}
-		}
+		public UString SourceText => SourceRangeExt.SourceText(this);
 
-		public SourcePos Start
-		{
-			get { 
-				if (Source == null)
-					return SourcePos.Nowhere;
-				return Source.IndexToLine(StartIndex);
-			}
-		}
-		public SourcePos End
-		{
-			get { 
-				if (Source == null)
-					return SourcePos.Nowhere;
-				return Source.IndexToLine(EndIndex);
-			}
-		}
+		public ILineColumnFile Start => SourceRangeExt.Start(this);
+		public ILineColumnFile End => SourceRangeExt.End(this);
 
+		[Obsolete("I never ended up using this. Anyone else using it?")]
 		public char this[int subIndex]
 		{
 			get {
@@ -76,7 +72,7 @@ namespace Loyc.Syntax
 		{
 			return a._source == b._source && a._startIndex == b._startIndex && a._length == b._length;
 		}
-		public static bool operator !=(SourceRange a, SourceRange b) { return !(a == b); }
+		public static bool operator !=(SourceRange a, SourceRange b) => !(a == b);
 
 		public bool Equals(SourceRange other) => this == other;
 		public override bool Equals(object obj)
@@ -91,7 +87,11 @@ namespace Loyc.Syntax
 		}
 		public override string ToString()
 		{
-			return string.Format("{0}[{1}..{2}]", _source.FileName, _startIndex, _startIndex + _length);
+			if (StartIndex <= 0)
+				return string.Format("{0}({1}..{2})", Source.FileName, StartIndex, EndIndex);
+			ILineColumnFile start = Start, end = End;
+			return string.Format(Length > 1 ? "{0}({1},{2},{3},{4})" : "{0}({1},{2})",
+				Source.FileName, start.Line, start.Column, end.Line, end.Column);
 		}
 
 		public bool Contains(SourceRange inner)

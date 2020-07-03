@@ -55,12 +55,13 @@ namespace Loyc.Ecs
 		public static readonly Precedence Primary    = new Precedence(100);   // x.y x::y x=:y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
 		public static readonly Precedence NullDot    = new Precedence(99);    // ?.
 		public static readonly Precedence Prefix     = new Precedence(91, 90, 90, 91); // +  -  !  ~  ++x  --x  (T)x
-		public static readonly Precedence Forward    = new Precedence(88);    // ==>x
-		public static readonly Precedence Power      = new Precedence(81, 80);// **
+		public static readonly Precedence Power      = new Precedence(86, 85);// **
+		public static readonly Precedence Range      = new Precedence(80);    // ..
+		public static readonly Precedence Forward    = new Precedence(78);    // ==> x
+		public static readonly Precedence Switch     = new Precedence(75);    // expr switch { ... }
 		public static readonly Precedence Multiply   = new Precedence(70);    // *, /, %
 		public static readonly Precedence Add        = new Precedence(60);    // +, -, ~
 		public static readonly Precedence Shift      = new Precedence(56, 56, 56, 70); // >> << (for printing purposes, immiscible with * / + -)
-		public static readonly Precedence Range      = new Precedence(50);    // ..
 		public static readonly Precedence Backtick   = new Precedence(46, 72, 45, 73); // `custom operator` (immiscible with * / + - << >> ..)
 		public static readonly Precedence Compare    = new Precedence(40);    // < > <= >=
 		public static readonly Precedence IsAsUsing  = new Precedence(40, 99, 40, 40); // is as using

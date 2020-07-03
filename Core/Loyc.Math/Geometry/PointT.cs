@@ -39,9 +39,6 @@ namespace Loyc.Geometry
 		public static implicit operator Point<double>(Point<T> p) { return new Point<double>(p._x.ToDouble(null), p._y.ToDouble(null)); }
 		public static explicit operator System.Drawing.Point(Point<T> p) { return new System.Drawing.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
 		public static explicit operator System.Drawing.PointF(Point<T> p) { return new System.Drawing.PointF(p._x.ToInt32(null), p._y.ToInt32(null)); }
-		#if DotNet3 || DotNet4
-		public static explicit operator System.Windows.Point(Point<T> p) { return new System.Windows.Point(p._x.ToInt32(null), p._y.ToInt32(null)); }
-		#endif
 		
 		public static Point<T>  operator+(Point<T> a, Vector<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }
 		public static Point<T>  operator+(Vector<T> a, Point<T> b) { return new Point<T>(m.Add(a.X,b.X), m.Add(a.Y,b.Y)); }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -235,7 +235,7 @@ namespace MiniTestRunner.WinForms
 		}
 		private void btnRunTests_Click(object sender, EventArgs e)
 		{
-			_tree.Model.StartTesting(_tree.Model.Roots.Upcast<RowModel, TaskRowModel>());
+			_tree.Model.StartTesting(_tree.Model.Roots);
 		}
 		private void btnStopTests_Click(object sender, EventArgs e)
 		{

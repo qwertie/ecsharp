@@ -9,20 +9,20 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// Member list:
 	/// <code>
-	/// public IEnumerator&lt;T> GetEnumerator(); // inherited
-	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
-	/// public T this[int index] { get; }         // inherited
-	/// public int Count { get; }                 // inherited
-	/// public T TryGet(int index, out bool fail);
+	/// public IEnumerator&lt;T> GetEnumerator();  // inherited
+	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator(); // inherited
+	/// public T this[int index] { get; }          // inherited
+	/// public int Count { get; }                  // inherited
+	/// public T TryGet(int index, out bool fail); // inherited
 	/// IRange&lt;T> Slice(int start, int count = int.MaxValue);
 	/// </code>
 	/// The term "source" means a read-only collection, as opposed to a "sink" which
-	/// is a write-only collection. The purpose of IListSource is to support slices,
-	/// eliminate the need to call <c>Count</c> before reading from the list, and to
-	/// make it easier to implement a read-only list, by lifting IList's requirement 
-	/// to write implementations for Add(), Remove(), etc. A secondary purpose is, 
-	/// of course, to guarantee users don't mistakenly call those methods on a 
-	/// read-only collection.
+	/// is a write-only collection.
+	/// <para/>
+	/// IListSource was created before .NET's IReadOnlyList but was later retrofitted 
+	/// so that IListSource implements IReadOnlyList. In addition, IListSource supports
+	/// slices through its Slice() method, and it has <c>TryGet</c> methods to eliminate 
+	/// the need to call <c>Count</c> before reading from the list.
 	/// <para/>
 	/// I have often wanted to access the "next" or "previous" item in a list, e.g.
 	/// during parsing, but it inconvenient if you have to worry about whether the 
@@ -34,46 +34,16 @@ namespace Loyc.Collections
 	/// to return a default value if the index is not valid, using only one 
 	/// interface call.
 	/// <para/>
-	/// Design footnote: I would have preferred to define <c>TryGet</c> with one of 
-	/// these signatures:
-	/// <code>
-	///     bool TryGet(int index, out T value);
-	///     T? TryGet(int index);
-	///     Maybe&lt;T> TryGet(int index);
-	/// </code>
-	/// However, these signatures don't allow T to be covariant (<c>out T</c>). 
-	/// The first signature doesn't work because the .NET runtime doesn't distinguish
-	/// between <c>ref</c> and <c>out</c>, so T could not be covariant. The second
-	/// signature doesn't work if <c>T</c> is not a value type. The third signature
-	/// doesn't work because, as a struct, <c>Maybe&lt;T></c> is not allowed to be
-	/// covariant (even though the JIT could, theoretically, treat it covariantly).
+	/// Design footnote: Ideally the return type of TryGet would be <see cref="Maybe{T}"/>,
+	/// but that design would not allow T to be covariant (out T). Therefore, the 
+	/// version of <c>TryGet</c> that returns <see cref="Maybe{T}"/> is an extension 
+	/// method.
 	/// <para/>
 	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface more quickly.
 	/// </remarks>
-	#if !DotNet2 && !DotNet3
-	public interface IListSource<out T> : IReadOnlyList<T>
-	#else
-	public interface IListSource<T> : IReadOnlyList<T>
-	#endif
+	public interface IListSource<out T> : IReadOnlyList<T>, ITryGet<int, T>, IIndexed<int, T>
 	{
-		/// <summary>Gets the item at the specified index, and does not throw an
-		/// exception on failure.</summary>
-		/// <param name="index">An index in the range 0 to Count-1.</param>
-		/// <param name="fail">A flag that is set on failure.</param>
-		/// <returns>The element at the specified index, or default(T) if the index
-		/// is not valid.</returns>
-		/// <remarks>In my original design, the caller could provide a value to 
-		/// return on failure, but this would not allow T to be marked as "out" in 
-		/// C# 4. For the same reason, we cannot have a ref/out T parameter.
-		/// Instead, the following extension methods are provided:
-		/// <code>
-		///     bool TryGet(int index, ref T value);
-		///     T TryGet(int, T defaultValue);
-		/// </code>
-		/// </remarks>
-		T TryGet(int index, out bool fail);
-
 		/// <summary>Returns a sub-range of this list.</summary>
 		/// <param name="start">The new range will start at this index in the current
 		/// list (this location will be index [0] in the new range).</param>
@@ -110,6 +80,7 @@ namespace Loyc.Collections
 		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
 		/// <param name="value">A variable that will be changed to the retrieved value. If the index is not valid, this variable is left unmodified.</param>
 		/// <returns>True on success, or false if the index was not valid.</returns>
+		[Obsolete("Please use another overload of TryGet; this one will be removed eventually")]
 		public static bool TryGet<T>(this IListSource<T> list, int index, ref T value)
 		{
 			bool fail;
@@ -119,35 +90,17 @@ namespace Loyc.Collections
 			value = result;
 			return true;
 		}
-		
+
+		// These methods disambiguate other extension methods: IReadOnlyList.TryGet and ITryGet.TryGet
 		/// <summary>Tries to get a value from the list at the specified index.</summary>
 		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
 		/// <param name="defaultValue">A value to return if the index is not valid.</param>
-		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
-		{
-			bool fail;
-			T result = list.TryGet(index, out fail);
-			if (fail)
-				return defaultValue;
-			else
-				return result;
-		}
-
-		/// <summary>Tries to get a value from the list at the specified index.</summary>
-		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
-		/// <returns>The retrieved value wrapped in <see cref="Maybe{T}"/>, if any.</returns>
-		public static Maybe<T> TryGet<T>(this IListSource<T> list, int index)
-		{
-			bool fail;
-			T result = list.TryGet(index, out fail);
-			if (fail)
-				return Maybe<T>.NoValue;
-			return new Maybe<T>(result);
-		}
+		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue) => TryGetExt.TryGet(list, index, defaultValue);
+		public static Maybe<T> TryGet<T>(this IListSource<T> list, int index) => TryGetExt.TryGet(list, index);
 
 		/// <summary>Uses list.TryGet(index) to find out if the specified index is valid.</summary>
 		/// <returns>true if the specified index is valid, false if not.</returns>
+		[Obsolete("Use TryGet(index).HasValue instead, or compare index to Count")]
 		public static bool HasIndex<T>(this IListSource<T> list, int index)
 		{
 			bool fail;

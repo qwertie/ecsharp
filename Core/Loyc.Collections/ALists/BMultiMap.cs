@@ -43,7 +43,7 @@ namespace Loyc.Collections
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
 	[Serializable]
-	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>
+	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>, IIndexed<K, BMultiMap<K, V>.ValueList>
 	{
 		#region Constructors
 
@@ -62,11 +62,11 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Initializes the map with the specified key-comparer and default value comparer.
-		/// This constructor can only be used if values are comparible with <see cref="IComparable{V}"/>.< </summary>
+		/// This constructor can only be used if values are comparible with <see cref="IComparable{V}"/>.</summary>
 		/// <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
 		public BMultiMap(Func<K, K, int> compareKeys)
 			: this(compareKeys, DefaultVComparison) { }
-		/// <summary>Initializes the map with the specified key and value comparers.< </summary>
+		/// <summary>Initializes the map with the specified key and value comparers.</summary>
 		/// <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
 		/// <param name="compareValues">Value comparer, or null to pretend all values are equal.
 		/// It is useful to use null for this parameter when V does not implement IComparable.

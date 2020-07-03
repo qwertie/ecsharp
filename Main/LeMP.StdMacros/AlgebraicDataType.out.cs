@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -32,14 +32,14 @@ namespace LeMP
 			int? i;
 			{
 				LNode baseName;
-				VList<LNode> attrs, baseTypes, body;
+				LNodeList attrs, baseTypes, body;
 				if ((attrs = classDecl.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && classDecl.Calls(CodeSymbols.Class, 3) && (baseName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && classDecl.Args[2].Calls(CodeSymbols.Braces)) {
 					baseTypes = classDecl.Args[1].Args;
 					body = classDecl.Args[2].Args;
 					attrs = attrs.RemoveAt(i.Value);
 					var adt = new AltType(attrs, baseName, baseTypes, null);
 					adt.ScanClassBody(body);
-					var output = new VList<LNode>();
+					var output = new LNodeList();
 					adt.GenerateOutput(ref output);
 					return LNode.Call(CodeSymbols.Splice, LNode.List(output));
 				}
@@ -54,11 +54,11 @@ namespace LeMP
 			// EITHER [$(.._classAttrs)] alt class $TypeName : $(..BaseTypes) { ScanClassBody produces _children }
 			// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
 			// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
-			private VList<LNode> _classAttrs;
+			private LNodeList _classAttrs;
 			public LNode TypeName;
-			public VList<LNode> BaseTypes;
+			public LNodeList BaseTypes;
 			public AltType ParentType;
-			public AltType(VList<LNode> classAttrs, LNode typeName, VList<LNode> baseTypes, AltType parentType)
+			public AltType(LNodeList classAttrs, LNode typeName, LNodeList baseTypes, AltType parentType)
 			{
 				_classAttrs = classAttrs;
 				TypeName = typeName;
@@ -73,8 +73,8 @@ namespace LeMP
 				//}
 				{	// Above matchCode expanded:
 					LNode stem;
-					VList<LNode> a = default(VList<LNode>);
-					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new VList<LNode>(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
+					LNodeList a = default(LNodeList);
+					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new LNodeList(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
 						_typeNameStem = stem;
 						_genericArgs = a.ToWList();
 					} else {
@@ -119,22 +119,22 @@ namespace LeMP
 			LNode TypeNameWithoutAttrs;	// TypeName with type-param attributes (e.g. #in #out #where) removed
 			List<AltType> _children = new List<AltType>();
 			internal List<AdtParam> Parts = new List<AdtParam>();
-			VList<LNode> _constructorAttrs;
-			VList<LNode> _extraConstrLogic;
-			VList<LNode> _classBody = new VList<LNode>();
+			LNodeList _constructorAttrs;
+			LNodeList _extraConstrLogic;
+			LNodeList _classBody = new LNodeList();
 		
-			public void AddParts(VList<LNode> parts)
+			internal void AddParts(LNodeList parts)
 			{
 				foreach (var part in parts)
 					Parts.Add(new AdtParam(part, this));
 			}
-			public void ScanClassBody(VList<LNode> body)
+			internal void ScanClassBody(LNodeList body)
 			{
 				foreach (var stmt in body) {
 					int? i;
 					{
 						LNode altName;
-						VList<LNode> attrs, childBody = default(VList<LNode>), parts, rest;
+						LNodeList attrs, childBody = default(LNodeList), parts, rest;
 						if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 3) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true || (attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fn, 4) && stmt.Args[0].IsIdNamed((Symbol) "alt") && (altName = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true && stmt.Args[3].Calls(CodeSymbols.Braces) && (childBody = stmt.Args[3].Args).IsEmpty | true) {
 							LNode genericAltName = altName;
 							if (altName.CallsMin(CodeSymbols.Of, 1)) { } else if (_genericArgs.Count > 0)
@@ -143,7 +143,7 @@ namespace LeMP
 							child.AddParts(parts);
 							child.ScanClassBody(childBody);
 							_children.Add(child);
-						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new VList<LNode>(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
+						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new LNodeList(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
 							parts = stmt.Args[2].Args;
 							attrs.RemoveAt(i.Value);
 							_constructorAttrs.AddRange(attrs);
@@ -156,7 +156,7 @@ namespace LeMP
 				}
 			}
 			// Generates a class declaration for the current alt and its subtypes
-			public void GenerateOutput(ref VList<LNode> list)
+			internal void GenerateOutput(ref LNodeList list)
 			{
 				bool isAbstract = _classAttrs.Any(a => a.IsIdNamed(S.Abstract));
 			
@@ -169,12 +169,12 @@ namespace LeMP
 				if (baseParts.Count > 0)
 					initialization.Insert(0, F.Call(S.Base, baseParts.Select(p => p.NameId)));
 			
-				var args = new VList<LNode>(allParts.Select(p => p.OriginalDecl));
+				var args = new LNodeList(allParts.Select(p => p.OriginalDecl));
 				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
 					_constructorAttrs.Add(F.Id(S.Public));
 				LNode constructor = LNode.Call(LNode.List(_constructorAttrs), CodeSymbols.Constructor, LNode.List(LNode.Missing, _typeNameStem, LNode.Call(CodeSymbols.AltList, LNode.List(args)), LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(initialization).AddRange(_extraConstrLogic)).SetStyle(NodeStyle.StatementBlock)));
 			
-				var outBody = new VList<LNode>();
+				var outBody = new LNodeList();
 				outBody.Add(constructor);
 				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));
 				outBody.AddRange(baseParts.Select(p => GetWithFn(p, isAbstract, S.Override, allParts)));
@@ -192,7 +192,7 @@ namespace LeMP
 				foreach (var child in _children)
 					child.GenerateOutput(ref list);
 			}
-			public LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
+			internal LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
 			{
 				int totalParts = allParts.Count();
 				var withField = F.Id("With" + part.NameId.Name);
@@ -205,7 +205,7 @@ namespace LeMP
 						args.Add(otherPart.NameId);
 				}
 			
-				var attrs = new VList<LNode>(F.Id(S.Public));
+				var attrs = new LNodeList(F.Id(S.Public));
 				if (isAbstract)
 					attrs.Add(F.Id(S.Abstract));
 				if (virtualOverride != null && (!isAbstract || virtualOverride == S.Override))
@@ -226,9 +226,9 @@ namespace LeMP
 		// Info about one parameter of one ADT
 		class AdtParam
 		{
-			public LNode OriginalDecl;
-			public AltType ContainingType;
-			public AdtParam(LNode originalDecl, AltType containingType)
+			internal LNode OriginalDecl;
+			internal AltType ContainingType;
+			internal AdtParam(LNode originalDecl, AltType containingType)
 			{
 				OriginalDecl = originalDecl;
 				ContainingType = containingType;
@@ -242,13 +242,13 @@ namespace LeMP
 					throw new LogException(NameId, "alt: Expected a simple variable name");
 			}
 		
-			public readonly LNode Type;
-			public readonly LNode NameId;
+			internal readonly LNode Type;
+			internal readonly LNode NameId;
 		
-			public LNode GetFieldDecl() {
+			internal LNode GetFieldDecl() {
 				return LNode.Call(LNode.List(LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type, NameId, LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Id(CodeSymbols.get), LNode.Id(LNode.List(LNode.Id(CodeSymbols.Private)), CodeSymbols.set))).SetStyle(NodeStyle.StatementBlock)));
 			}
-			public LNode GetItemDecl(int itemNum) {
+			internal LNode GetItemDecl(int itemNum) {
 				LNode ItemN = F.Id("Item" + itemNum);
 				// ItemN properties are used by the code generated for pattern matching
 				return LNode.Call(LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsable"))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "ComponentModel"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "EditorBrowsableState"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Never"))).SetStyle(NodeStyle.Operator))), LNode.Id(CodeSymbols.Public)), CodeSymbols.Property, LNode.List(Type, ItemN, LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.get, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(NameId)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special))).SetStyle(NodeStyle.StatementBlock)));

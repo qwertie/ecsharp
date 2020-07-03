@@ -17,7 +17,7 @@ namespace Loyc.LLParserGenerator
 	[TestFixture]
 	class LlpgParserTests : Assert
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 		static Symbol AndNot = GSymbol.Get("'&!"), AddColon = GSymbol.Get("'+:");
 		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("'suf+"), Star = GSymbol.Get("'suf*"), Opt = GSymbol.Get("'suf?"), Bang = GSymbol.Get("'suf!");
 		static Symbol Greedy = GSymbol.Get("greedy"), Nongreedy = GSymbol.Get("nongreedy");
@@ -102,12 +102,13 @@ namespace Loyc.LLParserGenerator
 				using (ParsingService.SetDefault(Ecs.EcsLanguageService.Value))
 					TestStage1Core(text, expected);
 		}
-		void TestStage1Core(string text, LNode expected)
+		void TestStage1Core(string text, LNode expected, IMessageSink sink = null)
 		{
-			var lexer = ParsingService.Default.Tokenize(text, ConsoleMessageSink.Value);
+			sink = sink ?? ConsoleMessageSink.Value;
+			var lexer = ParsingService.Default.Tokenize(text, sink);
 			var treeified = new TokensToTree(lexer, true);
 			var tokens = treeified.Buffered();
-			var parser = new StageOneParser(tokens, lexer.SourceFile, ConsoleMessageSink.Value);
+			var parser = new StageOneParser(tokens, lexer.SourceFile, sink);
 			LNode result = parser.Parse();
 			AreEqual(expected, result);
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,7 +73,7 @@ namespace Loyc.LLParserGenerator
 					_classBody.SpliceAdd(method, S.Splice);
 				}
 
-				method = CGH.CreateRuleMethod(rule, _target.ToVList());
+				method = CGH.CreateRuleMethod(rule, _target.ToLNodeList());
 				if (!rule.IsRecognizer)
 					method = F.OnNewLine(method);
 				_classBody.SpliceAdd(method, S.Splice);
@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 				if (!_recognizerMode)
 					AddUserAction(pred.Statements);
 			}
-			private void AddUserAction(VList<LNode> actions)
+			private void AddUserAction(LNodeList actions)
 			{
 				int i = _target.Count;
 

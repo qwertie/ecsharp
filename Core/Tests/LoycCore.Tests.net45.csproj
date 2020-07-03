@@ -17,7 +17,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkSubset>
     </TargetFrameworkSubset>
     <PublishUrl>publish\</PublishUrl>
@@ -42,73 +42,29 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <NoStdLib>False</NoStdLib>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <FileAlignment>1024</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug.NET4|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Bin\Debug.NET4\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\Bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
-    <DebugType>PdbOnly</DebugType>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Bin\Release.NET4\</OutputPath>
-    <DefineConstants>TRACE;DotNet4</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>..\Bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Loyc.Tests.RunCoreTests</StartupObject>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <BaseAddress>4194304</BaseAddress>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <FileAlignment>4096</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Bin\Debug.NET3\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet35</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <FileAlignment>4096</FileAlignment>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Debug.NET4\Tests.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <OutputPath>..\Bin\Release.NET3\</OutputPath>
-    <DefineConstants>TRACE;DotNet35</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <FileAlignment>4096</FileAlignment>
-    <DebugType>PdbOnly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\Bin\Release.NET4\Tests.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -120,7 +76,6 @@
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -131,7 +86,6 @@
     <DefineConstants>TRACE;DotNet45</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
-    <FileAlignment>4096</FileAlignment>
     <DebugType>PdbOnly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -157,16 +111,6 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-    <Reference Include="Theraot.Core">
-      <HintPath>..\Lib\DotNet35\Theraot.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v4.0'">
-    <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v4.5'">
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>

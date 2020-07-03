@@ -5,6 +5,7 @@ using System.Text;
 using Loyc.Utilities;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
+using Loyc;
 
 namespace Loyc.Syntax.Les
 {
@@ -51,32 +52,35 @@ namespace Loyc.Syntax.Les
 		{
 			get { return true; }
 		}
-		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
+		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			return new Les2Lexer(text, fileName, msgs);
+			return new Les2Lexer(text, fileName, msgs) {
+				SkipValueParsing = options.SurfaceScanOnly,
+				SpacesPerTab = options.SpacesPerTab
+			};
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
 		{
-			var lexer = Tokenize(text, fileName, msgs);
-			return Parse(lexer, msgs, inputType, preserveComments);
+			var lexer = Tokenize(text, fileName, msgs, options);
+			return Parse(lexer, msgs, options);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = true)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, IParsingOptions options)
 		{
-			if (preserveComments) {
+			if (options.PreserveComments) {
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);
-				var results = Parse(saver.Buffered(), input.SourceFile, msgs, inputType);
+				var results = Parse(saver.Buffered(), input.SourceFile, msgs, options);
 				var injector = new StandardTriviaInjector(saver.TriviaList, saver.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
 				return injector.Run(results.GetEnumerator()).Buffered();
 			} else {
 				var lexer = new WhitespaceFilter(input);
-				return Parse(lexer.Buffered(), input.SourceFile, msgs, inputType);
+				return Parse(lexer.Buffered(), input.SourceFile, msgs, options);
 			}
 		}
 
 		[ThreadStatic]
 		static Les2Parser _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, IParsingOptions options)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -86,9 +90,8 @@ namespace Loyc.Syntax.Les
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = inputType == ParsingMode.Expressions;
-			char _ = '\0';
-			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
+			bool exprMode = options.Mode == ParsingMode.Expressions;
+			if (options.Mode == ParsingMode.Expressions || file.Text.TryGet(255).HasValue) {
 				Les2Parser parser = _parser;
 				if (parser == null)
 					_parser = parser = new Les2Parser(input, file, msgs);
@@ -96,7 +99,7 @@ namespace Loyc.Syntax.Les
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
 				}
-				if (inputType == ParsingMode.Expressions)
+				if (options.Mode == ParsingMode.Expressions)
 					return parser.ExprList();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();

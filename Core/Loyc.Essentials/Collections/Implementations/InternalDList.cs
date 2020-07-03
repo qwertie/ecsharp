@@ -90,17 +90,13 @@ namespace Loyc.Collections.Impl
 
 		public T[] InternalArray { get { return _array; } }
 
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public int Internalize(int index)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
 			return Internalize_NoCheck(index);
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		private int Internalize_NoCheck(int index)
 		{
 			index += _start;
@@ -189,9 +185,7 @@ namespace Loyc.Collections.Impl
 			PushLast((ICollection<T>)items);
 		}
 
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public void PushLast(T item)
 		{
 			AutoRaiseCapacity(1);
@@ -251,9 +245,7 @@ namespace Loyc.Collections.Impl
  			if ((_count << 1) + 2 < _array.Length)
 				Capacity = _count + 2;
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public void AutoRaiseCapacity(int more)
 		{
 			if (_count + more > _array.Length)
@@ -637,17 +629,13 @@ namespace Loyc.Collections.Impl
 
 		public T this[int index]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			get {
 				Debug.Assert((uint)index < (uint)_count);
 				return _array[Internalize_NoCheck(index)];
 			}
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			set {
 				Debug.Assert((uint)index < (uint)_count);
@@ -656,9 +644,7 @@ namespace Loyc.Collections.Impl
 		}
 		public T this[int index, T defaultValue]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			[DebuggerStepThrough]
 			get {
 				if ((uint)index < (uint)_count)
@@ -858,24 +844,16 @@ namespace Loyc.Collections.Impl
 
 		public T First
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { return this[0]; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			set { this[0] = value; }
 		}
 		public T Last
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { return this[_count - 1]; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			set { this[_count - 1] = value; }
 		}
 		public bool IsEmpty

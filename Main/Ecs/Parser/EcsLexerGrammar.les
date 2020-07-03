@@ -229,7 +229,7 @@ namespace Loyc.Ecs.Parser
 		| "+="  { _type = TT.CompoundSet; _value = S.AddAssign; }
 		/ "++"  { _type = TT.IncDec; _value = S.PreInc; }
 		/ "+"   { _type = TT.Add; _value = S.Add; }
-		| "->"  { _type = TT.PtrArrow; _value = S.PtrArrow; } 
+		| "->"  { _type = TT.PtrArrow; _value = S.RightArrow; } 
 		/ "-="  { _type = TT.CompoundSet; _value = S.SubAssign; }
 		/ "--"  { _type = TT.IncDec; _value = S.PreDec; }
 		/ "-"   { _type = TT.Sub; _value = S.Sub; }

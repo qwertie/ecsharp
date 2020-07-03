@@ -69,5 +69,33 @@ namespace Loyc
 			Assert.AreEqual(123.0, d.Value);
 			Assert.AreEqual("Hi", s.Value);
 		}
+
+		[Test]
+		public void MapTest()
+		{
+			Either<int, Exception> i = 404;
+			Either<int, Exception> e = new ArgumentException("Hi");
+			Either<double, Exception> out1 = i.MapLeft(x => x * 0.5);
+			Either<double, Exception> out2 = e.MapLeft(x => x * 0.5);
+			Assert.AreEqual(202.0, out1.Value);
+			Assert.AreEqual(e.Value, out2.Value);
+			Either<int, string> out3 = i.MapRight(x => x.Message);
+			Either<int, string> out4 = e.MapRight(x => x.Message);
+			Assert.AreEqual(404, out3.Value);
+			Assert.AreEqual("Hi", out4.Value);
+		}
+
+		[Test]
+		public void IfTest()
+		{
+			Either<int, decimal> left = 5;
+			Either<int, string> right = "Hi";
+			string s = "";
+			left.IfLeft(L => s += L + "!");
+			left.IfRight(R => s += R + "!");
+			right.IfLeft(L => s += L + "!");
+			right.IfRight(R => s += R + "!");
+			Assert.AreEqual("5!Hi!", s);
+		}
 	}
 }

@@ -27,14 +27,9 @@ namespace Loyc.Syntax.Les
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 
-		protected LNode OnNewLine(LNode node)
-		{
-			return node.PlusAttrBefore(F.TriviaNewline);
-		}
-		protected LNode NewlineAfter(LNode node)
-		{
-			return node.PlusTrailingTrivia(F.TriviaNewline);
-		}
+		protected static LNode Op(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
+		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
+		protected LNode NewlineAfter(LNode node) => node.PlusTrailingTrivia(F.TriviaNewline);
 
 		[Test]
 		public void SimpleCalls()
@@ -42,7 +37,7 @@ namespace Loyc.Syntax.Les
 			Expr("x", x);
 			Expr("x()", F.Call(x));
 			Expr(@"x(1, ""Hello"", '!', 1.0)", F.Call(x, one, F.Literal("Hello"), F.Literal('!'), F.Literal(1.0)));
-			Expr(@"x(@true, @false, @null)",   F.Call(x, F.Literal(true), F.Literal(false), F.Literal(null)));
+			Expr(@"x(@true, @false, @null)",   F.Call(x, F.Literal(true), F.Literal(false), F.Null));
 			Expr("Foo(a, b, c)", F.Call(Foo, a, b, c));
 			Expr("Foo(a(b, c), b(c))", F.Call(Foo, F.Call(a, b, c), F.Call(b, c)));
 		}
@@ -92,13 +87,14 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void RangeOps()
 		{
-			Exact("a >= b .. c;",   F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
-			Exact("a >= b ..< c;",  F.Call(S.GE, a, F.Call("'..<", b, c)));
-			Exact("a + b ... c;",   F.Call(S.DotDotDot, F.Call(S.Add, a, b), c));
-			Exact("a .< b + c;",    F.Call("'.<", a, F.Call(S.Add, b, c)));
-			Stmt(".. a + b == c;",  F.Call(S.Eq, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
-			Exact("x >> a .. b;",   F.Call(S.DotDot, F.Call(S.Shr, x, a), b));
-			Exact("a.b!!.c .?. 1;", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
+			Exact("a >= b..c;",     F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Exact("a >= b..<c;",    F.Call(S.GE, a, F.Call("'..<", b, c)));
+			Exact("a + b...c;",     F.Call(S.Add, a, F.Call(S.DotDotDot, b, c)));
+			Exact("@'+(a, b)...c;", F.Call(S.DotDotDot, F.Call(S.Add, a, b), c));
+			Exact("a.<b + c;",      F.Call(S.Add, F.Call("'.<", a, b), c));
+			Stmt("..a + b == c;",   F.Call(S.Eq, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Exact("x >> a..b;",     F.Call(S.Shr, x, F.Call(S.DotDot, a, b)));
+			Exact("a.b!!.c.?.1;", F.Call("'.?.", F.Call("'!!.", F.Dot(a, b), c), one));
 		}
 
 		[Test]
@@ -137,7 +133,14 @@ namespace Loyc.Syntax.Les
 		{
 			Stmt("/x;", F.Call(S.Div, x));
 			Stmt("-a * b;", F.Call(S.Mul, F.Call(S._Negate, a), b));
-			Stmt("-x ** +x / ~x + &x & *x && !x == ^x;",
+			Stmt("-x** +x / ~x + &x & *x && !x == ^x;",
+				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, 
+					F.Call(S._Negate, F.Call(S.Exp, x, F.Call(S._UnaryPlus, x))), 
+					F.Call(S.NotBits, x)),
+					F.Call(S._AddressOf, x)),
+					F.Call(S._Dereference, x)),
+					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
+			Stmt("@'-(x)** +x / ~x + &x & *x && !x == ^x;",
 				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
@@ -155,8 +158,7 @@ namespace Loyc.Syntax.Les
 			Stmt(@"a.b --;", F.Call(S.PostDec, F.Call(S.Dot, a, b)));
 			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'suf-<>-", b)));
 			// Ensure printer isn't confused by "suf" prefix which also appears on suffix operators
-			Exact(@"`'suffer` x;", F.Call(@"'suffer", x).SetBaseStyle(NodeStyle.Operator));
-			Exact(@"`'suffer` x;", F.Call(@"'suffer", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"`'suffer`x;", Op(F.Call(@"'suffer", x)));
 			Exact(@"a!! !!;", F.Call(S.SufBangBang, F.Call(S.SufBangBang, a)));
 			Exact(@"!!a!!;", F.Call(S.PreBangBang, F.Call(S.SufBangBang, a)));
 		}
@@ -168,15 +170,9 @@ namespace Loyc.Syntax.Les
 			//Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"(a `is` b) `is` bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
 			Stmt(@"a `=` b && c", F.Call(S.And, F.Call(_("="), a, b), c));
+			Stmt(@"`Foo` a == `Foo` b", F.Call(S.Eq, Op(F.Call(Foo, a)), Op(F.Call(Foo, b))));
 			// Currently \* is equivalent to plain * (the backslash just indicates that the operator may contain letters)
 			//Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
-		}
-
-		protected static LNode AsOperator(LNode node) { return AsStyle(NodeStyle.Operator, node); }
-		protected static LNode AsStyle(NodeStyle s, LNode node)
-		{
-			node.BaseStyle = s;
-			return node;
 		}
 
 		[Test]

@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -55,7 +55,7 @@ namespace LeMP
 		{
 			{
 				LNode input;
-				VList<LNode> contents;
+				LNodeList contents;
 				if (node.Args.Count == 2 && (input = node.Args[0]) != null && node.Args[1].Calls(CodeSymbols.Braces)) {
 					contents = node.Args[1].Args;
 					var outputs = new WList<LNode>();
@@ -79,7 +79,7 @@ namespace LeMP
 							}
 						}
 						//  handler: the list of statements underneath `case`
-						var handler = new VList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
+						var handler = new LNodeList(contents.Slice(case_i + 1, next_i - (case_i + 1)));
 					
 						if (@case .Calls(S.Case) && @case .Args.Count > 0) {
 							var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
@@ -95,7 +95,7 @@ namespace LeMP
 								context.Sink.Error(@contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
 					}
-					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToVList().AsLNode(S.Braces), LNode.Literal(false)));
+					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToLNodeList().AsLNode(S.Braces), LNode.Literal(false)));
 				}
 			}
 			return null;
@@ -223,8 +223,8 @@ namespace LeMP
 		{
 			protected IMacroContext _context;
 			protected LNode _input;
-			protected VList<LNode> _handler;
-			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, VList<LNode> handler)
+			protected LNodeList _handler;
+			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, LNodeList handler)
 			{
 				_context = context;
 				_input = input;
@@ -252,7 +252,7 @@ namespace LeMP
 				// Get the parts of the pattern, e.g. `$x is T(sp)` => varBinding=x, isType=T, sp is returned
 				bool refExistingVar;
 				LNode varBinding, cmpExpr, isType, inRange, propName;
-				VList<LNode> subPatterns, conditions;
+				LNodeList subPatterns, conditions;
 				GetPatternComponents(pattern, out propName, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
 			
 				if (defaultPropName == null) {	// Outermost pattern
@@ -326,7 +326,7 @@ namespace LeMP
 			void GetPatternComponents(LNode pattern, out LNode propName, 
 				out LNode varBinding, out bool refExistingVar, 
 				out LNode cmpExpr, out LNode isType, out LNode inRange, 
-				out VList<LNode> subPatterns, out VList<LNode> conditions)
+				out LNodeList subPatterns, out LNodeList conditions)
 			{
 				// Format: PropName: is DerivedClass name(...) in Range
 				// Here's a typical pattern (case expr):
@@ -346,7 +346,7 @@ namespace LeMP
 				//   inRange = quote(Range);
 				//   conds will have "conds" pushed to the front.
 				// 
-				subPatterns = VList<LNode>.Empty;
+				subPatterns = LNodeList.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
 			
 				propName = varBinding = cmpExpr = isType = inRange = null;
@@ -358,7 +358,7 @@ namespace LeMP
 					propName = pattern[0]; pattern = pattern[1];
 				}
 				// Deconstruct `pattern && condition` (iteratively)
-				conditions = VList<LNode>.Empty;
+				conditions = LNodeList.Empty;
 				while (pattern.Calls(S.And, 2)) {
 					conditions.Add(pattern.Args.Last);
 					pattern = pattern.Args[0];
@@ -444,12 +444,12 @@ namespace LeMP
 						end = start;
 					
 						finalOutput = new WList<LNode> { 
-							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToVList().AsLNode(S.Braces)))
+							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToLNodeList().AsLNode(S.Braces)))
 						};
 					} else
 						finalOutput.Insert(0, code);
 				}
-				return finalOutput.ToVList().AsLNode(S.Braces);
+				return finalOutput.ToLNodeList().AsLNode(S.Braces);
 			}
 		}
 	

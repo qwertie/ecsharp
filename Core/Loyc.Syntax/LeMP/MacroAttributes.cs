@@ -172,7 +172,7 @@ namespace LeMP
 						results.Add(new MacroInfo(@namespace, attr, @delegate));
 					}
 				} else {
-					// Try to get macros by calling the method.
+					// If the method returns a list of MacroInfo, try to get macros by calling it.
 					try {
 						var d = Delegate.CreateDelegate(typeof(Func<IEnumerable<MacroInfo>>), 
 							method.IsStatic ? null : instance, method, throwOnBindFailure: false);

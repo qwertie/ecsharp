@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
@@ -75,9 +76,7 @@ namespace Loyc.Syntax
 		}
 
 		/// <inheritdoc/>
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		public new void Skip() { base.Skip(); }
 
 		#region Normal matching

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -57,7 +58,7 @@ namespace Loyc.Syntax.Lexing
 	/// is a wrapper around <c>System.String</c> that, among other things, 
 	/// implements <c>ICharSource</c>; please note that C# will implicitly convert 
 	/// normal strings to <see cref="UString"/> for you).</typeparam>
-	public abstract class BaseLexer<CharSrc> : IIndexToLine
+	public abstract class BaseLexer<CharSrc> : IIndexToLine, IHasFileName
 		where CharSrc : ICharSource
 	{
 		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
@@ -165,9 +166,7 @@ namespace Loyc.Syntax.Lexing
 		public int InputPosition
 		{
 			get { return _inputPosition; }
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			protected set
 			{
 				_inputPosition = value;
@@ -215,9 +214,7 @@ namespace Loyc.Syntax.Lexing
 
 		/// <summary>Increments InputPosition. Called by LLLPG when prediction 
 		/// already verified the input (and caller doesn't save LA(0))</summary>
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected void Skip()
 		{
 			Debug.Assert(_inputPosition <= _charSource.Count);
@@ -304,9 +301,7 @@ namespace Loyc.Syntax.Lexing
 				InputPosition++;
 			return la;
 		}
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		protected int Match(int a)
 		{
 			int la = LA0;
@@ -695,10 +690,11 @@ namespace Loyc.Syntax.Lexing
 				sb.Append(c);
 		}
 
-		public SourcePos IndexToLine(int charIndex)
+		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
+		public LineColumnFile IndexToLine(int charIndex)
 		{
 			if (SourceFile == null)
-				return new SourcePos(_fileName, LineNumber, charIndex - _lineStartAt + 1);
+				return new LineColumnFile(_fileName, LineNumber, charIndex - _lineStartAt + 1);
 			else
 				return SourceFile.IndexToLine(charIndex);
 		}

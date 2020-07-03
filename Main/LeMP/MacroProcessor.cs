@@ -32,7 +32,7 @@ namespace LeMP
 		public ILNodePrinter OutPrinter;
 		public ILNodePrinterOptions OutOptions;
 		public string OutFileName;
-		public VList<LNode> Output;
+		public LNodeList Output;
 		public override string ToString()
 		{
 			return FileName;
@@ -194,7 +194,7 @@ namespace LeMP
 
 		/// <summary>Processes a list of nodes directly on the current thread.</summary>
 		/// <remarks>Note: <c>AbortTimeout</c> doesn't work when using this overload.</remarks>
-		public VList<LNode> ProcessSynchronously(VList<LNode> stmts)
+		public LNodeList ProcessSynchronously(LNodeList stmts)
 		{
 			return new MacroProcessorTask(this).ProcessRoot(stmts);
 		}
@@ -211,39 +211,30 @@ namespace LeMP
 				new MacroProcessorTask(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 		}
 		
-		#if DotNet3 || DotNet2 // Parallel mode requires .NET 4 Tasks
-		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
-		{
-			ProcessSynchronously(sourceFiles, onProcessed);
-		}
-		#else
-
 		/// <summary>Processes source files in parallel. All files are fully 
 		/// processed before the method returns.</summary>
 		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
-			Task<VList<LNode>>[] tasks = ProcessAsync(sourceFiles, onProcessed);
+			Task<LNodeList>[] tasks = ProcessAsync(sourceFiles, onProcessed);
 			for (int i = 0; i < tasks.Length; i++)
 				tasks[i].Wait();
 		}
 
 		/// <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
-		public Task<VList<LNode>>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
+		public Task<LNodeList>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			int parentThreadId = Thread.CurrentThread.ManagedThreadId;
-			Task<VList<LNode>>[] tasks = new Task<VList<LNode>>[sourceFiles.Count];
+			Task<LNodeList>[] tasks = new Task<LNodeList>[sourceFiles.Count];
 			for (int i = 0; i < tasks.Length; i++)
 			{
 				var io = sourceFiles[i];
-				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<VList<LNode>>(() => {
+				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<LNodeList>(() => {
 					using (ThreadEx.PropagateVariables(parentThreadId))
 						return new MacroProcessorTask(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 				});
 			}
 			return tasks;
 		}
-
-		#endif
 
 		#endregion
 

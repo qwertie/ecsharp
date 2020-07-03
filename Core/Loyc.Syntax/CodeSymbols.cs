@@ -104,10 +104,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol Is = GSymbol.Get("'is");             //!< "'is":   @'is(x,string) <=> x is string, @'is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("'cast");         //!< "'cast": @'cast(x,int) <=> (int)x <=> x(-> int)
 		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
+		[Obsolete("This was renamed to RightArrow")]
 		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
 		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "::" Scope resolution operator in many languages
 		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "=>" used to define an anonymous function
 		public static readonly Symbol Default = GSymbol.Get("'default");   //!< "'default" for the default(T) pseudofunction in C#
+		public static readonly Symbol IS = GSymbol.Get("'IS");             //!< Backquoted suffixes in LES3 use this: x`bytes` <=> `'IS`(x, bytes)
 
 		// Compound assignment
 		public static readonly Symbol NullCoalesceAssign = GSymbol.Get("'??="); //!< "??=": `a ??= b` means `a = a ?? b`
@@ -191,10 +193,11 @@ namespace Loyc.Syntax
 		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "'!!" operator
 		public static readonly Symbol SufBangBang = GSymbol.Get(@"'suf!!"); //!< "'suf!!" operator
 		public static readonly Symbol BangBangDot = GSymbol.Get(@"'!!.");  //!< "'!!." operator
-		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< Alias for PtrArrow
+		public static readonly Symbol RightArrow = GSymbol.Get(@"'->");    //!< "'->" operator: a->b
+		[Obsolete("This was renamed to RightArrow")]
+		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->");   //!< "'->" operator: a->b
 		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");     //!< "'<-" operator
-		public static readonly Symbol SingleQuote = GSymbol.Get("'");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
-		public static readonly Symbol Parens = GSymbol.Get("'()");      //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
+		public static readonly Symbol Parens = GSymbol.Get("'()");         //!< Produced by ' in LESv3, which switches parser to prefix expression mode (similar to s-expressions)
 
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly"); //!< "#readonly" e.g. readonly int X; <=> [#readonly] #var(#int, X);
 		public static readonly Symbol Const = GSymbol.Get("#const");       //!< "#const"    e.g. const int X = 1; <=> [#const] #var(#int, X = 1);
@@ -353,34 +356,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
 		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
 		
-  [Obsolete]
-		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("%rawTextBefore");
-		[Obsolete]
-		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("%rawTextAfter");
-		// The following 6 kinds of trivia, which specify "Before" or "After" in their name,
-		// are deprecated in favor of trivia that is determined to be before or after
-		// based on its placement: trailing trivia is placed within a call to %trailing, 
-		// while leading trivia is placed directly in the node's attribute list. For example,
-		// `[%MLComment("L"), %trailing(%SLComment("T")] f();` means
-		// `/*L*/ f(); //T`.
-		[Obsolete]
-		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("%SLCommentBefore");
-		[Obsolete]
-		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("%MLCommentBefore");
-		[Obsolete]
-		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("%SLCommentAfter");
-		[Obsolete]
-		public static readonly Symbol TriviaMLCommentAfter = GSymbol.Get("%MLCommentAfter");
-		[Obsolete]
-		public static readonly Symbol TriviaSpaceBefore = GSymbol.Get("%spaceBefore");
-		[Obsolete]
-		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("%spaceAfter");
-
 		/// "%wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
 		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("%wordAttribute");
 		public static readonly Symbol TriviaDummyNode = GSymbol.Get("%dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
-		[Obsolete]
-		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("%beginTrailingTrivia");
 		public static readonly Symbol TriviaSLComment = GSymbol.Get("%SLComment"); //!< "%SLComment", e.g. @`%SLComment`(" Text")
 		public static readonly Symbol TriviaMLComment = GSymbol.Get("%MLComment"); //!< "%MLComment", e.g. @`%MLComment`(" Text")
 		public static readonly Symbol TriviaNewline = GSymbol.Get("%newline");

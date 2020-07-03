@@ -215,7 +215,7 @@ namespace Loyc.Ecs
 		/// <para/>
 		/// A destructor counts as a #fn with a method name that calls the ~ operator.
 		/// </remarks>
-		public static Symbol MethodDefinitionKind(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, bool allowDelegate, Pedantics p = Pedantics.Lax)
+		public static Symbol MethodDefinitionKind(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, bool allowDelegate = true, Pedantics p = Pedantics.Lax)
 		{
 			retType = name = args = body = null;
 			var kind = n.Name;
@@ -666,7 +666,7 @@ namespace Loyc.Ecs
 			return false;
 		}
 
-		private static bool AreValidLinqClauses(VList<LNode> parts, int i, Pedantics p)
+		private static bool AreValidLinqClauses(LNodeList parts, int i, Pedantics p)
 		{
 			for (; i < parts.Count; i++)
 				if (LinqClauseKind(parts[i], p) == null)

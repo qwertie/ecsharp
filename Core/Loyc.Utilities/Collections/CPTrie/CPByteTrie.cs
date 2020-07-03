@@ -1,4 +1,4 @@
-﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+// http://www.codeproject.com/KB/recipes/cptrie.aspx
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +9,7 @@ namespace Loyc.Collections.Impl
 {
 	/// <summary>A compact patricia trie that uses byte arrays as keys.</summary>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>
-	public class CPByteTrie<TValue> : CPTrie<TValue>, IDictionary<byte[], TValue>, IReadOnlyDictionary<byte[], TValue>
+	public class CPByteTrie<TValue> : CPTrie<TValue>, IDictionary<byte[], TValue>, IReadOnlyDictionary<byte[], TValue>, IIndexed<byte[], TValue>
 	{
 		public CPByteTrie() { }
 		public CPByteTrie(CPTrie<TValue> clone) : base(clone) { }

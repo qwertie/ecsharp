@@ -117,7 +117,7 @@ namespace Loyc.Syntax
 		/// <remarks>This method may STILL called for a given node when there is no trivia 
 		/// associated with that node, IF the node is at the top level or its sibling 
 		/// nodes in the same parent have associated trivia.</remarks>
-		protected abstract VList<LNode> GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		protected abstract LNodeList GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
 
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
@@ -230,7 +230,7 @@ namespace Loyc.Syntax
 		/// (SortedTrivia) to increase in size. For this reason, this algorithm is careful
 		/// to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this
 		/// precaution is sufficient to preserve trivia in all "streaming" cases, but it
-		/// seems to work in at least most cases.
+		/// has worked fine up to now.
 		/// </remarks>
 		protected IEnumerator<Pair<LNode, int>> RunCore(IEnumerator<Pair<LNode, int>> nodes, LNode parent)
 		{

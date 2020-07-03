@@ -16,7 +16,8 @@ namespace Loyc
 	/// <remarks>
 	/// UString is a slice type: it represents either an entire string, or a region
 	/// of code units in a string. .NET strings are converted implicitly to UString.
-	/// (it's like Memory{char}, but predates it by a few years.)
+	/// UString is similar to .NET Core's Memory{char}, but predates it by a few 
+	/// years.
 	/// <para/>
 	/// It has been suggested that Java and .NET's reliance on 16-bit "unicode" 
 	/// characters was a mistake, because it turned out that 16 bits was not enough 
@@ -114,10 +115,19 @@ namespace Loyc
 		public int InternalStart { get { return _start; } }
 		public int InternalStop { get { return _start + _count; } }
 
+		/// <summary>Gets the length of the string in code units (which may be 
+		/// greater than the number of actual characters or code points).</summary>
 		public int Length => _count;
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int Count => _count;
+		/// <summary>Returns true if and only if Count == 0.</summary>
 		public bool IsEmpty => _count == 0;
+		/// <summary>Returns true if the internal string is a null reference.
+		/// Caution: an "empty" UString is "equal" to a "null" UString because the 
+		/// list of characters is the same. If you want to know if the internal string 
+		/// reference is null, you must use this property instead of comparing with
+		/// null.</summary>
+		public bool IsNull => _str == null;
 		public uchar First => DecodeAt(0);
 		public uchar Last
 		{
@@ -247,9 +257,7 @@ namespace Loyc
 		/// <exception cref="IndexOutOfRangeException">Oops.</exception>
 		public char this[int index]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get { 
 				if ((uint)index >= (uint)_count)
 					ThrowIndexOutOfRange(index);
@@ -260,9 +268,7 @@ namespace Loyc
 		/// or a default value if the specified index was out of range.</summary>
 		public char this[int index, char defaultValue]
 		{
-			#if DotNet45
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			#endif
 			get {
 				if ((uint)index < (uint)_count)
 					return _str[_start + index];
@@ -338,7 +344,7 @@ namespace Loyc
 
 		public static bool operator ==(UString x, UString y) { return x.Equals(y); }
 		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
-		public static explicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
+		public static explicit operator string(UString s) { return s._str?.Substring(s._start, s._count) ?? ""; }
 		public static implicit operator UString(string s) { return new UString(s); }
 
 		/// <summary>Synonym for Slice()</summary>
@@ -508,9 +514,7 @@ namespace Loyc
 			return SubstringEqualHelper(_str, _start + Length - what.Length, what, ignoreCase);
 		}
 		
-		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		#endif
 		static bool SubstringEqualHelper(string _str, int _start, UString what, bool ignoreCase = false)
 		{
 			if (ignoreCase)

@@ -13,27 +13,6 @@ using System.Windows.Forms;
 
 namespace Benchmark
 {
-	#if DotNet35 
-	
-	// OxyPlot and ConcurrentDictionary not available in .NET 3.5. 
-	// DUMMY IMPLEMENTATION SO THAT THE TESTS PROJECT STILL COMPILES
-	public partial class EzChartForm : Form, IAdd<EzDataPoint>
-	{
-		public EzChartForm(bool example) { InitializeComponent(); }
-		public void Add(EzDataPoint point) { } // DUMMY so that project still compiles
-		protected override void OnVisibleChanged(EventArgs e) { if (Visible) Close(); }
-		private void btnSaveCurrent_Click(object sender, EventArgs e) {}
-		private void btnSaveAll_Click(object sender, EventArgs e) {}
-		public static EzChartForm StartOnNewThread(bool example = false)
-		{
-			EzChartForm form = new EzChartForm(example);
-			new Thread(() => System.Windows.Forms.Application.Run(form)).Start();
-			return form;
-		}
-	}
-	
-	#else
-	
 	using OxyPlot;
 	using OxyPlot.Axes;
 	using OxyPlot.Series;
@@ -256,7 +235,6 @@ namespace Benchmark
 			Controls.Add(Plot);
 		}
 	}
-	#endif
 
 	/// <summary>A data point used with <see cref="EzChartForm"/>.</summary>
 	public class EzDataPoint : IEquatable<EzDataPoint>, IComparable<EzDataPoint>, ICloneable<EzDataPoint>

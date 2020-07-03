@@ -68,20 +68,20 @@ namespace Loyc.VisualStudio
 			return GetEnumerator();
 		}
 
-		public SourcePos IndexToLine(int index)
+		public ILineColumnFile IndexToLine(int index)
 		{
 			var line = _ss.GetLineFromPosition(index);
-			return new SourcePos("", line.LineNumber + 1, index - line.Start.Position + 1);
+			return new LineColumnFile("", line.LineNumber + 1, index - line.Start.Position + 1);
 		}
 
-		public int LineToIndex(LineAndCol pos)
+		public int LineToIndex(ILineAndColumn pos)
 		{
 			if (pos.Line <= 0)
 				return -1;
 			if (pos.Line >= _ss.LineCount)
 				return _ss.Length;
 			var line = _ss.GetLineFromLineNumber(pos.Line);
-			return line.Start.Position + (pos.PosInLine - 1).PutInRange(0, line.Length + 1);
+			return line.Start.Position + (pos.Column - 1).PutInRange(0, line.Length + 1);
 		}
 		public int LineToIndex(int lineNo)
 		{
@@ -93,7 +93,7 @@ namespace Loyc.VisualStudio
 			return line.Start.Position;
 		}
 
-		string IIndexToLine.FileName
+		string IHasFileName.FileName
 		{
 			get { return ""; }
 		}

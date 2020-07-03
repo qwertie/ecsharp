@@ -18,11 +18,11 @@ namespace Loyc.LLParserGenerator
 		[ThreadStatic]
 		static AntlrStyleParser _parser;
 
-		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
+		public new static LNodeList ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{
 			return Parse(tokens, tokens.File, sink);
 		}
-		public new static VList<LNode> Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public new static LNodeList Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
 				_parser = new AntlrStyleParser(tokenTree, file, messages);
@@ -66,7 +66,7 @@ namespace Loyc.LLParserGenerator
 		
 		[FullLLk, AddCsLineDirectives(false)]
 		LLLPG (parser(laType: TT, matchType: int, allowSwitch: true,
-		              terminalType: Token, listInitializer: VList<T> _ = VList<T>.Empty));
+		              terminalType: Token, listInitializer: LNodeList _ = LNode.List()));
 
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
@@ -172,7 +172,7 @@ namespace Loyc.LLParserGenerator
 		};
 
 		[LL(4)]
-		public rule VList<LNode> RulesAndStuff() @{ // Start rule
+		public rule LNodeList RulesAndStuff() @{ // Start rule
 			( result+:Rule
 			| result+:HostCall
 			| result+:HostBlock )+

@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.7.0.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -216,6 +216,28 @@ namespace Loyc.Collections
 		public static SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult> Select<T, TResult>(this IReadOnlyCollection<T> list, Func<T, TResult> selector)
 		{
 			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
+		}
+	
+		public static T[] ConcatNow<T>(this T[] a, T[] b)
+		{
+			T[] @out = new T[a.Length + b.Length];
+			Array.Copy(a, @out, a.Length);
+			Array.Copy(b, 0, @out, a.Length, b.Length);
+			return @out;
+		}
+		public static T[] ConcatNow<T>(this IReadOnlyList<T> a, IReadOnlyList<T> b)
+		{
+			int aCount = a.Count;
+			T[] @out = new T[aCount + b.Count];
+			for (int out_i = 0, a_i = 0; out_i < @out .Length; out_i++) {
+				if (a_i >= aCount) {
+					a_i = 0;
+					a = b;
+					aCount = b.Count;
+				}
+				@out[out_i] = a[a_i];
+			}
+			return @out;
 		}
 	
 		/// <summary>Returns a reversed view of a read-only list.</summary>

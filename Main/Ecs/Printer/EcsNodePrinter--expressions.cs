@@ -54,7 +54,7 @@ namespace Loyc.Ecs
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
-			P(S.PtrArrow, EP.Primary), P(S.NullDot, EP.NullDot),
+			P(S.RightArrow, EP.Primary), P(S.NullDot, EP.NullDot),
 			P(S.Exp, EP.Power),        P(S.Mul, EP.Multiply),
 			P(S.Div, EP.Multiply),     P(S.Mod, EP.Multiply),
 			P(S.Add, EP.Add),          P(S.Sub, EP.Add),        P(S.NotBits, EP.Add),
@@ -559,7 +559,7 @@ namespace Loyc.Ecs
 			if (braceMode ?? true)
 			{
 				PrintBracedBlock(_n, 0, 
-					mode: braceMode == null ? BraceMode.Initializer : BraceMode.Normal);
+					mode: braceMode == null ? BraceMode.Initializer : BraceMode.BlockExpr);
 			}
 			else
 			{
@@ -963,7 +963,8 @@ namespace Loyc.Ecs
 				PrintLiteral();
 			else {
 				var mode = IdPrintMode.Normal;
-				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null)
+				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null 
+					|| (_n.Name.Name.StartsWith("'") && (_flags & Ambiguity.InDefinitionName) != 0))
 					mode = IdPrintMode.Operator;
 				if (_n.BaseStyle == NodeStyle.VerbatimId)
 					mode = IdPrintMode.Verbatim;

@@ -30,7 +30,7 @@ namespace Loyc.Collections
 	/// And, as always, <see cref="KeyCollection{K,V}"/>, <see cref="ValueCollection{K,V}"/> 
 	/// and <see cref="Impl.DictionaryBase{K,V}"/>will help you implement dictionary types.
 	/// </remarks>
-	public interface IDictionaryEx<K, V> : IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, ICloneable<IDictionaryEx<K, V>>
+	public interface IDictionaryEx<K, V> : IDictionaryImpl<K, V>, ICloneable<IDictionaryEx<K, V>>, ITryGet<K, V>
 	{
 		// Disambiguation through duplication: since they decided IDictionary wouldn't
 		// derive from IReadOnlyDictionary...and that the two would have different types
@@ -120,15 +120,25 @@ namespace Loyc.Collections
 			}
 		}
 
-		/// <summary>Adds an item to the map if the key is not present. If the 
+		/// <summary>Adds a key/value pair to the dictionary if the key is not present. If the 
 		/// key is already present, this method has no effect.</summary>
 		/// <returns>True if the pair was added, false if not.</returns>
 		public static bool AddIfNotPresent<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
 		{
 			return !dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
-		/// <summary>Gets the existing value, or adds a new value if there was no existing value.</summary>
+		/// <summary>Adds a key/value pair to the dictionary if the key is not already present,
+		/// and returns the existing or new value.</summary>
+		/// <returns>The existing value (if the key already existed) or the new value.</returns>
+		public static V GetOrAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+		{
+			dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
+			return value;
+		}
+		/// <summary>Adds a new key/value pair if the key was not present, or gets the existing 
+		/// value if the key was present.</summary>
 		/// <returns>The existing value. If a new pair was added, the result has no value.</returns>
+		/// <seealso cref="GetOrAdd{K, V}(IDictionaryEx{K, V}, K, V)"/>
 		public static Maybe<V> AddOrGetExisting<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
 		{
 			if (dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent))
@@ -150,15 +160,17 @@ namespace Loyc.Collections
 			return dict.GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent) ?
 				(Maybe<V>)value : default(Maybe<V>);
 		}
+		[Obsolete("This was renamed to GetAndSet")]
+		public static Maybe<V> SetAndGet<K, V>(this IDictionaryEx<K, V> dict, K key, V value) => GetAndSet(dict, key, value);
 		/// <summary>Associates a key with a value in the dictionary, and gets the old value
 		/// if the key was already present.</summary>
 		/// <returns>The old value associated with the same key. If a new pair was added,
 		/// the result has no value.</returns>
-		public static Maybe<V> SetAndGet<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+		public static Maybe<V> GetAndSet<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
 		{
 			if (dict.GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace))
 				return value;
-			return NoValue.Value;
+			return new Maybe<V>();
 		}
 	}
 }

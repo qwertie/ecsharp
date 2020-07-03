@@ -101,7 +101,7 @@ namespace LeMP
 				if (node.Equals(LNode.Missing))
 					return LNode_Missing;
 
-				VList<LNode> creationArgs = new VList<LNode>();
+				LNodeList creationArgs = new LNodeList();
 
 				// Translate attributes (if any)
 				var attrList = MaybeQuoteList(node.Attrs, isAttributes: true);
@@ -160,7 +160,7 @@ namespace LeMP
 				return result;
 			}
 
-			LNode MaybeQuoteList(VList<LNode> list, bool isAttributes = false)
+			LNode MaybeQuoteList(LNodeList list, bool isAttributes = false)
 			{
 				if (isAttributes && _ignoreTrivia)
 					list = list.SmartWhere(n => !n.IsTrivia || n.IsIdNamed(S.TriviaInParens));

@@ -107,7 +107,7 @@ namespace LeMP
 		/// <param name="resetProperties">If true, <see cref="ScopedProperties"/>
 		/// is reset to contain only predefined properties.</param>
 		/// <remarks>The node(s)</remarks>
-		VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
+		LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
 		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false);
 
@@ -177,17 +177,17 @@ namespace LeMP
 		/// <c>ctx.DropRemainingNodes</c> to true and uses <c>ctx.RemainingNodes</c>
 		/// as the second list. Otherwise the second list is left blank.
 		/// </remarks>
-		public static Pair<VList<LNode>, VList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
+		public static Pair<LNodeList, LNodeList> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
 		{
 			var node = ctx.CurrentNode();
 			var args = node.Args;
 			LNode last = null;
-			VList<LNode> body = new VList<LNode>();
+			var body = LNode.List();
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {
 				body = last.Args;
 				args = args.WithoutLast(1);
 			} else if (orRemainingNodes && ctx.RemainingNodes != null) {
-				body = new VList<LNode>(ctx.RemainingNodes);
+				body = LNode.List(ctx.RemainingNodes);
 				ctx.DropRemainingNodes = true;
 			} 
 			return Pair.Create(args, body);
@@ -200,7 +200,7 @@ namespace LeMP
 		/// <c>option1: v1, option2: v2</c> is parsed into <c>@`'::=`(option1, v1), 
 		/// @`'::=`(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
 		/// </remarks>
-		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(VList<LNode> optionList)
+		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(LNodeList optionList)
 		{
 			Symbol lesNamedArg = (Symbol)"'<:";
 			foreach (var option in optionList) {

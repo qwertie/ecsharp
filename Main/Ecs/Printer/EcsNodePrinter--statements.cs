@@ -383,19 +383,22 @@ namespace Loyc.Ecs
 
 		static readonly Symbol _openBrace = GSymbol.Get("'{");
 
-		enum BraceMode { Normal, BlockStmt, Enum, AutoProp, Initializer };
+		enum BraceMode { Normal, BlockExpr, BlockStmt, Enum, AutoProp, Initializer };
 
 		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null, BraceMode mode = BraceMode.Normal)
 		{
 			using (WithFlags(CheckOneLiner(_flags, body)))
 			{
 				int oldLineNum = _out.LineNumber;
-				if (mode != BraceMode.BlockStmt)
-					PrintTrivia(body, trailingTrivia: false);
-				else
-					G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
-				if (oldLineNum == _out.LineNumber && beforeBrace != 0)
-					NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
+				if (mode != BraceMode.BlockExpr)
+				{
+					if (mode != BraceMode.BlockStmt)
+						PrintTrivia(body, trailingTrivia: false);
+					else
+						G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
+					if (oldLineNum == _out.LineNumber && beforeBrace != 0)
+						NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
+				}
 				_out.Write('{', true);
 				// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
 				PrintTrivia(body.Target, trailingTrivia: true);
@@ -590,7 +593,7 @@ namespace Loyc.Ecs
 				}
 			}
 		}
-		private void PrintArgList(VList<LNode> args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
 			var flags = _flags & Ambiguity.OneLiner;
 			if (allowUnassignedVarDecl)
@@ -607,7 +610,7 @@ namespace Loyc.Ecs
 		{
 			PrintArgs(args.Args, _flags, omitMissingArguments, separator);
 		}
-		private void PrintArgs(VList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(LNodeList args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			for (int i = 0; i < args.Count; i++)
 			{

@@ -102,6 +102,18 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void PrecedenceChecks()
+		{
+			// The parser currently allows the Swift range operator ..< but translates it to ..
+			// and the precedence no longer matches Swift (changed 2020/05)
+			Expr("a..<b == b...c", F.Call(S.Eq, F.Call("'..", a, b), F.Call("'...", b, c)), mode: Mode.ParserTest);
+			Expr("a..<b + c...x", F.Call(S.Add, F.Call("'..", a, b), F.Call("'...", c, x)), mode: Mode.ParserTest);
+			Expr("a..<([] b + c)...x", F.Call("'...", F.Call("'..", a, F.Call(S.Add, b, c)), x), mode: Mode.ParserTest);
+			Expr("a..b.c...x", F.Call(S.DotDotDot, F.Call(S.DotDot, a, F.Dot(b, c)), x));
+			// TODO more?
+		}
+
+		[Test]
 		public void EcsSubstitutionVarDecls()
 		{
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));

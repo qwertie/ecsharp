@@ -111,8 +111,8 @@ namespace LeMP.Tests
 			     "var zero = default(int);");
 			Test("x = c ? a : b;",
 			     "x = c ? a : b;");
-			Test("a : b; x <: y;",
-				 "@`'::=`(a, b); @`'::=`(x, y);");
+			Test("x <: y;",
+				 "@`'::=`(x, y);");
 		}
 
 		[Test]
@@ -126,6 +126,12 @@ namespace LeMP.Tests
 				 "public int Foo = 0;");
 			Test("public Foo::int = 0;",
 				 "public int Foo = 0;");
+			Test("public Foo: long = 0;", // new style syntax
+				 "public long Foo = 0;");
+			Test("public Foo: float;", // new style syntax
+				 "public float Foo;");
+			Test("public Foo: Collections.List!int;",
+				 "public Collections.List<int> Foo;");
 			Test("@[public] struct Point!T { public X::T; public Y::T; };",
 				 " public  struct Point<T> { public T X; public T Y; }");
 			Test("@[private] enum Letters(byte) { A='a'; B='b'; };",
@@ -142,12 +148,16 @@ namespace LeMP.Tests
 				 " extern  void NoOp(int x);");
 			Test("@[static] fn Name(Arg1, Arg2)::RetType {};",
 				 " static RetType Name(Arg1, Arg2) {}");
+			Test("@[static] fn Name(arg: NS.Type1): NS.Type2 {};", // new style syntax
+				 " static NS.Type2 Name(NS.Type1 arg) {}");
 			Test("fn Spit(times::int = 1) {};",
 				 "void Spit(int times = 1) {}");
 			Test("@[protected] prop X::int { get; set; };",
 				 " protected  int X { get; set; }");
 			Test("prop X::int { get { return _x; }; };",
 				 "int X { get { return _x; } }");
+			Test("prop X:long { get { return _x; }; };", // new style syntax
+				 "long X { get { return _x; } }");
 			Test("@[protected] var(X=0, Y=0);",
 				 "protected var X = 0, Y = 0;");
 			Test("@[protected] internal X::int = 0;",

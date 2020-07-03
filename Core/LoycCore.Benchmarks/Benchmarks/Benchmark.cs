@@ -1,19 +1,11 @@
 using System.Linq;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Collections;
-using Loyc.Math;
 using Loyc.Threading;
-using Loyc.Collections.Impl;
-#if !DotNet45
-using Loyc.Collections.MutableListExtensionMethods;
-#endif
 using Loyc.Geometry;
-using Benchmark.Resources;
 using PointD = Loyc.Geometry.Point<double>;
 
 namespace Benchmark

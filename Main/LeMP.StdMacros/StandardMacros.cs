@@ -195,7 +195,7 @@ namespace LeMP
 			if (args.Slice(0, args.Count - 1).Any(n => n.IsCall))
 				return Reject(sink, node, "All arguments to ##() or concat() must be identifiers or literals (except the last one)");
 
-			VList<LNode> attrs = node.Attrs;
+			LNodeList attrs = node.Attrs;
 			LNode arg = null;
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < args.Count; i++)
@@ -477,7 +477,7 @@ namespace LeMP
 		public static LNode macro_scope(LNode node, IMacroContext context)
 		{
 			var args = node.Args;
-			VList<LNode> results;
+			LNodeList results;
 			if (args.Count == 1 && args[0].Calls(S.Braces)) {
 				node = context.PreProcessChildren();
 				results = node.Args;

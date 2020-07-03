@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,17 +16,17 @@ namespace Loyc.Syntax
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input 
 		/// as a single expression or expression list (which, in most languages, 
 		/// is comma-separated).</summary>
-		public static readonly ParsingMode Expressions = Pool.Get("Exprs");
+		public static readonly ParsingMode Expressions = Pool.Get("Expressions");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
 		/// as a list of statements. If the language makes a distinction between 
 		/// executable and declaration contexts, this refers to the executable 
 		/// context.</summary>
-		public static readonly ParsingMode Statements = Pool.Get("Stmts");
+		public static readonly ParsingMode Statements = Pool.Get("Statements");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
 		/// as a list of statements. If the language makes a distinction between 
 		/// executable and declaration contexts, this refers to the declaration
 		/// context, in which types, methods, and properties are recognized.</summary>
-		public static readonly ParsingMode Declarations = Pool.Get("Decls");
+		public static readonly ParsingMode Declarations = Pool.Get("Declarations");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
 		/// as a list of types (or a single type, if a list is not supported).</summary>
 		public static readonly ParsingMode Types = Pool.Get("Types");

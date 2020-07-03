@@ -193,14 +193,8 @@ namespace Loyc
 	/// </remarks>
 	public static class Localize
 	{
-		#if DotNet3
-		// A bug in our (old version of) Theraot causes an exception when accessing Value if there is no factory
-		public static ThreadLocal<LocalizerDelegate> _localizer = new ThreadLocal<LocalizerDelegate>(() => null);
-		public static ThreadLocal<FormatterDelegate> _formatter = new ThreadLocal<FormatterDelegate>(() => null);
-		#else
 		public static ThreadLocal<LocalizerDelegate> _localizer = new ThreadLocal<LocalizerDelegate>();
 		public static ThreadLocal<FormatterDelegate> _formatter = new ThreadLocal<FormatterDelegate>();
-		#endif
 		static LocalizerDelegate _globalLocalizer = Passthrough;
 		static FormatterDelegate _globalFormatter = string.Format;
 

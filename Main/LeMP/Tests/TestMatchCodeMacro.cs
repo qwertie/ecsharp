@@ -76,12 +76,12 @@ namespace LeMP.Tests
 					case ($(...args),):                           Tuple(args);
 				}", @"{
 					LNode a, b, c, first = null, last;
-					VList<LNode> args;
+					LNodeList args;
 					if (code.CallsMin(CodeSymbols.Tuple, 3) && (a = code.Args[0]) != null && (b = code.Args[1]) != null && (c = code.Args[code.Args.Count - 1]) != null) {
-						args = new VList<LNode>(code.Args.Slice(2, code.Args.Count - 3));
+						args = new LNodeList(code.Args.Slice(2, code.Args.Count - 3));
 						Three(a, b, c);
-					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new VList<LNode>(code.Args.Slice(1))).IsEmpty | true 
-						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new VList<LNode>(code.Args.Slice(1))).IsEmpty | true)
+					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true 
+						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true)
 						Tuple(first, args);
 					else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
 						args = code.Args.WithoutLast(1);
@@ -102,7 +102,7 @@ namespace LeMP.Tests
 						Other();
 				}", @"{
 					LNode op          = null, tmp_1 = null, x, x_ = null, y = null;
-					VList<LNode> attrs;
+					LNodeList attrs;
 					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
 						Assign(x, y);
 					else if ( 
@@ -127,7 +127,7 @@ namespace LeMP.Tests
 						Handler();
 				}", @"{
 					LNode typeName;
-					VList<LNode> attrs, baseTypes, body;
+					LNodeList attrs, baseTypes, body;
 					if ((attrs = classDecl.Attrs).IsEmpty | true && classDecl.Calls(CodeSymbols.Class, 3) && 
 						(typeName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && 
 						classDecl.Args[2].Calls(CodeSymbols.Braces))

@@ -19,7 +19,7 @@ namespace LeMP.Prelude.Les
 	[ContainsMacros]
 	public static partial class Macros
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		internal static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
@@ -174,24 +174,9 @@ namespace LeMP.Prelude.Les
 		{
 			return id.HasSimpleHead() || IsDefinitionId(id.Target, allowDots);
 		}
-		// A complex identifier has the form Id, ComplexId.Id, or ComplexId!(ComplexId, ...)
-		// where Id is a simple identifier and ComplexId is a complex identifier. Also, the
-		// form X!Y!Z, i.e. @'of(@'of(...), ...) is not allowed. $Substitution is allowed.
 		public static bool IsComplexId(LNode id, bool allowOf = true)
 		{
-			if (id.IsCall) {
-				if (id.Name == S.Of) {
-					if (allowOf)
-						return (id.HasSimpleHead() || IsComplexId(id.Target, false)) && id.Args.All(a => IsComplexId(a));
-					return false;
-				} else if (id.Calls(S.Dot, 2)) {
-					return id.Args.Last.IsId && IsComplexId(id.Args[0]);
-				} else if (id.Calls(S.Substitute, 1)) {
-					return true;
-				} else
-					return false;
-			} else
-				return id.IsId;
+			return Loyc.Ecs.EcsValidators.IsComplexIdentifier(id);
 		}
 
 		// Method decl syntaxes:
@@ -215,44 +200,103 @@ namespace LeMP.Prelude.Les
 		//   (def $name($args)) `where` (name 
 		// };
 
+		[LexicalMacro("NameOfFunction(Args...) -> Type => Body; NameOfFunction(Args...) ==> ForwardingTarget",
+			"Defines a function (also known as a method).",
+			"'=>", "'==>", Mode = MacroMode.Passive)]
+		public static LNode quickFunction(LNode node, IMessageSink sink)
+		{
+			// Recognizes Name(Args...) => Body
+			// and        Name(Args...) ==> Body
+			if (node.ArgCount == 2)
+			{
+				bool isForwarding = node.Calls("'==>");
+				LNode sig = node[0], body = node[1];
+				if (!sig.HasSpecialName)
+					return NewFunctionNode(node, sig, null, body, sink, isForwarding);
+			}
+			return null;
+		}
+
+		[LexicalMacro("NameOfFunction(Args...): Type => Body; NameOfFunction(Args...): Type ==> ForwardingTarget",
+			"Defines a function (also known as a method).", "':")]
+		public static LNode quickFunctionWithColon(LNode node, IMessageSink sink)
+		{
+			// Recognizes Name(Args...) : (Type =>  Body)
+			// and        Name(Args...) : (Type ==> Body)
+			if (node.ArgCount == 2)
+			{
+				LNode sig = node[0], rhs = node[1];
+				bool isForwarding = rhs.Calls(S.Forward, 2);
+				if (isForwarding || rhs.Calls(S.Lambda, 2))
+				{
+					LNode type = rhs[0];
+					LNode body = rhs[1];
+					if (!sig.HasSpecialName)
+						return NewFunctionNode(node, sig, type, body, sink, isForwarding);
+				}
+			}
+			return null;
+		}
+
 		[LexicalMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name(Args...): ReturnType { Body }; fn Name ==> ForwardingTarget",
 			"Defines a function (also known as a method).",
 			"fn", "def")]
 		public static LNode @fn(LNode node, IMessageSink sink)
 		{
-			return DefOrConstructor(node, sink, false);
+			return FnOrCons(node, sink, false);
 		}
 		[LexicalMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
 		public static LNode cons(LNode node, IMessageSink sink)
 		{
-			return DefOrConstructor(node, sink, true);
+			return FnOrCons(node, sink, true);
 		}
-		public static LNode DefOrConstructor(LNode node, IMessageSink sink, bool isCons)
+		public static LNode FnOrCons(LNode node, IMessageSink sink, bool isCons)
 		{
 			var parts = node.Args;
-			LNode sig = parts.TryGet(0, null), body = parts.TryGet(1, null);
-			if (!parts.Count.IsInRange(1, 2) || !sig.IsCall || (body != null && !body.Calls(S.Braces)))
+			LNode rest = parts.TryGet(0, null), body = parts.TryGet(1, null);
+			if (!parts.Count.IsInRange(1, 2) || !rest.IsCall || (body != null && !body.Calls(S.Braces)))
 				return null;
-			
-			LNode forwardTo = null, retVal = null;
-			if (sig.Calls(S.Forward, 2) || sig.Calls("'|>>", 2)) {
-				forwardTo = sig.Args[1];
-				sig = sig.Args[0];
+
+			// Recognize Name(Args...) : (Type =>  Body)
+			// and       Name(Args...) : (Type ==> Body)
+			// and       Name(Args...) : Type
+			LNode type = null, sig = null;
+			if (rest.Calls(S.Colon, 2))
+			{
+				sig = rest[0];
+				rest = rest[1];
+			}
+			// Recognize TypeOrSig => Body
+			// and       TypeOrSig ==> Body
+			bool isForwarding = rest.Calls(S.Forward, 2);
+			if (isForwarding || rest.Calls(S.Lambda, 2))
+			{
 				if (body != null)
-					return Reject(sink, sig.Target, "Cannot use ==> and a method body {...} at the same time.");
+					return Reject(sink, rest.Target, "Cannot use '{0}' and a body {...} at the same time.", type.Name.Name.Substring(1));
+				body = rest[1];
+				rest = rest[0];
 			}
-			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.Colon, 2) || sig.Calls(S.ColonColon, 2)) {
-				retVal = sig.Args[1];
-				sig = sig.Args[0];
+			if (sig == null)
+				sig = rest;
+			else
+				type = rest;
+			// Recognize Sig::Type
+			if (sig.Calls(S.ColonColon, 2) && type == null)
+			{
+				type = sig[1];
+				sig = sig[0];
 			}
-			if (retVal != null && retVal.Calls(S.Braces) && body == null) {
-				body = retVal;
-				retVal = F.Missing;
-			}
-			var name = sig.Target ?? sig;
+			return NewFunctionNode(node, sig, type, body, sink, isForwarding, isCons);
+		}
+		public static LNode NewFunctionNode(LNode range, LNode sig, LNode retVal, LNode body, IMessageSink sink, bool isForwarding, bool isCons = false)
+		{
+			if (!sig.IsCall)
+				return null;
+
+			var name = sig.Target;
 			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.AltList) : F.List();
+			var argList = sig.WithTarget(S.AltList);
 
 			if (retVal == null)
 				retVal = isCons ? F.Missing : F.Void;
@@ -260,12 +304,13 @@ namespace LeMP.Prelude.Les
 				return Reject(sink, retVal, "A constructor cannot have a return type");
 
 			Symbol kind = isCons ? S.Constructor : S.Fn;
-			if (body != null)
-				return node.With(kind, retVal, name, argList, body);
-			else if (forwardTo != null)
-				return node.With(kind, retVal, name, argList, F.Call(S.Forward, forwardTo));
-			else
-				return node.With(kind, retVal, name, argList);
+			if (body != null) {
+				if (isForwarding)
+					return range.With(kind, retVal, name, argList, F.Call(S.Forward, body));
+				else
+					return range.With(kind, retVal, name, argList, body);
+			} else
+				return range.With(kind, retVal, name, argList);
 		}
 
 		// Syntax I'm using:
@@ -284,7 +329,7 @@ namespace LeMP.Prelude.Les
 			if (parts.Count != 2 || !body.Calls(S.Braces))
 				return RejectIfNormal(sink, node, "A property definition must have the form prop(Name, { Body }), or prop(Name::type, { Body })");
 
-			if (sig.Calls(S._RightArrow, 2) || sig.Calls(S.ColonColon, 2)) {
+			if (sig.Calls(S.RightArrow, 2) || sig.Calls(S.ColonColon, 2) || sig.Calls(S.Colon, 2)) {
 				name = sig.Args[0];
 				retVal = sig.Args[1];
 			} else {
@@ -417,9 +462,9 @@ namespace LeMP.Prelude.Les
 		{
 			var args = node.Args;
 			if (node.ArgCount == 2 && args.Last.Calls(_while, 1)) {
-				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[1].Args[0]));
+				return node.With(S.DoWhile, new LNodeList(node.Args[0], node.Args[1].Args[0]));
 			} else if (node.ArgCount == 3 && args.TryGet(1, null).IsIdNamed(_while)) {
-				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[2]));
+				return node.With(S.DoWhile, new LNodeList(node.Args[0], node.Args[2]));
 			}
 			return null;
 		}
@@ -451,7 +496,7 @@ namespace LeMP.Prelude.Les
 			if (!elseKW.IsIdNamed(_else))
 				return Reject(sink, elseKW, "'{0}': expected else clause or end-of-statement marker", isUnless ? "unless" : "if");
 			if (@else.IsId && args.Count > 4)
-				@else = LNode.Call(@else.Name, new VList<LNode>(args.Slice(4)), node);
+				@else = LNode.Call(@else.Name, new LNodeList(args.Slice(4)), node);
 			return node.With(S.If, cond, then, @else);
 		}
 
@@ -480,7 +525,7 @@ namespace LeMP.Prelude.Les
 		public static LNode @case(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount >= 2 && node.Args.Last.Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.WithArgs(node.Args.WithoutLast(1)), node.Args.Last));
+				return F.Call(S.Splice, new LNodeList(node.WithArgs(node.Args.WithoutLast(1)), node.Args.Last));
 			if (node.ArgCount >= 1)
 				return node.WithTarget(S.Case);
 			return null;
@@ -492,7 +537,7 @@ namespace LeMP.Prelude.Les
 			if (node.IsId)
 				return node.With(S.Label, F.Id(S.Default)).SetBaseStyle(NodeStyle.Default);
 			else if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.With(S.Label, new VList<LNode>(F.Id(S.Default))).SetBaseStyle(NodeStyle.Default), node.Args[0]));
+				return F.Call(S.Splice, new LNodeList(node.With(S.Label, new LNodeList(F.Id(S.Default))).SetBaseStyle(NodeStyle.Default), node.Args[0]));
 			return null;
 		}
 
@@ -581,7 +626,7 @@ namespace LeMP.Prelude.Les
 			if (finallyCode != null)
 				clauses.Add(F.Call(S.Finally, finallyCode));
 			clauses.Insert(0, node.Args[0]);
-			return node.With(S.Try, clauses.ToVList());
+			return node.With(S.Try, clauses.ToLNodeList());
 		}
 		
 		public static LNode AutoRemoveParens(LNode node)
@@ -689,7 +734,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"arg<: value", "Represents a named argument.", "':", "'<:")]
+		[LexicalMacro(@"arg<: value", "Represents a named argument.", "'<:")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[0].IsId) {
@@ -805,7 +850,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "'=", "':=", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public static LNode ColonColonInit(LNode node, IMessageSink sink)
+		public static LNode VarDecl2(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
 			if (a.Count == 2) {
@@ -815,7 +860,22 @@ namespace LeMP.Prelude.Les
 			}
 			return null;
 		}
-		
+		[LexicalMacro("Name: Type = Value", "Defines a variable or field in the current scope.", "':", Mode = MacroMode.Normal | MacroMode.Passive)]
+		public static LNode VarDecl3(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count == 2)
+			{
+				LNode name = a[0], rest = a[1];
+				if (name.IsId)
+					if (rest.Calls(S.Assign, 2))
+						return node.With(S.Var, rest[0], F.Call(S.Assign, name, rest[1]));
+					else if (IsComplexId(rest))
+						return node.With(S.Var, rest, name);
+			}
+			return null;
+		}
+
 		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @ref(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Ref); }
 		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.", Mode = MacroMode.MatchIdentifier)]

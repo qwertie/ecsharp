@@ -1,8 +1,9 @@
 #ecs;
 #importMacros(Loyc.LLPG);
-using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
+using System(, .Text, .Linq, .Collections.Generic, .Diagnostics, .Runtime.CompilerServices);
 using Loyc;               // for IMessageSink, Symbol, etc.
 using Loyc.Collections;   // many handy interfaces & classes
+using Loyc.Collections.Impl; // For InternalList
 using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
 
@@ -34,69 +35,120 @@ partial class Les3Parser
 	alias("]" = TT.RBrack);
 	alias("{" = TT.LBrace);
 	alias("}" = TT.RBrace);
-	alias("'{" = TT.LTokenLiteral);
+	alias("'" = TT.SingleQuote);
 	alias("\n" = TT.Newline);
 
 	members {
-		void CheckEndMarker(ref TokenType endMarker, ref Token end)
-		{
-			var endType = end.Type();
-			if (endType == TokenType.Newline)
-				endType = TokenType.Semicolon;
-			if (endMarker != endType) {
-				if (endMarker == default(TT)) {
-					endMarker = endType;
-				} else {
-					Error(-1, "Unexpected separator: {0} should be {1}",
-						ToString(end.TypeInt), ToString((int) endMarker));
-				}
-			}
-		}
+		Dictionary<UString, LNode> _sharedTrees;
+		
+		// These two variables are used for detecting and reporting a "comma is not allowed"
+		// error in case of ambiguous input like `Foo(.keyword y, z)`
+		bool _isCommaSeparatedListContext;
+		string _listContextName;
+
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
+		public LNodeList ExprList(string listContextName, LNode firstItem = null, bool presumeCommaSeparated = true)
 		{
 			var endMarker = default(TT);
-			return ExprList(ref endMarker, list);
+			return ExprList(listContextName, ref endMarker, firstItem, presumeCommaSeparated, isBracedBlock: false);
 		}
-		public bool IsSpaceBefore(int li)
-		{
-			return LT(li).StartIndex > LT(li-1).EndIndex;
-		}
-		public void CheckForSpace(bool expectSpace, string errorMsg)
+		void CheckForSpace(bool expectSpace, string errorMsg)
 		{
 			if ((LT0.StartIndex == LT(-1).EndIndex) == expectSpace) {
 				var location = new SourceRange(SourceFile, LT0.StartIndex);
 				ErrorSink.Write(Severity.Error, location, errorMsg);
 			}
 		}
-		public bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
+		bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		bool IsConjoinedToken(int li) => LT(li-1).EndIndex == LT(li).StartIndex;
 	}
 
+	// Note: we're not saving newlines/trivia here - we rely on `StandardTriviaInjector` for that
 	NewlinesOpt : greedy("\n")*;
+
+	// In a list of CompactExpression, newlines, semicolons and commas behave as shown.
+	// In square brackets / parens, newlines are filtered out so they're invisible here.
+	// [. a b, c d] => [a, b, c, d]
+	// [. a b; c d] => [a, b, `';`, c, d]
+	protected CompactExpression returns [LNode result] :
+		(	result:TopExpr[compactMode: true]             greedy(",")?
+		|	","  { result = F.Id(GSymbol.Empty, $","); }
+		|	";"  { result = F.Id(S.Semicolon, $";"); }
+		|	"\n" { result = F.Id(S.Semicolon, $"\n"); }
+		);
+
+	[LL(1)]
+	protected NextExpression[ref TokenType separatorType, out Token separator, bool isBracedBlock] returns [LNode result] :
+		(";"|","|TopExpr) =>
+		{ separator = default(Token); }
+		(	result:TopExpr[compactMode: false]
+		/	{ result = F.Id(S.Missing, LT0); }
+		)
+		ErrorTokensOpt
+		greedy( &{isBracedBlock} (")"|"]") {Error(-1, "Ignoring unexpected closing bracket");} )?
+		greedy(separator=(";"|","|"\n"))?
+		{
+			var curSepType = separator.Type();
+			if (curSepType == TT.Newline && !isBracedBlock) {
+				Error(-1, "Expected ',' or ';' here");
+			} else if (curSepType != 0) {
+				if (curSepType == TT.Newline)
+					curSepType = TT.Semicolon;
+				if (curSepType != separatorType) {
+					if (separatorType == default(TT)) {
+						separatorType = curSepType;
+					} else if (!(separatorType == TT.Semicolon && curSepType == TT.EOF)) {
+						Error(-1, "Unexpected separator: {0} should be {1}",
+							ToString((int) separator.Type()), ToString((int) separatorType));
+					}
+				}
+			}
+		}
+		NewlinesOpt;
 
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
 	[LL(1)]
-	public ExprList[ref TokenType endMarker, VList<LNode> list = default(VList<LNode>), bool isBracedBlock = false] returns [VList<LNode> result] :
+	public ExprList[string listContextName, ref TokenType separatorType, LNode firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false] returns [LNodeList result] :
+		{
+			bool oldCommaSeparatedContext = _isCommaSeparatedListContext;
+			string oldListContext = _listContextName;
+			_isCommaSeparatedListContext = presumeCommaSeparated;
+			_listContextName = listContextName;
+			on_return {
+				_isCommaSeparatedListContext = oldCommaSeparatedContext;
+				_listContextName = oldListContext;
+			}
+			var list = InternalList<LNode>.Empty;
+			if (firstItem != null) list.Add(firstItem);
+		}
 		NewlinesOpt
-		(e:TopExpr)?
-		ErrorTokensOpt
-		[	( &{isBracedBlock} {Error(0, "Unexpected closing bracket");} (")"|"]") )?
-			end:(","|"\n"|";")
-			{CheckEndMarker(ref endMarker, ref end);}
-			NewlinesOpt
-			{list.Add(e ?? MissingExpr(end));}
-			({$e = null;} / e:TopExpr)
-			ErrorTokensOpt
-		]*
-		{	if ($e != null || end.Type() == TT.Comma)
-				list.Add(e ?? MissingExpr(end, afterToken: true));
-			$result = list;
-		};
+		(	&!{isBracedBlock}
+			&!{IsConjoinedToken($LI+1)}
+			"."
+			greedy(list+=CompactExpression)*
+			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
+		/	"'"
+			TokenListEx
+			{ list.AddRange($TokenListEx); }
+			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
+		/	{ var separator = default(Token); }
+			(	(";"|","|TopExpr) =>
+				{ _isCommaSeparatedListContext = presumeCommaSeparated ? separatorType != TT.Semicolon : separatorType == TT.Comma; }
+				list+=NextExpression[ref separatorType, out separator, isBracedBlock]
+			)*
+			{
+				if (separator.Type() == TT.Comma)
+					list.Add(F.Id(S.Missing, separator));
+			}
+		|	error { Error(0, "Expected an expression here"); } TokenListEx
+		)
+		{ return LNode.List(list); };
 
 	ErrorTokensOpt :
 		<=> // Make TokenList invisible to prediction analysis, so LLLPG treats this as an empty rule
@@ -106,45 +158,62 @@ partial class Les3Parser
 				Error(_errorPosition - InputPosition, "Expected end of expression (',', ';', etc.)");
 		};
 
-	// Lazy version of ExprList is used for parsing the top-level code in a streaming way
+	// Lazy version of ExprList is used for parsing the top-level code in a streaming way.
 	[LL(1)]
-	public ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
+	public ExprListLazy[Holder<TokenType> separatorType] returns [IEnumerable<LNode> result] :
+		{ bool isBracedBlock = true; } // hard-coded so we don't have to deal with compact expression lists
 		NewlinesOpt
-		(e:TopExpr)?
-		[	end:(","|"\n"|";")
-			{CheckEndMarker(ref endMarker.Value, ref end);}
-			NewlinesOpt
-			{yield return e ?? MissingExpr(end);}
-			({$e = null;} / e:TopExpr)
-			ErrorTokensOpt
-		]*
-		{if ($e != null || end.Type() == TT.Comma) {yield return e ?? MissingExpr(end, afterToken: true);}};
+		greedy(
+			&!{IsConjoinedToken($LI+1)}
+			"." { Error(0, "Expected a statement here"); }
+		)?
+		(	"'"
+			TokenListEx
+			{
+				foreach (var item in $TokenListEx)
+					yield return item;
+			}
+		|	{ var separator = default(Token); }
+			(	
+				NextExpression[ref separatorType.Value, out separator, isBracedBlock]
+				{
+					yield return $NextExpression;
+					break; // workaround for LLLPG not understanding difference between `return` and `yield return`
+				}
+			)*
+			{
+				if (separator.Type() == TT.Comma)
+					yield return F.Id(S.Missing, separator);
+			}
+		);
 
 	[LL(1)] // Simplify the output
-	protected TopExpr returns [LNode result] :
-		{int startIndex = LT0.StartIndex;}
-		{var attrs = new VList<LNode>();}
-		(	// @Attribute
-			"@" {CheckForSpace(false, "Unexpected space after `@`");}
-			(	"@" 
-			|	attr:=Particle[inAttribute: true]
-				greedy(&!{IsSpaceBefore($LI)} attr=CallArgs[attr])?
-				{attrs.Add(attr);}
-			)
-			greedy(~("{"|"\n") => {CheckForSpace(true, "Expected space after attribute");})?
-			NewlinesOpt
-		)*
-		(	e:Expr[Precedence.MinValue]
-			greedy(
-				":" (("\n"|")"|"]"|"}"|EOF) =>)
-				{e = F.Call(@@`'suf:`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
-			)?
+	protected TopExpr[bool compactMode] returns [LNode result] :
+		treeDef:TT.TreeDef?
+		(	e:Expr[Precedence.MinValue, compactMode]
+			//greedy(
+			//	":" (("\n"|")"|"]"|"}"|EOF) =>)
+			//	{e = F.Call(@@`'suf:`, e, e.Range.StartIndex, $":".EndIndex, $":".StartIndex, $":".EndIndex);}
+			//)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
-			(e:TopExpr | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);})
+			(	e:TopExpr[compactMode]
+			|	("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr(LT0);}
+			)
 		)
-		{if (!attrs.IsEmpty) { e = e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); }}
-		{$result = e;};
+		{
+			if (treeDef.Type() == TT.TreeDef) {
+				UString treeId = treeDef.Value?.ToString() ?? treeDef.SourceText(SourceFile.Text).Slice(2);
+				_sharedTrees = _sharedTrees ?? new Dictionary<UString, LNode>();
+				try {
+					_sharedTrees.Add(treeId, e);
+				} catch (Exception) {
+					ErrorSink.Error(treeDef.Range(SourceFile), "'@.{0}' was already defined at {1}", 
+									treeId, _sharedTrees[treeId].Range.Start);
+				}
+			}
+			return e;
+		};
 
 	////////////////////////////////////////////////////////////////////////////
 	// Normal Expressions
@@ -158,39 +227,78 @@ partial class Les3Parser
 	//   method_call(with arguments), block{call;}, indexer[with, indexes], generic!arguments,
 
 	[LL(1)] // simplifies output a lot
-	rule Expr[Precedence context] returns[LNode result] :
-		(	// Dot-expression
+	Expr[Precedence context, bool compactMode] returns [LNode result] :
+		{ int startIndex = LT0.StartIndex; }
+		{ var attrs = LNode.List(); }
+		(	"@"
+			&!{["An attribute cannot appear mid-expression in a compact expression list."]
+			   compactMode && context != Precedence.MinValue}
+			
+			// If the next token is conjoined we should be able to assume it's an expression,
+			// so we can simplify the output with gates (=>):
+			(	&{IsConjoinedToken($LI)} "@"
+			/	&{IsConjoinedToken($LI)}
+				=>
+				attrs+=Expr[Precedence.MinValue, compactMode: true]
+			)?
+			(=> NewlinesOpt)
+		)*
+		(	&{(TT)LA(1) == TT.Id && !compactMode}
+			// Dot-keyword expression
 			e:KeywordExpression
-		|	{Precedence prec;}
-			e:PrefixExpr[context]
-			greedy
-			(	// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
+		/	("."|PrefixExpr) => // This forces the &{predicates} on KeywordExpression to be checked during prediction
+			{ Precedence prec; }
+			e:PrefixExpr[context, compactMode]
+			// Note: it's better to repeat &{[Local] !compactMode || IsConjoinedToken($LI)}
+			//       over and over rather than suffer the lousy code generation that happens if the loop is a
+			//       separate choice from the alts.
+			greedy(
+				// Method_calls(with arguments), block_calls {...}, indexers[with indexes], generic!arguments
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
 			|	// Infix operator
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] CanParse(context, $LI, out prec)}
-				opName:=InfixOperatorName[out Token op]
-				rhs:=Expr(prec)
+				opName:=InfixOperatorName[out Token op, compactMode]
+				rhs:=Expr(prec, compactMode)
 				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// Suffix operator
-				&{[Local] context.CanParse(_prec.Find(OperatorShape.Suffix, LT($LI).Value))}
-				t:TT.PreOrSufOp
-				{e = F.Call(_prec.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
+				&{[Local] context.CanParse(_precMap.Find(OperatorShape.Suffix, LT($LI).Value))}
+				t:=TT.PreOrSufOp
+				{e = F.Call(_precMap.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+			|	// Suffix unit
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
+				&{[Local] context.CanParse(P.SuffixWord)}
+				unit:=TT.BQId
+				{e = F.Call(S.IS, e, F.Id(unit), e.Range.StartIndex, unit.EndIndex, unit.StartIndex, unit.EndIndex, NodeStyle.Operator);}
 			|	// ! operator (generic 'of)
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Of)}
 				"!"
-				{var args = new VList<LNode> { e }; int endIndex;}
-				(	"(" args=ExprList[args] c:=")"  {endIndex = c.EndIndex;}
-				/	T:=Expr[P.Of]                   {args.Add(T); endIndex = T.Range.EndIndex;}
+				{ LNodeList args; }
+				{ int endIndex; }
+				(	"(" args=ExprList["argument list", e] c:=")"  { endIndex = c.EndIndex; }
+				/	T:=Expr[P.Of, compactMode]   { args = LNode.List(e, T); endIndex = T.Range.EndIndex; }
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
+			|	// .keyword
+				&{[Local] !compactMode || IsConjoinedToken($LI)}
+				&{[Local] context.CanParse(P.Primary)}
+				kw:=TT.Keyword
+				{
+					var id = F.Id(kw.Value.ToString().Substring(1), kw.StartIndex + 1, kw.EndIndex);
+					e = F.Dot(e, id, e.Range.StartIndex, kw.EndIndex);
+				}
 			)*
-		)	{return e;};
+		)
+		{ return attrs.IsEmpty ? e : e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex); };
 
-	InfixOperatorName[out Token op] returns [Symbol result]
+	InfixOperatorName[out Token op, bool compactMode] returns [Symbol result]
 		:	op=(TT.NormalOp|TT.Assignment|".") "\n"*      {$result = (Symbol) op.Value;}
 		|	&{[Hoist] (TT)LA($LI+1) != TT.Newline} op=":" {$result = (Symbol) op.Value;}
-		|	&!{[Hoist] IsContinuator(LT($LI).Value)}
+		|	&{[Hoist] !IsContinuator(LT($LI).Value) && !compactMode}
 			op=TT.Id
 			(	// detect combo operator (optional punctuation part)
 				&{op.EndIndex == LT0.StartIndex} op2:(TT.NormalOp|TT.Assignment|".")
@@ -216,25 +324,26 @@ partial class Les3Parser
 		:	// call(function)
 			result:CallArgs[e]
 		|	// Indexer / square brackets
-			{var args = new VList<LNode> { e };}
-			lb:="[" args=ExprList[args] rb:="]"
+			lb:="[" args:ExprList["square brackets", e] rb:="]"
 			{return F.Call(S.IndexBracks, args, e.Range.StartIndex, rb.EndIndex, lb.StartIndex, rb.EndIndex, NodeStyle.Operator);}
 		;
 
 	CallArgs[LNode target] returns [LNode result] : 
-		{var endMarker = default(TokenType);}
-		"(" args:ExprList[ref endMarker] ")" 
+		{ var endMarker = default(TokenType); }
+		"(" args:ExprList["argument list", ref endMarker] ")" 
 		{
 			$result = MarkCall(F.Call(target, args, target.Range.StartIndex, $")".EndIndex).SetBaseStyle(NodeStyle.PrefixNotation));
 			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; }
 		};
 
-	PrefixExpr[Precedence context] returns [LNode result] 
+	PrefixExpr[Precedence context, bool compactMode] returns [LNode result] 
 		:	// Prefix operator
-			op:(TT.NormalOp|"!"|":"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
-			e:Expr[PrefixPrecedenceOf(op)]
+			&{!compactMode || LT(0).EndIndex == LT(1).StartIndex}
+			op:(TT.NormalOp|"!"|":"|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
+			NewlinesOpt
+			e:Expr[PrefixPrecedenceOf(op), compactMode]
 			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
-		/	result:Particle
+		/	result:Particle[compactMode]
 		;
 
 	// An Particle is:
@@ -243,23 +352,24 @@ partial class Les3Parser
 	//   - simple calls are also handled here, as a space optimization
 	// - a { block } in braces
 	// - a [ list  ] in square brackets
-	Particle[bool inAttribute = false] returns [LNode result]
+	// - a @@backReference
+	Particle[bool compactMode = false] returns [LNode result]
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=TT.Literal // literal
 			{$result = F.Literal(lit);}
-		|	// ' token list
-			op:=TT.SingleQuoteOp TokenList
-			{$result = F.Call((Symbol)op.Value, $TokenList, op.StartIndex, 
-			                  $TokenList.IsEmpty ? op.EndIndex : $TokenList.Last.Range.EndIndex);}
+		//|	// ' token list
+		//	op:=TT.SingleQuote TokenList
+		//	{$result = F.Call((Symbol)op.Value, $TokenList, op.StartIndex, 
+		//	                  $TokenList.IsEmpty ? op.EndIndex : $TokenList.Last.Range.EndIndex);}
 		|	// {statements; in; braces}
 			result:BracedBlock
 		|	// [list]
 			result:SquareBracketList
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
-			"(" {bool saveParens = !inAttribute && (TT)LA0 != TT.At;}
-			list:=ExprList[ref endMarker]
+			"(" { bool saveParens = !compactMode && (TT)LA0 != TT.At; }
+			list:=ExprList["parentheses", ref endMarker, presumeCommaSeparated: false]
 			")" {
 				if (endMarker != default(TT) || list.Count != 1) {
 					$result = F.Call(S.Tuple, list, $"(".StartIndex, $")".EndIndex, $"(".StartIndex, $"(".EndIndex);
@@ -267,21 +377,32 @@ partial class Les3Parser
 					$result = saveParens ? F.InParens(list[0], $"(".StartIndex, $")".EndIndex) : list[0];
 				};
 			}
+		|	backRef:=TT.BackRef { 
+				UString treeId = backRef.Value?.ToString() ?? backRef.SourceText(SourceFile.Text).Slice(2);
+				LNode tree = null;
+				if (_sharedTrees?.TryGetValue(treeId, out tree) == true)
+					$result = tree;
+				else {
+					$result = MissingExpr(backRef);
+					Error(-1, "There is no previous definition for '@.{0}'", treeId);
+				}
+			}
 		|	error {
 				$result = MissingExpr(LT0, "Expected a particle (id, literal, {braces} or (parens)).");
 			};
 
 	SquareBracketList returns [LNode result] : 
-		"[" list:=ExprList "]"
+		"[" list:=ExprList["square brackets"] "]"
 		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
 
 	// Token lists (TODO: add unit tests)
 	[LL(1), #new]
-	TokenList   returns [VList<LNode> result] @init {$result = LNode.List();} :
+	TokenList   returns [LNodeList result] @init {$result = LNode.List();} :
 		greedy( result+=TokenListParticle )*;
 	[LL(1)]
-	TokenListEx returns [VList<LNode> result] :
-		( t:(","|";") {$result.Add(F.Id(t));} 
+	TokenListEx returns [LNodeList result] :
+		( t:=(","|";") { $result.Add(F.Id(t)); } 
+		| t:="\n"      { $result.Add(F.Id(@@`'\n`, t)); }
 		| result+=TokenListParticle
 		)*;
 	[LL(1)]
@@ -293,42 +414,57 @@ partial class Les3Parser
 		/	t:=TT.Literal                    { return F.Literal(t); }
 		/	t:=(~(","|";"|"\n"|")"|"]"|"}")) { return F.Id(t); };
 
+	BracedBlock returns [LNode result] : 
+		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
+		"{" 
+			{ endMarker := default(TT); }
+			greedy("\n")? // Avoid causing an expectation that ";" is the list separator
+			stmts:ExprList["braced block", ref endMarker, isBracedBlock: true, presumeCommaSeparated: false]
+		"}" 
+		{ return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock); };
+
 	////////////////////////////////////////////////////////////////////////////
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
 	////////////////////////////////////////////////////////////////////////////
 
-	KeywordExpression returns [LNode result] @init {var args = new VList<LNode>();} :
-		kw:TT.Keyword           {var keyword = kw.Value as Symbol;}
+	KeywordExpression returns [LNode result] @init {var args = new LNodeList();} :
+		&{IsConjoinedToken($LI+1)}
+		"." word:TT.Id 
 		(	// simplify the output by telling LLLPG what to expect if not an expr
 			("\n" | ";" | EOF | ")" | "]" | "}") => 
-		/	args+=Expr[Precedence.MinValue] )
+		/	args+=Expr[Precedence.MinValue, compactMode: false]
+			args+=CommaContinuator[(Symbol)word.Value]*
+		)
 		greedy( "\n"? args+=BracedBlock )?
-		greedy( args+=Continuator )*
+		greedy( args+=Continuator[(Symbol)word.Value] )*
 		{
-			int endIndex = args.IsEmpty ? kw.EndIndex : args.Last.Range.EndIndex;
-			$result = MarkSpecial(F.Call(keyword, args, kw.StartIndex, endIndex, kw.StartIndex, kw.EndIndex));
+			var keyword = GSymbol.Get("#" + word.Value.ToString());
+			int endIndex = args.IsEmpty ? word.EndIndex : args.Last.Range.EndIndex;
+			$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, endIndex, $".".StartIndex, word.EndIndex));
 		}
 		(=>); // Simplify output by not considering what comes afterward
 
-	Continuator returns [LNode result] :
+	CommaContinuator[Symbol word] returns [LNode result] :
+		"," {
+			if (_isCommaSeparatedListContext)
+				Error(-1, "Please add parentheses around the '.{1}' expression. Otherwise, a comma is not allowed " +
+					"because it is unclear whether the comma separates items of the '{0}' or the .{1} expression.",
+					_listContextName, word);
+		}
+		"\n"? 
+		result:TopExpr[compactMode: false];
+
+	Continuator[Symbol word] returns [LNode result] :
 		"\n"?
 		kw:ContinuatorKeyword  {var opName = Continuators[kw.Value];}
 		(=>) // simplify output by preventing an unneeded check in KeywordExpression
-		"\n"?
+		greedy("\n")?
 		(	bb:BracedBlock     {$result = F.Call(opName, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
-		/	e:TopExpr
+		/	e:TopExpr[compactMode: false]
 			(	greedy("\n")? bb:BracedBlock 
 			    {$result = F.Call(opName, e, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
 			/	{$result = F.Call(opName, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);})
 		);
-
-	BracedBlock returns [LNode result] : 
-		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
-		"{" 
-			{endMarker := default(TT);}
-			stmts:ExprList(ref endMarker, isBracedBlock: true)
-		"}" 
-		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock);};
 
 	ContinuatorKeyword returns [Token result] : &{[Hoist] IsContinuator(LT($LI).Value)} result:TT.Id;
 

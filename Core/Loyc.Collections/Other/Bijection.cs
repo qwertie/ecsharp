@@ -33,7 +33,7 @@ namespace Loyc.Collections
 	/// This collection itself is not safe for multithreaded access, even if it is 
 	/// constructed out of two ConcurrentDictionary{K,V} objects.
 	/// </remarks>
-	public class Bijection<K1,K2> : IDictionary<K1, K2>, IDictionaryAndReadOnly<K1, K2>
+	public class Bijection<K1,K2> : IDictionary<K1, K2>, IDictionaryImpl<K1, K2>
 	{
 		IDictionary<K1,K2> _map;
 		Bijection<K2,K1> _inverse;

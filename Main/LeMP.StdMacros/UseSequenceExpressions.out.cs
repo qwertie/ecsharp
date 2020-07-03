@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.7.1.1
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -36,7 +36,7 @@ namespace LeMP
 			return null;
 		}
 	
-		public static VList<LNode> MaybeRemoveNoOpFromRunSeq(VList<LNode> runSeq)
+		public static LNodeList MaybeRemoveNoOpFromRunSeq(LNodeList runSeq)
 		{
 			// Delete final no-op in case of e.g. Foo()::id; => #runSequence(var id = Foo(); id)
 			if (runSeq.Count > 1 && runSeq.Last.IsId)
@@ -91,7 +91,7 @@ namespace LeMP
 			}
 			LNode[] _arrayOf1 = new LNode[1];
 		
-			public VList<LNode> EliminateSequenceExpressions(VList<LNode> stmts, bool isDeclContext)
+			public LNodeList EliminateSequenceExpressions(LNodeList stmts, bool isDeclContext)
 			{
 				return stmts.SmartSelectMany(stmt => {
 					/*
@@ -111,7 +111,7 @@ namespace LeMP
 					*/
 					LNode result = EliminateSequenceExpressions(stmt, isDeclContext);
 					if (result != stmt) {
-						VList<LNode> results;
+						LNodeList results;
 						if (result.Calls(__numrunSequence)) {
 							results = MaybeRemoveNoOpFromRunSeq(result.Args);
 							return results;
@@ -195,7 +195,7 @@ namespace LeMP
 			{
 				{
 					LNode block, collection, cond, init, initValue, loopVar, name, tmp_11, tmp_12, type;
-					VList<LNode> attrs, incs, inits;
+					LNodeList attrs, incs, inits;
 					if (stmt.Calls(CodeSymbols.Braces))
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
 					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.SwitchStmt, 2) && stmt.Args[1].Calls(CodeSymbols.Braces))
@@ -242,7 +242,7 @@ namespace LeMP
 						if (initValue_apos != initValue) {
 							{
 								LNode last;
-								VList<LNode> stmts;
+								LNodeList stmts;
 								if (initValue_apos.CallsMin((Symbol) "#runSequence", 1) && (last = initValue_apos.Args[initValue_apos.Args.Count - 1]) != null) {
 									stmts = initValue_apos.Args.WithoutLast(1);
 									return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
@@ -262,10 +262,10 @@ namespace LeMP
 				return stmt;
 			}
 		
-			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, VList<LNode> init, LNode cond, VList<LNode> inc, LNode block)
+			LNode ESEInForLoop(LNode stmt, LNodeList attrs, LNodeList init, LNode cond, LNodeList inc, LNode block)
 			{
 				// TODO: handle multi-int and multi-inc
-				var preInit = VList<LNode>.Empty;
+				var preInit = LNodeList.Empty;
 				var init_apos = init.SmartSelect(init1 => {
 					init1 = EliminateSequenceExpressionsInExecStmt(init1);
 					if (init1.CallsMin(__numrunSequence, 1)) {
@@ -317,14 +317,14 @@ namespace LeMP
 						args[i] = part.WithArgChanged(lasti, EliminateSequenceExpressionsInChildStmt(part.Args[lasti]));
 					}
 				}
-				return stmt.WithArgs(args.ToVList());
+				return stmt.WithArgs(args.ToLNodeList());
 			}
 		
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
 			{
 				List<LNode> childStmts = stmt.Args.Slice(childStmtsStartAt).ToList();
-				LNode partialStmt = stmt.WithArgs(stmt.Args.First(childStmtsStartAt));
-				VList<LNode> advanceSequence;
+				LNode partialStmt = stmt.WithArgs(stmt.Args.Initial(childStmtsStartAt));
+				LNodeList advanceSequence;
 				if (ProcessBlockCallStmt2(ref partialStmt, out advanceSequence, childStmts)) {
 					stmt = partialStmt.PlusArgs(childStmts);
 					if (advanceSequence.Count != 0)
@@ -337,7 +337,7 @@ namespace LeMP
 			// This is called to process the two parts of a block call, e.g.
 			// #if(cond, {T}, {F}) => partialStmt = #if(cond); childStmts = {{T}, {F}}
 			// Returns true if anything changed (i.e. sequence expr detected)
-			bool ProcessBlockCallStmt2(ref LNode partialStmt, out VList<LNode> advanceSequence, List<LNode> childStmts)
+			bool ProcessBlockCallStmt2(ref LNode partialStmt, out LNodeList advanceSequence, List<LNode> childStmts)
 			{
 				// Process the child statement(s)
 				bool childChanged = false;
@@ -397,12 +397,12 @@ namespace LeMP
 				if (!stmtContext) {
 					{
 						LNode tmp_14, value, varName, varType;
-						VList<LNode> attrs;
+						LNodeList attrs;
 						if (expr.Calls(CodeSymbols.Braces)) {
 							Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
 						
-						} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
+						} else if ((attrs = expr.Attrs).IsEmpty | true && ((LNodeList) attrs).NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 							if (varType.IsIdNamed(S.Missing))
 								Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
 							result = LNode.Call(LNode.List(_trivia_pure), (Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName.PlusAttrs(LNode.List(LNode.Id(CodeSymbols.Out)))));
@@ -417,7 +417,7 @@ namespace LeMP
 				if (result == null) {
 					{
 						LNode args, code, value, varName;
-						VList<LNode> attrs;
+						LNodeList attrs;
 						if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
 							result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
 						
@@ -454,7 +454,7 @@ namespace LeMP
 			// Bubbles up a call. The returned pair consists of 
 			// 1. A sequence of statements to run before the call
 			// 2. The call with all (outer) #runSequences removed
-			Pair<VList<LNode>, LNode> BubbleUp_GeneralCall2(LNode expr)
+			Pair<LNodeList, LNode> BubbleUp_GeneralCall2(LNode expr)
 			{
 				var target = expr.Target;
 				var args = expr.Args;
@@ -480,7 +480,7 @@ namespace LeMP
 				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(__numrunSequence, 1)) ?? -1;
 				if (lastRunSeq >= 0) {
 					// last index of #runSequence that is not marked pure
-					int lastRunSeqImpure = args.First(lastRunSeq + 1).FinalIndexWhere(a => 
+					int lastRunSeqImpure = args.Initial(lastRunSeq + 1).FinalIndexWhere(a => 
 					a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
 				
 					if (lastRunSeq > 0 && 
@@ -527,7 +527,7 @@ namespace LeMP
 			// Creates a temporary for an LValue (left side of `=`, or `ref` parameter)
 			// e.g. f(x).Foo becomes f(x_N).Foo, and `var x_N = x` is added to `stmtSequence`,
 			// where N is a unique integer for the temporary variable.
-			LNode MaybeCreateTemporaryForLValue(LNode expr, ref VList<LNode> stmtSequence)
+			LNode MaybeCreateTemporaryForLValue(LNode expr, ref LNodeList stmtSequence)
 			{
 				{
 					LNode _, lhs;
@@ -550,12 +550,12 @@ namespace LeMP
 								args[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 							}
 						}
-						return expr.WithArgs(args.ToVList());
+						return expr.WithArgs(args.ToLNodeList());
 					}
 				}
 			}
 		
-			LNode ConvertVarDeclToRunSequence(VList<LNode> attrs, LNode varType, LNode varName, LNode initValue)
+			LNode ConvertVarDeclToRunSequence(LNodeList attrs, LNode varType, LNode varName, LNode initValue)
 			{
 				initValue = BubbleUpBlocks(initValue);
 				varType = varType ?? F.Missing;
@@ -566,7 +566,7 @@ namespace LeMP
 					varName_apos = varName_apos.PlusAttr(@ref);
 				{
 					LNode resultValue;
-					VList<LNode> stmts;
+					LNodeList stmts;
 					if (initValue.CallsMin((Symbol) "#runSequence", 1) && (resultValue = initValue.Args[initValue.Args.Count - 1]) != null) {
 						stmts = initValue.Args.WithoutLast(1);
 						var newVarDecl = LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(varType, LNode.Call(CodeSymbols.Assign, LNode.List(varName, resultValue))));

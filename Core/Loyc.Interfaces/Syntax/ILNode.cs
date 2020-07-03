@@ -41,7 +41,7 @@ namespace Loyc.Syntax
 	/// Tip: the LES node printer can print any ILNode as a string. See
 	/// <see cref="Loyc.Syntax.Les.Les3LanguageService.Print(ILNode, StringBuilder, IMessageSink, ParsingMode, ILNodePrinterOptions)"/>
 	/// </remarks>
-	public interface ILNode : IEquatable<ILNode>, IHasValue<object>, INegListSource<ILNode>, IHasLocation
+	public interface ILNode : IEquatable<ILNode>, ILiteralValue, INegListSource<ILNode>, IHasLocation
 	{
 		/// <inheritdoc cref="LNode.Kind"/>
 		LNodeKind Kind { get; }
@@ -51,7 +51,7 @@ namespace Loyc.Syntax
 		/// <inheritdoc cref="LNode.Target"/>
 		ILNode Target { get; }
 		/// <inheritdoc cref="LNode.Range"/>
-		SourceRange Range { get; }
+		ISourceRange Range { get; }
 		/// <inheritdoc cref="LNode.Style"/>
 		NodeStyle Style { get; set; }
 		/// <summary>Returns true if <c>Kind == LNodeKind.Call</c>, <c>Name == name</c>, 

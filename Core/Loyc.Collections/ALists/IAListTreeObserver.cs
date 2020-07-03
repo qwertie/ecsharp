@@ -71,7 +71,7 @@ namespace Loyc.Collections.Impl
 		/// believes that any items exist in leaf nodes, it means that there is 
 		/// a bookkeeping error somewhere.</param>
 		/// <param name="list">The list that changed.</param>
-		/// <param name="newRoot">The new root (null if the tree is cleared).</param>
+		/// <param name="root">The new root (null if the tree is cleared).</param>
 		void RootChanged(AListBase<K,T> list, AListNode<K, T> root, bool clear);
 		
 		/// <summary>Called when an item is added to a leaf node.</summary>

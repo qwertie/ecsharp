@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -187,7 +187,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var pos = Basis.Range.Start;
 			if (pos.Line < 1) return ToString();
-			return string.Format("({0},{1}) {2}", pos.Line, pos.PosInLine, ToString());
+			return string.Format("({0},{1}) {2}", pos.Line, pos.Column, ToString());
 		}
 
 		/// <summary>Optional. If this predicate represents the matching code for a 
@@ -213,7 +213,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public VList<LNode> Params = VList<LNode>.Empty; // Params.Args is a list of parameters
+		public LNodeList Params = LNodeList.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 
 		public override bool IsNullable
@@ -856,7 +856,7 @@ namespace Loyc.LLParserGenerator
 		public AndPred(LNode basis, object pred, bool not, bool local)
 			: base(basis) { Pred = pred; Not = not; Local = local; }
 
-		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA")); // $LA
 		internal static readonly LNode SubstituteLI = F.Call(S.Substitute, F.Id("LI")); // $LI
 
@@ -939,9 +939,9 @@ namespace Loyc.LLParserGenerator
 	public partial class ActionPred : ZeroWidthPred
 	{
 		public ActionPred(LNode action) : base(action) { Statements = LNode.List(action); }
-		public ActionPred(LNode basis, VList<LNode> action) : base(basis) { Statements = action; }
+		public ActionPred(LNode basis, LNodeList action) : base(basis) { Statements = action; }
 
-		public VList<LNode> Statements;
+		public LNodeList Statements;
 
 		public override string ToString() { return "{..}"; }
 	}

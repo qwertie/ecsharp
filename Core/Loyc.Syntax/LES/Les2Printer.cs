@@ -122,9 +122,9 @@ namespace Loyc.Syntax.Les
 		private bool AutoPrintPrefixOrSuffixOp(ILNode node, Precedence context)
 		{
 			Symbol bareName;
-			if (Les2PrecedenceMap.IsSuffixOperatorName(node.Name, out bareName)) {
+			if (Les2PrecedenceMap.ResemblesSuffixOperator(node.Name, out bareName) && Les2PrecedenceMap.IsNaturalOperator(bareName.Name)) {
 				var prec = GetPrecedenceIfOperator(node, bareName, OperatorShape.Suffix, context);
-				if (prec == null || prec.Value == LesPrecedence.Other)
+				if (prec == null)
 					return false;
 				Print(node[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < _o.SpaceAfterPrefixStopPrecedence);
@@ -230,7 +230,7 @@ namespace Loyc.Syntax.Les
 				_out.Indent();
 				bool anyNewlines = false;
 				foreach (var stmt in args) {
-					if (stmt.AttrNamed(S.TriviaAppendStatement) == null && !_isOneLiner) {
+					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null) && !_isOneLiner) {
 						_out.Newline();
 						anyNewlines = true;
 					} else
@@ -458,17 +458,18 @@ namespace Loyc.Syntax.Les
 		/// normal identifier, without an "@" prefix. Note: identifiers 
 		/// starting with "#" still count as normal; call <see cref="LNode.HasSpecialName"/> 
 		/// to detect this.</summary>
-		public static bool IsNormalIdentifier(Symbol name)
+		public static bool IsNormalIdentifier(Symbol name) => IsNormalIdentifier(name.Name);
+		public static bool IsNormalIdentifier(UString name)
 		{
 			bool bq;
 			return !IsSpecialIdentifier(name, out bq);
 		}
 		
-		static bool IsSpecialIdentifier(Symbol name, out bool backquote)
+		static bool IsSpecialIdentifier(UString name, out bool backquote)
 		{
-			backquote = name.Name.Length == 0;
+			backquote = name.Length == 0;
 			bool special = false, first = true;
-			foreach (char c in name.Name)
+			foreach (char c in name)
 			{
 				if (!Les2Lexer.IsIdContChar(c)) {
 					if (Les2Lexer.IsSpecialIdChar(c))
@@ -482,7 +483,7 @@ namespace Loyc.Syntax.Les
 			
 			// Watch out for @`-inf_d` and @`-inf_f`, because they will be
 			// interpreted as named literals if we don't backquote them.
-			if (special && !backquote && (name.Name == "-inf_d" || name.Name == "-inf_f"))
+			if (special && !backquote && (name == "-inf_d" || name == "-inf_f"))
 				backquote = true;
 			return special || backquote;
 		}
@@ -490,7 +491,7 @@ namespace Loyc.Syntax.Les
 		private void PrintIdOrSymbol(Symbol name, bool isSymbol)
 		{
 			// Figure out what style we need to use: plain, @special, or @`backquoted`
-			bool backquote, special = IsSpecialIdentifier(name, out backquote); 
+			bool backquote, special = IsSpecialIdentifier(name.Name, out backquote); 
 
 			if (special || isSymbol)
 				_out.Write(isSymbol ? "@@" : "@", false);
