@@ -85,8 +85,12 @@ $(function() {
 Inheritance diagram for Loyc.Collections.INegListSource&lt; out out T &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="interfaceLoyc_1_1Collections_1_1INegListSource.png" alt=""/>
- </div></div>
+  <img src="interfaceLoyc_1_1Collections_1_1INegListSource.png" usemap="#Loyc.Collections.INegListSource_3C_20out_20out_20T_20_3E_map" alt=""/>
+  <map id="Loyc.Collections.INegListSource_3C_20out_20out_20T_20_3E_map" name="Loyc.Collections.INegListSource_3C_20out_20out_20T_20_3E_map">
+<area href="interfaceLoyc_1_1Collections_1_1ITryGet.html" alt="Loyc.Collections.ITryGet&lt; int, T &gt;" shape="rect" coords="281,0,552,24"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed.html" alt="Loyc.Collections.IIndexed&lt; int, T &gt;" shape="rect" coords="562,0,833,24"/>
+  </map>
+</div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>This interface is the counterpart to <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a> for lists whose minimum index is not (necessarily) zero. </p>
 <p>Be careful not to write a loop that relies on <a class="el" href="interfaceLoyc_1_1Collections_1_1ICount.html#a08d479898a458b28bb483892304a5837" title="Gets the number of items in the collection.">ICount.Count</a> or starts at zero! You must always loop from Min to Max, like so: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = list.Min; i &lt;= list.Max; i++) { ... }</div>
@@ -99,18 +103,20 @@ Properties</h2></td></tr>
 <tr class="memitem:a9ed8d45675c80490286b2cd38f3d880a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">Max</a><code> [get]</code></td></tr>
 <tr class="memdesc:a9ed8d45675c80490286b2cd38f3d880a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum valid index in the collection.  <a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a9ed8d45675c80490286b2cd38f3d880a">More...</a><br /></td></tr>
 <tr class="separator:a9ed8d45675c80490286b2cd38f3d880a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac77166fcd7e5f4f0a7941bc299291e14"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">this[int index]</a><code> [get]</code></td></tr>
-<tr class="memdesc:ac77166fcd7e5f4f0a7941bc299291e14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index.  <a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">More...</a><br /></td></tr>
-<tr class="separator:ac77166fcd7e5f4f0a7941bc299291e14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIndexed')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html">Loyc.Collections.IIndexed&lt; int, T &gt;</a></td></tr>
+<tr class="memitem:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">this[K key]</a><code> [get]</code></td></tr>
+<tr class="memdesc:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key.  <a href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">More...</a><br /></td></tr>
+<tr class="separator:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a238c28f7c77ade400dfa3329ef5fdb86"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a238c28f7c77ade400dfa3329ef5fdb86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">More...</a><br /></td></tr>
-<tr class="separator:a238c28f7c77ade400dfa3329ef5fdb86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">Slice</a> (int start, int count=int.MaxValue)</td></tr>
 <tr class="memdesc:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list.  <a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a0c0466927c95d573bbc32ba1a0ca8c77">More...</a><br /></td></tr>
 <tr class="separator:a0c0466927c95d573bbc32ba1a0ca8c77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html">Loyc.Collections.ITryGet&lt; int, T &gt;</a></td></tr>
+<tr class="memitem:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">TryGet</a> (K key, out bool fail)</td></tr>
+<tr class="memdesc:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item for the specified key or index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">More...</a><br /></td></tr>
+<tr class="separator:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0c0466927c95d573bbc32ba1a0ca8c77"></a>
@@ -140,48 +146,6 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns a sub-range of this list. </p>
-
-</div>
-</div>
-<a id="a238c28f7c77ade400dfa3329ef5fdb86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a238c28f7c77ade400dfa3329ef5fdb86">&#9670;&nbsp;</a></span>TryGet()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.TryGet </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out bool&#160;</td>
-          <td class="paramname"><em>fail</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Gets the item at the specified index, and does not throw an exception on failure. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>An index in the range Min to Max.</td></tr>
-    <tr><td class="paramname">fail</td><td>A flag that is set on failure. To improve performance slightly, this flag is not cleared on success.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The element at the specified index, or default(T) if the index is not valid.</dd></dl>
-<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span> index, ref T value);</div>
-<div class="line">T <a class="code" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">TryGet</a>(<span class="keywordtype">int</span>, T defaultValue);</div>
-</div><!-- fragment --> 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a200a0f7d1678d23c0c7439f6bb6e1501">Loyc.Collections.LinqToLists.SkipNowWhile&lt; T &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#ac2ae78619d132c16f8d571ac6910968f">Loyc.Collections.LinqToLists.TakeNowWhile&lt; T &gt;()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac70186255f63ef6549d76c4270758cba">Loyc.Collections.LCInterfaces.TryGet&lt; T &gt;()</a>.</p>
 
 </div>
 </div>
@@ -239,49 +203,11 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac77166fcd7e5f4f0a7941bc299291e14"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac77166fcd7e5f4f0a7941bc299291e14">&#9670;&nbsp;</a></span>this[int index]</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">Loyc.Collections.INegListSource</a>&lt; out out T &gt;.this[int index]</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">get</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the item at the specified index. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>An index in the range Min to Max.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">ArgumentOutOfRangeException</td><td>The index provided is not valid in this list.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The element at the specified index.</dd></dl>
-
-</div>
-</div>
 </div><!-- contents -->
-<div class="ttc" id="ainterfaceLoyc_1_1Collections_1_1INegListSource_html_a238c28f7c77ade400dfa3329ef5fdb86"><div class="ttname"><a href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource.TryGet</a></div><div class="ttdeci">T TryGet(int index, out bool fail)</div><div class="ttdoc">Gets the item at the specified index, and does not throw an exception on failure.</div></div>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:38 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

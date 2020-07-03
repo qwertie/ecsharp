@@ -88,9 +88,10 @@ Inheritance diagram for Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;:<
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.png" usemap="#Loyc.Syntax.Lexing.IndentTokenGenerator_3C_20Token_20_3E_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.IndentTokenGenerator_3C_20Token_20_3E_map" name="Loyc.Syntax.Lexing.IndentTokenGenerator_3C_20Token_20_3E_map">
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html" title="A base class for wrappers that modify lexer behavior. Implements the ILexer interface,..." alt="Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;" shape="rect" coords="160,112,470,136"/>
-<area href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html" title="A standard interface for lexers." alt="Loyc.Syntax.Lexing.ILexer&lt; Token &gt;" shape="rect" coords="160,56,470,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="0,0,310,24"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html" title="A base class for wrappers that modify lexer behavior. Implements the ILexer interface,..." alt="Loyc.Syntax.Lexing.LexerWrapper&lt; Token &gt;" shape="rect" coords="160,168,470,192"/>
+<area href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html" title="A standard interface for lexers." alt="Loyc.Syntax.Lexing.ILexer&lt; Token &gt;" shape="rect" coords="160,112,470,136"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="0,56,310,80"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IHasFileName.html" alt="Loyc.Syntax.IHasFileName" shape="rect" coords="0,0,310,24"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -245,10 +246,10 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> 
 <tr class="memitem:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a7dc8b3b6a3187b791861a1480ae1bf95">InputPosition</a><code> [get]</code></td></tr>
 <tr class="memdesc:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current input position (an index into SourceFile.Text).  <a href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a7dc8b3b6a3187b791861a1480ae1bf95">More...</a><br /></td></tr>
 <tr class="separator:a7dc8b3b6a3187b791861a1480ae1bf95 inherit properties_interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html">Loyc.Syntax.IIndexToLine</a></td></tr>
-<tr class="memitem:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">FileName</a><code> [get]</code></td></tr>
-<tr class="memdesc:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the file name used in results returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a>.  <a href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">More...</a><br /></td></tr>
-<tr class="separator:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IHasFileName')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IHasFileName.html">Loyc.Syntax.IHasFileName</a></td></tr>
+<tr class="memitem:af997f086c4655b4342232639b2f7ca98 inherit properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td class="memItemLeft" align="right" valign="top"><a id="af997f086c4655b4342232639b2f7ca98"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
+<tr class="separator:af997f086c4655b4342232639b2f7ca98 inherit properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -277,9 +278,9 @@ override TokenCategory&#160;</td><td class="memItemRight" valign="bottom"><b>Get
 <tr class="memitem:adb83ed488a49a459eb760660cd61f40d inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memItemLeft" align="right" valign="top"><a id="adb83ed488a49a459eb760660cd61f40d"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>LexerWrapper</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; sourceLexer)</td></tr>
 <tr class="separator:adb83ed488a49a459eb760660cd61f40d inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3bec690df9009da2d5826fc1ba8e1e8 inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#ad3bec690df9009da2d5826fc1ba8e1e8">IndexToLine</a> (int index)</td></tr>
-<tr class="memdesc:ad3bec690df9009da2d5826fc1ba8e1e8 inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#ad3bec690df9009da2d5826fc1ba8e1e8">More...</a><br /></td></tr>
-<tr class="separator:ad3bec690df9009da2d5826fc1ba8e1e8 inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1556b626e86b58b5a4a1326b9d96dc1a inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILineColumnFile.html">ILineColumnFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#a1556b626e86b58b5a4a1326b9d96dc1a">IndexToLine</a> (int index)</td></tr>
+<tr class="memdesc:a1556b626e86b58b5a4a1326b9d96dc1a inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#a1556b626e86b58b5a4a1326b9d96dc1a">More...</a><br /></td></tr>
+<tr class="separator:a1556b626e86b58b5a4a1326b9d96dc1a inherit pub_methods_classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -807,7 +808,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

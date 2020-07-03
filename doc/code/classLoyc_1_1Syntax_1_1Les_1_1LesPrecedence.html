@@ -100,7 +100,7 @@ The backslash "\" is reserved for future use. </li>
 </ul>
 <p>The following table shows all the precedence levels and associativities of the "built-in" LES operators, except a couple of special operators such as the "lambda" operator =&gt;, whose precedence is different on the left side than on the right side. Each precedence level has a name, which corresponds to a static field of this class. All binary operators are left-associative unless otherwise specified. </p><ol>
 <li>
-Substitute: prefix $ . : </li>
+Substitute: prefix $ . : (note: prefix-dot is not allowed in LES3) </li>
 <li>
 Primary: binary . =:, generic arguments List!(int), suffix ++ &ndash;, method calls f(x), indexers a[i] </li>
 <li>
@@ -194,30 +194,36 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <tr class="memitem:ad5853313fb3a547b31be9e4ffd0e9d04"><td class="memItemLeft" align="right" valign="top"><a id="ad5853313fb3a547b31be9e4ffd0e9d04"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NullDot</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(95)</td></tr>
 <tr class="separator:ad5853313fb3a547b31be9e4ffd0e9d04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22b018cf348cd17f3ef2c3cf2a4cd150"><td class="memItemLeft" align="right" valign="top"><a id="a22b018cf348cd17f3ef2c3cf2a4cd150"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Prefix</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(111, 90, 90, 90)</td></tr>
-<tr class="separator:a22b018cf348cd17f3ef2c3cf2a4cd150"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd3643f997f23a10e9eb60ec53073ce5"><td class="memItemLeft" align="right" valign="top"><a id="abd3643f997f23a10e9eb60ec53073ce5"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Power</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(86, 85)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Power</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(91, 90)</td></tr>
 <tr class="separator:abd3643f997f23a10e9eb60ec53073ce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd730beb81800989d1baf39cd14e8e4a"><td class="memItemLeft" align="right" valign="top"><a id="abd730beb81800989d1baf39cd14e8e4a"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Multiply</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(75)</td></tr>
-<tr class="separator:abd730beb81800989d1baf39cd14e8e4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a932f4658b28a49e4a3f75a5bcebaa0d1"><td class="memItemLeft" align="right" valign="top"><a id="a932f4658b28a49e4a3f75a5bcebaa0d1"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Shift</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(70, 70, 65, 70)</td></tr>
-<tr class="separator:a932f4658b28a49e4a3f75a5bcebaa0d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95c461632e9c21933f00277aa592f006"><td class="memItemLeft" align="right" valign="top"><a id="a95c461632e9c21933f00277aa592f006"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Other</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(70, 70, 55, 75)</td></tr>
-<tr class="separator:a95c461632e9c21933f00277aa592f006"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade4ddb4ba8c513e7206a52f5d910a81c"><td class="memItemLeft" align="right" valign="top"><a id="ade4ddb4ba8c513e7206a52f5d910a81c"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(65)</td></tr>
-<tr class="separator:ade4ddb4ba8c513e7206a52f5d910a81c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22b018cf348cd17f3ef2c3cf2a4cd150"><td class="memItemLeft" align="right" valign="top"><a id="a22b018cf348cd17f3ef2c3cf2a4cd150"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Prefix</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(111, 85, 85, 85)</td></tr>
+<tr class="separator:a22b018cf348cd17f3ef2c3cf2a4cd150"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47477edbaa9e216296df212217e34de4"><td class="memItemLeft" align="right" valign="top"><a id="a47477edbaa9e216296df212217e34de4"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SuffixWord</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(80, 111, 80, 80)</td></tr>
+<tr class="separator:a47477edbaa9e216296df212217e34de4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd71e268cfda5994bf20466134cd60bd"><td class="memItemLeft" align="right" valign="top"><a id="afd71e268cfda5994bf20466134cd60bd"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RangePrefix</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(111, 60, 60, 60)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RangePrefix</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(111, 75, 75, 75)</td></tr>
 <tr class="separator:afd71e268cfda5994bf20466134cd60bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab052fc9d1095a99bebdc17d6a1e45677"><td class="memItemLeft" align="right" valign="top"><a id="ab052fc9d1095a99bebdc17d6a1e45677"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Range</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(60)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Range</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(75)</td></tr>
 <tr class="separator:ab052fc9d1095a99bebdc17d6a1e45677"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd730beb81800989d1baf39cd14e8e4a"><td class="memItemLeft" align="right" valign="top"><a id="abd730beb81800989d1baf39cd14e8e4a"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Multiply</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(70)</td></tr>
+<tr class="separator:abd730beb81800989d1baf39cd14e8e4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21d1884a1356976d44ddf566da590a11"><td class="memItemLeft" align="right" valign="top"><a id="a21d1884a1356976d44ddf566da590a11"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>UpperWord</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(65)</td></tr>
+<tr class="separator:a21d1884a1356976d44ddf566da590a11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a932f4658b28a49e4a3f75a5bcebaa0d1"><td class="memItemLeft" align="right" valign="top"><a id="a932f4658b28a49e4a3f75a5bcebaa0d1"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Shift</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(65, 65, 60, 65)</td></tr>
+<tr class="separator:a932f4658b28a49e4a3f75a5bcebaa0d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95c461632e9c21933f00277aa592f006"><td class="memItemLeft" align="right" valign="top"><a id="a95c461632e9c21933f00277aa592f006"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Other</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(65, 65, 55, 70)</td></tr>
+<tr class="separator:a95c461632e9c21933f00277aa592f006"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade4ddb4ba8c513e7206a52f5d910a81c"><td class="memItemLeft" align="right" valign="top"><a id="ade4ddb4ba8c513e7206a52f5d910a81c"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(60)</td></tr>
+<tr class="separator:ade4ddb4ba8c513e7206a52f5d910a81c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a616c621732f21105b3b1622a82b65b41"><td class="memItemLeft" align="right" valign="top"><a id="a616c621732f21105b3b1622a82b65b41"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Squiggly</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(55)</td></tr>
 <tr class="separator:a616c621732f21105b3b1622a82b65b41"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -237,10 +243,10 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Compare</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(40)</td></tr>
 <tr class="separator:a185d971d56531e611cf75bb4d95a9cd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6da84af5647ddbd1b356b9e2a0009123"><td class="memItemLeft" align="right" valign="top"><a id="a6da84af5647ddbd1b356b9e2a0009123"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AndBitsLES2</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(36, 36, 35, 46)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AndBitsLES2</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(37, 37, 35, 52)</td></tr>
 <tr class="separator:a6da84af5647ddbd1b356b9e2a0009123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab311d98790ef82827d9ec885b8d0d086"><td class="memItemLeft" align="right" valign="top"><a id="ab311d98790ef82827d9ec885b8d0d086"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>OrBitsLES2</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(35, 35, 35, 46)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>OrBitsLES2</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(35, 35, 35, 52)</td></tr>
 <tr class="separator:ab311d98790ef82827d9ec885b8d0d086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff3034b4106944c716aee464d6494ec2"><td class="memItemLeft" align="right" valign="top"><a id="aff3034b4106944c716aee464d6494ec2"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Arrow</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(31, 30)</td></tr>
@@ -267,7 +273,7 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>LowerKeyword</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(6, 5, 5, 5)</td></tr>
 <tr class="separator:af34d72365790ab39b4f37b29ebf14036"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46260591bdf468d70b22f019872fa212"><td class="memItemLeft" align="right" valign="top"><a id="a46260591bdf468d70b22f019872fa212"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Lambda</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(52, 0, 0, 0)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Lambda</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(48, 0, 0, 0)</td></tr>
 <tr class="separator:a46260591bdf468d70b22f019872fa212"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a096c44c461a59eafff5fa959df8248"><td class="memItemLeft" align="right" valign="top"><a id="a5a096c44c461a59eafff5fa959df8248"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>LambdaPrefix</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(111, 0, 0, 0)</td></tr>
@@ -281,12 +287,15 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <tr class="memitem:a92c6be7119cc38dd5e2cf720c4e2b146"><td class="memItemLeft" align="right" valign="top"><a id="a92c6be7119cc38dd5e2cf720c4e2b146"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SuperExpr</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(-10)</td></tr>
 <tr class="separator:a92c6be7119cc38dd5e2cf720c4e2b146"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11c336b6683d38453a11cea89a9c9110"><td class="memItemLeft" align="right" valign="top"><a id="a11c336b6683d38453a11cea89a9c9110"></a>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Illegal</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(58)</td></tr>
+<tr class="separator:a11c336b6683d38453a11cea89a9c9110"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

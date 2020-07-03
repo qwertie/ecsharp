@@ -336,6 +336,10 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408">Default</a> = GSymbol.Get(&quot;'default&quot;)</td></tr>
 <tr class="memdesc:a1e7b1ab4fa682b89e50e70efdd736408"><td class="mdescLeft">&#160;</td><td class="mdescRight">"'default" for the default(T) pseudofunction in C# <br /></td></tr>
 <tr class="separator:a1e7b1ab4fa682b89e50e70efdd736408"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa913eb0b1d5698ded52123c8d24f25d6"><td class="memItemLeft" align="right" valign="top"><a id="aa913eb0b1d5698ded52123c8d24f25d6"></a>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa913eb0b1d5698ded52123c8d24f25d6">IS</a> = GSymbol.Get(&quot;'IS&quot;)</td></tr>
+<tr class="memdesc:aa913eb0b1d5698ded52123c8d24f25d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backquoted suffixes in LES3 use this: x<code>bytes</code> &lt;=&gt; <code>'IS</code>(x, bytes) <br /></td></tr>
+<tr class="separator:aa913eb0b1d5698ded52123c8d24f25d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea4754ed177c2e6073a341f24498077e"><td class="memItemLeft" align="right" valign="top"><a id="aea4754ed177c2e6073a341f24498077e"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aea4754ed177c2e6073a341f24498077e">NullCoalesceAssign</a> = GSymbol.Get(&quot;'??=&quot;)</td></tr>
 <tr class="memdesc:aea4754ed177c2e6073a341f24498077e"><td class="mdescLeft">&#160;</td><td class="mdescRight">"??=": <code>a ??= b</code> means <code>a = a ?? b</code> <br /></td></tr>
@@ -632,7 +636,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 
 <p># is used for lists of things in definition constructs, e.g. <code>#class(Derived, #(Base, IEnumerable), {...})</code>. For a time, 'tuple was used for this purpose; the problem is that a find-and-replace operation intended to find run-time tuples could accidentally match one of these lists. So I decided to dedicate # for use inside special constructs; its meaning depends on context. </p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a45a5a514c2f7b9f2fa8a4caa60a07dd6">Loyc.Ecs.EcsValidators.IsIsTest()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a45a5a514c2f7b9f2fa8a4caa60a07dd6">Loyc.Ecs.EcsValidators.IsIsTest()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">Loyc.Ecs.EcsValidators.IsPropertyDefinition()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a66bfe2f97b39955120aa44c870253bb0">Loyc.Ecs.EcsValidators.MethodDefinitionKind()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">Loyc.Ecs.EcsValidators.SpaceDefinitionKind()</a>.</p>
 
 </div>
 </div>
@@ -657,7 +661,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 </div><div class="memdoc">
 
 <p>#import is used instead of #using because the using(...) {...} statement already uses #using </p>
-<p>e.g. using <a class="el" href="namespaceSystem.html">System</a>; &lt;=&gt; #import(System); </p>
+<p>e.g. using System; &lt;=&gt; #import(System); </p>
 
 </div>
 </div>
@@ -736,7 +740,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:39 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -93,7 +93,7 @@ $(function() {
 </div><!-- fragment --><p> In order for the input code to have access to macros, two steps are necessary: you have to add the macro classes with AddMacros and then you have to import the namespace that contains the class(es). Higher-level code (e.g. <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">Compiler</a>) can define "always-open" namespaces by adding entries to PreOpenedNamespaces, and the code being processed can open additional namespaces with a #importMacros(Namespace) statement. </p>
 <p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> is not aware of any distinction between "statements" and "expressions"; it will run macros no matter where they are located, whether as standalone statements, attributes, or arguments to functions. </p>
 <p><a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a>'s main responsibilities are to keep track of a table of registered macros (call AddMacros to register more), to keep track of which namespaces are open, to scan the input for macros to call; and to control the printout of messages. </p>
-<p>This class processes a batch of files at once. Call either <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns.">ProcessParallel</a>. Parallelizing on a file-by-file basis is easy; each source file is completely independent, since no semantic analysis is being done. </p>
+<p>This class processes a batch of files at once. Call either <a class="el" href="classLeMP_1_1MacroProcessor.html#a19714d58c943307812f88b80aa6683bb" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns.">ProcessParallel</a>. Parallelizing on a file-by-file basis is easy; each source file is completely independent, since no semantic analysis is being done. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -136,18 +136,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Type ty
 <tr class="memitem:a32cb040a44cc8ff445ae2c9f8c0eae49"><td class="memItemLeft" align="right" valign="top"><a id="a32cb040a44cc8ff445ae2c9f8c0eae49"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Assembly assembly, bool writeToSink=true)</td></tr>
 <tr class="separator:a32cb040a44cc8ff445ae2c9f8c0eae49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bfab28cc0190a645334f501d22e419f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f">ProcessSynchronously</a> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; stmts)</td></tr>
-<tr class="memdesc:a1bfab28cc0190a645334f501d22e419f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes a list of nodes directly on the current thread.  <a href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f">More...</a><br /></td></tr>
-<tr class="separator:a1bfab28cc0190a645334f501d22e419f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19714d58c943307812f88b80aa6683bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a19714d58c943307812f88b80aa6683bb">ProcessSynchronously</a> (<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> stmts)</td></tr>
+<tr class="memdesc:a19714d58c943307812f88b80aa6683bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes a list of nodes directly on the current thread.  <a href="classLeMP_1_1MacroProcessor.html#a19714d58c943307812f88b80aa6683bb">More...</a><br /></td></tr>
+<tr class="separator:a19714d58c943307812f88b80aa6683bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab97d5ced3e55827800c2949b58679360"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#ab97d5ced3e55827800c2949b58679360">ProcessSynchronously</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
 <tr class="memdesc:ab97d5ced3e55827800c2949b58679360"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files one at a time (may be easier for debugging).  <a href="classLeMP_1_1MacroProcessor.html#ab97d5ced3e55827800c2949b58679360">More...</a><br /></td></tr>
 <tr class="separator:ab97d5ced3e55827800c2949b58679360"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a165fd693579315d897e71ebff1394c15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15">ProcessParallel</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
 <tr class="memdesc:a165fd693579315d897e71ebff1394c15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel. All files are fully processed before the method returns.  <a href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15">More...</a><br /></td></tr>
 <tr class="separator:a165fd693579315d897e71ebff1394c15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa53f53359150972780e07b42a00100ad"><td class="memItemLeft" align="right" valign="top">Task&lt; <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">ProcessAsync</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
-<tr class="memdesc:aa53f53359150972780e07b42a00100ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel using .NET Tasks. The method returns immediately.  <a href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">More...</a><br /></td></tr>
-<tr class="separator:aa53f53359150972780e07b42a00100ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8e1ca24a4994873cef790f12944535e"><td class="memItemLeft" align="right" valign="top">Task&lt; <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> &gt;[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#ad8e1ca24a4994873cef790f12944535e">ProcessAsync</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
+<tr class="memdesc:ad8e1ca24a4994873cef790f12944535e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel using .NET Tasks. The method returns immediately.  <a href="classLeMP_1_1MacroProcessor.html#ad8e1ca24a4994873cef790f12944535e">More...</a><br /></td></tr>
+<tr class="separator:ad8e1ca24a4994873cef790f12944535e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -262,8 +262,8 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aa53f53359150972780e07b42a00100ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa53f53359150972780e07b42a00100ad">&#9670;&nbsp;</a></span>ProcessAsync()</h2>
+<a id="ad8e1ca24a4994873cef790f12944535e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8e1ca24a4994873cef790f12944535e">&#9670;&nbsp;</a></span>ProcessAsync()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -272,7 +272,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Task&lt;<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; [] LeMP.MacroProcessor.ProcessAsync </td>
+          <td class="memname">Task&lt;<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&gt; [] LeMP.MacroProcessor.ProcessAsync </td>
           <td>(</td>
           <td class="paramtype">IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt;&#160;</td>
           <td class="paramname"><em>sourceFiles</em>, </td>
@@ -340,7 +340,7 @@ Static Public Member Functions</h2></td></tr>
 
 <p>Processes source files in parallel. All files are fully processed before the method returns. </p>
 
-<p class="reference">References <a class="el" href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">LeMP.MacroProcessor.ProcessAsync()</a>.</p>
+<p class="reference">References <a class="el" href="classLeMP_1_1MacroProcessor.html#ad8e1ca24a4994873cef790f12944535e">LeMP.MacroProcessor.ProcessAsync()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95">LeMP.Compiler.Run()</a>.</p>
 
@@ -384,8 +384,8 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a1bfab28cc0190a645334f501d22e419f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bfab28cc0190a645334f501d22e419f">&#9670;&nbsp;</a></span>ProcessSynchronously() <span class="overload">[2/2]</span></h2>
+<a id="a19714d58c943307812f88b80aa6683bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19714d58c943307812f88b80aa6683bb">&#9670;&nbsp;</a></span>ProcessSynchronously() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -394,9 +394,9 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; LeMP.MacroProcessor.ProcessSynchronously </td>
+          <td class="memname"><a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> LeMP.MacroProcessor.ProcessSynchronously </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td>
           <td class="paramname"><em>stmts</em></td><td>)</td>
           <td></td>
         </tr>
@@ -430,7 +430,7 @@ Static Public Member Functions</h2></td></tr>
 
 <p>Default values of scoped properties. </p>
 <p>Code being processed can look up a scoped property named "N" with <code>#getScopedProperty("N")</code> in LESv2 or EC#. This map is empty by default. Scoped properties are "scoped" in the sense that setting a property with <code>#setScopedProperty(keyLiteral, valueLiteral)</code> takes effect only until the end of the braced block in which it appears. </p>
-<p>The @#inputFolder and @#inputFileName properties (note: @ is EC# syntax for Symbol) are not normally stored in this collection; when you use <a class="el" href="classLeMP_1_1MacroProcessor.html#a1bfab28cc0190a645334f501d22e419f" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns.">ProcessParallel</a>, @#inputFolder and @#inputFileName are set according to the folder and filename in InputOutput.FileName. However, @#inputFolder is not set if the filename has no folder component, so this collection could be used to provide a value of @#inputFolder in that case. </p>
+<p>The @#inputFolder and @#inputFileName properties (note: @ is EC# syntax for Symbol) are not normally stored in this collection; when you use <a class="el" href="classLeMP_1_1MacroProcessor.html#a19714d58c943307812f88b80aa6683bb" title="Processes a list of nodes directly on the current thread.">ProcessSynchronously</a> or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns.">ProcessParallel</a>, @#inputFolder and @#inputFileName are set according to the folder and filename in InputOutput.FileName. However, @#inputFolder is not set if the filename has no folder component, so this collection could be used to provide a value of @#inputFolder in that case. </p>
 
 </div>
 </div>
@@ -519,7 +519,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:36 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

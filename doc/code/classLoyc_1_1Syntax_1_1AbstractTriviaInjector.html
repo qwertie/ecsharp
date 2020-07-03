@@ -144,9 +144,9 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a44397553dc84527cea4e3b5cdc746639"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a44397553dc84527cea4e3b5cdc746639">GetAttachedTrivia</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt; trivia, TriviaLocation loc, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
-<tr class="memdesc:a44397553dc84527cea4e3b5cdc746639"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class translates a list of trivia (tokens) into appropriate trivia attributes. This will be called for leading trivia before trailing trivia.  <a href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a44397553dc84527cea4e3b5cdc746639">More...</a><br /></td></tr>
-<tr class="separator:a44397553dc84527cea4e3b5cdc746639"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7443072e84b8b9f292e665105151cb0"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ae7443072e84b8b9f292e665105151cb0">GetAttachedTrivia</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; Trivia &gt; trivia, TriviaLocation loc, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> parent, int indexInParent)</td></tr>
+<tr class="memdesc:ae7443072e84b8b9f292e665105151cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class translates a list of trivia (tokens) into appropriate trivia attributes. This will be called for leading trivia before trailing trivia.  <a href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#ae7443072e84b8b9f292e665105151cb0">More...</a><br /></td></tr>
+<tr class="separator:ae7443072e84b8b9f292e665105151cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97177c46d447e5678c99e4c87e51a2a6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a97177c46d447e5678c99e4c87e51a2a6">MarkOneLiner</a> (ref <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
 <tr class="memdesc:a97177c46d447e5678c99e4c87e51a2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method is called when a node has no newlines or comments within it (although the node may still have a leading or trailing comment). It informs the derived class that <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a836be32377d9935ff0c98f2a024dfa5b" title="Initializes the SortedTrivia property.">AbstractTriviaInjector&lt;Trivia&gt;</a> will not traverse into the node.  <a href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#a97177c46d447e5678c99e4c87e51a2a6">More...</a><br /></td></tr>
 <tr class="separator:a97177c46d447e5678c99e4c87e51a2a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,8 +258,8 @@ static IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; 
 
 </div>
 </div>
-<a id="a44397553dc84527cea4e3b5cdc746639"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a44397553dc84527cea4e3b5cdc746639">&#9670;&nbsp;</a></span>GetAttachedTrivia()</h2>
+<a id="ae7443072e84b8b9f292e665105151cb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7443072e84b8b9f292e665105151cb0">&#9670;&nbsp;</a></span>GetAttachedTrivia()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -268,7 +268,7 @@ static IEnumerator&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; 
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.GetAttachedTrivia </td>
+          <td class="memname">abstract <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html">Loyc.Syntax.AbstractTriviaInjector</a>&lt; Trivia &gt;.GetAttachedTrivia </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
           <td class="paramname"><em>node</em>, </td>
@@ -520,7 +520,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 </div><div class="memdoc">
 
 <p>Core trivia associaton algorithm. </p>
-<p>NOTE: the enumerator may DRIVE lexing and actually cause the trivia list (SortedTrivia) to increase in size. For this reason, this algorithm is careful to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this precaution is sufficient to preserve trivia in all "streaming" cases, but it seems to work in at least most cases. </p>
+<p>NOTE: the enumerator may DRIVE lexing and actually cause the trivia list (SortedTrivia) to increase in size. For this reason, this algorithm is careful to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this precaution is sufficient to preserve trivia in all "streaming" cases, but it has worked fine up to now. </p>
 
 <p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1AbstractTriviaInjector.html#aa8d088768a4d80c19dda40cf547ce752">Loyc.Syntax.AbstractTriviaInjector&lt; Token &gt;.Run()</a>.</p>
 
@@ -583,7 +583,7 @@ this node" by returning null; the base class will, if possible, associate it wit
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:39 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

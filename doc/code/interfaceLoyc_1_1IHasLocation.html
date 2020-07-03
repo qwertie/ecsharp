@@ -106,7 +106,7 @@ Inheritance diagram for Loyc.IHasLocation:</div>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>This interface allows an object to declare its "location". </p>
-<p>For example, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a> implements this interface so that when a compiler error refers to a source code construct, the error message contains the location of that source code rather than the code itself. </p>
+<p>Objects designed to be used as a context parameter in IMessageSink&lt;T&gt; can implement this interface so that the string form of the message shows the location of a piece of data instead of the data itself. For example, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a> implements this interface so that when a compiler error refers to a source code construct, the context of the <a class="el" href="structLoyc_1_1LogMessage.html" title="Holds an argument list compatible with IMessageSink&lt;TContext&gt;.Write(Severity,TContext,...">LogMessage</a> can refer to the code itself while the printed form of the the error message shows the location of the code instead. </p>
 <p>Given a context object that may or may not implement this interface, it's handy to use <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638" title="Gets the strategy that message sinks should use to convert a context object to a string.">MessageSink.ContextToString</a> to convert the "context" of a message into a string, or <a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe" title="Returns context.Location if context implements IHasLocation; otherwise, returns context itself.">MessageSink.LocationOf(object)</a> to unwrap objects that implement <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;.">IHasLocation</a>. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -119,7 +119,7 @@ object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

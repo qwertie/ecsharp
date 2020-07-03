@@ -131,6 +131,18 @@ static <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L, R &gt;&#
 <tr class="memitem:a97624beb830ad6ee765fe1596d863e29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Either.html#a97624beb830ad6ee765fe1596d863e29">Select&lt; L2, R2 &gt;</a> (Func&lt; L, L2 &gt; selectL, Func&lt; R, R2 &gt; selectR)</td></tr>
 <tr class="memdesc:a97624beb830ad6ee765fe1596d863e29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an <a class="el" href="structLoyc_1_1Either.html" title="Holds a single value of one of two types (L or R).">Either</a> to another with different types.  <a href="structLoyc_1_1Either.html#a97624beb830ad6ee765fe1596d863e29">More...</a><br /></td></tr>
 <tr class="separator:a97624beb830ad6ee765fe1596d863e29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33425c99f1e593054d1c4408eb35c63e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R2 &gt; R2(selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Either.html#a33425c99f1e593054d1c4408eb35c63e">MapLeft&lt; L2 &gt;</a> (Func&lt; L, L2 &gt; selectL)</td></tr>
+<tr class="memdesc:a33425c99f1e593054d1c4408eb35c63e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms <code>Left</code> with the given selector, if <code>Left.HasValue</code>. Otherwise, returns Right unchanged.  <a href="structLoyc_1_1Either.html#a33425c99f1e593054d1c4408eb35c63e">More...</a><br /></td></tr>
+<tr class="separator:a33425c99f1e593054d1c4408eb35c63e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e142fadfcf65f3408111bb1dc8d4be1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R2 &gt; R2(selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R &gt; R(selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L, R2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Either.html#a8e142fadfcf65f3408111bb1dc8d4be1">MapRight&lt; R2 &gt;</a> (Func&lt; R, R2 &gt; selectR)</td></tr>
+<tr class="memdesc:a8e142fadfcf65f3408111bb1dc8d4be1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms <code>Right</code> with the given selector, if <code>Right.HasValue</code>. Otherwise, returns Left unchanged.  <a href="structLoyc_1_1Either.html#a8e142fadfcf65f3408111bb1dc8d4be1">More...</a><br /></td></tr>
+<tr class="separator:a8e142fadfcf65f3408111bb1dc8d4be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeeba40a48bba8cb32b33e2d8c2fce5e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R2 &gt; R2(selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L2, R &gt; R(selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L, R2 &gt; R2(selectR(_right)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L, R &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Either.html#aeeba40a48bba8cb32b33e2d8c2fce5e4">IfLeft</a> (Action&lt; L &gt; actionL)</td></tr>
+<tr class="memdesc:aeeba40a48bba8cb32b33e2d8c2fce5e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs actionL if <code>Left.HasValue</code>. Equivalent to <code>Left.Then(actionL)</code>, but also returns <code>this</code>.  <a href="structLoyc_1_1Either.html#aeeba40a48bba8cb32b33e2d8c2fce5e4">More...</a><br /></td></tr>
+<tr class="separator:aeeba40a48bba8cb32b33e2d8c2fce5e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a915a79de43af072fb946a9a4c7d806a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt; L, R &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Either.html#a915a79de43af072fb946a9a4c7d806a5">IfRight</a> (Action&lt; R &gt; actionR)</td></tr>
+<tr class="memdesc:a915a79de43af072fb946a9a4c7d806a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs actionR if <code>Right.HasValue</code>. Equivalent to <code>Right.Then(actionL)</code>, but also returns <code>this</code>.  <a href="structLoyc_1_1Either.html#a915a79de43af072fb946a9a4c7d806a5">More...</a><br /></td></tr>
+<tr class="separator:a915a79de43af072fb946a9a4c7d806a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -207,6 +219,102 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get]</c
 </dd>
 </dl>
 </div>
+
+</div>
+</div>
+<a id="aeeba40a48bba8cb32b33e2d8c2fce5e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeeba40a48bba8cb32b33e2d8c2fce5e4">&#9670;&nbsp;</a></span>IfLeft()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R2&gt; R2 (selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R&gt; R (selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L, R2&gt; R2 (selectR(_right)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L, R&gt; <a class="el" href="structLoyc_1_1Either.html">Loyc.Either</a>&lt; L, R &gt;.IfLeft </td>
+          <td>(</td>
+          <td class="paramtype">Action&lt; L &gt;&#160;</td>
+          <td class="paramname"><em>actionL</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs actionL if <code>Left.HasValue</code>. Equivalent to <code>Left.Then(actionL)</code>, but also returns <code>this</code>. </p>
+
+</div>
+</div>
+<a id="a915a79de43af072fb946a9a4c7d806a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a915a79de43af072fb946a9a4c7d806a5">&#9670;&nbsp;</a></span>IfRight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L, R&gt; <a class="el" href="structLoyc_1_1Either.html">Loyc.Either</a>&lt; L, R &gt;.IfRight </td>
+          <td>(</td>
+          <td class="paramtype">Action&lt; R &gt;&#160;</td>
+          <td class="paramname"><em>actionR</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs actionR if <code>Right.HasValue</code>. Equivalent to <code>Right.Then(actionL)</code>, but also returns <code>this</code>. </p>
+
+</div>
+</div>
+<a id="a33425c99f1e593054d1c4408eb35c63e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33425c99f1e593054d1c4408eb35c63e">&#9670;&nbsp;</a></span>MapLeft&lt; L2 &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R2&gt; R2 (selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R&gt; <a class="el" href="structLoyc_1_1Either.html">Loyc.Either</a>&lt; L, R &gt;.MapLeft&lt; L2 &gt; </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; L, L2 &gt;&#160;</td>
+          <td class="paramname"><em>selectL</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Transforms <code>Left</code> with the given selector, if <code>Left.HasValue</code>. Otherwise, returns Right unchanged. </p>
+
+</div>
+</div>
+<a id="a8e142fadfcf65f3408111bb1dc8d4be1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e142fadfcf65f3408111bb1dc8d4be1">&#9670;&nbsp;</a></span>MapRight&lt; R2 &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R2&gt; R2 (selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L2, R&gt; R (selectL(_left)) <a class="el" href="structLoyc_1_1Either.html">Either</a>&lt;L, R2&gt; <a class="el" href="structLoyc_1_1Either.html">Loyc.Either</a>&lt; L, R &gt;.MapRight&lt; R2 &gt; </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; R, R2 &gt;&#160;</td>
+          <td class="paramname"><em>selectR</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Transforms <code>Right</code> with the given selector, if <code>Right.HasValue</code>. Otherwise, returns Left unchanged. </p>
 
 </div>
 </div>
@@ -300,7 +408,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get]</c
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

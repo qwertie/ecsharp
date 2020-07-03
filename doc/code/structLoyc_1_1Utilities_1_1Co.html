@@ -118,7 +118,7 @@ return" recursively. </p>
 <div class="line">    yield <span class="keywordflow">return</span> RightChild.GetCoEnumerator().All();</div>
 <div class="line">}</div>
 </div><!-- fragment --><p> Simple, right? <a class="el" href="namespaceString.html">String</a> is automatically converted to <a class="el" href="structLoyc_1_1Utilities_1_1Co.html" title="A structure that helps you to write coroutines, or to avoid the performance penalty of nested iterato...">Co</a>{string} so that you can "yield return" one, but C# does not allow automatic coersion from IEnumerator{<a class="el" href="structLoyc_1_1Utilities_1_1Co.html" title="A structure that helps you to write coroutines, or to avoid the performance penalty of nested iterato...">Co</a>{T}} to <a class="el" href="structLoyc_1_1Utilities_1_1Co.html" title="A structure that helps you to write coroutines, or to avoid the performance penalty of nested iterato...">Co</a>{T} so you must add the suffix <code>.All()</code> which really means "wrap the IEnumerator{Co{T}} into a Co{T} object". </p>
-<p>In fact, this class simulates the core functionality of C# 5's async/await feature just using C# 2's iterators. However, the C# 5 async feature is richer; for example, it supports exceptions properly. If an exception is thrown from within a nested iterator, the outer iterator is unable to catch the exception; it will be thrown directly into whatever foreach loop (or other code) that is enumerating the sequence. </p>
+<p>In fact, this class simulates the core functionality of C# 5's async/await feature just using C# 2's iterators. However, the C# 5 async feature is richer; for example, it supports exceptions properly. If an exception is thrown from within a nested iterator, the outer iterator is unable to catch the exception; it will be thrown directly into whatever foreach loop (or other code) that is enumerating the sequence. On the other hand, async is impoverished, since it can only produce a single output. Also, it is difficult to control how and when async methods are executed. </p>
 <p>This class solves the same problem as Loyc.Collections.NestedEnumerator&lt;F,T&gt; in a way that is very easy to use. You should use Loyc.Collections.NestedEnumerator&lt;F,T&gt; instead if you need the highest possible performance. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -183,11 +183,11 @@ static IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="astructLoyc_1_1Utilities_1_1Co_html_a33020b107c62ea56443b1d9bad977ba5"><div class="ttname"><a href="structLoyc_1_1Utilities_1_1Co.html#a33020b107c62ea56443b1d9bad977ba5">Loyc.Utilities.Co.GetEnumerator</a></div><div class="ttdeci">IEnumerator&lt; T &gt; GetEnumerator()</div><div class="ttdoc">Enumerates the underlying sequence.</div><div class="ttdef"><b>Definition:</b> Co.cs:83</div></div>
+<div class="ttc" id="astructLoyc_1_1Utilities_1_1Co_html_a33020b107c62ea56443b1d9bad977ba5"><div class="ttname"><a href="structLoyc_1_1Utilities_1_1Co.html#a33020b107c62ea56443b1d9bad977ba5">Loyc.Utilities.Co.GetEnumerator</a></div><div class="ttdeci">IEnumerator&lt; T &gt; GetEnumerator()</div><div class="ttdoc">Enumerates the underlying sequence.</div><div class="ttdef"><b>Definition:</b> Co.cs:85</div></div>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

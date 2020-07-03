@@ -103,10 +103,13 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memdesc:a63b9d375e0f95c59acb1127395066680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation of <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35" title="Combines a get and change operation into a single method call. You rarely need to call this method di...">IDictionaryEx&lt;K, V&gt;.GetAndEdit</a>.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a63b9d375e0f95c59acb1127395066680">More...</a><br /></td></tr>
 <tr class="separator:a63b9d375e0f95c59acb1127395066680"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adea0e141da772deb0351caba0fa618b0"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#adea0e141da772deb0351caba0fa618b0">AddIfNotPresent&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
-<tr class="memdesc:adea0e141da772deb0351caba0fa618b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds an item to the map if the key is not present. If the key is already present, this method has no effect.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#adea0e141da772deb0351caba0fa618b0">More...</a><br /></td></tr>
+<tr class="memdesc:adea0e141da772deb0351caba0fa618b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a key/value pair to the dictionary if the key is not present. If the key is already present, this method has no effect.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#adea0e141da772deb0351caba0fa618b0">More...</a><br /></td></tr>
 <tr class="separator:adea0e141da772deb0351caba0fa618b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0f68f36c845d1b98b5e5a054b03b7cc"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac0f68f36c845d1b98b5e5a054b03b7cc">GetOrAdd&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
+<tr class="memdesc:ac0f68f36c845d1b98b5e5a054b03b7cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a key/value pair to the dictionary if the key is not already present, and returns the existing or new value.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac0f68f36c845d1b98b5e5a054b03b7cc">More...</a><br /></td></tr>
+<tr class="separator:ac0f68f36c845d1b98b5e5a054b03b7cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3722ccd8850ffaa5056da6b1ae0fae11"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3722ccd8850ffaa5056da6b1ae0fae11">AddOrGetExisting&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
-<tr class="memdesc:a3722ccd8850ffaa5056da6b1ae0fae11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the existing value, or adds a new value if there was no existing value.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3722ccd8850ffaa5056da6b1ae0fae11">More...</a><br /></td></tr>
+<tr class="memdesc:a3722ccd8850ffaa5056da6b1ae0fae11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a new key/value pair if the key was not present, or gets the existing value if the key was present.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3722ccd8850ffaa5056da6b1ae0fae11">More...</a><br /></td></tr>
 <tr class="separator:a3722ccd8850ffaa5056da6b1ae0fae11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3bad29546efab517825d7b9951507d88"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3bad29546efab517825d7b9951507d88">ReplaceIfPresent&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
 <tr class="memdesc:a3bad29546efab517825d7b9951507d88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces an item in the map if the key was already present. If the key was not already present, this method has no effect.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3bad29546efab517825d7b9951507d88">More...</a><br /></td></tr>
@@ -114,17 +117,20 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:a47277ad501d4ebecbb236bdcb33304b5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a47277ad501d4ebecbb236bdcb33304b5">SwapIfPresent&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
 <tr class="memdesc:a47277ad501d4ebecbb236bdcb33304b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces an item in the map if the key was already present. If the key was not already present, this method has no effect.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a47277ad501d4ebecbb236bdcb33304b5">More...</a><br /></td></tr>
 <tr class="separator:a47277ad501d4ebecbb236bdcb33304b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7cb4f5cecc92be3ddb5668156006cb8e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a7cb4f5cecc92be3ddb5668156006cb8e">SetAndGet&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
-<tr class="memdesc:a7cb4f5cecc92be3ddb5668156006cb8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates a key with a value in the dictionary, and gets the old value if the key was already present.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a7cb4f5cecc92be3ddb5668156006cb8e">More...</a><br /></td></tr>
+<tr class="memitem:a7cb4f5cecc92be3ddb5668156006cb8e"><td class="memItemLeft" align="right" valign="top"><a id="a7cb4f5cecc92be3ddb5668156006cb8e"></a>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGet&lt; K, V &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
 <tr class="separator:a7cb4f5cecc92be3ddb5668156006cb8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafaf203c7b5ecd767c623d2c0dc4c52a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#aafaf203c7b5ecd767c623d2c0dc4c52a">GetAndSet&lt; K, V &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt; dict, K key, V value)</td></tr>
+<tr class="memdesc:aafaf203c7b5ecd767c623d2c0dc4c52a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates a key with a value in the dictionary, and gets the old value if the key was already present.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#aafaf203c7b5ecd767c623d2c0dc4c52a">More...</a><br /></td></tr>
+<tr class="separator:aafaf203c7b5ecd767c623d2c0dc4c52a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afed0dbf9d83237665486f40518df4312"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#afed0dbf9d83237665486f40518df4312">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int index, ref T value)</td></tr>
 <tr class="memdesc:afed0dbf9d83237665486f40518df4312"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#afed0dbf9d83237665486f40518df4312">More...</a><br /></td></tr>
 <tr class="separator:afed0dbf9d83237665486f40518df4312"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f23dda94c2ab586d596540648d8ad7f"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a8f23dda94c2ab586d596540648d8ad7f">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int index, T defaultValue)</td></tr>
 <tr class="memdesc:a8f23dda94c2ab586d596540648d8ad7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a8f23dda94c2ab586d596540648d8ad7f">More...</a><br /></td></tr>
 <tr class="separator:a8f23dda94c2ab586d596540648d8ad7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a6b67c6fcee068af0599f830ae5efc5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a9a6b67c6fcee068af0599f830ae5efc5">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int index)</td></tr>
-<tr class="memdesc:a9a6b67c6fcee068af0599f830ae5efc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a9a6b67c6fcee068af0599f830ae5efc5">More...</a><br /></td></tr>
+<tr class="memitem:a9a6b67c6fcee068af0599f830ae5efc5"><td class="memItemLeft" align="right" valign="top"><a id="a9a6b67c6fcee068af0599f830ae5efc5"></a>
+static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:a9a6b67c6fcee068af0599f830ae5efc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef7ef2d58959125eb91108eb2378b3fa"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa">HasIndex&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int index)</td></tr>
 <tr class="memdesc:aef7ef2d58959125eb91108eb2378b3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses list.TryGet(index) to find out if the specified index is valid.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa">More...</a><br /></td></tr>
@@ -153,12 +159,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:ac70186255f63ef6549d76c4270758cba"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac70186255f63ef6549d76c4270758cba">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int index, ref T value)</td></tr>
 <tr class="memdesc:ac70186255f63ef6549d76c4270758cba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac70186255f63ef6549d76c4270758cba">More...</a><br /></td></tr>
 <tr class="separator:ac70186255f63ef6549d76c4270758cba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9be936daf6cfb1ed12123e25999297f6"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a9be936daf6cfb1ed12123e25999297f6">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int index, T defaultValue)</td></tr>
-<tr class="memdesc:a9be936daf6cfb1ed12123e25999297f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a9be936daf6cfb1ed12123e25999297f6">More...</a><br /></td></tr>
-<tr class="separator:a9be936daf6cfb1ed12123e25999297f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e82a92adabeaf655ec21dfbf444d2f7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a7e82a92adabeaf655ec21dfbf444d2f7">TryGet&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, int index)</td></tr>
-<tr class="memdesc:a7e82a92adabeaf655ec21dfbf444d2f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a7e82a92adabeaf655ec21dfbf444d2f7">More...</a><br /></td></tr>
-<tr class="separator:a7e82a92adabeaf655ec21dfbf444d2f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a4950d9197b14ce61ca1e1e23dec425"><td class="memItemLeft" align="right" valign="top">static ? int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a2a4950d9197b14ce61ca1e1e23dec425">IndexOf&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt; list, T item)</td></tr>
 <tr class="memdesc:a2a4950d9197b14ce61ca1e1e23dec425"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines the index of a specific value.  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#a2a4950d9197b14ce61ca1e1e23dec425">More...</a><br /></td></tr>
 <tr class="separator:a2a4950d9197b14ce61ca1e1e23dec425"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -231,7 +231,7 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 </table>
 </div><div class="memdoc">
 
-<p>Adds an item to the map if the key is not present. If the key is already present, this method has no effect. </p>
+<p>Adds a key/value pair to the dictionary if the key is not present. If the key is already present, this method has no effect. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if the pair was added, false if not.</dd></dl>
 
 <p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;.GetAndEdit()</a>.</p>
@@ -278,8 +278,9 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 </table>
 </div><div class="memdoc">
 
-<p>Gets the existing value, or adds a new value if there was no existing value. </p>
+<p>Adds a new key/value pair if the key was not present, or gets the existing value if the key was present. </p>
 <dl class="section return"><dt>Returns</dt><dd>The existing value. If a new pair was added, the result has no value.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd>GetOrAdd&lt;K, V&gt;(IDictionaryEx&lt;K, V&gt;, K, V)</dd></dl>
 
 <p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;.GetAndEdit()</a>.</p>
 
@@ -480,6 +481,100 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 
 </div>
 </div>
+<a id="aafaf203c7b5ecd767c623d2c0dc4c52a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafaf203c7b5ecd767c623d2c0dc4c52a">&#9670;&nbsp;</a></span>GetAndSet&lt; K, V &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;V&gt; Loyc.Collections.LCInterfaces.GetAndSet&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">V&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Associates a key with a value in the dictionary, and gets the old value if the key was already present. </p>
+<dl class="section return"><dt>Returns</dt><dd>The old value associated with the same key. If a new pair was added, the result has no value.</dd></dl>
+
+<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;.GetAndEdit()</a>.</p>
+
+</div>
+</div>
+<a id="ac0f68f36c845d1b98b5e5a054b03b7cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0f68f36c845d1b98b5e5a054b03b7cc">&#9670;&nbsp;</a></span>GetOrAdd&lt; K, V &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static V Loyc.Collections.LCInterfaces.GetOrAdd&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">V&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds a key/value pair to the dictionary if the key is not already present, and returns the existing or new value. </p>
+<dl class="section return"><dt>Returns</dt><dd>The existing value (if the key already existed) or the new value.</dd></dl>
+
+<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;.GetAndEdit()</a>.</p>
+
+</div>
+</div>
 <a id="aef7ef2d58959125eb91108eb2378b3fa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aef7ef2d58959125eb91108eb2378b3fa">&#9670;&nbsp;</a></span>HasIndex&lt; T &gt;()</h2>
 
@@ -516,8 +611,6 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 
 <p>Uses list.TryGet(index) to find out if the specified index is valid. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the specified index is valid, false if not.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
@@ -838,53 +931,6 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 
 </div>
 </div>
-<a id="a7cb4f5cecc92be3ddb5668156006cb8e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7cb4f5cecc92be3ddb5668156006cb8e">&#9670;&nbsp;</a></span>SetAndGet&lt; K, V &gt;()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;V&gt; Loyc.Collections.LCInterfaces.SetAndGet&lt; K, V &gt; </td>
-          <td>(</td>
-          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html">IDictionaryEx</a>&lt; K, V &gt;&#160;</td>
-          <td class="paramname"><em>dict</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">K&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">V&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Associates a key with a value in the dictionary, and gets the old value if the key was already present. </p>
-<dl class="section return"><dt>Returns</dt><dd>The old value associated with the same key. If a new pair was added, the result has no value.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;.GetAndEdit()</a>.</p>
-
-</div>
-</div>
 <a id="a47277ad501d4ebecbb236bdcb33304b5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a47277ad501d4ebecbb236bdcb33304b5">&#9670;&nbsp;</a></span>SwapIfPresent&lt; K, V &gt;()</h2>
 
@@ -932,55 +978,8 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 
 </div>
 </div>
-<a id="a9a6b67c6fcee068af0599f830ae5efc5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a6b67c6fcee068af0599f830ae5efc5">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[1/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;T&gt; Loyc.Collections.LCInterfaces.TryGet&lt; T &gt; </td>
-          <td>(</td>
-          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>list</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tries to get a value from the list at the specified index. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>The index to access. Valid indexes are between 0 and Count-1.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The retrieved value wrapped in Maybe&lt;T&gt;, if any.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
-
-</div>
-</div>
 <a id="afed0dbf9d83237665486f40518df4312"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afed0dbf9d83237665486f40518df4312">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[2/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afed0dbf9d83237665486f40518df4312">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1028,13 +1027,11 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True on success, or false if the index was not valid.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
 <a id="a8f23dda94c2ab586d596540648d8ad7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f23dda94c2ab586d596540648d8ad7f">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[3/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f23dda94c2ab586d596540648d8ad7f">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1068,7 +1065,7 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1081,61 +1078,11 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The retrieved value, or defaultValue if the index provided was not valid.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
-
-</div>
-</div>
-<a id="a7e82a92adabeaf655ec21dfbf444d2f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e82a92adabeaf655ec21dfbf444d2f7">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[4/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;T&gt; Loyc.Collections.LCInterfaces.TryGet&lt; T &gt; </td>
-          <td>(</td>
-          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>list</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tries to get a value from the list at the specified index. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>The index to access. Valid indexes are between Min and Max.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The retrieved value, or Maybe&lt;T&gt;.NoValue if the index provided was not valid.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
 <a id="ac70186255f63ef6549d76c4270758cba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac70186255f63ef6549d76c4270758cba">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[5/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac70186255f63ef6549d76c4270758cba">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1183,62 +1130,6 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True on success, or false if the index was not valid.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
-
-</div>
-</div>
-<a id="a9be936daf6cfb1ed12123e25999297f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9be936daf6cfb1ed12123e25999297f6">&#9670;&nbsp;</a></span>TryGet&lt; T &gt;() <span class="overload">[6/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static T Loyc.Collections.LCInterfaces.TryGet&lt; T &gt; </td>
-          <td>(</td>
-          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html">INegListSource</a>&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>list</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>defaultValue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tries to get a value from the list at the specified index. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>The index to access. Valid indexes are between Min and Max.</td></tr>
-    <tr><td class="paramname">defaultValue</td><td>A value to return if the index is not valid.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The retrieved value, or defaultValue if the index provided was not valid.</dd></dl>
-
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
 
 </div>
 </div>
@@ -1246,7 +1137,7 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &g
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:38 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

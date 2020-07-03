@@ -88,7 +88,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a573ad894a22bec21868c53d90e775ac1"><td class="memItemLeft" align="right" valign="top"><a id="a573ad894a22bec21868c53d90e775ac1"></a>
-static readonly <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Missing_</b> = new StdIdNode(<a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338">S.Missing</a>, new <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>(null))</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Missing_</b> = new StdIdNode(<a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338">S.Missing</a>, new <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>(EmptySourceFile.Unknown))</td></tr>
 <tr class="separator:a573ad894a22bec21868c53d90e775ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -135,12 +135,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a35bf6185529f010ab4b0147635a0d1c7"><td class="memItemLeft" align="right" valign="top"><a id="a35bf6185529f010ab4b0147635a0d1c7"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a35bf6185529f010ab4b0147635a0d1c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f9455d19528db33d92f59d6da4f1d6a"><td class="memItemLeft" align="right" valign="top"><a id="a2f9455d19528db33d92f59d6da4f1d6a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="separator:a2f9455d19528db33d92f59d6da4f1d6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4dc5b00a216fd46c872a8e9fb8849e48"><td class="memItemLeft" align="right" valign="top"><a id="a4dc5b00a216fd46c872a8e9fb8849e48"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
 <tr class="separator:a4dc5b00a216fd46c872a8e9fb8849e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10296d98d7926cfd27affe83d831eec3"><td class="memItemLeft" align="right" valign="top"><a id="a10296d98d7926cfd27affe83d831eec3"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a10296d98d7926cfd27affe83d831eec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada2214d8d1884e28c131a5aafe2ddc9e"><td class="memItemLeft" align="right" valign="top"><a id="ada2214d8d1884e28c131a5aafe2ddc9e"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal&lt; V &gt;</b> (V value, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:ada2214d8d1884e28c131a5aafe2ddc9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59946820e6c3b0ec278effe3f8380cab"><td class="memItemLeft" align="right" valign="top"><a id="a59946820e6c3b0ec278effe3f8380cab"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
 <tr class="separator:a59946820e6c3b0ec278effe3f8380cab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,9 +156,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a70d1d907ce4ec2d08dd6d8a1fdabd745"><td class="memItemLeft" align="right" valign="top"><a id="a70d1d907ce4ec2d08dd6d8a1fdabd745"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a70d1d907ce4ec2d08dd6d8a1fdabd745"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b1215b0062497e392db1b54f35459c4"><td class="memItemLeft" align="right" valign="top"><a id="a2b1215b0062497e392db1b54f35459c4"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a2b1215b0062497e392db1b54f35459c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa05bc2551f0a6125bfcda40018518e40"><td class="memItemLeft" align="right" valign="top"><a id="aa05bc2551f0a6125bfcda40018518e40"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> args, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:aa05bc2551f0a6125bfcda40018518e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f276e34e0ebc28942ec714af644d439"><td class="memItemLeft" align="right" valign="top"><a id="a4f276e34e0ebc28942ec714af644d439"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a4f276e34e0ebc28942ec714af644d439"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,12 +183,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abe62f6a80d831d017fe5fec221fc5501"><td class="memItemLeft" align="right" valign="top"><a id="abe62f6a80d831d017fe5fec221fc5501"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:abe62f6a80d831d017fe5fec221fc5501"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7046bcf4e213067fc503a6e5e292b6b"><td class="memItemLeft" align="right" valign="top"><a id="ac7046bcf4e213067fc503a6e5e292b6b"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:ac7046bcf4e213067fc503a6e5e292b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22cb28b73a9f79b8f7a2f989720c53af"><td class="memItemLeft" align="right" valign="top"><a id="a22cb28b73a9f79b8f7a2f989720c53af"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex, int endIndex, int targetStart, int targetEnd, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a22cb28b73a9f79b8f7a2f989720c53af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a316caa8b0d532af7218a0b56607da9bd"><td class="memItemLeft" align="right" valign="top"><a id="a316caa8b0d532af7218a0b56607da9bd"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> args, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a316caa8b0d532af7218a0b56607da9bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc4d7a10e3115374ae3f673e0533eda1"><td class="memItemLeft" align="right" valign="top"><a id="adc4d7a10e3115374ae3f673e0533eda1"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> args, int startIndex, int endIndex, int targetStart, int targetEnd, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:adc4d7a10e3115374ae3f673e0533eda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae65b67fdd24acef7c19f8fed0499edbe"><td class="memItemLeft" align="right" valign="top"><a id="ae65b67fdd24acef7c19f8fed0499edbe"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:ae65b67fdd24acef7c19f8fed0499edbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,9 +222,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac63aebe7fefcd956fb65596cdba5274c"><td class="memItemLeft" align="right" valign="top"><a id="ac63aebe7fefcd956fb65596cdba5274c"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (string target, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:ac63aebe7fefcd956fb65596cdba5274c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b80afced91212098980a9aafbf96d66"><td class="memItemLeft" align="right" valign="top"><a id="a0b80afced91212098980a9aafbf96d66"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (string target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a0b80afced91212098980a9aafbf96d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e0a0be06796df207c158daea699c09f"><td class="memItemLeft" align="right" valign="top"><a id="a9e0a0be06796df207c158daea699c09f"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (string target, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> args, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a9e0a0be06796df207c158daea699c09f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08ef7fa70e56bb41b6ab976830e9405a"><td class="memItemLeft" align="right" valign="top"><a id="a08ef7fa70e56bb41b6ab976830e9405a"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (string target, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a08ef7fa70e56bb41b6ab976830e9405a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -246,9 +249,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a50d5db5d3e13206cd83397cf66adb6e1"><td class="memItemLeft" align="right" valign="top"><a id="a50d5db5d3e13206cd83397cf66adb6e1"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> target, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
 <tr class="separator:a50d5db5d3e13206cd83397cf66adb6e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55da60759fb13f443fda9275b699a2c2"><td class="memItemLeft" align="right" valign="top"><a id="a55da60759fb13f443fda9275b699a2c2"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> target, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, int startIndex=-1, int endIndex=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
-<tr class="separator:a55da60759fb13f443fda9275b699a2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa005674e690266830224693089f0de2"><td class="memItemLeft" align="right" valign="top"><a id="aaa005674e690266830224693089f0de2"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> target, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> args, int startIndex=-1, int endIndex=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
+<tr class="separator:aaa005674e690266830224693089f0de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a036bf1c3cba13d60e05d15d5a71ca295"><td class="memItemLeft" align="right" valign="top"><a id="a036bf1c3cba13d60e05d15d5a71ca295"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> target, int startIndex=-1, int endIndex=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a>)</td></tr>
 <tr class="separator:a036bf1c3cba13d60e05d15d5a71ca295"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -300,9 +303,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a960d81a036b43ce1ed91a275cca4bad0"><td class="memItemLeft" align="right" valign="top"><a id="a960d81a036b43ce1ed91a275cca4bad0"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Braces</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] contents)</td></tr>
 <tr class="separator:a960d81a036b43ce1ed91a275cca4bad0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01e662091ae7a3802e45620cc77fde4f"><td class="memItemLeft" align="right" valign="top"><a id="a01e662091ae7a3802e45620cc77fde4f"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Braces</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a01e662091ae7a3802e45620cc77fde4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafd1dc003a3ea00881a2feb31c7be03a"><td class="memItemLeft" align="right" valign="top"><a id="aafd1dc003a3ea00881a2feb31c7be03a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Braces</b> (<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> contents, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:aafd1dc003a3ea00881a2feb31c7be03a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac74541f148d12f03f228677e49f29808"><td class="memItemLeft" align="right" valign="top"><a id="ac74541f148d12f03f228677e49f29808"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Braces</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:ac74541f148d12f03f228677e49f29808"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -318,9 +321,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2ad3bf371bcfe731186fd164625e0d1a"><td class="memItemLeft" align="right" valign="top"><a id="a2ad3bf371bcfe731186fd164625e0d1a"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a2ad3bf371bcfe731186fd164625e0d1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6718bcdb8093f2931d6331a6a8f2c5d"><td class="memItemLeft" align="right" valign="top"><a id="ad6718bcdb8093f2931d6331a6a8f2c5d"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:ad6718bcdb8093f2931d6331a6a8f2c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7c1d62caefc61a97dbcae4e38e5da1a"><td class="memItemLeft" align="right" valign="top"><a id="ae7c1d62caefc61a97dbcae4e38e5da1a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> contents, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:ae7c1d62caefc61a97dbcae4e38e5da1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e65924427e10766f99473c12eed153f"><td class="memItemLeft" align="right" valign="top"><a id="a2e65924427e10766f99473c12eed153f"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a2e65924427e10766f99473c12eed153f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -333,9 +336,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4ba331e7ab9df6b0cf1baa4d5e2476c2"><td class="memItemLeft" align="right" valign="top"><a id="a4ba331e7ab9df6b0cf1baa4d5e2476c2"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Splice</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a4ba331e7ab9df6b0cf1baa4d5e2476c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3b776277797fb85bb0dfbcb7a736a09"><td class="memItemLeft" align="right" valign="top"><a id="aa3b776277797fb85bb0dfbcb7a736a09"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Splice</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:aa3b776277797fb85bb0dfbcb7a736a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ac4d2fd5bbff97e4396682f4025c58d"><td class="memItemLeft" align="right" valign="top"><a id="a2ac4d2fd5bbff97e4396682f4025c58d"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Splice</b> (<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> contents, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a2ac4d2fd5bbff97e4396682f4025c58d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b50c6c84b023bfe9eb8ed2cca09b384"><td class="memItemLeft" align="right" valign="top"><a id="a0b50c6c84b023bfe9eb8ed2cca09b384"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Splice</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a0b50c6c84b023bfe9eb8ed2cca09b384"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -348,9 +351,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5bacbfed2e8e937ee209a403ed7c16e2"><td class="memItemLeft" align="right" valign="top"><a id="a5bacbfed2e8e937ee209a403ed7c16e2"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tuple</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a5bacbfed2e8e937ee209a403ed7c16e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa21150cdd447696cf3938b339f703a0f"><td class="memItemLeft" align="right" valign="top"><a id="aa21150cdd447696cf3938b339f703a0f"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tuple</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:aa21150cdd447696cf3938b339f703a0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67f5cfa1eb7e4d2aecb35afdc9caff94"><td class="memItemLeft" align="right" valign="top"><a id="a67f5cfa1eb7e4d2aecb35afdc9caff94"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tuple</b> (<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> contents, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a67f5cfa1eb7e4d2aecb35afdc9caff94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4641c95bcd922bf28b083776cf0c096e"><td class="memItemLeft" align="right" valign="top"><a id="a4641c95bcd922bf28b083776cf0c096e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tuple</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a4641c95bcd922bf28b083776cf0c096e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -501,7 +504,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

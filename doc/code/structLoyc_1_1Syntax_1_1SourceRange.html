@@ -68,6 +68,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-attribs">Public fields</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -81,7 +82,7 @@ $(function() {
 <p>Holds a reference to a source file (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>&lt;char&gt;) and the beginning and end indices of a range in that file.  
  <a href="structLoyc_1_1Syntax_1_1SourceRange.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Interfaces/Concrete/SourceRange.cs'>/Core/Loyc.Interfaces/Concrete/SourceRange.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/SourceFiles/SourceRange.cs'>/Core/Loyc.Syntax/SourceFiles/SourceRange.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.SourceRange:</div>
@@ -95,16 +96,28 @@ Inheritance diagram for Loyc.Syntax.SourceRange:</div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Holds a reference to a source file (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>&lt;char&gt;) and the beginning and end indices of a range in that file. </p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public fields</h2></td></tr>
+<tr class="memitem:ab73fb329d7f0e5e34b33fb2c2d8d42d5"><td class="memItemLeft" align="right" valign="top"><a id="ab73fb329d7f0e5e34b33fb2c2d8d42d5"></a>
+<a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SourceText</b> =&gt; SourceRangeExt.SourceText(this)</td></tr>
+<tr class="separator:ab73fb329d7f0e5e34b33fb2c2d8d42d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad980d44f98c771bafae352afcc6124bb"><td class="memItemLeft" align="right" valign="top"><a id="ad980d44f98c771bafae352afcc6124bb"></a>
+<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILineColumnFile.html">ILineColumnFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Start</b> =&gt; SourceRangeExt.Start(this)</td></tr>
+<tr class="separator:ad980d44f98c771bafae352afcc6124bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6d26b5fa0b57f2160899f045661a44c"><td class="memItemLeft" align="right" valign="top"><a id="ae6d26b5fa0b57f2160899f045661a44c"></a>
+<a class="el" href="interfaceLoyc_1_1Syntax_1_1ILineColumnFile.html">ILineColumnFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>End</b> =&gt; SourceRangeExt.End(this)</td></tr>
+<tr class="separator:ae6d26b5fa0b57f2160899f045661a44c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a927991a8000d658561d384b9893cd1a6"><td class="memItemLeft" align="right" valign="top"><a id="a927991a8000d658561d384b9893cd1a6"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Nowhere</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>(EmptySourceFile.Default, -1, 0)</td></tr>
+static readonly <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Nowhere</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a>(EmptySourceFile.Synthetic, -1, 0)</td></tr>
 <tr class="separator:a927991a8000d658561d384b9893cd1a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:ad1e0eeea3bad8bc105608419131f87ed"><td class="memItemLeft" align="right" valign="top"><a id="ad1e0eeea3bad8bc105608419131f87ed"></a>
-<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Source</b><code> [get]</code></td></tr>
+<tr class="memitem:ad1e0eeea3bad8bc105608419131f87ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html#ad1e0eeea3bad8bc105608419131f87ed">Source</a><code> [get]</code></td></tr>
+<tr class="memdesc:ad1e0eeea3bad8bc105608419131f87ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the source file of which this range is a part. If this <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> represents a "synthetic" syntax tree (created programmatically), the source file may be an empty "dummy" object such as <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html" title="A dummy implementation of ISourceFile that has only a filename, no source text. Used as the source fi...">EmptySourceFile</a>. In this case, the Length should be zero.  <a href="structLoyc_1_1Syntax_1_1SourceRange.html#ad1e0eeea3bad8bc105608419131f87ed">More...</a><br /></td></tr>
 <tr class="separator:ad1e0eeea3bad8bc105608419131f87ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23d0a58fe9f7de4ca1ddb83ff11c7060"><td class="memItemLeft" align="right" valign="top"><a id="a23d0a58fe9f7de4ca1ddb83ff11c7060"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>StartIndex</b><code> [get]</code></td></tr>
@@ -115,15 +128,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>EndIndex</b><code> [ge
 <tr class="memitem:a33dd3f3e9dbcafac8937b875a61ff5b2"><td class="memItemLeft" align="right" valign="top"><a id="a33dd3f3e9dbcafac8937b875a61ff5b2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Length</b><code> [get]</code></td></tr>
 <tr class="separator:a33dd3f3e9dbcafac8937b875a61ff5b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab73fb329d7f0e5e34b33fb2c2d8d42d5"><td class="memItemLeft" align="right" valign="top"><a id="ab73fb329d7f0e5e34b33fb2c2d8d42d5"></a>
-<a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SourceText</b><code> [get]</code></td></tr>
-<tr class="separator:ab73fb329d7f0e5e34b33fb2c2d8d42d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a572779a624cdb838d7983acc8cccc838"><td class="memItemLeft" align="right" valign="top"><a id="a572779a624cdb838d7983acc8cccc838"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Start</b><code> [get]</code></td></tr>
-<tr class="separator:a572779a624cdb838d7983acc8cccc838"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a943aee99f8d8a409fab59f80c5a6591c"><td class="memItemLeft" align="right" valign="top"><a id="a943aee99f8d8a409fab59f80c5a6591c"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>End</b><code> [get]</code></td></tr>
-<tr class="separator:a943aee99f8d8a409fab59f80c5a6591c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae6ac0ebe5b36f2d30eed1ad9cbe7a01"><td class="memItemLeft" align="right" valign="top"><a id="aae6ac0ebe5b36f2d30eed1ad9cbe7a01"></a>
 char&#160;</td><td class="memItemRight" valign="bottom"><b>this[int subIndex]</b><code> [get]</code></td></tr>
 <tr class="separator:aae6ac0ebe5b36f2d30eed1ad9cbe7a01"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +150,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af5638513c430e52f23cd2f1b5586204b"><td class="memItemLeft" align="right" valign="top"><a id="af5638513c430e52f23cd2f1b5586204b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>SourceRange</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> source, int beginIndex=-1, int length=0)</td></tr>
 <tr class="separator:af5638513c430e52f23cd2f1b5586204b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24faee95a60650ee9479d2df86b953e0"><td class="memItemLeft" align="right" valign="top"><a id="a24faee95a60650ee9479d2df86b953e0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SourceRange</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceRange.html">ISourceRange</a> range)</td></tr>
+<tr class="separator:a24faee95a60650ee9479d2df86b953e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af70d98a5d599ce6eca1020677de0aabe"><td class="memItemLeft" align="right" valign="top"><a id="af70d98a5d599ce6eca1020677de0aabe"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> other)</td></tr>
 <tr class="separator:af70d98a5d599ce6eca1020677de0aabe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -171,11 +178,38 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (<a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> a, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> b)</td></tr>
 <tr class="separator:aa6e6d1c347f54c83ef27dd54dd83cbe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Property Documentation</h2>
+<a id="ad1e0eeea3bad8bc105608419131f87ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1e0eeea3bad8bc105608419131f87ed">&#9670;&nbsp;</a></span>Source</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> Loyc.Syntax.SourceRange.Source</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the source file of which this range is a part. If this <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile&lt;char&gt;) and the beginning and end indices of a range i...">SourceRange</a> represents a "synthetic" syntax tree (created programmatically), the source file may be an empty "dummy" object such as <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html" title="A dummy implementation of ISourceFile that has only a filename, no source text. Used as the source fi...">EmptySourceFile</a>. In this case, the Length should be zero. </p>
+
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af5ae66080c5f1937e836a47c79abee02">Loyc.Syntax.LNode.MergeBinary()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

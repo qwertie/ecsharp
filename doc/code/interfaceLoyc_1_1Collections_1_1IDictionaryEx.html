@@ -87,10 +87,13 @@ Inheritance diagram for Loyc.Collections.IDictionaryEx&lt; K, V &gt;:</div>
  <div class="center">
   <img src="interfaceLoyc_1_1Collections_1_1IDictionaryEx.png" usemap="#Loyc.Collections.IDictionaryEx_3C_20K_2C_20V_20_3E_map" alt=""/>
   <map id="Loyc.Collections.IDictionaryEx_3C_20K_2C_20V_20_3E_map" name="Loyc.Collections.IDictionaryEx_3C_20K_2C_20V_20_3E_map">
-<area href="interfaceLoyc_1_1Collections_1_1IDictionaryAndReadOnly.html" title="This interface is meant to be implemented by read-only dictionary classes that originally implemented..." alt="Loyc.Collections.IDictionaryAndReadOnly&lt; K, V &gt;" shape="rect" coords="157,56,461,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html" alt="Loyc.Collections.IDictionarySink&lt; K, V &gt;" shape="rect" coords="471,56,775,80"/>
-<area href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke..." alt="Loyc.Collections.BDictionary&lt; K, V &gt;" shape="rect" coords="314,168,618,192"/>
-<area href="classLoyc_1_1Collections_1_1MMap.html" title="A dictionary class built on top of InternalSet&lt;KeyValuePair&lt;K,V&gt;&gt;." alt="Loyc.Collections.MMap&lt; K, V &gt;" shape="rect" coords="628,168,932,192"/>
+<area href="interfaceLoyc_1_1Collections_1_1IDictionaryImpl.html" title="This interface is intended to be implemented by all Loyc collections that implement IDictionary&lt;K,..." alt="Loyc.Collections.IDictionaryImpl&lt; K, V &gt;" shape="rect" coords="314,112,618,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1ITryGet.html" alt="Loyc.Collections.ITryGet&lt; K, V &gt;" shape="rect" coords="942,112,1246,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1IDictionaryAndReadOnly.html" title="This interface is meant to be implemented by read-only dictionary classes that originally implemented..." alt="Loyc.Collections.IDictionaryAndReadOnly&lt; K, V &gt;" shape="rect" coords="314,56,618,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html" alt="Loyc.Collections.IDictionarySink&lt; K, V &gt;" shape="rect" coords="628,56,932,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed.html" alt="Loyc.Collections.IIndexed&lt; K, V &gt;" shape="rect" coords="628,0,932,24"/>
+<area href="classLoyc_1_1Collections_1_1BDictionary.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke..." alt="Loyc.Collections.BDictionary&lt; K, V &gt;" shape="rect" coords="471,224,775,248"/>
+<area href="classLoyc_1_1Collections_1_1MMap.html" title="A dictionary class built on top of InternalSet&lt;KeyValuePair&lt;K,V&gt;&gt;." alt="Loyc.Collections.MMap&lt; K, V &gt;" shape="rect" coords="785,224,1089,248"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -109,6 +112,10 @@ new ICollection&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 <tr class="memitem:a8b00c72f164a0b8cd7e106d1e227e725"><td class="memItemLeft" align="right" valign="top"><a id="a8b00c72f164a0b8cd7e106d1e227e725"></a>
 new ICollection&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Values</b><code> [get]</code></td></tr>
 <tr class="separator:a8b00c72f164a0b8cd7e106d1e227e725"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIndexed')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html">Loyc.Collections.IIndexed&lt; K, V &gt;</a></td></tr>
+<tr class="memitem:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">this[K key]</a><code> [get]</code></td></tr>
+<tr class="memdesc:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key.  <a href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">More...</a><br /></td></tr>
+<tr class="separator:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IDictionarySink')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html">Loyc.Collections.IDictionarySink&lt; K, V &gt;</a></td></tr>
 <tr class="memitem:a00212b5186d0e6e35432d61750d4bb46 inherit properties_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memItemLeft" align="right" valign="top"><a id="a00212b5186d0e6e35432d61750d4bb46"></a>
 V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key]</b><code> [set]</code></td></tr>
@@ -150,6 +157,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</t
 <tr class="memitem:a7f2fe03b00451fe39ba6cbb3616f8b3c inherit pub_methods_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memItemLeft" align="right" valign="top"><a id="a7f2fe03b00451fe39ba6cbb3616f8b3c"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> ()</td></tr>
 <tr class="separator:a7f2fe03b00451fe39ba6cbb3616f8b3c inherit pub_methods_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html">Loyc.Collections.ITryGet&lt; K, V &gt;</a></td></tr>
+<tr class="memitem:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">TryGet</a> (K key, out bool fail)</td></tr>
+<tr class="memdesc:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item for the specified key or index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">More...</a><br /></td></tr>
+<tr class="separator:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a352d72d786012957610889768e619e20"></a>
@@ -241,7 +252,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</t
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a213f738b5bbf6eddee4aa73c6cea0a09">Loyc.Collections.BDictionary&lt; K, V &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#a26fdb1166a7a01adaa2d15d30f72a708">Loyc.Collections.MMap&lt; K, V &gt;</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#adea0e141da772deb0351caba0fa618b0">Loyc.Collections.LCInterfaces.AddIfNotPresent&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3722ccd8850ffaa5056da6b1ae0fae11">Loyc.Collections.LCInterfaces.AddOrGetExisting&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3bad29546efab517825d7b9951507d88">Loyc.Collections.LCInterfaces.ReplaceIfPresent&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a7cb4f5cecc92be3ddb5668156006cb8e">Loyc.Collections.LCInterfaces.SetAndGet&lt; K, V &gt;()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a47277ad501d4ebecbb236bdcb33304b5">Loyc.Collections.LCInterfaces.SwapIfPresent&lt; K, V &gt;()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#adea0e141da772deb0351caba0fa618b0">Loyc.Collections.LCInterfaces.AddIfNotPresent&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3722ccd8850ffaa5056da6b1ae0fae11">Loyc.Collections.LCInterfaces.AddOrGetExisting&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#aafaf203c7b5ecd767c623d2c0dc4c52a">Loyc.Collections.LCInterfaces.GetAndSet&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#ac0f68f36c845d1b98b5e5a054b03b7cc">Loyc.Collections.LCInterfaces.GetOrAdd&lt; K, V &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a3bad29546efab517825d7b9951507d88">Loyc.Collections.LCInterfaces.ReplaceIfPresent&lt; K, V &gt;()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a47277ad501d4ebecbb236bdcb33304b5">Loyc.Collections.LCInterfaces.SwapIfPresent&lt; K, V &gt;()</a>.</p>
 
 </div>
 </div>
@@ -279,7 +290,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

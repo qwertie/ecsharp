@@ -89,8 +89,11 @@ $(function() {
 Inheritance diagram for Loyc.Collections.BMultiMap&lt; K, V &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="classLoyc_1_1Collections_1_1BMultiMap.png" alt=""/>
- </div></div>
+  <img src="classLoyc_1_1Collections_1_1BMultiMap.png" usemap="#Loyc.Collections.BMultiMap_3C_20K_2C_20V_20_3E_map" alt=""/>
+  <map id="Loyc.Collections.BMultiMap_3C_20K_2C_20V_20_3E_map" name="Loyc.Collections.BMultiMap_3C_20K_2C_20V_20_3E_map">
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed.html" alt="Loyc.Collections.IIndexed&lt; K, BMultiMap&lt; K, V &gt;.ValueList &gt;" shape="rect" coords="748,0,1112,24"/>
+  </map>
+</div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An sorted dictionary that allows multiple values to be associated with a single key. </p>
 <p>The keys must be comparable. By default, the values must also be comparable, but if the values do not support IComparable, you can set the comparison function to <code>(a,b) =&gt; 0</code> to pretend all values are equal. A shorthand way to do this is to call the constructor with parameters of (null, null) which means "use default key comparison and treat all values as equal". If you do this, you should avoid calling this[key].Remove(value) or this[key].Contains(value), or the Remove method in the base class, since these methods will treat any value as a match. </p>
@@ -116,6 +119,10 @@ IEnumerable&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Key
 <tr class="memitem:ab26b97e18cc0905d285a41d513a6bb05"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="structLoyc_1_1Collections_1_1BMultiMap_1_1ValueList.html">ValueList</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#ab26b97e18cc0905d285a41d513a6bb05">Values</a><code> [get]</code></td></tr>
 <tr class="memdesc:ab26b97e18cc0905d285a41d513a6bb05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a list of collections of <a class="el" href="structLoyc_1_1Collections_1_1BMultiMap_1_1ValueList.html" title="Represents the set of values associated with a particular key in a BMultiMap&lt;K,V&gt; collection.">ValueList</a> in this object.  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#ab26b97e18cc0905d285a41d513a6bb05">More...</a><br /></td></tr>
 <tr class="separator:ab26b97e18cc0905d285a41d513a6bb05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIndexed')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html">Loyc.Collections.IIndexed&lt; K, BMultiMap&lt; K, V &gt;.ValueList &gt;</a></td></tr>
+<tr class="memitem:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">this[K key]</a><code> [get]</code></td></tr>
+<tr class="memdesc:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key.  <a href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">More...</a><br /></td></tr>
+<tr class="separator:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -126,10 +133,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (int maxLeafSize, int maxInnerSize)</td></tr>
 <tr class="separator:a36abea8731ad22666974ab230f67b643"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#a8d0d96015dd09b33ba3c8e1bc3ca1d7e">BMultiMap</a> (Func&lt; K, K, int &gt; compareKeys)</td></tr>
-<tr class="memdesc:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;.&lt;  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#a8d0d96015dd09b33ba3c8e1bc3ca1d7e">More...</a><br /></td></tr>
+<tr class="memdesc:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;.  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#a8d0d96015dd09b33ba3c8e1bc3ca1d7e">More...</a><br /></td></tr>
 <tr class="separator:a8d0d96015dd09b33ba3c8e1bc3ca1d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35388fd17abb492d73c7ee7d969481d2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#a35388fd17abb492d73c7ee7d969481d2">BMultiMap</a> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues)</td></tr>
-<tr class="memdesc:a35388fd17abb492d73c7ee7d969481d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key and value comparers.&lt;  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#a35388fd17abb492d73c7ee7d969481d2">More...</a><br /></td></tr>
+<tr class="memdesc:a35388fd17abb492d73c7ee7d969481d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the map with the specified key and value comparers.  <a href="classLoyc_1_1Collections_1_1BMultiMap.html#a35388fd17abb492d73c7ee7d969481d2">More...</a><br /></td></tr>
 <tr class="separator:a35388fd17abb492d73c7ee7d969481d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82db4eedf25cf24540982e3b0fd39aa7"><td class="memItemLeft" align="right" valign="top"><a id="a82db4eedf25cf24540982e3b0fd39aa7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BMultiMap</b> (Func&lt; K, K, int &gt; compareKeys, Func&lt; V, V, int &gt; compareValues, int maxNodeSize)</td></tr>
@@ -246,7 +253,7 @@ static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valig
 </table>
 </div><div class="memdoc">
 
-<p>Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;.&lt; </p>
+<p>Initializes the map with the specified key-comparer and default value comparer. This constructor can only be used if values are comparible with IComparable&lt;V&gt;. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">compareKeys</td><td>Key comparer, or null to use the default key comparer.</td></tr>
@@ -290,7 +297,7 @@ static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valig
 </table>
 </div><div class="memdoc">
 
-<p>Initializes the map with the specified key and value comparers.&lt; </p>
+<p>Initializes the map with the specified key and value comparers. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">compareKeys</td><td>Key comparer, or null to use the default key comparer.</td></tr>
@@ -832,7 +839,7 @@ static readonly Func&lt; V, V, int &gt;&#160;</td><td class="memItemRight" valig
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

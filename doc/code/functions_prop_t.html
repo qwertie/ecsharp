@@ -82,6 +82,9 @@ $(function() {
 : <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a57a585f6a44a4f5e5c40e819866aa965">Loyc.LLParserGenerator.CodeGenHelperBase</a>
 , <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a0b48ef9a6fe4c4256966a02eaa32165b">Loyc.LLParserGenerator.IPGCodeGenHelper</a>
 </li>
+<li>TextValue
+: <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10">Loyc.Syntax.ISerializedLiteral</a>
+</li>
 <li>this[int index, char defaultValue]
 : <a class="el" href="structLoyc_1_1UString.html#a9b79d1b5af451df2387a5b7bd98a0877">Loyc.UString</a>
 </li>
@@ -97,7 +100,6 @@ $(function() {
 <li>this[int index]
 : <a class="el" href="interfaceLoyc_1_1Collections_1_1IArray.html#aff28ad27291cd475a632b9f148da1ea3">Loyc.Collections.IArray&lt; T &gt;</a>
 , <a class="el" href="interfaceLoyc_1_1Collections_1_1INegArray.html#a70314d85981085f4e52a8558fd681fd3">Loyc.Collections.INegArray&lt; T &gt;</a>
-, <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac77166fcd7e5f4f0a7941bc299291e14">Loyc.Collections.INegListSource&lt; out out T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1NegList.html#af94ba69e91995d6a28150362f47fd5b7">Loyc.Collections.NegList&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html#a2cbe27a9eed3eaac8dd624b569fa0b65">Loyc.Collections.NegListSource&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1UString.html#a6960d77564d51fb72f649747aed9e66d">Loyc.UString</a>
@@ -113,15 +115,16 @@ $(function() {
 </li>
 <li>this[K key]
 : <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#a65889d351ee0f968041aa96250d76381">Loyc.Collections.BMultiMap&lt; K, V &gt;</a>
-</li>
-<li>this[string name]
-: <a class="el" href="classLoyc_1_1SymbolPool.html#a56d3a7c9380ba2be60d7c3f46db035e8">Loyc.SymbolPool&lt; SymbolE &gt;</a>
+, <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">Loyc.Collections.IIndexed&lt; in in K, out out V &gt;</a>
 </li>
 <li>this[TKey key]
 : <a class="el" href="interfaceLoyc_1_1Collections_1_1IAutoCreatePool.html#af91ed902fe612c1e6955bf3740d4096f">Loyc.Collections.IAutoCreatePool&lt; in in TKey, out out TValue &gt;</a>
 </li>
 <li>this[uint index]
 : <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode.html#a0b21bfb21059a585c0a39d5978f6b04b">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a>
+</li>
+<li>this[UString name]
+: <a class="el" href="classLoyc_1_1SymbolPool.html#a4960c36fa182159ed39259fac58f8f8b">Loyc.SymbolPool&lt; SymbolE &gt;</a>
 </li>
 <li>ThreadState
 : <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html#a8bf50a282308896fe28377a6af10d616">Loyc.Threading.ThreadEx</a>
@@ -150,14 +153,15 @@ $(function() {
 : <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ISimpleToken.html#af3b46f9a2c3c1c8e5142356c3e7654f4">Loyc.Syntax.Lexing.ISimpleToken&lt; TokenType &gt;</a>
 </li>
 <li>TypeMarker
-: <a class="el" href="structLoyc_1_1Syntax_1_1Les_1_1CustomLiteral.html#a8926a19c516c992c1cab1ffade7018dc">Loyc.Syntax.Les.CustomLiteral</a>
+: <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#a92c1b32a3f2b7c07f5d468fb09fa1dc8">Loyc.Syntax.ISerializedLiteral</a>
+, <a class="el" href="structLoyc_1_1Syntax_1_1Les_1_1CustomLiteral.html#a8926a19c516c992c1cab1ffade7018dc">Loyc.Syntax.Les.CustomLiteral</a>
 </li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:41 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

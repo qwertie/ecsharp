@@ -102,24 +102,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adbbeb8aa85af2ea6ea3135433810ef26"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.html#adbbeb8aa85af2ea6ea3135433810ef26">Start</a> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; separator)</td></tr>
 <tr class="memdesc:adbbeb8aa85af2ea6ea3135433810ef26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top-level rule: expects a sequence of statements followed by EOF  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Parser.html#adbbeb8aa85af2ea6ea3135433810ef26">More...</a><br /></td></tr>
 <tr class="separator:adbbeb8aa85af2ea6ea3135433810ef26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ed9351b2eeafef4d3f44c7673f048ff"><td class="memItemLeft" align="right" valign="top"><a id="a0ed9351b2eeafef4d3f44c7673f048ff"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;))</td></tr>
-<tr class="separator:a0ed9351b2eeafef4d3f44c7673f048ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b8a4c76114ff9f364656d6e7bf0bca3"><td class="memItemLeft" align="right" valign="top"><a id="a3b8a4c76114ff9f364656d6e7bf0bca3"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsSpaceBefore</b> (int li)</td></tr>
-<tr class="separator:a3b8a4c76114ff9f364656d6e7bf0bca3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab748f36e462a9b6140fe40160dd8b1e5"><td class="memItemLeft" align="right" valign="top"><a id="ab748f36e462a9b6140fe40160dd8b1e5"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CheckForSpace</b> (bool expectSpace, string errorMsg)</td></tr>
-<tr class="separator:ab748f36e462a9b6140fe40160dd8b1e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a103f6daf16b1180490f11045390b83a1"><td class="memItemLeft" align="right" valign="top"><a id="a103f6daf16b1180490f11045390b83a1"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsContinuator</b> (object ltv)</td></tr>
-<tr class="separator:a103f6daf16b1180490f11045390b83a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe66b9e3038fb9122012177afbc1ead3"><td class="memItemLeft" align="right" valign="top"><a id="afe66b9e3038fb9122012177afbc1ead3"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (ref TokenType endMarker, <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list=default(<a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;), bool isBracedBlock=false)</td></tr>
-<tr class="separator:afe66b9e3038fb9122012177afbc1ead3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6cabca1d46256b4aaf562f77ccac8d93"><td class="memItemLeft" align="right" valign="top"><a id="a6cabca1d46256b4aaf562f77ccac8d93"></a>
-IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprListLazy</b> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; endMarker)</td></tr>
-<tr class="separator:a6cabca1d46256b4aaf562f77ccac8d93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad5a0e19f7c014cadb95dda09bb1865d"><td class="memItemLeft" align="right" valign="top"><a id="aad5a0e19f7c014cadb95dda09bb1865d"></a>
+<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (string listContextName, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> firstItem=null, bool presumeCommaSeparated=true)</td></tr>
+<tr class="separator:aad5a0e19f7c014cadb95dda09bb1865d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7448464e57996de85004735ca1ef540"><td class="memItemLeft" align="right" valign="top"><a id="ad7448464e57996de85004735ca1ef540"></a>
+<a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExprList</b> (string listContextName, ref TokenType separatorType, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> firstItem=null, bool presumeCommaSeparated=true, bool isBracedBlock=false)</td></tr>
+<tr class="separator:ad7448464e57996de85004735ca1ef540"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6b00351133bafdfa57fd2140636418b"><td class="memItemLeft" align="right" valign="top"><a id="ae6b00351133bafdfa57fd2140636418b"></a>
+IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExprListLazy</b> (<a class="el" href="classLoyc_1_1Holder.html">Holder</a>&lt; TokenType &gt; separatorType)</td></tr>
+<tr class="separator:ae6b00351133bafdfa57fd2140636418b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -141,15 +132,21 @@ virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</
 <tr class="memitem:a08c8955b88f0f1eea7ad37dd8651d968"><td class="memItemLeft" align="right" valign="top"><a id="a08c8955b88f0f1eea7ad37dd8651d968"></a>
 <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrefixPrecedenceOf</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
 <tr class="separator:a08c8955b88f0f1eea7ad37dd8651d968"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d30674001270ecb62fd6dd03c9972df"><td class="memItemLeft" align="right" valign="top"><a id="a6d30674001270ecb62fd6dd03c9972df"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TopExpr</b> ()</td></tr>
-<tr class="separator:a6d30674001270ecb62fd6dd03c9972df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a393b4f2743a3138bfd85872bdd57fe1c"><td class="memItemLeft" align="right" valign="top"><a id="a393b4f2743a3138bfd85872bdd57fe1c"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CompactExpression</b> ()</td></tr>
+<tr class="separator:a393b4f2743a3138bfd85872bdd57fe1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab8b30c18a3522444044efa68107cd4d"><td class="memItemLeft" align="right" valign="top"><a id="aab8b30c18a3522444044efa68107cd4d"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NextExpression</b> (ref TokenType separatorType, out <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> separator, bool isBracedBlock)</td></tr>
+<tr class="separator:aab8b30c18a3522444044efa68107cd4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16050a8b06ad6ff82eb281bd4c365681"><td class="memItemLeft" align="right" valign="top"><a id="a16050a8b06ad6ff82eb281bd4c365681"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TopExpr</b> (bool compactMode)</td></tr>
+<tr class="separator:a16050a8b06ad6ff82eb281bd4c365681"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
-<tr class="memitem:ac44496b8065017c1e6ed163347a9275c"><td class="memItemLeft" align="right" valign="top"><a id="ac44496b8065017c1e6ed163347a9275c"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html">Les3PrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = Les3PrecedenceMap.Default</td></tr>
-<tr class="separator:ac44496b8065017c1e6ed163347a9275c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5fc974cdbced5608218bd381061177b"><td class="memItemLeft" align="right" valign="top"><a id="ac5fc974cdbced5608218bd381061177b"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html">Les3PrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_precMap</b> = Les3PrecedenceMap.Default</td></tr>
+<tr class="separator:ac5fc974cdbced5608218bd381061177b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Protected static fields</h2></td></tr>
@@ -190,7 +187,7 @@ const new TT&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b> = TT.
   </dd>
 </dl>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html#a834d86bd19ca370868c824675d68fa4c">Loyc.Syntax.Les.Les3LanguageService.Parse()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html#a940564f67752eea8bd3841c731afd401">Loyc.Syntax.Les.Les3LanguageService.Parse()</a>.</p>
 
 </div>
 </div>
@@ -198,7 +195,7 @@ const new TT&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b> = TT.
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

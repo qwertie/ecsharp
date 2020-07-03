@@ -92,11 +92,13 @@ Inheritance diagram for Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.png" usemap="#Loyc.Syntax.Lexing.BaseLexer_3C_20CharSrc_20_3E_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.BaseLexer_3C_20CharSrc_20_3E_map" name="Loyc.Syntax.Lexing.BaseLexer_3C_20CharSrc_20_3E_map">
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="351,0,692,24"/>
-<area href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer&lt;Token&gt;)." alt="Loyc.Ecs.Parser.EcsLexer" shape="rect" coords="0,112,341,136"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html" title="A version of BaseLexer&lt;CharSrc&gt; that implements ILexer&lt;Token&gt;. You should use this base class if you ..." alt="Loyc.Syntax.Lexing.BaseILexer&lt; CharSrc, Token &gt;" shape="rect" coords="351,112,692,136"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html" title="This class only exists to work around a limitation of the C# language: &quot;cannot change access modifier..." alt="Loyc.Syntax.Lexing.LexerSourceWorkaround&lt; CharSrc &gt;" shape="rect" coords="702,112,1043,136"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html" title="An implementation of the LLLPG Lexer API, used with the LLLPG options inputSource and inputClass." alt="Loyc.Syntax.Lexing.LexerSource&lt; CharSrc &gt;" shape="rect" coords="702,168,1043,192"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="175,56,516,80"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IHasFileName.html" alt="Loyc.Syntax.IHasFileName" shape="rect" coords="526,56,867,80"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IHasFileName.html" alt="Loyc.Syntax.IHasFileName" shape="rect" coords="175,0,516,24"/>
+<area href="classLoyc_1_1Ecs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer&lt;Token&gt;)." alt="Loyc.Ecs.Parser.EcsLexer" shape="rect" coords="0,168,341,192"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html" title="A version of BaseLexer&lt;CharSrc&gt; that implements ILexer&lt;Token&gt;. You should use this base class if you ..." alt="Loyc.Syntax.Lexing.BaseILexer&lt; CharSrc, Token &gt;" shape="rect" coords="351,168,692,192"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround.html" title="This class only exists to work around a limitation of the C# language: &quot;cannot change access modifier..." alt="Loyc.Syntax.Lexing.LexerSourceWorkaround&lt; CharSrc &gt;" shape="rect" coords="702,168,1043,192"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html" title="An implementation of the LLLPG Lexer API, used with the LLLPG options inputSource and inputClass." alt="Loyc.Syntax.Lexing.LexerSource&lt; CharSrc &gt;" shape="rect" coords="702,224,1043,248"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -165,10 +167,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>InputPosition</b><code
 <tr class="memitem:a195bafdad5c6bc2d0dce2354f2debce2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2">LineStartAt</a><code> [get]</code></td></tr>
 <tr class="memdesc:a195bafdad5c6bc2d0dce2354f2debce2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index at which the current line started.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a195bafdad5c6bc2d0dce2354f2debce2">More...</a><br /></td></tr>
 <tr class="separator:a195bafdad5c6bc2d0dce2354f2debce2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html">Loyc.Syntax.IIndexToLine</a></td></tr>
-<tr class="memitem:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">FileName</a><code> [get]</code></td></tr>
-<tr class="memdesc:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the file name used in results returned by <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3" title="Returns the position in a source file of the specified index.">IndexToLine(int)</a>.  <a href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#a6d3da28c156caea83183fa8b10c1d56f">More...</a><br /></td></tr>
-<tr class="separator:a6d3da28c156caea83183fa8b10c1d56f inherit properties_interfaceLoyc_1_1Syntax_1_1IIndexToLine"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IHasFileName')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IHasFileName.html">Loyc.Syntax.IHasFileName</a></td></tr>
+<tr class="memitem:af997f086c4655b4342232639b2f7ca98 inherit properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td class="memItemLeft" align="right" valign="top"><a id="af997f086c4655b4342232639b2f7ca98"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
+<tr class="separator:af997f086c4655b4342232639b2f7ca98 inherit properties_interfaceLoyc_1_1Syntax_1_1IHasFileName"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -217,9 +219,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_lineStartAt</b></td><
 <tr class="memitem:ae8eeb903f5eef427b220c816436496da"><td class="memItemLeft" align="right" valign="top"><a id="ae8eeb903f5eef427b220c816436496da"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_lineNumber</b> = 1</td></tr>
 <tr class="separator:ae8eeb903f5eef427b220c816436496da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab53ed2c550ac6e738972acc41ad71757"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab53ed2c550ac6e738972acc41ad71757">IndexToLine</a> (int charIndex)</td></tr>
-<tr class="memdesc:ab53ed2c550ac6e738972acc41ad71757"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab53ed2c550ac6e738972acc41ad71757">More...</a><br /></td></tr>
-<tr class="separator:ab53ed2c550ac6e738972acc41ad71757"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf689f68a3c7db99449dfcba8c26f13d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LineColumnFile.html">LineColumnFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#adf689f68a3c7db99449dfcba8c26f13d">IndexToLine</a> (int charIndex)</td></tr>
+<tr class="memdesc:adf689f68a3c7db99449dfcba8c26f13d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#adf689f68a3c7db99449dfcba8c26f13d">More...</a><br /></td></tr>
+<tr class="separator:adf689f68a3c7db99449dfcba8c26f13d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abae963fe4011bda74065554b7f606f0e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#abae963fe4011bda74065554b7f606f0e">Newline</a> ()</td></tr>
 <tr class="memdesc:abae963fe4011bda74065554b7f606f0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default newline parser that matches '<br  />
 ' or '\r' unconditionally.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#abae963fe4011bda74065554b7f606f0e">More...</a><br /></td></tr>
@@ -547,8 +549,8 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 
 </div>
 </div>
-<a id="ab53ed2c550ac6e738972acc41ad71757"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab53ed2c550ac6e738972acc41ad71757">&#9670;&nbsp;</a></span>IndexToLine()</h2>
+<a id="adf689f68a3c7db99449dfcba8c26f13d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf689f68a3c7db99449dfcba8c26f13d">&#9670;&nbsp;</a></span>IndexToLine()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -557,7 +559,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.IndexToLine </td>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LineColumnFile.html">LineColumnFile</a> <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html">Loyc.Syntax.Lexing.BaseLexer</a>&lt; CharSrc &gt;.IndexToLine </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -572,11 +574,11 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 </div><div class="memdoc">
 
 <p>Returns the position in a source file of the specified index. </p>
-<p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine),...">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
+<p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Please use the new name of this class: LineColumnFile. Holds a filename (FileName),...">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3">Loyc.Syntax.IIndexToLine</a>.</p>
+<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#abd6530d79b74e06b768c926e356d18a9">Loyc.Syntax.IIndexToLine</a>.</p>
 
-<p class="reference">References <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a35d6b4643767c13d6b7402705394e35d">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;.IndexToLine()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.LineNumber</a>.</p>
+<p class="reference">References <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a21388dd7844713c0636c0e3fc3fd7f6a">Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;.IndexToLine()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a10aa65ed2e21ad7fa8e4ef86bc4b35af">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.LineNumber</a>.</p>
 
 </div>
 </div>
@@ -959,7 +961,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 
 <p>Current line number. Starts at 1 for the first line, unless derived class changes it. </p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#ab53ed2c550ac6e738972acc41ad71757">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.IndexToLine()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#adf689f68a3c7db99449dfcba8c26f13d">Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.IndexToLine()</a>.</p>
 
 </div>
 </div>
@@ -989,12 +991,12 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 </div>
 </div><!-- contents -->
 <div class="ttc" id="anamespaceLoyc_html_aeb4d5c77591b654c8d37485b1dd00f5e"><div class="ttname"><a href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Loyc.Severity</a></div><div class="ttdeci">Severity</div><div class="ttdoc">A linear scale to categorize the importance and seriousness of messages sent to IMessageSink.</div><div class="ttdef"><b>Definition:</b> IMessageSink.cs:123</div></div>
-<div class="ttc" id="aclassLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_html_abae963fe4011bda74065554b7f606f0e"><div class="ttname"><a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#abae963fe4011bda74065554b7f606f0e">Loyc.Syntax.Lexing.BaseLexer.Newline</a></div><div class="ttdeci">void Newline()</div><div class="ttdoc">Default newline parser that matches ' ' or '\r' unconditionally.</div><div class="ttdef"><b>Definition:</b> BaseLexer.cs:257</div></div>
-<div class="ttc" id="aclassLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_html_a79c4e1d9e02ed6f1bd69870ff2f44a99"><div class="ttname"><a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a79c4e1d9e02ed6f1bd69870ff2f44a99">Loyc.Syntax.Lexing.BaseLexer.Spaces</a></div><div class="ttdeci">void Spaces()</div><div class="ttdoc">Skips past any spaces at the current position. Equivalent to rule Spaces @[ (' '|'\t')* ] in LLLPG.</div><div class="ttdef"><b>Definition:</b> BaseLexer.cs:280</div></div>
+<div class="ttc" id="aclassLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_html_abae963fe4011bda74065554b7f606f0e"><div class="ttname"><a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#abae963fe4011bda74065554b7f606f0e">Loyc.Syntax.Lexing.BaseLexer.Newline</a></div><div class="ttdeci">void Newline()</div><div class="ttdoc">Default newline parser that matches ' ' or '\r' unconditionally.</div><div class="ttdef"><b>Definition:</b> BaseLexer.cs:254</div></div>
+<div class="ttc" id="aclassLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_html_a79c4e1d9e02ed6f1bd69870ff2f44a99"><div class="ttname"><a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a79c4e1d9e02ed6f1bd69870ff2f44a99">Loyc.Syntax.Lexing.BaseLexer.Spaces</a></div><div class="ttdeci">void Spaces()</div><div class="ttdoc">Skips past any spaces at the current position. Equivalent to rule Spaces @[ (' '|'\t')* ] in LLLPG.</div><div class="ttdef"><b>Definition:</b> BaseLexer.cs:277</div></div>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

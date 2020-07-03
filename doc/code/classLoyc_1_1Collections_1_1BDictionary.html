@@ -90,10 +90,9 @@ Inheritance diagram for Loyc.Collections.BDictionary&lt; K, V &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1BDictionary.png" usemap="#Loyc.Collections.BDictionary_3C_20K_2C_20V_20_3E_map" alt=""/>
   <map id="Loyc.Collections.BDictionary_3C_20K_2C_20V_20_3E_map" name="Loyc.Collections.BDictionary_3C_20K_2C_20V_20_3E_map">
-<area href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html" title="Combines IDictionary, IReadOnlyDictionary, and IDictonarySink with a few additional methods." alt="Loyc.Collections.IDictionaryEx&lt; K, V &gt;" shape="rect" coords="1256,112,1560,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html" alt="Loyc.Collections.IDictionarySink&lt; K, V &gt;" shape="rect" coords="1884,112,2188,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IDictionaryAndReadOnly.html" title="This interface is meant to be implemented by read-only dictionary classes that originally implemented..." alt="Loyc.Collections.IDictionaryAndReadOnly&lt; K, V &gt;" shape="rect" coords="942,56,1246,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html" alt="Loyc.Collections.IDictionarySink&lt; K, V &gt;" shape="rect" coords="1256,56,1560,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed.html" alt="Loyc.Collections.IIndexed&lt; K, V &gt;" shape="rect" coords="255,392,500,416"/>
+<area href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html" alt="Loyc.Collections.IDictionarySink&lt; K, V &gt;" shape="rect" coords="255,336,500,360"/>
+<area href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html" title="Combines IDictionary, IReadOnlyDictionary, and IDictonarySink with a few additional methods." alt="Loyc.Collections.IDictionaryEx&lt; K, V &gt;" shape="rect" coords="255,224,500,248"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -128,6 +127,10 @@ new ICollection&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 <tr class="memitem:a8b00c72f164a0b8cd7e106d1e227e725 inherit properties_interfaceLoyc_1_1Collections_1_1IDictionaryEx"><td class="memItemLeft" align="right" valign="top"><a id="a8b00c72f164a0b8cd7e106d1e227e725"></a>
 new ICollection&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Values</b><code> [get]</code></td></tr>
 <tr class="separator:a8b00c72f164a0b8cd7e106d1e227e725 inherit properties_interfaceLoyc_1_1Collections_1_1IDictionaryEx"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIndexed')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html">Loyc.Collections.IIndexed&lt; K, V &gt;</a></td></tr>
+<tr class="memitem:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">this[K key]</a><code> [get]</code></td></tr>
+<tr class="memdesc:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key.  <a href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">More...</a><br /></td></tr>
+<tr class="separator:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IDictionarySink')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionarySink.html">Loyc.Collections.IDictionarySink&lt; K, V &gt;</a></td></tr>
 <tr class="memitem:a00212b5186d0e6e35432d61750d4bb46 inherit properties_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memItemLeft" align="right" valign="top"><a id="a00212b5186d0e6e35432d61750d4bb46"></a>
 V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key]</b><code> [set]</code></td></tr>
@@ -242,8 +245,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddIfNotPresent</b> (
 <tr class="memitem:a71bdb8609e22da313a2ac00269902aca"><td class="memItemLeft" align="right" valign="top"><a id="a71bdb8609e22da313a2ac00269902aca"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGetOldValue</b> (ref K key, ref V value)</td></tr>
 <tr class="separator:a71bdb8609e22da313a2ac00269902aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6212c0cca9685dbe8b9e11783a3121e5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a6212c0cca9685dbe8b9e11783a3121e5">SetAndGet</a> (ref K key, ref V value)</td></tr>
-<tr class="memdesc:a6212c0cca9685dbe8b9e11783a3121e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates the specified value with the specified key, while getting the old value if one exists.  <a href="classLoyc_1_1Collections_1_1BDictionary.html#a6212c0cca9685dbe8b9e11783a3121e5">More...</a><br /></td></tr>
+<tr class="memitem:a940dfc2dff4c52fa6ba02172c1efe83c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a940dfc2dff4c52fa6ba02172c1efe83c">GetAndSet</a> (ref K key, ref V value)</td></tr>
+<tr class="memdesc:a940dfc2dff4c52fa6ba02172c1efe83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associates the specified value with the specified key, while getting the old value if one exists.  <a href="classLoyc_1_1Collections_1_1BDictionary.html#a940dfc2dff4c52fa6ba02172c1efe83c">More...</a><br /></td></tr>
+<tr class="separator:a940dfc2dff4c52fa6ba02172c1efe83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6212c0cca9685dbe8b9e11783a3121e5"><td class="memItemLeft" align="right" valign="top"><a id="a6212c0cca9685dbe8b9e11783a3121e5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGet</b> (ref K key, ref V value)</td></tr>
 <tr class="separator:a6212c0cca9685dbe8b9e11783a3121e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80a7e49ccd9150a75a0eb2902c6d7c52"><td class="memItemLeft" align="right" valign="top"><a id="a80a7e49ccd9150a75a0eb2902c6d7c52"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetAndGetOldValue</b> (K key, ref V value)</td></tr>
@@ -277,6 +283,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</t
 <tr class="memitem:a7f2fe03b00451fe39ba6cbb3616f8b3c inherit pub_methods_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memItemLeft" align="right" valign="top"><a id="a7f2fe03b00451fe39ba6cbb3616f8b3c"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> ()</td></tr>
 <tr class="separator:a7f2fe03b00451fe39ba6cbb3616f8b3c inherit pub_methods_interfaceLoyc_1_1Collections_1_1IDictionarySink"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html">Loyc.Collections.ITryGet&lt; K, V &gt;</a></td></tr>
+<tr class="memitem:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">TryGet</a> (K key, out bool fail)</td></tr>
+<tr class="memdesc:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item for the specified key or index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">More...</a><br /></td></tr>
+<tr class="separator:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -695,7 +705,7 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#ab94d9cdc2fb4ce189bdbe8850bafae35">Loyc.Collections.IDictionaryEx&lt; K, V &gt;</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a06880ebdb8a6209a1ba289a3319314f0">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.AddIfNotPresent()</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a1309d1cfb375677fee83e6ea66deecf2">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.ReplaceIfPresent()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a6212c0cca9685dbe8b9e11783a3121e5">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.SetAndGet()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a06880ebdb8a6209a1ba289a3319314f0">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.AddIfNotPresent()</a>, <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a940dfc2dff4c52fa6ba02172c1efe83c">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.GetAndSet()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a1309d1cfb375677fee83e6ea66deecf2">Loyc.Collections.BDictionary&lt; int, Loyc.Pair&lt; int, string &gt; &gt;.ReplaceIfPresent()</a>.</p>
 
 </div>
 </div>
@@ -726,6 +736,52 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 <p>TODO: TEST THIS!! </p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#a120c8ea9b51947176ddc8336e08b0235">Loyc.Collections.IDictionaryEx&lt; K, V &gt;</a>.</p>
+
+</div>
+</div>
+<a id="a940dfc2dff4c52fa6ba02172c1efe83c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a940dfc2dff4c52fa6ba02172c1efe83c">&#9670;&nbsp;</a></span>GetAndSet()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.GetAndSet </td>
+          <td>(</td>
+          <td class="paramtype">ref K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ref V&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Associates the specified value with the specified key, while getting the old value if one exists. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>Key to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old key instance.</td></tr>
+    <tr><td class="paramname">value</td><td>Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the new pair was added, false if it was replaced.</dd></dl>
 
 </div>
 </div>
@@ -776,57 +832,11 @@ static readonly Func&lt; K, K, int &gt;&#160;</td><td class="memItemRight" valig
 
 </div>
 </div>
-<a id="a6212c0cca9685dbe8b9e11783a3121e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6212c0cca9685dbe8b9e11783a3121e5">&#9670;&nbsp;</a></span>SetAndGet()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html">Loyc.Collections.BDictionary</a>&lt; K, V &gt;.SetAndGet </td>
-          <td>(</td>
-          <td class="paramtype">ref K&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">ref V&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Associates the specified value with the specified key, while getting the old value if one exists. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td>Key to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old key instance.</td></tr>
-    <tr><td class="paramname">value</td><td>Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the new pair was added, false if it was replaced.</dd></dl>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

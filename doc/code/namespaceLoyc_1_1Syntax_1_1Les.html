@@ -122,6 +122,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html">Les3Printer</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html">Les3PrinterOptions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A set of extended options supported when printing in LES3.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html">LesLanguageService</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alternate name for <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html" title="The Value property provides easy access to the lexer, parser and printer for Loyc Expression Syntax (...">Les2LanguageService</a> (will change to <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html">Les3LanguageService</a> in the future)  <a href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html#details">More...</a><br /></td></tr>
@@ -196,7 +197,7 @@ Enumerations</h2></td></tr>
 <b>Not</b> = TokenKind.Operator + 6, 
 <br />
 &#160;&#160;<b>Colon</b> = TokenKind.Operator + 8, 
-<b>SingleQuoteOp</b> = TokenKind.Operator + 9, 
+<b>SingleQuote</b> = TokenKind.Operator + 9, 
 <b>BQOperator</b> = TokenKind.Operator + 255, 
 <br />
 &#160;&#160;<b>Comma</b> = TokenKind.Separator, 
@@ -212,7 +213,10 @@ Enumerations</h2></td></tr>
 <b>LBrace</b> = TokenKind.LBrace, 
 <br />
 &#160;&#160;<b>RBrace</b> = TokenKind.RBrace, 
-<b>Unknown</b> = TokenKind.Other
+<b>TreeDef</b> = TokenKind.Other + 1, 
+<b>BackRef</b> = TokenKind.Other + 2, 
+<br />
+&#160;&#160;<b>Unknown</b> = TokenKind.Other
 <br />
  }</td></tr>
 <tr class="separator:afe2b2df7a1a16f56d226545d64951eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -249,7 +253,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

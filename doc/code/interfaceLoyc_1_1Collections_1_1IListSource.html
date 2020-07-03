@@ -84,32 +84,42 @@ $(function() {
 Inheritance diagram for Loyc.Collections.IListSource&lt; out out T &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="interfaceLoyc_1_1Collections_1_1IListSource.png" alt=""/>
- </div></div>
+  <img src="interfaceLoyc_1_1Collections_1_1IListSource.png" usemap="#Loyc.Collections.IListSource_3C_20out_20out_20T_20_3E_map" alt=""/>
+  <map id="Loyc.Collections.IListSource_3C_20out_20out_20T_20_3E_map" name="Loyc.Collections.IListSource_3C_20out_20out_20T_20_3E_map">
+<area href="interfaceLoyc_1_1Collections_1_1ITryGet.html" alt="Loyc.Collections.ITryGet&lt; int, T &gt;" shape="rect" coords="258,0,506,24"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed.html" alt="Loyc.Collections.IIndexed&lt; int, T &gt;" shape="rect" coords="516,0,764,24"/>
+  </map>
+</div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A read-only list indexed by an integer. </p>
-<p>Member list: </p><div class="fragment"><div class="line"><span class="keyword">public</span> IEnumerator&lt;T&gt; GetEnumerator(); <span class="comment">// inherited</span></div>
-<div class="line"><a class="code" href="namespaceSystem.html">System</a>.<a class="code" href="namespaceSystem_1_1Collections.html">Collections</a>.IEnumerator <a class="code" href="namespaceSystem.html">System</a>.<a class="code" href="namespaceSystem_1_1Collections.html">Collections</a>.IEnumerable.GetEnumerator();</div>
-<div class="line"><span class="keyword">public</span> T <span class="keyword">this</span>[<span class="keywordtype">int</span> index] { <span class="keyword">get</span>; }         <span class="comment">// inherited</span></div>
-<div class="line"><span class="keyword">public</span> <span class="keywordtype">int</span> Count { <span class="keyword">get</span>; }                 <span class="comment">// inherited</span></div>
-<div class="line"><span class="keyword">public</span> T <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span> index, out <span class="keywordtype">bool</span> fail);</div>
+<p>Member list: </p><div class="fragment"><div class="line"><span class="keyword">public</span> IEnumerator&lt;T&gt; GetEnumerator();  <span class="comment">// inherited</span></div>
+<div class="line">System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator(); <span class="comment">// inherited</span></div>
+<div class="line"><span class="keyword">public</span> T <span class="keyword">this</span>[<span class="keywordtype">int</span> index] { <span class="keyword">get</span>; }          <span class="comment">// inherited</span></div>
+<div class="line"><span class="keyword">public</span> <span class="keywordtype">int</span> Count { <span class="keyword">get</span>; }                  <span class="comment">// inherited</span></div>
+<div class="line"><span class="keyword">public</span> T <a class="code" href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">TryGet</a>(<span class="keywordtype">int</span> index, out <span class="keywordtype">bool</span> fail); <span class="comment">// inherited</span></div>
 <div class="line">IRange&lt;T&gt; <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a>(<span class="keywordtype">int</span> start, <span class="keywordtype">int</span> count = <span class="keywordtype">int</span>.MaxValue);</div>
-</div><!-- fragment --><p> The term "source" means a read-only collection, as opposed to a "sink" which is a write-only collection. The purpose of <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> is to support slices, eliminate the need to call <code>Count</code> before reading from the list, and to make it easier to implement a read-only list, by lifting IList's requirement to write implementations for Add(), Remove(), etc. A secondary purpose is, of course, to guarantee users don't mistakenly call those methods on a read-only collection. </p>
+</div><!-- fragment --><p> The term "source" means a read-only collection, as opposed to a "sink" which is a write-only collection. </p>
+<p><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> was created before .NET's IReadOnlyList but was later retrofitted so that <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> implements IReadOnlyList. In addition, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a> supports slices through its <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf" title="Returns a sub-range of this list.">Slice()</a> method, and it has <code>TryGet</code> methods to eliminate the need to call <code>Count</code> before reading from the list. </p>
 <p>I have often wanted to access the "next" or "previous" item in a list, e.g. during parsing, but it inconvenient if you have to worry about whether the the current item is the first or last. In that case you must check whether the array index is valid, which is both inconvenient and wasteful, because the list class itself will check the array index a second time, and then the .NET runtime will check the index a third time when reading the internal array. The <code>TryGet(index, defaultValue)</code> extension method can be used to return a default value if the index is not valid, using only one interface call. </p>
-<p>Design footnote: I would have preferred to define <code>TryGet</code> with one of these signatures: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span> index, out T value);</div>
-<div class="line">T? <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span> index);</div>
-<div class="line">Maybe&lt;T&gt; <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span> index);</div>
-</div><!-- fragment --><p> However, these signatures don't allow T to be covariant (<code>out T</code>). The first signature doesn't work because the .NET runtime doesn't distinguish between <code>ref</code> and <code>out</code>, so T could not be covariant. The second signature doesn't work if <code>T</code> is not a value type. The third signature doesn't work because, as a struct, <code><a class="el" href="structLoyc_1_1Maybe.html" title="Same as Nullable&lt;T&gt; except that it behaves like a normal type, i.e. (1) T is allowed to be a referenc...">Maybe</a>&lt;T&gt;</code> is not allowed to be covariant (even though the JIT could, theoretically, treat it covariantly). </p>
+<p>Design footnote: Ideally the return type of TryGet would be Maybe&lt;T&gt;, but that design would not allow T to be covariant (out T). Therefore, the version of <code>TryGet</code> that returns Maybe&lt;T&gt; is an extension method. </p>
 <p>Using Impl.ListSourceBase&lt;T&gt; as your base class can help you implement this interface more quickly. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
 <tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list.  <a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
 <tr class="separator:a52cf4d93658771ea9539ed905d2d91bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html">Loyc.Collections.ITryGet&lt; int, T &gt;</a></td></tr>
+<tr class="memitem:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">TryGet</a> (K key, out bool fail)</td></tr>
+<tr class="memdesc:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item for the specified key or index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">More...</a><br /></td></tr>
+<tr class="separator:ad9f07b08ca86fcc11fa02dcec1623e5d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ITryGet"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Collections_1_1IIndexed')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html">Loyc.Collections.IIndexed&lt; int, T &gt;</a></td></tr>
+<tr class="memitem:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memItemLeft" align="right" valign="top">V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">this[K key]</a><code> [get]</code></td></tr>
+<tr class="memdesc:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value associated with the specified key.  <a href="interfaceLoyc_1_1Collections_1_1IIndexed.html#a1aec4d901a6b56f01c108526bdbabbba">More...</a><br /></td></tr>
+<tr class="separator:a1aec4d901a6b56f01c108526bdbabbba inherit properties_interfaceLoyc_1_1Collections_1_1IIndexed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a52cf4d93658771ea9539ed905d2d91bf"></a>
@@ -167,57 +177,13 @@ public <a class="el" href="structLoyc_1_1Collections_1_1Slice__.html" title="Ada
 
 </div>
 </div>
-<a id="a19a865ed54cfef48cd244d1343ff83b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19a865ed54cfef48cd244d1343ff83b6">&#9670;&nbsp;</a></span>TryGet()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">T <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource</a>&lt; out out T &gt;.TryGet </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out bool&#160;</td>
-          <td class="paramname"><em>fail</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Gets the item at the specified index, and does not throw an exception on failure. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">index</td><td>An index in the range 0 to Count-1.</td></tr>
-    <tr><td class="paramname">fail</td><td>A flag that is set on failure.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The element at the specified index, or default(T) if the index is not valid.</dd></dl>
-<p>In my original design, the caller could provide a value to return on failure, but this would not allow T to be marked as "out" in C# 4. For the same reason, we cannot have a ref/out T parameter. Instead, the following extension methods are provided: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span> index, ref T value);</div>
-<div class="line">T <a class="code" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a>(<span class="keywordtype">int</span>, T defaultValue);</div>
-</div><!-- fragment --> 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa">Loyc.Collections.LCInterfaces.HasIndex&lt; T &gt;()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html#af7d735bee5e606c80ab3db5f779b4291">Loyc.Syntax.Les.Les2LanguageService.Parse()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3LanguageService.html#a834d86bd19ca370868c824675d68fa4c">Loyc.Syntax.Les.Les3LanguageService.Parse()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsLanguageService.html#a3b08b0b1c5b36be49e5a89153bb2b5a9">Loyc.Ecs.EcsLanguageService.Parse()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a686c2f1a4bb7cfb71c6b66f2d10e2c44">Loyc.Collections.LinqToLists.SkipNowWhile&lt; T &gt;()</a>, <a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#aeb7a058ad0f3c93adac12f5e302972ad">Loyc.Collections.LinqToLists.TakeNowWhile&lt; T &gt;()</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html#a76cb3bbbf73d0f42c2a6ac3b3542fb0d">Loyc.Collections.NegListSource&lt; T &gt;.TryGet()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#afed0dbf9d83237665486f40518df4312">Loyc.Collections.LCInterfaces.TryGet&lt; T &gt;()</a>.</p>
-
-</div>
-</div>
 </div><!-- contents -->
-<div class="ttc" id="anamespaceSystem_html"><div class="ttname"><a href="namespaceSystem.html">System</a></div><div class="ttdef"><b>Definition:</b> IReadOnlyCollections.cs:6</div></div>
-<div class="ttc" id="ainterfaceLoyc_1_1Collections_1_1IListSource_html_a19a865ed54cfef48cd244d1343ff83b6"><div class="ttname"><a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource.TryGet</a></div><div class="ttdeci">T TryGet(int index, out bool fail)</div><div class="ttdoc">Gets the item at the specified index, and does not throw an exception on failure.</div></div>
-<div class="ttc" id="anamespaceSystem_1_1Collections_html"><div class="ttname"><a href="namespaceSystem_1_1Collections.html">System.Collections</a></div><div class="ttdef"><b>Definition:</b> IReadOnlyCollections.cs:6</div></div>
+<div class="ttc" id="ainterfaceLoyc_1_1Collections_1_1ITryGet_html_ad9f07b08ca86fcc11fa02dcec1623e5d"><div class="ttname"><a href="interfaceLoyc_1_1Collections_1_1ITryGet.html#ad9f07b08ca86fcc11fa02dcec1623e5d">Loyc.Collections.ITryGet&lt; int, T &gt;::TryGet</a></div><div class="ttdeci">V TryGet(K key, out bool fail)</div><div class="ttdoc">Gets the item for the specified key or index, and does not throw an exception on failure.</div></div>
 <div class="ttc" id="ainterfaceLoyc_1_1Collections_1_1IListSource_html_a52cf4d93658771ea9539ed905d2d91bf"><div class="ttname"><a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Loyc.Collections.IListSource.Slice</a></div><div class="ttdeci">IRange&lt; T &gt; Slice(int start, int count=int.MaxValue)</div><div class="ttdoc">Returns a sub-range of this list.</div></div>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

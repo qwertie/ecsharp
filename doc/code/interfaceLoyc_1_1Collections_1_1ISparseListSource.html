@@ -105,7 +105,7 @@ Inheritance diagram for Loyc.Collections.ISparseListSource&lt; T &gt;:</div>
 <li>
 <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html#a729f3e987410a739101c05289a7ede31" title="Determines whether a value exists at the specified index.">IsSet(int)</a> returns the result of SortedDictionary&lt;K,V&gt;.ContainsKey, and </li>
 <li>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6" title="Gets the item at the specified index, and does not throw an exception on failure.">IListSource&lt;T&gt;.TryGet(int, out bool)</a> returns the value retrieved by SortedDictionary&lt;K,V&gt;.TryGetValue, setting 'fail' only if the index is negative. </li>
+IListSource&lt;T&gt;.TryGet(int, out bool) returns the value retrieved by SortedDictionary&lt;K,V&gt;.TryGetValue, setting 'fail' only if the index is negative. </li>
 </ul>
 <p><code>SortedDictionary</code> is not a very useful example in practise, though, because it does not provide a way for <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html#a6380add1ee69e10fd489940ea08c0769" title="Increases index by at least one to reach the next index that is not classified as empty space,...">NextHigherItem</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html#a18c0f0df3e9d840acdd446fd6b6b4390" title="Decreases index by at least one to reach the next index that is not classified as empty space,...">NextLowerItem</a> to work efficiently, and it cannot efficiently support the ISparseList&lt;T&gt; interface. A more useful example is <a class="el" href="classLoyc_1_1Collections_1_1SparseAList.html" title="A sparse A-List that implements ISparseList&lt;T&gt;.">SparseAList</a>{T} in Loyc.Collections.dll, which efficiently implements this interface and ISparseList&lt;T&gt;. </p>
 <dl class="section see"><dt>See also</dt><dd>LCExt.AsSparse</dd></dl>
@@ -122,9 +122,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a729f3e987410a739101c05289a7ede31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether a value exists at the specified index.  <a href="interfaceLoyc_1_1Collections_1_1ISparseListSource.html#a729f3e987410a739101c05289a7ede31">More...</a><br /></td></tr>
 <tr class="separator:a729f3e987410a739101c05289a7ede31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IListSource')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">Loyc.Collections.IListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">TryGet</a> (int index, out bool fail)</td></tr>
-<tr class="memdesc:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure.  <a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">More...</a><br /></td></tr>
-<tr class="separator:a19a865ed54cfef48cd244d1343ff83b6 inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IRange.html">IRange</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">Slice</a> (int start, int count=int.MaxValue)</td></tr>
 <tr class="memdesc:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list.  <a href="interfaceLoyc_1_1Collections_1_1IListSource.html#a52cf4d93658771ea9539ed905d2d91bf">More...</a><br /></td></tr>
 <tr class="separator:a52cf4d93658771ea9539ed905d2d91bf inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListSource"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -225,7 +222,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:38 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -85,6 +85,18 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ac31843ad30f72d4a7369e25c65a4c5d8"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ac31843ad30f72d4a7369e25c65a4c5d8">GetOrAdd&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, V value)</td></tr>
+<tr class="memdesc:ac31843ad30f72d4a7369e25c65a4c5d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a key/value pair to the dictionary if the key is not already present, and returns the existing or new value.  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#ac31843ad30f72d4a7369e25c65a4c5d8">More...</a><br /></td></tr>
+<tr class="separator:ac31843ad30f72d4a7369e25c65a4c5d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a075e0a8c382026f75fc26754b486bdd9"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a075e0a8c382026f75fc26754b486bdd9">GetOrAdd&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, Func&lt; K, V &gt; valueFactory)</td></tr>
+<tr class="memdesc:a075e0a8c382026f75fc26754b486bdd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a key/value pair to the dictionary if the key is not already present, by using the specified function to obtain a value, and returns the existing or new value.  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#a075e0a8c382026f75fc26754b486bdd9">More...</a><br /></td></tr>
+<tr class="separator:a075e0a8c382026f75fc26754b486bdd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f9098f3c0bfd7af7c77593a62a73980"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a3f9098f3c0bfd7af7c77593a62a73980">AddOrUpdate&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, Func&lt; K, V &gt; addValueFactory, Func&lt; K, V, V &gt; updateValueFactory)</td></tr>
+<tr class="memdesc:a3f9098f3c0bfd7af7c77593a62a73980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses the specified functions either to add a key/value pair to the dictionary if the key does not already exist, or to update a key/value pair in the dictionary if the key already exists.  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#a3f9098f3c0bfd7af7c77593a62a73980">More...</a><br /></td></tr>
+<tr class="separator:a3f9098f3c0bfd7af7c77593a62a73980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae816ab0bba2f3557024784fdde2f05d8"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ae816ab0bba2f3557024784fdde2f05d8">AddOrUpdate&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, V addValue, Func&lt; K, V, V &gt; updateValueFactory)</td></tr>
+<tr class="memdesc:ae816ab0bba2f3557024784fdde2f05d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a key/value pair to the dictionary if the key does not already exist, or, if it does, updates a key/value pair in the dictionary using the specified function.  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#ae816ab0bba2f3557024784fdde2f05d8">More...</a><br /></td></tr>
+<tr class="separator:ae816ab0bba2f3557024784fdde2f05d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90f4365fca001536ed9a4c000ab25c7a"><td class="memItemLeft" align="right" valign="top">static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a90f4365fca001536ed9a4c000ab25c7a">TryGetValue&lt; K, V &gt;</a> (this Dictionary&lt; K, V &gt; dict, K key, V defaultValue)</td></tr>
 <tr class="memdesc:a90f4365fca001536ed9a4c000ab25c7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">An alternate version TryGetValue that returns a default value if the key was not found in the dictionary, and that does not throw if the key is null.  <a href="classLoyc_1_1Collections_1_1DictionaryExt.html#a90f4365fca001536ed9a4c000ab25c7a">More...</a><br /></td></tr>
 <tr class="separator:a90f4365fca001536ed9a4c000ab25c7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,6 +138,110 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
 <tr class="separator:ac6932b4253d83c55047105227d62389d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a3f9098f3c0bfd7af7c77593a62a73980"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f9098f3c0bfd7af7c77593a62a73980">&#9670;&nbsp;</a></span>AddOrUpdate&lt; K, V &gt;() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static V Loyc.Collections.DictionaryExt.AddOrUpdate&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>addValueFactory</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, V, V &gt;&#160;</td>
+          <td class="paramname"><em>updateValueFactory</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Uses the specified functions either to add a key/value pair to the dictionary if the key does not already exist, or to update a key/value pair in the dictionary if the key already exists. </p>
+<dl class="section return"><dt>Returns</dt><dd>The new value associated with the key, which is either the result of addValueFactory or updateValueFactory.</dd></dl>
+<p>This is not thread-safe. Only one thread should access the dictionary at once.</p>
+
+</div>
+</div>
+<a id="ae816ab0bba2f3557024784fdde2f05d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae816ab0bba2f3557024784fdde2f05d8">&#9670;&nbsp;</a></span>AddOrUpdate&lt; K, V &gt;() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static V Loyc.Collections.DictionaryExt.AddOrUpdate&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">V&#160;</td>
+          <td class="paramname"><em>addValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, V, V &gt;&#160;</td>
+          <td class="paramname"><em>updateValueFactory</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds a key/value pair to the dictionary if the key does not already exist, or, if it does, updates a key/value pair in the dictionary using the specified function. </p>
+<dl class="section return"><dt>Returns</dt><dd>The new value associated with the key, which is either addValue or the result of updateValueFactory.</dd></dl>
+<p>This is not thread-safe. Only one thread should access the dictionary at once.</p>
+
+</div>
+</div>
 <a id="a121da3cae196a8f5550d1864d5c7ce5d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a121da3cae196a8f5550d1864d5c7ce5d">&#9670;&nbsp;</a></span>AddRange&lt; K, V &gt;() <span class="overload">[1/2]</span></h2>
 
@@ -243,6 +359,98 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
 </div><div class="memdoc">
 
 <p>Default implementation of <a class="el" href="interfaceLoyc_1_1Collections_1_1IDictionaryEx.html#a120c8ea9b51947176ddc8336e08b0235" title="Gets the value associated with the specified key, then removes the pair with that key from the dictio...">IDictionaryEx&lt;K, V&gt;.GetAndRemove</a>. Gets the value associated with the specified key, then removes the pair with that key from the dictionary. </p>
+
+</div>
+</div>
+<a id="a075e0a8c382026f75fc26754b486bdd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a075e0a8c382026f75fc26754b486bdd9">&#9670;&nbsp;</a></span>GetOrAdd&lt; K, V &gt;() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static V Loyc.Collections.DictionaryExt.GetOrAdd&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>valueFactory</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds a key/value pair to the dictionary if the key is not already present, by using the specified function to obtain a value, and returns the existing or new value. </p>
+<dl class="section return"><dt>Returns</dt><dd>The existing value (if the key already existed) or the new value.</dd></dl>
+<p>This is not thread-safe. Only one thread should access the dictionary at once.</p>
+
+</div>
+</div>
+<a id="ac31843ad30f72d4a7369e25c65a4c5d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac31843ad30f72d4a7369e25c65a4c5d8">&#9670;&nbsp;</a></span>GetOrAdd&lt; K, V &gt;() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static V Loyc.Collections.DictionaryExt.GetOrAdd&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">V&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds a key/value pair to the dictionary if the key is not already present, and returns the existing or new value. </p>
+<dl class="section return"><dt>Returns</dt><dd>The existing value (if the key already existed) or the new value.</dd></dl>
+<p>This is not thread-safe. Only one thread should access the dictionary at once.</p>
 
 </div>
 </div>
@@ -454,7 +662,7 @@ static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:37 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

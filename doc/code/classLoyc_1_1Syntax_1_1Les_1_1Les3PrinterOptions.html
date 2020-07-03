@@ -76,8 +76,11 @@ $(function() {
 <div class="title">Loyc.Syntax.Les.Les3PrinterOptions Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A set of extended options supported when printing in LES3.  
+ <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/Les3Printer.cs'>/Core/Loyc.Syntax/LES/Les3Printer.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/Les3PrinterOptions.cs'>/Core/Loyc.Syntax/LES/Les3PrinterOptions.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.Les.Les3PrinterOptions:</div>
@@ -89,7 +92,10 @@ Inheritance diagram for Loyc.Syntax.Les.Les3PrinterOptions:</div>
 <area href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html" title="A set of relatively universal printing options that LNodePrinters should understand." alt="Loyc.Syntax.ILNodePrinterOptions" shape="rect" coords="0,0,218,24"/>
   </map>
 </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>A set of extended options supported when printing in LES3. </p>
+<p>This type can be used, for example, in a call to Les3LanguageService.Print(ILNode, IMessageSink, ParsingMode, ILNodePrinterOptions).</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a2c8cea91b597b325d66aae9b848f2391"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a2c8cea91b597b325d66aae9b848f2391">SpacesBetweenAppendedStatements</a> = true</td></tr>
@@ -126,7 +132,7 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>CompactMode<
 <tr class="memdesc:aeddfdf09a00ee0b670a93e4a62dae4cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow perfect round-tripping.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#aeddfdf09a00ee0b670a93e4a62dae4cf">More...</a><br /></td></tr>
 <tr class="separator:aeddfdf09a00ee0b670a93e4a62dae4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cfe61c504b61649d934ecf16be523ea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a5cfe61c504b61649d934ecf16be523ea">OmitSpaceTrivia</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a5cfe61c504b61649d934ecf16be523ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter).  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a5cfe61c504b61649d934ecf16be523ea">More...</a><br /></td></tr>
+<tr class="memdesc:a5cfe61c504b61649d934ecf16be523ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaNewline).  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a5cfe61c504b61649d934ecf16be523ea">More...</a><br /></td></tr>
 <tr class="separator:a5cfe61c504b61649d934ecf16be523ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3aead16ac990470e89235761f91ac54"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#ab3aead16ac990470e89235761f91ac54">WarnAboutUnprintableLiterals</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ab3aead16ac990470e89235761f91ac54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print a warning when an "unprintable" literal is encountered. In any case the literal is converted to a string, placed in double quotes and prefixed by the unqualified Type of the Value.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#ab3aead16ac990470e89235761f91ac54">More...</a><br /></td></tr>
@@ -384,7 +390,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter). </p>
+<p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaNewline). </p>
 
 </div>
 </div>
@@ -587,7 +593,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:40 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

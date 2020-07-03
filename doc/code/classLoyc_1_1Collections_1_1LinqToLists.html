@@ -162,6 +162,12 @@ static <a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyList.html">
 <tr class="memitem:aa71d32b6d31e35dadac5e3027244bfd4"><td class="memItemLeft" align="right" valign="top"><a id="aa71d32b6d31e35dadac5e3027244bfd4"></a>
 static <a class="el" href="classLoyc_1_1Collections_1_1SelectReadOnlyCollection.html">SelectReadOnlyCollection</a>&lt; IReadOnlyCollection&lt; T &gt;, T, TResult &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Select&lt; T, TResult &gt;</b> (this IReadOnlyCollection&lt; T &gt; list, Func&lt; T, TResult &gt; selector)</td></tr>
 <tr class="separator:aa71d32b6d31e35dadac5e3027244bfd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74d6eb7ce8680b1f94d5655c5d660aaa"><td class="memItemLeft" align="right" valign="top"><a id="a74d6eb7ce8680b1f94d5655c5d660aaa"></a>
+static T[]&#160;</td><td class="memItemRight" valign="bottom"><b>ConcatNow&lt; T &gt;</b> (this T[] a, T[] b)</td></tr>
+<tr class="separator:a74d6eb7ce8680b1f94d5655c5d660aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4689bbbb6245eecc26c3113667be2d9a"><td class="memItemLeft" align="right" valign="top"><a id="a4689bbbb6245eecc26c3113667be2d9a"></a>
+static T[]&#160;</td><td class="memItemRight" valign="bottom"><b>ConcatNow&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; a, IReadOnlyList&lt; T &gt; b)</td></tr>
+<tr class="separator:a4689bbbb6245eecc26c3113667be2d9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11b9640c0e1e07722a5110c0148a8ec9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Collections_1_1ReversedListSource.html">ReversedListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LinqToLists.html#a11b9640c0e1e07722a5110c0148a8ec9">Reverse&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; c)</td></tr>
 <tr class="memdesc:a11b9640c0e1e07722a5110c0148a8ec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a reversed view of a read-only list.  <a href="classLoyc_1_1Collections_1_1LinqToLists.html#a11b9640c0e1e07722a5110c0148a8ec9">More...</a><br /></td></tr>
 <tr class="separator:a11b9640c0e1e07722a5110c0148a8ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -495,8 +501,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <p>Returns a slice without the initial elements of the list that meet the specified criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this method scans the list immediately. </p>
 <p>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n =&gt; n &gt; 10) returns a slice (not a copy) of the last 2 elements.</p>
 
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
-
 </div>
 </div>
 <a id="a200a0f7d1678d23c0c7439f6bb6e1501"></a>
@@ -536,7 +540,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <p>Returns a slice without the initial elements of the list that meet the specified criteria. The word "now" is added to the name because unlike Enumerable.SkipWhile, this method scans the list immediately. </p>
 <p>Example: new[] { 24, 28, 2, 12, 11 }.SkipNowWhile(n =&gt; n &gt; 10) returns a slice (not a copy) of the last 2 elements.</p>
 
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Loyc.Collections.INegListSource&lt; out out T &gt;.Min</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
+<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Loyc.Collections.INegListSource&lt; out out T &gt;.Min</a>.</p>
 
 </div>
 </div>
@@ -653,8 +657,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <p>Returns a slice of the initial elements of the list that meet the provided criteria. The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans the list immediately. </p>
 <p>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n =&gt; n &gt; 10) returns a slice (not a copy) of the first 3 elements.</p>
 
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html#a19a865ed54cfef48cd244d1343ff83b6">Loyc.Collections.IListSource&lt; out out T &gt;.TryGet()</a>.</p>
-
 </div>
 </div>
 <a id="ac2ae78619d132c16f8d571ac6910968f"></a>
@@ -694,7 +696,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <p>Returns a slice of the initial elements of the list that meet the provided criteria. The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans the list immediately. </p>
 <p>Example: new[] { 13, 16, 19, 2, 11, 12 }.TakeNowWhile(n =&gt; n &gt; 10) returns a slice (not a copy) of the first 3 elements.</p>
 
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Loyc.Collections.INegListSource&lt; out out T &gt;.Min</a>, and <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#a238c28f7c77ade400dfa3329ef5fdb86">Loyc.Collections.INegListSource&lt; out out T &gt;.TryGet()</a>.</p>
+<p class="reference">References <a class="el" href="interfaceLoyc_1_1Collections_1_1INegListSource.html#ac91ff7dfc46c3b3e174a1b213742be9d">Loyc.Collections.INegListSource&lt; out out T &gt;.Min</a>.</p>
 
 </div>
 </div>
@@ -760,7 +762,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 5 2020 09:07:38 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
