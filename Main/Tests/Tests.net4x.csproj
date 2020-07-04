@@ -16,13 +16,13 @@
     <Optimize>false</Optimize>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release.NET45' or '$(Configuration)' == 'Release' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,20 +36,6 @@
     <OutputPath>..\..\Bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <DocumentationFile>..\..\Bin\Release\Tests.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45'">
-    <OutputPath>..\..\Bin\Debug.NET45\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release.NET45'">
-    <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE;DotNet45</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET45\Tests.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -106,17 +92,17 @@
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
       <Name>LoycCore.Tests.net45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ecs\Loyc.Ecs.net45.csproj">
+    <ProjectReference Include="..\Ecs\Loyc.Ecs.net4x.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
-      <Name>Loyc.Ecs.net45</Name>
+      <Name>Loyc.Ecs.net4x</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LeMP\LeMP.net45.csproj">
+    <ProjectReference Include="..\LeMP\LeMP.net4x.csproj">
       <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
-      <Name>LeMP.net45</Name>
+      <Name>LeMP.net4x</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LLLPG\LLLPG.net45.csproj">
+    <ProjectReference Include="..\LLLPG\LLLPG.net4x.csproj">
       <Project>{0E50272F-4FDB-4FDA-858A-AE46D1B66E1A}</Project>
-      <Name>LLLPG.net45</Name>
+      <Name>LLLPG.net4x</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

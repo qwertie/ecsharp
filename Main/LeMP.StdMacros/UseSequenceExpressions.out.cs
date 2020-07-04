@@ -317,13 +317,13 @@ namespace LeMP
 						args[i] = part.WithArgChanged(lasti, EliminateSequenceExpressionsInChildStmt(part.Args[lasti]));
 					}
 				}
-				return stmt.WithArgs(args.ToLNodeList());
+				return stmt.WithArgs(args.ToVList());
 			}
 		
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
 			{
 				List<LNode> childStmts = stmt.Args.Slice(childStmtsStartAt).ToList();
-				LNode partialStmt = stmt.WithArgs(stmt.Args.Initial(childStmtsStartAt));
+				LNode partialStmt = stmt.WithArgs(stmt.Args.First(childStmtsStartAt));
 				LNodeList advanceSequence;
 				if (ProcessBlockCallStmt2(ref partialStmt, out advanceSequence, childStmts)) {
 					stmt = partialStmt.PlusArgs(childStmts);
@@ -480,7 +480,7 @@ namespace LeMP
 				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(__numrunSequence, 1)) ?? -1;
 				if (lastRunSeq >= 0) {
 					// last index of #runSequence that is not marked pure
-					int lastRunSeqImpure = args.Initial(lastRunSeq + 1).FinalIndexWhere(a => 
+					int lastRunSeqImpure = args.First(lastRunSeq + 1).FinalIndexWhere(a => 
 					a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
 				
 					if (lastRunSeq > 0 && 
@@ -550,7 +550,7 @@ namespace LeMP
 								args[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 							}
 						}
-						return expr.WithArgs(args.ToLNodeList());
+						return expr.WithArgs(args.ToVList());
 					}
 				}
 			}

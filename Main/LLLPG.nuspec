@@ -26,7 +26,7 @@
   <files>
     <file src="..\readme.md" target="readme.txt" />
     <file src="..\Bin\Release\netstandard2.0\LLLPG.*" target="lib\netstandard2.0\" />
-    <file src="..\Bin\Release.NET45\LLLPG.*" target="lib\net45\" />
+    <file src="..\Bin\Release\LLLPG.*" target="lib\net472\" />
     <file src="LLLPG\**\*.cs" target="src" />
     <file src="LLLPG\**\*.ecs" target="src" />
   </files>

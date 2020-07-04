@@ -28,7 +28,7 @@
     <file src="..\readme.md" />
 
     <file src="..\Bin\Release\netstandard2.0\LeMP.*" target="lib\netstandard2.0\" />
-    <file src="..\Bin\Release.NET45\LeMP.*" target="lib\net45\" />
+    <file src="..\Bin\Release\LeMP.*" target="lib\net472\" />
     <file src="LeMP\**\*.cs" target="src\LeMP" />
     <file src="LeMP\**\*.ecs" target="src\LeMP" />
     <file src="LeMP.StdMacros\**\*.cs" target="src\LeMP.StdMacros" />
