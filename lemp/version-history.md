@@ -6,6 +6,17 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.8.0: July 3, 2020 ###
+
+.NET 3.5 and .NET 4 versions have been dropped, leaving only .NET 4.5 and .NET Standard versions.
+
+LeMP:
+- The macro for the binary `:` operator now means "variable declaration" instead of "named argument". Use `arg <: value` for named arguments.
+
+EC# Printer:
+- Bug fix: the syntax tree for `({ block; })` now prints correctly ([#90](https://github.com/qwertie/ecsharp/issues/90))
+- If an operator like `'+` is a method name, print it as `operator+` even if `%useOperatorKeyword` is missing
+
 ### v2.7.1.2: March 29, 2020 ###
 
 - Fix regressions in EC# parser:
