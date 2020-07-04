@@ -32,21 +32,21 @@ after_build:
     #  - Loyc.Syntax.dll      (Loyc.Syntax.$PKG_VERSION.nupkg)
     #  - Loyc.Utilities.dll   (Loyc.Utilities.$PKG_VERSION.nupkg)
     #  - All 5 together       (LoycCore.$PKG_VERSION.nupkg)
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Interfaces.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Essentials.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Collections.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Math.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Syntax.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\Loyc.Utilities.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Core\LoycCore.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Interfaces.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Essentials.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Collections.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Math.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Syntax.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Utilities.nuspec
+    - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
 
     # Package the Main libraries:
     # - Loyc.Ecs.dll (Loyc.Ecs.$PKG_VERSION.nupkg)
     # - LeMP.exe     (LeMP.$PKG_VERSION.nupkg)
     # - LLLPG.exe    (LLLPG.$PKG_VERSION.nupkg)
-    - nuget pack -Version %PKG_VERSION% -symbols Main\Loyc.Ecs.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Main\LeMP.nuspec
-    - nuget pack -Version %PKG_VERSION% -symbols Main\LLLPG.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\Loyc.Ecs.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LeMP.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LLLPG.nuspec
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
@@ -68,11 +68,10 @@ artifacts:
 # Push the NuGet packages whenever a git tag is pushed.
 deploy:
     - provider: NuGet
-      server:
       api_key:
           secure: Oa0lAafvnEc49af1ZoeqWCl2LgSf18vM389etR/CEwoaheeD37bJZ06ZIGgEaJto
       skip_symbols: false         # Whether to not publish symbol pkgs (src/pdb)
-      artifact: /.*\.nupkg/
+      artifact: /.*\.s?nupkg/
       on:
           branch: master          # Release from master branch only.
           appveyor_repo_tag: true # Deploy on tag push only.
