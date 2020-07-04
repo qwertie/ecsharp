@@ -16,7 +16,12 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
     <dependencies>
-      <dependency id="Loyc.Interfaces" version="$version$"/>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+      </group>
     </dependencies>
   </metadata>
   <files>

@@ -16,6 +16,8 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Interfaces Collections</tags>
     <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework=".NETStandard2.0" />
       <!--<dependency id="SampleDependency" version="1.0"/>-->
     </dependencies>
   </metadata>

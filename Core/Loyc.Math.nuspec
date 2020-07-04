@@ -14,8 +14,14 @@
     <copyright>Copyright 2019</copyright>
     <tags>Loyc Core Math Geometry FixedPoint</tags>
     <dependencies>
-      <dependency id="Loyc.Interfaces" version="$version$"/>
-      <dependency id="Loyc.Essentials" version="$version$"/>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
