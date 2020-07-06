@@ -27,12 +27,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsParserGrammar.les</DependentUpon>
     </Compile>
-    <None Include="Parser\EcsLexerGrammar.les">
+    <None Update="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=20</CustomToolNamespace>
       <LastGenOutput>EcsLexerGrammar.out.cs</LastGenOutput>
     </None>
-    <None Include="Parser\EcsParserGrammar.les">
+    <None Update="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=10</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.out.cs</LastGenOutput>
