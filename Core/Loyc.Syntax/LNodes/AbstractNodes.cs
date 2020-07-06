@@ -160,5 +160,15 @@ namespace Loyc.Syntax
 			else
 				return node.WithArgs(selector);
 		}
+		public override LNode SelectMany(Func<LNode, IReadOnlyList<LNode>> selector, ReplaceOpt options = ReplaceOpt.ProcessAttrs)
+		{
+			var node = (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
+			LNode target = node.Target, newTarget = LNode.List(selector(node.Target)).AsLNode(CodeSymbols.Splice);
+			LNodeList newArgs = Args.SmartSelectMany(selector);
+			if (newTarget != null && newTarget != target)
+				return node.With(newTarget, newArgs);
+			else
+				return node.WithArgs(newArgs);
+		}
 	}
 }

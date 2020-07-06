@@ -250,11 +250,11 @@ namespace Loyc.Collections
 			VListBlock<T>.MuRemoveFront(this, count);
 		}
 
-		internal void AddRangeBase(IList<T> items, bool isRWList)
+		internal void AddRangeBase(IReadOnlyList<T> items, bool isRWList)
 		{
 			InsertRangeAtDff(0, items, isRWList);
 		}
-		protected void InsertRangeAtDff(int distanceFromFront, IList<T> items, bool isRWList)
+		protected void InsertRangeAtDff(int distanceFromFront, IReadOnlyList<T> items, bool isRWList)
 		{
 			int count = items.Count; // (may throw NullReferenceException)
 			if ((uint)distanceFromFront > (uint)Count)

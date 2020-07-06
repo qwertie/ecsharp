@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.Collections.Impl;
@@ -411,7 +411,7 @@ namespace Loyc.Collections
 						int index = 0;
 						Func<int, int> select = n => ++index <= same ? n : n + 1000;
 						Func<int, bool> where = n => ++index <= same * 2 || ((pattern >> (index & 31)) & 1) == 0;
-						Func<int, IList<int>> selectMany = n =>
+						Func<int, IReadOnlyList<int>> selectMany = n =>
 						{
 							var @out = new List<int>();
 							if (index < same)

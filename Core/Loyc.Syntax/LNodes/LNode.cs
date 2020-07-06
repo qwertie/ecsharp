@@ -721,6 +721,10 @@ namespace Loyc.Syntax
 			Debug.Assert(AttrCount == 0);
 			return this;
 		}
+		public virtual LNode WithAttrs(Func<LNode, IReadOnlyList<LNode>> selector) {
+			Debug.Assert(AttrCount == 0);
+			return this;
+		}
 		public virtual LNode WithArgs(Func<LNode, Maybe<LNode>> selector) { Debug.Assert(!IsCall); return this; }
 		
 		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
@@ -941,7 +945,13 @@ namespace Loyc.Syntax
 			Debug.Assert(ArgCount == 0);
 			return (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
 		}
-		
+		public virtual LNode SelectMany(Func<LNode, IReadOnlyList<LNode>> selector, ReplaceOpt options = ReplaceOpt.ProcessAttrs)
+		{
+			Debug.Assert(ArgCount == 0);
+			return (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
+		}
+
+
 		[Flags]
 		public enum ReplaceOpt
 		{
@@ -979,29 +989,46 @@ namespace Loyc.Syntax
 		{
 			Maybe<LNode> newRoot;
 			if ((options & ReplaceOpt.ReplaceRoot) != 0)
+			{
 				newRoot = matcher(this);
-			else
-				newRoot = new Maybe<LNode>(null);
-
-			if (newRoot.HasValue) {
-				if (newRoot.Value != null)
+				if (!newRoot.HasValue)
+					return NoValue.Value;
+				else if (newRoot.Value != null)
 					return newRoot.Value;
+			}
 
-				Func<LNode, Maybe<LNode>> selector = null; selector = node =>
-				{
-					Maybe<LNode> @new = matcher(node);
-					if (@new.HasValue)
-						return @new.Value ?? node.Select(selector, options);
-					else
-						return @new;
-				};
-				return Select(selector, options);
-			} else
-				return NoValue.Value;
+			Func<LNode, Maybe<LNode>> selector = null; selector = node =>
+			{
+				Maybe<LNode> @new = matcher(node);
+				if (@new.HasValue)
+					return @new.Value ?? node.Select(selector, options);
+				else
+					return @new;
+			};
+			return Select(selector, options);
 		}
 		public LNode ReplaceRecursive(Func<LNode, LNode> matcher, ReplaceOpt options = ReplaceOpt.Default)
 		{
 			return ReplaceRecursive(node => new Maybe<LNode>(matcher(node)), options).Value;
+		}
+		public LNodeList RecursiveReplace(Func<LNode, LNodeList?> matcher, ReplaceOpt options = ReplaceOpt.Default)
+		{
+			if ((options & ReplaceOpt.ReplaceRoot) != 0)
+			{
+				LNodeList? newRoot = matcher(this);
+				if (newRoot != null)
+					return newRoot.Value;
+			}
+
+			Func<LNode, IReadOnlyList<LNode>> selector = null; selector = node =>
+			{
+				LNodeList? @new = matcher(node);
+				if (@new != null)
+					return @new.Value;
+				else
+					return LNode.List(node.SelectMany(selector, options));
+			};
+			return LNode.List(SelectMany(selector, options));
 		}
 	}
 }

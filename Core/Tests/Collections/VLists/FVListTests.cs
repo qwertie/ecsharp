@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.Collections.Impl;
@@ -45,7 +45,7 @@ namespace Loyc.Collections
 			ExpectList(list, 4, 2, 1);
 
 			// Try doubling list using a different overload of AddRange()
-			list.AddRange((IList<int>)list);
+			list.AddRange((IReadOnlyList<int>)list);
 			ExpectList(list, 4, 2, 1, 4, 2, 1);
 			list = list.WithoutFirst(3);
 			ExpectList(list, 4, 2, 1);

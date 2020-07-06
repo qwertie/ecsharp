@@ -64,6 +64,13 @@ namespace Loyc.Syntax
 				return this;
 			return WithAttrs(newAttrs);
 		}
+		public override LNode WithAttrs(Func<LNode, IReadOnlyList<LNode>> selector)
+		{
+			var newAttrs = Attrs.SmartSelectMany(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
 	}
 
 	/// <summary>A simple call node with a single literal argument. </summary>
@@ -183,6 +190,13 @@ namespace Loyc.Syntax
 		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
 		{
 			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
+		public override LNode WithAttrs(Func<LNode, IReadOnlyList<LNode>> selector)
+		{
+			var newAttrs = Attrs.SmartSelectMany(selector);
 			if (newAttrs == Attrs)
 				return this;
 			return WithAttrs(newAttrs);
@@ -334,6 +348,13 @@ namespace Loyc.Syntax
 				return this;
 			return WithAttrs(newAttrs);
 		}
+		public override LNode WithAttrs(Func<LNode, IReadOnlyList<LNode>> selector)
+		{
+			var newAttrs = Attrs.SmartSelectMany(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
 	}
 
 	internal class StdComplexCallNode : StdCallNode
@@ -394,6 +415,13 @@ namespace Loyc.Syntax
 		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
 		{
 			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
+		public override LNode WithAttrs(Func<LNode, IReadOnlyList<LNode>> selector)
+		{
+			var newAttrs = Attrs.SmartSelectMany(selector);
 			if (newAttrs == Attrs)
 				return this;
 			return WithAttrs(newAttrs);

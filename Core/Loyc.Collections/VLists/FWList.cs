@@ -1,4 +1,4 @@
-﻿/*
+/*
 	VList processing library: Copyright 2009 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
@@ -48,7 +48,7 @@ namespace Loyc.Collections
 			Block = new VListBlockOfTwo<T>(itemOne, itemZero, true);
 			LocalCount = 2;
 		}
-		public FWList(IList<T> list)
+		public FWList(IReadOnlyList<T> list)
 		{
 			AddRange(list);
 		}
@@ -61,8 +61,8 @@ namespace Loyc.Collections
 		// add the items in reverse order (the first item enumerated would have 
 		// the highest index). AddRange(IList<T>) adds list[list.Count-1] first.
 
-		public void AddRange(IList<T> list) { AddRangeBase(list, false); }
-		public void InsertRange(int index, IList<T> list) { InsertRangeAtDff(index, list, false); }
+		public void AddRange(IReadOnlyList<T> list) { AddRangeBase(list, false); }
+		public void InsertRange(int index, IReadOnlyList<T> list) { InsertRangeAtDff(index, list, false); }
 		public void RemoveRange(int index, int count)     { RemoveRangeBase(index, count); }
 
 		#endregion

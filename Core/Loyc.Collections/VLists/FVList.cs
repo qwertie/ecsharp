@@ -77,7 +77,7 @@ namespace Loyc.Collections
 			for (int i = array.Length-1; i > 0; i--)
 				Add(array[i]);
 		}
-		public FVList(IList<T> list)
+		public FVList(IReadOnlyList<T> list)
 		{
 			_block = null;
 			_localCount = 0;
@@ -166,12 +166,12 @@ namespace Loyc.Collections
 			this = VListBlock<T>.AddRange(_block, _localCount, list, excludeSubList);
 			return this;
 		}
-		public FVList<T> AddRange(IList<T> list)
+		public FVList<T> AddRange(IReadOnlyList<T> list)
 		{
 			this = VListBlock<T>.AddRange(_block, _localCount, list, false);
 			return this;
 		}
-		public FVList<T> InsertRange(int index, IList<T> list)
+		public FVList<T> InsertRange(int index, IReadOnlyList<T> list)
 		{
 			this = VListBlock<T>.InsertRange(_block, _localCount, list, index, false);
 			return this;
@@ -604,7 +604,7 @@ namespace Loyc.Collections
 		/// the existing list and the new one. This is useful for functional code
 		/// that often processes a list without modifying it at all.
 		/// </remarks>
-		public FVList<T> SmartSelectMany(Func<T, IList<T>> map)
+		public FVList<T> SmartSelectMany(Func<T, IReadOnlyList<T>> map)
 		{
 			if (_localCount == 0)
 				return this;

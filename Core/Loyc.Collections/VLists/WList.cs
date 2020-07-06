@@ -1,4 +1,4 @@
-﻿/*
+/*
 	VList processing library: Copyright 2009 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
@@ -54,8 +54,8 @@ namespace Loyc.Collections
 
 		public void AddRange(IEnumerable<T> items) { AddRange(items.GetEnumerator()); }
 		public new void AddRange(IEnumerator<T> items) { base.AddRange(items); }
-		public void AddRange(IList<T> list) { AddRangeBase(list, true); }
-		public void InsertRange(int index, IList<T> list) { InsertRangeAtDff(Count - index, list, true); }
+		public void AddRange(IReadOnlyList<T> list) { AddRangeBase(list, true); }
+		public void InsertRange(int index, IReadOnlyList<T> list) { InsertRangeAtDff(Count - index, list, true); }
 		public void RemoveRange(int index, int count)     { RemoveRangeBase(Count - (index + count), count); }
 
 		#endregion

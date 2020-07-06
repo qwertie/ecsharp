@@ -120,7 +120,7 @@ namespace Loyc.Syntax
 		/// the existing list and the new one. This is useful for functional code
 		/// that often processes a list without modifying it at all.
 		/// </remarks>
-		public LNodeList SmartSelectMany(Func<LNode, IList<LNode>> map) => new LNodeList(_list.SmartSelectMany(map));
+		public LNodeList SmartSelectMany(Func<LNode, IReadOnlyList<LNode>> map) => new LNodeList(_list.SmartSelectMany(map));
 
 		/// <summary>Filters the list, returning the same list if the filter function returns true for every item.</summary>
 		public LNodeList SmartWhere(Func<LNode, bool> filter) => new LNodeList(_list.SmartWhere(filter));
@@ -142,7 +142,7 @@ namespace Loyc.Syntax
 		public LNodeList AddRange(LNodeList list) => new LNodeList(_list.AddRange(list._list));
 		public LNodeList AddRange(IList<LNode> list) => new LNodeList(_list.AddRange(list));
 		public LNodeList AddRange(IEnumerable<LNode> list) => new LNodeList(_list.AddRange(list));
-		public LNodeList InsertRange(int index, IList<LNode> list) => new LNodeList(_list.InsertRange(index, list));
+		public LNodeList InsertRange(int index, IReadOnlyList<LNode> list) => new LNodeList(_list.InsertRange(index, list));
 		public LNodeList RemoveRange(int index, int count) => new LNodeList(_list.RemoveRange(index, count));
 		public LNode Pop() => _list.Pop();
 

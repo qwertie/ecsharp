@@ -239,6 +239,18 @@ namespace Loyc.Syntax
 			return null;
 		}
 
+		public static LNodeList RecursiveReplace(this LNodeList self, Func<LNode, LNodeList?> matcher, LNode.ReplaceOpt options = LNode.ReplaceOpt.Default)
+		{
+			return self.SmartSelectMany(n =>
+			{
+				var choice = matcher(n);
+				if (choice == null)
+					return n.RecursiveReplace(matcher, options);
+				else
+					return choice;
+			});
+		}
+
 		#region Parentheses management
 
 		public static bool IsParenthesizedExpr(this LNode node)

@@ -603,7 +603,7 @@ namespace Loyc.Syntax
 		public LNode Attr(params LNode[] attrsAndNode)
 		{
 			var node = attrsAndNode[attrsAndNode.Length - 1];
-			var newAttrs = node.Attrs.InsertRange(0, attrsAndNode.Slice(0, attrsAndNode.Length-1).AsList());
+			var newAttrs = node.Attrs.InsertRange(0, attrsAndNode.Slice(0, attrsAndNode.Length-1));
 			return node.WithAttrs(newAttrs);
 		}
 

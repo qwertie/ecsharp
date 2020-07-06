@@ -428,7 +428,7 @@ namespace Loyc.Collections
 		/// range.</exception>
 		/// <returns>The FVList containing the inserted items.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static FVList<T> InsertRange(VListBlock<T> self, int localCount, IList<T> items, int distanceFromFront, bool isRVList)
+		public static FVList<T> InsertRange(VListBlock<T> self, int localCount, IReadOnlyList<T> items, int distanceFromFront, bool isRVList)
 		{
 			if (self == null) {
 				Debug.Assert(localCount == 0);
@@ -514,7 +514,7 @@ namespace Loyc.Collections
 
 		/// <summary>Adds a list of items to an immutable FVList.</summary>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static FVList<T> AddRange(VListBlock<T> self, int localCount, IList<T> items, bool isRVList)
+		public static FVList<T> AddRange(VListBlock<T> self, int localCount, IReadOnlyList<T> items, bool isRVList)
 		{
 			int itemCount = items.Count;
 			if (isRVList) {
@@ -1089,14 +1089,14 @@ namespace Loyc.Collections
 		{
 			return @new.HasValue && EqualityComparer.Equals(@new.Value, old);
 		}
-		public virtual FVList<T> SelectMany(int _localCount, Func<T, IList<T>> map, bool isRList, WListProtected<T> forWList)
+		public virtual FVList<T> SelectMany(int _localCount, Func<T, IReadOnlyList<T>> map, bool isRList, WListProtected<T> forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
 			FVList<T> self = new FVList<T>(this, _localCount);
 			VList<T>.Enumerator e = new VList<T>.Enumerator(self);
 			FVList<T> output;
-			IList<T> outList;
+			IReadOnlyList<T> outList;
 			for (int commonTailLength = 0; ; commonTailLength++)
 			{
 				if (!e.MoveNext())
