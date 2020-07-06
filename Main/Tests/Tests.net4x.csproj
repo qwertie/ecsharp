@@ -109,6 +109,7 @@
     <None Include="PlayPen.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>PlayPen.out.cs</LastGenOutput>
+      <CustomToolNamespace>--set:foo="hello"</CustomToolNamespace>
     </None>
     <None Include="Samples.ecs">
       <Generator>LLLPG</Generator>

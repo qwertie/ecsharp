@@ -86,16 +86,22 @@ namespace LeMP
 			var options = c.ProcessArguments(argList, false, true);
 			if (options == null)
 				return; // error occurred, message should have printed already
-			if (argList.Count == 0) {
-				filter.Error(null, "No input files provided, stopping.");
-				return;
-			}
+			
 			if (!MaybeShowHelp(options, KnownOptions))
 			{
-				WarnAboutUnknownOptions(options, filter, 
+				WarnAboutUnknownOptions(options, filter,
 					KnownOptions.With("nologo", Pair.Create("", "")));
-				using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
-					c.Run();
+
+				if (argList.Count == 0)
+				{
+					filter.Error(null, "No input files provided, stopping.");
+					return;
+				}
+				else
+				{
+					using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+						c.Run();
+				}
 			}
 		}
 
@@ -383,21 +389,30 @@ namespace LeMP
 		bool SetPropertyHelper(string exprStr, bool quote)
 		{
 			LNode expr = (InLang ?? ParsingService.Default).ParseSingle(exprStr, Sink, ParsingMode.Expressions);
-			if (expr.Calls(CodeSymbols.Assign, 2) && !expr[0].IsCall) {
-				object key = expr[0].IsLiteral ? expr[0].Value : expr[0].Name;
-				LNode valueN = expr[1];
-				object value = valueN.Value;
-				if (quote)
-					value = valueN.Calls(CodeSymbols.Braces) ? valueN.Args.AsLNode(CodeSymbols.Splice) : valueN;
-				if (!(value is NoValue)) {
-					MacroProcessor.DefaultScopedProperties[key] = value;
-					return true;
+			if (expr.Calls(CodeSymbols.Assign, 2) && !expr[0].IsCall)
+			{
+				LNode keyNode = expr[0], valueNode = expr[1];
+				if (!keyNode.IsCall)
+				{
+					object key = keyNode.IsLiteral ? keyNode.Value : keyNode.Name;
+					if (quote)
+					{
+						valueNode = valueNode.Calls(CodeSymbols.Braces) ? valueNode.WithTarget(CodeSymbols.Splice) : valueNode;
+						MacroProcessor.DefaultScopedProperties[key] = valueNode;
+						return true;
+					}
+					else if (!valueNode.IsCall)
+					{
+						object value = valueNode.IsLiteral ? valueNode.Value : valueNode.Name.Name;
+						MacroProcessor.DefaultScopedProperties[key] = value;
+						return true;
+					}
 				}
 			}
 			if (quote)
 				Sink.Error("Command line", "--snippet: syntax error. Expected `key=code` where `key` is a literal or identifier with which to associate a code snippet.");
 			else
-				Sink.Error("Command line", "--set: syntax error. Expected `key=value` where `key` is a literal or identifier with which to associate a value.");
+				Sink.Error("Command line", "--set: syntax error. Expected `key=value` where `key` and `value` are literals or identifiers.");
 			return false;
 		}
 
