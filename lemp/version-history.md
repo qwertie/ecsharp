@@ -6,6 +6,20 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.8.1: July 6, 2020 ###
+
+EC# Parser/Printer:
+- Support `#nullable` directive and the C# interactive directives `#r`, `#load`, `#cls`, `#clear`, `#help`, and `#reset` in the parser. The printer currently supports only `#nullable`, `#r` and `#load`.
+
+Loyc.Ecs package:
+- Add `Loyc.Ecs.EcsCodeSymbols` class with a handful of symbols moved from `CodeSymbols` (the versions in `CodeSymbols` are marked `[Obsolete]`), plus a handful of new symbols
+
+LeMP:
+- Make it easy to run arbitrary C# code at compile time ([#112](https://github.com/qwertie/ecsharp/issues/112)) with the new macros `compileTime {...}`, `compileTimeAndRuntime {...}`, `precompute()` and `rawPrecompute(...)`.
+- Bug fix: `LeMP --help` didn't show help
+
+Note: including Roslyn has ballooned the Visual Studio extension to six times its earlier size. Also, the .NET 4.5 version of LeMP and LLLPG changed to use .NET 4.7.2, but the core Loyc.\* libraries still use .NET 4.5.
+
 ### v2.8.0: July 3, 2020 ###
 
 .NET 3.5 and .NET 4 versions have been dropped, leaving only .NET 4.5 and .NET Standard versions.
