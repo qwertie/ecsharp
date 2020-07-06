@@ -9,7 +9,7 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 using EP = Loyc.Ecs.EcsPrecedence;
 using System.IO;
 using Loyc.Syntax.Les;
@@ -446,7 +446,8 @@ namespace Loyc.Ecs
 
 		static readonly HashSet<Symbol> PreprocessorCollisions = SymbolSet(
 			"#if", "#else", "#elif", "#endif", "#define", "#undef",
-			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line"
+			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line",
+			"#nullable", "#r", "#load", "#cls", "#clear", "#reset", "#help"
 		);
 
 		internal static readonly HashSet<Symbol> OperatorIdentifiers = new HashSet<Symbol> {
@@ -874,7 +875,8 @@ namespace Loyc.Ecs
 				return false;
 			else {
 				if (AttributeKeywords.ContainsKey(node.Name))
-					return node.Name != S.NewAttribute || style >= AttrStyle.IsDefinition;
+					return style >= AttrStyle.AllowKeywordAttrs &&
+						(node.Name != S.NewAttribute || style >= AttrStyle.IsDefinition);
 				else
 					return style >= AttrStyle.AllowWordAttrs && (node.Name == S.This || 
 						!CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));

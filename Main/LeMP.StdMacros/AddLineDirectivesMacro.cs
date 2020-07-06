@@ -5,7 +5,7 @@ using System.Text;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 using Loyc.Ecs;
 
 namespace LeMP

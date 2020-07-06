@@ -11,6 +11,18 @@ namespace Loyc
 	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="FormatCore"/> and <see cref="Slice"/>.</summary>
 	public static partial class StringExt
 	{
+		/// <summary>Returns a version of the string without the specified prefix.
+		/// If the string does not have the specified prefix, it is returned unchanged.
+		/// The prefix check is case-sensitive.</summary>
+		public static string WithoutPrefix(this string s, string prefix) =>
+			s.StartsWith(prefix) ? s.Substring(prefix.Length) : s;
+
+		/// <summary>Returns a version of the string without the specified suffix.
+		/// If the string does not have the specified suffix, it is returned unchanged.
+		/// The suffix check is case-sensitive.</summary>
+		public static string WithoutSuffix(this string s, string suffix) =>
+			s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s;
+
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
 		/// <param name="s">String to split</param>
 		/// <param name="delimiter">Dividing character.</param>

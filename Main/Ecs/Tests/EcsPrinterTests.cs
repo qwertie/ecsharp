@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Syntax;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {

@@ -50,8 +50,8 @@ after_build:
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
-    - Bin\Release.NET45\Tests.exe 12345
-    - Bin\Release.NET45\Tests.exe 67
+    - Bin\Release\Tests.exe 12345
+    - Bin\Release\Tests.exe 67
 
 # "task for setting values in AssemblyInfo files during the build"
 assembly_info:

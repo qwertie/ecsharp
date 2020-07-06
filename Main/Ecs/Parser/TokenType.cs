@@ -84,7 +84,15 @@ namespace Loyc.Ecs.Parser
 		Out       = TokenKind.OtherKeyword + 57,
 		Stackalloc= TokenKind.OtherKeyword + 58,
 
-		PPif       = TokenKind.Other + 64,
+		// Note: the parser expects "preprocessor" directives that it understands to be "keywords"
+		CSIreference = TokenKind.OtherKeyword + 60, // #r directive (C# interactive)
+		CSIload    = TokenKind.OtherKeyword + 61,
+		CSIhelp    = TokenKind.OtherKeyword + 62,
+		CSIclear   = TokenKind.OtherKeyword + 63, // #cls and #clear directive (C# interactive)
+		CSIreset   = TokenKind.OtherKeyword + 64,
+		PPnullable = TokenKind.OtherKeyword + 65,
+
+		PPif = TokenKind.Other + 64,
 		PPelse     = TokenKind.Other + 65,
 		PPelif     = TokenKind.Other + 66,
 		PPendif    = TokenKind.Other + 67,
@@ -99,7 +107,7 @@ namespace Loyc.Ecs.Parser
 		PPpragma   = TokenKind.Other + 76,
 		PPignored  = TokenKind.Other + 77, // covers one or more lines ignored by #if/#elif/#else.
 
-		Dot          = TokenKind.Dot,     // .
+		Dot = TokenKind.Dot,     // .
 		PtrArrow     = TokenKind.Dot + 1, // ->
 		ColonColon   = TokenKind.Dot + 2, // ::
 		NullDot      = TokenKind.Dot + 3, // ?.

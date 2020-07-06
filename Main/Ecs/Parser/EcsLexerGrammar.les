@@ -10,7 +10,7 @@ import Loyc.Syntax.Lexing;
 namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
-	using S = CodeSymbols;
+	using S = EcsCodeSymbols;
 
 	@[#public, #partial] class EcsLexer
 	{
@@ -341,6 +341,13 @@ namespace Loyc.Ecs.Parser
 			/ &{AllowPP} "#note"      (EndId=>{_type=TT.PPnote;     } _value=RestOfPPLine)
 			/ &{AllowPP} "#region"    (EndId=>{_type=TT.PPregion;   } _value=RestOfPPLine)
 			/ &{AllowPP} "#endregion" (EndId=>{_type=TT.PPendregion;} _value=RestOfPPLine)
+			/ &{AllowPP} "#nullable"  (EndId=>{_type=TT.PPnullable;}  _value=RestOfPPLine)
+			/ &{AllowPP} "#r"         (EndId=>{_type=TT.CSIreference;} _value=RestOfPPLine)
+			/ &{AllowPP} "#load"      (EndId=>{_type=TT.CSIload;}     _value=RestOfPPLine)
+			/ &{AllowPP} "#cls"       (EndId=>{_type=TT.CSIclear;     _value = S.CsiCls;})
+			/ &{AllowPP} "#clear"     (EndId=>{_type=TT.CSIclear;     _value = S.CsiClear;})
+			/ &{AllowPP} "#help"      (EndId=>{_type=TT.CSIhelp;      _value = S.CsiHelp;})
+			/ &{AllowPP} "#reset"     (EndId=>{_type=TT.CSIreset;     _value = S.CsiReset;})
 			/ "var"                   (EndId=>{_type=TT.ContextualKeyword; _value = _var;})
 			/ "dynamic"               (EndId=>{_type=TT.ContextualKeyword; _value = _dynamic;})
 			/ "trait"                 (EndId=>{_type=TT.ContextualKeyword; _value = _trait;})

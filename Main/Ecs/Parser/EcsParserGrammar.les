@@ -25,7 +25,7 @@ import Loyc.Collections.Impl;
 namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
-	using S = CodeSymbols;
+	using S = EcsCodeSymbols;
 	using EP = EcsPrecedence;
 
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
@@ -1210,7 +1210,10 @@ namespace Loyc.Ecs.Parser
 			TT.Foreach  ; TT.Goto ; TT.Lock;
 			TT.Return   ; TT.Try  ; TT.Do; 
 			TT.Continue ; TT.Break; TT.Throw;
-			TT.If;
+			TT.If       ; 
+			// C# interactive directives and other non-trivia directives
+			TT.PPnullable; TT.CSIreference; TT.CSIload;
+			TT.CSIhelp; TT.CSIclear; TT.CSIreset
 		});
 
 		fn DetectStatementCategoryAndAddWordAttributes(out wordAttrCount::int, ref attrs::LNodeList, mode::DetectionMode)::StmtCat
@@ -1284,6 +1287,8 @@ namespace Loyc.Ecs.Parser
 			|	r=LockStmt(startIndex)                  
 			|	r=FixedStmt(startIndex)                 
 			|	r=TryStmt(startIndex)                   
+			|	r=PPNullaryDirective(startIndex)
+			|	r=PPStringDirective(startIndex)
 			|	error {r = Error("Bug: Keyword statement expected, but got '{0}'", CurrentTokenText());}
 				ScanToEndOfStmt
 			)
@@ -2021,6 +2026,27 @@ namespace Loyc.Ecs.Parser
 					Error(result, "'try': At least one 'catch' or 'finally' clause is required");
 				};
 				return result;
+			}
+		};
+
+		// C# interactive directives -------------------------------------------
+
+		@[private] rule PPNullaryDirective(startIndex::int)::LNode @{
+			t:=(TT.CSIhelp|TT.CSIclear|TT.CSIreset)
+			{return F.Call(t, startIndex, t.EndIndex);}
+		};
+
+		@[private] rule PPStringDirective(startIndex::int)::LNode @{
+			t:=(TT.PPnullable|TT.CSIreference|TT.CSIload)
+			{
+				var target = S.PPNullable;
+				if (t.Type() == TT.CSIload) {
+					target = S.CsiLoad;
+				} else if (t.Type() == TT.CSIreference) {
+					target = S.CsiReference;
+				};
+				var value = t.Value.ToString().WithoutPrefix(" ");
+				return F.Trivia(target, value, startIndex, t.EndIndex);
 			}
 		};
 

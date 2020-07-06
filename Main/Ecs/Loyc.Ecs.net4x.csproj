@@ -90,6 +90,7 @@
     <Compile Include="..\..\Core\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="EcsCodeSymbols.cs" />
     <Compile Include="Parser\EcsLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -7,7 +7,7 @@ using Loyc.Ecs.Parser;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {

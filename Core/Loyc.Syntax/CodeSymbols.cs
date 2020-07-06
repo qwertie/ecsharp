@@ -8,7 +8,7 @@ using Loyc.Utilities;
 namespace Loyc.Syntax
 {
 	/// <summary>
-	/// A list of common symbols that have special meaning somewhere in Loyc or EC#:
+	/// A list of common symbols that, by convention, have special meaning:
 	/// operators, built-in data types, keywords, trivia, etc.
 	/// </summary>
 	/// <remarks>
@@ -67,15 +67,18 @@ namespace Loyc.Syntax
 		public static readonly Symbol IndexBracks = GSymbol.Get("'suf[]"); //!< "'suf[]" indexing operator
 																		   //!< foo[1, A] <=> @`'suf[]`(foo, 1, A), but in a type context, Foo[] <=> @'of(@`[]`, Foo)
 		public static readonly Symbol Array = GSymbol.Get("'[]");  //!< Used for list/array literals. Not used for attributes.
-		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`#[]`)
+		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (`'[]`)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("'[,]"); //!< int[,] <=> @'of(@`#[,]`, int)
 
 		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
+		[Obsolete("Use EcsCodeSymbols.Async instead (Loyc.Ecs package)")]
 		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
 		                              // async is a normal contextual attribute so it needs no special parser support.
+		[Obsolete("Use EcsCodeSymbols.Await instead (Loyc.Ecs package)")]
 		public static readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
 		public static readonly Symbol NullIndexBracks = GSymbol.Get("'?[]"); //!< "?[]" indexing operator of C# 6
 		                              //!< @`?[]`(foo, #(1, A)) <=> foo?[1, A] (TENTATIVE, may be changed later)
+		[Obsolete("Use EcsCodeSymbols.InitializerAssignment instead (Loyc.Ecs package)")]
 		public static readonly Symbol InitializerAssignment = GSymbol.Get("'[]="); //!< @`[]=`(0, 1, x) <=> [0, 1]=x
 		                              // (TENTATIVE, and only supported in 'new' initializer blocks)
 		
@@ -89,9 +92,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol AltList = GSymbol.Get("#");
 		public static readonly Symbol _HashMark = GSymbol.Get("#");
 
-		public static readonly Symbol QuestionMark = GSymbol.Get("'?");    //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> @'of(@`?`, int)
+		public static readonly Symbol QuestionMark = GSymbol.Get("'?");    //!< "'?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> @'of(@`'?`, int)
 		public static readonly Symbol Of = GSymbol.Get("'of");             //!< "'of" for giving generic arguments. @'of(List,int) <=> List<int>
-		public static readonly Symbol Dot = GSymbol.Get("'.");             //!< "." binary dot operator, e.g. string.Join
+		public static readonly Symbol Dot = GSymbol.Get("'.");             //!< "'." binary dot operator, e.g. string.Join
 		public static readonly Symbol NamedArg = GSymbol.Get("'::=");      //!< "'::=" Named argument e.g. `'::=`(x, 0) <=> x: 0
 		public static readonly Symbol New = GSymbol.Get("'new");           //!< "'new": new Foo(x) { a } <=> @`'new`(Foo(x), a);  new[] { ... } <=> @`'new`(@`[]`(), ...)
 		public static readonly Symbol NewAttribute = GSymbol.Get("#new");  //!< "#new": public new void Foo() {} <=> [#public, #new] #fn(#void, Foo, #(), {})
@@ -103,28 +106,28 @@ namespace Loyc.Syntax
 		public static readonly Symbol As = GSymbol.Get("'as");             //!< "'as":   @'as(x,string) <=> x as string <=> x(as string)
 		public static readonly Symbol Is = GSymbol.Get("'is");             //!< "'is":   @'is(x,string) <=> x is string, @'is(x,#var(Foo,v),#(y,z)) <=> x is Foo v(y, z)
 		public static readonly Symbol Cast = GSymbol.Get("'cast");         //!< "'cast": @'cast(x,int) <=> (int)x <=> x(-> int)
-		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
+		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "'??":    a ?? b <=> @`'??`(a, b)
 		[Obsolete("This was renamed to RightArrow")]
-		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
-		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "::" Scope resolution operator in many languages
-		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "=>" used to define an anonymous function
+		public static readonly Symbol PtrArrow = GSymbol.Get("'->");
+		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "'::" Scope resolution operator in many languages
+		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "'=>" used to define an anonymous function
 		public static readonly Symbol Default = GSymbol.Get("'default");   //!< "'default" for the default(T) pseudofunction in C#
 		public static readonly Symbol IS = GSymbol.Get("'IS");             //!< Backquoted suffixes in LES3 use this: x`bytes` <=> `'IS`(x, bytes)
 
 		// Compound assignment
-		public static readonly Symbol NullCoalesceAssign = GSymbol.Get("'??="); //!< "??=": `a ??= b` means `a = a ?? b`
-		public static readonly Symbol MulAssign = GSymbol.Get("'*=");           //!< "*=" multiply-and-set operator
-		public static readonly Symbol DivAssign = GSymbol.Get("'/=");           //!< "/=" divide-and-set operator
-		public static readonly Symbol ModAssign = GSymbol.Get("'%=");           //!< "%=" set-to-remainder operator
-		public static readonly Symbol SubAssign = GSymbol.Get("'-=");           //!< "-=" subtract-and-set operator
-		public static readonly Symbol AddAssign = GSymbol.Get("'+=");           //!< "+=" add-and-set operator
-		public static readonly Symbol ConcatAssign = GSymbol.Get("'~=");        //!< "~=" concatenate-and-set operator
-		public static readonly Symbol ShrAssign = GSymbol.Get("'>>=");          //!< ">>=" shift-right-by operator
-		public static readonly Symbol ShlAssign = GSymbol.Get("'<<=");          //!< "<<=" shift-left-by operator
-		public static readonly Symbol ExpAssign = GSymbol.Get("'**=");          //!< "**=" raise-to-exponent-and-set operator
-		public static readonly Symbol XorBitsAssign = GSymbol.Get("'^=");       //!< "^=" bitwise-xor-by operator
-		public static readonly Symbol AndBitsAssign = GSymbol.Get("'&=");       //!< "&=" bitwise-and-with operator
-		public static readonly Symbol OrBitsAssign = GSymbol.Get("'|=");        //!< "|=" set-bits operator
+		public static readonly Symbol NullCoalesceAssign = GSymbol.Get("'??="); //!< "'??=": `a ??= b` means `a = a ?? b`
+		public static readonly Symbol MulAssign = GSymbol.Get("'*=");           //!< "'*=" multiply-and-set operator
+		public static readonly Symbol DivAssign = GSymbol.Get("'/=");           //!< "'/=" divide-and-set operator
+		public static readonly Symbol ModAssign = GSymbol.Get("'%=");           //!< "'%=" set-to-remainder operator
+		public static readonly Symbol SubAssign = GSymbol.Get("'-=");           //!< "'-=" subtract-and-set operator
+		public static readonly Symbol AddAssign = GSymbol.Get("'+=");           //!< "'+=" add-and-set operator
+		public static readonly Symbol ConcatAssign = GSymbol.Get("'~=");        //!< "'~=" concatenate-and-set operator
+		public static readonly Symbol ShrAssign = GSymbol.Get("'>>=");          //!< "'>>=" shift-right-by operator
+		public static readonly Symbol ShlAssign = GSymbol.Get("'<<=");          //!< "'<<=" shift-left-by operator
+		public static readonly Symbol ExpAssign = GSymbol.Get("'**=");          //!< "'**=" raise-to-exponent-and-set operator
+		public static readonly Symbol XorBitsAssign = GSymbol.Get("'^=");       //!< "'^=" bitwise-xor-by operator
+		public static readonly Symbol AndBitsAssign = GSymbol.Get("'&=");       //!< "'&=" bitwise-and-with operator
+		public static readonly Symbol OrBitsAssign = GSymbol.Get("'|=");        //!< "'|=" set-bits operator
 
 		// Executable statements
 		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(c,x,y) and #if(c,x); I wanted it to be the conditional operator too, but the semantics are a bit different
@@ -187,7 +190,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol ArrayInit = GSymbol.Get("#arrayInit"); //!< C# e.g. int[] x = {1,2} <=> int[] x = #arrayInit(1, 2)
 
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)
-		public static readonly Symbol Backslash = GSymbol.Get(@"'\");      //!< "\" operator
+		public static readonly Symbol Backslash = GSymbol.Get(@"'\");      //!< "'\" operator
+
 		[Obsolete("Use PreBangBang or SufBangBang")]
 		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");    //!< "'!!" operator
 		public static readonly Symbol PreBangBang = GSymbol.Get(@"'!!");   //!< "'!!" operator
@@ -353,7 +357,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("%useOperatorKeyword"); //!< "%useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([`%useOperatorKeyword`]`'+`)(a, b)
 		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("%forwardedProperty");   //!< "%forwardedProperty" e.g. get ==> _x; <=> [`%forwardedProperty`] get(`'==>`(_x));
 		public static readonly Symbol TriviaRawText = GSymbol.Get("%rawText");                 //!< "%rawText" - Arbitrary text to be emitted unchanged, e.g. `[`%rawText`("cue!")] q;` is printed as `cue!q;`.
+		[Obsolete("Use EcsCodeSymbols.TriviaCsRawText instead (Loyc.Ecs package)")]
 		public static readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
+		[Obsolete("Use EcsCodeSymbols.TriviaCsPPRawText instead (Loyc.Ecs package)")]
 		public static readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
 		
 		/// "%wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
@@ -372,7 +378,9 @@ namespace Loyc.Syntax
 		/// the argument is converted to a string and printed out by EcsNodePrinter 
 		/// without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
+		[Obsolete("Use EcsCodeSymbols.CsRawText instead (Loyc.Ecs package)")]
 		public static readonly Symbol CsRawText = GSymbol.Get("#C#RawText");
+		[Obsolete("Use EcsCodeSymbols.CsPPRawText instead (Loyc.Ecs package)")]
 		public static readonly Symbol CsPPRawText = GSymbol.Get("#C#PPRawText"); //!< "#C#PPRawText" - Preprocessor raw text: always printed on separate line
 
 		// NodeStyle.Alternate is used for: @"verbatim strings", 0xhex numbers, 

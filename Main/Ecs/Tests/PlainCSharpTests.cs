@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
 using Loyc.Syntax;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {
@@ -936,6 +936,52 @@ namespace Loyc.Ecs.Tests
 				"  get => _foo;\n"+
 				"  set => _foo = value ?? throw new Exception();\n"+
 				"}", stmt);
+		}
+
+		[Test]
+		public void CSharpNullable()
+		{
+			Stmt("#nullable enable", F.Call(S.PPNullable, F.Literal("enable")));
+			Stmt("int x;\n" +
+				"#nullable disable", F.Splice(
+				F.Var(F.Int32, x),
+				F.Call(S.PPNullable, F.Literal("disable"))));
+			Stmt("#nullable restore\n" +
+				"int x;", F.Splice(
+				F.Call(S.PPNullable, F.Literal("restore")),
+				F.Var(F.Int32, x)));
+
+			// Try to trick the printer into bad output
+			Stmt("@#r(x);", F.Call("#r", x));
+			Stmt("@#load(x);", F.Call("#load", x));
+			// Try to trick the parser into failing
+			// (#nullable is a contextual keyword - it must appear at beginning of a line)
+			Stmt("int #nullable;", F.Var(F.Int32, _("#nullable")), mode: Mode.ParserTest);
+		}
+
+		[Test]
+		public void CSharpInteractiveDirectives()
+		{
+			LNode code = F.Splice(
+				F.Var(F.Int32, x),
+				F.Call(S.CsiReference, F.Literal("\"C:\\Test\"")),
+				F.Call(S.CsiLoad, F.Literal("\"D:\\test\"")),
+				F.Assign(x, zero));
+			Stmt("int x;\n#r \"C:\\Test\"\n#load \"D:\\test\"\nx = 0;", code);
+			Stmt("int x;\n#r\"C:\\Test\"\n#load\"D:\\test\"\nx = 0;", code, mode: Mode.ParserTest);
+			
+			// Try to trick the printer into bad output
+			Stmt("@#r(x);", F.Call("#r", x));
+			Stmt("@#load(x);", F.Call("#load", x));
+			// Try to trick the parser into failing
+			code = F.Var(F.Int32, x, F.Call(S.Add, _("#r"), _("#load")));
+			Stmt("int x = @#r + @#load;", code);
+			Stmt("int x = #r + #load;", code, mode: Mode.ParserTest);
+
+			// TODO: support these in the printer
+			code = F.Splice(F.Var(F.Int32, x),
+				F.Call(S.CsiCls), F.Call(S.CsiClear), F.Call(S.CsiHelp), F.Call(S.CsiReset));
+			Stmt("int x;\n#cls\n#clear\n#help\n#reset", code, mode: Mode.ParserTest);
 		}
 	}
 }

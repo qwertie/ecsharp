@@ -7,7 +7,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
 {
-	using S = Loyc.Syntax.CodeSymbols;
+	using S = Loyc.Ecs.EcsCodeSymbols;
 	using System.Diagnostics;
 	using Loyc.Utilities;
 	using Loyc.Syntax;

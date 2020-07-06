@@ -10,7 +10,7 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 using EP = Loyc.Ecs.EcsPrecedence;
 using Loyc.Syntax.Lexing;
 
@@ -69,22 +69,25 @@ namespace Loyc.Ecs
 		{
 			// Build a dictionary of printers for each operator name.
 			var d = new Dictionary<Symbol, StatementPrinter>();
-			AddAll(d, SpaceDefinitionStmts, "AutoPrintSpaceDefinition");
-			AddAll(d, OtherDefinitionStmts, "AutoPrintMethodDefinition");
-			d[S.Var]      = OpenDelegate<StatementPrinter>("AutoPrintVarDecl");
-			d[S.Event]    = OpenDelegate<StatementPrinter>("AutoPrintEvent");
-			d[S.Property] = OpenDelegate<StatementPrinter>("AutoPrintProperty");
-			AddAll(d, SimpleStmts, "AutoPrintSimpleStmt");
-			AddAll(d, TwoArgBlockStmts, "AutoPrintTwoArgBlockStmt");
-			AddAll(d, OtherBlockStmts, "AutoPrintOtherBlockStmt");
-			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
-			d[S.Braces] = OpenDelegate<StatementPrinter>("AutoPrintBlockOfStmts");
-			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
-			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
-			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
-			d[S.CsRawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
-			d[S.CsPPRawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
-			d[S.Assembly] = OpenDelegate<StatementPrinter>("AutoPrintAssemblyAttribute");
+			AddAll(d, SpaceDefinitionStmts, nameof(AutoPrintSpaceDefinition));
+			AddAll(d, OtherDefinitionStmts, nameof(AutoPrintMethodDefinition));
+			d[S.Var]      = OpenDelegate<StatementPrinter>(nameof(AutoPrintVarDecl));
+			d[S.Event]    = OpenDelegate<StatementPrinter>(nameof(AutoPrintEvent));
+			d[S.Property] = OpenDelegate<StatementPrinter>(nameof(AutoPrintProperty));
+			AddAll(d, SimpleStmts, nameof(AutoPrintSimpleStmt));
+			AddAll(d, TwoArgBlockStmts, nameof(AutoPrintTwoArgBlockStmt));
+			AddAll(d, OtherBlockStmts, nameof(AutoPrintOtherBlockStmt));
+			AddAll(d, LabelStmts, nameof(AutoPrintLabelStmt));
+			d[S.Braces] = OpenDelegate<StatementPrinter>(nameof(AutoPrintBlockOfStmts));
+			d[S.Result] = OpenDelegate<StatementPrinter>(nameof(AutoPrintResult));
+			d[S.Missing] = OpenDelegate<StatementPrinter>(nameof(AutoPrintMissingStmt));
+			d[S.RawText] = OpenDelegate<StatementPrinter>(nameof(AutoPrintRawText));
+			d[S.CsRawText] = OpenDelegate<StatementPrinter>(nameof(AutoPrintRawText));
+			d[S.CsPPRawText] = OpenDelegate<StatementPrinter>(nameof(AutoPrintRawText));
+			d[S.Assembly] = OpenDelegate<StatementPrinter>(nameof(AutoPrintAssemblyAttribute));
+			d[S.PPNullable] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
+			d[S.CsiReference] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
+			d[S.CsiLoad] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -748,6 +751,25 @@ namespace Loyc.Ecs
 			PrintReturnThrowEtc(usingStatic != null ? _using_static : _name, _n.Args[0, null]);
 
 			return SPResult.NeedSemicolon;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintPPStringDirective()
+		{
+			// S.CsiReference, S.CsiLoad.
+			if (_n.ArgCount != 1 || !(_n[0].Value is string value) || value.Contains('\n'))
+				return SPResult.Fail;
+
+			G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs));
+			if (_n.Name == S.CsiReference)
+				_out.Write("#r", true);
+			else
+				_out.Write(_n.Name.Name.Substring(1), true);
+			_out.Space();
+			_out.Write(value, false);
+			_out.Newline(pending: true);
+
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		readonly Symbol _using_static = (Symbol)"using static";

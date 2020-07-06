@@ -7,7 +7,7 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 using EP = Loyc.Ecs.EcsPrecedence;
 
 namespace Loyc.Ecs
@@ -109,19 +109,19 @@ namespace Loyc.Ecs
 			var d = new Dictionary<Symbol, Pair<Precedence, OperatorPrinter>>();
 			
 			// Create open delegates to the printers for various kinds of operators
-			var prefix = OpenDelegate<OperatorPrinter>("AutoPrintPrefixUnaryOperator");
-			var infix = OpenDelegate<OperatorPrinter>("AutoPrintInfixBinaryOperator");
-			var both = OpenDelegate<OperatorPrinter>("AutoPrintPrefixOrInfixOperator");
-			var throwEtc = OpenDelegate<OperatorPrinter>("AutoPrintPrefixReturnThrowEtc");
-			var cast = OpenDelegate<OperatorPrinter>("AutoPrintCastOperator");
-			var isOp = OpenDelegate<OperatorPrinter>("AutoPrintIsOperator");
-			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
-			var @new = OpenDelegate<OperatorPrinter>("AutoPrintNewOperator");
-			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
-			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
-			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
-			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>("AutoPrintOfOperator")));
-			d.Add(S.Linq, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>("AutoPrintLinqExpression")));
+			var prefix = OpenDelegate<OperatorPrinter>(nameof(AutoPrintPrefixUnaryOperator));
+			var infix = OpenDelegate<OperatorPrinter>(nameof(AutoPrintInfixBinaryOperator));
+			var both = OpenDelegate<OperatorPrinter>(nameof(AutoPrintPrefixOrInfixOperator));
+			var throwEtc = OpenDelegate<OperatorPrinter>(nameof(AutoPrintPrefixReturnThrowEtc));
+			var cast = OpenDelegate<OperatorPrinter>(nameof(AutoPrintCastOperator));
+			var isOp = OpenDelegate<OperatorPrinter>(nameof(AutoPrintIsOperator));
+			var list = OpenDelegate<OperatorPrinter>(nameof(AutoPrintListOperator));
+			var @new = OpenDelegate<OperatorPrinter>(nameof(AutoPrintNewOperator));
+			var anonfn = OpenDelegate<OperatorPrinter>(nameof(AutoPrintAnonymousFunction));
+			var other = OpenDelegate<OperatorPrinter>(nameof(AutoPrintOtherSpecialOperator));
+			var call = OpenDelegate<OperatorPrinter>(nameof(AutoPrintCallOperator));
+			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>(nameof(AutoPrintOfOperator))));
+			d.Add(S.Linq, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>(nameof(AutoPrintLinqExpression))));
 
 			foreach (var p in PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
@@ -147,10 +147,10 @@ namespace Loyc.Ecs
 			foreach (var op in CallOperators)
 				d.Add(op, Pair.Create(Precedence.MaxValue, call));
 
-			d[S.RawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>("PrintRawText"));
-			d[S.CsRawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>("PrintRawText"));
-			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintNamedArg"));
-			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintPropDeclExpr"));
+			d[S.RawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
+			d[S.CsRawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
+			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNamedArg)));
+			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPropDeclExpr)));
 
 			return d;
 		}
@@ -183,7 +183,7 @@ namespace Loyc.Ecs
 		{
 			if (!_n.IsCall)
 			{
-				PrintPurePrefixNotation(skipAttrs: false);
+				PrintInPrefixNotation(skipAttrs: false);
 			}
 			else
 			{
@@ -209,7 +209,7 @@ namespace Loyc.Ecs
 
 				NodeStyle style = _n.BaseStyle;
 				if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
-					PrintPurePrefixNotation(skipAttrs: false);
+					PrintInPrefixNotation(skipAttrs: false);
 				else {
 					int inParens;
 					if (IsVariableDecl(false, true)) {
@@ -229,7 +229,7 @@ namespace Loyc.Ecs
 							if (style == NodeStyle.Special || _name == S.SwitchStmt)
 								if (AutoPrintMacroBlockCall(true))
 									break;
-							PrintPurePrefixNotation(skipAttrs: true);
+							PrintInPrefixNotation(skipAttrs: true);
 						} while (false);
 					}
 					WriteCloseParens(inParens);
@@ -904,11 +904,11 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		internal void PrintPurePrefixNotation(bool skipAttrs = false)
+		internal void PrintInPrefixNotation(bool skipAttrs = false)
 		{
 			int inParens = 0;
 			if (!skipAttrs)
-				inParens = PrintAttrs(AttrStyle.NoKeywordAttrs);
+				inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
 
 			if (!_n.IsCall)
 				PrintSimpleIdentOrLiteral();
