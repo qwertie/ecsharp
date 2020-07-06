@@ -12,7 +12,6 @@ namespace Loyc.Syntax
 	/// SourcePos.PosInLine => ILineAndColumn.Column during upgrades</summary>
 	public static class SourcePosIsObsolete
 	{
-		
 		[Obsolete("The name has changed to \"Column\"")]
 		public static int PosInLine(this ILineAndColumn c) => c.Column;
 	}

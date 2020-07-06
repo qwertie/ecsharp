@@ -25,11 +25,11 @@
     <ProjectReference Include="..\LLLPG\LLLPG.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PlayPen.ecs">
+    <None Update="PlayPen.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>PlayPen.out.cs</LastGenOutput>
     </None>
-    <None Include="Samples.ecs">
+    <None Update="Samples.ecs">
       <Generator>LLLPG</Generator>
       <LastGenOutput>Samples.out.cs</LastGenOutput>
     </None>

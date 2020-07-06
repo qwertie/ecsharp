@@ -34,7 +34,7 @@ namespace LeMP.Les3.To.CSharp
 	[ContainsMacros]
 	public static partial class Macros
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
 		static readonly HashSet<string> _aliasedMacros = new HashSet<string>(new[] {
 			// Basic types

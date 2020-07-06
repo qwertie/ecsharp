@@ -431,7 +431,7 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"includeFileText(""Filename"")", 
-			 "Reads a UTF-8 text file into a string literal. Newlines become '\n'."
+			 "Reads a UTF-8 text file into a string literal. Newlines become '\\n'."
 			+"The single argument is macro-preprocessed.")]
 		public static LNode includeFileText(LNode node, IMacroContext context)
 		{

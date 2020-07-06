@@ -98,14 +98,16 @@ namespace LeMP
 		/// <summary>Runs the macro processor on the specified node(s).</summary>
 		/// <param name="input">The node or node list to process.</param>
 		/// <param name="asRoot">If false, the nodes are treated as children of the 
-		/// current node (using the current list of ancestors as a basis); if true,
-		/// the list of parent nodes is cleared.</param>
+		///   current node (using the current list of ancestors as a basis); if true,
+		///   the list of parent nodes is cleared.</param>
 		/// <param name="resetOpenNamespaces">If false, the set of open namespaces
-		/// stays the same; if true it is cleared to the set of pre-opened 
-		/// namespaces (<see cref="MacroProcessor.PreOpenedNamespaces"/>) and
-		/// macros defined with <see cref="RegisterMacro"/> are forgotten.</param>
+		///   stays the same; if true it is cleared to the set of pre-opened 
+		///   namespaces (<see cref="MacroProcessor.PreOpenedNamespaces"/>) and
+		///   macros defined with <see cref="RegisterMacro"/> are forgotten.</param>
 		/// <param name="resetProperties">If true, <see cref="ScopedProperties"/>
-		/// is reset to contain only predefined properties.</param>
+		///   is reset to contain only predefined properties.</param>
+		/// <param name="areAttributes">This parameter controls the value of 
+		///   <see cref="IsAttribute"/> while the items in the list are processed.</param>
 		/// <remarks>The node(s)</remarks>
 		LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
 		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool, bool)"/>
