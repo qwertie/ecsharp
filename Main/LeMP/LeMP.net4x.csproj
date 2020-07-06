@@ -60,6 +60,7 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="MacroProcessor.cs" />
     <Compile Include="MacroProcessorTask.cs" />
+    <Compile Include="Tests\TestCompileTimeMacros.cs" />
     <Compile Include="Tests\PreludeMacroTests_Les2.cs" />
     <Compile Include="Tests\PreludeMacroTests_Les3.cs" />
     <Compile Include="Tests\TestStaticDeconstructMacro.cs" />

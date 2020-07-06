@@ -458,13 +458,13 @@
             Returns a sequence of integers that represent the locations where a given item appears in the list.
             </summary>
         </member>
-        <member name="M:Loyc.Collections.AListBase`2.LinearScanFor(`1,System.Int32,System.Collections.Generic.EqualityComparer{`1})">
+        <member name="M:Loyc.Collections.AListBase`2.FirstIndexOf(`1,System.Int32,System.Collections.Generic.EqualityComparer{`1})">
             <summary>Scans the list starting at startIndex and going upward, and 
             returns the index of an item that matches the first argument.</summary>
             <param name="item">Item to find</param>
             <param name="startIndex">Index of first element against which to compare the item.</param>
             <param name="comparer">Comparison object (e.g. <see cref="P:System.Collections.Generic.EqualityComparer`1.Default"/>.)</param>
-            <returns>Index of the matching item, or -1 if no matching item was found.</returns>
+            <returns>Index of the matching item, or null if no matching item was found.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">when startIndex > Count</exception>
         </member>
         <member name="P:Loyc.Collections.AListBase`2.Enumerator.CurrentIndex">
@@ -1132,6 +1132,8 @@
         </member>
         <member name="F:Loyc.Collections.Impl.BListInner`2._highestKey">
             <summary>Stores the highest key that applies to the node with the same index.</summary>
+            <remarks>The highest key of the rightmost node is not tracked (can't remember 
+            why not - maybe just because it is traditional not to track it in B+ trees.)</remarks>
         </member>
         <member name="M:Loyc.Collections.Impl.BListInner`2.BinarySearchK(`0,System.Func{`0,`0,System.Int32})">
             <summary>Performs a binary search for a key.</summary>
@@ -1214,7 +1216,7 @@
             believes that any items exist in leaf nodes, it means that there is 
             a bookkeeping error somewhere.</param>
             <param name="list">The list that changed.</param>
-            <param name="newRoot">The new root (null if the tree is cleared).</param>
+            <param name="root">The new root (null if the tree is cleared).</param>
         </member>
         <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.ItemAdded(`1,Loyc.Collections.Impl.AListLeafBase{`0,`1})">
             <summary>Called when an item is added to a leaf node.</summary>
@@ -2110,7 +2112,7 @@
             <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
             <returns>True if the pair was added, false if it was retrieved.</returns>
         </member>
-        <member name="M:Loyc.Collections.BDictionary`2.SetAndGet(`0@,`1@)">
+        <member name="M:Loyc.Collections.BDictionary`2.GetAndSet(`0@,`1@)">
             <summary>Associates the specified value with the specified key, while getting the old value if one exists.</summary>
             <param name="key">Key to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old key instance.</param>
             <param name="value">Value to search for or add. If this parameter is passed by reference and a matching pair existed already, this method sets it to the old value.</param>
@@ -2346,9 +2348,18 @@
         <member name="T:Loyc.Collections.BMultiMap`2">
             <summary>
             An sorted dictionary that allows multiple values to be associated with a
-            single key. Note: both keys and values must be comparable.
+            single key.
             </summary>
             <remarks>
+            The keys must be comparable. By default, the values must also be comparable,
+            but if the values do not support IComparable, you can set the comparison 
+            function to <c>(a,b) => 0</c> to pretend all values are equal. A shorthand 
+            way to do this is to call the constructor with parameters of (null, null) 
+            which means "use default key comparison and treat all values as equal". If 
+            you do this, you should avoid calling this[key].Remove(value) or 
+            this[key].Contains(value), or the Remove method in the base class, since 
+            these methods will treat any value as a match.
+            <para/>
             An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
             about the BList classes is available.
             <para/>
@@ -2369,6 +2380,19 @@
             efficiency of a B+ tree and capabilities of a <see cref="T:Loyc.Collections.AListBase`2"/>, 
             although it tends to be slower than <see cref="T:System.Collections.Generic.Dictionary`2"/>.
             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.BMultiMap`2.#ctor(System.Func{`0,`0,System.Int32})">
+            <summary>Initializes the map with the specified key-comparer and default value comparer.
+            This constructor can only be used if values are comparible with <see cref="T:System.IComparable`1"/>.</summary>
+            <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
+        </member>
+        <member name="M:Loyc.Collections.BMultiMap`2.#ctor(System.Func{`0,`0,System.Int32},System.Func{`1,`1,System.Int32})">
+            <summary>Initializes the map with the specified key and value comparers.</summary>
+            <param name="compareKeys">Key comparer, or null to use the default key comparer.</param>
+            <param name="compareValues">Value comparer, or null to pretend all values are equal.
+            It is useful to use null for this parameter when V does not implement IComparable.
+            However, keep in mind that the Contains() and Remove() methods won't work in
+            the normal way when all values are considered equal!</param>
         </member>
         <member name="M:Loyc.Collections.BMultiMap`2.AddIfUnique(`0,`1)">
             <summary>Adds a key-value pair if there is not already a pair that compares equal to the new one.</summary>
@@ -3178,7 +3202,7 @@
             <ul>
             <li>MMap allows null as a key (assuming it is based on the second version
             of <see cref="T:Loyc.Collections.Impl.InternalSet`1"/>).</li>
-            <li><see cref="M:Loyc.Collections.MapOrMMap`2.TryGetValue(`0,`1@)"/> and <see cref="M:Loyc.Collections.MapOrMMap`2.ContainsKey(`0)"/> do not throw
+            <li><see cref="!:MapOrMMap&lt;K, V&gt;.TryGet"/> and <see cref="M:Loyc.Collections.MapOrMMap`2.ContainsKey(`0)"/> do not throw
             an incredibly annoying exception if you have the audacity to ask whether 
             there is a null key in the collection.</li>
             <li>This class supports fast cloning in O(1) time.</li>
@@ -3712,7 +3736,7 @@
             that often processes a list without modifying it at all.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IList{`0}})">
+        <member name="M:Loyc.Collections.FVList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IReadOnlyList{`0}})">
             <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
             <param name="map">A function that transforms each item in the list to a list of items.</param>
             <returns>A list that contains all the items returned from `map`.</returns>
@@ -3957,6 +3981,14 @@
         <member name="P:Loyc.Collections.VList`1.Last">
             <summary>Returns the last item of the list (at index Count-1), which is the head of the list.</summary>
         </member>
+        <member name="M:Loyc.Collections.VList`1.TryPop(System.Boolean@)">
+            <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
+            <param name="isEmpty">When the list is empty, this is set to true and default(T) is returned.</param>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.TryPeek(System.Boolean@)">
+            <summary>Gets the last item in the list (at index Count-1).</summary>
+            <param name="isEmpty">When the list is empty, this is set to true and default(T) is returned.</param>
+        </member>
         <member name="M:Loyc.Collections.VList`1.Pop">
             <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
         </member>
@@ -4077,7 +4109,7 @@
             that often processes a list without modifying it at all.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.VList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IList{`0}})">
+        <member name="M:Loyc.Collections.VList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IReadOnlyList{`0}})">
             <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
             <param name="map">A function that transforms each item in the list to a list of items.</param>
             <returns>A list that contains all the items returned from `map`.</returns>
@@ -4511,7 +4543,7 @@
             <returns>The block resulting from the insert (may or may not be 'this')</returns>
             <remarks>This method is for use by immutable VLists only.</remarks>
         </member>
-        <member name="M:Loyc.Collections.VListBlock`1.InsertRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IList{`0},System.Int32,System.Boolean)">
+        <member name="M:Loyc.Collections.VListBlock`1.InsertRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IReadOnlyList{`0},System.Int32,System.Boolean)">
             <summary>Inserts a list of items in the middle of a FVList, where
             localCount is the number of items in the FVList's first block and
             distanceFromFront is the insertion position (0=front).
@@ -4549,7 +4581,7 @@
             <summary>Adds a list of items to an immutable VList (not a FVList).</summary>
             <remarks>This method is for use by immutable RVLists only.</remarks>
         </member>
-        <member name="M:Loyc.Collections.VListBlock`1.AddRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IList{`0},System.Boolean)">
+        <member name="M:Loyc.Collections.VListBlock`1.AddRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IReadOnlyList{`0},System.Boolean)">
             <summary>Adds a list of items to an immutable FVList.</summary>
             <remarks>This method is for use by immutable VLists only.</remarks>
         </member>
@@ -4959,7 +4991,9 @@
             richer; for example, it supports exceptions properly. If an exception is
             thrown from within a nested iterator, the outer iterator is unable to catch
             the exception; it will be thrown directly into whatever foreach loop (or
-            other code) that is enumerating the sequence.
+            other code) that is enumerating the sequence. On the other hand, async is
+            impoverished, since it can only produce a single output. Also, it is 
+            difficult to control how and when async methods are executed.
             <para/>
             This class solves the same problem as <see cref="T:Loyc.Collections.NestedEnumerator`2"/> in
             a way that is very easy to use. You should use <see cref="T:Loyc.Collections.NestedEnumerator`2"/>

@@ -190,7 +190,7 @@
             <li><see cref="M:Loyc.Collections.ISparseListSource`1.NextHigherItem(System.Nullable{System.Int32}@)"/> and <see cref="M:Loyc.Collections.ISparseListSource`1.NextLowerItem(System.Nullable{System.Int32}@)"/> do a linear scan 
             to find the next higher or lower key that exists.</li>
             <li><see cref="M:Loyc.Collections.ISparseListSource`1.IsSet(System.Int32)"/> returns the result of <see cref="M:System.Collections.Generic.SortedDictionary`2.ContainsKey(`0)"/>, and</li>
-            <li><see cref="M:Loyc.Collections.IListSource`1.TryGet(System.Int32,System.Boolean@)"/> returns the value 
+            <li><see cref="!:IListSource&lt;T&gt;.TryGet(int, out bool)"/> returns the value 
             retrieved by <see cref="M:System.Collections.Generic.SortedDictionary`2.TryGetValue(`0,`1@)"/>, setting 'fail'
             only if the index is negative.</li>
             </ul>
@@ -284,13 +284,20 @@
             <summary>Default implementation of <see cref="M:Loyc.Collections.IDictionaryEx`2.GetAndEdit(`0@,`1@,Loyc.Collections.DictEditMode)"/>.</summary>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.AddIfNotPresent``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
-            <summary>Adds an item to the map if the key is not present. If the 
+            <summary>Adds a key/value pair to the dictionary if the key is not present. If the 
             key is already present, this method has no effect.</summary>
             <returns>True if the pair was added, false if not.</returns>
         </member>
+        <member name="M:Loyc.Collections.LCInterfaces.GetOrAdd``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
+            <summary>Adds a key/value pair to the dictionary if the key is not already present,
+            and returns the existing or new value.</summary>
+            <returns>The existing value (if the key already existed) or the new value.</returns>
+        </member>
         <member name="M:Loyc.Collections.LCInterfaces.AddOrGetExisting``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
-            <summary>Gets the existing value, or adds a new value if there was no existing value.</summary>
+            <summary>Adds a new key/value pair if the key was not present, or gets the existing 
+            value if the key was present.</summary>
             <returns>The existing value. If a new pair was added, the result has no value.</returns>
+            <seealso cref="M:Loyc.Collections.LCInterfaces.GetOrAdd``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)"/>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.ReplaceIfPresent``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
             <summary>Replaces an item in the map if the key was already present.
@@ -302,7 +309,7 @@
             If the key was not already present, this method has no effect.</summary>
             <returns>The old value if a value was replaced, or an empty value of <see cref="T:Loyc.Maybe`1"/> otherwise.</returns>
         </member>
-        <member name="M:Loyc.Collections.LCInterfaces.SetAndGet``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
+        <member name="M:Loyc.Collections.LCInterfaces.GetAndSet``2(Loyc.Collections.IDictionaryEx{``0,``1},``0,``1)">
             <summary>Associates a key with a value in the dictionary, and gets the old value
             if the key was already present.</summary>
             <returns>The old value associated with the same key. If a new pair was added,
@@ -318,30 +325,27 @@
             <summary>Tries to get a value from the list at the specified index.</summary>
             <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
             <param name="defaultValue">A value to return if the index is not valid.</param>
-            <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-        </member>
-        <member name="M:Loyc.Collections.LCInterfaces.TryGet``1(Loyc.Collections.IListSource{``0},System.Int32)">
-            <summary>Tries to get a value from the list at the specified index.</summary>
-            <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
-            <returns>The retrieved value wrapped in <see cref="T:Loyc.Maybe`1"/>, if any.</returns>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.HasIndex``1(Loyc.Collections.IListSource{``0},System.Int32)">
             <summary>Uses list.TryGet(index) to find out if the specified index is valid.</summary>
             <returns>true if the specified index is valid, false if not.</returns>
         </member>
+        <member name="M:Loyc.Collections.LCInterfaces.FirstIndexOf``1(System.Collections.Generic.IReadOnlyList{``0},``0)">
+            <summary>Determines the index of a specific value.</summary>
+            <returns>The index of the value, if found, or null if it was not found.</returns>
+        </member>
         <member name="M:Loyc.Collections.LCInterfaces.IndexOf``1(System.Collections.Generic.IReadOnlyList{``0},``0)">
             <summary>Determines the index of a specific value.</summary>
             <returns>The index of the value, if found, or -1 if it was not found.</returns>
-            <remarks>
-            At first, this method was a member of IListSource itself, just in 
-            case the source might have some kind of fast lookup logic (e.g. binary 
-            search) or custom comparer. However, since the item to find is an "in" 
-            argument, it would prevent IListSource from being marked covariant when
-            I upgrade to C# 4.
-            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.LCInterfaces.FirstIndexWhere``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
+            <summary>Gets the lowest index at which a condition is true, or null if nowhere.</summary>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.IndexWhere``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
+        </member>
+        <member name="M:Loyc.Collections.LCInterfaces.FinalIndexWhere``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
+            <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.LastIndexWhere``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
@@ -351,17 +355,6 @@
             <param name="index">The index to access. Valid indexes are between Min and Max.</param>
             <param name="value">A variable that will be changed to the retrieved value. If the index is not valid, this variable is left unmodified.</param>
             <returns>True on success, or false if the index was not valid.</returns>
-        </member>
-        <member name="M:Loyc.Collections.LCInterfaces.TryGet``1(Loyc.Collections.INegListSource{``0},System.Int32,``0)">
-            <summary>Tries to get a value from the list at the specified index.</summary>
-            <param name="index">The index to access. Valid indexes are between Min and Max.</param>
-            <param name="defaultValue">A value to return if the index is not valid.</param>
-            <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-        </member>
-        <member name="M:Loyc.Collections.LCInterfaces.TryGet``1(Loyc.Collections.INegListSource{``0},System.Int32)">
-            <summary>Tries to get a value from the list at the specified index.</summary>
-            <param name="index">The index to access. Valid indexes are between Min and Max.</param>
-            <returns>The retrieved value, or <see cref="P:Loyc.Maybe`1.NoValue"/> if the index provided was not valid.</returns>
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.IndexOf``1(Loyc.Collections.INegListSource{``0},``0)">
             <summary>Determines the index of a specific value.</summary>
@@ -954,20 +947,20 @@
             <remarks>
             Member list:
             <code>
-            public IEnumerator&lt;T> GetEnumerator(); // inherited
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
-            public T this[int index] { get; }         // inherited
-            public int Count { get; }                 // inherited
-            public T TryGet(int index, out bool fail);
+            public IEnumerator&lt;T> GetEnumerator();  // inherited
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator(); // inherited
+            public T this[int index] { get; }          // inherited
+            public int Count { get; }                  // inherited
+            public T TryGet(int index, out bool fail); // inherited
             IRange&lt;T> Slice(int start, int count = int.MaxValue);
             </code>
             The term "source" means a read-only collection, as opposed to a "sink" which
-            is a write-only collection. The purpose of IListSource is to support slices,
-            eliminate the need to call <c>Count</c> before reading from the list, and to
-            make it easier to implement a read-only list, by lifting IList's requirement 
-            to write implementations for Add(), Remove(), etc. A secondary purpose is, 
-            of course, to guarantee users don't mistakenly call those methods on a 
-            read-only collection.
+            is a write-only collection.
+            <para/>
+            IListSource was created before .NET's IReadOnlyList but was later retrofitted 
+            so that IListSource implements IReadOnlyList. In addition, IListSource supports
+            slices through its Slice() method, and it has <c>TryGet</c> methods to eliminate 
+            the need to call <c>Count</c> before reading from the list.
             <para/>
             I have often wanted to access the "next" or "previous" item in a list, e.g.
             during parsing, but it inconvenient if you have to worry about whether the 
@@ -979,39 +972,13 @@
             to return a default value if the index is not valid, using only one 
             interface call.
             <para/>
-            Design footnote: I would have preferred to define <c>TryGet</c> with one of 
-            these signatures:
-            <code>
-                bool TryGet(int index, out T value);
-                T? TryGet(int index);
-                Maybe&lt;T> TryGet(int index);
-            </code>
-            However, these signatures don't allow T to be covariant (<c>out T</c>). 
-            The first signature doesn't work because the .NET runtime doesn't distinguish
-            between <c>ref</c> and <c>out</c>, so T could not be covariant. The second
-            signature doesn't work if <c>T</c> is not a value type. The third signature
-            doesn't work because, as a struct, <c>Maybe&lt;T></c> is not allowed to be
-            covariant (even though the JIT could, theoretically, treat it covariantly).
+            Design footnote: Ideally the return type of TryGet would be <see cref="T:Loyc.Maybe`1"/>,
+            but that design would not allow T to be covariant (out T). Therefore, the 
+            version of <c>TryGet</c> that returns <see cref="T:Loyc.Maybe`1"/> is an extension 
+            method.
             <para/>
             Using <see cref="!:Impl.ListSourceBase&lt;T&gt;"/> as your base class can help you
             implement this interface more quickly.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.IListSource`1.TryGet(System.Int32,System.Boolean@)">
-            <summary>Gets the item at the specified index, and does not throw an
-            exception on failure.</summary>
-            <param name="index">An index in the range 0 to Count-1.</param>
-            <param name="fail">A flag that is set on failure.</param>
-            <returns>The element at the specified index, or default(T) if the index
-            is not valid.</returns>
-            <remarks>In my original design, the caller could provide a value to 
-            return on failure, but this would not allow T to be marked as "out" in 
-            C# 4. For the same reason, we cannot have a ref/out T parameter.
-            Instead, the following extension methods are provided:
-            <code>
-                bool TryGet(int index, ref T value);
-                T TryGet(int, T defaultValue);
-            </code>
             </remarks>
         </member>
         <member name="M:Loyc.Collections.IListSource`1.Slice(System.Int32,System.Int32)">
@@ -1056,31 +1023,6 @@
         <member name="P:Loyc.Collections.INegListSource`1.Max">
             <summary>Returns the maximum valid index in the collection.</summary>
             <remarks>Count must equal Max-Min+1. If Count is 0, Max = Min-1</remarks>
-        </member>
-        <member name="P:Loyc.Collections.INegListSource`1.Item(System.Int32)">
-            <summary>Gets the item at the specified index.</summary>
-            <param name="index">An index in the range Min to Max.</param>
-            <exception cref="T:System.ArgumentOutOfRangeException">The index provided is not 
-            valid in this list.</exception>
-            <returns>The element at the specified index.</returns>
-        </member>
-        <member name="M:Loyc.Collections.INegListSource`1.TryGet(System.Int32,System.Boolean@)">
-            <summary>Gets the item at the specified index, and does not throw an
-            exception on failure.</summary>
-            <param name="index">An index in the range Min to Max.</param>
-            <param name="fail">A flag that is set on failure. To improve
-            performance slightly, this flag is not cleared on success.</param>
-            <returns>The element at the specified index, or default(T) if the index
-            is not valid.</returns>
-            <remarks>In my original design, the caller could provide a value to 
-            return on failure, but this would not allow T to be marked as "out" in 
-            C# 4. For the same reason, we cannot have a ref/out T parameter.
-            Instead, the following extension methods are provided:
-            <code>
-                bool TryGet(int index, ref T value);
-                T TryGet(int, T defaultValue);
-            </code>
-            </remarks>
         </member>
         <member name="M:Loyc.Collections.INegListSource`1.Slice(System.Int32,System.Int32)">
             <summary>Returns a sub-range of this list.</summary>
@@ -1428,7 +1370,7 @@
             collection is greater than the available space from arrayIndex to the end of 
             the destination array.</exception>
         </member>
-        <member name="M:Loyc.Collections.LCExt.ToArray``1(Loyc.Collections.ICollectionSource{``0})">
+        <member name="M:Loyc.Collections.CollectionSource.ToArray``1(Loyc.Collections.ICollectionSource{``0})">
             <summary>Converts the collection to an array.</summary>
         </member>
         <member name="T:Loyc.Collections.IArray`1">
@@ -1454,6 +1396,61 @@
             that the setter in <see cref="T:Loyc.Collections.IArraySink`1"/> conflicts with the getter
             in <see cref="T:Loyc.Collections.IListSource`1"/>.
             </remarks>
+        </member>
+        <member name="T:Loyc.Collections.IIndexed`2">
+            <summary>Represents the essence of a dictionary, which returns a value given a key.</summary>
+            <typeparam name="K">Input type.</typeparam>
+            <typeparam name="V">Output type.</typeparam>
+            <remarks>Consider implementing <see cref="T:Loyc.Collections.ITryGet`2"/> instead, or in addition 
+            to this interface alone.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.IIndexed`2.Item(`0)">
+            <summary>Gets the value associated with the specified key.</summary>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">The key was not found.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">The class implements <see cref="T:System.Collections.Generic.IReadOnlyList`1"/>
+            and the key is an integer index that is outside the valid range.</exception>
+            <exception cref="T:System.IndexOutOfRangeException">The object is an array or other list,
+            and the key is an integer index that is outside the valid range.</exception>
+        </member>
+        <member name="T:Loyc.Collections.ITryGet`2">
+            <summary>Enables access to TryGet extension methods for retrieving items from 
+            a collection without risk of exceptions.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ITryGet`2.TryGet(`0,System.Boolean@)">
+            <summary>Gets the item for the specified key or index, and does not throw an
+            exception on failure.</summary>
+            <param name="key">A lookup key that might be associated with a value in this 
+            object. If K is an integer, this value could be an index into a list.</param>
+            <param name="fail">TryGet sets this to true on failure or false on success.</param>
+            <returns>The element at the specified index, or default(V) if the index
+            is not valid.</returns>
+            <remarks>
+            This method should never intentionally throw (e.g. don't throw if key == null)
+            although it may use third-party methods that throw (e.g. Object.Equals()).
+            <para/>
+            Ideally the return type would be <see cref="T:Loyc.Maybe`1"/> but that design would
+            not allow variance on the output type (out V). Instead, an extension method
+            <see cref="M:Loyc.Collections.TryGetExt.TryGet``2(Loyc.Collections.ITryGet{``0,``1},``0)"/> is provided that returns
+            <see cref="T:Loyc.Maybe`1"/>.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.TryGetExt">
+            <summary>Standard extension methods for <see cref="T:Loyc.Collections.ITryGet`2"/>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.TryGetExt.TryGet``2(Loyc.Collections.ITryGet{``0,``1},``0)">
+            <summary>Returns the value at the specified key or index, wrapped in 
+            <see cref="T:Loyc.Maybe`1"/>.</summary>
+            <param name="key">A lookup key that might be associated with a value in this 
+            object. If K is an integer, this value could be an index into a list.</param>
+            <returns>A value associated with the key, wrapped in <see cref="T:Loyc.Maybe`1"/>
+            so that <see cref="P:Loyc.Maybe`1.HasValue"/> is false if lookup fails.</returns>
+        </member>
+        <member name="M:Loyc.Collections.TryGetExt.TryGet``2(Loyc.Collections.ITryGet{``0,``1},``0,``1)">
+            <summary>Returns the value at the specified key or index, or the specified
+            default value if the key was not found.</summary>
+            <param name="key">A lookup key that might be associated with a value in this 
+            object. If K is an integer, this value could be an index into a list.</param>
+            <param name="defaultValue">A value to return if lookup fails.</param>
         </member>
         <member name="T:Loyc.Collections.IOptimize">
             <summary>Interface for an Optimize() method.</summary>
@@ -1484,6 +1481,42 @@
             an exception and return <c>default(T)</c> instead.
             </remarks>
         </member>
+        <member name="T:Loyc.Either`2">
+            <summary>Holds a single value of one of two types (L or R).</summary>
+            <remarks>For efficiency, this is a struct, but this makes it possible
+            to default-construct it. In that case its value will be <c>default(R)</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Either`2.NewLeft(`0)">
+            <summary>Simply calls the constructor. This method exists to make
+            it possible to construct an Either when both types are the same.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.NewRight(`1)">
+            <summary>Simply calls the constructor. This method exists to make
+            it possible to construct an Either when both types are the same.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.From``2(Loyc.Either{``0,``1})">
+            <summary>Does an upcast, e.g. Either{string,ArgumentException} to Either{object,Exception}.
+            C# does not allow defining conversion operators to take generic 
+            parameters, so you'll have to put up with this hassle instead.</summary>
+            <remarks>
+            Sadly, automatically upcasting value types to reference types doesn't seem possible.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Either`2.Select``2(System.Func{`0,``0},System.Func{`1,``1})">
+            <summary>Converts an Either to another with different types.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.MapLeft``1(System.Func{`0,``0})">
+            <summary>Transforms <c>Left</c> with the given selector, if <c>Left.HasValue</c>. Otherwise, returns Right unchanged.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.MapRight``1(System.Func{`1,``0})">
+            <summary>Transforms <c>Right</c> with the given selector, if <c>Right.HasValue</c>. Otherwise, returns Left unchanged.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.IfLeft(System.Action{`0})">
+            <summary>Runs actionL if <c>Left.HasValue</c>. Equivalent to <c>Left.Then(actionL)</c>, but also returns <c>this</c>.</summary>
+        </member>
+        <member name="M:Loyc.Either`2.IfRight(System.Action{`1})">
+            <summary>Runs actionR if <c>Right.HasValue</c>. Equivalent to <c>Right.Then(actionL)</c>, but also returns <c>this</c>.</summary>
+        </member>
         <member name="T:Loyc.Syntax.EmptySourceFile">
             <summary>
             A dummy implementation of <see cref="T:Loyc.Syntax.ISourceFile"/> that has only a 
@@ -1493,7 +1526,12 @@
         </member>
         <member name="T:Loyc.Syntax.IIndexToLine">
             <summary>Contains <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> method.</summary>
-            <seealso cref="T:Loyc.Syntax.IIndexPositionMapper"/>
+            <remarks>
+            The FileName property gets the name of the file on which results returned by 
+            <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> are based. It is not guaranteed that <i>all</i> 
+            return values from <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> use this filename. 
+            For example, the file may have mappings to other files; see 
+            <see cref="!:SourceFileWithLineRemaps"/>.</remarks>
         </member>
         <member name="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)">
             <summary>Returns the position in a source file of the specified index.</summary>
@@ -1501,12 +1539,6 @@
             Line and PosInLine are zero (signifying an unknown location). If index 
             is beyond the end of the file, this should retun the final position in 
             the file.</remarks>
-        </member>
-        <member name="P:Loyc.Syntax.IIndexToLine.FileName">
-            <summary>Gets the file name used in results returned by <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/>.</summary>
-            <remarks>It is not guaranteed that <i>all</i> return values from 
-            <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> use this filename; for example, the
-            file may vary in mappings from <see cref="!:SourceFileWithLineRemaps"/>.</remarks>
         </member>
         <member name="T:Loyc.Syntax.IIndexPositionMapper">
             <summary>
@@ -1520,6 +1552,71 @@
             <remarks>If lineNo is zero, this method should return -1 (signifying 
             an unknown location). If lineNo is larger than the largest line 
             number, this method should return the index of end-of-file.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ILineAndColumn">
+            <summary>A line/column pair representing a location in a text file. 
+            Numbering starts at one for both Line and Column.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ISerializedLiteral">
+            <summary>Represents a serialized text form of a literal value.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.ISerializedLiteral.TextValue">
+            <summary>Represents the serialized text of the value.</summary>
+            <remarks>Typically this will be a parsed form of the string; for example in LES3, 
+            if the TextValue is `C:\Users`, the raw text may be `C:\\Users` which was parsed 
+            so that the double backslash became a single backslash.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.ISerializedLiteral.TypeMarker">
+            <summary>Represents the type of the value.</summary>
+            <remarks>The Type Marker indicates not just the type but also the syntax of the
+            <see cref="P:Loyc.Syntax.ISerializedLiteral.TextValue"/>. If the syntax of a TextValue is not compatible with 
+            the syntax used in LES, it should not use the same type marker as used in LES.
+            <para/>
+            The TypeMarker can be null if this is a <see cref="T:Loyc.Syntax.ILiteralValue"/> and the
+            <see cref="P:Loyc.Syntax.ISerializedLiteral.TextValue"/> is empty.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.ILiteralValue">
+            <summary>Bundles the optional original text of a value with an optional in-memory form of it.</summary>
+            <remarks>
+            <see cref="T:Loyc.Syntax.ILNode"/> objects that do not represent literals will have a Value property 
+            that returns <see cref="F:Loyc.NoValue.Value"/>. Also, the TextValue and TypeMarker for a value 
+            may not be known, in which case they will return an empty string and null, respectively. 
+            It could also be that the <see cref="P:Loyc.Syntax.ISerializedLiteral.TextValue"/> is known but the 
+            value it represents is not known, in which case the Value may be a copy of the TextValue.
+            <para/>
+            If this object represents a literal, Value should never be <see cref="F:Loyc.NoValue.Value"/>, 
+            and it should not be null unless null is the actual value of the literal.
+            <para/>
+            In all, a literal may have the the following valid combinations of properties:
+            <ul>
+            <li>TextValue.IsNull, null TypeMarker, valid Value: this combination often occurs when
+                nodes created programmatically and have never been in text form before, but it 
+                may also occur if the parser isn't designed to preserve input text, or if the
+                syntax is nonstandard and there is no benefit in preserving the text. Keep in
+                mind that the TypeMarker dictates constraints on syntax, not just type, so if a 
+                language uses an unusual literal syntax the most reasonable thing is often to
+                parse the text and not include it in the Loyc tree.</li>
+            <li>TextValue.IsNull, non-null TypeMarker, valid Value: this combination can be used
+                to disambiguate when one type corresponds to multiple TypeMarkers. For example,
+                the literal 123 has the generic numeric type marker "_". This may be stored as 
+                a 32-bit integer in the Loyc tree, but suppose that an attempt is made to store
+                the integer in an 8-bit integer variable. Should it succeed? It is conceivable
+                that in a particular programming language, a generic number 123 (type marker "_") 
+                can be stored in a byte variable, but that a literal with the explicit type 
+                marker "_i32" should not be convertible to a byte because is marked as 32 bits.</li>
+            <li>Non-null TextValue, non-null TypeMarker: In this case the Value will either be
+                a parsed form of TextValue (so that <c>!Value.Equals(TextValue)</c> or a boxed
+                form of TextValue so that <c>Value.Equals(TextValue)</c>. The latter case 
+                indicates that the parser did not recognize the TypeMarker, or that parsing the 
+                TextValue failed, that literal parsing is not enabled in the parser, or that
+                the value is a string but the parser chose not to convert it to the .NET native
+                string type.</li>
+            </ul>
+            Caution: TextValue is <see cref="T:Loyc.UString"/> and an "empty" UString is "equal" to a 
+            "null" UString since the list of characters is the same. Do not compare UString 
+            with null; instead, use <see cref="P:Loyc.UString.IsNull"/>.
+            </remarks>
         </member>
         <member name="T:Loyc.Syntax.LNodeKind">
             <summary>The three kinds of nodes in a Loyc tree</summary>
@@ -1657,6 +1754,12 @@
             plus the data necessary to convert between line-column positions and 
             0-based integer indexes.</summary>
         </member>
+        <member name="T:Loyc.Syntax.ISourceRange">
+            <summary>Represents a (contiguous) region of text in a source file.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.SourceRangeExt">
+            <summary>Standard extension methods for <see cref="T:Loyc.Syntax.ISourceRange"/>.</summary>
+        </member>
         <member name="T:Loyc.Syntax.NodeStyle">
             <summary>Suggests a printing style when serializing a Loyc tree to text.</summary>
             <remarks>See <see cref="!:LNode.Style"/>.
@@ -1695,8 +1798,8 @@
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Special">
             <summary>A language-specific special notation should be used for this
-            node. In LESv3, the parser puts this style on block call nodes (e.g. 
-            <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
+            node. In LES3, the parser puts this style on keyword expressions (e.g. 
+            <c>#if x {...}</c>).</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.PrefixNotation">
             <summary>The node should be printed in prefix notation (even if it is 
@@ -1709,8 +1812,12 @@
             <remarks>In EC#, braced initializer blocks have this style. The EC# 
             node printer will refuse to print a node with this style as a statement.</remarks>
         </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Reserved">
-            <summary>Unassigned.</summary>
+        <member name="F:Loyc.Syntax.NodeStyle.Compact">
+            <summary>The node's children should have a compact notation. In LES3, the 
+            Julia-style list or call notation has this style: <c>[. a b c 2+2]</c>.
+            When combined with NodeStyle.Alternate, this requests expression-tree 
+            notation like [' ...], which can only be used if the Loyc tree meets
+            certain constraints.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.OldStyle">
             <summary>Use an older or backward-compatible notation.</summary>
@@ -1736,6 +1843,7 @@
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.OctalLiteral">
             <summary>Used for an octal (base-7) literal like 0o37.</summary>
+            <remarks>Octal literals are not natively supported in LES.</remarks>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.VerbatimStringLiteral">
             <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
@@ -1785,26 +1893,36 @@
             between copies of a node.
             </remarks>
         </member>
+        <member name="T:Loyc.Syntax.SourcePosIsObsolete">
+            <summary>This just helps end-users to discover the name change 
+            SourcePos.PosInLine => ILineAndColumn.Column during upgrades</summary>
+        </member>
         <member name="T:Loyc.Syntax.LineAndCol">
-            <summary>Holds a line number (Line) and a position in the line (PosInLine).
+            <summary>Please use the new name of this class: LineAndColumn.
+            Holds a line number (Line) and a position in the line (Column).
             This class isn't really needed in Loyc but is separated from SourcePos 
             in case anyone might want position without a filename.</summary>
-            <remarks>Numbering starts at one for both Line and PosInLine. 
+            <remarks>Numbering starts at one for both Line and Column. 
             Line=0 signifies nowhere in particular, or an unknown location.</remarks>
         </member>
         <member name="T:Loyc.Syntax.SourcePos">
-            <summary>Holds a filename (FileName), a line number (Line) and a position in 
-            the line (PosInLine), representing a position in a source code file.</summary>
+            <summary>Please use the new name of this class: LineColumnFile.
+            Holds a filename (FileName), a line number (Line) and a position in 
+            the line (Column), representing a position in a source code file.</summary>
             <remarks>
             Line and column numbering both start at one (1). Line=0 signifies nowhere 
             in particular. Instances are immutable.
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.SourceRange">
-            <summary>
-            Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
-            beginning and end indices of a range in that file.
-            </summary>
+        <member name="T:Loyc.Syntax.LineAndColumn">
+            <summary>This is the new (and recommended) name for LineAndCol. It
+            holds a line number (Line) and a position in the line (Column).
+            Numbering starts at one for both Line and Column.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.LineColumnFile">
+            <summary>This is the new (and recommended) name for SourcePos. It's named 
+            after what it contains: a line number, column number and file name.
+            Numbering starts at one for both Line and Column.</summary>
         </member>
         <member name="T:Loyc.Syntax.ParsingMode">
             <summary>Standard parsing modes used with <see cref="!:IParsingService"/> and
@@ -1929,7 +2047,8 @@
             <remarks>
             UString is a slice type: it represents either an entire string, or a region
             of code units in a string. .NET strings are converted implicitly to UString.
-            (it's like Memory{char}, but predates it by a few years.)
+            UString is similar to .NET Core's Memory{char}, but predates it by a few 
+            years.
             <para/>
             It has been suggested that Java and .NET's reliance on 16-bit "unicode" 
             characters was a mistake, because it turned out that 16 bits was not enough 
@@ -1986,6 +2105,20 @@
             form of a triple (string, start index, count). In order to call such an
             old-style API using a slice, one must be able to extract the internal
             string and start index values.</remarks>
+        </member>
+        <member name="P:Loyc.UString.Length">
+            <summary>Gets the length of the string in code units (which may be 
+            greater than the number of actual characters or code points).</summary>
+        </member>
+        <member name="P:Loyc.UString.IsEmpty">
+            <summary>Returns true if and only if Count == 0.</summary>
+        </member>
+        <member name="P:Loyc.UString.IsNull">
+            <summary>Returns true if the internal string is a null reference.
+            Caution: an "empty" UString is "equal" to a "null" UString because the 
+            list of characters is the same. If you want to know if the internal string 
+            reference is null, you must use this property instead of comparing with
+            null.</summary>
         </member>
         <member name="M:Loyc.UString.TryDecodeAt(System.Int32)">
             <summary>Returns the UCS code point that starts at the specified index.</summary>
@@ -2066,10 +2199,14 @@
         </member>
         <member name="T:Loyc.IHasLocation">
             <summary>This interface allows an object to declare its "location".</summary>
-            <remarks>For example, <see cref="!:Loyc.Syntax.LNode"/> implements this 
-            interface so that when a compiler error refers to a source code construct,
-            the error message contains the location of that source code rather than the
-            code itself.
+            <remarks>
+            Objects designed to be used as a context parameter in <see cref="T:Loyc.IMessageSink`1"/>
+            can implement this interface so that the string form of the message shows
+            the location of a piece of data instead of the data itself. For example, 
+            <see cref="!:Loyc.Syntax.LNode"/> implements this interface so that when a 
+            compiler error refers to a source code construct, the context of the
+            <see cref="!:LogMessage"/> can refer to the code itself while the printed form 
+            of the the error message shows the location of the code instead.
             <para/>
             Given a context object that may or may not implement this interface, it's
             handy to use <see cref="!:MessageSink.ContextToString"/> to convert the 
@@ -2359,6 +2496,32 @@
         </member>
         <member name="M:Loyc.Maybe.Value``1(``0)">
             <summary>Returns <c>new Maybe&lt;T>(value)</c>. (exists for type inference)</summary>
+        </member>
+        <member name="M:Loyc.Maybe.AsNullable``1(Loyc.Maybe{``0})">
+            <summary>Converts <see cref="T:Loyc.Maybe`1"/> to a <see cref="T:System.Nullable`1"/> having the same HasValue property.</summary>
+        </member>
+        <member name="M:Loyc.Maybe.AsMaybe``1(System.Nullable{``0})">
+            <summary>Creates a <see cref="T:Loyc.Maybe`1"/>, using <see cref="P:Loyc.Maybe`1.NoValue"/> if and only if the input is null.</summary>
+        </member>
+        <member name="M:Loyc.Maybe.AsMaybe``1(``0)">
+            <summary>Creates a <see cref="T:Loyc.Maybe`1"/>, using <see cref="P:Loyc.Maybe`1.NoValue"/> if and only if the input is null.</summary>
+        </member>
+        <member name="M:Loyc.Maybe.Or``2(``0,``1)">
+            <summary>Converts <see cref="T:Loyc.IMaybe`1"/> to T, returning a default value if <see cref="!:HasValue"/> is false.</summary>
+            <remarks>This is like the <c>??</c> operator of <c>T?</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Maybe.Or``2(``0,System.Func{``1})">
+            <summary>Converts <see cref="T:Loyc.IMaybe`1"/> to T, calling a factory function if <see cref="!:HasValue"/> is false.</summary>
+            <remarks>This is like the <c>??</c> operator of <c>T?</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Maybe.Then``1(Loyc.IMaybe{``0},System.Action{``0})">
+            <summary>Runs a function if and only if <see cref="P:Loyc.IMaybe`1.HasValue"/>.</summary>
+        </member>
+        <member name="M:Loyc.Maybe.Then``2(Loyc.IMaybe{``0},System.Func{``0,``1},System.Func{``1})">
+            <summary>Runs one of two functions depending on whether <see cref="P:Loyc.IMaybe`1.HasValue"/>.</summary>
+        </member>
+        <member name="M:Loyc.Maybe.Then``2(Loyc.IMaybe{``0},System.Func{``0,``1},``1)">
+            <summary>Runs a function if and only if <see cref="P:Loyc.IMaybe`1.HasValue"/>, returning a default value otherwise.</summary>
         </member>
         <member name="T:Loyc.Maybe`1">
             <summary>Same as <see cref="T:System.Nullable`1"/> except that it behaves like a
@@ -3210,7 +3373,7 @@
             <typeparam name="TContext">The type of the second parameer to <c>Write</c>, 
             which indicates where the error occurs. If the message relates to a text
             file or source code, the location is typically indicated with an object of
-            type <see cref="T:Loyc.Syntax.SourceRange"/> or <see cref="!:Loyc.Syntax.LNode"/>.</typeparam>
+            type <see cref="T:Loyc.Syntax.ISourceRange"/> or <see cref="T:Loyc.Syntax.ILNode"/>.</typeparam>
             <seealso cref="!:MessageSink"/>
             <seealso cref="!:ConsoleMessageSink"/>
             <seealso cref="!:TraceMessageSink"/>
@@ -3287,6 +3450,12 @@
         <member name="T:Loyc.IHasValue`1">
             <summary>Interface for things that have a Value property.</summary>
         </member>
+        <member name="T:Loyc.IHasMutableValue`1">
+            <summary>Interface for things that have a mutable Value property.</summary>
+        </member>
+        <member name="T:Loyc.IEither`2">
+            <summary>Represents a type that holds a single value of one of two types (L or R).</summary>
+        </member>
         <member name="T:Loyc.Symbol">
             <summary>Represents a symbol, which is a singleton string that supports fast 
             comparisons and extensible enums.</summary>
@@ -3329,7 +3498,7 @@
             <summary>Returns a numeric ID for the Symbol.</summary>
             <remarks>Normally the Id is auto-assigned and the Id corresponding to 
             a particular Name may vary between different runs of the same program. 
-            However, <see cref="M:Loyc.SymbolPool.Get(System.String,System.Int32)"/> can be used to 
+            However, <see cref="!:SymbolPool.Get(string, int)"/> can be used to 
             assign a specific Id to a Name when setting up a new pool.</remarks>
         </member>
         <member name="M:Loyc.Symbol.#ctor(System.Int32,System.String,Loyc.SymbolPool)">
@@ -3344,7 +3513,7 @@
             prototype after calling this constructor.</param>
         </member>
         <member name="M:Loyc.Symbol.For(System.String)">
-            <summary>Alias for <see cref="M:Loyc.GSymbol.Get(System.String)"/>. This function was 
+            <summary>Alias for <see cref="!:GSymbol.Get(string)"/>. This function was 
             introduced to match the equivalent ES6 API <c>Symbol.for("string")</c></summary>
         </member>
         <member name="T:Loyc.GSymbol">
@@ -3387,7 +3556,7 @@
             <param name="poolId">Numeric ID of the pool (affects the HashCode of 
             Symbols from the pool)</param>
         </member>
-        <member name="M:Loyc.SymbolPool.Get(System.String)">
+        <member name="M:Loyc.SymbolPool.Get(Loyc.UString)">
             <summary>Gets a symbol from this pool, or creates it if it does not 
             exist in this pool already.</summary>
             <param name="name">Name to find or create.</param>
@@ -3400,10 +3569,10 @@
             ID.
             </remarks>
         </member>
-        <member name="P:Loyc.SymbolPool.Item(System.String)">
-            <inheritdoc cref="M:Loyc.SymbolPool.Get(System.String)"/>
+        <member name="P:Loyc.SymbolPool.Item(Loyc.UString)">
+            <inheritdoc cref="!:Get(string)"/>
         </member>
-        <member name="M:Loyc.SymbolPool.Get(System.String,System.Int32)">
+        <member name="M:Loyc.SymbolPool.Get(Loyc.UString,System.Int32)">
             <summary>Creates a Symbol in this pool with a specific ID, or verifies 
             that the requested Name-Id pair is present in the pool.</summary>
             <param name="name">Name to find or create.</param>
@@ -3415,16 +3584,16 @@
             Name=="a" does not have Id==1.</exception>
             <returns>A symbol with the requested Name and Id.</returns>
         </member>
-        <member name="M:Loyc.SymbolPool.Get(System.String,Loyc.Symbol@)">
+        <member name="M:Loyc.SymbolPool.Get(Loyc.UString,Loyc.Symbol@)">
             <summary>Workaround for lack of covariant return types in C#</summary>
         </member>
-        <member name="M:Loyc.SymbolPool.Get(System.String,System.Int32,Loyc.Symbol@)">
+        <member name="M:Loyc.SymbolPool.Get(Loyc.UString,System.Int32,Loyc.Symbol@)">
             <summary>Workaround for lack of covariant return types in C#</summary>
         </member>
         <member name="M:Loyc.SymbolPool.NewSymbol(System.Int32,System.String)">
             <summary>Factory method to create a new Symbol.</summary>
         </member>
-        <member name="M:Loyc.SymbolPool.GetIfExists(System.String)">
+        <member name="M:Loyc.SymbolPool.GetIfExists(Loyc.UString)">
             <summary>Gets a symbol from this pool, if the name exists already.</summary>
             <param name="name">Symbol Name to find</param>
             <returns>Returns the existing Symbol if found; returns null if the name 

@@ -13,8 +13,14 @@
     <Optimize>true</Optimize>
     <DocumentationFile>..\..\Bin\$(Configuration)\$(TargetFramework)\LeMP.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;NoReflectionEmit</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;NoReflectionEmit</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
+    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj" />

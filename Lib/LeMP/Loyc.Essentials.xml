@@ -4,6 +4,204 @@
         <name>Loyc.Essentials</name>
     </assembly>
     <members>
+        <member name="T:Loyc.Collections.ListExt">
+            <summary>Extension methods and helper methods for <see cref="T:System.Collections.Generic.List`1"/>,
+            <see cref="T:System.Collections.Generic.IList`1"/>, <see cref="T:System.Collections.Generic.IReadOnlyList`1"/>, arrays, 
+            <see cref="T:Loyc.Collections.IListSource`1"/>, and for related mutable interfaces such as 
+            <see cref="T:Loyc.Collections.IArray`1"/>. 
+            </summary>
+            <remarks>
+            Extension methods that only apply to Loyc's new interfaces, or adapt a 
+            list to those interfaces, will go in <see cref="T:Loyc.Collections.LCExt"/> instead.
+            <para/>
+            The source code for adapter extension methods such as the Slice() method for 
+            arrays, which returns an <see cref="T:Loyc.Collections.ArraySlice`1"/> adapter, is now 
+            placed in the source file for each adapter class (e.g. ArraySlice.cs)
+            to make it easier to create custom versions of Loyc.Essentials with parts 
+            removed.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Repeat``1(``0,System.Int32)">
+            <summary>Returns a helper object that stores one value, but acts like 
+            a read-only list that repeats the value the specified number of times.</summary>
+            <returns><c>new Repeated&lt;T>(value, count)</c></returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Single``1(``0)">
+            <summary>Returns a helper object that stores one value, but acts like 
+            a read-only list of one item.</summary>
+            <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.RemoveRange``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>Removes <c>count</c> items from <c>list</c> starting at the specified <c>index</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.List{``0},System.Int32)">
+            <summary>Resizes a list by removing items from the list (if it is too 
+            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>Resizes a list by removing items from the list (if it is too 
+            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Zip``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+            <summary>Returns a sequence of length <c>Min(a.Count(), b.Count())</c> 
+            of items from <c>a</c> and <c>b</c> paired together. The output is
+            produced lazily, so infinite input sequences are supported.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)">
+            <summary>Returns a sequence that has the same length as the first sequence,
+            with items from the first and second sequence paired together.</summary>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLeft``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1,System.Func{``0,``1,``2})">
+            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)"/>
+            in which a user-defined function is used to combine the items from the two lists.</summary>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+            <param name="resultSelector">A function that combines items from the two lists.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+            <summary>Returns a sequence as long as the longer of two sequences.
+            Items from the first and second sequence are initially paired together, and when
+            one sequence ends, the other sequence's remaining values are paired 
+            with a default value.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)">
+            <summary>Returns a sequence as long as the longer of two sequences.
+            Items from the first and second sequence are initially paired together, 
+            and when one sequence ends, the other sequence's remaining values are 
+            paired with a default value provided as a parameter.</summary>
+            <param name="defaultA">If the first sequence <c>a</c> is shorter than the 
+            second sequence, the remaining items of the second sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1,System.Func{``0,``1,``2})">
+            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)"/>
+            in which a user-defined function is used to combine the items from the two lists.</summary>
+            <param name="resultSelector">A function that combines items from the two lists.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.RangeArray(System.Int32)">
+            <summary>Returns an array of Length <c>count</c> containing the numbers 0 through <c>count-1</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0})">
+            <inheritdoc cref="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})"/>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Comparison{``0})">
+            <inheritdoc cref="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})"/>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
+            <summary>Performs a quicksort using a Comparison function.</summary>
+            <param name="index">Index at which to begin sorting a portion of the list.</param>
+            <param name="count">Number of items to sort starting at 'index'.</param>
+            <remarks>
+            This method exists because the .NET framework offers no method to
+            sort <see cref="T:System.Collections.Generic.IList`1"/>--you can sort arrays and <see cref="T:System.Collections.Generic.List`1"/>, 
+            but not IList.
+            <para/>
+            This quicksort algorithm uses a best-of-three pivot so that it remains
+            performant (fast) if the input is already sorted. It is designed to 
+            perform reasonably well in case the data contains many duplicates (not
+            verified). It is also designed to avoid using excessive stack space if 
+            a worst-case input occurs that requires O(N^2) time.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.StableSort``1(System.Collections.Generic.IList{``0},System.Comparison{``0})">
+            <summary>Performs a stable sort, i.e. a sort that preserves the 
+            relative order of items that compare equal.</summary>
+            <remarks>
+            On larger inputs, this algorithm uses a quicksort and therefore runs 
+            in O(N log N) time, but it requires O(N) temporary space (specifically, 
+            an array of N integers) and is slower than a standard quicksort, so 
+            you should use it only if you need a stable sort or if the input is
+            usually small (in which case insertion sort is used).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SortLowestK``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>Uses a partial quicksort, known as "quickselect", to find and
+            sort the lowest k elements in a list.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="list">A list that will be partially sorted.</param>
+            <param name="k">Number of elements that will be sorted at the beginning 
+            of the list when this method returns. If <c>k > list.Count</c>, the 
+            entire list is sorted.</param>
+            <returns>Although the list is modified in-place, a slice of the 
+            beginning of the same list is returned. The slice will have k elements 
+            (or list.Count elements, whichever is less).</returns>
+            <remarks>Whereas quicksort typically runs in O(N log N) time,
+            quickselect typically requires O(N) time for small values of k, 
+            although the worst-case performance remains O(N^2).</remarks>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SortLowestKStable``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>A stable version of <see cref="M:Loyc.Collections.ListExt.SortLowestK``1(System.Collections.Generic.IList{``0},System.Int32)"/>. This means 
+            that when k>1 and adjacent results at the beginning of <c>list</c> 
+            compare equal, they keep the same order that they had originally.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="list">A list that will be partially sorted.</param>
+            <param name="k">Number of elements that will be sorted at the beginning 
+            of the list when this method returns. If <c>k > list.Count</c>, the 
+            entire list is sorted.</param>
+            <returns>This method uses the quickselect algorithm and stability is
+            achieved using a temporary array of <c>list.Count</c> integers.</returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.InsertionSort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
+            <summary>Performs an insertion sort.</summary>
+            <remarks>The insertion sort is a stable sort algorithm that is slow in 
+            general (O(N^2)). It should be used only when (a) the list to be sorted
+            is short (less than 10-20 elements) or (b) the list is very nearly
+            sorted already.</remarks>
+            <seealso cref="M:Loyc.Collections.Impl.InternalList.InsertionSort``1(``0[],System.Int32,System.Int32,System.Comparison{``0})"/>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SortPair``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
+            <summary>Sorts two items to ensure that list[i] is less than list[j].</summary>
+            <returns>True if the array elements were swapped, false if not.</returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Swap``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>Swaps list[i] with list[j].</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Randomized``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SelectArray``2(``0[],System.Func{``0,``1})">
+            <summary>Maps an array to another array of the same length.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SelectArray``2(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,``1})">
+            <summary>Maps a list to an array of the same length.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.SelectArray``2(Loyc.Collections.IListAndListSource{``0},System.Func{``0,``1})">
+            <summary>Maps a list to an array of the same length.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.RemoveAll``1(System.Collections.Generic.IList{``0},System.Predicate{``0})">
+            <summary>Removes the all the elements that match the conditions defined by the specified predicate.</summary>
+            <returns>The number of elements removed from the list</returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.InsertRangeHelper``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>Increases the list size by <c>spaceNeeded</c> and copies 
+            elements starting at <c>list[index]</c> "rightward" to make room 
+            for inserted elements that will be initialized by the caller.</summary>
+        </member>
+        <member name="T:Loyc.Collections.ROLSlice`2">
+            <summary>Adapter: a random-access range for a slice of an <see cref="T:System.Collections.Generic.IReadOnlyList`1"/>.</summary>
+            <typeparam name="T">Item type in the list</typeparam>
+            <typeparam name="TList">List type</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.ROLSlice`2.#ctor(`0,System.Int32,System.Int32)">
+            <summary>Initializes a slice.</summary>
+            <exception cref="T:System.ArgumentException">The start index was below zero.</exception>
+            <remarks>The (start, count) range is allowed to be invalid, as long
+            as 'start' and 'count' are zero or above. 
+            <ul>
+            <li>If 'start' is above the original Count, the Count of the new slice 
+            is set to zero.</li>
+            <li>if (start + count) is above the original Count, the Count of the new
+            slice is reduced to <c>list.Count - start</c>.</li>
+            </ul>
+            </remarks>
+        </member>
         <member name="T:Loyc.Collections.EnumerableExt">
             <summary>
             Additional extension methods for <see cref="T:System.Collections.Generic.IEnumerable`1"/>,
@@ -58,6 +256,9 @@
             }
             </code>
             </example>
+        </member>
+        <member name="M:Loyc.Collections.EnumerableExt.FirstIndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>Gets the lowest index at which a condition is true, or null if nowhere.</summary>
         </member>
         <member name="M:Loyc.Collections.EnumerableExt.IndexWhere``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
@@ -295,8 +496,14 @@
             removed.
             </remarks>
         </member>
+        <member name="M:Loyc.Collections.MutableListExtensionMethods.IListExt.FinalIndexWhere``1(System.Collections.Generic.IList{``0},System.Func{``0,System.Boolean})">
+            <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
+        </member>
         <member name="M:Loyc.Collections.MutableListExtensionMethods.IListExt.LastIndexWhere``1(System.Collections.Generic.IList{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
+        </member>
+        <member name="M:Loyc.Collections.MutableListExtensionMethods.IListExt.FinalIndexWhere``1(Loyc.Collections.IListAndListSource{``0},System.Func{``0,System.Boolean})">
+            <summary>Gets the highest index at which a condition is true, or null if nowhere.</summary>
         </member>
         <member name="M:Loyc.Collections.MutableListExtensionMethods.IListExt.LastIndexWhere``1(Loyc.Collections.IListAndListSource{``0},System.Func{``0,System.Boolean})">
             <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
@@ -327,186 +534,6 @@
             or more, the Count property will overflow and return an incorrect value.
             </remarks>
         </member>
-        <member name="T:Loyc.Collections.ListExt">
-            <summary>Extension methods and helper methods for <see cref="T:System.Collections.Generic.List`1"/>,
-            <see cref="T:System.Collections.Generic.IList`1"/>, <see cref="T:System.Collections.Generic.IReadOnlyList`1"/>, arrays, 
-            <see cref="T:Loyc.Collections.IListSource`1"/>, and for related mutable interfaces such as 
-            <see cref="T:Loyc.Collections.IArray`1"/>. 
-            </summary>
-            <remarks>
-            Extension methods that only apply to Loyc's new interfaces, or adapt a 
-            list to those interfaces, will go in <see cref="T:Loyc.Collections.LCExt"/> instead.
-            <para/>
-            The source code for adapter extension methods such as the Slice() method for 
-            arrays, which returns an <see cref="T:Loyc.Collections.ArraySlice`1"/> adapter, is now 
-            placed in the source file for each adapter class (e.g. ArraySlice.cs)
-            to make it easier to create custom versions of Loyc.Essentials with parts 
-            removed.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Repeat``1(``0,System.Int32)">
-            <summary>Returns a helper object that stores one value, but acts like 
-            a read-only list that repeats the value the specified number of times.</summary>
-            <returns><c>new Repeated&lt;T>(value, count)</c></returns>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Single``1(``0)">
-            <summary>Returns a helper object that stores one value, but acts like 
-            a read-only list of one item.</summary>
-            <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.RemoveRange``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
-            <summary>Removes <c>count</c> items from <c>list</c> starting at the specified <c>index</c>.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.List{``0},System.Int32)">
-            <summary>Resizes a list by removing items from the list (if it is too 
-            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.IList{``0},System.Int32)">
-            <summary>Resizes a list by removing items from the list (if it is too 
-            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Zip``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
-            <summary>Returns a sequence of length <c>Min(a.Count(), b.Count())</c> 
-            of items from <c>a</c> and <c>b</c> paired together. The output is
-            produced lazily, so infinite input sequences are supported.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)">
-            <summary>Returns a sequence that has the same length as the first sequence,
-            with items from the first and second sequence paired together.</summary>
-            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
-            first sequence, the remaining items of the first sequence are paired with 
-            this value. Otherwise, this value is not used.</param>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.ZipLeft``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1,System.Func{``0,``1,``2})">
-            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)"/>
-            in which a user-defined function is used to combine the items from the two lists.</summary>
-            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
-            first sequence, the remaining items of the first sequence are paired with 
-            this value. Otherwise, this value is not used.</param>
-            <param name="resultSelector">A function that combines items from the two lists.</param>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
-            <summary>Returns a sequence as long as the longer of two sequences.
-            Items from the first and second sequence are initially paired together, and when
-            one sequence ends, the other sequence's remaining values are paired 
-            with a default value.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)">
-            <summary>Returns a sequence as long as the longer of two sequences.
-            Items from the first and second sequence are initially paired together, 
-            and when one sequence ends, the other sequence's remaining values are 
-            paired with a default value provided as a parameter.</summary>
-            <param name="defaultA">If the first sequence <c>a</c> is shorter than the 
-            second sequence, the remaining items of the second sequence are paired with 
-            this value. Otherwise, this value is not used.</param>
-            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
-            first sequence, the remaining items of the first sequence are paired with 
-            this value. Otherwise, this value is not used.</param>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.ZipLonger``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1,System.Func{``0,``1,``2})">
-            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)"/>
-            in which a user-defined function is used to combine the items from the two lists.</summary>
-            <param name="resultSelector">A function that combines items from the two lists.</param>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.RangeArray(System.Int32)">
-            <summary>Returns an array of Length <c>count</c> containing the numbers 0 through <c>count-1</c>.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0})">
-            <inheritdoc cref="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})"/>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Comparison{``0})">
-            <inheritdoc cref="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})"/>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Sort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
-            <summary>Performs a quicksort using a Comparison function.</summary>
-            <param name="index">Index at which to begin sorting a portion of the list.</param>
-            <param name="count">Number of items to sort starting at 'index'.</param>
-            <remarks>
-            This method exists because the .NET framework offers no method to
-            sort <see cref="T:System.Collections.Generic.IList`1"/>--you can sort arrays and <see cref="T:System.Collections.Generic.List`1"/>, 
-            but not IList.
-            <para/>
-            This quicksort algorithm uses a best-of-three pivot so that it remains
-            performant (fast) if the input is already sorted. It is designed to 
-            perform reasonably well in case the data contains many duplicates (not
-            verified). It is also designed to avoid using excessive stack space if 
-            a worst-case input occurs that requires O(N^2) time.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.StableSort``1(System.Collections.Generic.IList{``0},System.Comparison{``0})">
-            <summary>Performs a stable sort, i.e. a sort that preserves the 
-            relative order of items that compare equal.</summary>
-            <remarks>
-            On larger inputs, this algorithm uses a quicksort and therefore runs 
-            in O(N log N) time, but it requires O(N) temporary space (specifically, 
-            an array of N integers) and is slower than a standard quicksort, so 
-            you should use it only if you need a stable sort or if the input is
-            usually small (in which case insertion sort is used).
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SortLowestK``1(System.Collections.Generic.IList{``0},System.Int32)">
-            <summary>Uses a partial quicksort, known as "quickselect", to find and
-            sort the lowest k elements in a list.</summary>
-            <typeparam name="T"></typeparam>
-            <param name="list">A list that will be partially sorted.</param>
-            <param name="k">Number of elements that will be sorted at the beginning 
-            of the list when this method returns. If <c>k > list.Count</c>, the 
-            entire list is sorted.</param>
-            <returns>Although the list is modified in-place, a slice of the 
-            beginning of the same list is returned. The slice will have k elements 
-            (or list.Count elements, whichever is less).</returns>
-            <remarks>Whereas quicksort typically runs in O(N log N) time,
-            quickselect typically requires O(N) time for small values of k, 
-            although the worst-case performance remains O(N^2).</remarks>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SortLowestKStable``1(System.Collections.Generic.IList{``0},System.Int32)">
-            <summary>A stable version of <see cref="M:Loyc.Collections.ListExt.SortLowestK``1(System.Collections.Generic.IList{``0},System.Int32)"/>. This means 
-            that when k>1 and adjacent results at the beginning of <c>list</c> 
-            compare equal, they keep the same order that they had originally.</summary>
-            <typeparam name="T"></typeparam>
-            <param name="list">A list that will be partially sorted.</param>
-            <param name="k">Number of elements that will be sorted at the beginning 
-            of the list when this method returns. If <c>k > list.Count</c>, the 
-            entire list is sorted.</param>
-            <returns>This method uses the quickselect algorithm and stability is
-            achieved using a temporary array of <c>list.Count</c> integers.</returns>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.InsertionSort``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
-            <summary>Performs an insertion sort.</summary>
-            <remarks>The insertion sort is a stable sort algorithm that is slow in 
-            general (O(N^2)). It should be used only when (a) the list to be sorted
-            is short (less than 10-20 elements) or (b) the list is very nearly
-            sorted already.</remarks>
-            <seealso cref="M:Loyc.Collections.Impl.InternalList.InsertionSort``1(``0[],System.Int32,System.Int32,System.Comparison{``0})"/>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SortPair``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32,System.Comparison{``0})">
-            <summary>Sorts two items to ensure that list[i] is less than list[j].</summary>
-            <returns>True if the array elements were swapped, false if not.</returns>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Swap``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
-            <summary>Swaps list[i] with list[j].</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.Randomized``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SelectArray``2(``0[],System.Func{``0,``1})">
-            <summary>Maps an array to another array of the same length.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SelectArray``2(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,``1})">
-            <summary>Maps a list to an array of the same length.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.SelectArray``2(Loyc.Collections.IListAndListSource{``0},System.Func{``0,``1})">
-            <summary>Maps a list to an array of the same length.</summary>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.RemoveAll``1(System.Collections.Generic.IList{``0},System.Predicate{``0})">
-            <summary>Removes the all the elements that match the conditions defined by the specified predicate.</summary>
-            <returns>The number of elements removed from the list</returns>
-        </member>
-        <member name="M:Loyc.Collections.ListExt.InsertRangeHelper``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
-            <summary>Increases the list size by <c>spaceNeeded</c> and copies 
-            elements starting at <c>list[index]</c> "rightward" to make room 
-            for inserted elements that will be initialized by the caller.</summary>
-        </member>
         <member name="T:Loyc.Collections.Repeated`1">
             <summary>Helper struct. A sequence that stores one value, but acts like a list in which
             that value is repeated a specified number of times. Returned from 
@@ -522,7 +549,7 @@
             <summary>
             Helper class: provides a modified view of an IList by transforming each element 
             on-demand. Objects of this type are returned from 
-            <see cref="!:LinqToLists.Select&lt;T,TResult&gt;(IList&lt;T&gt;,Func&lt;T,TResult&gt;)"/>
+            <see cref="M:Loyc.Collections.MutableListExtensionMethods.LinqToLists.Select``2(System.Collections.Generic.IList{``0},System.Func{``0,``1})"/>
             </summary>
             <typeparam name="T">input type</typeparam>
             <typeparam name="TResult">output type</typeparam>
@@ -887,6 +914,33 @@
             <summary>Extension methods for <see cref="T:System.Collections.Generic.Dictionary`2"/>, 
             <see cref="T:System.Collections.Generic.IDictionary`2"/> and <see cref="T:Loyc.Collections.IDictionaryEx`2"/>.</summary>
         </member>
+        <member name="M:Loyc.Collections.DictionaryExt.GetOrAdd``2(System.Collections.Generic.IDictionary{``0,``1},``0,``1)">
+            <summary>Adds a key/value pair to the dictionary if the key is not already present,
+            and returns the existing or new value.</summary>
+            <returns>The existing value (if the key already existed) or the new value.</returns>
+            <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.DictionaryExt.GetOrAdd``2(System.Collections.Generic.IDictionary{``0,``1},``0,System.Func{``0,``1})">
+            <summary>Adds a key/value pair to the dictionary if the key is not already present, by 
+            using the specified function to obtain a value, and returns the existing or new value.</summary>
+            <returns>The existing value (if the key already existed) or the new value.</returns>
+            <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.DictionaryExt.AddOrUpdate``2(System.Collections.Generic.IDictionary{``0,``1},``0,System.Func{``0,``1},System.Func{``0,``1,``1})">
+            <summary>Uses the specified functions either to add a key/value pair to the dictionary 
+            if the key does not already exist, or to update a key/value pair in the dictionary if 
+            the key already exists.</summary>
+            <returns>The new value associated with the key, which is either the result of addValueFactory or 
+            updateValueFactory.</returns>
+            <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.DictionaryExt.AddOrUpdate``2(System.Collections.Generic.IDictionary{``0,``1},``0,``1,System.Func{``0,``1,``1})">
+            <summary>Adds a key/value pair to the dictionary if the key does not already exist, or, 
+            if it does, updates a key/value pair in the dictionary using the specified function.</summary>
+            <returns>The new value associated with the key, which is either addValue or the result 
+            of updateValueFactory.</returns>
+            <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
+        </member>
         <member name="M:Loyc.Collections.DictionaryExt.TryGetValue``2(System.Collections.Generic.Dictionary{``0,``1},``0,``1)">
             <summary>An alternate version TryGetValue that returns a default value 
             if the key was not found in the dictionary, and that does not throw if 
@@ -1058,7 +1112,7 @@
         <member name="T:Loyc.Collections.ListSlice`1">
             <summary>
             Adapter: a wrapper of a list that provides a view of a range of elements.
-            Objects of this type are returned from <see cref="!:ListExt.Slice&lt;T&gt;"/>
+            Objects of this type are returned from <see cref="M:Loyc.Collections.ListExt.Slice``1(System.Collections.Generic.IReadOnlyList{``0},System.Int32,System.Int32)"/>
             </summary>
             <remarks>
             ListSlice provides both a <see cref="T:System.Collections.Generic.IList`1"/> interface and a 
@@ -1101,7 +1155,7 @@
         <member name="T:Loyc.Collections.NegList`1">
             <summary>
             Adapter: provides a view of an <see cref="T:System.Collections.Generic.IList`1"/> in which the Count is the same, but the 
-            minimum index is not necessarily zero. Returned from <see cref="!:LCExt.AsNegList&lt;T&gt;(IList&lt;T&gt;,int)"/>.
+            minimum index is not necessarily zero. Returned from <see cref="M:Loyc.Collections.LCExt.AsNegList``1(Loyc.Collections.IListSource{``0},System.Int32)"/>.
             </summary>
             <remarks>This wrapper is a structure in order to offer high performance in 
             certain scenarios.</remarks>
@@ -1479,9 +1533,17 @@
             <summary>Removes all leading and trailing occurrences of the specified set of characters from the StringBuilder object.</summary>
             <param name="trimChars">An array of Unicode characters to remove.</param>
         </member>
+        <member name="M:Loyc.StringBuilderExt.FirstIndexOf(System.Text.StringBuilder,System.Char,System.Int32)">
+            <summary>Gets the index of a character in a StringBuilder</summary>
+            <returns>Index of the first instance of the specified character in the string, or null if not found</returns>
+        </member>
         <member name="M:Loyc.StringBuilderExt.IndexOf(System.Text.StringBuilder,System.Char,System.Int32)">
             <summary>Gets the index of a character in a StringBuilder</summary>
             <returns>Index of the first instance of the specified character in the string, or -1 if not found</returns>
+        </member>
+        <member name="M:Loyc.StringBuilderExt.FirstIndexOf(System.Text.StringBuilder,Loyc.UString,System.Int32,System.Boolean)">
+            <summary>Gets the index of a substring in a StringBuilder</summary>
+            <returns>Index of the first instance of the specified substring in the StringBuilder, or null if not found</returns>
         </member>
         <member name="M:Loyc.StringBuilderExt.IndexOf(System.Text.StringBuilder,Loyc.UString,System.Int32,System.Boolean)">
             <summary>Gets the index of a substring in a StringBuilder</summary>
@@ -1612,6 +1674,10 @@
         <member name="M:Loyc.G.With``1(``0,System.Func{``0,``0})">
             <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
             of this method, except that the action has a return value.</summary>
+        </member>
+        <member name="M:Loyc.G.Do``2(``0,System.Func{``0,``1})">
+            <summary>Returns <c>action(obj)</c>. This method lets you embed statements 
+            in any expression.</summary>
         </member>
         <member name="M:Loyc.G.True``1(``0)">
             <summary>Returns true. This method has no effect; it is used to do an action in a conditional expression.</summary>
@@ -2315,7 +2381,7 @@
         <member name="M:Loyc.MiniTest.Assert.Expect(System.Boolean)">
             <summary>Calls Fail() if condition is false.</summary>
         </member>
-        <member name="M:Loyc.MiniTest.Assert.Throws(System.Type,System.Action,System.String,System.Object[])">
+        <member name="M:Loyc.MiniTest.Assert.ThrowsAny(System.Type,System.Action,System.String,System.Object[])">
             <summary>
             Verifies that a delegate throws a particular exception when called.
             </summary>
@@ -2810,6 +2876,16 @@
         <member name="T:Loyc.StringExt">
             <summary>Extension methods for strings, such as <see cref="M:Loyc.StringExt.SplitAt(System.String,System.Char)"/>, 
             <see cref="M:Loyc.StringExt.Left(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.Right(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.FormatCore(System.String,System.Object[])"/> and <see cref="M:Loyc.StringExt.Slice(System.String,System.Int32,System.Int32)"/>.</summary>
+        </member>
+        <member name="M:Loyc.StringExt.WithoutPrefix(System.String,System.String)">
+            <summary>Returns a version of the string without the specified prefix.
+            If the string does not have the specified prefix, it is returned unchanged.
+            The prefix check is case-sensitive.</summary>
+        </member>
+        <member name="M:Loyc.StringExt.WithoutSuffix(System.String,System.String)">
+            <summary>Returns a version of the string without the specified suffix.
+            If the string does not have the specified suffix, it is returned unchanged.
+            The suffix check is case-sensitive.</summary>
         </member>
         <member name="M:Loyc.StringExt.SplitAt(System.String,System.Char)">
             <summary>Gets the substrings to the left and right of a dividing character.</summary>

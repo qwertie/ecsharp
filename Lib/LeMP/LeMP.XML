@@ -113,7 +113,7 @@
             call; and to control the printout of messages.
             <para/>
             This class processes a batch of files at once. Call either
-            <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
+            <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Syntax.LNodeList)"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
             Parallelizing on a file-by-file basis is easy; each source file is completely 
             independent, since no semantic analysis is being done. 
             </remarks>
@@ -147,14 +147,14 @@
             <para/>
             The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
             syntax for <see cref="T:Loyc.Symbol"/>) are not normally stored in this collection; 
-            when you use <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>, 
+            when you use <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Syntax.LNodeList)"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>, 
             @@#inputFolder and @@#inputFileName are set according to the folder and 
             filename in <see cref="F:LeMP.InputOutput.FileName"/>. However, @@#inputFolder 
             is not set if the filename has no folder component, so this collection 
             could be used to provide a value of @@#inputFolder in that case.
             </remarks>
         </member>
-        <member name="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+        <member name="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Syntax.LNodeList)">
             <summary>Processes a list of nodes directly on the current thread.</summary>
             <remarks>Note: <c>AbortTimeout</c> doesn't work when using this overload.</remarks>
         </member>
@@ -251,7 +251,7 @@
             view or even modify some of this information.
             </remarks>
         </member>
-        <member name="M:LeMP.MacroProcessorTask.ProcessRoot(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+        <member name="M:LeMP.MacroProcessorTask.ProcessRoot(Loyc.Syntax.LNodeList)">
             <summary>Top-level macro applicator.</summary>
         </member>
         <member name="M:LeMP.MacroProcessorTask.ApplyMacros(Loyc.Syntax.LNode,System.Int32,System.Boolean,System.Boolean,Loyc.Collections.DList{Loyc.Pair{Loyc.Syntax.LNode,System.Int32}}@)">

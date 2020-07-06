@@ -2,23 +2,64 @@
 // A file for playing around with Enhanced C# and LeMP
 // 
 #importMacros(Loyc.LLPG);
-using System(.Linq, .Text, .Collections(, .Generic), .IO, );
+using System(.Text, .Collections(, .Generic), .IO, );
 using Loyc(.Collections, .MiniTest, .Syntax(, .Lexing), .Ecs, );
+
+// You might have `class Order` in a Order.cs file that is part of your project 
+// and use compileTime { includeFile("Order.cs"); } to use it at compile time, 
+// but if it's a small class (or if it uses EC# features) you might want to use 
+// compileTimeAndRuntime instead:
+compileTimeAndRuntime {
+	using System.Linq;
+
+	namespace Company {
+		public partial class Order {
+			public string ProductCode { get; set; }
+			public string ProductName { get; set; }
+		}
+	}
+}
+compileTime {
+	// (This is already provided as an extension method of Loyc.Essentials btw)
+	public static string WithoutPrefix(string s, string prefix) =>
+		s.StartsWith(prefix) ? s.Substring(prefix.Length) : s;
+
+	// In real life you might read a file with includeFileText("FileName.csv")
+	// and parse it at compile time, to produce a list or dictionary of objects.
+	Order[] CannedOrders = new[] { 
+		new Order { ProductName = "Tire", ProductCode = "#1234" },
+		new Order { ProductName = "XL Tire", ProductCode = "#1236" },
+		new Order { ProductName = "Black Rim", ProductCode = "#1238" },
+		new Order { ProductName = "Red Rim", ProductCode = "#1240" },
+	};
+}
+namespace Company {
+	public partial class Order {
+		precompute(CannedOrders
+			.Select(o => quote {
+			public static Order $(LNode.Id("New" + o.ProductName.Replace(" ", "")))() => 
+				new Order {
+					ProductName = $(LNode.Literal(o.ProductName)),
+					ProductCode = $(LNode.Literal(WithoutPrefix(o.ProductCode, "#"))),
+				};
+		}));
+	}
+}
 
 namespace Samples
 {
-	partial class PlayPen
-	{
-		internal static LNode GetName(LNode type)
-		{
-			matchCode(type) {
-			  case { class  $name : $(.._) { $(.._); }  },
-				   { struct $name : $(.._) { $(.._); }  },
-				   { enum   $name : $(.._) { $(.._)  }  }:
-				return name;
-			  default:
-				return null;
-			}
-		}
-	}
+    partial class PlayPen
+    {
+        internal static LNode GetName(LNode type)
+        {
+            matchCode(type) {
+              case { class  $name : $(.._) { $(.._); }  },
+                   { struct $name : $(.._) { $(.._); }  },
+                   { enum   $name : $(.._) { $(.._)  }  }:
+                return name;
+              default:
+                return null;
+            }
+        }
+    }
 }

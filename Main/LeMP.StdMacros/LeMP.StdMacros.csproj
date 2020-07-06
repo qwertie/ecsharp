@@ -12,12 +12,15 @@
     <DocumentationFile>..\..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Ecs.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
+    <ProjectReference Include="..\..\Core\Loyc.Interfaces\Loyc.Interfaces.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj" />
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj" />
     <ProjectReference Include="..\Ecs\Loyc.Ecs.csproj" />
     <Compile Include="..\..\Core\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.6.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="AlgebraicDataType.ecs">

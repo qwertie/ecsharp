@@ -190,9 +190,9 @@ namespace Loyc.VisualStudio
 				var range = ((LNode)context).Range;
 				line = range.Start.Line;
 				col = range.Start.Column;
-			} else if (context is SourcePos) {
-				line = ((SourcePos)context).Line;
-				col = ((SourcePos)context).Column;
+			} else if (context is LineColumnFile) {
+				line = ((LineColumnFile)context).Line;
+				col = ((LineColumnFile)context).Column;
 			} else if (context is SourceRange) {
 				line = ((SourceRange)context).Start.Line;
 				col = ((SourceRange)context).Start.Column;
