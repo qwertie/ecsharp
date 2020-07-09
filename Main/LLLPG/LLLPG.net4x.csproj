@@ -114,6 +114,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="OpenSourceKey.snk" />
     <None Include="ParsersAndMacros\AntlrStyleParserGrammar.ecs">
       <Generator>LeMP</Generator>

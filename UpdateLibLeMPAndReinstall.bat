@@ -10,6 +10,7 @@ copy Bin\Release\*.exe Lib\LeMP
 @IF ERRORLEVEL 1 GOTO ERROR
 copy Bin\Release\*.xml Lib\LeMP
 copy Bin\Release\*.pdb Lib\LeMP
+copy Bin\Release\*.exe.config Lib\LeMP
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe" /out vsbuild.log /build Debug "Visual Studio Integration\Visual Studio Integration 2017.sln"
 @echo off

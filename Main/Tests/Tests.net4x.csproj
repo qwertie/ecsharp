@@ -106,6 +106,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="PlayPen.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>PlayPen.out.cs</LastGenOutput>
