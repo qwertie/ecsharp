@@ -7,13 +7,13 @@ toc: true
 In Visual Studio
 ----------------
 
-Installing LeMP in Visual Studio (2015/2017) is easy now: just download the vsix file from the [latest release](https://github.com/qwertie/ecsharp/releases), then open it and tell it to install. (Visual Studio 2008 through 2013 have a different install process; see below.)
+To install LeMP in Visual Studio (2017/2019), download the vsix file from the [latest release page](https://github.com/qwertie/ecsharp/releases), and double-click on it.
 
-**Note**: If you installed a previous version of LeMP, you must uninstall it from within Visual Studio first, because apparently vsix files don't support upgrades. Go to Tools \| Extensions and Updates and find the "LeMP Custom Tool" or "LoycSyntaxForVS" extension and then click uninstall. If your old version is called LoycSyntaxForVS, then you were using the old two-part install process, which means there is also a two-part uninstall process. In this case, the second part of the uninstallation is to find the LoycFileGeneratorForVs.exe file (it is located wherever you chose to put it). Run this file and click "Unregister (Uninstall)".
+**Note**: If you installed a previous version of LeMP, you must uninstall it from within Visual Studio first; apparently vsix files don't support upgrades. Go to Extensions \| Manage Extensions, find the "LeMP Custom Tool" in the "Installed" section, and click Uninstall. You'll be asked to close Visual Studio. Close all instances. (If your old version is called LoycSyntaxForVS, then you were using the old two-part install process, which means there is also a two-part uninstall process. In this case, the second part of the uninstallation is to find the LoycFileGeneratorForVs.exe file (it is located wherever you chose to put it). Run this file and click "Unregister (Uninstall)".)
 
 ### Try it out
 
-I typically add a .cs file to my project as usual, then change the extension to .ecs. The Enhanced C# syntax highlighter should take over, though IntelliSense will stop working. Alternately, you can create a text file and give it the .ecs extension in the first place, as shown here:
+I typically add a .cs file to my project as usual, then change the extension to .ecs. The Enhanced C# syntax highlighter should take over, and IntelliSense will stop working. Alternately, you can create a text file and give it the .ecs extension in the first place, as shown here:
 
 ![](lemp-add-file-1.png)
 ![](lemp-add-file-2.png)
@@ -64,18 +64,16 @@ To install syntax highlighting for `.ecs` and `.les` files, run `LoycSyntaxForVs
 On other platforms
 ------------------
 
-All platforms support a command-line version of LeMP, LeMP.exe. Download the zip file from the [latest release](https://github.com/qwertie/ecsharp/releases) (e.g. LeMP2.6.2.zip) and unzip it.
+All platforms support a command-line version of LeMP, LeMP.exe, and a demo window, LeMPDemo.exe. Download the zip file from the [latest release](https://github.com/qwertie/ecsharp/releases) (e.g. LeMP2.6.2.zip) and unzip it.
 
 That zip file contains LeMP.exe. You can run this file directly on Windows:
 
     LeMP your-source-code.ecs
 
-But on other platforms you'll typically run it with [mono](http://www.mono-project.com):
+But on other platforms you'll typically run it with [mono](http://www.mono-project.com) or .NET Core, e.g.
 
     mono ./LeMP.exe your-source-code.ecs
 
-LeMP also has a built-in editor to help you play with it - just run `LeMPDemo.exe`.
-
 ![](lemp-editor.png)
 
-Okay, that's it. Good luck, have fun, and feel free to email me if you need help. I'm reachable via gmail.com, where my username is qwertie256.
+Okay, that's it. Good luck, have fun. If you have questions, please post them on StackOverflow with the `lemp` and `ec#` tags, and I will be notified. If you find a bug or have a feature request, post it on the [issues list](https://github.com/qwertie/ecsharp/issues).
