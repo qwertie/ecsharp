@@ -74,6 +74,8 @@ But on other platforms you'll typically run it with [mono](http://www.mono-proje
 
     mono ./LeMP.exe your-source-code.ecs
 
+LeMPDemo.exe is a program that lets you try it interactively:
+
 ![](lemp-editor.png)
 
 Okay, that's it. Good luck, have fun. If you have questions, please post them on StackOverflow with the `lemp` and `ec#` tags, and I will be notified. If you find a bug or have a feature request, post it on the [issues list](https://github.com/qwertie/ecsharp/issues).
