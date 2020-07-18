@@ -11,8 +11,9 @@ Introduction
 
 One of the main uses of LeMP is generating large amounts of code that follow obvious patterns.
 
-- The `static` macros (`static if`, `static deconstruct`, `static matchCode`, `staticMatches`) make decisions at compile-time by analyzing syntax.
+- The `compileTime` and `precompute` macros make decisions at compile-time by running C# code (powered by Microsoft's C# Interactive engine). This can produce numbers, expressions or blocks of code that are inserted into the output; it can also read or write files (or, in fact, do anything that you could do at runtime*) <div class="sidebox">* I don't consider this a good thing: it is a security risk, but .NET has never offered a very reliable sandboxing mechanism, and with the move to .NET Core, the old AppDomain sandboxing mechanism is going away. Giving you unlimited power to do anything at compile time seems like the best choice under the circumstances.</div>
 - The `replace`, `define` and `unroll` macros are typically used to generate user-defined code, but `replace` and  `define` may also useful for other tasks, such as implementing optimizations or doing syntactically predictable refactorings.
+- The `static` macros (`static if`, `static deconstruct`, `static matchCode`, `staticMatches`) make decisions at compile-time by analyzing syntax.
 - The `alt class` macro is the only macro on this page designed for a particular use case: generating disjoint union types in the form of class hierarchies.
 
 In addition, there is a macro for the unary `$` operator, which looks up and inserts a syntax variable captured by `static deconstruct`, `static tryDeconstruct` or the `` `staticMatches` `` operator. (This works differently from `static matchCode`, because `static matchCode` performs replacements "in advance" inside the "handler" below the matching `case`, whereas `$` replaces lazily. In most cases, however, the net effect is the same.)
@@ -117,6 +118,91 @@ static partial class Node {
 ~~~
 </div>
 
+### compileTime, compileTimeAndRuntime ###
+
+These two macros run code at compile-time using Microsoft's C# Interactive engine. The code can be either executable statements, like `string text = File.ReadAllText("File.txt");`, or declarations like `class Foo { ... }`. The code executes as though you had typed it into C# Interactive, except that the code is not expected to "return" any value or produce any output. These macros are usually used together with the `precompute` macro.
+
+The C# interactive engine has some limitations that you should keep in mind when using this feature. For example, namespaces are not supported, and extension methods are not allowed inside classes (extension methods _are_ allowed at the top level of the `compileTime` block, except in the initial release, v2.8.1).
+
+The `#r` directive can be used to reference an assembly. The path to the assembly can be absolute, or relative to the current value of `#get(#inputFolder)`, which is normally the folder that contains the source file that was given to LeMP (if one source file includes another using [`includeFile`](ref-other.html#includefile-aka-include), the input folder doesn't change, so by default `#r` is relative to the original file, not the current file.
+
+<div class='sbs' markdown='1'>
+~~~csharp
+compileTime {
+	#r "../../ecsharp/Lib/LeMP/Loyc.Utilities.dll"
+	using Loyc.Utilities;
+  
+	var stat = new Statistic();
+	stat.Add(5);
+	stat.Add(7);
+}
+class Foo {
+  const int Six = precompute((int) stat.Avg());
+}
+~~~
+
+~~~csharp
+class Foo {
+  const int Six = 6;
+}
+~~~
+</div>
+
+The code in a `compileTime` block automatically has references to assemblies with basic types such as tuples and `List<T>`, but it is necessary to add a `using` statement to access some of these types, e.g. `using System(.Collections.Generic, .Linq, .Text);`. Some Loyc core libraries are also referenced automatically: Loyc.Interfaces.dll, Loyc.Essentials.dll, Loyc.Collections.dll, Loyc.Syntax.dll, Loyc.Ecs.dll, and LeMP.StdMacros.dll.
+
+The following namespaces are imported automatically and do not require a `using` statement: `System`, `Loyc`, `Loyc.Syntax`.
+
+The code passed to `compileTime` (and related macros, including `precompute`) runs in the same context as LeMP itself, so it will run under the same version of .NET as LeMP itself uses. As of July 2020, The LeMP extension for Visual Studio expects to run under .NET version 4.7.2, but the actual environment is set up by Visual Studio itself. Therefore, certain C# features such as `#nullable enable` may or may not work depending on the environment.
+
+`compileTime` blocks should appear at the top level of the file, outside any `namespace` or `class` declarations, because there is no support for scoping. For example, consider this code:
+
+~~~csharp
+class X {
+  // Not allowed
+  compileTime {
+    using System;
+    string text = "Text";
+    string folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+  }
+}
+class Y {
+  compileTime {
+    File.WriteAllText(Path.Combine(folder, "temp.txt"), text));
+  }
+}
+~~~
+
+This code would naturally _work_ because the `compileTime` blocks are simply given to C# Interactive to run. But this is confusing, because `text` and `folder` appear to be defined in `class X` and used in `class Y`. To reduce confusion, this code produces the following error: "compileTime is designed for use only at the top level of the file. It will be executed as though it is at the top level."
+
+LeMP will evaluate macros in the code block before executing it. For example, you could use the [`quote` macro](ref-other.html#quote) or the [`matchCode` macro](http://ecsharp.net/lemp/ref-other.html#matchcode) to create or analyze syntax trees.
+
+`compileTime` blocks do not appear in the output file, but `compileTimeAndRuntime` blocks are both executed and also copied to the output file. If you are unsure what effect a macro has inside a `compileTime` block, try changing it to `compileTimeAndRuntime` temporarily and look at the output file. Also, when a compiler error occurs in C# Interactive, LeMP will include, in the error message, the final line of code that was given to C# Interactive, instead of the original EC# code.
+
+There are four kinds of errors that can occur when using code-execution macros:
+
+1. Enhanced C# parser errors. These errors do not include an error code, only a location.
+2. Messages from the macro. These errors or warnings begin with the qualified macro name, e.g. `LeMP.StandardMacros.compileTime`
+3. "Compile-time" errors from C# interactive, which begin with a macro name (`LeMP.StandardMacros.compileTime`) but also include an error code from the C# compiler (e.g. CS0103).
+4. Execution-time errors, which occur when the code is valid but encounters an error when it is executed. These errors will be followed by a stack trace in the Error List.
+
+**Note:** As of July 2020, warnings from C# Interactive are not supported and are never shown.
+
+**Warning:** `compileTime` and related macros are somewhat dangerous, in a couple of ways:
+
+1. There are no restrictions on what the code can do: it can read or write files, access the internet, or engage in destructive behavior. This makes it a security risk if you or your team did not write the code being given to LeMP.
+2. The code can accidentally cause problems. Visual Studio will run the code **every time you save the file**, and it will also run the code **every time you switch to a different file in the editor**. So if your code is incomplete or buggy, it could do something unexpected just because you pressed Ctrl+Tab or saved the file.
+
+For example, when using the LeMP extension, you can **crash Visual Studio** with code like this:
+
+~~~csharp
+compileTime {
+    int Foo() => Foo();
+    Foo();
+}
+~~~
+
+This causes `StackOverflowException`, which is unrecoverable and terminates the host process. I  [considered](https://github.com/qwertie/ecsharp/issues/112#issuecomment-653931471) fixing this, but avoiding the problem would be a substantial amount of work, and I noticed that T4 templates (which Visual Studio has supported for over 10 years) have the same problem. If it's good enough for Microsoft, I thought to myself, it's good enough for an open-source project with zero funding. In fact, T4 templates are even worse. `<# while(true) {} #>` will freeze Visual Studio forever, but LeMP has a system to stop itself after (by default) 10 seconds.
+
 ### define ###
 
 <div class='sbs' markdown='1'>
@@ -195,6 +281,38 @@ The order of replacements is
 Often, `define` has higher performance than `replace` because, by piggybacking on the usual macro expansion process, it avoids performing an extra pass on the syntax tree.
 
 **Note**: `define` and `replace` are not hygienic. For example, variables defined in the replacement expression are not renamed to avoid conflicts with variables defined at the point of expansion.
+
+### precompute, rawPrecompute ###
+
+These macros evaluate an expression using the C# interactive engine. The expression is allowed to return either a primitive value, a syntax tree ([Loyc tree](http://loyc.net/loyc-trees)), or a list of syntax trees. In all cases, the macro call is replaced with its result.
+
+~~~exec
+double Talk() { 
+	precompute(new List<LNode> {
+		quote(Console.WriteLine("hello")),
+		quote { return $(LNode.Literal(Math.PI)); }
+	});
+}
+~~~
+
+`precompute` shares the same instance of C# Interactive as `compileTime`, and most of the documentation of that macro applies to this one.
+
+`rawCompute` is like `precompute` except that macros are blocked:
+
+1. macros are not evaluated inside the expression (e.g. `rawCompute(quote(x))` produces an error). **Note:** other macros such as `replace` could still be used to change the code before `rawPrecompute` sees it.
+2. if the expression returns a syntax tree, macros are not evaluated on it afterward.
+
+Runtime variables and functions are not visible at compile-time, and variables created inside `precompute` disappear immediately afterward. For example, in the following code, the second call to `precompute` cannot access `array` or `x`, so an error occurs.
+
+~~~csharp
+compileTime {
+  var dict = new Dictionary<int,int>() { [0] = 123 };
+}
+var array = new[] {
+    precompute(dict.TryGetValue(0, out int x)),
+    precompute(x) // error CS0103: the name 'x' does not exist [...]
+};
+~~~
 
 ### replace ###
 

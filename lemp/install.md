@@ -9,6 +9,8 @@ In Visual Studio
 
 To install LeMP in Visual Studio (2017/2019), download the vsix file from the [latest release page](https://github.com/qwertie/ecsharp/releases), and double-click on it.
 
+**Note:** users should be aware that LeMP has a similar security risk as T4 templates (.tt files, which are natively supported by Visual Studio). LeMP and T4 templates can run any code they are instructed to run inside the file they are processing.
+
 **Note**: If you installed a previous version of LeMP, you must uninstall it from within Visual Studio first; apparently vsix files don't support upgrades. Go to Extensions \| Manage Extensions, find the "LeMP Custom Tool" in the "Installed" section, and click Uninstall. You'll be asked to close Visual Studio. Close all instances. (If your old version is called LoycSyntaxForVS, then you were using the old two-part install process, which means there is also a two-part uninstall process. In this case, the second part of the uninstallation is to find the LoycFileGeneratorForVs.exe file (it is located wherever you chose to put it). Run this file and click "Unregister (Uninstall)".)
 
 ### Try it out
