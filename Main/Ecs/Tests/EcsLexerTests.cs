@@ -99,6 +99,19 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void TestHexEscapeSequences()
+		{
+			Case(@"""\u0020\U00020\x20""", A(TT.Literal), "   ");
+			Case(@"""\U0020\u00200\x20""", A(TT.Literal), "  0 ");
+			Case(@"""\u0009\u00009\x09""", A(TT.Literal), "\t\09\t");
+			Case(@"""\u2202\U02202\x2202""", A(TT.Literal), "\u2202\u2202\"02"); // • Bullet
+			Case(@"""\U1F4A9\U10FFFF""", A(TT.Literal), "\uD83D\uDCA9\uDBFF\uDFFF"); // 💩 pile of poo and highest code point
+			Case(@"""\u1F4A9\u10FFFF""", A(TT.Literal), "\u1F4A9\u10FFFF"); // only 4 digits are part of each escape sequence
+			Case(@"""\U1F4A90""", A(TT.Literal), ERROR); // This escape is not really 6 digits
+			Case(@"""\U110000""", A(TT.Literal), ERROR); // The greatest escape U+10FFFF plus 1
+		}
+
+		[Test]
 		public void TestShebang()
 		{
 			Case("#!/bin/sh\r\n// that's called a shebang!",

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -154,9 +154,11 @@ namespace Loyc.Syntax
 			encountered |= EscapeC.HasEscapes;
 			int code; // hex code after \u or \x
 			UString slice, original = s;
-			switch (s.PopFirst(out fail)) {
+			int type = s.PopFirst(out fail);
+			switch (type) {
 				case 'u':
-					slice = s.Left(6);
+				case 'U':
+					slice = s.Left(type == 'U' ? 6 : 4);
 					if (TryParseHex(ref slice, out code) >= 4) {
 						if (code <= 0x10FFFF) {
 							s = s.Substring(slice.InternalStart - s.InternalStart);

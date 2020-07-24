@@ -79,7 +79,7 @@ namespace Loyc.Syntax.Les
 		{
 			// Astral characters are stored as surrogate pairs in C#
 			// and are printed as 6-digit escapes by the printer.
-			Exact(@"""\u01F4A9.\u10FFFF""", F.Literal("\uD83D\uDCA9.\uDBFF\uDFFF").SetBaseStyle(NodeStyle.Default));
+			Exact(@"""\U01F4A9.\U10FFFF""", F.Literal("\uD83D\uDCA9.\uDBFF\uDFFF").SetBaseStyle(NodeStyle.Default));
 			// Invalid UTF-8 bytes are transliterated to 0xDCxx bytes.
 			// High surrogates (0xD800..0xDBFF) are left alone.
 			Exact(@"""\xFF.\uD800""", F.Literal("\uDCFF.\uD800").SetBaseStyle(NodeStyle.Default));
@@ -89,8 +89,8 @@ namespace Loyc.Syntax.Les
 		public void StringLiteralsWithArbitraryBytes()
 		{
 			Exact(@"""é""",        F.Literal("é"));
-			Exact(@"""\u01F4A9""", F.Literal("\uD83D\uDCA9")); // 💩 pile of poo U+1F4A9
-			Stmt (@" ""\u1F4A9""", F.Literal("\uD83D\uDCA9")); // Printer uses 6 digits, only 5 needed
+			Exact(@"""\U01F4A9""", F.Literal("\uD83D\uDCA9")); // 💩 pile of poo U+1F4A9
+			Stmt (@" ""\U1F4A9""", F.Literal("\uD83D\uDCA9")); // Printer uses 6 digits, only 5 needed
 			Exact(@"""\x1B\xFF""", F.Literal("\x1B\uDCFF"));
 			// Triple-quote request is ignored if the string contains invalid UTF-8,
 			// since triple-quoted strings do not support \xNN or \uNNNN escapes.

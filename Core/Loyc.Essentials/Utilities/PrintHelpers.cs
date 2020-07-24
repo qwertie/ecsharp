@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -50,15 +50,17 @@ namespace Loyc.Syntax
 
 		static void EscapeU(int c, StringBuilder @out, EscapeC flags)
 		{
-			if (c <= 255 && (flags & EscapeC.BackslashX) != 0)
+			if (c <= 255 && (flags & EscapeC.BackslashX) != 0) {
 				@out.Append(@"\x");
-			else {
+			} else if (c > 0xFFFF || (flags & EscapeC.HasLongEscape) != 0) {
+				@out.Append(@"\U");
+				Debug.Assert(c <= 0x10FFFF);
+				@out.Append(HexDigitChar((c >> 20) & 0xF));
+				@out.Append(HexDigitChar((c >> 16) & 0xF));
+				@out.Append(HexDigitChar((c >> 12) & 0xF));
+				@out.Append(HexDigitChar((c >> 8) & 0xF));
+			} else {
 				@out.Append(@"\u");
-				if (c > 0xFFFF || (flags & EscapeC.HasLongEscape) != 0) {
-					Debug.Assert(c <= 0x10FFFF);
-					@out.Append(HexDigitChar((c >> 20) & 0xF));
-					@out.Append(HexDigitChar((c >> 16) & 0xF));
-				}
 				@out.Append(HexDigitChar((c >> 12) & 0xF));
 				@out.Append(HexDigitChar((c >> 8) & 0xF));
 			}
@@ -257,10 +259,10 @@ namespace Loyc.Syntax
 		HasEscapes = 0x100, 
 		/// <summary>While unescaping, an unrecognized escape was encountered .</summary>
 		Unrecognized = 0x200,
-		/// <summary>While unescaping, a valid \u escape was encountered with more than 4 digits.
+		/// <summary>While unescaping, a valid \U escape was encountered with more than 4 digits.
 		/// To detect whether the value was above 0xFFFF, however, one must check the output.</summary>
 		HasLongEscape = 0x400,
-		/// <summary>While unescaping, a valid \u escape was encountered with 6 digits, but the
+		/// <summary>While unescaping, a valid \U escape was encountered with 6 digits, but the
 		/// number was more than 0x10FFFF and had to be treated as 5 digits to make it valid.</summary>
 		/// <remarks>Always appears with HasLongEscape | HasEscapes</remarks>
 		HasInvalid6DigitEscape = 0x800,
