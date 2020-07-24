@@ -6,6 +6,15 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.8.2: July 24, 2020 ###
+
+LeMP:
+- Add `*.exe.config` files in LeMP2.8.2.zip to avoid `FileLoadException` from Roslyn when attempting to use `compileTime` and `precompute` with LeMP (note: the VS extension never had this problem)
+- Extension methods are no longer blocked in `compileTime`: I thought extension methods weren't allowed by C# Interactive engine. In fact they are only disallowed in classes. You'll get an odd-looking error if you attempt to use an extension method in a class inside `compileTime`; the C# interactive engine will complain that the class is "a nested class".
+
+Enhanced C# printer/parser:
+- Interpret `\u` differently to match C#/JS. In C#/JS/JSON, `\u` must be followed by 4 digits, and any additional digits will be ignored; previously `\u` could be followed by a code between 4 and 6 digits long. A new prefix `\U` has been introdued for codes between 4 and 6 digits, and `\u` is reserved for codes that are exactly 4 digits.
+
 ### v2.8.1: July 6, 2020 ###
 
 EC# Parser/Printer:

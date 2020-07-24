@@ -72,7 +72,13 @@ The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
                                LLLPG.exe (Loyc LL(k) Parser Generator)
 
     External libraries:
-    - Theraot.Core is a compatibility library used only in .NET 3.5 builds
+    - The following libraries are required for running C# code at compile time:
+      Microsoft.CodeAnalysis.CSharp.dll, Microsoft.CodeAnalysis.Scripting.dll,
+      Microsoft.CodeAnalysis.CSharp.Scripting.dll, Microsoft.CodeAnalysis.dll, 
+      System.Buffers.dll, System.Memory.dll, System.Reflection.Metadata.dll,
+      System.Collections.Immutable.dll, System.Threading.Tasks.Extensions.dll,
+      System.Numerics.Vectors.dll, System.Text.Encoding.CodePages.dll,
+      System.Runtime.CompilerServices.Unsafe.dll.
     - ICSharpCode.TextEditor is a text editor widget for LeMP's built-in editor
     - OxyPlot is used by LoycCore.Benchmarks to results of the newest benchmarks
     Note: Baadia is a prototype boxes-and-arrows diagram maker. It doesn't belong 

@@ -124,7 +124,7 @@ These two macros run code at compile-time using Microsoft's C# Interactive engin
 
 The C# interactive engine has some limitations that you should keep in mind when using this feature. For example, namespaces are not supported, and extension methods are not allowed inside classes (extension methods _are_ allowed at the top level of the `compileTime` block, except in the initial release, v2.8.1).
 
-The `#r` directive can be used to reference an assembly. The path to the assembly can be absolute, or relative to the current value of `#get(#inputFolder)`, which is normally the folder that contains the source file that was given to LeMP (if one source file includes another using [`includeFile`](ref-other.html#includefile-aka-include), the input folder doesn't change, so by default `#r` is relative to the original file, not the current file.
+To reference an assembly, use the `#r` directive as shown in the following example. The path to the assembly can be absolute, or relative to the current value of `#get(#inputFolder)`, which is normally the folder that contains the source file that was given to LeMP (if one source file includes another using [`includeFile`](ref-other.html#includefile-aka-include), the input folder doesn't change, so by default `#r` is relative to the original file, not the current file.)
 
 <div class='sbs' markdown='1'>
 ~~~csharp
