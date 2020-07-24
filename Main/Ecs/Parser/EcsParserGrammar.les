@@ -70,6 +70,7 @@ namespace Loyc.Ecs.Parser
 		alias("<" = TT.LT);
 		alias(">" = TT.GT);
 		alias("<=,>=" = TT.LEGE);
+		alias("<=>" = TT.Compare);
 		alias(".." = TT.DotDot);
 		alias("?" = TT.QuestionMark);
 		alias("??" = TT.NullCoalesce);
@@ -80,6 +81,7 @@ namespace Loyc.Ecs.Parser
 		alias("=>" = TT.LambdaArrow);
 		alias("," = TT.Comma);
 		alias(";" = TT.Semicolon);
+		alias("|>,?|>" = TT.PipeArrow);
 		
 		// Used to resolve the constructor ambiguity, in which "Foo()" could be a
 		// constructor declaration or a method call. _spaceName is the name of the
@@ -459,8 +461,8 @@ namespace Loyc.Ecs.Parser
 			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"     
 			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--" 
 			|	"&&" | "||,^^" | "!"     | "&"   | "^"  | "|"   | "~"  | "==,!=" 
-			|	"<"  | ">"     | "<=,>=" | ".."  | "?"  | "??"  | "=:" | ":="
-			|	"$"  | "=>"    | "==>" )
+			|	"<"  | ">"     | "<=,>=" | "<=>" | ".." | "?"   | "??" | "=:"
+			|	":=" | "$"     | "=>"    | "==>" | "|>,?|>" )
 		};
 
 		token NewExpr::LNode @{
@@ -704,8 +706,8 @@ namespace Loyc.Ecs.Parser
 			greedy
 			(	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
-				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.In )
+				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|"|>,?|>"|TT.BQString|TT.In )
 				rhs:=SubExpr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// is-test or a more complex is-expr

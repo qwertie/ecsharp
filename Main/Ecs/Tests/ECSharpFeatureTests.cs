@@ -5,7 +5,7 @@ using Loyc.Ecs.Parser;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {
@@ -27,16 +27,18 @@ namespace Loyc.Ecs.Tests
 			Expr("Don't",  _("Don't"));
 		}
 
+		[Test]
 		public void EcsPrefixOperators()
 		{
 			Expr("$a",     F.Call(S.Substitute, a));
 			Expr("$(-$a)", F.Call(S.Substitute, F.Call(S._Negate, F.Call(S.Substitute, a))));
 			Expr(".(-a)",  F.Call(S.Dot, F.Call(S._Negate, a)));
 			Expr("..a", F.Call(S.DotDot, a));
-			Expr("..<a", F.Call(S.DotDot, a));
+			Expr("..<a", F.Call(S.DotDot, a), mode: Mode.ParserTest);
 			Expr("...a", F.Call(S.DotDotDot, a));
 		}
 
+		[Test]
 		public void EcsInfixOperators()
 		{
 			Expr("a**b**c",      F.Call(S.Exp, F.Call(S.Exp, a, b), c));
@@ -45,26 +47,40 @@ namespace Loyc.Ecs.Tests
 			Expr("a += b ~ c",   F.Call(S.AddAssign, a, F.Call(S.NotBits, b, c)));
 			Expr("a ??= b",      F.Call(S.NullCoalesceAssign, a, b));
 			Expr("a..b",         F.Call(S.DotDot, a, b));
-			Expr("a..<b",        F.Call(S.DotDot, a, b));
+			Expr("a..<b",        F.Call(S.DotDot, a, b), mode: Mode.ParserTest);
 			Expr("a...b",        F.Call(S.DotDotDot, a, b));
 		}
 
+		[Test]
 		public void EcsOtherOperatorTests()
 		{
 			Expr("a. 2",         F.Dot(a, two));
 			Expr("a::b.c. 2",    F.Dot(F.Call(S.ColonColon, a, b), c, two));
-			Expr("1 `Foo` 2",    F.Call(Foo, F.Literal(1), F.Literal(2)));
+			Expr("1 `Foo` 2",    F.Call(Foo, F.Literal(1), F.Literal(2)).SetStyle(NodeStyle.Operator));
 			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceAssign, a, F.Call(S.UsingCast, b, Foo)));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)",     F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
-			Expr("x(->a + b)",   F.Call(S.Cast, x, F.Call(S.Add, a, b)).SetStyle(NodeStyle.Alternate));
+			Expr("x(->a<b>)",    F.Call(S.Cast, x, F.Of(a, b)).SetStyle(NodeStyle.Operator | NodeStyle.Alternate));
 			Expr("x as Foo",     F.Call(S.As, x, Foo));
 			Expr("x(as Foo)",    F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
 			Expr("x using Foo",  F.Call(S.UsingCast, x, Foo));
 			Expr("x(using Foo)", F.Call(S.UsingCast, x, Foo).SetStyle(NodeStyle.Alternate));
 			// Printer detects a possible ambiguity between multiplication and a pointer declaration?
-			Stmt("a `*` b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
+			Stmt("a `'*` b ? x : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), x, zero));
 			Stmt("a * b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParserTest);
+		}
+
+		[Test]
+		public void EcsNewOperatorTests()
+		{
+			Expr("a(x) |> b(#)", F.Call(S.ForwardPipeArrow, F.Call(a, x), F.Call(b, _("#"))));
+			Expr("a(x) ?|> b(#)", F.Call(S.NullForwardPipeArrow, F.Call(a, x), F.Call(b, _("#"))));
+			Expr("a ?? b |> c = #", F.Call(S.ForwardPipeArrow, F.Call(S.NullCoalesce, a, b), F.Assign(c, _("#"))));
+			Expr("a ?? b ?|> c = #", F.Call(S.NullForwardPipeArrow, F.Call(S.NullCoalesce, a, b), F.Assign(c, _("#"))));
+			Expr("a = b |> c", F.Assign(a, F.Call(S.ForwardPipeArrow, b, c)));
+			Expr("a = b ?|> c", F.Assign(a, F.Call(S.NullForwardPipeArrow, b, c)));
+			Expr("a = b <=> c", F.Assign(a, F.Call(S.Compare, b, c)));
+			Expr("a `mod` b <=> c == 0", F.Call(S.Eq, F.Call(S.Compare, Operator(F.Call(_("mod"), a, b)), c), zero));
 		}
 
 		[Test]

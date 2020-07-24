@@ -141,14 +141,16 @@ namespace Loyc.Ecs.Parser
 		LT        = TokenKind.Operator + 20, // <
 		GT        = TokenKind.Operator + 21, // >
 		LEGE      = TokenKind.Operator + 22, // <= >=
-		DotDot       = TokenKind.Operator + 23, // ..
-		QuestionMark = TokenKind.Operator + 24, // ?
-		NullCoalesce = TokenKind.Operator + 25, // ??
-		QuickBind    = TokenKind.Operator + 26, // =:
-		Forward      = TokenKind.Operator + 27, // ==>
-		Substitute   = TokenKind.Operator + 28, // $
-		LambdaArrow  = TokenKind.Operator + 29, // =>
-		
+		Compare   = TokenKind.Operator + 23, // <=>
+		DotDot       = TokenKind.Operator + 24, // ..
+		QuestionMark = TokenKind.Operator + 25, // ?
+		NullCoalesce = TokenKind.Operator + 26, // ??
+		QuickBind    = TokenKind.Operator + 27, // =:
+		Forward      = TokenKind.Operator + 28, // ==>
+		Substitute   = TokenKind.Operator + 29, // $
+		LambdaArrow  = TokenKind.Operator + 30, // =>
+		PipeArrow    = TokenKind.Operator + 31, // |>, ?|>
+
 		Unknown = TokenKind.Other, // invalid input
 		//Indent = TokenKind.LBrace + 1,
 		//Dedent = TokenKind.RBrace + 1,

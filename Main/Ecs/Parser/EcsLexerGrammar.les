@@ -187,20 +187,22 @@ namespace Loyc.Ecs.Parser
 		@[private] token At        @{ '@' { _type = TT.At;    _value = S.AtSign; } };
 
 		@[k(3), private] token Operator  @{
-		( "..."  { _type = TT.DotDot; _value = S.DotDotDot; }
-		/ "..<"  { _type = TT.DotDot; _value = S.DotDot; }
+		( "..." { _type = TT.DotDot; _value = S.DotDotDot; }
+		/ "..<" { _type = TT.DotDot; _value = S.DotDot; }
 		/ ".."  { _type = TT.DotDot; _value = S.DotDot; }
 		/ "."   { _type = TT.Dot; _value = S.Dot; }
 		| ">>=" { _type = TT.CompoundSet; _value = S.ShrAssign; }
 		/ ">="  { _type = TT.LEGE; _value = S.GE; }
 		/ ">"   { _type = TT.GT; _value = S.GT; }
+		/ "<=>" { _type = TT.Compare; _value = S.Compare; }
 		/ "<<=" { _type = TT.CompoundSet; _value = S.ShlAssign; }
 		/ "<="  { _type = TT.LEGE; _value = S.LE; }
 		/ "<"   { _type = TT.LT; _value = S.LT; }
 		| "&&"  { _type = TT.And; _value = S.And; }
 		/ "&="  { _type = TT.CompoundSet; _value = S.AndBitsAssign; }
 		/ "&"   { _type = TT.AndBits; _value = S.AndBits; }
-		| "||"  { _type = TT.OrXor; _value = S.Or; }
+		| "|>"  { _type = TT.PipeArrow; _value = S.ForwardPipeArrow; }
+		/ "||"  { _type = TT.OrXor; _value = S.Or; }
 		/ "|="  { _type = TT.CompoundSet; _value = S.OrBitsAssign; }
 		/ "|"   { _type = TT.OrBits; _value = S.OrBits; }
 		| "^^"  { _type = TT.OrXor; _value = S.Xor; }
@@ -236,6 +238,7 @@ namespace Loyc.Ecs.Parser
 		| "??=" { _type = TT.CompoundSet; _value = S.NullCoalesceAssign; }
 		/ "??"  { _type = TT.NullCoalesce; _value = S.NullCoalesce; }
 		/ "?."  { _type = TT.NullDot; _value = S.NullDot; }
+		/ "?|>" { _type = TT.PipeArrow; _value = S.NullForwardPipeArrow; }
 		/ "?"   { _type = TT.QuestionMark; _value = S.QuestionMark; }
 		| "$"   { _type = TT.Substitute; _value = S.Substitute; }
 		| "\\"  { _type = TT.Backslash; _value = S.Backslash; }

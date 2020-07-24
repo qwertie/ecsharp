@@ -55,7 +55,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence Primary    = new Precedence(100);   // x.y x::y x=:y x->y f(x) x(->y) a[x] x++ x-- typeof() checked() unchecked() new
 		public static readonly Precedence NullDot    = new Precedence(99);    // ?.
 		public static readonly Precedence Prefix     = new Precedence(91, 90, 90, 91); // +  -  !  ~  ++x  --x  (T)x
-		public static readonly Precedence Power      = new Precedence(86, 85);// **
+		public static readonly Precedence Power      = new Precedence(85);    // ** (tentatively left-associative)
 		public static readonly Precedence Range      = new Precedence(80);    // ..
 		public static readonly Precedence Forward    = new Precedence(78);    // ==> x
 		public static readonly Precedence Switch     = new Precedence(75);    // expr switch { ... }
@@ -63,6 +63,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence Add        = new Precedence(60);    // +, -, ~
 		public static readonly Precedence Shift      = new Precedence(56, 56, 56, 70); // >> << (for printing purposes, immiscible with * / + -)
 		public static readonly Precedence Backtick   = new Precedence(46, 72, 45, 73); // `custom operator` (immiscible with * / + - << >> ..)
+		public static readonly Precedence Compare3Way= new Precedence(42);    // <=>
 		public static readonly Precedence Compare    = new Precedence(40);    // < > <= >=
 		public static readonly Precedence IsAsUsing  = new Precedence(40, 99, 40, 40); // is as using
 		public static readonly new Precedence Equals = new Precedence(38);    // == != in
@@ -72,6 +73,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence And        = new Precedence(22);    // &&
 		public static readonly Precedence Or         = new Precedence(20);    // || ^^
 		public static readonly Precedence OrIfNull   = new Precedence(16);    // ??
+		public static readonly Precedence ForwardPipeArrow = new Precedence(13);    // |> ?|>
 		public static readonly Precedence IfElse     = new Precedence(11, 10, 10, 11); // x ? y : z
 		public static readonly Precedence Assign     = new Precedence(26,  0,  0, 1);  // =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=
 		public static readonly Precedence Lambda     = new Precedence(85, -1, -2, -1); // =>
