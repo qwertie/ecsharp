@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.8.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -306,9 +306,11 @@ namespace Loyc
 		}
 	
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
-		[Obsolete] public static readonly TraceMessageSink Trace = TraceMessageSink.Value;
+		[Obsolete("Use TraceMessageSink.Value instead")] 
+		public static readonly TraceMessageSink Trace = TraceMessageSink.Value;
 		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine(string)"/>.</summary>
-		[Obsolete] public static readonly ConsoleMessageSink Console = ConsoleMessageSink.Value;
+		[Obsolete("Use ConsoleMessageSink.Value instead")] 
+		public static readonly ConsoleMessageSink Console = ConsoleMessageSink.Value;
 		/// <summary>The message sink that discards all messages.</summary>
 		public static readonly NullMessageSink Null = NullMessageSink.Value;
 	

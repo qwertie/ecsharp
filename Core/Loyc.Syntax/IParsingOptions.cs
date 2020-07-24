@@ -29,7 +29,7 @@ namespace Loyc.Syntax
 	}
 
 	/// <summary>A simple implementation of <see cref="IParsingOptions"/>.</summary>
-	class ParsingOptions : IParsingOptions
+	public class ParsingOptions : IParsingOptions
 	{
 		public ParsingMode Mode { get; set; } = ParsingMode.File;
 

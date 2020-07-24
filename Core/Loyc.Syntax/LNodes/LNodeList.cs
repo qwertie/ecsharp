@@ -140,7 +140,7 @@ namespace Loyc.Syntax
 
 		public LNodeList AddRange(VList<LNode> list) => new LNodeList(_list.AddRange(list));
 		public LNodeList AddRange(LNodeList list) => new LNodeList(_list.AddRange(list._list));
-		public LNodeList AddRange(IList<LNode> list) => new LNodeList(_list.AddRange(list));
+		public LNodeList AddRange(IReadOnlyList<LNode> list) => new LNodeList(_list.AddRange(list));
 		public LNodeList AddRange(IEnumerable<LNode> list) => new LNodeList(_list.AddRange(list));
 		public LNodeList InsertRange(int index, IReadOnlyList<LNode> list) => new LNodeList(_list.InsertRange(index, list));
 		public LNodeList RemoveRange(int index, int count) => new LNodeList(_list.RemoveRange(index, count));
