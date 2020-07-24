@@ -57,7 +57,7 @@ namespace LeMP.Tests
 									TestCompiler.StripExtraWhitespace(resultStr));
 					// In some tests, the text is equal even though the trees are different,
 					// typically because of differences in #trivia attributes between the two.
-					Console.WriteLine(); // it's OK, but print a hint that this occurred.
+					Console.WriteLine("(minor dif)"); // it's OK, but print a hint that this occurred.
 				}
 			}
 		}

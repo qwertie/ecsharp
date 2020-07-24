@@ -90,30 +90,20 @@ namespace LeMP
 			WriteHeaderCommentInSessionLog(node, context.Sink);
 
 			// Remove namespace blocks (not supported by Roslyn scripting)
-			LNode namespaceBlock = null, extensionMethod = null;
-			var codeSansNamespaces = code.RecursiveReplace(ProblemFixer);
-			LNodeList? ProblemFixer(LNode n)
+			LNode namespaceBlock = null;
+			var codeSansNamespaces = code.RecursiveReplace(RemoveNamespaces);
+			LNodeList? RemoveNamespaces(LNode n)
 			{
 				if (EcsValidators.SpaceDefinitionKind(n, out _, out _, out LNode body) == S.Namespace)
 				{
 					namespaceBlock = n;
-					return body.Args.RecursiveReplace(ProblemFixer);
-				}
-				else if (n.Calls(S.Var, 2) && n.AttrNamed(S.This) != null)
-				{
-					// Scripting engine will give the confusing error "Extension methods 
-					// must be defined in a top level static class; Extensions is a nested 
-					// class" - so strip out 'this' and give our own error instead.
-					extensionMethod = n;
-					return LNode.List(n.WithoutAttr(n.AttrNamed(S.This)));
+					return body.Args.RecursiveReplace(RemoveNamespaces);
 				}
 				return null;
 			}
 
 			if (namespaceBlock != null)
 				context.Warning(namespaceBlock, "The C# scripting engine does not support namespaces. They will be ignored when running at compile time.");
-			if (extensionMethod != null)
-				context.Error(extensionMethod, "The C# scripting engine does not support extension methods.");
 
 			RunCSharpCodeWithRoslyn(node, codeSansNamespaces, context);
 
@@ -272,5 +262,6 @@ namespace LeMP
 				sink.Write(Severity.ErrorDetail, context, moreInfo);
 			}
 		}
+
 	}
 }
