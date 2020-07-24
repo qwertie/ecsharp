@@ -8,7 +8,7 @@ using Loyc.MiniTest;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class TestReplaceMacro : MacroTesterBase
+	public class TestReplaceAndDefineMacros : MacroTesterBase
 	{
 		[Test]
 		public void TestReplace_basics()
@@ -137,6 +137,21 @@ namespace LeMP.Tests
 					@"Console.WriteLine(124);");
 			TestLes(@"#define WL { Console.WriteLine; }; WL(125);",
 					@"Console.WriteLine(125);");
+		}
+
+		[Test]
+		public void TestMulDiv()
+		{
+			TestEcs(@"
+				replace (($x * $y / $z) => { MulDiv($x, $y, $z); }) {
+					var x = 2 * x / 4.0;
+				}",
+				@"var x = MulDiv(2, x, 4d);");
+			TestEcs(@"
+				// [Passive]
+				define operator/(($x * $y), $z) { MulDiv($x, $y, $z); }
+				var x = 2 * x / 4.0;",
+				@"var x = MulDiv(2, x, 4d);");
 		}
 	}
 }

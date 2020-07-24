@@ -69,7 +69,7 @@
     <Compile Include="BuiltinMacros.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\TestOnFinallyReturnThrowMacros.cs" />
-    <Compile Include="Tests\TestReplaceMacro.cs" />
+    <Compile Include="Tests\TestReplaceAndDefineMacros.cs" />
     <Compile Include="Tests\TestSequenceExpressionMacro.cs" />
     <Compile Include="Tests\MacroTesterBase.cs" />
     <Compile Include="Tests\TestSetOrCreateMemberMacro.cs" />
