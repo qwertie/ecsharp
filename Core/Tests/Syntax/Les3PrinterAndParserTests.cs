@@ -185,12 +185,15 @@ namespace Loyc.Syntax.Les
 			Exact("a.b::x.c",     F.Dot(F.Call(S.ColonColon, F.Dot(a, b), x), c));
 			Exact("a ~ b =~ c",   F.Call(S.Matches, F.Call(S._Concat, a, b), c));
 			Exact("a + b ~ c",    F.Call(S._Concat, F.Call(S.Add, a, b), c));
+			Exact("a ?? b <> c == 0", F.Call("'==", F.Call("'<>", F.Call(S.NullCoalesce, a, b), c), zero));
 
 			// Custom ops
 			Exact("a |-| b + c",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!.c?. 1",  F.Call("'?.", F.Call("'!!.", F.Dot(a, b), c), one));
+			Exact("a.b!!.c?. 1",   F.Call("'?.", F.Call("'!!.", F.Dot(a, b), c), one));
 			Exact("a +/ b *+ c",   F.Call("'*+", F.Call("'+/", a, b), c));
 			Exact("a === b && a !== c", F.Call(S.And, F.Call("'===", a, b), F.Call("'!==", a, c)));
+			Exact("a <=> b + 1 !== 0", F.Call("'!==", F.Call(S.Compare, a, F.Call(S.Add, b, one)), zero));
+			Exact("a &+ b |> c = 2 &* #", F.Call("'|>", F.Call("'&+", a, b), F.Assign(c, F.Call("'&*", two, _("#")))));
 
 			// See also Les3ParserTests.ImmiscibilityErrors
 			//     and Les3PrinterTests.ImmiscibilityErrors

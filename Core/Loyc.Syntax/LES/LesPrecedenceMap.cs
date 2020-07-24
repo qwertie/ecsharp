@@ -115,6 +115,7 @@ namespace Loyc.Syntax.Les
 				{ S.OrBits,      P.OrBitsLES2 }, // |
 				{ S.XorBits,     P.OrBitsLES2 }, // ^
 				{ S.NullCoalesce,P.OrIfNull   }, // ??
+				{ (Symbol)"'<>", P.Diamond    }, // <> (controls the precedence of <=>)
 				{ S.GT,          P.Compare    }, // >
 				{ S.LT,          P.Compare    }, // <
 				{ S.LE,          P.Compare    }, // <=

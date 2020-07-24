@@ -262,7 +262,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence SquigglyPrefix = new Precedence(111,55,55,55);  // ~> <~ (prefix)
 		public static readonly Precedence AndBits      = new Precedence(52, 52, 35, 52);  // &   (LES3 precedence)
 		public static readonly Precedence OrBits       = new Precedence(50, 50, 35, 52);  // | ^ (LES3 precedence)
-		public static readonly Precedence OrIfNull     = new Precedence(45);              // ??
+		public static readonly Precedence OrIfNull     = new Precedence(46);              // ??
+		public static readonly Precedence Diamond      = new Precedence(43);              // <> (including <=>)
 		public static readonly Precedence Compare      = new Precedence(40);              // == != > < >= <=
 		public static readonly Precedence AndBitsLES2  = new Precedence(37, 37, 35, 52);  // &   (LES2 precedence)
 		public static readonly Precedence OrBitsLES2   = new Precedence(35, 35, 35, 52);  // | ^ (LES2 precedence)
