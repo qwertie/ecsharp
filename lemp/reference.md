@@ -12,7 +12,9 @@ Look up by category
     - [`replace`](ref-codegen.html#replace) ([see article](avoid-tedium-with-LeMP.html#replace))
     - [`unroll`](ref-codegen.html#unroll) ([see article](avoid-tedium-with-LeMP.html#unroll))
     - [Algebraic Data Types](ref-codegen.html#alt-class-algebraic-data-type) ([see article](pattern-matching.html#algebraic-data-types))
-- Compile-time decision-making
+- Compile-time decision making and code execution
+    - [`compileTime`, `compileTimeAndRuntime`](http://ecsharp.net/lemp/ref-codegen.html#compiletime-compiletimeandruntime)
+    - [`precompute`, `rawPrecompute`](http://ecsharp.net/lemp/ref-codegen.html#precompute-rawprecompute)
     - [`static matchCode`](ref-codegen.html#static-matchcode)
     - [`static if` and `static_if`](ref-codegen.html#static-if)
     - [`` `staticMatches` `` operator](ref-codegen.html#staticmatches-operator)
