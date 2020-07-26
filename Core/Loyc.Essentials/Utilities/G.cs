@@ -417,5 +417,171 @@ namespace Loyc
 			else
 				return digit == 62 ? digit62 : digit63;
 		}
+
+		static Func<int, WordWrapCharType> _getWordWrapCharType = GetWordWrapCharType;
+
+		/// <summary>This function controls the default character categorization used by 
+		/// overloads of <see cref="WordWrap(string, int, Func{int, WordWrapCharType})"/>.</summary>
+		public static WordWrapCharType GetWordWrapCharType(int c)
+		{
+			switch (c)
+			{
+				case ' ': case '\u200B': case '\t': case '\r': // 200B=zero-width space
+					return WordWrapCharType.Space;
+				// There are a lot of other dash/hyphen characters but these are some common ones
+				case '-': case '\u00AD': case '\u2010':
+				case '\u2012': case '\u2013': case '\u2014':
+				case ',': case ';': case '/': // 00AD=soft hyphen
+					return WordWrapCharType.BreakAfter;
+				case '\0': // included for unit-testing purposes
+					return WordWrapCharType.BreakBefore;
+				case '\n':
+					return WordWrapCharType.Newline;
+				default:
+					return WordWrapCharType.NoWrap;
+			}
+		}
+
+		/// <summary>Breaks a paragraph into lines using a simple word-wrapping algorithm.</summary>
+		/// <param name="paragraph">Text to be broken apart if necessary.</param>
+		/// <param name="lineWidth">Line width in characters.</param>
+		/// <returns>A list of lines, each not too long.</returns>
+		/// <remarks>
+		/// The other overload of this function is more flexible, e.g. it supports variable-width
+		/// characters.
+		/// <para/>
+		/// This algorithm may be unsuitable for some non-English languages, in which adjacent 
+		/// characters do not have independent widths because of the way they combine. It may
+		/// still be useful if you only need to make sure lines don't get too long.
+		/// <para/>
+		/// Whitespace characters (including tabs and zero-width spaces) at the end of a 
+		/// line are not counted toward the line length limit. As a result, strings in the output 
+		/// list can be longer than <c>lineWidth</c> unless you trim spaces afterward.
+		/// <para/>
+		/// If the input contains a newline character, a line break occurs but the newline is 
+		/// preserved, e.g. "Ann\nBob" causes output like { "Ann\n", "Bob" }. Depending on
+		/// how you intend to use the output, you may need to trim the newline from the end.
+		/// <para/>
+		/// By default, lines can be broken at the soft hyphen '\u00AD', in which case it is 
+		/// advisable for the caller to replace the trailing '\u00AD' with '-' before drawing to 
+		/// ensure that the hyphen is actually displayed on the screen. For simplicity, this 
+		/// replacement is not part of the wrapping algorithm itself.
+		/// </remarks>
+		public static List<string> WordWrap(string paragraph, int lineWidth)
+		{
+			return WordWrap(paragraph.Select(c => Pair.Create((int) c, 1)), lineWidth, _getWordWrapCharType);
+		}
+
+		/// <summary>Breaks a paragraph into lines using a simple word-wrapping algorithm.</summary>
+		/// <param name="paragraph">A sequence of characters that will be treated as a paragraph 
+		/// to be broken into lines as necessary. The first item in each pair is a 21-bit unicode
+		/// character; the second item is the width of that character, e.g. in pixels. The
+		/// width must be non-negative and no more than half of int.MaxValue.</param>
+		/// <param name="lineWidth">Line width. The unit used here is the same as the unit of
+		/// the second item in each pair, e.g. pixels.</param>
+		/// <param name="getCharType">A function that determines how a character is relevant to
+		/// the wrapping operation; see <see cref="WordWrapCharType"/>. This function accepts
+		/// 21-bit unicode characters from <c>paragraph</c>.</param>
+		/// <returns>A list of lines, each not too long.</returns>
+		/// <remarks>
+		/// This algorithm may be unsuitable for some non-English languages, in which adjacent 
+		/// characters do not have independent widths because of the way they combine. It may
+		/// still be useful if you only need to make sure lines don't get too long.
+		/// <para/>
+		/// Characters higher than 0xFFFF are converted into UTF-16 surrogate pairs.
+		/// <para/>
+		/// Whitespace characters at the end of a line are not counted toward the line length 
+		/// limit. As a result, strings in the output list can be longer than <c>lineWidth</c> 
+		/// unless you trim off spaces afterward.
+		/// <para/>
+		/// If the input contains a newline character, a line break occurs but the newline is 
+		/// preserved, e.g. "Foo\nBar" causes output like { "Foo\n", "Bar" }. Depending on
+		/// how you intend to use the output, you may need to trim the newline from the end.
+		/// <para/>
+		/// By default, lines can be broken at the soft hyphen '\u00AD', in which case it is 
+		/// advisable for the caller to replace the trailing '\u00AD' with '-' before drawing to 
+		/// ensure that the hyphen is actually displayed on the screen. For simplicity, this 
+		/// replacement is not part of the wrapping algorithm itself. 
+		/// </remarks>
+		public static List<string> WordWrap(IEnumerable<Pair<int, int>> paragraph, int lineWidth, Func<int, WordWrapCharType> getCharType = null)
+		{
+			getCharType = getCharType ?? _getWordWrapCharType;
+			if (lineWidth == int.MaxValue)
+				lineWidth--; // algorithm expects lineWidth+1 > lineWidth
+
+			var sb = new StringBuilder();
+			var output = new List<string>();
+			int width = 0; // width of current line
+			int lastBreakPoint = 0, widthAtBreakPoint = 0;
+			foreach (var pair in paragraph)
+			{
+				int c = pair.A;
+				int cWidth = pair.B;
+				var charType = getCharType(c);
+				if (width <= lineWidth && (charType & WordWrapCharType.BreakBefore) != 0) {
+					lastBreakPoint = sb.Length;
+					widthAtBreakPoint = width;
+				}
+				if (c <= 0xFFFF)
+					sb.Append((char)c);
+				else {
+					c -= 0x10000;
+					sb.Append(((c >> 10) & 0x3FF) + 0xD800);
+					sb.Append((c & 0x3FF) + 0xDC00);
+				}
+				width += cWidth;
+				if ((charType & WordWrapCharType.Space) != 0) {
+					lastBreakPoint = sb.Length;
+					widthAtBreakPoint = width;
+				} else {
+					if ((charType & WordWrapCharType.Newline) != 0) {
+						lastBreakPoint = sb.Length;
+						widthAtBreakPoint = width = lineWidth + 1; // force break now
+					}
+					if (width > lineWidth) {
+						if (lastBreakPoint <= 0) {
+							// No suitable breakpoint exists (e.g. string lacks spaces)
+							lastBreakPoint = sb.Length - 1;
+							widthAtBreakPoint = width - cWidth;
+							if (lastBreakPoint == 0) {
+								lastBreakPoint = 1;
+								Debug.Assert(widthAtBreakPoint == 0);
+								widthAtBreakPoint = width;
+							}
+						}
+						output.Add(sb.ToString(0, lastBreakPoint));
+						sb.Remove(0, lastBreakPoint);
+						width -= widthAtBreakPoint;
+						lastBreakPoint = widthAtBreakPoint = 0;
+					} else if ((charType & WordWrapCharType.BreakAfter) != 0) {
+						lastBreakPoint = sb.Length;
+						widthAtBreakPoint = width;
+					}
+				}
+			}
+			if (sb.Length != 0)
+				output.Add(sb.ToString());
+			return output;
+		}
+	}
+
+	/// <summary>The set of character categories recognized by overloads of 
+	/// <see cref="G.WordWrap(string, int, Func{int, WordWrapCharType})"/>.</summary>
+	[Flags]
+	public enum WordWrapCharType
+	{
+		/// <summary>Represents a character on which not to wrap, such as a letter.</summary>
+		NoWrap = 0,
+		/// <summary>Represents a space character. Spaces are special because they do not 
+		/// consume physical space at the end of a line, so a line break never occurs before 
+		/// a space.</summary>
+		Space = 1,
+		/// <summary>Represents a character before which a line break can be added.</summary>
+		BreakBefore = 2,
+		/// <summary>Represents a character after which a line break can be added.
+		/// The most common example of this category is a hyphen.</summary>
+		BreakAfter = 4,
+		/// <summary>Represents a forced-break (newline) character.</summary>
+		Newline = 8,
 	}
 }

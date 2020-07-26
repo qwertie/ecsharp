@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ namespace Loyc.Collections.Impl
 	/// classes but sometimes useful in other cases.</summary>
 	public class TestHelpers : Assert
 	{
-		protected static void ExpectList<T>(IListSource<T> list, params T[] expected)
+		protected static void ExpectList<T>(IReadOnlyList<T> list, params T[] expected)
 		{
 			ExpectList(list, expected as IList<T>, false);
 		}
@@ -18,11 +18,11 @@ namespace Loyc.Collections.Impl
 		/// When testing a buggy collection type, the enumerator might behave 
 		/// differently than the indexer, so this alternate comparer is provided.
 		/// </summary>
-		protected static void ExpectListByEnumerator<T>(IListSource<T> list, params T[] expected)
+		protected static void ExpectListByEnumerator<T>(IReadOnlyList<T> list, params T[] expected)
 		{
 			ExpectList(list, expected as IList<T>, true);
 		}
-		protected static void ExpectList<T>(IListSource<T> list, IList<T> expected, bool useEnumerator = false)
+		protected static void ExpectList<T>(IReadOnlyList<T> list, IList<T> expected, bool useEnumerator = false)
 		{
 			Assert.AreEqual(expected.Count, list.Count);
 			if (useEnumerator)
