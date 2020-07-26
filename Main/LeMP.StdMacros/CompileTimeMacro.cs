@@ -221,7 +221,15 @@ namespace LeMP
 
 			try
 			{
-				_roslynScriptState = _roslynScriptState.ContinueWithAsync(codeText).Result;
+				// Allow users to write messages via MessageSink.Default
+				using (MessageSink.SetDefault(new MessageSinkFromDelegate((sev, ctx, msg, args) => {
+					_roslynSessionLog.Write("{0} from user ({1}): ", sev, MessageSink.GetLocationString(sev));
+					_roslynSessionLog.WriteLine(msg, args);
+					context.Sink.Write(sev, ctx, msg, args);
+				})))
+				{
+					_roslynScriptState = _roslynScriptState.ContinueWithAsync(codeText).Result;
+				}
 				return _roslynScriptState.ReturnValue;
 			}
 			catch (CompilationErrorException e) when (e.Diagnostics.Length > 0 && e.Diagnostics[0].Location.IsInSource)
