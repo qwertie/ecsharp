@@ -725,7 +725,7 @@ namespace LeMP.Prelude.Les
 
 		// only works as long as : is allowed
 		[LexicalMacro(@"condition ? (t : f)", 
-			"Attempts to cast a reference down to a derived class. The result is null if the cast fails.", 
+			"Converts an LES-style binary ? operator to a C-style ternary ? operator.", 
 			"'?", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode QuestionMark(LNode node, IMessageSink sink)
 		{
@@ -799,39 +799,39 @@ namespace LeMP.Prelude.Les
 			return TranslateWordAttr(node, sink, kind);
 		}
 
-		[LexicalMacro("[pub]", "Used as an attribute to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[pub]", "Used as an attribute in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode pub(LNode node, IMacroContext ctx) { return TranslateId(node, S.Public, ctx); }
-		[LexicalMacro("[priv]", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[priv]", "Used as an attribute in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode priv(LNode node, IMacroContext ctx) { return TranslateId(node, S.Private, ctx); }
-		[LexicalMacro("[prot]", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[prot]", "Used as an attribute in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode prot(LNode node, IMacroContext ctx) { return TranslateId(node, S.Protected, ctx); }
-		[LexicalMacro("[virt]", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[virt]", "Used as an attribute in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode virt(LNode node, IMacroContext ctx) { return TranslateId(node, S.Virtual, ctx); }
-		[LexicalMacro("public <declaration>", "Indicates that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("public <declaration>", "Used in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @public(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Public); }
-		[LexicalMacro("private <declaration>", "Indicates that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("private <declaration>", "Used in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @private(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Private); }
-		[LexicalMacro("protected <declaration>", "Indicates that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("protected <declaration>", "Used in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @protected(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Protected); }
-		[LexicalMacro("internal <declaration>", "Indicates that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("internal <declaration>", "Used in LES2 to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @internal(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Internal); }
 
-		[LexicalMacro("virtual <declaration>", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("virtual <declaration>", "Used in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @virtual(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Virtual); }
-		[LexicalMacro("override <declaration>", "Indicates that a method overrides a virtual method in the base class.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("override <declaration>", "Used in LES2 to indicate that a method overrides a virtual method in the base class.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @override(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Override); }
-		[LexicalMacro("extern <declaration>", "Indicates that the definition is supplies elsewhere.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("extern <declaration>", "Used in LES2 to indicate that the definition is supplied elsewhere.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @extern(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Extern); }
-		[LexicalMacro("static <declaration>", "Applies the #static attribute to a declaration.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("static <declaration>", "Used in LES2 to apply the #static attribute to a declaration.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @static(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Static); }
-		[LexicalMacro("unsafe <declaration>", "Indicates that the definition may use 'unsafe' parts of C#, such as pointers", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("unsafe <declaration>", "Used in LES2 to indicate that the definition may use 'unsafe' parts of C#, such as pointers", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @unsafe(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Unsafe); }
 
-		[LexicalMacro("partial <declaration>", "Indicates that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("partial <declaration>", "Used in LES2 to indicate that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @partial(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Partial); }
-		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Indicates that a variable cannot be changed after it is initialized.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Used in LES2 to indicate that a variable cannot be changed after it is initialized.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @readonly(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Readonly); }
-		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Used in LES2 to indicate a compile-time constant.", Mode = MacroMode.MatchIdentifier)]
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
 		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.",

@@ -101,32 +101,42 @@ namespace LeMP.Prelude
 			//     ...
 			// }
 			return F.Call(S.Splice, context.AllKnownMacros.SelectMany(p => p.Value)
-				.GroupBy(mi => mi.Namespace).OrderBy(g => g.Key).Select(group =>
-					F.Attr(F.Trivia(S.TriviaSLComment, " printKnownMacros output "),
-					F.Call(S.Namespace, NamespaceSymbolToLNode(group.Key ?? GSymbol.Empty), LNode.Missing,
-						F.Braces(group.OrderBy(mi => mi.Macro.Method.Name).Select(mi =>
-						{
-							StringBuilder descr = new StringBuilder();
-							descr.Append("\n### ").Append(mi.Names.FirstOrDefault("<no name>")).Append(" ###\n");
-							if (!string.IsNullOrEmpty(mi.Syntax))
-								descr.Append("\n\t").Append(mi.Syntax).Append("\n");
-							if (!string.IsNullOrEmpty(mi.Description))
-								descr.Append("\n").Append(mi.Description).Append("\n");
-							descr.Replace("\n", "\n\t\t");
-							descr.Append("\t");
-							LNode line = mi.Names.Length == 1  
-								? (LNode)LNode.Id(mi.Names[0]) 
-								: LNode.Call(S.Tuple, LNode.List(mi.Names.Select(name => (LNode)LNode.Id(name))));
+				.GroupBy(mi => mi.Namespace).OrderBy(g => g.Key).Select(group => {
+					var descriptions = group.OrderBy(mi => mi.Macro.Method.Name).Select(GetDescriptionOfMacro);
+					if ((group.Key ?? GSymbol.Empty).Name != "")
+						return F.Attr(F.Trivia(S.TriviaSLComment, " printKnownMacros output:"),
+							F.Call(S.Namespace, NamespaceSymbolToLNode(group.Key ?? GSymbol.Empty),
+								LNode.Missing, F.Braces(descriptions)));
+					else
+						return F.Attr(F.Trivia(S.TriviaSLComment, " printKnownMacros output: global namespace"),
+							F.Braces(descriptions));
+					}));
 
-							string methodName = mi.Macro.Method.Name, @class = mi.Macro.Method.DeclaringType.Name;
-							string postComment = " " + @class + "." + methodName;
-							if (mi.Mode != MacroMode.Normal)
-								postComment += string.Format(" (Mode = {0})", mi.Mode);
-							return F.Attr(
-								F.Trivia(S.TriviaMLComment, descr.ToString()),
-								F.TriviaNewline,
-								line).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, postComment));
-						}))))));
+			LNode GetDescriptionOfMacro(MacroInfo mi)
+			{
+				StringBuilder descr = new StringBuilder();
+				descr.Append("\n### ").Append(mi.Names.FirstOrDefault("<no name>")).Append(" ###\n");
+				if (!string.IsNullOrEmpty(mi.Syntax))
+					descr.Append("\n\t").Append(mi.Syntax).Append("\n");
+				if (!string.IsNullOrEmpty(mi.Description)) {
+					var description = G.WordWrap(mi.Description, 80).Select(L => L.TrimEnd('\n')).Join("\n");
+					descr.Append("\n").Append(description).Append("\n");
+				}
+				descr.Replace("\n", "\n\t\t");
+				descr.Append("\t");
+				LNode line = mi.Names.Length == 1
+					? (LNode)LNode.Id(mi.Names[0])
+					: LNode.Call(S.Tuple, LNode.List(mi.Names.Select(name => (LNode)LNode.Id(name))));
+
+				string methodName = mi.Macro.Method.Name, @class = mi.Macro.Method.DeclaringType.Name;
+				string postComment = " " + @class + "." + methodName;
+				if (mi.Mode != MacroMode.Normal)
+					postComment += string.Format(" (Mode = {0})", mi.Mode);
+				return F.Attr(
+					F.Trivia(S.TriviaMLComment, descr.ToString()),
+					F.TriviaNewline,
+					line).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, postComment));
+			}
 		}
 		internal static LNode NamespaceSymbolToLNode(Symbol ns)
 		{
