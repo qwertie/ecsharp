@@ -52,4 +52,4 @@ LeMP itself references all these plus `Loyc.Utilities.dll` (for `UG.ProcessComma
 
 ### Q. My question isn't here!
 
-You can still ask - reach me by email at `gmail.com`, with account name `qwertie256`, or make an [issue on GitHub](https://github.com/qwertie/Loyc/issues).
+Please leave your question on StackOverflow with the `lemp` tag and I'll receive a notification. You can also reach me by email at `gmail.com`, with account name `qwertie256`, or make an [issue on GitHub](https://github.com/qwertie/Loyc/issues).
