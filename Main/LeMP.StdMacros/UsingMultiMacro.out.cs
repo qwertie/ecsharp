@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.8.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -22,16 +22,16 @@ namespace LeMP
 		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", 
 		"Generates multiple using-statements from a single one.", 
 		"#import", Mode = MacroMode.Passive | MacroMode.Normal)] 
-		public static LNode UsingMulti(LNode stmt, IMacroContext context)
+		public static LNode UsingMulti(LNode input, IMacroContext context)
 		{
 			{
 				LNode multiNamespace;
-				if (stmt.Calls(CodeSymbols.Import, 1) && (multiNamespace = stmt.Args[0]) != null)
+				if (input.Calls(CodeSymbols.Import, 1) && (multiNamespace = input.Args[0]) != null)
 					try {
-						var list = GetNamespaces(stmt[0]);
+						var list = GetNamespaces(multiNamespace);
 						if (list == null)
 							return null;
-						return LNode.Call(CodeSymbols.Splice, LNode.List(list.Select(namespc => (LNode) LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
+						return LNode.Call(CodeSymbols.Splice, LNode.List(list.Select(namespc => (LNode) LNode.Call(CodeSymbols.Import, LNode.List(namespc))))).IncludingTriviaFrom(input);
 					} catch (LogException exc) {
 						exc.Msg.WriteTo(context.Sink);
 					}

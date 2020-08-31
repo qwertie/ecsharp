@@ -15,17 +15,17 @@ namespace LeMP
 		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", 
 			"Generates multiple using-statements from a single one.", 
 			"#import", Mode = MacroMode.Passive | MacroMode.Normal)]
-		public static LNode UsingMulti(LNode stmt, IMacroContext context)
+		public static LNode UsingMulti(LNode input, IMacroContext context)
 		{
-			matchCode (stmt) {
+			matchCode (input) {
 			case { using $multiNamespace; }:
 				try {
-					var list = GetNamespaces(stmt[0]);
+					var list = GetNamespaces(multiNamespace);
 					if (list == null)
 						return null;
 					return quote(#splice(
 						$(.. list.Select(namespc => (LNode)quote { using $namespc; }))
-					));
+					)).IncludingTriviaFrom(input);
 				} catch (LogException exc) {
 					exc.Msg.WriteTo(context.Sink);
 				}

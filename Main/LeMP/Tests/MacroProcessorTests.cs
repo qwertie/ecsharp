@@ -233,6 +233,39 @@ namespace LeMP
 		}
 
 		[Test]
+		public void EmptySpliceWithTrivia()
+		{
+			Test("#importMacros(LeMP.Tests); { splice(); }",
+				"{ }");
+			// Note: the test code ignores single-line comments, so use a multi-line comment
+			Test("#importMacros(LeMP.Tests);\n splice(); /*trailing comment*/",
+				"/*trailing comment*/");
+			Test("#importMacros(LeMP.Tests);\n /*leading comment*/ splice();",
+				"/*leading comment*/");
+			Test("#importMacros(LeMP.Tests); {\n  splice(); /*trailing comment*/\n}",
+				"{ } /*trailing comment*/");
+			Test("#importMacros(LeMP.Tests);\n {\n  Foo();\n  @[@`%trailing`(@`%MLComment`(\"trailing comment\"))] splice();\n}",
+				"{ Foo(); /*trailing comment*/ }");
+			Test("#importMacros(LeMP.Tests);\n {\n  @[@`%trailing`(@`%MLComment`(\"trailing comment\"))] splice();\n  Foo();\n}",
+				"{ /*trailing comment*/ Foo(); }");
+			Test("#importMacros(LeMP.Tests);\n {\n  Foo();\n  @[Ignored, @`%MLComment`(\"leading comment\")] splice();\n  Bar();\n}",
+				"{ Foo(); /*leading comment*/ Bar(); }");
+			Test("#importMacros(LeMP.Tests);\n {\n  Foo();\n  @[@`%trailing`(@`%MLComment`(\"trailing comment\")), Ignored] splice();\n  Bar();\n}",
+				"{ Foo(); /*trailing comment*/ Bar(); }");
+
+			Test("{\n  #splice(); /*trailing comment*/\n  Foo();\n}",
+				"{ /*trailing comment*/ Foo(); }");
+			Test("{\n  @[Ignored] #splice(); /*trailing comment*/\n  Foo();\n}",
+				"{ /*trailing comment*/ Foo(); }");
+			Test("{\n  #splice(); /*trailing comment*/\n}",
+				"{ } /*trailing comment*/");
+			Test("#splice(); /*trailing comment*/",
+				"/*trailing comment*/");
+			Test("/*leading comment*/ #splice();",
+				"/*leading comment*/");
+		}
+
+		[Test]
 		public void NoLexicalMacrosTest()
 		{
 			Test("#noLexicalMacros(blocks macros, e.g. break, return Foo);",

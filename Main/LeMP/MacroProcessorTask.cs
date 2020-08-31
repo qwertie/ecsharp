@@ -225,7 +225,7 @@ namespace LeMP
 					if (asRoot)
 						_ancestorStack.PopLast();
 					Debug.Assert(_ancestorStack.Count == oldStackCount);
-					return splice;
+					return null; // caller ignores return value
 				}
 			} finally {
 				_reentrancyCounter--;
@@ -407,13 +407,15 @@ namespace LeMP
 				}
 			}
 			// Puts contents of a #splice into NodeQueue and returns the first item of the splice.
-			public LNode EnqueueSplice(LNodeList spliced, int maxExpansionsInner, int maxExpansions)
+			public LNode EnqueueSplice(LNode splice, int maxExpansionsInner, int maxExpansions)
 			{
+				Debug.Assert(splice.Calls(S.Splice));
 				//Debug.Assert(!IsTarget); should be true except that IsTarget may not have been set yet
 				MaybeCreateNodeQueue(maxExpansions, ref NodeQueue);
 
 				// Enqueue spliced items
-				foreach (var item in spliced.ToFVList())
+				var items = splice.Args.IncludingAttributes(splice.Attrs);
+				foreach (var item in items.ToFVList())
 					NodeQueue.PushFirst(Pair.Create(item, maxExpansionsInner));
 
 				return NodeQueue.PopFirst().A;
@@ -659,7 +661,8 @@ namespace LeMP
 		/// _s.NodeQueue = nodeQueue when it starts.</param>
 		/// <returns>Returns a transformed tree (or null if the macros did not 
 		/// change the syntax tree at any level).</returns>
-		/// <remarks>EnqueueSplice is used if a #splice(...) is encountered.</remarks>
+		/// <remarks>EnqueueSplice is used if the input is #splice(...), but this
+		/// function doesn't notice if the output is #splice().</remarks>
 		LNode ApplyMacros(LNode input, int maxExpansions, bool isTargetNode, bool isSingleNode, ref DList<Pair<LNode, int>> nodeQueue)
 		{
 			_s.NodeQueue = nodeQueue;
@@ -670,8 +673,8 @@ namespace LeMP
 				// If #splice, expand it
 				if (!isSingleNode && curNode.Calls(S.Splice)) {
 					if (curNode.ArgCount == 0)
-						return curNode; // #splice()
-					curNode = resultNode = _s.EnqueueSplice(curNode.Args, maxExpansions, maxExpansionsBefore);
+						return curNode; // empty #splice()
+					curNode = resultNode = _s.EnqueueSplice(curNode, maxExpansions, maxExpansionsBefore);
 					Debug.Assert(curNode != null);
 				}
 
@@ -825,8 +828,6 @@ namespace LeMP
 				s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 			}
 
-			s.DropRemainingNodesRequested = false;
-
 			PrintMessages(s.Results, input, accepted,
 				s.MessageHolder.List.MaxOrDefault(msg => (int)msg.Severity).Severity);
 
@@ -883,8 +884,9 @@ namespace LeMP
 			DList<Pair<LNode, int>> nodeQueue = null;
 			LNodeList results;
 			LNode result = null;
+			LNode emptySplice = null; // an empty #splice() may have trivia we need to preserve
 			
-			// Share as much of the original VList as is left unchanged
+			// Share as much of the original LNodeList as is left unchanged
 			for (int i = 0, count = list.Count;; ++i)
 			{
 				if (i >= count)
@@ -896,7 +898,7 @@ namespace LeMP
 				if (result != null)
 				{
 					results = list.Initial(i);
-					Add(ref results, result);
+					Add(ref results, ref emptySplice, result);
 					// restore possibly-clobbered state
 					_s.StartListItem(list, i, areAttributes);
 					_s.MaybeCreateNodeQueue(maxExpansions, ref nodeQueue);
@@ -908,18 +910,44 @@ namespace LeMP
 			while (!nodeQueue.IsEmpty) {
 				_s.StartListItem(LNode.List(), 0, areAttributes);
 				Pair<LNode,int> input2 = nodeQueue.PopFirst();
+				if (emptySplice != null) {
+					input2.A = input2.A.PlusAttrsBefore(TriviaFromEmptySplice(emptySplice));
+					emptySplice = null;
+				}
 				result = ApplyMacros(input2.A, input2.B, false, false, ref nodeQueue);
-				Add(ref results, result ?? input2.A);
+				Add(ref results, ref emptySplice, result ?? input2.A);
 			}
 			_s.NodeQueue = null;
+
+			// If final result was empty splice, transfer its trivia to remaining nodes, or put
+			// it in results if results.IsEmpty, in which case the caller should deal with it.
+			// Sometimes the caller can't deal with it (e.g. top level) and the final output
+			// will contain an empty #splice() with trivia.
+			LNodeList trivia;
+			if (emptySplice != null && !(trivia = TriviaFromEmptySplice(emptySplice)).IsEmpty) {
+				if (results.IsEmpty)
+					results.Add(emptySplice);
+				else
+					results[results.Count - 1] = results.Last.PlusTrailingTrivia(trivia);
+			}
 			return results;
 		}
-		private void Add(ref LNodeList results, LNode result)
+		private void Add(ref LNodeList results, ref LNode emptySplice, LNode result)
 		{
-			if (result.Calls(S.Splice))
-				results.AddRange(result.Args);
-			else
+			if (result.Calls(S.Splice)) {
+				if (result.ArgCount == 0)
+					emptySplice = result;
+				else
+					results.AddRange(result.Unsplice());
+			} else
 				results.Add(result);
+		}
+		private LNodeList TriviaFromEmptySplice(LNode emptySplice)
+		{
+			var trivia = emptySplice.GetTrivia().WithoutTrailingTrivia(out var trailing);
+			if (!trailing.IsEmpty)
+				trivia.AddRange(trailing);
+			return trivia;
 		}
 
 		LNode ApplyMacrosToChildrenOf(LNode node, int maxExpansions, bool skipTarget = false)
@@ -928,8 +956,13 @@ namespace LeMP
 				return null;
 
 			bool changed = false;
+			
+			// Process attributes
 			LNodeList old;
 			var newAttrs = ApplyMacrosToList(old = node.Attrs, maxExpansions, true);
+			if (newAttrs.Count == 1 && newAttrs.Last.Calls(S.Splice, 0))
+				newAttrs = TriviaFromEmptySplice(newAttrs.Last);
+
 			_s.IsAttribute = false;
 			if (newAttrs != old)
 			{
@@ -939,6 +972,7 @@ namespace LeMP
 			if (!skipTarget)
 			{
 				LNode target = node.Target;
+
 				if (target != null && target.Kind != LNodeKind.Literal)
 				{
 					DList<Pair<LNode, int>> _ = null;
@@ -952,12 +986,18 @@ namespace LeMP
 					}
 				}
 			}
-			var newArgs = ApplyMacrosToList(old = node.Args, maxExpansions, false);
+
+			LNodeList newArgs = ApplyMacrosToList(old = node.Args, maxExpansions, false);
 			if (newArgs != old)
 			{
-				node = node.WithArgs(newArgs);
+				if (newArgs.Count == 1 && newArgs.Last.Calls(S.Splice, 0)) {
+					var trivia = TriviaFromEmptySplice(newArgs[0]);
+					node = node.WithArgs().PlusTrailingTrivia(trivia);
+				} else
+					node = node.WithArgs(newArgs);
 				changed = true;
 			}
+
 			return changed ? node : null;
 		}
 

@@ -56,18 +56,25 @@ namespace LeMP.Tests
 		public void TestUsingMulti()
 		{
 			TestEcs("using System.Collections;", 
-					"using System.Collections;");
+			        "using System.Collections;");
 			TestEcs("using System(.Collections, .Collections.Generic, .Text, .Linq);",
-				   @"using System.Collections;
+			       @"using System.Collections;
 			         using System.Collections.Generic;
 			         using System.Text;
 			         using System.Linq;");
 			TestEcs("using System(, .Collections(, .Generic), .Text, .Linq);",
-				   @"using System;
-				     using System.Collections;
+			       @"using System;
+			         using System.Collections;
 			         using System.Collections.Generic;
 			         using System.Text;
 			         using System.Linq;");
+			TestEcs(@"/*Comment!*/
+			         using System(.Linq, .Text);
+			         /*Trailing comment!*/",
+			       @"/*Comment!*/
+			         using System.Linq;
+			         using System.Text;
+			         /*Trailing comment!*/");
 		}
 
 		[Test]
