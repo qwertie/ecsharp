@@ -337,7 +337,7 @@ namespace Loyc
 		}
 		public override string ToString()
 		{
-			return _str.Substring(_start, _count);
+			return _str?.Substring(_start, _count);
 		}
 
 		#endregion
