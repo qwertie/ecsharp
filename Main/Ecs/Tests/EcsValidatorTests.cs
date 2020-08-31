@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +17,7 @@ namespace Loyc.Ecs.Tests
 			AreEqual("_plus5",   EcsValidators.SanitizeIdentifier("+5" ));
 			AreEqual("__empty__",EcsValidators.SanitizeIdentifier(""   ));
 			AreEqual("_lt_gt",   EcsValidators.SanitizeIdentifier("<>"));
+			AreEqual("_apos_period", EcsValidators.SanitizeIdentifier("'."));
 		}
 
 		[Test]
