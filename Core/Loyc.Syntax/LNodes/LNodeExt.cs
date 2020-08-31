@@ -59,19 +59,18 @@ namespace Loyc.Syntax
 		{
 			return attrs.SmartWhere(attr => !attr.Calls(S.TriviaTrailing));
 		}
-		/// <summary>Gets a new list with any %trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
+		/// <summary>Gets a new list with any %trailing attributes removed. Trailing 
+		/// trivia inside those attributes are returned in an `out` parameter.</summary>
 		public static LNodeList WithoutTrailingTrivia(this LNodeList attrs, out LNodeList trailingTrivia)
 		{
-			var trailingTrivia2 = LNodeList.Empty;
-			attrs = attrs.SmartWhere(attr => {
-				if (attr.Calls(S.TriviaTrailing)) {
-					trailingTrivia2.AddRange(attr.Args);
-					return false;
-				}
-				return true;
-			});
-			trailingTrivia = trailingTrivia2; // cannot use `out` parameter within lambda method
-			return attrs;
+			trailingTrivia = LNodeList.Empty;
+			var attrs2 = attrs.SmartWhere(attr => !attr.Calls(S.TriviaTrailing));
+			if (attrs2 != attrs) {
+				foreach (var attr in attrs)
+					if (attr.Calls(S.TriviaTrailing))
+						trailingTrivia.AddRange(attr.Args);
+			}
+			return attrs2;
 		}
 		/// <summary>Adds additional trailing trivia to a node.</summary>
 		public static LNode PlusTrailingTrivia(this LNode node, LNodeList trivia)
@@ -113,9 +112,61 @@ namespace Loyc.Syntax
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(listIdentifier)</c>, otherwise returning a one-item list 
 		/// of nodes with <c>block</c> as the only item.</summary>
-		public static LNodeList AsList(this LNode block, Symbol listIdentifier)
+		public static LNodeList AsList(this LNode block, Symbol listIdentifier) =>
+			block.Calls(listIdentifier) ? block.Args : new LNodeList(block);
+
+		/// <summary>Converts an expression to a list. Similar to calling 
+		/// <c>AsList(block, CodeSymbols.Splice)</c>, if the expression calls #splice
+		/// then the arguments of the splice are returned, and if not then the 
+		/// argument is converted to a list with one item. However, if the call to 
+		/// #splice has attached trivia/attributes, those attributes are attached to
+		/// the output list using <see cref="PlusAttributes(LNodeList, LNodeList)"/>.
+		/// </summary>
+		/// <param name="block">A node that may or may not be a call to #splice</param>
+		/// <returns>A list of nodes that <c>block</c> is equivalent to.</returns>
+		/// <remarks>
+		/// Attributes attached to #splice are ordinarily attached to the first item 
+		/// in the output list, but any %trailing attribute is attached to the last
+		/// item instead. If the #splice() call has no arguments, then (i) if it has
+		/// no trivia attributes, an empty list is returned, but (ii) if it has 
+		/// trivia attributes, the attributes themselves are returned as the content
+		/// of the list. This assumes that printers can print 
+		/// </remarks>
+		public static LNodeList Unsplice(this LNode node)
 		{
-			return block.Calls(listIdentifier) ? block.Args : new LNodeList(block);
+			var list = node.AsList(S.Splice);
+			return list.IncludingAttributes(node.Attrs);
+		}
+
+		/// <summary>Finds trivia attributes attached directly to <c>otherNode</c>, and 
+		/// returns a new version of <c>node</c> with these attributes added.</summary>
+		public static LNode IncludingTriviaFrom(this LNode node, LNode otherNode)
+		{
+			var trivia = otherNode.GetTrivia();
+			if (trivia.IsEmpty)
+				return node; // optimize common case
+			return node.PlusAttrsBefore(trivia.WithoutTrailingTrivia(out var trailing)).PlusTrailingTrivia(trailing);
+		}
+
+		/// <summary>Prepends attributes to the first item in a list, except for
+		/// trailing trivia (%trailing(...)), which is appended to the last item in 
+		/// the list. If the list is empty, the attributes are ignored.</summary>
+		/// <returns>A modified version of the list with attributes added. If the
+		/// attribute list is empty, the empty <c>list</c> is returned unchanged.
+		/// </returns>
+		public static LNodeList IncludingAttributes(this LNodeList list, LNodeList attributes)
+		{
+			if (attributes.IsEmpty || list.IsEmpty)
+				return list;
+			attributes = attributes.WithoutTrailingTrivia(out LNodeList trailing);
+			if (trailing.Count != 0) {
+				if (attributes.Count != 0)
+					list[0] = list[0].PlusAttrsBefore(attributes);
+				list[list.Count - 1] = list.Last.PlusTrailingTrivia(trailing);
+			} else {
+				list[0] = list[0].PlusAttrsBefore(attributes);
+			}
+			return list;
 		}
 
 		/// <summary>Converts a list of LNodes to a single LNode by using the list 
