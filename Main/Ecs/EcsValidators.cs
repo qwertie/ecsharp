@@ -835,7 +835,7 @@ namespace Loyc.Ecs
 				} else {
 					char prefix = '_';
 					string ent = G.BareHtmlEntityNameForAscii(c);
-					if (ent == null || (c < 256 && ent.Length > 5)) {
+					if (ent == null) {
 						prefix = 'x';
 						ent = ((int)c).ToString("X2");
 					}

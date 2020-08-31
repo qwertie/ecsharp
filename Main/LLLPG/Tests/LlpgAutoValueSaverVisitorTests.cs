@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -133,9 +133,9 @@ namespace Loyc.LLParserGenerator
 					}
 					char? Percent()
 					{
-						int chx25 = 0;
-						chx25 = Match('%');
-						return (char) chx25;
+						int ch_percnt = 0;
+						ch_percnt = Match('%');
+						return (char) ch_percnt;
 					}");
 		}
 		[Test] public void TestMisc()

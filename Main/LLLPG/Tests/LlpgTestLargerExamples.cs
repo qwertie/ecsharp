@@ -741,7 +741,7 @@ namespace Loyc.LLParserGenerator
 						string la0, la1;
 						LNode got_Expr = default(LNode);
 						StringToken lit_dash = default(StringToken);
-						StringToken litx3D = default(StringToken);
+						StringToken lit_equals = default(StringToken);
 						LNode result = default(LNode);
 						LNode rhs = default(LNode);
 						// Line 34: (@""-"" Expr / Atom)
@@ -763,10 +763,10 @@ namespace Loyc.LLParserGenerator
 							case @""="":
 								{
 									if (prec <= 10) {
-										litx3D = MatchAny();
+										lit_equals = MatchAny();
 										var r = Expr(10);
 										// line 41
-										result = Op(result, litx3D, r);
+										result = Op(result, lit_equals, r);
 									} else
 										goto stop;
 								}
