@@ -105,6 +105,13 @@ namespace LeMP.Tests
 				");
 		}
 
+		[Test]
+		public void PrecomputePreservesTrivia()
+		{
+			TestEcs(@"const string Y = /* a devilish computation */ precompute(666.ToString());",
+				@"const string Y = /* a devilish computation */ ""666"";");
+		}
+
 		#if !NoReflectionEmit // Oops, can't generate assemblies in .NET Standard
 
 		[Test]

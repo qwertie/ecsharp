@@ -132,20 +132,22 @@ namespace LeMP
 
 				if (!(result is NoValue))
 				{
+					LNode output;
 					if (result == null)
-						return F.Null;
+						output = F.Null;
 					else if (result is ILNode)
-						return ((ILNode)result).ToLNode();
+						output = ((ILNode)result).ToLNode();
 					else if (result is IEnumerable<LNode> list)
-						return F.Splice(list);
+						output = F.Splice(list);
 					else if (result is IEnumerable<ILNode> list2)
-						return F.Splice(list2.Select(n => n.ToLNode()));
+						output = F.Splice(list2.Select(n => n.ToLNode()));
 					else
 					{
 						// TODO: this won't work for arbitrary types but... 
 						//       how can we even detect if it might work?
-						return F.Literal(result);
+						output = F.Literal(result);
 					}
+					return output.IncludingTriviaFrom(node);
 				}
 			}
 			return null;

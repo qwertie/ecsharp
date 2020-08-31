@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.8.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -100,10 +100,10 @@ namespace LeMP
 				cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
 			}
 			if (output.Count == 0)
-				return ifStmt;
+				return ifStmt.IncludingTriviaFrom(node);
 			else {
 				output.Add(ifStmt);
-				return F.Braces(output.ToVList());
+				return F.Braces(output.ToVList()).IncludingTriviaFrom(node);
 			}
 		}
 	

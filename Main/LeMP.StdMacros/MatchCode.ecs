@@ -92,10 +92,10 @@ namespace LeMP
 					cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? quote($(F.Id(kvp.Key)) = default($type)) : F.Id(kvp.Key)))));
 			}
 			if (output.Count == 0)
-				return ifStmt;
+				return ifStmt.IncludingTriviaFrom(node);
 			else {
 				output.Add(ifStmt);
-				return F.Braces(output.ToVList());
+				return F.Braces(output.ToVList()).IncludingTriviaFrom(node);
 			}
 		}
 

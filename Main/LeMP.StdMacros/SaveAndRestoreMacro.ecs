@@ -36,16 +36,16 @@ namespace LeMP
 						}
 					};
 					if (newValue != null) {
-						return quote {
+						return (quote {
 							$varDecl;
 							$property = $newValue;
 							$tryFinally;
-						};
+						}).IncludingTriviaFrom(node);
 					} else {
-						return quote {
+						return (quote {
 							$varDecl;
 							$tryFinally;
-						};
+						}).IncludingTriviaFrom(node);
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from SaveAndRestoreMacro.ecs by LeMP custom tool. LeMP version: 2.8.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -41,9 +41,14 @@ namespace LeMP
 						LNode varName, varDecl = TempVarDecl(context, property, out varName, varPrefix);
 						LNode tryFinally = LNode.Call(CodeSymbols.Try, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(body)).SetStyle(NodeStyle.StatementBlock), LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(property, varName)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.StatementBlock)))));
 						if (newValue != null) {
-							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, LNode.Call(CodeSymbols.Assign, LNode.List(property, newValue)).SetStyle(NodeStyle.Operator), tryFinally));
+							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, LNode.Call(CodeSymbols.Assign, LNode.List(property, newValue)).SetStyle(NodeStyle.Operator), tryFinally))
+						
+						
+							.IncludingTriviaFrom(node);
 						} else {
-							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, tryFinally));
+							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, tryFinally))
+						
+							.IncludingTriviaFrom(node);
 						}
 					}
 				}

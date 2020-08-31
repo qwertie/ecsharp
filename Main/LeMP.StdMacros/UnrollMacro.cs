@@ -37,9 +37,12 @@ namespace LeMP
 						return Reject(context, cases, "The right-hand side of 'in' should be a tuple or braced block.");
 				}
 				var result = unroll(identifiers, cases.Args, node.Args[1], context.Sink);
-				if (result != null && node.HasPAttrs())
-					context.Sink.Warning(result.Attrs[0], "'unroll' does not support attributes.");
-				return result;
+				if (result != null)
+				{
+					if (node.HasPAttrs())
+						context.Sink.Warning(result.Attrs[0], "'unroll' does not support attributes.");
+					return result.IncludingTriviaFrom(node);
+				}
 			}
 			return null;
 		}

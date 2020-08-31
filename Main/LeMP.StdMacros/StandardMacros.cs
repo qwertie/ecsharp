@@ -88,27 +88,6 @@ namespace LeMP
 			return false;
 		}
 
-		// quote @{ Hope.For(777, $cash) } => F.Call(F.Dot(F.Id("Hope"), F.Id("For")), F.Literal(777), cash)
-		// declare_symbols @@Foo @@Bar {...} (braces optional, invoke replace_code)
-		// replace_code (IntSet.Parse($s) \with ParseSet($s), IntSet \with HashSet!int) {...}
-		// replace_code_after ($X($Y, -1) \with $X($Y, EOF)) {...}
-		// with Foo.Bar {...} => replace_code (.($x) \with Foo.Bar.$x) {...}
-		// include_here "../Util/Util.les"
-		// specialize $T \in (int, float, double) { def Square!$T(T x) { x*x; }; class Foo!($T,U) {}; }
-		// run_macros (specialize $T \in (int, float)) (replace Xyz \with Zyx) { ... }
-		// Bob.Hair?.Brush()
-		// cons Point(public field X::int, public field Y::int) { }
-		// def SetX(public X::int) { }
-		// prop X::int (public field _x) { get; set; };
-		// def DoSomething(required X::string) { };
-		// public override def ToString()::string ==> _obj;
-		// forward_to _obj { def ToString()::string; def GetHashCode()::int; };
-		// foo ??= Foo();
-		// x - 0.5;
-		// x in (1, 2, 3);
-		// $"The value is {Value,-10:C}." => string.Format("The value is {0,-10:C}", Value)
-		// save_and_restore _foo { Foo(_foo = true); } => var tmp17 = _foo; try { Foo(_foo = true); } finally { _foo = tmp17; }
-
 		/// <summary>Given a statement, this method attempts to decide if the 
 		/// immediately following statement (if any) is reachable.</summary>
 		/// <returns>true if reachable/unsure, false if definitely unreachable.</returns>

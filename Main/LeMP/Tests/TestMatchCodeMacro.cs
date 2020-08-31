@@ -159,5 +159,25 @@ namespace LeMP.Tests
 						WriteLine(altName.ToString());
 				}");
 		}
+
+		[Test]
+		public void TestMatchCodePreservesTrivia()
+		{
+			TestEcs(@"/*before*/ matchCode (var) { case 777: Yay(); case 666: Boo(); default: Huh(); } /*after*/",
+				@"/*before*/ if (777.Equals(var.Value)) Yay(); else if (666.Equals(var.Value)) Boo(); else Huh(); /*after*/");
+			TestEcs(@"/*before*/ 
+					matchCode(Get.Var) {
+						case Do($stuff):
+							Do(stuff);
+					} /*after*/",
+					@"/*before*/ 
+					{
+						var tmp_1 = Get.Var;
+						LNode stuff;
+						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null)
+							Do(stuff);
+					} /*after*/"
+				.Replace("tmp_1", "tmp_" + MacroProcessor.NextTempCounter));
+		}
 	}
 }

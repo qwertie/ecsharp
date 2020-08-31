@@ -50,6 +50,9 @@ namespace LeMP.Tests
 						Foo.Bar = oldBar_1;
 					}
 				}".Replace("oldBar_1", "oldBar_" + MacroProcessor.NextTempCounter));
+			TestEcs("/*comment!*/ saveAndRestore(Foo.Bar); F();",
+				"/*comment!*/ var oldBar_1 = Foo.Bar; try { F(); } finally { Foo.Bar = oldBar_1; }"
+				.Replace("oldBar_1", "oldBar_" + MacroProcessor.NextTempCounter));
 		}
 
 		[Test]
