@@ -88,6 +88,7 @@ namespace Loyc.Ecs
 			d[S.PPNullable] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
 			d[S.CsiReference] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
 			d[S.CsiLoad] = OpenDelegate<StatementPrinter>(nameof(AutoPrintPPStringDirective));
+			d[S.Splice] = OpenDelegate<StatementPrinter>(nameof(AutoPrintEmptySplice));
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -239,6 +240,18 @@ namespace Loyc.Ecs
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 			return SPResult.NeedSemicolon;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintEmptySplice()
+		{
+			// LeMP can produce an empty #splice() with trivia if there is no other node 
+			// on which to place the trivia, so we normally won't see non-empty splices.
+			Debug.Assert(_name == S.Splice);
+			if (_n.ArgCount != 0)
+				return SPResult.Fail;
+			G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
+			return SPResult.NeedSuffixTrivia;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

@@ -80,17 +80,18 @@ namespace Loyc.Ecs
 	/// </remarks>
 	public partial class EcsNodePrinter
 	{
-		LNode _n;
-		Symbol _name;
-		Precedence _context;
-		Ambiguity _flags;
-		INodePrinterWriter _out;
-		Symbol _spaceName; // for detecting constructor ambiguity (= S.Fn inside functions)
+		LNode _n; // the node currently being printed
+		Symbol _name; // caches the value of _n.Name
+		Precedence _context; // current precedence level (or StartStmt at statement level)
+		Ambiguity _flags; // special-situation flags sent down from the parent expression
+		INodePrinterWriter _out; // Low-level printer object. We give it text to print.
+		Symbol _spaceName; // for detecting constructor ambiguity (= S.Fn inside functions/lambdas/properties/constructors)
 		IMessageSink _errors;
 
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
+		/// <remarks>The most common error is an unprintable literal.</remarks>
 		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		EcsPrinterOptions _o;

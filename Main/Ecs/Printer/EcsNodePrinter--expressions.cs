@@ -956,7 +956,7 @@ namespace Loyc.Ecs
 		static string GetRawText(LNode rawTextNode)
 		{
 			object tVal = rawTextNode.TriviaValue;
-			return tVal == NoValue.Value || tVal == null ? rawTextNode.Name.Name : tVal.ToString();
+			return tVal == NoValue.Value || tVal == null ? "" : tVal.ToString();
 		}
 		private void PrintSimpleIdentOrLiteral()
 		{

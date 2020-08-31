@@ -28,7 +28,7 @@ namespace Loyc.Ecs.Tests
 				configure(options);
 			var sb = new StringBuilder();
 			var mode2 = exprMode ? ParsingMode.Expressions : ParsingMode.Statements;
-			if (input.Calls(S.Splice))
+			if (input.Calls(S.Splice) && !input.HasAttrs)
 				EcsLanguageService.Value.Print(input.Args, sb, MessageSink.Default, mode2, options);
 			else
 				EcsLanguageService.Value.Print(input, sb, MessageSink.Default, mode2, options);
@@ -103,6 +103,21 @@ namespace Loyc.Ecs.Tests
 			var bytes = new byte[] { 33,66,132,200 };
 			Expr("new byte[] { 33,66,132,200\n}", F.Literal(bytes));
 			Expr("new byte[] { 0x21,0x42,0x84,0xC8\n}", F.Literal(bytes).SetBaseStyle(NodeStyle.HexLiteral));
+		}
+
+		[Test]
+		public void PrintEmptySpliceWithTrivia()
+		{
+			// Note (2020/09): normal parsing won't produce code like {/*comment*/} (using an 
+			// empty-splice inside the braces) because StandardTriviaInjector doesn't know if the 
+			// language supports it. A tree of the form Foo([@`%MLComment`("Hello")] #splice()) 
+			// technically has one argument, so producing this carries the risk of confusing 
+			// compiler front-ends which might treat it as a normal argument. However, LeMP can 
+			// produce empty #splice() with trivia attached at the top level (file level), so the 
+			// printer has support for empty-splice statements.
+			Stmt("{\n  /*Hello*/\n}", F.Braces(F.Splice().PlusAttr(F.Trivia(S.TriviaMLComment, "Hello"))));
+			Stmt("/*Hello*/", F.Splice().PlusAttr(F.Trivia(S.TriviaMLComment, "Hello")));
+			Stmt("/*Hello*/", F.Splice().PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "Hello")));
 		}
 
 		int _testNum;
