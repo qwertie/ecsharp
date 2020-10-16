@@ -1,12 +1,14 @@
 README
 ======
 
-This repository holds several tools for enhancing .NET and C# development:
+The ecsharp repository holds several tools for enhancing .NET and C# development:
 
 - The Loyc .NET Core libraries, a set of libraries whose theme is "stuff that 
   should be built into the .NET framework, but isn't." These libraries have their
   [own repository](http://github.com/qwertie/LoycCore) and [home page](http://core.loyc.net),
   and the Loyc .NET Core repository is the `Core/` folder in this repository.
+  One of these libraries (Loyc.Syntax) supports [universal syntax trees](http://loyc.net/loyc-trees),
+  [LES2 and LES3](http://loyc.net/les).
 
 - [Enhanced C#](http://ecsharp.net) (or EC#) is a liberalization and regularization of the C# language.
   You can think of EC# as a C# _preprocessor_, since only the "front end" part of the project is done.
