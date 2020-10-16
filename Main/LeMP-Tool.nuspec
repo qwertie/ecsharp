@@ -45,7 +45,8 @@
          ... I thought I could take advantage of this to avoid hard-coding a path to specific nuget packages & versions,
          but I got "Could not load file or assembly 'System.Runtime, Version=4.2.2.0...'" during testing, implying that the
          MS DLLs in Release\netcoreapp3.1 rely on .NET Core 3.1 and won't load under .NET Core 2.1.
-         -->
+         Instead, the script that packages this for AppVeyor will manually copy DLLs to Release\netcoreapp2.1 before 
+         packing this. AppVeyor lets me use powershell, so I can avoid referring to package version numbers. -->
     <file src="..\Bin\Release\netcoreapp2.1\**\Microsoft.CodeAnalysis*.dll" target="tools\netcoreapp2.1\any\" />
   </files>
 </package>
