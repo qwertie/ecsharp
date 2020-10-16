@@ -49,16 +49,19 @@ after_build:
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\Loyc.Ecs.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LeMP.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LLLPG.nuspec
-    # Copy Roslyn DLLs to Release\netcoreapp2.1 so that LeMP-Tool.nuspec can use them
-    - ps: Get-ChildItem -Path "packages\Microsoft.CodeAnalysis.*\lib\netstandard2.0" | Foreach-Object { Copy-item -Force -Recurse -Verbose (Join-Path $_.FullName "*") -Destination .\Bin\Release\netcoreapp2.1 }
-    # Copy System DLLs to Release\netcoreapp2.1 so that Roslyn can use them
-    - ps: Get-ChildItem -Path "packages\System.*\lib\netstandard2.0" | Foreach-Object { Copy-item -Force -Recurse -Verbose (Join-Path $_.FullName "*") -Destination .\Bin\Release\netcoreapp2.1 }
+    # .NET Core builds produce output that can ONLY run on the current machine
+    # (because important DLLs are not included in the output folder).
+    # To produce something runnable elsewhere, use a publish command:
+    - dotnet publish -c Release "Main\LeMP\LeMP.csproj" --no-build -o .\Bin\published
+    # The output of "dotnet publish" is needed to build LeMP-Tool, because tool packages 
+    # must be self-contained (no dependencies)
     - nuget pack -Version %PKG_VERSION% Main\LeMP-Tool.nuspec
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
     - Bin\Release\Tests.exe 12345
     - Bin\Release\Tests.exe 67
+    # In case I'm debugging the build over RDP, give me a little time
     - sleep 20
 
 # "task for setting values in AssemblyInfo files during the build"
