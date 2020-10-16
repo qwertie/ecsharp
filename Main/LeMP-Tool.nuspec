@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>LeMP-tool</id>
+    <version>$version$</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">LGPL-2.1-or-later</license>
+    <projectUrl>http://ecsharp.net/lemp/</projectUrl>
+    <description>This is the command-line version of the LeMP macro processor (and LLLPG parser generator) which can be installed with (for example) `dotnet tool install -g lemp-tool`. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time.
+    
+    To integrate LeMP and LLLPG into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</description>
+    <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>
+    <repository url="https://github.com/qwertie/ecsharp" />
+    <dependencies>
+      <!--<group targetFramework=".NETCoreApp2.1">
+        <dependency id="Loyc.Collections" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Loyc.Essentials" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Loyc.Interfaces" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Loyc.Syntax" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Loyc.Utilities" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Loyc.Ecs" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="LeMP" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.CodeAnalysis.CSharp.Scripting" version="3.6.0" />
+      </group>-->
+    </dependencies>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="LeMP\DotnetToolSettings.xml" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\LeMP.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\LLLPG.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Ecs.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Utilities.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Syntax.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Math.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Collections.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Essentials.*" target="tools\netcoreapp2.1\any\" />
+    <file src="..\Bin\Release\netcoreapp2.1\Loyc.Interfaces.*" target="tools\netcoreapp2.1\any\" />
+    <!-- Building LeMP.dll (.NET Core 2.1) does NOT make Microsoft.CodeAnalysis.*.dll appear in Release\netcoreapp2.1
+         but building LeMPDemo.exe (.NET Core 3.1 Windows Application) makes them appear in Release\netcoreapp3.1
+         ... I thought I could take advantage of this to avoid hard-coding a path to specific nuget packages & versions,
+         but I got "Could not load file or assembly 'System.Runtime, Version=4.2.2.0...'" during testing, implying that the
+         MS DLLs in Release\netcoreapp3.1 rely on .NET Core 3.1 and won't load under .NET Core 2.1.
+         -->
+    <file src="..\Bin\Release\netcoreapp2.1\**\Microsoft.CodeAnalysis*.dll" target="tools\netcoreapp2.1\any\" />
+  </files>
+</package>

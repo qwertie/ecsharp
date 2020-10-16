@@ -4,6 +4,8 @@ version: 2.8.2.{build}
 image: Visual Studio 2019
 
 before_build:
+    # enable RDP
+    - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
     - nuget restore Loyc.netfx.sln
     - nuget restore Loyc.netstd.sln
     - nuget restore Core\LoycCore.netfx.sln
@@ -47,6 +49,7 @@ after_build:
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\Loyc.Ecs.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LeMP.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LLLPG.nuspec
+    - nuget pack -Version %PKG_VERSION% Main\LeMP-Tool.nuspec
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.
