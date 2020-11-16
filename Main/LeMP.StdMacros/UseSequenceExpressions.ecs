@@ -244,13 +244,12 @@ namespace LeMP
 						}
 					case { [$(...attrs)] $type $name = $initValue; }:
 						var initValue' = BubbleUpBlocks(initValue);
-						if (initValue' != initValue) {
-							matchCode (initValue') {
-								case #runSequence($(...stmts), $last):
-									return quote(#runSequence($(...stmts), [$(...attrs)] $type $name = $last));
-								default:
+						matchCode (initValue') {
+							case #runSequence($(...stmts), $last):
+								return quote(#runSequence($(...stmts), [$(...attrs)] $type $name = $last));
+							default:
+								if (initValue' != initValue)
 									return quote { [$(...attrs)] $type $name = $initValue'; };
-							}
 						}
 					default:
 						if (stmt.CallsMin(S.Try, 2)) {

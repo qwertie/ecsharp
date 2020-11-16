@@ -615,5 +615,20 @@ namespace LeMP.Tests
 					return int.Parse(s, out x) ? (int?)x : null;
 				}");
 		}
+
+		[Test]
+		public void TestObviousBugWithRunSequenceInVarDecl()
+		{
+			TestEcs(@"#useSequenceExpressions;
+				static double Circumference(double radius) {
+					double c = #runSequence(Console.WriteLine(), Math.PI * 2 * radius);
+					return c;
+				}", @"
+				static double Circumference(double radius) {
+					Console.WriteLine();
+					double c = Math.PI * 2 * radius;
+					return c;
+				}");
+		}
 	}
 }

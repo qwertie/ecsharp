@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -239,16 +239,14 @@ namespace LeMP
 						}
 					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Var, 2) && (type = stmt.Args[0]) != null && (tmp_12 = stmt.Args[1]) != null && tmp_12.Calls(CodeSymbols.Assign, 2) && (name = tmp_12.Args[0]) != null && (initValue = tmp_12.Args[1]) != null) {
 						var initValue_apos = BubbleUpBlocks(initValue);
-						if (initValue_apos != initValue) {
-							{
-								LNode last;
-								LNodeList stmts;
-								if (initValue_apos.CallsMin((Symbol) "#runSequence", 1) && (last = initValue_apos.Args[initValue_apos.Args.Count - 1]) != null) {
-									stmts = initValue_apos.Args.WithoutLast(1);
-									return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
-								} else
-									return LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, initValue_apos))));
-							}
+						{
+							LNode last;
+							LNodeList stmts;
+							if (initValue_apos.CallsMin((Symbol) "#runSequence", 1) && (last = initValue_apos.Args[initValue_apos.Args.Count - 1]) != null) {
+								stmts = initValue_apos.Args.WithoutLast(1);
+								return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
+							} else if (initValue_apos != initValue)
+								return LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, initValue_apos))));
 						}
 					} else if (stmt.CallsMin(S.Try, 2)) {
 						return ESEInTryStmt(stmt);
