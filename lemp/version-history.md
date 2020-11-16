@@ -6,10 +6,20 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
-### v2.8.2.1: November 16, 2020 ###
+### v2.8.3: November 16, 2020 ###
+
+EC# Parser/Printer:
+- Add new binary operators `<=>`, `|>`, `?|>` (#113)
+- `EcsValidators.SanitizeIdentifier` now allows long entity names such as _percnt and _period, which improves the appearance of plain C# output when an identifier with punctuation, such as ``@`%example` ``, is converted from Enhanced C# to plain C#.
+- In support of a change to LeMP in this version, the printer now handles `#rawText()` and `#splice()`, with no arguments, as no-ops that produce no output, with the side effect that attached trivia can be printed. Note: `#splice()` is only recognized in a statement context, and currently arguments are not recognized (e.g. `#splice(Foo())` is printed as though it were a normal nested function call).
 
 LeMP:
+- In `compileTime` blocks, you can now use `MessageSink.Default` to report errors and warnings. Example: `compileTime { MessageSink.Default.Error("error location", "{0} is an error", "This"); }`
+- LeMP has been changed to support attributes, and in particular, trivia, attached to `#splice()` calls (#122). If a `#splice()` node takes at least one argument, LeMP moves the attributes into the children while expanding the splice; most attributes are simply moved to the beginning of the attribute list of the first child, but trailing trivia are placed on the last child instead. If the `#splice()` call takes no arguments, attached attributes are ignored except for trivia. LeMP attempts to delete the `#splice()` node and add its trivia to the next or previous sibling. If there are no siblings, it attempts to create trailing trivia in the parent node. If this is not possible because there is no parent node, the empty `#splice()` becomes LeMP's output. Therefore, ideally, language printers will recognize and ignore `#splice()` except for the trivia attached to it. LeMP will behave this way regardless of whether the `#splice` was produced by a macro or was present in the original source tree.
+- Bug fix: preserve trivia on `matchCode`, `precompute`, `saveAndRestore`, `unroll` macros (#122)
 - Bug fix: a statement of the form `var x = #runSequence(...)` was being ignored in the context of `#useSequenceExpressions`
+- The output of `#printKnownMacros;` now has word wrapping
+- A NuGet-based LeMP command-line tool is now available in the LeMP-Tool package.
 
 ### v2.8.2: July 24, 2020 ###
 
