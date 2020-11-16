@@ -32,19 +32,14 @@
  */
 
 html {
-  font-family: "PT Sans", Helvetica, Arial, sans-serif;
+  font-family: "Segoe UI",Helvetica,Arial,sans-serif;
+  font-size: 17px;
 }
-@media (min-width: 48em) {
+@media (min-width: 70em) {
   html {
-    font-size: 16px;
+    font-size: 19px;
   }
 }
-@media (min-width: 60em) {
-  html {
-    font-size: 18px;
-  }
-}
-
 
 /*
  * Sidebar
