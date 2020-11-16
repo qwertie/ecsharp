@@ -6,6 +6,11 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.8.2.1: November 16, 2020 ###
+
+LeMP:
+- Bug fix: a statement of the form `var x = #runSequence(...)` was being ignored in the context of `#useSequenceExpressions`
+
 ### v2.8.2: July 24, 2020 ###
 
 LeMP:
