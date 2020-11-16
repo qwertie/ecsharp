@@ -1,4 +1,4 @@
-﻿<#@ template language="C#" #>
+<#@ template language="C#" #>
 <#@ output extension="cs" #>
 <#@ include file="../../Loyc.Math/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
@@ -196,6 +196,8 @@ namespace Loyc.Geometry
 		}
 		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace)
 		{
+			if (points.Count < 2)
+				return new DList<Point>((IReadOnlyList<Point>) points);
 			if (!sortInPlace)
 				points = new List<Point>(points);
 			points.Sort((a, b) => 

@@ -12,8 +12,8 @@
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Math.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj"/>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj" />
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <Compile Update="Range.out.cs">
       <AutoGen>True</AutoGen>
@@ -81,5 +81,8 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>PolygonMathTT.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 </Project>
