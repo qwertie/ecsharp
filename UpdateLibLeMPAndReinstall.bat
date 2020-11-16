@@ -4,6 +4,7 @@ REM   Note: Any previously installed vsix must first be uninstalled manually
 REM from within VS.
 "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe" /out vsbuild.log /build Release "Loyc.netfx.sln"
 @IF ERRORLEVEL 1 GOTO ERROR
+mkdir Lib\LeMP
 copy Bin\Release\*.dll Lib\LeMP
 @IF ERRORLEVEL 1 GOTO ERROR
 copy Bin\Release\*.exe Lib\LeMP
