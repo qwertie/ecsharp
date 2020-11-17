@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.8.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -468,6 +468,7 @@ namespace LeMP
 			}
 		
 			static readonly LNode defaultContractAssert = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "Assert"))).SetStyle(NodeStyle.Operator);
+		
 		
 			LNode GetAssertMethodForRequires()
 			{

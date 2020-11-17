@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -152,7 +152,8 @@ namespace LeMP.Les3.To.CSharp
 		{
 			{
 				LNode getExpr = null, setExpr = null, sig, tmp_10 = null, tmp_11 = null;
-				if (node.Calls((Symbol) "'get", 2) && (sig = node.Args[0]) != null && (tmp_10 = node.Args[1]) != null && tmp_10.Calls((Symbol) "'set", 2) && (getExpr = tmp_10.Args[0]) != null && (setExpr = tmp_10.Args[1]) != null || node.Calls((Symbol) "'set", 2) && (sig = node.Args[0]) != null && (tmp_11 = node.Args[1]) != null && tmp_11.Calls((Symbol) "'get", 2) && (setExpr = tmp_11.Args[0]) != null && (getExpr = tmp_11.Args[1]) != null || node.Calls((Symbol) "'get", 2) && (sig = node.Args[0]) != null && (getExpr = node.Args[1]) != null || node.Calls((Symbol) "'set", 2) && (sig = node.Args[0]) != null && (setExpr = node.Args[1]) != null) {
+				if (node.Calls((Symbol) "'get", 2) && (sig = node.Args[0]) != null && (tmp_10 = node.Args[1]) != null && tmp_10.Calls((Symbol) "'set", 2) && (getExpr = tmp_10.Args[0]) != null && (setExpr = tmp_10.Args[1]) != null || node.Calls((Symbol) "'set", 2) && (sig = node.Args[0]) != null && (tmp_11 = node.Args[1]) != null && tmp_11.Calls((Symbol) "'get", 2) && (setExpr = tmp_11.Args[0]) != null && (getExpr = tmp_11.Args[1]) != null || node.Calls((Symbol) "'get", 2) && (sig = node.Args[0]) != null && (getExpr = node.Args[1]) != null || node.Calls((Symbol) "'set", 2) && (sig = node.Args[0]) != null && (setExpr = node.Args[1]) != null)// Deconstruct the signature
+				 {
 					LNode name, type;
 					if (sig.Calls(CodeSymbols.Colon, 2) && (name = sig.Args[0]) != null && (type = sig.Args[1]) != null) {
 						// Build C# property body (the stuff in braces)

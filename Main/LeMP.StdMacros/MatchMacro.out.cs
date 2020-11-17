@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.8.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -364,6 +364,7 @@ namespace LeMP
 					pattern = pattern.Args[0];
 				}
 			
+				// deconstruct `pattern in Range`
 				{
 					LNode lhs;
 					if (pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null)
@@ -376,6 +377,7 @@ namespace LeMP
 					LNode lhs, type;
 					if (pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
 						if (subpatterns == null) {
+							// Check for syntax for LES with `with`
 							if (type.Calls((Symbol) "with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null || type.Calls((Symbol) "'with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null) { }
 						}
 						if (type.Calls(CodeSymbols.Var, 2) && (isType = type.Args[0]) != null && (varBinding = type.Args[1]) != null) { } else isType = type;
@@ -400,6 +402,7 @@ namespace LeMP
 					else
 						cmpExpr = pattern;
 				}
+			
 				if (subpatterns != null) {
 					if (subpatterns.Calls(S.Tuple) || subpatterns.Calls(S.AltList))
 						subPatterns = subpatterns.Args;

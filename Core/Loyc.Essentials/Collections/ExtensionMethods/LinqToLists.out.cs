@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.8.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -59,6 +59,7 @@ namespace Loyc.Collections
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
 		}
+	
 		// *** Reminder: do not edit the generated output! ***
 		public static T Last<T>(this IListAndListSource<T> list) { return Last((IListSource<T>) list); }
 	
@@ -108,6 +109,7 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(list, 0, count);
 		}
+	
 		// *** Reminder: do not edit the generated output! ***
 		public static NegListSlice<T> Skip<T>(this INegListSource<T> list, int count)
 		{
@@ -182,6 +184,7 @@ namespace Loyc.Collections
 					return new NegListSlice<T>(list, i);
 			}
 		}
+	
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Copies the contents of a list to an array.</summary>
 		public static T[] ToArray<T>(this IReadOnlyList<T> c)
@@ -346,6 +349,7 @@ namespace Loyc.Collections.MutableListExtensionMethods
 					return new ListSlice<T>(list, i);
 			}
 		}
+	
 		public static SelectCollection<ICollection<T>, T, TResult> Select<T, TResult>(this ICollection<T> list, Func<T, TResult> selector)
 		{
 			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
