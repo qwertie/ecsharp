@@ -56,6 +56,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Shl = GSymbol.Get("'<<");   //!< "<<" Left-shift operator
 		public static readonly Symbol Not = GSymbol.Get("'!");    //!< "!"  Logical 'not' operator
 		public static readonly Symbol Assign = GSymbol.Get("'="); //!< "="  Assignment operator
+		public static readonly Symbol ForwardAssign = GSymbol.Get("'|=>"); //!< Assignment operator with reversed argument order (designed to resemble the pipe operator `|>`)
+		public static readonly Symbol ForwardNullCoalesceAssign = GSymbol.Get("'?|=>"); //!< Null-coalescing assignment with reversed argument order
 		public static readonly Symbol OrBits = GSymbol.Get("'|");     //!< "|" Bitwise or operator
 		public static readonly Symbol AndBits = GSymbol.Get("'&");    //!< "&" Bitwise and operator. Also, address-of (unary &)
 		public static readonly Symbol _AddressOf = GSymbol.Get("'&"); //!< Alias for AndBits
@@ -238,7 +240,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol DotDotDot = GSymbol.Get("'...");    //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol DotDotLT = GSymbol.Get("'..<");     //!< "..<" Swift uses this instead of ".."
 		public static readonly Symbol Tuple = GSymbol.Get("'tuple");      //!< "'tuple": (1, "a") <=> @'tuple(1, "a")
-		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
+		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). ":::" may be a synonym
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
 		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {this.x = 0;}) <=> Foo() {this.x = 0;)

@@ -78,9 +78,14 @@ namespace Loyc.Ecs.Tests
 			Expr("a ?? b |> c = #", F.Call(S.ForwardPipeArrow, F.Call(S.NullCoalesce, a, b), F.Assign(c, _("#"))));
 			Expr("a ?? b ?|> c = #", F.Call(S.NullForwardPipeArrow, F.Call(S.NullCoalesce, a, b), F.Assign(c, _("#"))));
 			Expr("a = b |> c", F.Assign(a, F.Call(S.ForwardPipeArrow, b, c)));
-			Expr("a = b ?|> c", F.Assign(a, F.Call(S.NullForwardPipeArrow, b, c)));
+			Expr("x = a ?|> b ?> Foo", F.Assign(x, F.Call(S.NullForwardPipeArrow, F.Call(S.NullForwardPipeArrow, a, b), Foo)), Mode.ParserTest);
+			Expr("x = a ?|> b ?|> c", F.Assign(x, F.Call(S.NullForwardPipeArrow, F.Call(S.NullForwardPipeArrow, a, b), c)));
 			Expr("a = b <=> c", F.Assign(a, F.Call(S.Compare, b, c)));
 			Expr("a `mod` b <=> c == 0", F.Call(S.Eq, F.Call(S.Compare, Operator(F.Call(_("mod"), a, b)), c), zero));
+			Expr("a(x) |=> b", F.Call(S.ForwardAssign, F.Call(a, x), b));
+			var node = F.Call(S.ForwardNullCoalesceAssign, F.Call(S.ForwardNullCoalesceAssign, F.Call(a, x), b), c);
+			Expr("a(x) ?|=> b ?=> c", node, Mode.ParserTest);
+			Expr("a(x) ?|=> b ?|=> c", node);
 		}
 
 		[Test]

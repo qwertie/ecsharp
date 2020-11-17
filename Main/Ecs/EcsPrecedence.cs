@@ -73,7 +73,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence And        = new Precedence(22);    // &&
 		public static readonly Precedence Or         = new Precedence(20);    // || ^^
 		public static readonly Precedence OrIfNull   = new Precedence(16);    // ??
-		public static readonly Precedence ForwardPipeArrow = new Precedence(13);    // |> ?|>
+		public static readonly Precedence PipeArrow  = new Precedence(13);    // |>  ?|>  |=>  ?|=>
 		public static readonly Precedence IfElse     = new Precedence(11, 10, 10, 11); // x ? y : z
 		public static readonly Precedence Assign     = new Precedence(26,  0,  0, 1);  // =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=
 		public static readonly Precedence Lambda     = new Precedence(85, -1, -2, -1); // =>

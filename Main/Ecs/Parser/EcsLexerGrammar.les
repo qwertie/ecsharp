@@ -202,6 +202,7 @@ namespace Loyc.Ecs.Parser
 		/ "&="  { _type = TT.CompoundSet; _value = S.AndBitsAssign; }
 		/ "&"   { _type = TT.AndBits; _value = S.AndBits; }
 		| "|>"  { _type = TT.PipeArrow; _value = S.ForwardPipeArrow; }
+		| "|=>" { _type = TT.PipeArrow; _value = S.ForwardAssign; }
 		/ "||"  { _type = TT.OrXor; _value = S.Or; }
 		/ "|="  { _type = TT.CompoundSet; _value = S.OrBitsAssign; }
 		/ "|"   { _type = TT.OrBits; _value = S.OrBits; }
@@ -239,6 +240,9 @@ namespace Loyc.Ecs.Parser
 		/ "??"  { _type = TT.NullCoalesce; _value = S.NullCoalesce; }
 		/ "?."  { _type = TT.NullDot; _value = S.NullDot; }
 		/ "?|>" { _type = TT.PipeArrow; _value = S.NullForwardPipeArrow; }
+		/ "?>"  { _type = TT.PipeArrow; _value = S.NullForwardPipeArrow; } // synonym for ?|>
+		/ "?|=>" { _type = TT.PipeArrow; _value = S.ForwardNullCoalesceAssign; }
+		/ "?=>" { _type = TT.PipeArrow; _value = S.ForwardNullCoalesceAssign; } // synonym for ?|=>
 		/ "?"   { _type = TT.QuestionMark; _value = S.QuestionMark; }
 		| "$"   { _type = TT.Substitute; _value = S.Substitute; }
 		| "\\"  { _type = TT.Backslash; _value = S.Backslash; }

@@ -72,8 +72,10 @@ namespace Loyc.Ecs
 			P(S.ExpAssign, EP.Assign),      P(S.XorBitsAssign, EP.Assign),
 			P(S.AndBitsAssign, EP.Assign),  P(S.OrBitsAssign, EP.Assign), 
 			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceAssign, EP.Assign),
-			P(S.Compare, EP.Compare3Way),   P(S.ForwardPipeArrow, EP.ForwardPipeArrow),
-			P(S.NullForwardPipeArrow, EP.ForwardPipeArrow)
+			P(S.Compare, EP.Compare3Way),   P(S.ForwardPipeArrow, EP.PipeArrow),
+			P(S.ForwardAssign, EP.PipeArrow),
+			P(S.NullForwardPipeArrow, EP.PipeArrow),
+			P(S.ForwardNullCoalesceAssign, EP.PipeArrow)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(

@@ -79,6 +79,8 @@ namespace Loyc.Syntax.Les
 				{ (Symbol)"'<-", P.ArrowPrefix }, // <-
 				{ (Symbol)"':>", P.ColonArrowPrefix }, // :>
 				{ (Symbol)"'<:", P.ColonArrowPrefix }, // <:
+				{ (Symbol)"'?>", P.ColonArrowPrefix }, // ?>
+				{ (Symbol)"'<?", P.ColonArrowPrefix }, // <?
 				{ S.GT,          P.LambdaPrefix }, // > and =>
 				{ (Symbol)"'|>", P.TrianglePrefix }, // |>
 				{ (Symbol)"'<|", P.TrianglePrefix }, // <|
@@ -130,6 +132,8 @@ namespace Loyc.Syntax.Les
 				{ S.QuestionMark,P.IfElse     }, // ?
 				{ S.Colon,       P.IfElse     }, // :
 				{ (Symbol)"':>", P.IfElse     }, // :> (so <: and :> have the same precedence as :)
+				{ (Symbol)"'?>", P.IfElse     }, // ?>
+				{ (Symbol)"'<?", P.IfElse     }, // <?
 				{ S.Assign,      P.Assign     }, // =
 				{ S.Lambda,      P.Lambda     }, // =>
 				{ (Symbol)"'|>", P.Triangle   }, // |>

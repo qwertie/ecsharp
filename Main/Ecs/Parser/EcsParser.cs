@@ -603,7 +603,7 @@ namespace Loyc.Ecs.Parser
 			{ (int)TT.And, EP.And },
 			{ (int)TT.OrXor, EP.Or },
 			{ (int)TT.NullCoalesce, EP.OrIfNull },
-			{ (int)TT.PipeArrow, EP.ForwardPipeArrow },
+			{ (int)TT.PipeArrow, EP.PipeArrow },
 			{ (int)TT.QuestionMark, EP.IfElse }, // yeah, not really infix
 			{ (int)TT.Set, EP.Assign },
 			{ (int)TT.CompoundSet, EP.Assign },

@@ -149,7 +149,7 @@ namespace Loyc.Ecs.Parser
 		Forward      = TokenKind.Operator + 28, // ==>
 		Substitute   = TokenKind.Operator + 29, // $
 		LambdaArrow  = TokenKind.Operator + 30, // =>
-		PipeArrow    = TokenKind.Operator + 31, // |>, ?|>
+		PipeArrow    = TokenKind.Operator + 31, // |>, ?|> aka ?>, |=>, ?|=> aka ?=>
 
 		Unknown = TokenKind.Other, // invalid input
 		//Indent = TokenKind.LBrace + 1,

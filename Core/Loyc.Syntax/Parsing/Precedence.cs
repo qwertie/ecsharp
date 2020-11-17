@@ -23,9 +23,9 @@ namespace Loyc.Syntax
 	/// To understand how this works, remember that a parser scans from left to 
 	/// right. Each time it encounters a new operator, it needs to figure out 
 	/// whether to include that operator in the current (inner) expression or 
-	/// whether to "complete" the inner expression and bind the operator to an
-	/// outer expression instead. The concept of a "precedence floor" can be used 
-	/// to make this decision.
+	/// whether to "complete" the inner expression so that the operator can be 
+	/// bound to an outer expression instead. The concept of a "precedence floor" 
+	/// can be used to make this decision.
 	/// <para/>
 	/// For example, suppose we start parsing the expression <c>-a.b + c * d + e</c>.
 	/// The parser sees "-" first, which must be a prefix operator since there is 

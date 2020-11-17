@@ -271,8 +271,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence ArrowPrefix  = new Precedence(111, 30, 30, 30); // -> <- (prefix)
 		public static readonly Precedence And          = new Precedence(25);              // &&
 		public static readonly Precedence Or           = new Precedence(20);              // || ^^
-		public static readonly Precedence IfElse       = new Precedence(16, 15);          // ? : :> <:   a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
-		public static readonly Precedence ColonArrowPrefix = new Precedence(111, 15);     // :> <: (prefix)
+		public static readonly Precedence IfElse       = new Precedence(16, 15);          // ? : :> <: ?> <?  a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
+		public static readonly Precedence ColonArrowPrefix = new Precedence(111, 15);     // :> <: ?> <? (prefix)
 		public static readonly Precedence Assign       = new Precedence(28, 10, 10, 10);  // =      label : (b = (c ? (d : e)))
 		public static readonly Precedence LowerKeyword = new Precedence(6, 5, 5, 5);      // keyword, e.g. (a = b) implies (a knows (b = c));
 		public static readonly Precedence Lambda       = new Precedence(48, 0, 0, 0);     // =>
