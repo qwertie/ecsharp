@@ -111,18 +111,22 @@ namespace LeMP.Tests
 		public void TestFieldInitializers()
 		{
 			TestEcs(@"#useSequenceExpressions;
-				static double nine = Math.Sqrt(9)::three * three;
-				Pair<Symbol,Symbol> p = Pair.Create(""foo""(->Symbol)::str, str);
-				", @"
-				static double nine = nine_initializer();
-				static double nine_initializer() {
-					var three = Math.Sqrt(9);
-					return ([@`%isTmpVar`] three) * three;
+				class Foo {
+					static double nine = Math.Sqrt(9)::three * three;
+					Pair<Symbol,Symbol> p = Pair.Create(""foo""(->Symbol)::str, str);
 				}
-				Pair<Symbol,Symbol> p = p_initializer();
-				static Pair<Symbol,Symbol> p_initializer() {
-					var str = ""foo""(->Symbol);
-					return Pair.Create([@`%isTmpVar`] str, str);
+				", @"
+				class Foo {
+					static double nine = nine_initializer();
+					static double nine_initializer() {
+						var three = Math.Sqrt(9);
+						return ([@`%isTmpVar`] three) * three;
+					}
+					Pair<Symbol,Symbol> p = p_initializer();
+					static Pair<Symbol,Symbol> p_initializer() {
+						var str = ""foo""(->Symbol);
+						return Pair.Create([@`%isTmpVar`] str, str);
+					}
 				}
 				");
 		}
@@ -629,6 +633,45 @@ namespace LeMP.Tests
 					double c = Math.PI * 2 * radius;
 					return c;
 				}");
+		}
+
+		[Test]
+		public void TestTopLevelRunSequenceWithBraces()
+		{
+			TestEcs(@"#ecs;
+				define operator<<($s, $x) => $s.Append($x);
+
+				[PriorityOverride, Passive]
+				define operator<<($s, ($items, $toString)) {
+					// Not advisable for production use, but good as a test	
+					#runSequence {
+						var s__ = $s;
+						IReadOnlyList<string> it__ = $items;
+						for (int i__ = 0; i__ < it__.Count; ++i__)
+							(i__ > 0 ? s__ << "", "" : s__) << $toString(it__[i__]);
+						s__;
+					}
+				}
+
+				string Ack(string s) => s + ""!"";
+				var names = new[] { ""Holly"", ""Molly"" };
+				var b = new StringBuilder();
+				b << ""Hello... "";
+				b << ""Howdy "" << (names, Ack) << "" etc."";
+			", @"
+				string Ack(string s) => s + ""!"";
+
+				var names = new[] {
+					""Holly"", ""Molly""
+				};
+				var b = new StringBuilder() ;
+				b.Append(""Hello... "");
+				var s__ = b.Append(""Howdy "");
+				IReadOnlyList<string> it__ = names;
+				for (int i__ = 0; i__ < it__.Count; ++i__)
+					(i__ > 0 ? s__.Append("", "") : s__).Append(Ack(it__[i__]));
+				s__.Append("" etc."");
+			");
 		}
 	}
 }

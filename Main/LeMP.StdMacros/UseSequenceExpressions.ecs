@@ -1,3 +1,4 @@
+#useSymbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,6 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		static readonly Symbol _#runSequence = (Symbol) "#runSequence";
-		static readonly Symbol _useSequenceExpressionsIsRunning = (Symbol) "#useSequenceExpressionsIsRunning";
-
 		[LexicalMacro("#runSequence { Stmts; };",
 			"Allows #runSequence at brace-scope without the use of #useSequenceExpressions",
 			"#runSequence", Mode = MacroMode.Passive)]
@@ -24,7 +22,7 @@ namespace LeMP
 		{
 			if (context.Parent.Calls(S.Braces))
 				return node.With(S.Splice, MaybeRemoveNoOpFromRunSeq(node.Args));
-			if (!context.ScopedProperties.ContainsKey(_useSequenceExpressionsIsRunning))
+			if (!context.ScopedProperties.ContainsKey(@@#useSequenceExpressionsIsRunning))
 				Reject(context, node, "#useSequenceExpressions is required to make #runSequence work");
 			return null;
 		}
@@ -51,12 +49,12 @@ namespace LeMP
 				context.Sink.Error(node[1], "#useSequenceExpressions does not support arguments.");
 
 			{
-				context.ScopedProperties[_useSequenceExpressionsIsRunning] = G.BoxedTrue;
-				on_finally { context.ScopedProperties.Remove(_useSequenceExpressionsIsRunning); }
+				context.ScopedProperties[@@#useSequenceExpressionsIsRunning] = G.BoxedTrue;
+				on_finally { context.ScopedProperties.Remove(@@#useSequenceExpressionsIsRunning); }
 				body = context.PreProcess(body);
 			}
 			var ers = new EliminateRunSequences(context);
-			return ers.EliminateSequenceExpressions(body, true).AsLNode(S.Splice);
+			return ers.EliminateSequenceExpressions(body, false).AsLNode(S.Splice);
 		}
 
 		class EliminateRunSequences
@@ -75,7 +73,7 @@ namespace LeMP
 			
 			public this(public IMacroContext Context) {}
 			LNode[] _arrayOf1 = new LNode[1];
-			
+
 			public LNodeList EliminateSequenceExpressions(LNodeList stmts, bool isDeclContext)
 			{
 				return stmts.SmartSelectMany(stmt => {
@@ -96,11 +94,8 @@ namespace LeMP
 					*/
 					LNode result = EliminateSequenceExpressions(stmt, isDeclContext);
 					if (result != stmt) {
-						LNodeList results;
-						if (result.Calls(_#runSequence)) {
-							results = MaybeRemoveNoOpFromRunSeq(result.Args);
-							return results;
-						}
+						if (result.Calls(@@#runSequence))
+							return MaybeRemoveNoOpFromRunSeq(result.Args);
 					}
 					_arrayOf1[0] = result;
 					return _arrayOf1;
@@ -134,9 +129,7 @@ namespace LeMP
 					return stmt;
 				} else if (stmt.Calls(CodeSymbols.Braces)) {
 					return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, isDeclContext));
-				} else if (!isDeclContext) {
-					return EliminateSequenceExpressionsInExecStmt(stmt);
-				} else if (stmt.CallsMin(S.Var, 2)) {
+				} else if (stmt.CallsMin(S.Var, 2) && isDeclContext) {
 					// Eliminate blocks from field member
 					var results = new List<LNode> { stmt };
 					var vars = stmt.Args;
@@ -154,18 +147,30 @@ namespace LeMP
 					}
 					if (results.Count > 1) {
 						results[0] = stmt.WithArgs(vars);
-						return LNode.List(results).AsLNode(_#runSequence);
+						return LNode.List(results).AsLNode(@@#runSequence);
 					}
 					return stmt;
 				} else
-					return stmt;
+					return EliminateSequenceExpressionsInExecStmt(stmt);
+			}
+
+			static bool UnwrapRunSequence(LNode expr, out LNodeList exprSeq) => (exprSeq = UnwrapRunSequence(expr)).Count != 0;
+			static LNodeList UnwrapRunSequence(LNode runSeq)
+			{
+				if (runSeq.CallsMin(@@#runSequence, 1)) {
+					if (runSeq.ArgCount == 1 && runSeq[0].Calls(S.Braces))
+						return runSeq[0].Args;
+					else
+						return runSeq.Args;
+				}
+				return LNode.List();
 			}
 
 			LNode EliminateSequenceExpressionsInLambdaExpr(LNode expr, LNode retType)
 			{
 				var stmt = EliminateSequenceExpressions(expr, false);
-				if (stmt.Calls(_#runSequence)) {
-					stmt = stmt.WithTarget(S.Braces);
+				if (UnwrapRunSequence(stmt, out var stmtSeq)) {
+					stmt = stmt.With(S.Braces, stmtSeq);
 					if (!retType.IsIdNamed(S.Void)) {
 						if (retType.IsIdNamed(S.Missing) && stmt.Args.Last.IsCall)
 							Context.Sink.Warning(expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
@@ -189,23 +194,22 @@ namespace LeMP
 					case { [$(...attrs)] fixed ($init) $block;   }:
 						init = EliminateSequenceExpressionsInExecStmt(init);
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						if (init.CallsMin(_#runSequence, 1)) {
+						if (UnwrapRunSequence(init, out var initSeq)) {
 							return quote {
 								[$(...attrs)] {
-									$(...init.Args.WithoutLast(1));
-									fixed ($(init.Args.Last)) $block;
+									$(...initSeq.WithoutLast(1));
+									fixed ($(initSeq.Last)) $block;
 								}
 							};
 						} else
 							return stmt.WithArgChanged(1, block);
 					case { [$(...attrs)] while ($cond) $block; }:
-						cond = BubbleUpBlocks(cond);
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						if (cond.CallsMin(_#runSequence, 1)) {
+						if (BubbleUpAndUnwrapRunSequence(ref cond, out var condSeq)) {
 							return quote { 
 								[$(...attrs)] for (;;) {
-									$(...cond.Args.WithoutLast(1));
-									if ($(cond.Args.Last))
+									$(...condSeq.WithoutLast(1));
+									if ($(condSeq.Last))
 										$block;
 									else
 										break;
@@ -215,12 +219,11 @@ namespace LeMP
 							return stmt.WithArgChanged(1, block);
 					case { [$(...attrs)] do $block; while($cond); }:
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						cond = BubbleUpBlocks(cond);
-						if (cond.CallsMin(_#runSequence, 1)) {
+						if (BubbleUpAndUnwrapRunSequence(ref cond, out var condSeq)) {
 							var continue_N = F.Id(NextTempName(Context, "continue_"));
 							var bodyStmts = block.AsList(S.Braces);
-							bodyStmts.AddRange(cond.Args.WithoutLast(1));
-							bodyStmts.Add(quote { $continue_N = $(cond.Args.Last); });
+							bodyStmts.AddRange(condSeq.WithoutLast(1));
+							bodyStmts.Add(quote { $continue_N = $(condSeq.Last); });
 							return quote { 
 								[$(...attrs)] for (bool $continue_N = true; $continue_N;) { $(...bodyStmts); }
 							};
@@ -230,12 +233,11 @@ namespace LeMP
 						return ESEInForLoop(stmt, attrs, inits, cond, incs, block);
 					case { [$(...attrs)] foreach ($type $loopVar in $collection) $block; }:
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						collection = BubbleUpBlocks(collection);
-						if (collection.CallsMin(_#runSequence, 1)) {
+						if (BubbleUpAndUnwrapRunSequence(ref collection, out var collectionSeq)) {
 							return quote { 
 								[$(...attrs)] {
-									$(...collection.Args.WithoutLast(1));
-									foreach ($type $loopVar in $(collection.Args.Last)) 
+									$(...collectionSeq.WithoutLast(1));
+									foreach ($type $loopVar in $(collectionSeq.Last)) 
 										$block;
 								}
 							};
@@ -243,14 +245,12 @@ namespace LeMP
 							return stmt.WithArgChanged(stmt.Args.Count - 1, block);
 						}
 					case { [$(...attrs)] $type $name = $initValue; }:
-						var initValue' = BubbleUpBlocks(initValue);
-						matchCode (initValue') {
-							case #runSequence($(...stmts), $last):
-								return quote(#runSequence($(...stmts), [$(...attrs)] $type $name = $last));
-							default:
-								if (initValue' != initValue)
-									return quote { [$(...attrs)] $type $name = $initValue'; };
-						}
+						var initValue' = initValue;
+						if (BubbleUpAndUnwrapRunSequence(ref initValue', out var initValueSeq)) {
+							initValueSeq[initValueSeq.Count - 1] = quote([$(...attrs)] $type $name = $(initValueSeq.Last));
+							return initValue'.WithArgs(initValueSeq);
+						} else if (initValue' != initValue)
+							return stmt.WithArgChanged(1, quote { $name = $initValue'; });
 					default:
 						if (stmt.CallsMin(S.Try, 2)) {
 							return ESEInTryStmt(stmt);
@@ -266,33 +266,34 @@ namespace LeMP
 
 			LNode ESEInForLoop(LNode stmt, LNodeList attrs, LNodeList init, LNode cond, LNodeList inc, LNode block)
 			{
-				// TODO: handle multi-int and multi-inc
+				// TODO: handle multi-init and multi-inc
 				var preInit = LNodeList.Empty;
 				var init' = init.SmartSelect(init1 => {
 					init1 = EliminateSequenceExpressionsInExecStmt(init1);
-					if (init1.CallsMin(_#runSequence, 1)) {
-						preInit.AddRange(init1.Args.WithoutLast(1));
-						return init1.Args.Last;
+					if (UnwrapRunSequence(init1, out var init1Seq)) {
+						preInit.AddRange(init1Seq.WithoutLast(1));
+						return init1Seq.Last;
 					}
 					return init1;
 				});
-				var cond' = BubbleUpBlocks(cond);
+				var cond' = cond;
+				BubbleUpAndUnwrapRunSequence(ref cond', out var cond'Seq);
 				var inc'  = inc.SmartSelectMany(inc1 => {
 					inc1 = BubbleUpBlocks(inc1);
-					return inc1.AsList(_#runSequence);
+					return inc1.AsList(@@#runSequence);
 				});
 
 				block = EliminateSequenceExpressionsInChildStmt(block);
-				if (init' != init || cond' != cond || inc' != inc) {
+				if (init' != init || cond'Seq.Count != 0 || inc' != inc) {
 					init = init';
 					if (inc' != inc) {
 						var blockStmts = block.AsList(S.Braces).AddRange(inc');
 						block = blockStmts.AsLNode(S.Braces);
 						inc = LNode.List();
 					}
-					if (cond'.CallsMin(_#runSequence, 1)) {
-						var preCond = cond'.Args.WithoutLast(1);
-						cond = cond'.Args.Last;
+					if (cond'Seq.Count != 0) {
+						var preCond = cond'Seq.WithoutLast(1);
+						cond = cond'Seq.Last;
 						stmt = quote {
 							for ($init; ; $inc) { 
 								$(...preCond);
@@ -371,8 +372,8 @@ namespace LeMP
 			LNode EliminateSequenceExpressionsInChildStmt(LNode stmt)
 			{
 				stmt = EliminateSequenceExpressionsInExecStmt(stmt);
-				if (stmt.Calls(_#runSequence))
-					return stmt.With(S.Braces, MaybeRemoveNoOpFromRunSeq(stmt.Args));
+				if (UnwrapRunSequence(stmt, out var stmtSeq))
+					return stmt.With(S.Braces, MaybeRemoveNoOpFromRunSeq(stmtSeq));
 				return stmt;
 			}
 
@@ -387,10 +388,9 @@ namespace LeMP
 			///   expr on exit:  fieldName_initializer()
 			LNode EliminateRunSeqFromInitializer(LNode retType, LNode fieldName, ref LNode expr)
 			{
-				expr = BubbleUpBlocks(expr);
-				if (expr.CallsMin(_#runSequence, 1)) {
-					var statements = expr.Args.WithoutLast(1);
-					var finalResult = expr.Args.Last;
+				if (BubbleUpAndUnwrapRunSequence(ref expr, out var exprSeq)) {
+					var statements = exprSeq.WithoutLast(1);
+					var finalResult = exprSeq.Last;
 					
 					LNode methodName = F.Id(KeyNameComponentOf(fieldName).Name + "_initializer");
 					expr = quote( $methodName() );
@@ -402,6 +402,14 @@ namespace LeMP
 					};
 				} else
 					return null; // most common case
+			}
+
+			bool BubbleUpAndUnwrapRunSequence(LNode expr, out LNodeList exprSeq) => BubbleUpAndUnwrapRunSequence(ref expr, out exprSeq);
+			bool BubbleUpAndUnwrapRunSequence(ref LNode expr, out LNodeList exprSeq)
+			{
+				expr = BubbleUpBlocks(expr);
+				exprSeq = UnwrapRunSequence(expr);
+				return exprSeq.Count != 0;
 			}
 
 			// This method's main goal is to move #runSequence from child nodes to outer nodes:
@@ -446,7 +454,7 @@ namespace LeMP
 						result = expr.WithArgChanged(1, EliminateSequenceExpressionsInLambdaExpr(code, F.Missing));
 
 					default:
-						if (expr.Calls(_#runSequence))
+						if (expr.Calls(@@#runSequence))
 							result = expr;
 						else
 							result = BubbleUp_GeneralCall(expr);
@@ -455,7 +463,7 @@ namespace LeMP
 
 				// #runSequences can be nested by the user or produced by BubbleUp_GeneralCall,
 				// so process the code inside #runSequence too
-				if (result.Calls(_#runSequence))
+				if (result.Calls(@@#runSequence))
 					return result.WithArgs(EliminateSequenceExpressions(result.Args, false));
 				else
 					return result;
@@ -481,10 +489,9 @@ namespace LeMP
 				var combinedSequence = LNode.List();
 				
 				// Bubbe up target
-				target = BubbleUpBlocks(target);
-				if (target.CallsMin(_#runSequence, 1)) {
-					combinedSequence = target.Args.WithoutLast(1);
-					expr = expr.WithTarget(target.Args.Last);
+				if (BubbleUpAndUnwrapRunSequence(ref target, out var targetSeq)) {
+					combinedSequence = targetSeq.WithoutLast(1);
+					expr = expr.WithTarget(targetSeq.Last);
 				}
 				
 				// Bubble up each argument
@@ -497,11 +504,11 @@ namespace LeMP
 					args = args.SmartSelect(arg => BubbleUpBlocks(arg));
 				}
 
-				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(_#runSequence, 1)) ?? -1;
+				int lastRunSeq = args.FinalIndexWhere(a => a.CallsMin(@@#runSequence, 1)) ?? -1;
 				if (lastRunSeq >= 0) {
 					// last index of #runSequence that is not marked pure
 					int lastRunSeqImpure = args.Initial(lastRunSeq+1).FinalIndexWhere(a => 
-						a.CallsMin(_#runSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
+						a.CallsMin(@@#runSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null) ?? -1;
 
 					if (lastRunSeq > 0 && 
 						(  args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or))
@@ -514,9 +521,9 @@ namespace LeMP
 					for (int i = 0; i <= lastRunSeq; i++) {
 						LNode arg = argsW[i];
 						if (!arg.IsLiteral) {
-							if (arg.CallsMin(_#runSequence, 1)) {
-								combinedSequence.AddRange(arg.Args.WithoutLast(1));
-								argsW[i] = arg = arg.Args.Last;
+							if (UnwrapRunSequence(arg, out var argSeq)) {
+								combinedSequence.AddRange(argSeq.WithoutLast(1));
+								argsW[i] = arg = argSeq.Last;
 							}
 							if (i < lastRunSeqImpure) {
 								if (i == 0 && (expr.CallsMin(S.IndexBracks, 1) || expr.CallsMin(S.NullIndexBracks, 1))) {
