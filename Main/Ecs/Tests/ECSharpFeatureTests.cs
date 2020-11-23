@@ -263,6 +263,15 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void EcsPartlyEmptyTypeParameters()
+		{
+			Stmt("Dictionary<a, > x;", F.Var(F.Of(_("Dictionary"), a, F.Missing), x));
+			Expr("[] Dictionary<, b> x", F.Var(F.Of(_("Dictionary"), F.Missing, b), x));
+			Expr("typeof(Map<, Foo>) != typeof(Map<a.b, >)",
+				F.Call(S.NotEq, F.Call(S.Typeof, F.Of(_("Map"), F.Missing, Foo)), F.Call(S.Typeof, F.Of(_("Map"), F.Dot(a, b), F.Missing))));
+		}
+
+		[Test]
 		public void EcsForwardedMethodsAndProperties()
 		{
 			LNode stmt;
@@ -670,6 +679,11 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("crazy throw return goto case break continue;", F.Attr(WordAttr("crazy"), 
 				F.Call(S.Throw, F.Call(S.Return, F.Call(S.GotoCase, F.Call(S.Break, F.Call(S.Continue)))))));
+			Stmt("typeof(List<>) != typeof(2+2);",
+				F.Call(S.NotEq, 
+					F.Call(S.Typeof, F.Of(_("List"), F.Missing)), 
+					F.Call(S.Typeof, F.Call(_("#error"), F.Literal("Type expected")))),
+					Mode.ParserTest | Mode.ExpectAndDropParserError);
 		}
 	}
 }

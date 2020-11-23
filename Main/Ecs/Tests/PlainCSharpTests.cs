@@ -717,6 +717,18 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void CSharpEmptyTypeParameters()
+		{
+			Stmt("List<> x;", F.Var(F.Of(_("List"), F.Missing), x));
+			Expr("[] List<> x",  F.Var(F.Of(_("List"), F.Missing), x));
+			Stmt("Dictionary<, > x;", F.Var(F.Of(_("Dictionary"), F.Missing, F.Missing), x));
+			Expr("[] Dictionary<, > x",  F.Var(F.Of(_("Dictionary"), F.Missing, F.Missing), x));
+			Stmt("Foo<, , > x;", F.Var(F.Of(Foo, F.Missing, F.Missing, F.Missing), x));
+			Expr("typeof(List<>) == typeof(Dictionary<, >)", F.Call(S.Eq, F.Call(S.Typeof, F.Of(_("List"), F.Missing)), F.Call(S.Typeof, F.Of(_("Dictionary"), F.Missing, F.Missing))));
+			Stmt("void IFoo<, , >.Foo() { }", F.Fn(F.Void, F.Dot(F.Of(_("IFoo"), F.Missing, F.Missing, F.Missing), Foo), F.List(), F.Braces()));
+		}
+
+		[Test]
 		public void CSharp5AsyncAwait()
 		{
 			// "async" is just an ordinary word attribute so it is already supported

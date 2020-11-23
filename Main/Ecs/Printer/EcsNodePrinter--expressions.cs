@@ -604,7 +604,12 @@ namespace Loyc.Ecs
 			for (int i = 1, argC = _n.ArgCount; i < argC; i++) {
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
-				PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
+				var typeArg = _n.Args[i];
+				if (typeArg.IsIdNamed(S.Missing) && !HasPAttrs(typeArg)) {
+					// Omit argument (e.g. Dictionary<,> means Dictionary<@``, @``>)
+				} else {
+					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
+				}
 			}
 			_out.Write(needSpecialOfNotation ? ')' : '>', true);
 			return true;

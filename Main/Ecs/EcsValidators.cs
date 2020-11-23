@@ -409,8 +409,9 @@ namespace Loyc.Ecs
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
 			// 1. A simple symbol
 			// 2. A substitution expression
-			// 3. An 'of' expression a<b,...>, where 'a' is (1) or (2) and each arg 'b' 
-			//    is a complex identifier (if printing in C# style)
+			// 3. An 'of' expression a<b,...>, where 'a' is (1) or (2), and each arg 'b' 
+			//    is a complex identifier (if printing in C# style), and there is at 
+			//    least one type parameter
 			// 4. A dotted expression (a.b), where 'a' is a complex identifier and 'b' 
 			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
 			//    do not count as complex identifiers. Note that a.b<c> is 
@@ -447,7 +448,7 @@ namespace Loyc.Ecs
 				return true;
 
 			var args = n.Args;
-			if (CallsMinWPAIH(n, S.Of, 1, p)) {
+			if (CallsMinWPAIH(n, S.Of, 2, p)) {
 				var baseName = args[0];
 				if (!IsSimpleIdentifier(baseName, p))
 					return false;

@@ -138,7 +138,7 @@ namespace Loyc.Ecs.Parser
 
 		@[recognizer(fn Scan_DataType(afterAsOrIs::bool = false))]
 		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @{
-			(result:ComplexId() | result:TupleType())
+			(result:ComplexId() | result:TupleType() | error {$result = Error("Type expected");})
 			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
 		};
 		@[private]
@@ -217,8 +217,8 @@ namespace Loyc.Ecs.Parser
 		@{
 			{list::LNodeList = (new LNodeList(r));}
 			{endIndex::int;}
-			( op:"<" [list+=TParamDeclOrDataType(declContext)
-			     ("," list+=TParamDeclOrDataType(declContext))*]? end:=">"   {endIndex = end.EndIndex;}
+			( op:"<"  list+=TParamDeclOrDataType(declContext)
+			     ("," list+=TParamDeclOrDataType(declContext))* end:=">"   {endIndex = end.EndIndex;}
 			| op:"." t:="[" end:="]"      {list = AppendExprsInside(t, list); endIndex = end.EndIndex;} // Nemerle style
 			| op:"!" t:="(" end:=")"      {list = AppendExprsInside(t, list); endIndex = end.EndIndex;} // D & LES style
 			| op:"!" list+=IdWithOptionalTypeParams(declContext) {endIndex = list.Last.Range.EndIndex;}
@@ -231,14 +231,14 @@ namespace Loyc.Ecs.Parser
 
 		@[recognizer(fn Scan_TParamDeclOrDataType(declarationContext::bool))]
 		rule TParamDeclOrDataType(declarationContext::bool)::LNode @{
-			{attrs::LNodeList = default(LNodeList); startIndex::int = GetTextPosition(InputPosition);}
 			(	result:DataType(false)
 			/	&{declarationContext}
+				{attrs::LNodeList = default(LNodeList); startIndex::int = GetTextPosition(InputPosition);}
 				NormalAttributes(ref attrs)
 				TParamAttributeKeywords(ref attrs)
 				result:IdAtom
-			)
-			{$result = $result.WithAttrs(attrs);}
+				{$result = $result.WithAttrs(attrs);}
+			/	{$result = MissingHere();})
 		};
 
 		// This is the same as ComplexId except that it is used in declaration 
@@ -699,7 +699,7 @@ namespace Loyc.Ecs.Parser
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
-		@[private] rule SubExpr(context::Precedence)::LNode @{
+		@[private] token SubExpr(context::Precedence)::LNode @{
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}
 			e:=PrefixExpr
@@ -726,6 +726,7 @@ namespace Loyc.Ecs.Parser
 					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
 				|	op:=">" ">" rhs:=SubExpr(EP.Shift)
 					{e = F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
+				|	error {e = Error("Syntax error");}
 				)
 			|	// Conditional operator
 				&{@[Local] context.CanParse(EP.IfElse)}
