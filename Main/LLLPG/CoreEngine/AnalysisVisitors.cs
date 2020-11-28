@@ -87,10 +87,10 @@ namespace Loyc.LLParserGenerator
 				}
 
 				try {
-					EzStopwatch TEMP = new EzStopwatch(true);
+					EzStopwatch timer = new EzStopwatch(true);
 					alts.PredictionTree = ComputePredictionTree(firstSets);
-					if (TEMP.Millisec > 500)
-						LLPG.Output(Warning, alts, "Slug? This took a long time to analyze: " + TEMP.Millisec + "ms");
+					if (timer.Millisec > 500)
+						LLPG.Output(Warning, alts, "Slug? This took a long time to analyze: " + timer.Millisec + "ms");
 				} catch (System.Threading.ThreadAbortException) {
 					LLPG.Output(Error, alts, "ThreadAbortException in rule '" + _currentRule.Name + "'"); // user diagnostic
 					throw;

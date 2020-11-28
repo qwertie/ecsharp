@@ -1009,22 +1009,18 @@ namespace Loyc.LLParserGenerator
 			public void Do(KthSet result, GrammarPos position)
 			{
 				_stackDepth = 0;
-				Debug.Assert(_followSetVisited.Count == 0);
 
-				try {
-					_result = result;
-					_currentPos = position;
-					_andPreds = VList<AndPred>.Empty;
-					Visit(position.Pred);
-					Debug.Assert(_stackDepth == 0);
-				} finally {
-					_followSetVisited.Clear();
-				}
+				_result = result;
+				_currentPos = position;
+				_andPreds = VList<AndPred>.Empty;
+				_followSetVisited.Clear();
+				Visit(position.Pred);
+				Debug.Assert(_stackDepth == 0);
 			}
 			KthSet _result;
 			VList<AndPred> _andPreds;
 			GrammarPos _currentPos;
-			HashSet<Pred> _followSetVisited = new HashSet<Pred>();
+			MSet<Pred> _followSetVisited = new MSet<Pred>();
 			int _stackDepth;
 
 			public void Visit(Pred pred, GrammarPos newPos = null)
@@ -1071,12 +1067,17 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(Alts alts)
 			{
 				var saved = _andPreds;
+				var saved2 = _followSetVisited.Clone();
 				foreach (var pred in alts.Arms) {
 					Visit(pred);
 					_andPreds = saved;
+					_followSetVisited = saved2;
 				}
-				if (alts.HasExit)
+				if (alts.HasExit) {
 					Visit(alts.Next);
+					_andPreds = saved;
+					_followSetVisited = saved2;
+				}
 			}
 			public override void Visit(AndPred and)
 			{

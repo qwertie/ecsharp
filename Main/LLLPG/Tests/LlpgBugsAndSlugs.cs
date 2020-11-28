@@ -11,6 +11,57 @@ namespace Loyc.LLParserGenerator
 	{
 
 		[Test]
+		public void Bug_2020_11_SynPredInTokenProblem()
+		{
+			Test(@"
+				@[LL(2), FullLLk(true), Verbosity(1), AddCsLineDirectives(@false)]
+				LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
+				             allowSwitch(@true), setType(HashSet!int), castLA(@false));
+
+				token TypeSuffixOpt(afterAsOrIs::bool, out dimensionBrack::opt!Token, ref e::LNode)::bool
+				@{
+					(	t:=TT.QuestionMark
+						(&!{afterIsOrAs} | &!(TT.Id | etc))
+						{$result=true;}
+					)*
+				};
+			", @"
+				bool TypeSuffixOpt(bool afterAsOrIs, out Token? dimensionBrack, ref LNode e)
+				{
+					TokenType la0;
+					bool result = default(bool);
+					for (;;) {
+						la0 = LA0;
+						if (la0 == TT.QuestionMark) {
+							if (!afterIsOrAs || !Try_TypeSuffixOpt_Test0(1)) {
+								var t = MatchAny();
+								// This shouldn't really be here, but it doesn't break correctness
+								if (!afterIsOrAs) { } else
+									Check(!Try_TypeSuffixOpt_Test0(0), ""Did not expect(etc | TT.Id)"");
+								result = true;
+							}
+							else
+								break;
+						} else
+							break;
+					}
+					return result;
+				}
+				private bool Try_TypeSuffixOpt_Test0(int lookaheadAmt)
+				{
+					using (new SavePosition(this, lookaheadAmt))
+						return TypeSuffixOpt_Test0();
+				}
+				private bool TypeSuffixOpt_Test0()
+				{
+					if (!TryMatch((int)etc, (int)TT.Id))
+						return false;
+					return true;
+				}
+				");
+		}
+
+		[Test]
 		public void Bug_2017_08_UnexpectedWarning()
 		{
 			// Spurious "It's poor style to put a code block {..} before an and-predicate"
