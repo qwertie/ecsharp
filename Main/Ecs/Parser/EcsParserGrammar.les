@@ -9,6 +9,7 @@
 // case a macro might transform it later into something that makes more sense.
 //
 #importMacros LeMP.Prelude.Les;
+#importMacros Loyc.LLPG; // (pulled in implicitly by using LLLPG custom tool)
 #ecs;
 import System;
 import System.Collections.Generic;
@@ -315,8 +316,8 @@ namespace Loyc.Ecs.Parser
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
 				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.Literal 
-				                                | TT.New | "(" | "{" | "+" | "-" | "*" | "&" | "!" | "~"
-				                                | "==>" | "++,--" | "$" | "@" | LinqKeywordAsId))
+				                                    | TT.New | "(" | "{" | "+" | "-" | "*" | "&" | "!" | "~"
+				                                    | "==>" | "++,--" | "$" | "@" | LinqKeywordAsId))
 				       {e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
 				// unconditionally accept "*" as a pointer marker.

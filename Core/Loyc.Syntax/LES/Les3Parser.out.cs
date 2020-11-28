@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -438,8 +438,8 @@ namespace Loyc.Syntax.Les
 						switch ((TT) LA0) {
 						case TT.LBrack: case TT.LParen:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(P.Primary))
+								if (context.CanParse(P.Primary)) {
+									if (!compactMode || IsConjoinedToken(0))
 										e = FinishPrimaryExpr(e);
 									else
 										goto stop;
@@ -449,8 +449,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Assignment: case TT.Dot: case TT.NormalOp:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (CanParse(context, 0, out prec))
+								if (CanParse(context, 0, out prec)) {
+									if (!compactMode || IsConjoinedToken(0))
 										goto match2;
 									else
 										goto stop;
@@ -459,9 +459,9 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Colon:
 							{
-								if ((TT) LA(0 + 1) != TT.Newline) {
-									if (!compactMode || IsConjoinedToken(0)) {
-										if (CanParse(context, 0, out prec))
+								if (CanParse(context, 0, out prec)) {
+									if ((TT) LA(0 + 1) != TT.Newline) {
+										if (!compactMode || IsConjoinedToken(0))
 											goto match2;
 										else
 											goto stop;
@@ -472,9 +472,9 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Id:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
+								if (CanParse(context, 0, out prec)) {
 									if (!IsContinuator(LT(0).Value) && !compactMode) {
-										if (CanParse(context, 0, out prec))
+										if (!compactMode || IsConjoinedToken(0))
 											goto match2;
 										else
 											goto stop;
@@ -485,8 +485,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.PreOrSufOp:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+								if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var t = MatchAny();
 										// line 270
 										e = F.Call(_precMap.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);
@@ -498,8 +498,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.BQId:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(P.SuffixWord)) {
+								if (context.CanParse(P.SuffixWord)) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var unit = MatchAny();
 										// line 275
 										e = F.Call(S.IS, e, F.Id(unit), e.Range.StartIndex, unit.EndIndex, unit.StartIndex, unit.EndIndex, NodeStyle.Operator);
@@ -511,8 +511,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Not:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(P.Of)) {
+								if (context.CanParse(P.Of)) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										lit_excl = MatchAny();
 										// line 280
 										LNodeList args;
@@ -542,8 +542,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Keyword:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(P.Primary)) {
+								if (context.CanParse(P.Primary)) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var kw = MatchAny();
 										// line 291
 										var id = F.Id(kw.Value.ToString().Substring(1), kw.StartIndex + 1, kw.EndIndex);
@@ -909,13 +909,13 @@ namespace Loyc.Syntax.Les
 		LNode KeywordExpression()
 		{
 			TT la0, la1;
-			Token litx2E = default(Token);
+			Token lit_period = default(Token);
 			LNode result = default(LNode);
 			Token word = default(Token);
 			// line 430
 			var args = new LNodeList();
 			Check(IsConjoinedToken(0 + 1), "Expected IsConjoinedToken($LI + 1)");
-			litx2E = MatchAny();
+			lit_period = MatchAny();
 			word = Match((int) TT.Id);
 			// Line 434: ((EOF|TT.Newline|TT.RBrace|TT.RBrack|TT.RParen|TT.Semicolon) =>  / Expr (CommaContinuator)*)
 			switch ((TT) LA0) {
@@ -990,7 +990,7 @@ namespace Loyc.Syntax.Les
 			// line 441
 			var keyword = GSymbol.Get("#" + word.Value.ToString());
 			int endIndex = args.IsEmpty ? word.EndIndex : args.Last.Range.EndIndex;
-			result = MarkSpecial(F.Call(keyword, args, litx2E.StartIndex, endIndex, litx2E.StartIndex, word.EndIndex));
+			result = MarkSpecial(F.Call(keyword, args, lit_period.StartIndex, endIndex, lit_period.StartIndex, word.EndIndex));
 			return result;
 		}
 	

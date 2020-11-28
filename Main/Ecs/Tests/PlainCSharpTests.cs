@@ -832,10 +832,15 @@ namespace Loyc.Ecs.Tests
 			Stmt(@"var x = (a: 1, b: 2, T: x = ""Tee tea"");", F.Var(F.Missing, F.Call(S.Assign, x, tuple)));
 		}
 
-		[Test(Fails = "Mismatch between parser and printer behavior")]
+		[Test(Fails = "TODO - Mismatch between parser and printer behavior")]
 		public void CSharp7TupleTypesWithUsing()
 		{
-			// The printer behavior is probably better
+			// The printer behavior is probably better: it rejects the tuple (Foo, Foo) 
+			// as not being a type. The type (Foo, Foo) is represented as @#of(@'tuple, Foo, Foo),
+			// whereas the parser parses everything after `using` as an expression, which produces
+			// @'tuple(Foo, Foo) instead. This parsing behavior supports general expressions like
+			// `using System(.Linq, .IO, .Collections.Generic)` but produces questionable results
+			// in the specific case of type aliases. More thought is needed here.
 			LNode stmt;
 			Stmt("using x = (Foo, Foo);", UsingAlias(F.Call(S.Assign, x, F.Tuple(Foo, Foo))));
 			stmt = UsingAlias(F.Call(S.Assign, x, F.Tuple(F.Var(Foo, a), F.Var(Foo, b))));

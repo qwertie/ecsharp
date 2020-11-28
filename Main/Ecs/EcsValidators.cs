@@ -403,7 +403,7 @@ namespace Loyc.Ecs
 		}
 		public static bool IsComplexIdentifier(LNode n, ICI f = ICI.Default, Pedantics p = Pedantics.Lax)
 		{
-			// Returns true if 'n' is printable as a complex identifier.
+			// Returns true if 'n' is printable as a complex identifier (a potential type name).
 			//
 			// To be printable, a complex identifier in EC# must not contain 
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
@@ -411,7 +411,8 @@ namespace Loyc.Ecs
 			// 2. A substitution expression
 			// 3. An 'of' expression a<b,...>, where 'a' is (1) or (2), and each arg 'b' 
 			//    is a complex identifier (if printing in C# style), and there is at 
-			//    least one type parameter
+			//    least one type parameter. If b is @'tuple, then later arguments can be
+			//    #var expressions (see code for details).
 			// 4. A dotted expression (a.b), where 'a' is a complex identifier and 'b' 
 			//    is (1), (2) or (3); structures like @`'.`(a, b, c) and @`'.`(a, b.c) 
 			//    do not count as complex identifiers. Note that a.b<c> is 
@@ -422,19 +423,21 @@ namespace Loyc.Ecs
 			//    'b' does not contain another scope-resolution operator.
 			// 
 			// Type names have the same structure, with the following patterns for
-			// arrays, pointers, nullables and typeof<>:
+			// arrays, pointers, nullables, and tuples:
 			// 
 			// Foo*      <=> @'of(@*, Foo)
 			// Foo[]     <=> @'of(@`[]`, Foo)
 			// Foo[,]    <=> @'of(#`[,]`, Foo)
 			// Foo?      <=> @'of(@?, Foo)
+			// (A, B)    <=> @'of(@'tuple, A, B)
+			// (A a, B b)<=> @'of(@'tuple, #var(A, a), #var(B, b))
 			//
 			// Note that we can't just use @'of(Nullable, Foo) for Foo? because it
 			// doesn't work if System is not imported. It's reasonable to allow '? 
 			// instead of global::System.Nullable, since we have special symbols 
 			// for types like #int32 anyway.
 			// 
-			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, @'of(b, c)), #of(d, e)), f).
+			// (a.b<c>.d<e>.f is structured a.(b<c>).(d<e>).f or @`'.`(@`'.`(@`'.`(a, @'of(b, c)), @'of(d, e)), f).
 			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n, p) : HasPAttrsOrParens(n, p)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 

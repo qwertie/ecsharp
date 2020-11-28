@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 
 	public partial class Les3Lexer {
-		static readonly Symbol sy__aposx40 = (Symbol) "'@";
+		static readonly Symbol sy__apos_commat = (Symbol) "'@";
 	
 		void DotIndent()
 		{
@@ -727,6 +727,7 @@ namespace Loyc.Syntax.Les
 					goto match2;
 			match1:
 				{
+					// line 148
 					var old_startPosition_10 = _startPosition;
 					try {
 						// line 149
@@ -1175,7 +1176,7 @@ namespace Loyc.Syntax.Les
 					_type = TT.At;
 					Skip();
 					// line 208
-					value = sy__aposx40;
+					value = sy__apos_commat;
 				}
 			} while (false);
 			// line 212
