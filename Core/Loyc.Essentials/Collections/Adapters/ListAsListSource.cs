@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/10/2011
@@ -26,15 +26,19 @@ namespace Loyc.Collections
 				return listS;
 			return new ListAsListSource<T>(c);
 		}
-		public static IListSource<T> AsListSource<T>(this IListAndListSource<T> c)
-		{
-			return c;
-		}
+		/// <summary>Adapter: treats List{T} as <see cref="IListSource{T}"/>.</summary>
+		public static IListSource<T> AsListSource<T>(this List<T> c) => new ListAsListSource<T>(c);
+		/// <summary>Adapter: treats T[] as <see cref="IListSource{T}"/>.</summary>
+		public static IListSource<T> AsListSource<T>(this T[] c) => new ListAsListSource<T>(c);
+		/// <summary>No-op.</summary>
+		public static IListSource<T> AsListSource<T>(this IListAndListSource<T> c) => c;
 	}
+
 	/// <summary>
 	/// Helper type returned from <see cref="LCExt.AsListSource{T}"/>.
 	/// </summary>
-	/// <summary>A read-only wrapper that implements ICollection and ISource.</summary>
+	/// <remarks>This class implements IList{T} but arguably shouldn't; the IList{T} 
+	/// implementation might be removed in a future version.</remarks>
 	[Serializable]
 	public sealed class ListAsListSource<T> : WrapperBase<IList<T>>, IListAndListSource<T>
 	{

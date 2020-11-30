@@ -58,8 +58,8 @@ namespace Loyc.Collections
 			_list = list;
 			_start = start;
 			_count = count;
-			if (start < 0) throw new ArgumentException("The start index was below zero.");
-			if (count < 0) throw new ArgumentException("The count was below zero.");
+			if (start < 0) throw new ArgumentException("The start index was below zero.".Localized());
+			if (count < 0) throw new ArgumentException("The count was below zero.".Localized());
 			if (count > _list.Count - start)
 				_count = System.Math.Max(_list.Count - start, 0);
 		}
