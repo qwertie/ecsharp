@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -166,7 +166,8 @@ namespace Loyc.Collections.Tests
 				Assert.AreEqual((i & 1) == 0, list.Remove(i));
 
 			if (_testExceptions)
-				AssertThrows<IndexOutOfRangeException>(delegate() { int x = At(list, 0); });
+				// IndexOutOfRangeException or ArgumentOutOfRangeException
+				AssertThrows<SystemException>(delegate() { int x = At(list, 0); });
 
 			// Equals(), GetHashCode(), Clear()
 			Assert.That(!list.Equals("hello"));
@@ -205,7 +206,8 @@ namespace Loyc.Collections.Tests
 					ExpectListByEnumerator(list, list2.ToArray());
 					
 					if (_testExceptions)
-						AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(Count(list)); });
+						// IndexOutOfRangeException or ArgumentOutOfRangeException
+						AssertThrows<SystemException>(delegate() { list.RemoveAt(Count(list)); });
 				}
 				if (i == StressTestIterations/2)
 				{

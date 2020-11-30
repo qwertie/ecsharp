@@ -113,6 +113,7 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="Collections\ICharSource.cs" />
+    <Compile Include="Collections\INotifyListChanged.cs" />
     <Compile Include="Concrete\BaseDictionary.cs" />
     <Compile Include="Concrete\Either.cs" />
     <Compile Include="Concrete\EmptySourceFile.cs" />

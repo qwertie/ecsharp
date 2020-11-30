@@ -172,5 +172,18 @@ namespace Loyc.Collections
 				return value;
 			return new Maybe<V>();
 		}
+
+		public static bool TryAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+		{
+			return dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
+		}
+	}
+
+	public interface IDictionaryWithChangeEvents<K, V> : IDictionaryAndReadOnly<K, V>, INotifyListChanging<KeyValuePair<K, V>, IDictionary<K, V>>, INotifyListChanged<KeyValuePair<K, V>, IDictionary<K, V>>
+	{
+	}
+
+	public interface IDictionaryExWithChangeEvents<K, V> : IDictionaryEx<K, V>, IDictionaryWithChangeEvents<K, V>
+	{
 	}
 }

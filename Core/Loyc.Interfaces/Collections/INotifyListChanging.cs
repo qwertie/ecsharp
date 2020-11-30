@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -6,10 +6,11 @@ namespace Loyc.Collections
 {
 	/// <summary>
 	/// Encapsulates the <see cref="ListChanging"/> event that notifies listeners 
-	/// of dynamic changes to an indexed list, such as when items get added and 
-	/// removed or the whole list is refreshed.
+	/// of dynamic changes to a collection, such as when items are about to be
+	/// added and removed or the whole list is about to be refreshed.
 	/// </summary>
 	/// <typeparam name="T">Type of items in the list</typeparam>
+	/// <typeparam name="TCollection">Type of the first argument of the event</typeparam>
 	/// <remarks>
 	/// This approach to change notification is more lightweight than the standard
 	/// <see cref="INotifyCollectionChanged"/> interface because that interface
@@ -30,7 +31,7 @@ namespace Loyc.Collections
 	/// Such a list has less overhead than <see cref="List{T}"/> and the same
 	/// overhead as an array of one item.
 	/// </remarks>
-	public interface INotifyListChanging<T>
+	public interface INotifyListChanging<T, TCollection>
 	{
 		/// <summary>Occurs when the collection associated with this interface is 
 		/// about to change.</summary>
@@ -44,14 +45,23 @@ namespace Loyc.Collections
 		/// IMPORTANT: if the event handler throws an exception, the change does 
 		/// not actually happen. Collections that support this event must ensure
 		/// that the collection is not left in an invalid state in the event that
-		/// a ListChanging event handler throws an exception.
+		/// a ListChanging event handler throws an exception. When throwing an
+		/// exception, be aware that this can cause other event handlers attached
+		/// to the same event not to receive any change notification.
 		/// </remarks>
-		event ListChangingHandler<T> ListChanging;
+		event ListChangingHandler<T, TCollection> ListChanging;
 	}
 
+	/// <summary>A version of <see cref="INotifyListChanging{T, TCollection}"/> 
+	/// in which TCollection is fixed at <see cref="IListSource{T}"/>.</summary>
+	public interface INotifyListChanging<T> : INotifyListChanging<T, IListSource<T>> { }
+
 	/// <summary>Represents the method that handles the 
-	/// <see cref="INotifyListChanging{T}.ListChanging"/> event.</summary>
+	/// <see cref="INotifyListChanging{T, TSender}.ListChanging"/> event.</summary>
 	/// <param name="sender">The collection that changed.</param>
 	/// <param name="args">Information about the change.</param>
+	public delegate void ListChangingHandler<T, TSender>(TSender sender, ListChangeInfo<T> args);
+
+	[Obsolete("Use ListChangingHandler<T, IListSource<T>> instead")]
 	public delegate void ListChangingHandler<T>(IListSource<T> sender, ListChangeInfo<T> args);
 }

@@ -146,7 +146,7 @@ namespace Loyc.Collections
 	{
 		#region Data members
 
-		protected internal ListChangingHandler<T> _listChanging; // Delegate for ListChanging
+		protected internal ListChangingHandler<T, IListSource<T>> _listChanging; // Delegate for ListChanging
 		protected internal AListNode<K, T> _root;
 		protected internal IAListTreeObserver<K, T> _observer;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -167,7 +167,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Event for learning about changes in progress on a list.</summary>
-		public virtual event ListChangingHandler<T> ListChanging
+		public virtual event ListChangingHandler<T, IListSource<T>> ListChanging
 		{
 			add {
 				lock (this) { _listChanging += value; }
@@ -247,7 +247,7 @@ namespace Loyc.Collections
 			_maxLeafSize = items._maxLeafSize;
 			_treeHeight = items._treeHeight;
 			if (keepListChangingHandlers && items._listChanging != null)
-				_listChanging = (ListChangingHandler<T>)items._listChanging.Clone();
+				_listChanging = (ListChangingHandler<T, IListSource<T>>)items._listChanging.Clone();
 			// Leave _freezeMode at NotFrozen and _version at 0
 		}
 

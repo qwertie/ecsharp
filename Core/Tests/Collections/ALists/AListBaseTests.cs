@@ -136,7 +136,7 @@ namespace Loyc.Collections.Tests
 			// (2) It checks whether cloned lists can be modified independently.
 			
 			int changeIndex = -1, changeItem = -1, sizeChange = 0;
-			ListChangingHandler<T> changeHandler = (sender, args) =>
+			ListChangingHandler<T, IListSource<T>> changeHandler = (sender, args) =>
 			{
 				Assert.AreEqual(sizeChange, args.SizeChange);
 				sizeChange = 0;
@@ -280,7 +280,7 @@ namespace Loyc.Collections.Tests
 		{
 			List<T> list;
 			int sizeChange = 0;
-			ListChangingHandler<T> clearCheck = (sender, args) =>
+			ListChangingHandler<T, IListSource<T>> clearCheck = (sender, args) =>
 			{
 				Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
 				Assert.AreEqual(0, args.Index);
@@ -501,7 +501,7 @@ namespace Loyc.Collections.Tests
 
 			// ListChanging could throw an exception, which blocks changes.
 			// We are also testing that alist doesn't go into an invalid state.
-			ListChangingHandler<T> veto = (sender, args) => { throw new SuccessException("veto test"); };
+			ListChangingHandler<T, IListSource<T>> veto = (sender, args) => { throw new SuccessException("veto test"); };
 			alist.ListChanging += veto;
 			AssertThrows<SuccessException>(() => alist.RemoveAt(10));
 			AssertThrows<SuccessException>(() => alist.RemoveRange(10, 80));

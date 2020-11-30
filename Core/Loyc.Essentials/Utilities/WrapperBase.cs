@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,10 +10,7 @@ namespace Loyc
 	public abstract class WrapperBase<T>
 	{
 		protected T _obj;
-		protected WrapperBase(T wrappedObject)
-		{
-			_obj = wrappedObject; // possibly null
-		}
+		protected WrapperBase(T wrappedObject) => _obj = wrappedObject; // possibly null
 
 		protected static readonly EqualityComparer<T> TComp = EqualityComparer<T>.Default;
 

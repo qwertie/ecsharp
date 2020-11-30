@@ -164,7 +164,7 @@ namespace Loyc.Collections.Tests
 			}
 		}
 
-		SparseAList<int> NewList(int start, int count, ListChangingHandler<int> observer, out List<int> list)
+		SparseAList<int> NewList(int start, int count, ListChangingHandler<int, IListSource<int>> observer, out List<int> list)
 		{
 			var alist = new SparseAList<int>(_maxLeafSize, _maxInnerSize);
 			list = new List<int>();

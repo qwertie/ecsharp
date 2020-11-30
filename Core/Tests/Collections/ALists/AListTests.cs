@@ -173,7 +173,7 @@ namespace Loyc.Collections.Tests
 			}
 		}
 
-		AList<int> NewList(int start, int count, ListChangingHandler<int> observer)
+		AList<int> NewList(int start, int count, ListChangingHandler<int, IListSource<int>> observer)
 		{
 			var list = new AList<int>(Helpers.MaxLeafSize, Helpers.MaxInnerSize);
 			for (int i = 0; i < count; i++)

@@ -35,19 +35,6 @@ namespace Loyc.Collections
 		void RemoveRange(int index, int amount);
 	}
 
-	/// <summary>Extension methods for Loyc collection interfaces</summary>
-	public static partial class LCInterfaces
-	{
-		public static void Resize<T>(this IListRangeMethods<T> list, int newSize)
-		{
-			int count = list.Count;
-			if (newSize < count)
-				list.RemoveRange(newSize, count - newSize);
-			else if (newSize > count)
-				list.InsertRange(count, new T[newSize - count]); // ListExt.Repeat(default(T), newSize - count)
-		}
-	}
-
 	/// <summary>
 	/// This interface combines the original IList(T) interface with others -
 	/// IListSource(T), ISinkList(T), IArray(T) - and some additional methods
@@ -65,6 +52,30 @@ namespace Loyc.Collections
 	/// </remarks>
 	public interface IListEx<T> : IListAndListSource<T>, ICollectionEx<T>, IArray<T>, IListRangeMethods<T>
 	{
+		new int Count { get; } // resolve "ambiguity" between IList.Count and ICount.Count
+	}
+
+	public interface IListWithChangeEvents<T> : IListAndListSource<T>, INotifyListChanging<T>, INotifyListChanged<T>
+	{
+	}
+
+	public interface IListExWithChangeEvents<T> : IListEx<T>, IListWithChangeEvents<T>
+	{
+	}
+
+	/// <summary>Extension methods for Loyc collection interfaces</summary>
+	public static partial class LCInterfaces
+	{
+		public static void Resize<T>(this IListRangeMethods<T> list, int newSize)
+		{
+			int count = list.Count;
+			if (newSize < count)
+				list.RemoveRange(newSize, count - newSize);
+			else if (newSize > count)
+				list.InsertRange(count, new T[newSize - count]); // ListExt.Repeat(default(T), newSize - count)
+		}
+		public static void Resize<T>(this IListEx<T> list, int newSize) 
+			=> Resize(list as IListRangeMethods<T>, newSize);
 	}
 
 	// See IDictionaryEx for extended IDictionary interface
