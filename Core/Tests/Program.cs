@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Loyc.MiniTest;
+using Loyc.Essentials.Tests;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 using Loyc.Collections.Tests;
@@ -87,7 +88,6 @@ namespace Loyc.Tests
 
 		public static int Loyc_Essentials()
 		{
-
 			return MiniTest.RunTests.RunMany(
 				new EitherTests(),
 				new BaisTests(),
@@ -98,9 +98,14 @@ namespace Loyc.Tests
 				new LocalizeTests(),
 				new SymbolTests(),
 				new ThreadExTests(),
+				new DictionaryWrapperTests(),
+				new DictionaryWithChangeEventsTests(),
+				new DictionaryWithChangeEventsTests2(),
+				new ListWrapperTests(_seed),
+				new ListWithChangeEventsTests(_seed),
 				new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }),
 				new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }),
-				new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }),
+				new ListTests<DList<int>>(true, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }),
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }),
 				SelectDictionaryFromKeysTests.TestObjects[0],

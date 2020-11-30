@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections.MutableListExtensionMethods;
+using Loyc.Collections;
 
-namespace Loyc.Collections
+namespace Loyc.Essentials.Tests
 {
 	/// <summary>Unit tests for <see cref="ListExt"/>.</summary>
 	[TestFixture]

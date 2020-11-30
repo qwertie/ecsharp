@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using System.Threading;
+using Loyc.Threading;
 
-namespace Loyc.Threading
+namespace Loyc.Essentials.Tests
 {
 	[TestFixture]
 	public class ThreadExTests

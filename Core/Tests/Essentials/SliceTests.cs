@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Loyc.Collections.Tests
+namespace Loyc.Essentials.Tests
 {
 	public class SliceTests<SliceT> : TestHelpers where SliceT : IListSource<string>, ICloneable<SliceT>
 	{

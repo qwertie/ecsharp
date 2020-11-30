@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 
-namespace Loyc
+namespace Loyc.Essentials.Tests
 {
 	[TestFixture]
 	public class SymbolTests

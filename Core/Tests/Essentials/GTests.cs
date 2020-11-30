@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.MiniTest;
 
-namespace Loyc.Tests
+namespace Loyc.Essentials.Tests
 {
 	[TestFixture]
 	public class GTests : TestHelpers

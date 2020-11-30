@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using Loyc.Math;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 
-namespace Loyc.Tests
+namespace Loyc.Essentials.Tests
 {
 	[TestFixture]
 	public class PrintHelpersTests : Assert
