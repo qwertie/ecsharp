@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Loyc.Collections.Impl
 {
-	///	<summary>A simple base class that to helps you implement a "smart" collection.
+	///	<summary>A simple base class that helps you use the decorator pattern on a collection.
 	///	By default, all it does is forward every method to the underlying collection
 	///	(including GetHashCode, Equals and ToString). You can change its behavior by
 	///	overriding methods.</summary>

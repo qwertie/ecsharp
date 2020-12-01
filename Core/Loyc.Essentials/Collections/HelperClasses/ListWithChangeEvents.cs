@@ -5,6 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+namespace Loyc.Collections
+{
+	/// <summary>A list wrapper that provides ListChanging and ListChanged events. 
+	/// Shorthand for <see cref="Loyc.Collections.Impl.ListWithChangeEvents{T,IList{T}}"/>.</summary>
+	public class ListWithChangeEvents<T> : Loyc.Collections.Impl.ListWithChangeEvents<T, IList<T>>
+	{
+		public ListWithChangeEvents(IList<T> wrappedObject) : base(wrappedObject) { }
+		public ListWithChangeEvents() : base(new List<T>()) { }
+	}
+}
+
 namespace Loyc.Collections.Impl
 {
 	/// <summary>A list wrapper that provides ListChanging and ListChanged events. 
@@ -16,8 +27,8 @@ namespace Loyc.Collections.Impl
 	{
 		public ListWithChangeEvents(TList list) : base(list) { }
 
-		public event ListChangingHandler<T, IListSource<T>> ListChanging;
-		public event ListChangingHandler<T, IListSource<T>> ListChanged;
+		public virtual event ListChangingHandler<T, IListSource<T>> ListChanging;
+		public virtual event ListChangingHandler<T, IListSource<T>> ListChanged;
 
 		public bool IsEmpty => Count == 0;
 

@@ -6,6 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Loyc.Collections;
 
+namespace Loyc.Collections
+{
+	/// <summary>A dictionary wrapper that provides ListChanging and ListChanged events.
+	/// Shorthand for <see cref="Loyc.Collections.Impl.DictionaryWithChangeEvents{K,V,IDictionary{K,V}}"/>.</summary>
+	public class DictionaryWithChangeEvents<K, V> : Impl.DictionaryWithChangeEvents<K, V, IDictionary<K, V>>
+	{
+		public DictionaryWithChangeEvents(IDictionary<K, V> wrappedObject) : base(wrappedObject) { }
+		public DictionaryWithChangeEvents() : base(new Dictionary<K, V>()) { }
+	}
+}
+
 namespace Loyc.Collections.Impl
 {
 	///	<summary>A dictionary wrapper that provides ListChanging and ListChanged events.
@@ -24,8 +35,8 @@ namespace Loyc.Collections.Impl
 	{
 		public DictionaryWithChangeEvents(TDictionary dictionary) : base(dictionary) { }
 
-		public event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanging;
-		public event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanged;
+		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanging;
+		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanged;
 
 		public bool IsEmpty => _obj.Count == 0;
 

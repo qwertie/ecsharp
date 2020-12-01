@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Loyc.Collections.Impl
 {
-	///	<summary>A simple base class that to helps you implement a "smart" collection.
+	///	<summary>A simple base class that helps you use the decorator pattern on a dictionary.
 	///	By default, all it does is forward every method to the underlying collection
 	///	(including GetHashCode, Equals and ToString). You can change its behavior by
 	///	overriding methods.</summary>
@@ -14,7 +14,7 @@ namespace Loyc.Collections.Impl
 	///	that needs to take some kind of action whenever the collection is modified.
 	/// </remarks>
 	///	<seealso cref="ListWrapper{TList,T}"/>
-	///	<seealso cref="DictionaryWithListChanges{TDictionary, K, V}"/>
+	///	<seealso cref="DictionaryWithChangeEvents{TDictionary, K, V}"/>
 	public abstract class DictionaryWrapper<K, V, TDictionary> : CollectionWrapper<KeyValuePair<K,V>, TDictionary>, 
 		IDictionaryAndReadOnly<K, V> where TDictionary : IDictionary<K, V>
 	{

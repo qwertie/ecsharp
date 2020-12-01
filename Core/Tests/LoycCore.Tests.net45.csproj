@@ -123,6 +123,7 @@
     <Compile Include="Collections\VLists\VListTests.cs" />
     <Compile Include="Collections\VLists\WListTests.cs" />
     <Compile Include="Essentials\BaisTests.cs" />
+    <Compile Include="Essentials\CollectionWithChangeEventsTests.cs" />
     <Compile Include="Essentials\ListWithChangeEventsTests.cs" />
     <Compile Include="Essentials\ListWrapperTests.cs" />
     <Compile Include="Essentials\DictionaryWithChangeEventsTests.cs" />

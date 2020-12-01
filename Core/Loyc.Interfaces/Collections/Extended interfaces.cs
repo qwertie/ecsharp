@@ -25,6 +25,20 @@ namespace Loyc.Collections
 	{
 	}
 
+	/// <summary>Combines <see cref="ICollectionEx{T}"/> with <see cref="INotifyListChanging{T, ICollection{T}}"/> 
+	/// and <see cref="INotifyListChanged{T, ICollection{T}}"/>. This exists for completeness; as of 2020/12 there 
+	/// are no implementations.</summary>
+	public interface ICollectionExWithChangeEvents<T> : ICollectionEx<T>, INotifyListChanging<T, ICollection<T>>, INotifyListChanged<T, ICollection<T>>
+	{
+	}
+
+	/// <summary>Combines <see cref="ICollection{T}"/> with <see cref="INotifyListChanging{T, ICollection{T}}"/> 
+	/// and <see cref="INotifyListChanged{T, ICollection{T}}"/>.</summary>
+	/// <seealso cref="Loyc.Collections.CollectionWithChangeEvents{T}"/>
+	public interface ICollectionWithChangeEvents<T> : ICollection<T>, INotifyListChanging<T, ICollection<T>>, INotifyListChanged<T, ICollection<T>>
+	{
+	}
+
 	/// <summary>The batch-operation methods of <see cref="IListEx{T}"/>, mainly
 	/// for collection types that can add or remove multiple items in one method 
 	/// call.</summary>

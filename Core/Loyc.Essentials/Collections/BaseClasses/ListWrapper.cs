@@ -16,7 +16,7 @@ namespace Loyc.Collections.Impl
 	/// </remarks>
 	public abstract class ListWrapper<T, TList> : CollectionWrapper<T, TList>, IListAndListSource<T> where TList : IList<T>
 	{
-		public ListWrapper(TList list) : base(list) { }
+		public ListWrapper(TList wrappedObject) : base(wrappedObject) { }
 
 		public virtual T this[int index]
 		{
