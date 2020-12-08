@@ -46,8 +46,8 @@ namespace Loyc.Collections.Impl
 	[Serializable]
 	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>//, IGetIteratorSlice<T>
 	{
-		public static readonly T[] EmptyArray = new T[0];
-		public static readonly InternalList<T> Empty = new InternalList<T>(0);
+		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
+		public static readonly InternalList<T> Empty = new InternalList<T>(EmptyArray<T>.Value, 0);
 		private T[] _array;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int _count;
