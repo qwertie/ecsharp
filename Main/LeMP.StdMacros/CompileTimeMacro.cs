@@ -27,6 +27,7 @@ namespace LeMP
 		//       so sessions for different files are separate and proper cleanup can occur 
 		//       at the end. In practice, this is working fine, but it's fragile.
 		const string __result_of_precompute = nameof(__result_of_precompute);
+		const string __macro_context = nameof(__macro_context);
 		[ThreadStatic] static ScriptState<object> _roslynScriptState;
 		[ThreadStatic] static StreamWriter _roslynSessionLog;
 		[ThreadStatic] static string _roslynSessionLogFileName;
@@ -124,11 +125,22 @@ namespace LeMP
 				if (!rawMode)
 					expr = context.PreProcess(expr);
 
+				// To avoid creating variables, run {__result_of_precompute = $expr;} instead of 
+				// $expr directly. Thus an input like `precompute(dict.TryGetValue(k, out var v))` 
+				// does not create a variable v. This is desirable because `precompute` may appear 
+				// anywhere. From the perspective of the C# Scripting Engine there is a single 
+				// scope for all script expressions, but from the user's perspective he/she would 
+				// expect a new scope for each set of curly braces. It would be weird if a variable 
+				// `v` was created in a nested scope and then it still existed at an outer scope. 
+				// To avoid variable scoping problems, variable creation is disabled entirely. 
+				// By contrast, you can create variables in `compileTime`, but to avoid confusion,
+				// `compileTime` complains if the user tries to use it in a nested scope.
 				LNode exprBlock = LNode.Call(S.Braces, LNode.List(
 					F.Assign(F.Id(__result_of_precompute), F.Attr(F.TriviaNewline, expr))), node);
+
 				WriteHeaderCommentInSessionLog(node, context.Sink);
 				RunCSharpCodeWithRoslyn(node, LNode.List(exprBlock), context);
-				object result = RunCSharpCodeWithRoslyn(node, LNode.List(F.Id(__result_of_precompute)), context, ParsingMode.Expressions);
+				object result = _roslynScriptState.GetVariable(__result_of_precompute).Value;
 
 				if (!(result is NoValue))
 				{
@@ -196,7 +208,9 @@ namespace LeMP
 					.WithEmitDebugInformation(true)
 					.WithCheckOverflow(false);
 
-				_roslynScriptState = CSharpScript.RunAsync($"dynamic {__result_of_precompute};", scriptOptions).Result;
+				_roslynScriptState = CSharpScript.RunAsync(
+					$"dynamic {__result_of_precompute};\n" +
+					$"global::LeMP.IMacroContext {__macro_context};", scriptOptions).Result;
 			}
 		}
 
@@ -225,11 +239,13 @@ namespace LeMP
 			{
 				// Allow users to write messages via MessageSink.Default
 				using (MessageSink.SetDefault(new MessageSinkFromDelegate((sev, ctx, msg, args) => {
-					_roslynSessionLog.Write("{0} from user ({1}): ", sev, MessageSink.GetLocationString(sev));
-					_roslynSessionLog.WriteLine(msg, args);
+					_roslynSessionLog?.Write("{0} from user ({1}): ", sev, MessageSink.GetLocationString(ctx));
+					_roslynSessionLog?.WriteLine(msg, args);
 					context.Sink.Write(sev, ctx, msg, args);
 				})))
 				{
+					_roslynScriptState.GetVariable(__macro_context).Value = context;
+
 					_roslynScriptState = _roslynScriptState.ContinueWithAsync(codeText).Result;
 				}
 				return _roslynScriptState.ReturnValue;
@@ -266,6 +282,7 @@ namespace LeMP
 				_roslynSessionLog.WriteLine("// *** " + "An error occurred while {0} the code above.".Localized(action));
 				_roslynSessionLog.WriteLine("// *** " + "Note: due to the error, any variables/types you attempted to define above won't be visible in subsequent code below.".Localized());
 				_roslynSessionLog.WriteLine(error.DescriptionAndStackTrace());
+				_roslynSessionLog.Flush();
 				string moreInfo = "Session log at {0} contains emitted code.".Localized(_roslynSessionLogFileName);
 				if (!compiling)
 					moreInfo = "Stack trace: {0}".Localized(error.StackTrace) + "\n" + moreInfo;
