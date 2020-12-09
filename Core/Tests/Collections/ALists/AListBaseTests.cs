@@ -152,6 +152,7 @@ namespace Loyc.Collections.Tests
 				else if (sizeChange < 0) 
 				{
 					Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
+					Assert.That(args.OldItems != null && args.OldItems.Count == 1);
 					Assert.AreEqual(changeItem, GetKey(sender[args.Index]));
 				}
 			};
@@ -284,6 +285,7 @@ namespace Loyc.Collections.Tests
 			{
 				Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
 				Assert.AreEqual(0, args.Index);
+				Assert.AreEqual(-args.SizeChange, args.OldItems.Count);
 				sizeChange += args.SizeChange;
 			};
 

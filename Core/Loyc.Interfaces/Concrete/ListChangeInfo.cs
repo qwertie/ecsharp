@@ -20,7 +20,8 @@ namespace Loyc.Collections
 	public struct ListChangeInfo<T>
 	{
 		/// <summary>Initializes the members of <see cref="ListChangeInfo{T}"/>.</summary>
-		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems) : this(action, index, sizeChange, newItems, null) { }
+		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems) 
+			: this(action, index, sizeChange, newItems, null) { }
 
 		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems, IListSource<T> oldItems)
 		{
@@ -29,6 +30,7 @@ namespace Loyc.Collections
 			SizeChange = sizeChange;
 			_newItems = newItems;
 			_oldItems = oldItems;
+			_collection = null;
 			Debug.Assert(
 				(action == NotifyCollectionChangedAction.Add && newItems != null && NewItems.Count == sizeChange) ||
 				(action == NotifyCollectionChangedAction.Remove && (newItems == null || newItems.Count == 0) && sizeChange < 0) ||
@@ -36,6 +38,13 @@ namespace Loyc.Collections
 				(action == NotifyCollectionChangedAction.Move && sizeChange == 0) ||
 				(action == NotifyCollectionChangedAction.Reset));
 		}
+
+		/// <summary>This contructor is meant for ListChanging events only (not ListChanged).
+		/// It computes the OldItems property automatically, on-demand, if the user gets it.</summary>
+		/// <param name="collection">The list that is about to change.</param>
+		/// <param name="action">Should be Remove, Reset or Replace.</param>
+		public ListChangeInfo(IListSource<T> collection, NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems = null)
+			: this(action, index, sizeChange, newItems, null) => _collection = collection;
 
 		/// <summary>Gets a value that indicates the type of change being made to 
 		/// the collection.</summary>
@@ -60,33 +69,37 @@ namespace Loyc.Collections
 		public readonly int SizeChange;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		private readonly IListSource<T> _newItems, _oldItems;
+		private readonly IListSource<T> _newItems;
+		private IListSource<T> _oldItems, _collection;
 
 		/// <summary>Represents either new item(s) that are being added to the 
 		/// collection, or item(s) that are replacing existing item(s) in the 
 		/// collection. When items are being removed from an indexed list,
 		/// this member is either null or empty.</summary>
+		/// <remarks>
+		/// In a ListChanged event, the collection returned from this property 
+		/// could be a slice that will be invalid after the event is over.
+		/// Avoid storing it without making a copy.
+		/// </remarks>
 		public IListSource<T> NewItems => _newItems;
 
-		/// <summary>This member is often null, but it may provide a list of 
-		/// old items that are being removed or replaced in the collection.
-		/// The <see cref="INotifyListChanging{T, TCollection}.ListChanging"/> event
-		/// does not need to provide this list unless Index is int.MinValue, because
-		/// the event receiver can figure out what the OldItems are by looking at
-		/// the original collection, which has not yet changed.</summary>
+		/// <summary>This member may provide a list of old items that are being 
+		/// removed or replaced in the collection. It may be null when items are
+		/// being added.</summary>
 		/// <remarks>
-		/// This property was added in version v2.9.0, and is null when the providing
-		/// collection class does not support it. Notably, the AList/BList family of 
-		/// data structures never provide this list (as of v2.9.0).
-		/// <para/>
-		/// When you receive a ListChanging event, the set of old items is 
-		/// <c>var oldItems = sender.Slice(args.Index, (args.NewItems?.Count ?? 0) - args.SizeChange)];</c>
-		/// When you receive a ListChanged event, the only way to get the set of
-		/// old items is to read this property. In general, your event handler can 
-		/// use the following code to get the list of old items:
-		/// <para/>
-		/// <code>var oldItems = args.OldItems ?? sender.Slice(args.Index, (args.NewItems?.Count ?? 0) - args.SizeChange)];</code>
+		/// In a ListChanging event, the collection returned from this property 
+		/// may be empty if the list is being sorted in-place, since it is not
+		/// known what the new list will be. In any case, this property is
+		/// typically a slice and therefore is not valid after the event is over;
+		/// avoid storing it without making a copy.
 		/// </remarks>
-		public IListSource<T> OldItems => _oldItems;
-	}
+		public IListSource<T> OldItems => _oldItems ?? ComputeOldItems();
+
+        private IListSource<T> ComputeOldItems()
+        {
+			if (_collection == null)
+				return null;
+			return _oldItems = _collection.Slice(Index, (NewItems?.Count ?? 0) - SizeChange);
+		}
+    }
 }

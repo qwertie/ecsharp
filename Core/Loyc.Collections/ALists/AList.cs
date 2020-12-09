@@ -166,7 +166,7 @@ namespace Loyc.Collections
 			DetectSizeOverflow(1);
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item)));
+				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item)));
 
 			try {
 				_freezeMode = FreezeMode.FrozenForConcurrency;
@@ -254,7 +254,7 @@ namespace Loyc.Collections
 		private void SetHelper(uint index, T value)
 		{
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, ListExt.Single(value)));
+				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Replace, (int)index, 0, ListExt.Single(value)));
 			++_version;
 			if (_root.IsFrozen)
 				AutoCreateOrCloneRoot();
@@ -389,7 +389,7 @@ namespace Loyc.Collections
 				// Although the entire list might not be changing, a Reset is the
 				// only applicable notification, because we can't provide a list of 
 				// NewItems as required by Replace.
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, null));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, EmptyList<T>.Value, EmptyList<T>.Value));
 			}
 
 			Debug.Assert((_treeHeight == 0) == (_root == null));
@@ -702,7 +702,7 @@ namespace Loyc.Collections
 			
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, itemsCount, items));
+				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Add, index, itemsCount, items));
 
 			_freezeMode = FreezeMode.FrozenForConcurrency;
 			AutoCreateOrCloneRoot();
@@ -838,10 +838,10 @@ namespace Loyc.Collections
 				var tempO = other._listChanging;
 				Exception e = null;
 				if (temp != null)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
+					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
 				if (tempO != null) {
 					try {
-						other.CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, 0, -other.Count, null));
+						other.CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, 0, -other.Count, EmptyList<T>.Value));
 					} catch(Exception e_) {
 						// Ugh. We already notified the first list about the insert, 
 						// so it is too late to abort. Finish the operation and 

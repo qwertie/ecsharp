@@ -69,9 +69,9 @@ namespace Loyc.Collections
 				if (op.Source == null)
 					op.Source = new Repeated<T>(op.WriteEmpty ? default(T) : op.Item, op.SourceCount);
 				if (op.IsInsert)
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)index, op.SourceCount, op.Source));
+					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)index, op.SourceCount, op.Source, EmptyList<T>.Value));
 				else
-					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, op.Source));
+					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Replace, (int)index, 0, op.Source));
 			}
 			if (_root == null || _root.IsFrozen)
 				AutoCreateOrCloneRoot();
