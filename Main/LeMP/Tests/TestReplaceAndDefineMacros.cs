@@ -14,7 +14,7 @@ namespace LeMP.Tests
 		public void TestReplace_basics()
 		{
 			// Simple cases
-			using (MessageSink.SetDefault(_msgHolder)) { 
+			using (MessageSink.SetDefault(_msgHolder)) {
 				TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
 				Assert.IsTrue(_msgHolder.List.Count > 0, "expected warning about 'no replacements'");
 			}
@@ -22,36 +22,36 @@ namespace LeMP.Tests
 			TestLes(@"replace (7 => seven) {x = 7;}", "x = seven;");
 			TestLes(@"replace (7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
 			TestLes(@"replace (a => b) {@[Hello] a; a(a);}", "@[Hello] b; b(b);");
-			TestLes("replace (MS => MessageSink; C => Current; W => Write; S => Severity; B => \"Bam!\")\n"+
-			        "    { MS.C.W(S.Error, @null, B); }",
-			        @"MessageSink.Current.Write(Severity.Error, @null, ""Bam!"");");
-			TestLes(@"replace (Write => Store; Console.Write => Console.Write) "+
-			        @"{ Write(x); Console.Write(x); }", "Store(x); Console.Write(x);");
-			
+			TestLes("replace (MS => MessageSink; C => Current; W => Write; S => Severity; B => \"Bam!\")\n" +
+					"    { MS.C.W(S.Error, @null, B); }",
+					@"MessageSink.Current.Write(Severity.Error, @null, ""Bam!"");");
+			TestLes(@"replace (Write => Store; Console.Write => Console.Write) " +
+					@"{ Write(x); Console.Write(x); }", "Store(x); Console.Write(x);");
+
 			// Swap
 			TestLes("replace (foo => bar; bar => foo) {foo() = bar;}", "bar() = foo;");
 			TestLes("replace (a => 'a'; 'a' => A; A => a) {'a' = A - a;}", "A = a - 'a';");
 
 			// Captures
 			TestBoth("replace (input($capture) => output($capture)) { var i = 21; input(i * 2); };",
-			         "replace (input($capture) => output($capture)) { var i = 21; input(i * 2); }",
-			         "var i = 21; output(i * 2);");
+					 "replace (input($capture) => output($capture)) { var i = 21; input(i * 2); }",
+					 "var i = 21; output(i * 2);");
 		}
 
 		[Test]
 		public void TestReplace_params()
 		{
-			TestEcs("replace({{ $(params before); on_exit { $(params command); } $(params after); }} =>\n"+
-			        "        {{ $before;          try  { $after; } finally { $command; }         }}) \n"+
-			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
-			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
-			
-			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n"+
-			        @"   { MessageBox.Show($(""I hate {0}""; noun)); }",
-			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
-			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n"+
-			        @"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
-			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
+			TestEcs("replace({{ $(params before); on_exit { $(params command); } $(params after); }} =>\n" +
+					"        {{ $before;          try  { $after; } finally { $command; }         }}) \n" +
+					"{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
+					" { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
+
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n" +
+					@"   { MessageBox.Show($(""I hate {0}""; noun)); }",
+					@"MessageBox.Show(String.Format(""I hate {0}"", noun));");
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $(..args)))\n" +
+					@"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
+					@"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}
 
 		[Test(Fails = "Not Implemented")]
@@ -59,7 +59,7 @@ namespace LeMP.Tests
 		{
 			// [foo] a([attr] Foo) `MatchesPattern` 
 			// [`%`, bar] a([$attr] $foo)
-			
+
 			// ([foo] F([x] X, [y] Y, [a1(...), a2(...)] Z) `MatchesPattern`
 			//        F(X, $Y, $(params P), [$A, a1($(params args))] $Z)) == false cuz [x] is unmatched
 
@@ -83,11 +83,11 @@ namespace LeMP.Tests
 		{
 			// Nested replacements
 			TestEcs(@"replace(X => Y, X($(params p)) => X($p)) { X = X(X, Y); }",
-			        @"Y = X(Y, Y);");
+					@"Y = X(Y, Y);");
 			// Note: $a * $b doesn't work because it is seen as a variable decl
 			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a`'*`$b) => Mul($a, $b))
-			          { var y = 2*x*2 + 3*x + 4; }", 
-			        @"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
+			          { var y = 2*x*2 + 3*x + 4; }",
+					@"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
 
 			//TestEcs(@"replace(TO=>DO) {}", @"");
 		}
@@ -96,7 +96,7 @@ namespace LeMP.Tests
 		public void TestReplace_RemainingNodes()
 		{
 			TestEcs(@"{ replace(C => Console, WL => WriteLine); string name = ""Bob""; C.WL(""Hi ""+name); }",
-			        @"{ string name = ""Bob""; Console.WriteLine(""Hi ""+name); }");
+					@"{ string name = ""Bob""; Console.WriteLine(""Hi ""+name); }");
 		}
 
 		[Test]
@@ -137,6 +137,31 @@ namespace LeMP.Tests
 					@"Console.WriteLine(124);");
 			TestLes(@"#define WL { Console.WriteLine; }; WL(125);",
 					@"Console.WriteLine(125);");
+		}
+
+		[Test]
+		public void TestDefineLiterals()
+		{
+			TestEcs(@"define ('x') { 'X'; }
+					Console.WriteLine('x');",
+					@"Console.WriteLine('X');");
+			TestEcs(@"define (123) { 456; }
+					Console.WriteLine(123 + 456 + 789);",
+					@"Console.WriteLine(456 + 456 + 789);");
+		}
+
+		[Test]
+		public void TestDefineComplexCall()
+		{
+			TestEcs(@"define ($x << $y) { $x.Append($y); }
+					sb << ""Hello"";",
+					@"sb.Append(""Hello"");");
+			TestEcs(@"define (Foo()()()) { Bar(); }
+					define (Invalid.$F($X)) { Valid.$F($X); }
+					x = Foo()()()(x);
+					Invalid.Foo(x);",
+					@"x = Bar()(x);
+					Valid.Foo(x);");
 		}
 
 		[Test]

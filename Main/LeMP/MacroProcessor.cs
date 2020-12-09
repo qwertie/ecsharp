@@ -162,32 +162,51 @@ namespace LeMP
 			return found;
 		}
 
+		static SymbolPool Wildcards = new SymbolPool();
+		internal static Symbol MatchEveryIdentifier = Wildcards.Get(nameof(MatchEveryIdentifier));
+		internal static Symbol MatchEveryCall = Wildcards.Get(nameof(MatchEveryCall));
+		internal static Symbol MatchEveryLiteral = Wildcards.Get(nameof(MatchEveryLiteral));
+
 		internal static void AddMacro(MMap<Symbol, InternalList<InternalMacroInfo>> macros, LeMP.MacroInfo newMacro)
 		{
 			if (newMacro?.Macro == null)
 				return; // TODO: should we throw? log an error?
-			foreach (string name_ in newMacro.Names) {
-				var name = (Symbol)name_;
-				var macrosWithThisName = macros[name, InternalList<InternalMacroInfo>.Empty];
+			
+			foreach (string name_ in newMacro.Names)
+				if (name_ != null)
+					AddMacroByName(macros, (Symbol)name_, newMacro);
 
-				// Check if the same macro was added earlier, possibly in a different namespace
-				foreach (var macro in macrosWithThisName)
+			if ((newMacro.Mode & MacroMode.MatchEveryCall) != 0)
+				AddMacroByName(macros, MatchEveryCall, newMacro);
+			if ((newMacro.Mode & MacroMode.MatchEveryIdentifier) != 0)
+				AddMacroByName(macros, MatchEveryIdentifier, newMacro);
+			if ((newMacro.Mode & MacroMode.MatchEveryLiteral) != 0)
+				AddMacroByName(macros, MatchEveryLiteral, newMacro);
+		}
+		private static void AddMacroByName(MMap<Symbol, InternalList<InternalMacroInfo>> macros, Symbol name, MacroInfo newMacro)
+		{
+			var macrosWithThisName = macros[name, InternalList<InternalMacroInfo>.Empty];
+
+			// Check if the same macro was added earlier, possibly in a different namespace
+			foreach (var macro in macrosWithThisName)
+			{
+				if (macro.Macro.Equals(newMacro.Macro))
 				{
-					if (macro.Macro.Equals(newMacro.Macro)) {
-						if (!macro.Namespaces.Contains(newMacro.Namespace))
-							macro.Namespaces.Add(newMacro.Namespace);
-						goto continueOuter;
-					}
+					if (!macro.Namespaces.Contains(newMacro.Namespace))
+						macro.Namespaces.Add(newMacro.Namespace);
+					return;
 				}
-				// It's a new macro, add it
-				macrosWithThisName.Add(new InternalMacroInfo {
-					Attr = newMacro,
-					Macro = newMacro.Macro,
-					Namespaces = new InternalList<Symbol>(new Symbol[] { newMacro.Namespace })
-				});
-				macros[name] = macrosWithThisName;
-				continueOuter:;
 			}
+
+			// It's a new macro, add it
+			macrosWithThisName.Add(new InternalMacroInfo
+			{
+				Name = name,
+				Attr = newMacro,
+				Macro = newMacro.Macro,
+				Namespaces = new InternalList<Symbol>(new Symbol[] { newMacro.Namespace })
+			});
+			macros[name] = macrosWithThisName;
 		}
 
 		#endregion
@@ -258,6 +277,7 @@ namespace LeMP
 	/// potentially list multiple names.</summary>
 	internal class InternalMacroInfo
 	{
+		public Symbol Name;
 		public LexicalMacro Macro;
 		public LexicalMacroAttribute Attr;
 		public InternalList<Symbol> Namespaces = InternalList<Symbol>.Empty;

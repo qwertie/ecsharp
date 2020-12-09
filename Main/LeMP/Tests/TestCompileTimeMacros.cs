@@ -112,7 +112,52 @@ namespace LeMP.Tests
 				@"const string Y = /* a devilish computation */ ""666"";");
 		}
 
-		#if !NoReflectionEmit // Oops, can't generate assemblies in .NET Standard
+		[Test]
+		public void CompileTimeMacrosAreRegistered()
+		{
+			TestEcs(@"compileTime
+				{
+					[LexicalMacro(""syntax"", ""description"", ""#var"", Mode = MacroMode.Passive)]
+					public static LNode DumbMacro(LNode node, IMacroContext context)
+					{
+						matchCode(node) {
+							case float $x:
+								if (x.IsId) // make sure it's not already an assignment
+									return quote(float $x = 0.0);
+						}
+						return null;
+					}
+				}
+				int i;
+				float f;",
+				@"int i;
+				float f = 0d;");
+
+			// Use different syntax to refer to LexicalMacro (this is detected, awkwardly)
+			TestEcs(@"compileTime
+				{
+					[LeMP.LexicalMacroAttribute("""", """")]
+					public static LNode poop(LNode node, IMacroContext context)
+					{
+						return node.WithTarget((Symbol)""POOP"");
+					}
+					[global::LeMP.LexicalMacro("""", """", ""#var"", Mode = MacroMode.Passive)]
+					public static LNode DumbMacro2(LNode node, IMacroContext context)
+					{
+						matchCode(node) {
+							case Int32 $(..v):
+								return quote(int $(..v));
+						}
+						return null;
+					}
+				}
+				Int32 i = poop(123);
+				Int32 x, y = 0;",
+				@"int i = POOP(123);
+				int x, y = 0;");
+		}
+
+#if !NoReflectionEmit // Oops, can't generate assemblies in .NET Standard
 
 		[Test]
 		public void LoadReferenceTest()

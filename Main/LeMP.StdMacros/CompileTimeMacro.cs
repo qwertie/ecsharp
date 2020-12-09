@@ -203,20 +203,24 @@ namespace LeMP
 						typeof(EcsLanguageService).Assembly, // Loyc.Ecs.dll
 						typeof(StandardMacros).Assembly // LeMP.StdMacros.dll
 					)
-					.WithImports("Loyc", "Loyc.Syntax", "System")
+					.WithImports("Loyc", "Loyc.Syntax", "LeMP", "System")
 					.WithLanguageVersion(LanguageVersion.CSharp8)
 					.WithEmitDebugInformation(true)
 					.WithCheckOverflow(false);
 
 				_roslynScriptState = CSharpScript.RunAsync(
 					$"dynamic {__result_of_precompute};\n" +
+					// Using dynamic for this variable type gave me an error when calling .RegisterMacro on it:
+					// Error CS0656 Missing compiler required member 'Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create'
 					$"global::LeMP.IMacroContext {__macro_context};", scriptOptions).Result;
 			}
 		}
 
 		private static object RunCSharpCodeWithRoslyn(LNode parent, LNodeList code, IMacroContext context, ParsingMode printMode = null)
 		{
-			code = code.SmartSelect(stmt =>
+			// Note: when using compileTimeAndRuntime, the transforms here affect the version
+			//       sent to Roslyn, but not the runtime version placed in the output file.
+			code = code.SmartSelectMany(stmt =>
 			{
 				// Ensure #r gets an absolute path; I don't know what Roslyn does with a 
 				// relative path (maybe WithMetadataResolver would let me control this,
@@ -226,9 +230,26 @@ namespace LeMP
 					fileName = fileName.Trim().WithoutPrefix("\"").WithoutSuffix("\"");
 					var inputFolder = context.ScopedProperties.TryGetValue((Symbol)"#inputFolder", "").ToString();
 					var fullPath = Path.Combine(inputFolder, fileName);
-					return stmt.WithArgChanged(0, stmt[0].WithValue("\"" + fullPath + "\""));
+					return LNode.List(stmt.WithArgChanged(0, stmt[0].WithValue("\"" + fullPath + "\"")));
 				}
-				return stmt;
+
+				// For each (top-level) LexicalMacro method, call __macro_context.RegisterMacro().
+				LNode attribute = null;
+				if ((attribute = stmt.Attrs.FirstOrDefault(
+						attr => AppearsToCall(attr, "LeMP", nameof(LexicalMacroAttribute).WithoutSuffix("Attribute"))
+						     || AppearsToCall(attr, "LeMP", nameof(LexicalMacroAttribute)))) != null
+					&& EcsValidators.MethodDefinitionKind(stmt, out _, out var macroName, out _, out _) == S.Fn)
+				{
+					var setters = SeparateAttributeSetters(ref attribute);
+					attribute = attribute.WithTarget((Symbol) nameof(LexicalMacroAttribute));
+					setters.Insert(0, attribute);
+					var newAttribute = F.Call(S.New, setters);
+					var registrationCommand = 
+						F.Call(F.Dot(__macro_context, nameof(IMacroContext.RegisterMacro)),
+							F.Call(S.New, F.Call(nameof(MacroInfo), F.Null, newAttribute, macroName)));
+					return LNode.List(stmt, registrationCommand);
+				}
+				return LNode.List(stmt);
 			});
 			
 			string codeText = EcsLanguageService.WithPlainCSharpPrinter.Print(code, context.Sink, printMode, new LNodePrinterOptions { IndentString = "  " });
@@ -272,6 +293,30 @@ namespace LeMP
 				LogRoslynError(e, context.Sink, parent, compiling: false);
 			}
 			return NoValue.Value;
+		}
+
+		private static bool AppearsToCall(LNode attr, string optionalNamespace, string name)
+		{
+			// Detecting this syntactically is very clumsy, and we're assuming the namespace is imported.
+			LNode target = attr.Target;
+			return target != null && (
+				target.IsIdNamed(name) ||
+				target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(name) && (
+					target.Args[0].IsIdNamed(optionalNamespace) ||
+					target.Args[0].Calls(S.ColonColon, 2) && target.Args[0].Args[0].IsIdNamed("global") && target.Args[0].Args[1].IsIdNamed(optionalNamespace)
+				));
+		}
+
+		// Given Foo(x, y, a = 1, c = 2), extracts { a = 1, c = 2 } to a separate list
+		private static LNodeList SeparateAttributeSetters(ref LNode attribute)
+		{
+			LNodeList setters = LNode.List();
+			while (attribute.Args.LastOrDefault()?.Calls(S.Assign) == true)
+			{
+				setters.Insert(0, attribute.Args.Last);
+				attribute = attribute.WithArgs(attribute.Args.WithoutLast(1));
+			}
+			return setters;
 		}
 
 		static void LogRoslynError(Exception error, IMessageSink sink, object context, bool compiling)

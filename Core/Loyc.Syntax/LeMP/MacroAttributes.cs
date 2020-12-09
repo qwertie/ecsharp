@@ -101,7 +101,31 @@ namespace LeMP
 		DropRemainingListItems = 32,
 		/// <summary>If this flag is present, the macro can match a plain identifier. By default, only calls can be treated as macros.</summary>
 		/// <remarks>This flag does <i>not</i> prevent the macro from matching calls.</remarks>
+		[Obsolete("This was renamed to MatchIdentifierOrCall. Consider using MatchIdentifierOnly if applicable.")]
 		MatchIdentifier = 64,
+		MatchIdentifierOrCall = 64,
+		/// <summary>If this flag is present, the macro can match a plain identifier but cannot match calls.</summary>
+		MatchIdentifierOnly = 128,
+		/// <summary>The macro will be called whenever any kind of literal is encountered
+		/// (if its namespace is imported).</summary>
+		/// <remarks>When a literal is encountered, it is processed as though the Passive 
+		/// flag were present on all macros that use this flag, because no macro should alter 
+		/// all literals.</remarks>
+		MatchEveryLiteral = 0x1000,
+		/// <summary>The macro will be called for every call node
+		/// (if its namespace is imported).</summary>
+		/// <remarks>When a macro with this flag is called, it is processed as though the 
+		/// Passive flag were present.</remarks>
+		MatchEveryCall = 0x2000,
+		/// <summary>The macro will be called for every identifier node 
+		/// (if its namespace is imported).</summary>
+		/// <remarks>When a macro with this flag is called, it is processed as though the 
+		/// Passive flag were present.</remarks>
+		MatchEveryIdentifier = 0x4000,
+		/// <summary>Tells LeMP not to mention the physical method that implements the macro.
+		/// This improves error message clarity for user-defined macros, all of which share 
+		/// a single implementing method.</summary>
+		UseLogicalNameInErrorMessages = 0x8000,
 		/// <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
 		PriorityFallbackMin = 0x100,
 		/// <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
@@ -125,7 +149,9 @@ namespace LeMP
 	{
 		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
 		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro)
-			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 ? a.Names : new[] { macro.Method.Name })
+			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 
+				? a.Names : (a.Mode & (MacroMode.MatchEveryCall | MacroMode.MatchEveryLiteral)) != 0
+				? EmptyArray<string>.Value : new[] { macro.Method.Name })
 		{
 			CheckParam.IsNotNull("macro", macro);
 			Namespace = @namespace;

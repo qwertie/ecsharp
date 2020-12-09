@@ -9,6 +9,7 @@ using Loyc.Collections;
 using Loyc;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
+using System.Diagnostics;
 
 /// <summary>Contains tests for the <see cref="LeMP.MacroProcessor"/> and for standard LeMP macros.</summary>
 namespace LeMP.Tests
@@ -87,6 +88,22 @@ namespace LeMP.Tests
 		{
 			return LNode.Id("tommy");
 		}
+		[LexicalMacro("", "Capitalizes identifiers that start with q", null, Mode = MacroMode.MatchEveryIdentifier)]
+		public static LNode QWords(LNode node, IMacroContext context)
+		{
+			Debug.Assert(node.IsId);
+			if (node.IsId && node.Name.Name.StartsWith("q"))
+				return node.WithName((Symbol)("Q" + node.Name.Name.Substring(1)));
+			return null;
+		}
+		[LexicalMacro("", "Lowercases call targets that start with P", null, Mode = MacroMode.MatchEveryCall)]
+		public static LNode PCalls(LNode node, IMessageSink sink)
+		{
+			Debug.Assert(!node.IsId);
+			if (node.IsCall && node.Name.Name.StartsWith("P"))
+				return node.WithName((Symbol)("p" + node.Name.Name.Substring(1)));
+			return null;
+		}
 	}
 
 	namespace A
@@ -94,10 +111,10 @@ namespace LeMP.Tests
 		[ContainsMacros]
 		public class AliasTest
 		{
-			[LexicalMacro("", "", "uppercasemacro", "UpperCaseMacro", Mode = MacroMode.MatchIdentifier)]
+			[LexicalMacro("", "", "uppercasemacro", "UpperCaseMacro", Mode = MacroMode.MatchIdentifierOnly)]
 			public static LNode uppercasemacro(LNode node, IMacroContext context)
 			{
-				return node.IsId ? LNode.Id("UPPERCASE") : null;
+				return LNode.Id("UPPERCASE");
 			}
 		}
 	}
@@ -330,14 +347,18 @@ namespace LeMP
 		{
 			Test("import_macros LeMP.Tests; bob(); tom();", "bobby; tommy;");
 			Test("import_macros LeMP.Tests; bob; tom;", "bob; tommy;");
+			Test("import_macros LeMP.Tests; q = y + z; a = eq + qual();", "Q = y + z; a = eq + Qual();");
+			Test("                          q = a + b; a = aq / quatic;", "q = a + b; a = aq / quatic;");
+			Test("import_macros LeMP.Tests; p = P() + Poo();", "p = p() + poo();");
+			Test("                          q = P() + Poo();", "q = P() + Poo();");
 		}
 
 		[Test]
 		public void MacroAliasedAcrossNamespaces()
 		{
 			Test("#importMacros(LeMP.Tests.A); uppercasemacro;", "UPPERCASE;");
-			Test("#importMacros(LeMP.Tests.A); UpperCaseMacro;", "UPPERCASE;");
-			Test("#importMacros(LeMP.Tests.B); uppercasemacro;", "UPPERCASE;");
+			Test("#importMacros(LeMP.Tests.A); UpperCaseMacro();", "UPPERCASE();");
+			Test("#importMacros(LeMP.Tests.B); uppercasemacro();", "UPPERCASE();");
 			Test("#importMacros(LeMP.Tests.B); UpperCaseMacro;", "UPPERCASE;");
 			Test("#importMacros(LeMP.Tests.A); import_macros LeMP.Tests.B; uppercasemacro;", "UPPERCASE;");
 			Test("#importMacros(LeMP.Tests.A); import_macros LeMP.Tests.B; UpperCaseMacro;", "UPPERCASE;");

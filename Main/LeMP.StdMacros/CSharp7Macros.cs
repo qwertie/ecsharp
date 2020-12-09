@@ -41,7 +41,7 @@ namespace LeMP.CSharp7.To.OlderVersions
 			return result;
 		}
 
-		[LexicalMacro("#useDefaultTupleTypes;", "Reverts to using Tuple and Tuple.Create for all arities of tuple.", "#useDefaultTupleTypes", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("#useDefaultTupleTypes;", "Reverts to using Tuple and Tuple.Create for all arities of tuple.", "#useDefaultTupleTypes", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode useDefaultTupleTypes(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount != 0)

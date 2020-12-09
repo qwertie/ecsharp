@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -47,7 +47,7 @@ namespace LeMP
 		+ "but its name comes from the fact that it is usually used to allow variable declarations. " 
 		+ "#useSequenceExpressions expects to be used in a declaration context, " 
 		+ "e.g. at class or namespace level, not within a function.", 
-		"#useSequenceExpressions", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifier)] 
+		"#useSequenceExpressions", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifierOrCall)] 
 		public static LNode useSequenceExpressions(LNode node, IMacroContext context)
 		{
 			var tmp_10 = context.GetArgsAndBody(true);

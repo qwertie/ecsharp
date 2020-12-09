@@ -102,6 +102,7 @@
     </Compile>
     <Compile Include="CSharp7Macros.cs" />
     <Compile Include="DeconstructMacro.cs" />
+    <Compile Include="DefineMacro.cs" />
     <Compile Include="FluentMacro.cs" />
     <Compile Include="ForwardingMacro.cs" />
     <Compile Include="InRange.out.cs">
@@ -109,6 +110,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="MacroMacro.cs" />
     <Compile Include="MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>
       <AutoGen>True</AutoGen>

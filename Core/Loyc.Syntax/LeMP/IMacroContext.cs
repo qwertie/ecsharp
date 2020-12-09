@@ -118,20 +118,33 @@ namespace LeMP
 		/// <c>#importMacros</c>.</summary>
 		IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get; }
 
-		/// <summary>Gets the next number to use as a suffix for temporary variables (without incrementing).</summary>
+		/// <summary>Gets the next number to use as a suffix for temporary variables (without incrementing it).</summary>
 		int NextTempCounter { get; }
 		/// <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
 		int IncrementTempCounter();
 
 		/// <summary>Registers a new macro in the current scope.</summary>
-		/// <param name="macroInfo"></param>
-		/// <remarks>The macro will be forgotten at the end of the current scope. Macros 
-		/// in child scopes do not shadow macros in outer scopes; if there are macros 
-		/// with the same name in the outer scope, conflicts are handled in the same way 
-		/// as with groups of macros that are imported in the same scope. For example,
-		/// <c>Mode = <see cref="MacroMode.PriorityOverride"/></c> can be used to make 
-		/// macros that override normal-priority macros.</remarks>
+		/// <param name="macroInfo">Information about the macro</param>
+		/// <remarks>
+		/// The macro will be forgotten at the end of the current scope (regardless 
+		/// of which namespace it is assigned to).
+		/// <para/>
+		/// Macros defined in child scopes do not shadow macros in outer scopes; 
+		/// if there are macros with the same name in the outer scopes, conflicts are 
+		/// handled in the same way as with groups of macros that are imported in the 
+		/// same scope. For example, <c>Mode = <see cref="MacroMode.PriorityOverride"/></c>
+		/// can be used to make macros that override normal-priority macros.</remarks>
 		void RegisterMacro(MacroInfo macroInfo);
+
+		/// <summary>Gets the list of namespaces that are being searched for macros in 
+		/// the current scope. You can modify this collection.</summary>
+		/// <remarks>The naming scheme of namespaces is not standardized in cases where
+		/// the namespace name is not a "normal" identifier. It is recommended that 
+		/// macros be placed in namespaces whose names are valid identifiers in most 
+		/// languages (C++, C#, Java, Python, etc.). It's okay to put macros in nested
+		/// namespaces.
+		/// </remarks>
+		ICollection<Symbol> OpenMacroNamespaces { get; }
 	}
 
 	/// <summary>Standard extension methods for <see cref="IMacroContext"/>.</summary>

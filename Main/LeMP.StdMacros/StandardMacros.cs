@@ -223,11 +223,9 @@ namespace LeMP
 		#endregion
 
 		[LexicalMacro("#ecs;", "Typically used at the top of a file, this macro enable certain EC# features before the EC# compiler is written, by implementing those features as macro. "
-			+"Currently, `#ecs` expands to `#useSymbols; #useSequenceExpressions`.", "#ecs", Mode = MacroMode.MatchIdentifier)]
+			+"Currently, `#ecs` expands to `#useSymbols; #useSequenceExpressions`.", "#ecs", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode ecs(LNode node, IMacroContext context)
 		{
-			if (node.IsCall)
-				return null;
 			return F.Call(S.Splice, F.Id("#useSymbols"), F.Id("#useSequenceExpressions"));
 		}
 
@@ -468,6 +466,27 @@ namespace LeMP
 				results = node.Args;
 			}
 			return results.AsLNode(S.Splice);
+		}
+
+		static Symbol _currentNamespace = (Symbol)"#currentNamespace";
+
+		[LexicalMacro(@"namespace Name { ... } /* C# syntax */",
+			"Responds to braces inside namespace statements by changing the `#currentNamespace` property and by 'opening' the namespace as if by using `#importMacros`. The output is not directly affected.",
+			"'{}", Mode = MacroMode.Passive)]
+		public static LNode DetectCurrentNamespace(LNode node, IMacroContext context)
+		{
+			if (EcsValidators.SpaceDefinitionKind(context.Parent, out LNode name, out _, out _) == S.Namespace)
+			{
+				var newNamespace = name.Print(ParsingMode.Expressions);
+				var currentNamespace = context.ScopedProperties.TryGetValue(_currentNamespace, null) as Symbol;
+				if (currentNamespace == null)
+					currentNamespace = (Symbol)newNamespace;
+				else
+					currentNamespace = (Symbol)(currentNamespace.Name + "." + newNamespace);
+				context.OpenMacroNamespaces.Add(currentNamespace);
+				context.ScopedProperties[_currentNamespace] = currentNamespace;
+			}
+			return null; // don't alter output
 		}
 
 		[LexicalMacro(@"reset_macros { code; }", 

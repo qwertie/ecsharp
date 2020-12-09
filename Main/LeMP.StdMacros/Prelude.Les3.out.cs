@@ -1,4 +1,4 @@
-// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from Prelude.Les3.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -503,13 +503,13 @@ namespace LeMP.Les3.To.CSharp
 			return Les2.TranslateSpaceDefinition(node, context, S.Namespace);
 		}
 	
-		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifier)] 
+		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifierOrCall)] 
 		public static LNode @this(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.This);
 		}
 	
-		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifier)] 
+		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifierOrCall)] 
 		public static LNode @base(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Base);

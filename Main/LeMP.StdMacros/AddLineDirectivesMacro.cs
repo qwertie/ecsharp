@@ -19,7 +19,7 @@ namespace LeMP
 			"C# specific: adds a #line directive in front of many statements so error messages are mapped back to the source file. "
 			+"This macro doesn't know exactly how the output will be printed, so it tends to emit more #line directives than necessary "
 			+"to increase the chances of a correct mapping.",
-			"#lines", Mode = MacroMode.MatchIdentifier)]
+			"#lines", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode AddCsLineDirectives(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount != 0)

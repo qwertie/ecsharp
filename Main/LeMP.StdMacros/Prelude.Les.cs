@@ -507,17 +507,17 @@ namespace LeMP.Prelude.Les
 			return TranslateCall(node, S.SwitchStmt);
 		}
 
-		[LexicalMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @break(LNode node, IMessageSink sink)
 		{
-			if (!node.IsId) return null;
+			Debug.Assert(node.IsId);
 			return node.WithTarget(S.Break);
 		}
 
-		[LexicalMacro("continue", "Jump to the end of the loop body, running the loop again if the loop condition is true.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("continue", "Jump to the end of the loop body, running the loop again if the loop condition is true.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @continue(LNode node, IMessageSink sink)
 		{
-			if (!node.IsId) return null;
+			Debug.Assert(node.IsId);
 			return node.WithTarget(S.Continue);
 		}
 
@@ -531,7 +531,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 		
-		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @defaultCase(LNode node, IMessageSink sink)
 		{
 			if (node.IsId)
@@ -637,14 +637,14 @@ namespace LeMP.Prelude.Les
 			return node;
 		}
 
-		[LexicalMacro("throw; throw Expr", "Returns to the caller of the current method or lambda function.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("throw; throw Expr", "Returns to the caller of the current method or lambda function.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @throw(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount > 1) return null;
 			return node.With(S.Throw, node.Args); // change throw -> #throw() and throw(x) -> #throw(x)
 		}
 
-		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @return(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount <= 1)
@@ -660,13 +660,13 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @this(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.This);
 		}
 
-		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @base(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Base);
@@ -771,7 +771,7 @@ namespace LeMP.Prelude.Les
 
 		private static LNode TranslateId(LNode node, Symbol symbol, IMacroContext checkIsAttr = null)
 		{
-			if (!node.IsId) return null;
+			Debug.Assert(node.IsId);
 			if (checkIsAttr != null && !checkIsAttr.IsAttribute) return null;
 			return node.WithName(symbol);
 		}
@@ -799,39 +799,39 @@ namespace LeMP.Prelude.Les
 			return TranslateWordAttr(node, sink, kind);
 		}
 
-		[LexicalMacro("[pub]", "Used as an attribute in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[pub]", "Used as an attribute in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode pub(LNode node, IMacroContext ctx) { return TranslateId(node, S.Public, ctx); }
-		[LexicalMacro("[priv]", "Used as an attribute in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[priv]", "Used as an attribute in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode priv(LNode node, IMacroContext ctx) { return TranslateId(node, S.Private, ctx); }
-		[LexicalMacro("[prot]", "Used as an attribute in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[prot]", "Used as an attribute in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode prot(LNode node, IMacroContext ctx) { return TranslateId(node, S.Protected, ctx); }
-		[LexicalMacro("[virt]", "Used as an attribute in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[virt]", "Used as an attribute in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode virt(LNode node, IMacroContext ctx) { return TranslateId(node, S.Virtual, ctx); }
-		[LexicalMacro("public <declaration>", "Used in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("public <declaration>", "Used in LES2 to indicate that a type, method or field is publicly accessible.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @public(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Public); }
-		[LexicalMacro("private <declaration>", "Used in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("private <declaration>", "Used in LES2 to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @private(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Private); }
-		[LexicalMacro("protected <declaration>", "Used in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("protected <declaration>", "Used in LES2 to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @protected(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Protected); }
-		[LexicalMacro("internal <declaration>", "Used in LES2 to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("internal <declaration>", "Used in LES2 to indicate that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @internal(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Internal); }
 
-		[LexicalMacro("virtual <declaration>", "Used in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("virtual <declaration>", "Used in LES2 to indicate that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @virtual(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Virtual); }
-		[LexicalMacro("override <declaration>", "Used in LES2 to indicate that a method overrides a virtual method in the base class.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("override <declaration>", "Used in LES2 to indicate that a method overrides a virtual method in the base class.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @override(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Override); }
-		[LexicalMacro("extern <declaration>", "Used in LES2 to indicate that the definition is supplied elsewhere.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("extern <declaration>", "Used in LES2 to indicate that the definition is supplied elsewhere.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @extern(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Extern); }
-		[LexicalMacro("static <declaration>", "Used in LES2 to apply the #static attribute to a declaration.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("static <declaration>", "Used in LES2 to apply the #static attribute to a declaration.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @static(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Static); }
-		[LexicalMacro("unsafe <declaration>", "Used in LES2 to indicate that the definition may use 'unsafe' parts of C#, such as pointers", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("unsafe <declaration>", "Used in LES2 to indicate that the definition may use 'unsafe' parts of C#, such as pointers", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @unsafe(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Unsafe); }
 
-		[LexicalMacro("partial <declaration>", "Used in LES2 to indicate that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("partial <declaration>", "Used in LES2 to indicate that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @partial(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Partial); }
-		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Used in LES2 to indicate that a variable cannot be changed after it is initialized.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Used in LES2 to indicate that a variable cannot be changed after it is initialized.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @readonly(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Readonly); }
-		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Used in LES2 to indicate a compile-time constant.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Used in LES2 to indicate a compile-time constant.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
 		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.",
@@ -876,55 +876,55 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @ref(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Ref); }
-		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode @out(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Out); }
 
-		[LexicalMacro("sbyte", "A signed 8-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("sbyte", "A signed 8-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, S.Int8); }
-		[LexicalMacro("byte", "An unsigned 8-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("byte", "An unsigned 8-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt8); }
-		[LexicalMacro("short", "A signed 16-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("short", "A signed 16-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, S.Int16); }
-		[LexicalMacro("ushort", "An unsigned 16-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("ushort", "An unsigned 16-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt16); }
-		[LexicalMacro("int", "A signed 32-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("int", "A signed 32-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, S.Int32); }
-		[LexicalMacro("uint", "An unsigned 32-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("uint", "An unsigned 32-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt32); }
-		[LexicalMacro("long", "A signed 64-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("long", "A signed 64-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, S.Int64); }
-		[LexicalMacro("ulong", "An unsigned 64-bit data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("ulong", "An unsigned 64-bit data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt64); }
-		[LexicalMacro("char", "A 16-bit single-character data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("char", "A 16-bit single-character data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, S.Char); }
-		[LexicalMacro("float", "A 32-bit floating-point data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("float", "A 32-bit floating-point data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, S.Single); }
-		[LexicalMacro("double", "A 64-bit floating-point data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("double", "A 64-bit floating-point data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, S.Double); }
-		[LexicalMacro("bool", "The boolean data type (holds one of two values, @true or @false)", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("bool", "The boolean data type (holds one of two values, @true or @false)", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, S.Bool); }
-		[LexicalMacro("string", "The string data type: a read-only sequence of characters.", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("string", "The string data type: a read-only sequence of characters.", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, S.String); }
-		[LexicalMacro("decimal", "A 128-bit floating-point BCD data type", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("decimal", "A 128-bit floating-point BCD data type", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, S.Decimal); }
-		[LexicalMacro("void", "An empty data type that always has the same value, known as '@void'", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("void", "An empty data type that always has the same value, known as '@void'", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, S.Void); }
-		[LexicalMacro("object", "Common base class of all .NET data types", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("object", "Common base class of all .NET data types", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, S.Object); }
 
 		private static LNode TranslateLiteral(LNode node, IMessageSink sink, object literal)
 		{
-			if (!node.IsId) return null;
+			Debug.Assert(node.IsId);
 			return LNode.Literal(literal, node);
 		}
 
-		[LexicalMacro("true", "", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("true", "", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @true(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, true); }
-		[LexicalMacro("false", "", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("false", "", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @false(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, false); }
-		[LexicalMacro("null", "(Nothing in Visual Basic)", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("null", "(Nothing in Visual Basic)", Mode = MacroMode.MatchIdentifierOnly)]
 		public static LNode @null(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, null); }
 
 		#endregion

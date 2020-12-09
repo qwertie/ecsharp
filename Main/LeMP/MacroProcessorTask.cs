@@ -126,7 +126,7 @@ namespace LeMP
 
 		#endregion
 
-		#region Public entry points: ProcessFileWithThreadAbort(), ProcessFile(), ProcessRoot()
+		#region Main entry points: ProcessFileWithThreadAbort(), ProcessFile(), ProcessRoot()
 
 		public LNodeList ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
 		{
@@ -204,7 +204,7 @@ namespace LeMP
 					_ancestorStack = new DList<LNode>();
 				_s = new CurNodeState();
 				if (asRoot || resetOpenNamespaces || resetProperties) {
-					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces : _curScope.OpenNamespaces;
+					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces : _curScope._openNamespaces;
 					var properties = resetProperties ? _rootScopedProperties : _curScope.ScopedProperties;
 					var macros = resetOpenNamespaces ? _rootMacros : _macros;
 					newScope = true;
@@ -236,36 +236,46 @@ namespace LeMP
 					PopScope();
 			}
 		}
-	
+
 		#endregion
 
 		#region Scope (IMacroContext) definition
 
 		class Scope : ICloneable<Scope>, IMacroContext
 		{
-			public Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, InternalList<InternalMacroInfo>> macros, MacroProcessorTask task)
-				{ OpenNamespaces = openNamespaces; _scopedProperties = scopedProperties; _macros = macros; _task = task; _modified = false; }
-			public MSet<Symbol> OpenNamespaces;
+			internal Scope(MSet<Symbol> openNamespaces, MMap<object, object> scopedProperties, MMap<Symbol, InternalList<InternalMacroInfo>> macros, MacroProcessorTask task)
+			{
+				_openNamespaces = openNamespaces;
+				_openNamespaces.Add(null);
+				_scopedProperties = scopedProperties;
+				_macros = macros;
+				_task = task;
+				_modified = false;
+			}
+
+			internal MSet<Symbol> _openNamespaces; // ALWAYS includes null
 			MacroProcessorTask _task;
 			MMap<object, object> _scopedProperties;
+			// A key of null is used for macros that match literals and macros that match every call
 			internal MMap<Symbol, InternalList<InternalMacroInfo>> _macros;
+			
 			bool _modified; // copy-on-write behavior occurs when this is false
-				
+
 			public void BeforeModify()
 			{
 				if (!_modified) {
 					_modified = true;
-					OpenNamespaces = OpenNamespaces.Clone();
+					_openNamespaces = _openNamespaces.Clone();
 					_scopedProperties = _scopedProperties.Clone();
 					_macros = _macros.Clone();
 				}
 			}
 			public Scope Clone()
 			{
-				return new Scope(OpenNamespaces, _scopedProperties, _macros, _task);
+				return new Scope(_openNamespaces, _scopedProperties, _macros, _task);
 			}
 
-			#region IMacroContext Members
+			#region IMacroContext implementation
 
 			IDictionary<object, object> IMacroContext.ScopedProperties { get { return ScopedProperties; } }
 			public MMap<object, object> ScopedProperties
@@ -295,7 +305,7 @@ namespace LeMP
 				LNodeList empty = LNodeList.Empty;
 				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, resetProperties, isTarget);
 			}
-			
+
 			public LNode PreProcessChildren()
 			{
 				return _task.ProcessChildrenOfCurrentNode();
@@ -341,6 +351,14 @@ namespace LeMP
 			{
 				BeforeModify();
 				MacroProcessor.AddMacro(_macros, macroInfo);
+			}
+
+			public ICollection<Symbol> OpenMacroNamespaces
+			{
+				get {
+					BeforeModify();
+					return _openNamespaces;
+				}
 			}
 
 			#endregion
@@ -482,25 +500,22 @@ namespace LeMP
 
 		#region Find macros by name: GetApplicableMacros
 
-		public int GetApplicableMacros(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, ICollection<InternalMacroInfo> found, bool isIdentifier)
+		public void GetApplicableMacros2(IReadOnlyCollection<Symbol> openNamespaces, Symbol name, bool isIdentifier, ICollection<InternalMacroInfo> found)
 		{
 			if (_curScope._macros.TryGetValue(name, out var candidates)) {
-				int count = 0;
 				foreach (var info in candidates) {
-					if (!isIdentifier || (info.Attr.Mode & MacroMode.MatchIdentifier) != 0)
+					if (isIdentifier == ((info.Attr.Mode & MacroMode.MatchIdentifierOnly) != 0)
+					    || (info.Attr.Mode & MacroMode.MatchIdentifierOrCall) != 0)
 					{
 						foreach (var ns in info.Namespaces)
-							if (openNamespaces.Contains(ns) || ns == null)
+							if (openNamespaces.Contains(ns))
 								goto available;
 						continue;
 					 available:
-						count++;
 						found.Add(info);
 					}
 				}
-				return count;
-			} else
-				return 0;
+			}
 		}
 
 		#endregion
@@ -528,7 +543,7 @@ namespace LeMP
 			AutoInitScope().BeforeModify();
 			foreach (var arg in node.Args) {
 				var namespaceSym = NamespaceToSymbol(arg);
-				_curScope.OpenNamespaces.Add(namespaceSym);
+				_curScope.OpenMacroNamespaces.Add(namespaceSym);
 				if (expectMacros && !_macroNamespaces.Contains(namespaceSym))
 					context.Sink.Warning(node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
 			}
@@ -557,7 +572,7 @@ namespace LeMP
 			AutoInitScope().BeforeModify();
 			foreach (var arg in node.Args) {
 				var sym = NamespaceToSymbol(arg);
-				if (!_curScope.OpenNamespaces.Remove(sym))
+				if (!_curScope.OpenMacroNamespaces.Remove(sym))
 					context.Write(Severity.Debug, arg, "Namespace not found to remove: {0}", sym);
 			}
 			return LNode.Call(S.Splice);
@@ -595,7 +610,7 @@ namespace LeMP
 			if (node.ArgCount == 2 && (key = context.PreProcess(node[0])).IsLiteral) {
 				context.ScopedProperties[key.Value] = node[1];
 				return F.Call(S.Splice);
-            }
+			}
 			context.Sink.Error(node, "Expected two parameters (key, value), of which the first is a literal.");
 			return null;
 		}
@@ -695,7 +710,9 @@ namespace LeMP
 				try {
 					if (_s.FoundMacros.Count == 0) {
 						nodeQueue = _s.NodeQueue;
-						bool skipTarget = curNode.HasSimpleHeadWithoutPAttrs();
+						bool skipTarget = curNode.HasSimpleHeadWithoutPAttrs()
+							&& !_curScope._macros.ContainsKey(curNode.Name)
+							&& !_curScope._macros.ContainsKey(MacroProcessor.MatchEveryIdentifier);
 						return ApplyMacrosToChildrenOf(curNode, maxExpansions, skipTarget) ?? resultNode;
 					}
 
@@ -705,8 +722,7 @@ namespace LeMP
 						// Macro(s) had no effect (not in this iteration, anyway), 
 						// so move on to processing children.
 						nodeQueue = _s.NodeQueue;
-						bool skipTarget = curNode.HasSimpleHeadWithoutPAttrs() && !_s.FoundMacros.Any(m => (m.Mode & MacroMode.MatchIdentifier) != 0);
-						return _s.Preprocessed ?? ApplyMacrosToChildrenOf(curNode, maxExpansions, skipTarget) ?? resultNode;
+						return _s.Preprocessed ?? ApplyMacrosToChildrenOf(curNode, maxExpansions, false) ?? resultNode;
 					}
 					result = result_.Value;
 				} finally {
@@ -746,14 +762,38 @@ namespace LeMP
 		private void GetApplicableMacros(LNode curNode, List<InternalMacroInfo> foundMacros)
 		{
 			LNode target;
-			if (curNode.HasSimpleHead()) {
-				GetApplicableMacros(_curScope.OpenNamespaces, curNode.Name, foundMacros, curNode.IsId);
-			} else if ((target = curNode.Target).Calls(S.Dot, 2) && target.Args[1].IsId) {
-				Symbol name = target.Args[1].Name;
-				if (_macros.ContainsKey(name)) {
-					Symbol @namespace = NamespaceToSymbol(target.Args[0]);
-					GetApplicableMacros(ListExt.Single(@namespace), name, foundMacros, false);
+
+			var kind = curNode.Kind;
+			if (kind == LNodeKind.Call)
+			{
+				if (curNode.HasSimpleHead())
+				{
+					GetApplicableMacros2(_curScope._openNamespaces, curNode.Name, false, foundMacros);
 				}
+				else // complex call
+				{
+					if ((target = curNode.Target).Calls(S.Dot, 2) && target.Args[1].IsId)
+					{
+						Symbol name = target.Args[1].Name;
+						if (_macros.ContainsKey(name))
+						{
+							Symbol @namespace = NamespaceToSymbol(target.Args[0]);
+							GetApplicableMacros2(ListExt.Single(@namespace), name, false, foundMacros);
+						}
+					}
+				}
+
+				GetApplicableMacros2(_curScope._openNamespaces, MacroProcessor.MatchEveryCall, false, foundMacros);
+			}
+			else if (kind == LNodeKind.Id)
+			{
+				GetApplicableMacros2(_curScope._openNamespaces, curNode.Name, true, foundMacros);
+
+				GetApplicableMacros2(_curScope._openNamespaces, MacroProcessor.MatchEveryIdentifier, false, foundMacros);
+			}
+			else // LNodeKind.Literal
+			{
+				GetApplicableMacros2(_curScope._openNamespaces, MacroProcessor.MatchEveryLiteral, false, foundMacros);
 			}
 		}
 
@@ -814,7 +854,7 @@ namespace LeMP
 						acceptedIndex = i;
 					}
 				} catch (ThreadAbortException e) {
-					_sink.Write(Severity.Error, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
+					_sink.Write(Severity.Error, "Macro-processing thread aborted in {0}", QualifiedNameOf(macro));
 					_sink.Write(Severity.ErrorDetail, input, e.StackTrace);
 					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 					PrintMessages(s.Results, input, accepted, Severity.Error);
@@ -1009,7 +1049,7 @@ namespace LeMP
 				bool allowed, equal = AreAllOutcomesEqual(results, out allowed);
 				if (!equal || !allowed)
 				{
-					string list = results.Where(r => r.NewNode != null).Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", ");
+					string list = results.Where(r => r.NewNode != null).Select(r => QualifiedNameOf(r.Macro)).Join(", ");
 					if (equal)
 						_sink.Warning(input, "Ambiguous macro call. {0} macros accepted the input and produced equal results: {1}", accepted, list);
 					else
@@ -1018,7 +1058,8 @@ namespace LeMP
 			}
 
 			bool macroStyleCall = input.BaseStyle == NodeStyle.Special;
-			var rejected = results.Where(r => r.NewNode == null && (r.Macro.Mode & MacroMode.Passive) == 0);
+			var passive = MacroMode.Passive | MacroMode.MatchEveryCall | MacroMode.MatchEveryLiteral | MacroMode.MatchEveryIdentifier;
+			var rejected = results.Where(r => r.NewNode == null && (r.Macro.Mode & passive) == 0);
 			if (macroStyleCall && maxSeverity < Severity.Warning)
 				maxSeverity = Severity.Warning;
 			if (maxSeverity < Severity.Note)
@@ -1026,7 +1067,7 @@ namespace LeMP
 			if (accepted == 0 && input.IsCall && _sink.IsEnabled(maxSeverity) && rejected.Any(r => r.Msgs.Count == 0))
 			{
 				_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
-					results.Count, rejected.Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
+					results.Count, rejected.Select(r => QualifiedNameOf(r.Macro)).Join(", "));
 			}
 			
 			foreach (var result in results)
@@ -1040,7 +1081,7 @@ namespace LeMP
 						|| macroStyleCall))
 					{
 						var msg2 = new LogMessage(msg.Severity, msg.Context,
-							QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
+							QualifiedNameOf(result.Macro) + ": " + msg.Format, msg.Args);
 						msg2.WriteTo(_sink);
 					}
 				}
@@ -1067,9 +1108,21 @@ namespace LeMP
 			return true;
 		}
 
-		private string QualifiedName(MethodInfo method)
+		private string QualifiedNameOf(InternalMacroInfo macro)
 		{
-			return string.Format("{0}.{1}.{2}", method.DeclaringType.Namespace, method.DeclaringType.Name, method.Name);
+			if ((macro.Attr.Mode & MacroMode.UseLogicalNameInErrorMessages) != 0) {
+				// TODO: we can't tell here which namespace was used to access the macro; it
+				//       might be a qualified name. But we can usually guess correctly and 
+				//       threading the needed info into this method is a pain so it isn't done.
+				//       The displayed namespace can be wrong if the macro exists in multiple 
+				//       namespaces. User-defined macros share a method, might be problematic?
+				var ns = macro.Namespaces.FirstOrDefault(n => _curScope._openNamespaces.Contains(n)) 
+				      ?? macro.Namespaces.FirstOrDefault(S.Missing);
+				return string.Format("{0}.{1}", ns, macro.Name).WithoutPrefix(".");
+			} else {
+				var method = macro.Macro.Method;
+				return string.Format("{0}.{1}.{2}", method.DeclaringType.Namespace, method.DeclaringType.Name, method.Name);
+			}
 		}
 
 		#endregion
