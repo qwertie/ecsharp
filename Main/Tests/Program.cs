@@ -67,7 +67,8 @@ namespace Loyc.Tests
 				new TestSetOrCreateMemberMacro(),
 				new TestUnrollMacro(),
 				new TestUseSymbolsMacro(),
-				new TestCompileTimeMacros());
+				new TestCompileTimeMacros(),
+				new TestUserDefinedMacroMacro());
 		}
 	}
 }

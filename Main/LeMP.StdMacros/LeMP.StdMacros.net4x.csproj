@@ -110,7 +110,10 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="MacroMacro.cs" />
+    <None Include="UserDefinedMacroMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UserDefinedMacroMacro.out.cs</LastGenOutput>
+    </None>
     <Compile Include="MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -163,6 +166,11 @@
     <Compile Include="StaticMatchCodeMacro.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
     <Compile Include="UnrollMacro.cs" />
+    <Compile Include="UserDefinedMacroMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UserDefinedMacroMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="UseSequenceExpressions.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

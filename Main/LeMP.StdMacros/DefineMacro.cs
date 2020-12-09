@@ -82,6 +82,8 @@ namespace LeMP
 				modes |= MacroMode.MatchEveryLiteral;
 			else if (pattern.IsId)
 				modes |= MacroMode.MatchIdentifierOnly;
+			else if (DecodeSubstitutionExpr(pattern, out _, out _, out _) != null)
+				modes |= MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier | MacroMode.MatchEveryLiteral;
 			else if (!pattern.Target.IsId)
 				modes |= MacroMode.MatchEveryCall; // custom matching code needed
 			return modes;
@@ -89,6 +91,9 @@ namespace LeMP
 
 		private static LNode RegisterSimpleMacro(LNodeList attrs, LNode pattern, LNode body, IMacroContext context)
 		{
+			if (DecodeSubstitutionExpr(pattern, out _, out _, out _) != null)
+				return Reject(context, pattern, "Defining a macro that could match everything is not allowed.");
+
 			MacroMode modes = GetMacroMode(ref attrs, pattern);
 
 			LNode macroName = pattern.Target ?? pattern;
@@ -103,7 +108,7 @@ namespace LeMP
 			// waste of CPU time as those strings are usually not requested. 
 			// Compromise: provide syntax pattern only
 			var syntax = pattern.ToString();
-			var lma = new LexicalMacroAttribute(syntax, "User-defined macro at {0}".Localized(body.Range.Start), macroName.Name.Name) { Mode = modes };
+			var lma = new LexicalMacroAttribute(syntax, "User-defined macro at {0}".Localized(pattern.Range.Start), macroName.Name.Name) { Mode = modes };
 			if ((modes & (MacroMode.MatchEveryLiteral | MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier)) != 0)
 				lma = new LexicalMacroAttribute(syntax, lma.Description) { Mode = modes };
 

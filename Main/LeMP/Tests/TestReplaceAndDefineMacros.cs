@@ -100,6 +100,21 @@ namespace LeMP.Tests
 		}
 
 		[Test]
+		public void TestDefineEverything()
+		{
+			var holder = new MessageHolder();
+			using (MessageSink.SetDefault(holder)) // suppress errors
+			{
+				TestEcs(@"define ($anything) { $anything + 1; }
+					X();",
+					@"define ($anything) { $anything + 1; }
+					X();");
+				Assert.AreEqual(1, holder.List.Count(msg => 
+					msg.Format.EndsWith("Defining a macro that could match everything is not allowed.")));
+			}
+		}
+
+		[Test]
 		public void TestDefineFn()
 		{
 			TestLes(@"define WL() { Console.WriteLine(); }; WL(); WL();",

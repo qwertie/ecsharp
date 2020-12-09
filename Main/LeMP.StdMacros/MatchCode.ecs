@@ -184,7 +184,7 @@ namespace LeMP
 				// is this a $substitutionVar?
 				LNode condition;
 				bool isParams, refExistingVar;
-				var nodeVar = GetSubstitutionVar(pattern, out condition, out isParams, out refExistingVar);
+				var nodeVar = DecodeSubstitutionExpr(pattern, out condition, out isParams, out refExistingVar);
 
 				// Unless the candidate is a simple variable name, avoid repeating 
 				// it by creating a temporary variable to hold its value
@@ -284,7 +284,7 @@ namespace LeMP
 				bool isParams, refExistingVar;
 				Symbol listVar;
 				var pAttrs = pattern.PAttrs();
-				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams, out refExistingVar)) != null && isParams) {
+				if (pAttrs.Count == 1 && (listVar = DecodeSubstitutionExpr(pAttrs[0], out condition, out isParams, out refExistingVar)) != null && isParams) {
 					if (listVar != __ || condition != null) {
 						if (!refExistingVar)
 							AddVar(listVar, true, errAt: pattern);
@@ -303,7 +303,7 @@ namespace LeMP
 				for (int i = 0; i < patternArgs.Count; i++) {
 					LNode condition;
 					bool isParams, _;
-					var nodeVar = GetSubstitutionVar(patternArgs[i], out condition, out isParams, out _);
+					var nodeVar = DecodeSubstitutionExpr(patternArgs[i], out condition, out isParams, out _);
 					if (isParams)
 						varArgAt = i;
 					else
@@ -361,43 +361,43 @@ namespace LeMP
 						ThenClause.Add(grabVarArgs);
 				}
 			}
+		}
 
-			internal static Symbol GetSubstitutionVar(LNode expr, out LNode condition, out bool isParams, out bool refExistingVar)
+		internal static Symbol DecodeSubstitutionExpr(LNode expr, out LNode condition, out bool isParams, out bool refExistingVar)
+		{
+			condition = null;
+			isParams = false;
+			refExistingVar = false;
+			if (expr.Calls(S.Substitute, 1))
 			{
-				condition = null;
-				isParams = false;
-				refExistingVar = false;
-				if (expr.Calls(S.Substitute, 1))
-				{
-					LNode id = expr.Args[0];
-					if (id.AttrNamed(S.Params) != null)
-						isParams = true;
-					else if (id.Calls(S.DotDotDot, 1) || id.Calls(S.DotDot, 1)) {
-						isParams = true;
-						id = id.Args[0];
-					}
-
-					if (id.AttrNamed(S.Ref) != null)
-						refExistingVar = true;
-
-					if (id.Calls(S.IndexBracks, 2)) {
-						// old style
-						condition = id.Args[1];
-						id = id.Args[0];
-					} else while (id.Calls(S.And, 2)) { 
-						// new style (recommended)
-						condition = condition == null ? id.Args[1] : quote( $(id.Args[1]) && $condition );
-						id = id.Args[0];
-					}
-
-					if (condition != null)
-						condition = condition.ReplaceRecursive(n => n.IsIdNamed(S._HashMark) ? id : null);
-					if (!id.IsId)
-						return null;
-					return id.Name;
+				LNode id = expr.Args[0];
+				if (id.AttrNamed(S.Params) != null)
+					isParams = true;
+				else if (id.Calls(S.DotDotDot, 1) || id.Calls(S.DotDot, 1)) {
+					isParams = true;
+					id = id.Args[0];
 				}
-				return null;
+
+				if (id.AttrNamed(S.Ref) != null)
+					refExistingVar = true;
+
+				if (id.Calls(S.IndexBracks, 2)) {
+					// old style
+					condition = id.Args[1];
+					id = id.Args[0];
+				} else while (id.Calls(S.And, 2)) { 
+					// new style (recommended)
+					condition = condition == null ? id.Args[1] : quote( $(id.Args[1]) && $condition );
+					id = id.Args[0];
+				}
+
+				if (condition != null)
+					condition = condition.ReplaceRecursive(n => n.IsIdNamed(S._HashMark) ? id : null);
+				if (!id.IsId)
+					return null;
+				return id.Name;
 			}
+			return null;
 		}
 	}
 }
