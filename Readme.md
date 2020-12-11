@@ -50,10 +50,12 @@ This is more of a note-to-self than anything. Pull-requestors can ignore it.
 2. Update version in Core/AssemblyVersion.cs
 3. Update appveyor.yml at `version:` (first line)
 4. Update appveyor.yml at `- set SEMVER=` (semantic version combines w.x.y into wx.y, e.g. 2.7.1 => 27.1, because semantic versioning demands a new major version number for each breaking change, while the internal version number increments the minor version for a minor breaking change.)
-5. If a GitHub release is to be created, uninstall the LeMP VS extension and rebuild it with UpdateLibLeMPAndReinstall.bat. Manually check that it still works.
-6. Commit changes
-7. Push changes and check whether the build succeeded on AppVeyor.
-8. On success, create an (unannotated) git tag like `v2.7.1` locally: `git tag v2.7.1`.
-9. Push the tag to make Appveyor publish NuGet packages: `git push origin v2.7.1`.
-10. Every so often, create a release on GitHub.com. Prepare a zip file from the built binaries and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
-11. Update version-history.md on ecsharp.net and core.loyc.net, and update documentation by running doc/Doxygen.bat in the gh-pages branch.
+5. (Tentative) If the VS extension is to be released, update the version number in Visual Studio Integration\LoycForVS2017\source.extension.vsixmanifest
+6. If a GitHub release is to be created, uninstall the LeMP VS extension and rebuild it with UpdateLibLeMPAndReinstall.bat. Manually check that it still works.
+7. Commit changes
+8. Push changes and check whether the build succeeded on AppVeyor.
+9. On success, create an (unannotated) git tag like `v2.7.1` locally: `git tag v2.7.1`.
+10. Push the tag to make Appveyor publish NuGet packages: `git push origin v2.7.1`.
+11. Every so often, create a release on GitHub.com. Prepare a zip file from the built binaries and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
+12. Update version-history.md on ecsharp.net and core.loyc.net, and update documentation by running doc/Doxygen.bat in the gh-pages branch.
+13. If applicable, release a new version of the extension on the Visual Studio Marketplace

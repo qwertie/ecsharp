@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="LeMP_VisualStudio.DavidPiepgrass.4d54bef0-b580-46df-b4ee-06a5ec43221e" Version="2.0" Language="en-US" Publisher="David Piepgrass" />
+        <Identity Id="LeMP_VisualStudio.DavidPiepgrass.4d54bef0-b580-46df-b4ee-06a5ec43221f" Version="2.9" Language="en-US" Publisher="David Piepgrass" />
         <DisplayName>LeMP Custom Tool</DisplayName>
         <Description xml:space="preserve">The LeMP and LLLPG single-file generators, with syntax highlighting for .ecs (Enhanced C#) and .les files.</Description>
     </Metadata>
