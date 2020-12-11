@@ -11,7 +11,7 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		use_symbols;
+		#useSymbols;
 
 		static readonly Symbol _haveContractRewriter = (Symbol)"#haveContractRewriter";
 

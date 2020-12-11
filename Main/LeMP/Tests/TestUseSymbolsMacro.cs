@@ -62,6 +62,26 @@ namespace LeMP.Tests
 				using X = Y; Symbol z = @@foo;",
 				@"[Attr] static readonly Symbol sy_foo = (Symbol)""foo""; 
 				using X = Y; Symbol z = sy_foo;");
-		}
+
+			TestEcs(@"
+				#useSymbols;
+				class Class
+				{
+					#region Bug in #useSymbols caused this line to disappear
+
+					Foo();
+
+					#endregion
+				}", @"
+				class Class
+				{
+					#region Bug in #useSymbols caused this line to disappear
+
+					Foo();
+
+					#endregion
+				}");
+
 	}
+}
 }
