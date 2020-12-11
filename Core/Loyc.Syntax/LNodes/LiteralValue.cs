@@ -29,8 +29,8 @@ namespace Loyc.Syntax
 	/// where it holds the value of a literal while being able to retrieve the 
 	/// original text of that value from the source code. This type is slightly
 	/// smaller than <see cref="LiteralValue"/> because it doesn't hold a 
-	/// reference to the source text, because the <see cref="LiteralNode"/> 
-	/// provides access to that.</summary>
+	/// reference to the source text, because it is embedded in a 
+	/// <see cref="LiteralNode"/> which has a reference to that.</summary>
 	/// <remarks>In addition, this struct provides the ability to parse lazily.</remarks>
 	public struct ParsedValue : ILiteralValueProvider
 	{
@@ -65,17 +65,4 @@ namespace Loyc.Syntax
 		/// <summary><see cref="LNode.TypeMarker"/> returns whatever this returns.</param>
 		Symbol GetTypeMarker(SourceRange range);
 	}
-
-	//public class TypeMarkers
-	//{
-	//	IReadOnlyDictionary<Symbol, Type> TypeMap { get; }
-	//
-	//	// Symbol => (Type, Func<UString, SourceRange, T> parse, Func<T, UString> print)
-	//}
-
-	//public interface ILiteralParser
-	//{
-	//	Maybe<object> TryParse(string textValue, Symbol typeMarker, IMessageSink errorSink = null);
-	//	Maybe<object> TryParse(SourceRange sourceText, out string textValue, out Symbol typeMarker, IMessageSink errorSink = null);
-	//}
 }

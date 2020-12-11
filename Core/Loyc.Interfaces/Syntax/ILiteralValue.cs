@@ -12,16 +12,30 @@ namespace Loyc.Syntax
 		/// <summary>Represents the serialized text of the value.</summary>
 		/// <remarks>Typically this will be a parsed form of the string; for example in LES3, 
 		/// if the TextValue is `C:\Users`, the raw text may be `C:\\Users` which was parsed 
-		/// so that the double backslash became a single backslash.</remarks>
+		/// so that the double backslash became a single backslash.
+		/// <para/>
+		/// Since this property has type <see cref="UString"/> which is a struct, it cannot 
+		/// be null, but <c>TextValue.IsNull</c> can be true when this interface is part of
+		/// <see cref="ILiteralValue"/> or <see cref="ILNode"/>. This means either that the 
+		/// original text form of the literal has been discarded, or that it never existed. 
+		/// For example if you call <see cref="Loyc.Syntax.LNode.Literal(123)"/> it will 
+		/// create a "synthetic" node representing the integer 123. In that case, there is no 
+		/// text form, <c>TextValue.IsNull</c> will be true and <c>TypeMarker</c> will be 
+		/// null.
+		/// </remarks>
 		UString TextValue { get; }
 
 		/// <summary>Represents the type of the value.</summary>
 		/// <remarks>The Type Marker indicates not just the type but also the syntax of the
 		/// <see cref="TextValue"/>. If the syntax of a TextValue is not compatible with 
-		/// the syntax used in LES, it should not use the same type marker as used in LES.
+		/// the syntax used in LES, it should not use the same type marker as is used in LES.
 		/// <para/>
-		/// The TypeMarker can be null if this is a <see cref="ILiteralValue"/> and the
-		/// <see cref="TextValue"/> is empty.
+		/// The TypeMarker can be null when this object is a <see cref="ILNode"/> and no 
+		/// type marker was assigned to it, either because the node is synthetic (did not
+		/// come from a source file) or the parser simple did not assign one. In this case,
+		/// <c>TextValue.IsNull</c> is true. Conversely, if the TypeMarker is not null, 
+		/// <c>TextValue.IsNull</c> may be true or false (for details, see the documentation 
+		/// of <see cref="ILiteralValue"/>).
 		/// </remarks>
 		Symbol TypeMarker { get; }
 	}
