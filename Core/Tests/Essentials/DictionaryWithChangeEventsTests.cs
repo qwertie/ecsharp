@@ -57,7 +57,6 @@ namespace Loyc.Essentials.Tests
 		Random _r = new Random();
 
 		// Helper methods for making key-value pairs and lists of pairs
-		static KeyValuePair<object, object> P(object key, object value) => new KeyValuePair<object, object>(key, value);
 		static KeyValuePair<object, object>[] A(params object[] pairs)
 		{
 			AreEqual(0, pairs.Length & 1);

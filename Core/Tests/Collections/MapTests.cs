@@ -54,8 +54,8 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(1, imm.TryGetValue(1, -1));
 			Assert.AreEqual(-1, map.TryGetValue(4, -1));
 			Assert.AreEqual(-1, imm.TryGetValue(4, -1));
-			Assert.That(map.AddIfNotPresent(0, 0));
-			Assert.That(!map.AddIfNotPresent(1, "negatory"));
+			Assert.That(map.TryAdd(0, 0));
+			Assert.That(!map.TryAdd(1, "negatory"));
 			ExpectSet(map, P(0, 0), P(1, 1), P(2, 2), P(3, 3));
 			var pX = P("X", null);
 			var p0 = P(0, "zero");

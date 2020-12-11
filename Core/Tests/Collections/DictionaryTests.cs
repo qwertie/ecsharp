@@ -15,8 +15,8 @@ namespace Loyc.Collections.Tests
 		bool _tryNullKey, _isSortedDict;
 		public DictionaryTests(bool tryNullKey = false, bool isSortedDict = false) { _tryNullKey = tryNullKey; _isSortedDict = isSortedDict; }
 
-		protected KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
-		protected KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
+		protected static KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
+		protected static KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
 		
 		Random _r = new Random();
 

@@ -461,14 +461,21 @@ namespace Loyc.Collections
 				return false;
 		}
 
-		public bool AddIfNotPresent(K key, ref V value) => AddIfNotPresent(ref key, ref value);
+		[Obsolete("This has been renamed to TryAdd")]
+		public bool AddIfNotPresent(K key, ref V value) => TryAdd(ref key, ref value);
+		public bool TryAdd(K key, ref V value) => TryAdd(ref key, ref value);
 		/// <summary>Add a pair if it is not alredy present, or get its value if it is.</summary>
 		/// <returns>True if the pair was added, false if it was retrieved.</returns>
+		[Obsolete("This has been renamed to TryAdd")]
 		public bool AddIfNotPresent(ref K key, ref V value)
 		{
 			return !GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
-		[Obsolete("Please use another overload or the GetOrAdd extension method")]
+		public bool TryAdd(ref K key, ref V value)
+		{
+			return !GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
+		}
+		[Obsolete("Please use an overload of TryAdd, or the GetOrAdd extension method")]
 		public bool AddIfNotPresent(ref KeyValuePair<K, V> pair)
 		{
 			K k = pair.Key;

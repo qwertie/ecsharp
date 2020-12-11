@@ -123,10 +123,16 @@ namespace Loyc.Collections
 		/// <summary>Adds a key/value pair to the dictionary if the key is not present. If the 
 		/// key is already present, this method has no effect.</summary>
 		/// <returns>True if the pair was added, false if not.</returns>
+		[Obsolete("This has been renamed to TryAdd")]
 		public static bool AddIfNotPresent<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
 		{
 			return !dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
+		public static bool TryAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+		{
+			return !dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
+		}
+
 		/// <summary>Adds a key/value pair to the dictionary if the key is not already present,
 		/// and returns the existing or new value.</summary>
 		/// <returns>The existing value (if the key already existed) or the new value.</returns>
@@ -171,11 +177,6 @@ namespace Loyc.Collections
 			if (dict.GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace))
 				return value;
 			return new Maybe<V>();
-		}
-
-		public static bool TryAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
-		{
-			return dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
 	}
 
