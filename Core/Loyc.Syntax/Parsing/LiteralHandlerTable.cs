@@ -220,38 +220,4 @@ namespace Loyc.Syntax
 					bases.Add(ift);
 		}
 	}
-
-	/// <summary>This interface for parsing text into objects is implemented by <see cref="LiteralHandlerTable"/>.</summary>
-	public interface ILiteralParser
-	{
-		/// <summary>Returns true if this object has a parser for the specified type marker.</summary>
-		bool CanParse(Symbol typeMarker);
-
-		/// <summary>Attempts to parse a string with a given type marker.</summary>
-		/// <param name="textValue">A text value that has already been preprocessed to remove escape sequences</param>
-		/// <param name="typeMarker">Indicates the type of the value. There is a standard
-		/// set of type markers; please see the documention of <see cref="StandardLiteralHandlers"/>.</param>
-		/// <returns>Returns either the parsed value or an error message. Does not throw.</returns>
-		Either<object, LogMessage> TryParse(UString textValue, Symbol typeMarker);
-	}
-
-	/// <summary>This interface for converting literals to text is implemented by <see cref="LiteralHandlerTable"/>.</summary>
-	public interface ILiteralPrinter
-	{
-		/// <summary>Finds out whether there is a printer for the given type marker. Never throws.</summary>
-		/// <returns>True if typeMarker is not null and there is a printer for that marker.</returns>
-		bool CanPrint(Symbol typeMarker);
-
-		/// <summary>Returns true if there is a printer registered for the given type. Never throws.</summary>
-		/// <returns>True if type is not null and if there is a printer for that type.</returns>
-		bool CanPrint(Type type);
-
-		/// <summary>Attempts to convert the specified literal to a string.</summary>
-		/// <param name="literal">A literal that you want to convert to a string.</param>
-		/// <returns>Either a recommended type marker for the literal, or an error 
-		/// message. The string form of the literal is appended to the StringBuilder
-		/// provided by the caller. If an error occurs, it is possible that some kind 
-		/// of output was added to the StringBuilder anyway.</returns>
-		Either<Symbol, LogMessage> TryPrint(ILNode literal, StringBuilder sb);
-	}
 }

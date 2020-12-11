@@ -72,8 +72,8 @@ namespace Loyc
 		/// this class.
 		/// <para/>
 		/// For simplicity, this method's base-64 encoding always encodes groups of 
-		/// three bytes if possible (as four characters). This decision may 
-		/// unfortunately cut off the beginning of some ASCII runs.
+		/// three bytes if possible (as four characters). This decision may, 
+		/// unfortunately, cut off the beginning of some ASCII runs.
 		/// </remarks>
 		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true)
 		{
