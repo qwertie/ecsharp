@@ -11,6 +11,12 @@ namespace Loyc.Syntax.Lexing
 	public class TokenTests : Assert
 	{
 		[Test]
+		public void StructSizeCheck()
+		{
+			LessOrEqual(System.Runtime.InteropServices.Marshal.SizeOf(typeof(Token)), 24);
+		}
+
+		[Test]
 		public void ToLiteralLNodeTests()
 		{
 			var file = EmptySourceFile.Unknown;
@@ -68,7 +74,7 @@ namespace Loyc.Syntax.Lexing
 		}
 		private void TestToLNode(Token t, ISourceFile file, string lesString)
 		{
-			LNode n = t.ToLNode(file);
+			LNode n = TokenTree.TokenToLNode(t, file);
 			AreEqual(lesString, Les2LanguageService.Value.Print(n, null, ParsingMode.Expressions));
 			AreEqual(file, n.Source);
 			AreEqual(t.StartIndex, n.Range.StartIndex);

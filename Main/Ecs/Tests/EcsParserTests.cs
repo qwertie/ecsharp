@@ -15,7 +15,7 @@ namespace Loyc.Ecs.Tests
 	[TestFixture]
 	public partial class EcsParserTests : EcsPrinterAndParserTests
 	{
-		Func<Token, string> _oldTSS;
+		Func<Token, ICharSource, string> _oldTSS;
 		[SetUp] public void SetUp()
 		{
 			_oldTSS = Token.ToStringStrategy;

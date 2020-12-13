@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -58,25 +59,25 @@ namespace Loyc.Syntax.Lexing
 		#region ToString, Equals, GetHashCode
 
 		public override string ToString() => ToString(Token.ToStringStrategy);
-		public string ToString(Func<Token, string> toStringStrategy = null)
+		public string ToString(Func<Token, ICharSource, string> toStringStrategy = null, ICharSource sourceCode = null)
 		{
 			StringBuilder sb = new StringBuilder();
-			AppendTo(sb, toStringStrategy ?? Token.ToStringStrategy);
+			AppendTo(sb, toStringStrategy ?? Token.ToStringStrategy, sourceCode);
 			return sb.ToString();
 		}
-		void AppendTo(StringBuilder sb, Func<Token, string> toStringStrategy, int prevEndIndex = 0)
+		void AppendTo(StringBuilder sb, Func<Token, ICharSource, string> toStringStrategy, ICharSource sourceCode, int prevEndIndex = 0)
 		{
-			Token prev = new Token(0, prevEndIndex, 0);
+			Token prev = new Token((ushort)0, prevEndIndex, 0);
 			for (int i = 0; i < Count; i++)
 			{
 				Token t = this[i];
 				if (t.StartIndex != prev.EndIndex || t.StartIndex <= 0)
 					sb.Append(' ');
-				sb.Append(toStringStrategy(t));
+				sb.Append(toStringStrategy(t, sourceCode));
 				if (t.Value is TokenTree)
 				{
 					var subtree = ((TokenTree)t.Value);
-					subtree.AppendTo(sb, toStringStrategy, t.EndIndex);
+					subtree.AppendTo(sb, toStringStrategy, sourceCode, t.EndIndex);
 					if (subtree.Count != 0)
 						t = t.WithRange(t.StartIndex, subtree.Last.EndIndex); // to avoid printing unnecessary space before closing ')' or '}'
 				}
@@ -110,8 +111,67 @@ namespace Loyc.Syntax.Lexing
 		{
 			var list = LNodeList.Empty;
 			foreach (var item in (DList<Token>)this)
-				list.Add(item.ToLNode(File));
+				list.Add(TokenToLNode(item, File));
 			return list;
+		}
+
+		const int TokenKindShift = 8;
+
+		// Used by TokenToLNode:
+		// Each list contains a single item, the attribute to be associated with
+		// the node returned from ToLNode. Why a list for only one item? This is
+		// an optimization to ensure we only allocate the list once. Example:
+		// _kindAttrTable[(int)TokenKind.Operator >> TokenKindShift][0].Name.Name == "Operator"
+		static readonly InternalList<Symbol> _kindAttrTable = KindAttrTable();
+		private static InternalList<Symbol> KindAttrTable()
+		{
+			Debug.Assert(((int)TokenKind.KindMask & ((2 << TokenKindShift) - 1)) == (1 << TokenKindShift));
+			int incr = (1 << TokenKindShift), stopAt = (int)TokenKind.KindMask;
+			var table = new InternalList<Symbol>(stopAt / incr);
+			for (int kind = 0; kind < stopAt; kind += incr)
+			{
+				string kindStr = ((TokenKind)kind).ToString();
+				table.Add((Symbol)kindStr);
+			}
+			return table;
+		}
+
+		/// <summary>Converts a <see cref="Token"/> to a <see cref="LNode"/>.</summary>
+		/// <param name="file">This becomes the <see cref="LNode.Source"/> property.</param>
+		/// <remarks>If you really need to store tokens as LNodes, use this. Only
+		/// the <see cref="Token.Kind"/>, not the TypeInt, is preserved. Identifiers 
+		/// (where Kind==TokenKind.Id and Value is Symbol) are translated as Id 
+		/// nodes; everything else is translated as a call, using the TokenKind as
+		/// the <see cref="LNode.Name"/> and the value, if any, as parameters. For
+		/// example, if it has been treeified with <see cref="TokensToTree"/>, the
+		/// token list for <c>"Nodes".Substring(1, 3)</c> as parsed by LES might 
+		/// translate to the LNode sequence <c>String("Nodes"), Dot(@@.), 
+		/// Substring, LParam(Number(1), Separator(@@,), Number(3)), RParen()</c>.
+		/// The <see cref="LNode.Range"/> will match the range of the token.
+		/// </remarks>
+		public static LNode TokenToLNode(Token token, ISourceFile file)
+		{
+			var kind = token.Kind;
+			Symbol kSym = GSymbol.Empty;
+			Symbol id;
+			if (kind != TokenKind.Id) {
+				int k = (int)kind >> TokenKindShift;
+				kSym = _kindAttrTable.TryGet(k, null);
+			}
+
+			var r = new SourceRange(file, token.StartIndex, token.Length);
+			var c = token.Children;
+			if (c != null) {
+				if (c.Count != 0)
+					r = new SourceRange(file, token.StartIndex, System.Math.Max(token.EndIndex, c.Last.EndIndex) - token.StartIndex);
+				return LNode.Call(kSym, c.ToLNodes(), r, token.Style);
+			} else if (Token.IsOpenerOrCloser(kind) || token.Value == WhitespaceTag.Value) {
+				return LNode.Call(kSym, LNodeList.Empty, r, token.Style);
+			} else if (kind == TokenKind.Id && (id = token.Value as Symbol) != null) {
+				return LNode.Id(id, r, token.Style);
+			} else {
+				return LNode.Trivia(kSym, token.Value, r, token.Style);
+			}
 		}
 
 		/// <summary>Converts a token tree back to a plain list.</summary>

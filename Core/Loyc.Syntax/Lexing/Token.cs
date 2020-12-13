@@ -36,20 +36,21 @@ namespace Loyc.Syntax.Lexing
 	/// the complete list.</li>
 	/// <li><see cref="StartIndex"/>: location in the original source file where 
 	/// the token starts.</li>
-	/// <li><see cref="Length"/>: length of the token in the source file (24 bits).</li>
-	/// <li><see cref="Style"/>: 8 bits for other information.</li>
+	/// <li><see cref="Length"/>: length of the token in the source file (32 bits).</li>
 	/// </ol>
-	/// Originally I planned to use <see cref="Symbol"/> as the common token 
-	/// type, because it is extensible and could nicely represent tokens in all
-	/// languages; unfortunately, Symbol may reduce parsing performance because 
-	/// it cannot be used with the switch opcode (i.e. the switch statement in 
-	/// C#), so I decided to switch to integers instead and to introduce the 
-	/// concept of <see cref="TokenKind"/>, which is derived from 
-	/// <see cref="Type"/> using <see cref="TokenKind.KindMask"/>.
-	/// Each language should have, in the namespace of that language, an
-	/// extension method <c>public static TokenType Type(this Token t)</c> that 
-	/// converts the TypeInt to the enum type for that language.
-	/// <para/>
+	/// Since 64-bit platforms are very common, the Value is 64 bits, and padding
+	/// increases the structure size from 16 bytes to 24. Given this reality, 
+	/// I decided to fill in the 4 bytes of padding with additional information:
+	/// <ol>
+	/// <li><see cref="Style"/>: 8 bits of style information, e.g. it can be used to
+	///    mark whether integer literals use hexadecimal, binary or decimal format.</li>
+	/// <li>TextValue range: Tokens are able to keep track of two values, one in 
+	///    the <see cref="Value"/> property and one returned from <see cref="TextValue(ICharSource)"/>.
+	///    16 bits of information enables the TextValue feature to work without 
+	///    memory allocation in many cases; see the documentation of the constructor
+	///    <see cref="Token(int, int, UString, NodeStyle, object, int, int)"/> for
+	///    more information about the purpose and usage of this feature.
+	/// </ol>
 	/// To save space (and because .NET doesn't handle large structures well),
 	/// tokens do not know what source file they came from and cannot convert 
 	/// their location to a line number. For this reason, one should keep a
@@ -57,49 +58,196 @@ namespace Loyc.Syntax.Lexing
 	/// to get the source location.
 	/// <para/>
 	/// A generic token also cannot convert itself to a properly-formatted 
-	/// string. The <see cref="ToString"/> method does allow 
+	/// string. The <see cref="ToString"/> method does allow you to provide an optional
+	/// reference to <see cref="ICharSource"/> which allows the token to get its
+	/// original text, and in any case you can call <see cref="SetToStringStrategy"/>
+	/// to control the method by which a token converts itself to a string.
+	/// <para/>
+	/// Fun fact: originally I planned to use <see cref="Symbol"/> as the common 
+	/// token type, because it is extensible and could nicely represent tokens in 
+	/// all languages; unfortunately, Symbol may reduce parsing performance 
+	/// because it cannot be used with the switch opcode (i.e. the switch 
+	/// statement in C#), so I decided to switch to integers instead and to 
+	/// introduce the concept of <see cref="TokenKind"/>, which is derived from 
+	/// <see cref="Type"/> using <see cref="TokenKind.KindMask"/>.
+	/// Each language should have, in the namespace of that language, an
+	/// extension method <c>public static TokenType Type(this Token t)</c> that 
+	/// converts the TypeInt to the enum type for that language.
 	/// </remarks>
 	public struct Token : IListSource<Token>, IToken<int>, IEquatable<Token>
 	{
+		/// <summary>Initializes the Token structure.</summary>
+		/// <param name="type">Value of <see cref="TypeInt"/></param>
+		/// <param name="startIndex">Value of <see cref="StartIndex"/></param>
+		/// <param name="length">Value of <see cref="Length"/></param>
+		/// <param name="style">Value of <see cref="Style"/></param>
+		/// <param name="value">Value of <see cref="Value"/></param>
 		public Token(int type, int startIndex, int length, NodeStyle style = 0, object value = null)
 		{
-			TypeInt = type;
-			StartIndex = startIndex;
-			_length = length | (((int)style << StyleShift) & StyleMask);
-			Value = value;
+			_typeInt = type;
+			_style = style;
+			_substringOffset = _substringOffsetFromEnd = 0;
+			_startIndex = startIndex;
+			_length = length;
+			_value = value;
 		}
+
+		/// <inheritdoc cref="Token(ushort, int, int, NodeStyle, object)"/>
 		public Token(int type, int startIndex, int length, object value)
 		{
-			TypeInt = type;
-			StartIndex = startIndex;
+			_typeInt = type;
+			_style = 0;
+			_substringOffset = _substringOffsetFromEnd = 0;
+			_startIndex = startIndex;
 			_length = length;
-			Value = value;
+			_value = value;
 		}
 
-		/// <summary>Token type.</summary>
-		public readonly int TypeInt;
+		/// <summary>Initializes a kind of token designed to store two parts of a 
+		/// literal without allocating extra memory (see the Remarks for details).
+		/// </summary>
+		/// <param name="type">Value of <see cref="TypeInt"/></param>
+		/// <param name="startIndex">Value of <see cref="StartIndex"/></param>
+		/// <param name="tokenText">A substring of the token in the original source 
+		/// file, such that <see cref="Length"/> will be <c>tokenText.Length</c> 
+		/// and <c>tokenText.Substring(valueStart - startIndex, valueEnd - valueStart)</c> 
+		/// will be returned from <see cref="TextValue(ICharSource)"/>. For correct
+		/// results, the <see cref="ICharSource"/> passed to TextValue later needs 
+		/// to represent the same string that was used to produce this parameter.</param>
+		/// <param name="style">Value of <see cref="Style"/></param>
+		/// <param name="value">Value of <see cref="Value"/></param>
+		/// <param name="substringStart">Index where the TextValue starts in the source 
+		/// code; should be equal to or greater than startIndex.</param>
+		/// <param name="substringEnd">Index where the TextValue ends in the source 
+		/// code; should be equal to or less than startIndex + tokenText.Length.</param>
+		/// <remarks>
+		/// Literals in many languages can be broken into two textual parts: their 
+		/// type and their value. For example, in some languages you can write 123.5f,
+		/// where "f" indicates that the floating-point value has a size of 32 bits.
+		/// C++ strings have up to three parts, as in <c>u"Hello"_UD</c>: <c>u</c>
+		/// indicates the character type (u = 16-bit unicode) while <c>_UD</c> 
+		/// indicates that the string should be interpreted in a user-defined way.
+		/// In LES3, all literals have two parts: value text and a type marker. For 
+		/// example, 123.5f has a text "123.5" and type marker "_f"; greeting"Hello" 
+		/// has text "Hello" and type marker "greeting"; and a simple number like 123 
+		/// has text "123" and type marker "_".
+		/// <para/>
+		/// This constructor allows you to represent up to two "values" in a single 
+		/// token without necessarily allocating memory for them, even though Tokens 
+		/// only contain a single heap reference (<see cref="Value"/>). When calling
+		/// this constructor, the second value, called the "TextValue", must be a 
+		/// substring of the token's original source text; for example given the token 
+		/// <c>"Hello"</c>, the tokenizer would use <c>Hello</c> as the TextValue. 
+		/// Rather than allocating a string "Hello" and storing it in the token, you 
+		/// can use this constructor to record the fact that the string <c>Hello</c> 
+		/// begins one character after the beginning of the token (<c>valueStart = 1</c>)
+		/// and one character before the end of the token 
+		/// (<c>valueEnd = startIndex + tokenText.Length - 1</c>).
+		/// <para/>
+		/// Since a Token does not have a reference to its own source file (<see 
+		/// cref="ISourceFile"/>), the language parser will need to use the <see 
+		/// cref="TextValue(ICharSource)"/> method to retrieve the value text later.
+		/// <para/>
+		/// <see cref="Token"/> is a small structure that allocates only 4 bits for 
+		/// each offset (8 bits total). If either offset is greater than 15, the 
+		/// TextValue is combined with the value in a heap object of type 
+		/// <see cref="Tuple{object, UString}"/>, but this is a hidden implementation 
+		/// detail - the <see cref="Value"/> property simply returns the object.
+		/// <para/>
+		/// For strings that contain escape sequences, such as "Hello\n", you may
+		/// prefer to store a parsed version of the string in the Token. There is
+		/// another constructor for this purpose, which always allocates memory:
+		/// <see cref="Token(ushort, int, int, NodeStyle, object, UString)"/>.
+		/// </remarks>
+		public Token(int type, int startIndex, UString tokenText, NodeStyle style, object value, int substringStart, int substringEnd)
+		{
+			_startIndex = startIndex;
+			_length = tokenText.Length;
+			_value = value; // may change
+			_typeInt = type;
+			_style = style;
 
-		/// <summary>Token kind.</summary>
+			Debug.Assert(substringStart >= startIndex && substringEnd <= startIndex + tokenText.Length);
+			int substringOffset = substringStart - startIndex;
+			int substringOffsetFromEnd = startIndex + tokenText.Length - substringEnd;
+			if ((uint)substringOffset < 255 && (uint)substringOffsetFromEnd <= 255)
+			{
+				_substringOffset = (byte)substringOffset;
+				_substringOffsetFromEnd = (byte)substringOffsetFromEnd;
+			}
+			_substringOffset = _substringOffsetFromEnd = 0xFF;
+			_value = new Tuple<object, UString>(value, tokenText.Slice(substringStart, substringEnd - substringStart));
+		}
+
+		/// <summary>Initializes a kind of token designed to store two parts of a 
+		/// literal (see the Remarks for details).</summary>
+		/// <param name="type">Value of <see cref="TypeInt"/></param>
+		/// <param name="startIndex">Value of <see cref="StartIndex"/></param>
+		/// <param name="length">Value of <see cref="Length"/></param>
+		/// <param name="style">Value of <see cref="Style"/></param>
+		/// <param name="value">Value of <see cref="Value"/></param>
+		/// <param name="textValue">Value returned from <see cref="TextValue(ICharSource)"/>.</param>
+		/// <remarks>
+		/// As explained in the documentation of the other constructor 
+		/// (<see cref="Token(ushort, int, UString, NodeStyle, object, int, int)"/>,
+		/// some literals have two parts which we call the Value and the TextValue.
+		/// Since the Token structure only contains a single heap reference, 
+		/// this contructor combines Value with TextValue in a heap object of type 
+		/// <see cref="Tuple{object, UString}"/>, but this is a hidden implementation 
+		/// detail; the <see cref="Value"/> property simply returns the object.
+		/// </remarks>
+		public Token(int type, int startIndex, int length, NodeStyle style, object value, UString textValue)
+		{
+			_typeInt = type;
+			_style = style;
+			_substringOffset = _substringOffsetFromEnd = 0xFF;
+			_startIndex = startIndex;
+			_length = length;
+			_value = new Tuple<object, UString>(value, textValue);
+		}
+
+		private Token(int typeInt, int startIndex, int length, object value, NodeStyle style, byte substringOffset, byte substringOffsetFromEnd)
+		{
+			_typeInt = typeInt;
+			_startIndex = startIndex;
+			_length = length;
+			_style = style;
+			_substringOffset = substringOffset;
+			_substringOffsetFromEnd = substringOffsetFromEnd;
+			_value = value;
+		}
+
+		private readonly int _typeInt;
+		private readonly int _startIndex;
+		private readonly int _length;
+		private readonly NodeStyle _style;
+		private readonly byte _substringOffset, _substringOffsetFromEnd;
+		private object _value;
+
+		/// <summary>Token type.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public int TypeInt => _typeInt;
+
+		/// <summary>Token category. This value is only meaningful if the token type
+		/// integers are based on <see cref="TokenKind"/>s. Token types for LES and 
+		/// Enhanced C# are, indeed, based on <see cref="TokenKind"/>.</summary>
 		public TokenKind Kind { get { return ((TokenKind)TypeInt & TokenKind.KindMask); } }
 
 		/// <summary>Location in the orginal source file where the token starts, or
 		/// -1 for a synthetic token.</summary>
-		public readonly int StartIndex;
-		int ISimpleToken<int>.StartIndex { get { return StartIndex; } }
-
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)] int _length;
-		const int LengthMask = 0x00FFFFFF;
-		const int StyleMask = unchecked((int)0xFF000000);
-		const int StyleShift = 24;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public int StartIndex => _startIndex;
 
 		/// <summary>Length of the token in the source file, or 0 for a synthetic 
 		/// or implied token.</summary>
-		public int Length { get { return _length & LengthMask; } }
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public int Length => _length;
 		/// <summary>8 bits of nonsemantic information about the token. The style 
 		/// is used to distinguish hex literals from decimal literals, or triple-
 		/// quoted strings from double-quoted strings.</summary>
-		public NodeStyle Style { get { return (NodeStyle)((_length & StyleMask) >> StyleShift); } }
-		
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public NodeStyle Style => _style;
+
 		/// <summary>The parsed value of the token.</summary>
 		/// <remarks>Recommended ways to use this field:
 		/// <ul>
@@ -123,7 +271,20 @@ namespace Loyc.Syntax.Lexing
 		/// <li>When no value is needed (because the Type() is enough): null</li>
 		/// </ul>
 		/// </remarks>
-		public object Value;
+		public object Value {
+			get {
+				if (_substringOffset != 0xFF)
+					return _value;
+				else
+					return((Tuple<object, UString>)_value).Item1;
+			}
+			set {
+				if (_substringOffset != 0xFF)
+					_value = value;
+				else
+					_value = new Tuple<object, UString>(value, ((Tuple<object, UString>)_value).Item2);
+			}
+		}
 		
 		/// <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
 		public TokenTree Children { get { return Value as TokenTree; } }
@@ -137,14 +298,14 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Returns true if the specified type and value match this token.</summary>
 		public bool Is(int type, object value) { return type == TypeInt && object.Equals(value, Value); }
 
-		static readonly ThreadLocalVariable<Func<Token, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,string>>(Loyc.Syntax.Les.TokenExt.ToString);
-		public static SavedValue<Func<Token, string>> SetToStringStrategy(Func<Token, string> newValue)
+		static readonly ThreadLocalVariable<Func<Token, ICharSource, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,ICharSource,string>>(Loyc.Syntax.Les.TokenExt.ToString);
+		public static SavedValue<Func<Token, ICharSource, string>> SetToStringStrategy(Func<Token, ICharSource, string> newValue)
 		{
-			return new SavedValue<Func<Token, string>>(ToStringStrategyTLV, newValue);
+			return new SavedValue<Func<Token, ICharSource, string>>(ToStringStrategyTLV, newValue);
 		}
 
 		/// <summary>Gets or sets the strategy used by <see cref="ToString"/>.</summary>
-		public static Func<Token, string> ToStringStrategy
+		public static Func<Token, ICharSource, string> ToStringStrategy
 		{
 			get { return ToStringStrategyTLV.Value; }
 			set { ToStringStrategyTLV.Value = value ?? Loyc.Syntax.Les.TokenExt.ToString; }
@@ -167,7 +328,22 @@ namespace Loyc.Syntax.Lexing
 				return chars.Slice(StartIndex, Length);
 			return UString.Null;
 		}
-		public UString SourceText(ILexer<Token> l) { return SourceText(l.SourceFile.Text); }
+		public UString SourceText(ILexer<Token> l) => SourceText(l.SourceFile.Text);
+
+		/// <summary>Helps get the "text value" from tokens that used one of the 
+		/// constructors designed to support this use case, e.g.
+		/// <see cref="Token(int type, int startIndex, UString tokenText, NodeStyle style, object value, int valueStart, int valueEnd)"/>.
+		/// If one of the other constructors was used, this function returns the same
+		/// value as <see cref="SourceText(ICharSource)"/>.</summary>
+		/// <param name="chars">Original source code or lexer from which this token was derived.</param>
+		public UString TextValue(ICharSource source)
+		{
+			if (_substringOffset == 0xFF)
+				return ((Tuple<object, UString>)Value).Item2;
+			return source.Slice(StartIndex + _substringOffset, Length - _substringOffset - _substringOffsetFromEnd);
+		}
+		/// <inheritdoc cref="TextValue(ICharSource)"/>
+		public UString TextValue(ILexer<Token> source) => TextValue(source.SourceFile.Text);
 
 		#region ToString, Equals, GetHashCode
 
@@ -176,17 +352,20 @@ namespace Loyc.Syntax.Lexing
 		/// token types is stored in the original source file and for performance 
 		/// reasons is not copied to the token.</summary>
 		/// <remarks>
-		/// This does <i>not</i> return the original source text; it uses a language-
-		/// specific stringizer (<see cref="ToStringStrategy"/>).
+		/// This does <i>not</i> return the original source text; it uses the stringizer 
+		/// in <see cref="ToStringStrategy"/>, which can be overridden with language-
+		/// specific behavior by calling <see cref="SetToStringStrategy"/>.
 		/// <para/>
 		/// The returned string, in general, will not match the original
 		/// token, since the <see cref="ToStringStrategy"/> does not have access to
 		/// the original source file.
 		/// </remarks>
-		public override string ToString()
-		{
-			return ToStringStrategy(this);
-		}
+		public override string ToString() => ToStringStrategy(this, null);
+		
+		/// <summary>Gets the original text of the token, if you provide a reference
+		/// to the original source code text. Note: the method used to convert the
+		/// token to a string can be overridden with <see cref="SetToStringStrategy"/>.</summary>
+		public string ToString(ICharSource sourceText) => ToStringStrategy(this, sourceText);
 
 		public override bool Equals(object obj)
 		{
@@ -242,17 +421,20 @@ namespace Loyc.Syntax.Lexing
 		#endregion
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		int ISimpleToken<int>.Type { get { return TypeInt; } }
-		IToken<int> IToken<int>.WithType(int type) { return WithType(type); }
-		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
+		int ISimpleToken<int>.Type => TypeInt;
+		IToken<int> IToken<int>.WithType(int type) => WithType(checked((ushort)type));
+		public Token WithType(int type) => new Token(type, _startIndex, _length, _value, _style, _substringOffset, _substringOffset);
 
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		object IHasValue<object>.Value { get { return Value; } }
-		IToken<int> IToken<int>.WithValue(object value) { return WithValue(value); }
-		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
+		IToken<int> IToken<int>.WithValue(object value) => WithValue(value);
+		public Token WithValue(object value)
+		{
+			Token newT = this;
+			newT.Value = value;
+			return newT;
+		}
 
-		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Value); }
-		public Token WithStartIndex(int startIndex)          { return new Token(TypeInt, startIndex, _length, Value); }
+		public Token WithRange(int startIndex, int endIndex) => new Token(_typeInt, startIndex, endIndex - startIndex, _value, _style, _substringOffset, _substringOffset);
+		public Token WithStartIndex(int startIndex) => new Token(_typeInt, startIndex, _length, _value, _style, _substringOffset, _substringOffset);
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken<int>> IToken<int>.Children
@@ -274,112 +456,30 @@ namespace Loyc.Syntax.Lexing
 		}
 		public static bool IsOpenerOrCloser(TokenKind tt)
 		{
-			return tt >= TokenKind.LParen && tt < (TokenKind)((int)TokenKind.ROther + (1 << TokenKindShift));
+			return tt >= TokenKind.LParen && tt < (TokenKind)((int)TokenKind.ROther + 0x100);
 		}
 
-		#region ToLNode()
+		[Obsolete("Please call TokenTree.TokenToLNode(Token, ISourceFile) instead.")]
+		public LNode ToLNode(ISourceFile file) => TokenTree.TokenToLNode(this, file);
 
-		/// <summary>Converts a <see cref="Token"/> to a <see cref="LNode"/>.</summary>
-		/// <param name="file">This becomes the <see cref="LNode.Source"/> property.</param>
-		/// <remarks>If you really need to store tokens as LNodes, use this. Only
-		/// the <see cref="Kind"/>, not the TypeInt, is preserved. Identifiers 
-		/// (where Kind==TokenKind.Id and Value is Symbol) are translated as Id 
-		/// nodes; everything else is translated as a call, using the TokenKind as
-		/// the <see cref="LNode.Name"/> and the value, if any, as parameters. For
-		/// example, if it has been treeified with <see cref="TokensToTree"/>, the
-		/// token list for <c>"Nodes".Substring(1, 3)</c> as parsed by LES might 
-		/// translate to the LNode sequence <c>String("Nodes"), Dot(@@.), 
-		/// Substring, LParam(Number(1), Separator(@@,), Number(3)), RParen()</c>.
-		/// The <see cref="LNode.Range"/> will match the range of the token.
-		/// </remarks>
-		public LNode ToLNode(ISourceFile file)
-		{
-			var kind = Kind;
-			Symbol kSym = GSymbol.Empty;
-			Symbol id;
-			if (kind != TokenKind.Id) {
-				int k = (int)kind >> TokenKindShift;
-				kSym = _kindAttrTable.TryGet(k, null);
-			}
-
-			var r = new SourceRange(file, StartIndex, Length);
-			var c = Children;
-			if (c != null) {
-				if (c.Count != 0)
-					r = new SourceRange(file, StartIndex, System.Math.Max(EndIndex, c.Last.EndIndex) - StartIndex);
-				return LNode.Call(kSym, c.ToLNodes(), r, Style);
-			} else if (IsOpenerOrCloser(kind) || Value == WhitespaceTag.Value) {
-				return LNode.Call(kSym, LNodeList.Empty, r, Style);
-			} else if (kind == TokenKind.Id && (id = this.Value as Symbol) != null) {
-				return LNode.Id(id, r, Style);
-			} else {
-				return LNode.Trivia(kSym, this.Value, r, Style);
-			}
-		}
-
-		private Symbol GetPunctuationSymbol(TokenKind Kind)
-		{
-			int i = (Kind - TokenKind.LParen) >> TokenKindShift;
-			if ((uint)i < (uint)TokenKindPunctuationSymbols.Length)
-				return TokenKindPunctuationSymbols[i];
-			return null;
-		}
-
-		internal Symbol GetParenPairSymbol(Token followingToken)
-		{
-			Symbol opener = Value as Symbol;
-			Symbol closer = followingToken.Value as Symbol;
-			if (opener != null && closer != null)
-				return GSymbol.Get(opener.Name + closer.Name);
-			else
-				return GetParenPairSymbol(Kind, followingToken.Kind);
-		}
+		[Obsolete("This doesn't appear to be used will be removed if no one complains")]
 		public static Symbol GetParenPairSymbol(TokenKind k, TokenKind k2)
 		{
 			Symbol both;
 			if (k == TokenKind.LParen && k2 == TokenKind.RParen)
-				both = Parens;
+				both = GSymbol.Get("'()");
 			else if (k == TokenKind.LBrack && k2 == TokenKind.RBrack)
 				both = CodeSymbols._Bracks;
 			else if (k == TokenKind.LBrace && k2 == TokenKind.RBrace)
 				both = CodeSymbols.Braces;
 			else if (k == TokenKind.Indent && k2 == TokenKind.Dedent)
-				both = IndentDedent;
+				both = GSymbol.Get("'IndentDedent");
 			else if (k == TokenKind.LOther && k2 == TokenKind.ROther)
-				both = LOtherROther;
+				both = GSymbol.Get("'LOtherROther");
 			else
 				return null;
 			return both;
 		}
-
-		static readonly Symbol Parens = GSymbol.Get("()");
-		static readonly Symbol IndentDedent = GSymbol.Get("IndentDedent");
-		static readonly Symbol LOtherROther = GSymbol.Get("LOtherROther");
-		const int TokenKindShift = 8;
-		const int NumPuncSymbols = ((TokenKind.RBrace - TokenKind.LParen) >> TokenKindShift) + 1;
-		static readonly Symbol[] TokenKindPunctuationSymbols = new Symbol[NumPuncSymbols] {
-			(Symbol)"(", (Symbol)")", 
-			(Symbol)"[", (Symbol)"]",
-			(Symbol)"{", (Symbol)"}"
-		};
-		// Each list contains a single item, the attribute to be associated with
-		// the node returned from ToLNode. Why a list for only one item? This is
-		// an optimization to ensure we only allocate the list once. Example:
-		// _kindAttrTable[(int)TokenKind.Operator >> TokenKindShift][0].Name.Name == "Operator"
-		static readonly InternalList<Symbol> _kindAttrTable = KindAttrTable();
-		private static InternalList<Symbol> KindAttrTable()
-		{
-			Debug.Assert(((int)TokenKind.KindMask & ((2 << TokenKindShift) - 1)) == (1 << TokenKindShift));
-			int incr = (1 << TokenKindShift), stopAt = (int)TokenKind.KindMask;
-			var table = new InternalList<Symbol>(stopAt / incr);
-			for (int kind = 0; kind < stopAt; kind += incr) {
-				string kindStr = ((TokenKind)kind).ToString();
-				table.Add((Symbol)kindStr);
-			}
-			return table;
-		}
-		
-		#endregion
 	}
 
 	/// <summary><see cref="WhitespaceTag.Value"/> can be used as the

@@ -1,4 +1,4 @@
-﻿#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
+#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
 using System;
 using System.Text;
 using System.Collections.Generic;

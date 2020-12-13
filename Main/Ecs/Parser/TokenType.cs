@@ -6,6 +6,7 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
 using System.Diagnostics;
+using Loyc.Collections;
 
 namespace Loyc.Ecs.Parser
 {
@@ -174,8 +175,11 @@ namespace Loyc.Ecs.Parser
 		/// <para/>
 		/// The results are undefined if the token was not produced by <see cref="EcsLexer"/>.
 		/// </remarks>
-		public static string ToString(Token t)
+		public static string ToString(Token t, ICharSource sourceCode)
 		{
+			if (sourceCode != null && t.EndIndex <= sourceCode.Count)
+				return sourceCode.Slice(t.StartIndex, t.Length).ToString();
+
 			StringBuilder sb = new StringBuilder();
 			if (t.Kind == TokenKind.Operator || t.Kind == TokenKind.Assignment || t.Kind == TokenKind.Dot)
 			{

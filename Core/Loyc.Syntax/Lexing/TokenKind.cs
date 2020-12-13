@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,7 +44,7 @@ namespace Loyc.Syntax.Lexing
 	/// in the <see cref="Token.Value"/> to represent operators, keywords and 
 	/// identifiers.
 	/// </remarks>
-	public enum TokenKind
+	public enum TokenKind : ushort
 	{
 		/// <summary>For token types not covered by other token kinds.</summary>
 		Other        = 0x0000,

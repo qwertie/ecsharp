@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Syntax.Lexing;
+using Loyc.Collections;
 
 namespace Loyc.Syntax.Les
 {
@@ -61,8 +62,11 @@ namespace Loyc.Syntax.Les
 		/// For performance reasons, a <see cref="Token"/> does not have a reference 
 		/// to its source file, so this method cannot return the original string.
 		/// </remarks>
-		public static string ToString(Token t)
+		public static string ToString(Token t, ICharSource sourceCode)
 		{
+			if (sourceCode != null && t.EndIndex <= sourceCode.Count)
+				return sourceCode.Slice(t.StartIndex, t.Length).ToString();
+
 			StringBuilder sb = new StringBuilder();
 			switch (t.Kind)
 			{
