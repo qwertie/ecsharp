@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,10 @@ namespace Loyc.Syntax.Lexing
 		[Test]
 		public void StructSizeCheck()
 		{
-			LessOrEqual(System.Runtime.InteropServices.Marshal.SizeOf(typeof(Token)), 24);
+			if (Environment.Is64BitProcess)
+				AreEqual(24, System.Runtime.InteropServices.Marshal.SizeOf(typeof(Token)));
+			else
+				AreEqual(20, System.Runtime.InteropServices.Marshal.SizeOf(typeof(Token)));
 		}
 
 		[Test]

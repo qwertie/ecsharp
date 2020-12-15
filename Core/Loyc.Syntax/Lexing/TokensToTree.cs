@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -113,7 +113,7 @@ namespace Loyc.Syntax.Lexing
 				} else
 					children.Add(t.Value);
 			}
-			openToken.Value = children;
+			openToken = openToken.WithValue(children);
 		}
 	}
 }
