@@ -337,6 +337,7 @@ namespace Loyc
 		}
 		public override string ToString()
 		{
+			// Don't worry: var x = "x"; ReferenceEquals(x.Substring(0,1), x) == true
 			return _str?.Substring(_start, _count);
 		}
 
@@ -611,17 +612,7 @@ namespace Loyc
 				return new Pair<UString, UString>(this, UString.Null);
 		}
 
-		public static StringBuilder Append(StringBuilder sb, UString s)
-		{
-			if (s._count == s._str.Length)
-				return sb.Append(s);
-			else {
-				sb.EnsureCapacity(sb.Length + s.Length);
-				for (int i = s._start; i < s._start + s._count; i++)
-					sb.Append(s._str[i]);
-				return sb;
-			}
-		}
+		public static StringBuilder Append(StringBuilder sb, UString s) { return sb.Append(s._str, s._start, s._count); }
 
 		public static UString operator+(string a, UString b)
 		{

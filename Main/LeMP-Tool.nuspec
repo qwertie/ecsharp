@@ -8,7 +8,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">LGPL-2.1-or-later</license>
     <projectUrl>http://ecsharp.net/lemp/</projectUrl>
-    <description>This is the command-line version of the LeMP macro processor (and LLLPG parser generator) which can be installed with (for example) `dotnet tool install -g lemp-tool`. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time.
+    <description>This is the command-line version of the LeMP macro processor (and LLLPG parser generator) which can be installed with (for example) `dotnet tool install -g lemp-tool`. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time. Once installed, invoke it with `LeMP filename.ecs`.
     
     To integrate LeMP and LLLPG into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</description>
     <releaseNotes>See http://ecsharp.net/lemp/version-history.html</releaseNotes>

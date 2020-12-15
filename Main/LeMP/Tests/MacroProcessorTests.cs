@@ -44,7 +44,7 @@ namespace LeMP.Tests
 				return node.WithArgs(node[1], node[0]);
 			return null;
 		}
-		[LexicalMacro("braceTheRest", "Put the rest of the statements in braces", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("braceTheRest", "Put the rest of the statements in braces", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode braceTheRest(LNode node, IMacroContext context)
 		{
 			context.DropRemainingNodes = true;
@@ -83,7 +83,7 @@ namespace LeMP.Tests
 		{
 			return LNode.Id("bobby");
 		}
-		[LexicalMacro("tom", "= tommy", Mode = MacroMode.MatchIdentifier)]
+		[LexicalMacro("tom", "= tommy", Mode = MacroMode.MatchIdentifierOrCall)]
 		public static LNode tom(LNode node, IMacroContext context)
 		{
 			return LNode.Id("tommy");
