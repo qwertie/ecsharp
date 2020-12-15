@@ -1,4 +1,4 @@
-﻿//
+//
 // This file defines simple standard message sinks:
 //
 //   - ConsoleMessageSink, 
@@ -105,31 +105,24 @@ namespace Loyc
 
 		int _count, _errorCount;
 		/// <summary>Total number of messages that have been discarded.</summary>
-		public int Count { get { return _errorCount; } }
+		public int Count { get { return _count; } }
 		/// <summary>Number of errors sent to this object so far, not including detail messages.</summary>
-		public int ErrorCount { get { return _count; } }
+		public int ErrorCount { get { return _errorCount; } }
 		public bool IsEmpty { get { return _count == 0; } }
 		public void ResetCountersToZero() { _count = _errorCount = 0; }
 
-		public void Write(Severity level, object context, string format)
+		public void Write(Severity level)
 		{
 			_count++;
-			if (level >= Severity.Error && ((int)level & 1) == 0)
+			if (level >= Severity.Error && ((int) level & 1) == 0)
 				_errorCount++;
 		}
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
-		{
-			Write(level, context, format);
-		}
-		public void Write(Severity level, object context, string format, params object[] args)
-		{
-			Write(level, context, format);
-		}
+		public void Write(Severity level, object context, string format) => Write(level);
+		public void Write(Severity level, object context, string format, object arg0, object arg1 = null) => Write(level);
+		public void Write(Severity level, object context, string format, params object[] args) => Write(level);
+		
 		/// <summary>Always returns false.</summary>
-		public bool IsEnabled(Severity level)
-		{
-			return false;
-		}
+		public bool IsEnabled(Severity level) => false;
 	}
 
 	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
