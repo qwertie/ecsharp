@@ -129,6 +129,7 @@
     <Compile Include="IHasLocation.cs" />
     <Compile Include="Concrete\Localize.cs" />
     <Compile Include="Concrete\Maybe.cs" />
+    <Compile Include="ILogMessage.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="Concrete\NoValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

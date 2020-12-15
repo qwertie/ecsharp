@@ -10,7 +10,7 @@ namespace Loyc
 	/// <summary>Holds an argument list compatible with 
 	/// <see cref="IMessageSink{TContext}.Write(Severity,TContext,string)"/>.
 	/// Typically used with <see cref="MessageHolder"/>.</summary>
-	public struct LogMessage : IHasLocation
+	public struct LogMessage : IHasLocation, ILogMessage
 	{
 		public LogMessage(Severity type, object context, string format, object arg0, object arg1 = null)
 			: this (type, context, format, new object[2] { arg0, arg1 }) {}
@@ -24,11 +24,11 @@ namespace Loyc
 			_args = args;
 		}
 
-		public readonly Severity Severity;
-		public readonly object Context;
-		public readonly string Format;
-		readonly object[] _args;
-		public object[] Args { get { return _args; } }
+		public Severity Severity { get; set; }
+		public object Context { get; set; }
+		public string Format { get; set; }
+		object[] _args;
+		public object[] Args { get => _args; set => _args = value; }
 		public string Formatted
 		{
 			get {
@@ -49,7 +49,7 @@ namespace Loyc
 		{
 			get { return MessageSink.LocationOf(Context); }
 		}
-		public void WriteTo(IMessageSink sink)
+		public void WriteTo(IMessageSink<object> sink)
 		{
 			if (_args.Length == 0)
 				sink.Write(Severity, Context, Format);

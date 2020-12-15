@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -336,6 +336,15 @@ namespace Loyc
 		public static MessageSinkWithContext<TContext> WithContext<TContext>(IMessageSink<TContext> target, TContext context, string messagePrefix = null) where TContext: class
 		{
 			return new MessageSinkWithContext<TContext>(target, context, messagePrefix);
+		}
+	
+		public static void Write(this IMessageSink<object> sink, LogMessage msg)
+		{
+			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
+		}
+		public static void Write(this IMessageSink<object> sink, ILogMessage msg)
+		{
+			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
 		}
 	
 		#endregion
