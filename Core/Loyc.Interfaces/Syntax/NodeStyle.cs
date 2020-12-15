@@ -60,9 +60,6 @@ namespace Loyc.Syntax
 		/// <summary>Use an older or backward-compatible notation.</summary>
 		/// <remarks>In EC#: prints lambda as delegate; forces old cast notation in EC#.</remarks>
 		OldStyle = 7,
-		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
-		/// base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
-		BaseStyleMask = 7,
 
 		/// <summary>Indicates that an identifier was marked in the standard way 
 		/// used to indicate that it contained special characters or matched a 
@@ -70,34 +67,39 @@ namespace Loyc.Syntax
 		/// <remarks>Indicates the presence of the marking (e.g. @ sigil in C#) 
 		/// regardless of whether the marking is necessary. Node printers must
 		/// ensure their output is valid even when this style is not present.</remarks>
-		VerbatimId = 4,
+		VerbatimId = 8,
 		/// <summary>Used for a binary (base-2) literal like 0b11111.</summary>
-		BinaryLiteral = 5,
+		BinaryLiteral = 9,
 		/// <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
-		HexLiteral = 6,
+		HexLiteral = 10,
 		/// <summary>Used for an octal (base-7) literal like 0o37.</summary>
 		/// <remarks>Octal literals are not natively supported in LES.</remarks>
-		OctalLiteral = 7,
+		OctalLiteral = 11,
 		/// <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
-		VerbatimStringLiteral = 5,
+		VerbatimStringLiteral = 12,
 		/// <summary>Used for a triple-quoted string literal like <c>'''foo'''</c>.</summary>
-		TQStringLiteral = 6,
+		TQStringLiteral = 13,
 		/// <summary>Used for a triple-double-quoted string literal like <c>"""foo"""</c>.</summary>
-		TDQStringLiteral = 7,
+		TDQStringLiteral = 14,
+
+		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
+		/// base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
+		BaseStyleMask = 15,
 
 		/// <summary>If this node has two styles in which it can be printed, this
 		/// selects the second (the less common style, or less-well-supported style).
 		/// In EC#, it denotes x(->int) as opposed to (int)x, and x (as Y) as opposed 
 		/// to (x as Y). In C#, delegate(X) {Y;} is considered to be the alternate 
 		/// style for X => Y; it forces parens and braces as a side-effect.</summary>
-		Alternate = 16,
+		Alternate = 32,
 		
 		/// <summary>Reserved for use by specific compilers/languages.</summary>
-		InternalFlag = 32,
+		InternalFlag = 64,
 
 		/// <summary>Indicates that the there is no comment or newline trivia associated
 		/// with the children of this node, and therefore when printing this node,
 		/// automatic newlines can be suppressed.</summary>
+		[Obsolete("This flag has proven to be a hassle that should no longer be used")]
 		OneLiner = 64,
 
 		/// <summary>Indicates that some part of a compiler, or a macro, has seen 
