@@ -132,10 +132,15 @@
     <Compile Include="Lexing\WhitespaceFilter.cs" />
     <Compile Include="LeMP\IMacroContext.cs" />
     <Compile Include="LeMP\MacroAttributes.cs" />
-    <Compile Include="LNodes\LiteralValue.cs" />
+    <Compile Include="LNodes\ILiteralValueProvider.cs" />
     <Compile Include="LNodes\ILNodePrinter.cs" />
+    <Compile Include="LNodes\LiteralFromParser.cs" />
+    <Compile Include="LNodes\LiteralValue.cs" />
     <Compile Include="LNodes\LNodeList.cs" />
     <Compile Include="LNodes\LNodePrintingOptions.cs" />
+    <Compile Include="LNodes\StdCallNode.cs" />
+    <Compile Include="LNodes\StdIdNode.cs" />
+    <Compile Include="LNodes\StdLiteralNode.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
@@ -166,7 +171,7 @@
     <Compile Include="LNodes\LNodeExt.cs" />
     <Compile Include="LNodes\LNodeFactory.cs" />
     <Compile Include="LNodes\LNodeVisitor.cs" />
-    <Compile Include="LNodes\StdNodes.cs" />
+    <Compile Include="LNodes\StdTriviaNode.cs" />
     <Compile Include="Parsing\OperatorShape.cs" />
     <Compile Include="Parsing\ParseHelpers.cs" />
     <Compile Include="Parsing\LiteralHandlerTable.cs" />
