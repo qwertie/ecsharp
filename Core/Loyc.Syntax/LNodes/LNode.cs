@@ -624,8 +624,26 @@ namespace Loyc.Syntax
 				return false;
 			if (a.Name != b.Name)
 				return false;
-			if (kind == LNodeKind.Literal && !object.Equals(a.Value, b.Value))
-				return false;
+			if (kind == LNodeKind.Literal)
+			{
+				if (!object.Equals(a.Value, b.Value))
+					return false;
+				// Note: When a literal doesn't have a parsed value, it is expected that
+				// Value will return a boxed form of TextValue which is a UString. 
+				// Therefore, by comparing Values we have already compared the most
+				// important info. The type markers should also be equal. It could be
+				// argued that nodes with no type marker (TypeMarker == null) should compare 
+				// equal to another node as long as the Values are equal, but I have a 
+				// feeling that there should be a CompareNode demanding such a lax 
+				// comparison and I haven't made one, yet.
+				//   We don't need to compare the two TextValues unless we are comparing
+				// by "style" in the comparison, implying that 12_345 should not be treated 
+				// as equal to 12345.
+				if (a.TypeMarker != b.TypeMarker)
+					return false;
+				if ((mode & CompareMode.Styles) != 0 && !a.TextValue.Equals(b.TextValue))
+					return false;
+			}
 			if ((mode & CompareMode.IgnoreTrivia) != 0) {
 				// TODO: unit test this
 				int ia, ib;

@@ -13,11 +13,16 @@ namespace Loyc.Syntax
 		bool CanParse(Symbol typeMarker);
 
 		/// <summary>Attempts to parse a string with a given type marker.</summary>
-		/// <param name="textValue">A text value that has already been preprocessed to remove escape sequences</param>
+		/// <param name="textValue">A text value that has already been preprocessed to remove 
+		///   escape sequences.</param>
 		/// <param name="typeMarker">Indicates the type of the value. There is a standard
-		/// set of type markers; please see the documention of <see cref="StandardLiteralHandlers"/>.</param>
+		///   set of type markers; please see the documention of <see cref="StandardLiteralHandlers"/>.
+		///   </param>
 		/// <returns>Returns either the parsed value or an error message. Does not throw.</returns>
-		Either<object, LogMessage> TryParse(UString textValue, Symbol typeMarker);
+		/// <remarks>If the problem is that the type marker doesn't have an associated parser,
+		/// the returned <see cref="LogMessage"/> should not have a Severity of Error; 
+		/// <see cref="LiteralHandlerTable"/> uses <see cref="Severity.Note"/> for this.</remarks>
+		Either<object, ILogMessage> TryParse(UString textValue, Symbol typeMarker);
 	}
 
 }

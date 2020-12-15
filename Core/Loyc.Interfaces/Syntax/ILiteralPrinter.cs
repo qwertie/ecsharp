@@ -23,6 +23,8 @@ namespace Loyc.Syntax
 		/// message. The string form of the literal is appended to the StringBuilder
 		/// provided by the caller. If an error occurs, it is possible that some kind 
 		/// of output was added to the StringBuilder anyway.</returns>
-		Either<Symbol, LogMessage> TryPrint(ILNode literal, StringBuilder sb);
+		/// <remarks>The string is printed without escaping. For example a newline 
+		/// would be printed as character (char)10, not "\n".</remarks>
+		Either<Symbol, ILogMessage> TryPrint(ILNode literal, StringBuilder sb);
 	}
 }

@@ -71,5 +71,12 @@ namespace Loyc.Syntax
 		/// depending on how strings are defined in the language being printed.
 		/// </remarks>
 		string NewlineString { get; }
+
+		/// <summary>Requests that a specific printer be used to convert literals into 
+		///   strings.</summary>
+		/// <remarks>The printer may choose to only use this printer for type markers it
+		/// doesn't have built-in support for, or it may use this printer for all literals.
+		/// </remarks>
+		ILiteralPrinter LiteralPrinter { get; }
 	}
 }

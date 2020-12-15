@@ -73,7 +73,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void OtherParseErrors()
 		{
-			Test(Mode.Stmt, 1, "_u\"-2\";", F.Literal(new CustomLiteral("-2", (Symbol)"_u")));
+			Test(Mode.Stmt, 1, "_u\"-2\";", F.Literal((UString)"-2", (Symbol)"_u"));
 			Test(Mode.Stmt, 1, "Foo(", F.Call(Foo));
 			Test(Mode.Stmt, 1, "{Foo", F.Braces(Foo));
 			Test(Mode.Stmt, 1, "{Foo(x", F.Braces(F.Call(Foo, x)));
@@ -154,8 +154,9 @@ namespace Loyc.Syntax.Les
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{
 				messages.WriteListTo(ConsoleMessageSink.Value);
-				AreEqual(errorsExpected, messages.List.Count, 
-					"Error count was {0} for «{1}»", messages.List.Count, text); // fail
+				int errorCount = messages.List.Count(msg => msg.Severity >= Severity.Error);
+				AreEqual(errorsExpected, errorCount, 
+					"Error count was {0} for «{1}»", errorCount, text); // fail
 			}
 			for (int i = 0; i < expected.Length; i++) {
 				LNode expect = expected[i], actual = results.TryGet(i, null);

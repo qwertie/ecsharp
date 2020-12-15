@@ -160,6 +160,8 @@
     <Compile Include="Concrete\Symbol.cs" />
     <Compile Include="Syntax\IIndexPositionMapper.cs" />
     <Compile Include="Syntax\ILineColumnFile.cs" />
+    <Compile Include="Syntax\ILiteralParser.cs" />
+    <Compile Include="Syntax\ILiteralPrinter.cs" />
     <Compile Include="Syntax\ILiteralValue.cs" />
     <Compile Include="Syntax\ILNode.cs" />
     <Compile Include="Syntax\ILNodePrinterOptions.cs" />

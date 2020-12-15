@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Represents a serialized text form of a literal value.</summary>
-	public interface ISerializedLiteral
+	/// <summary>Represents the text form of a literal value, without its parsed value.</summary>
+	public interface IUninterpretedLiteral
 	{
 		/// <summary>Represents the serialized text of the value.</summary>
-		/// <remarks>Typically this will be a parsed form of the string; for example in LES3, 
-		/// if the TextValue is `C:\Users`, the raw text may be `C:\\Users` which was parsed 
-		/// so that the double backslash became a single backslash.
+		/// <remarks>Typically this will be an unescaped form of the string; for example in 
+		/// LES3, if the TextValue is `C:\Users`, the original text may have been `C:\\Users`.
 		/// <para/>
 		/// Since this property has type <see cref="UString"/> which is a struct, it cannot 
 		/// be null, but <c>TextValue.IsNull</c> can be true when this interface is part of
@@ -39,6 +38,9 @@ namespace Loyc.Syntax
 		/// </remarks>
 		Symbol TypeMarker { get; }
 	}
+
+	[Obsolete("This has been renamed to IUninterpretedLiteral")]
+	public interface ISerializedLiteral : IUninterpretedLiteral { }
 
 	/// <summary>Bundles the optional original text of a value with an optional in-memory form of it.</summary>
 	/// <remarks>
@@ -80,7 +82,7 @@ namespace Loyc.Syntax
 	/// "null" UString since the list of characters is the same. Do not compare UString 
 	/// with null; instead, use <see cref="UString.IsNull"/>.
 	/// </remarks>
-	public interface ILiteralValue : ISerializedLiteral, IHasValue<object>
+	public interface ILiteralValue : IUninterpretedLiteral, IHasValue<object>
 	{
 		//bool IsParsed { get; }
 	}

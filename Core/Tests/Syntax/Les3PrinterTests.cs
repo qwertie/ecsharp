@@ -17,23 +17,25 @@ namespace Loyc.Syntax.Les
 		{
 			// There are certain instances of CustomLiteral that the parser will 
 			// not produce, which come out as ordinary literals when printed:
-			Exact("1234",                  F.Literal(new CustomLiteral("1234", (Symbol)"_")));
-			Exact("1234.5f00bar",          F.Literal(new CustomLiteral("1234.5", (Symbol)"_f00bar")));
-			Exact(@"_exact""123.5""",      F.Literal(new CustomLiteral(123.5, (Symbol)"_exact")));
-			Exact(@"_f00bar""0x1234""",    F.Literal(new CustomLiteral(0x1234, (Symbol)"_f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"`_WTF!\n`""0x1234""",  F.Literal(new CustomLiteral(0x1234, (Symbol)"_WTF!\n")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"0x1234g00",            F.Literal(new CustomLiteral(0x1234, (Symbol)"_g00")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"0x1234woo",            F.Literal(new CustomLiteral(0x1234, (Symbol)"_woo")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"_poo""0x1234""", F.Literal(new CustomLiteral(0x1234, (Symbol)"_poo")).SetBaseStyle(NodeStyle.HexLiteral));
-			Exact(@"re""[hH]ello!""",      F.Literal(new CustomLiteral(
-				new System.Text.RegularExpressions.Regex("[hH]ello!"), (Symbol)"re")));
+			Exact("1234",                  F.Literal("1234", "_"));
+			Exact("1234.5f00bar",          F.Literal("1234.5", "_f00bar"));
+			Exact(@"_exact""123.5""",      F.Literal(123.5, "_exact"));
+			Exact(@"_""""",                F.Literal("", "_"));
+			Exact(@"_f00bar""0x1234""",    F.Literal(0x1234, "_f00bar").SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"`_WTF!\n`""0x1234""",  F.Literal(0x1234, "_WTF!\n").SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234g00",            F.Literal(0x1234, "_g00").SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"0x1234woo",            F.Literal(0x1234, "_woo").SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"_poo""0x1234""", F.Literal(0x1234, "_poo").SetBaseStyle(NodeStyle.HexLiteral));
+			Exact(@"re""[hH]ello!""",      F.Literal(
+				new System.Text.RegularExpressions.Regex("[hH]ello!"), "re"));
 			// Support in parser planned soon
 			Exact("123456789012345678901234567890z", F.Literal(BigInteger.Parse("123456789012345678901234567890")));
 			// Ensure we can't trick printer into printing non-number as number
-			Exact(@"_f00bar""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"_f00bar")));
-			Exact(@"_""1234.5.6""", F.Literal(new CustomLiteral("1234.5.6", (Symbol)"_")));
-			Exact(@"_""1234e5.6""", F.Literal(new CustomLiteral("1234e5.6", (Symbol)"_")));
-			Exact(@"_""1234567.""", F.Literal(new CustomLiteral("1234567.", (Symbol)"_")));
+			Exact(@"_f00bar""1234.5.6""", F.Literal("1234.5.6", "_f00bar"));
+			Exact(@"_""1234.5.6""", F.Literal("1234.5.6", "_"));
+			Exact(@"_""1234e5.6""", F.Literal("1234e5.6", "_"));
+			Exact(@"_""1234567.""", F.Literal("1234567.", "_"));
+			Exact(@"foo""""", F.Literal(null, "foo"));
 		}
 
 		[Test]

@@ -15,7 +15,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Les
 {
-	public class Les3Printer
+	public partial class Les3Printer
 	{
 		#region Properties
 
@@ -298,7 +298,8 @@ namespace Loyc.Syntax.Les
 
 		#region Printing of identifiers
 
-		static readonly Symbol sy_true = (Symbol)"true", sy_false = (Symbol)"false", sy_null = (Symbol)"null";
+		static readonly Symbol sy_true = (Symbol)"true", sy_false = (Symbol)"false", sy__ = (Symbol)"_";
+		static readonly Symbol sy_null = (Symbol)"null", sy_bool = (Symbol)"bool", sy_c = (Symbol)"c";
 
 		public void VisitId(ILNode node)
 		{
@@ -405,111 +406,99 @@ namespace Loyc.Syntax.Les
 
 		public void VisitLiteral(ILNode node)
 		{
-			PrintLiteralCore(node.Value, node.Style);
-		}
-
-		#region Table of literal printer helper lambdas
-
-		static Pair<RuntimeTypeHandle, Action<Les3Printer, object, NodeStyle, Symbol>> P<T>(Action<Les3Printer, object, NodeStyle, Symbol> handler) 
-			{ return Pair.Create(typeof(T).TypeHandle, handler); }
-		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
-		{
-			var d = new Dictionary<K,V>();
-			for (int i = 0; i < input.Length; i++)
-				d.Add(input[i].Key, input[i].Value);
-			return d;
-		}
-
-		static Dictionary<RuntimeTypeHandle,Action<Les3Printer, object, NodeStyle, Symbol>> LiteralPrinters = Dictionary(
-			// TODO: improve BigInteger support (ie. efficiency, support hex & binary, support digit separators
-			P<BigInteger>((p, value, style, tmarker) => p.PrintString(((BigInteger)value).ToString(), style, _Z, detectFormat: true)),
-			P<int>    ((p, value, style, tmarker) => p.PrintInteger((int)value, style, tmarker ?? _number)),
-			P<long>   ((p, value, style, tmarker) => p.PrintInteger((long)value, style, tmarker ?? _L)),
-			P<uint>   ((p, value, style, tmarker) => p.PrintInteger((uint)value, style, tmarker ?? _U)),
-			P<ulong>  ((p, value, style, tmarker) => p.PrintInteger((ulong)value, style, tmarker ?? _UL)),
-			P<short>  ((p, value, style, tmarker) => p.PrintInteger((short)value,  style, tmarker ?? (Symbol)"_i16")),
-			P<ushort> ((p, value, style, tmarker) => p.PrintInteger((ushort)value, style, tmarker ?? (Symbol)"_u16")),
-			P<sbyte>  ((p, value, style, tmarker) => p.PrintInteger((sbyte)value,  style, tmarker ?? (Symbol)"_i8")),
-			P<byte>   ((p, value, style, tmarker) => p.PrintInteger((byte)value,   style, tmarker ?? (Symbol)"_u8")),
-			P<double> ((p, value, style, tmarker) => p.PrintDouble((double)value, style, tmarker)),
-			P<float>  ((p, value, style, tmarker) => p.PrintFloat ((float)value, style, tmarker ?? _F)),
-			P<decimal>((p, value, style, tmarker) => p.PrintDouble((double)(decimal)value, style, tmarker ?? _M)),
-			P<bool>   ((p, value, style, tmarker) => p.WriteToken((bool)value? "true" : "false", LesColorCode.KeywordLiteral, Chars.Id)),
-			P<@void>  ((p, value, style, tmarker) => {
-				p.WriteToken("void\"\"", LesColorCode.CustomLiteral, Chars.Id, Chars.DoubleQuote);
-			}),
-			P<char>   ((p, value, style, tmarker) => {
-				p.StartToken(LesColorCode.String, Chars.SingleQuote);
-				p.PrintStringCore('\'', false, value.ToString());
-			}),
-			P<Symbol> ((p, value, style, tmarker) => {
-				p.StartToken(LesColorCode.CustomLiteral, Chars.StringStart, Chars.DoubleQuote);
-				p.PrintStringCore('"', false, value.ToString(), (tmarker ?? _s).Name);
-			}),
-			P<string>((p, value, style, tmarker) => p.PrintString((string)value, style, tmarker, detectFormat: true)));
-
-		protected static Symbol _s = GSymbol.Get("s"); // symbol
-		protected static Symbol _F = GSymbol.Get("_f"); // float
-		protected static Symbol _D = GSymbol.Get("_d"); // double
-		protected static Symbol _M = GSymbol.Get("_m"); // decimal
-		protected static Symbol _U = GSymbol.Get("_u"); // uint
-		protected static Symbol _L = GSymbol.Get("_L"); // long
-		protected static Symbol _UL = GSymbol.Get("_uL"); // ulong
-		protected static Symbol _Z = GSymbol.Get("_z"); // BigInt
-		protected static Symbol _number = GSymbol.Get("_"); // number without explicit marker
-
-		#endregion
-
-		private void PrintLiteralCore(object value, NodeStyle style)
-		{
-			Symbol tmarker = null;
-			if (value is CustomLiteral) {
-				var sp = (CustomLiteral)value;
-				tmarker = sp.TypeMarker;
-				value = sp.Value;
-				if (tmarker == null)
-					MessageSink.Write(Severity.Warning, _n, "Les3Printer: CustomLiteral.TypeMarker is null");
+			var typeMarker = node.TypeMarker;
+			var textValue = node.TextValue;
+			var value = node.Value;
+			if (value == null && (typeMarker == null || typeMarker == sy_null))
+			{
+				WriteToken(sy_null.Name, LesColorCode.KeywordLiteral, Chars.Id, Chars.Id);
 			}
-
-			Action<Les3Printer, object, NodeStyle, Symbol> printHelper;
-			if (value == null) {
-				if (tmarker != null && tmarker.Name != "null")
-					MessageSink.Write(Severity.Warning, _n, "Les3Printer: type marker ('{0}') attached to 'null' is unprintable", tmarker);
-				WriteToken("null", LesColorCode.KeywordLiteral, Chars.Id);
-			} else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out printHelper)) {
-				printHelper(this, value, style, tmarker);
-			} else {
-				if (tmarker == null)
-					tmarker = (Symbol)MemoizedTypeName.Get(value.GetType());
-				if (_o.WarnAboutUnprintableLiterals)
-					MessageSink.Write(Severity.Warning, _n, "Les3Printer: Encountered unprintable literal of type {0}",
-						MemoizedTypeName.Get(value.GetType()));
-				string text;
-				try {
-					text = value.ToString();
-				} catch (Exception ex) {
-					text = ex.ExceptionMessageAndType();
-				}
-				PrintString(text, style, tmarker, detectFormat: false);
+			else if (value is bool b && (typeMarker == null || typeMarker == sy_bool))
+			{
+				WriteToken(b ? "true" : "false", LesColorCode.KeywordLiteral, Chars.Id, Chars.Id);
+				return;
 			}
-		}
+			else if (value is char c && (typeMarker == null || typeMarker == sy_c))
+			{
+				StartToken(LesColorCode.String, Chars.SingleQuote);
+				PrintStringCore('\'', false, c.ToString());
+			}
+			else if (typeMarker == sy_c && value is string s && ((UString)s).Do(s0 => { 
+				s0.PopFirst(out bool fail); 
+				return !fail && s0.Length == 0;
+			}))
+			{
+				StartToken(LesColorCode.String, Chars.SingleQuote);
+				PrintStringCore('\'', false, s);
+			}
+			else if (typeMarker == null || textValue.IsNull) // Convert to string for printing
+			{
+				var printer = _o.LiteralPrinter ?? StandardLiteralHandlers.Value;
+				var sb = new StringBuilder();
+				var result = printer.TryPrint(node, sb);
+				if (result.Right.HasValue)
+				{
+					if (_o.WarnAboutUnprintableLiterals)
+						MessageSink.Write(result.Right.Value);
 
-		static Regex IsNumber = new Regex(@"^[0-9]+(_[0-9]+)*([.][0-9]+(_[0-9]+)*)?([eE][+\-]?[0-9]+)?$");
-
-		private void PrintString(string text, NodeStyle stringStyle, Symbol typeMarker, bool detectFormat)
-		{
-			var kind = LesColorCode.String;
-			if (typeMarker != null) {
-				kind = LesColorCode.CustomLiteral;
-				if (detectFormat) {
-					// Detect if we should print it as a number instead
-					if (IsValidNumericMarker(typeMarker, 0) && IsNumber.IsMatch(text)) {
-						WriteToken(text, kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-						SB.Append(typeMarker.Name.Slice(1));
-						return;
+					typeMarker = typeMarker ?? (Symbol)MemoizedTypeName.Get(value.GetType());
+					if (textValue.IsEmpty)
+					{
+						if (sb.Length != 0)
+							textValue = sb.ToString();
+						else if (node.Value != null)
+						{
+							try
+							{
+								textValue = node.Value.ToString();
+							}
+							catch (Exception e)
+							{
+								MessageSink.Write(Severity.Error, node, "Exception in Value.ToString: {0}", e.Description());
+							}
+						}
 					}
 				}
+				else
+				{
+					typeMarker = typeMarker ?? result.Left.Value;
+					textValue = sb.ToString();
+					var tv = textValue;
+				}
+				PrintStringOrNumber(textValue, node.Style, typeMarker);
 			}
+			else // Serialized form is already provided
+			{
+				// Note: other languages should not store TextValue for any standard 
+				// TypeMarker unless they use the same syntax as LES, or a subset.
+				// Accepting the TextValue without verifying that it matches the Value
+				// should work fine as long as the creator of the node followed this rule.
+				PrintStringOrNumber(textValue, node.Style, typeMarker);
+			}
+		}
+
+		private void PrintStringOrNumber(UString text, NodeStyle stringStyle, Symbol typeMarker)
+		{
+			var kind = LesColorCode.String;
+			if (typeMarker != null)
+			{
+				// Detect if we should print it as a number instead. One-digit numbers optimized:
+				if (typeMarker == sy__ && text.Length == 1 && text[0] >= '0' && text[0] <= '9')
+				{
+					StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
+					SB.Append(text[0]);
+					return;
+				}
+				else if (CanPrintAsNumber(text, typeMarker))
+				{
+					WriteToken(text.ToString(), kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
+					SB.Append(typeMarker.Name.Slice(1));
+					return;
+				}
+				else if (typeMarker != GSymbol.Empty)
+					kind = LesColorCode.CustomLiteral;
+			}
+
 			NodeStyle bs = (stringStyle & NodeStyle.BaseStyleMask);
 			if (bs == NodeStyle.TQStringLiteral) {
 				StartToken(kind, Chars.SingleQuote);
@@ -518,205 +507,6 @@ namespace Loyc.Syntax.Les
 				StartToken(kind, Chars.StringStart, Chars.DoubleQuote);
 				PrintStringCore('"', bs == NodeStyle.TDQStringLiteral, text, typeMarker?.Name);
 			}
-		}
-
-		void PrintInteger(long value, NodeStyle style, Symbol typeMarker)
-		{
-			bool negative = value < 0;
-			if (negative) {
-				StartToken(LesColorCode.Number, Chars.Id | Chars.BQId, Chars.NumberEnd);
-				PrintIdCore(typeMarker.Name, startToken: false);
-				SB.Append("\"-");
-				PrintIntegerCore((ulong)-value, style, SB);
-				SB.Append('\"');
-			} else {
-				PrintInteger((ulong)value, style, typeMarker);
-			}
-		}
-
-		void PrintInteger(ulong value, NodeStyle style, Symbol typeMarker)
-		{
-			Debug.Assert(typeMarker.Name.StartsWith("_"));
-			if (IsValidNumericMarker(typeMarker, style))
-			{
-				StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-				PrintIntegerCore(value, style, SB);
-				SB.Append(typeMarker.Name.Substring(1));
-			}
-			else
-			{
-				StartToken(LesColorCode.Number, Chars.StringStart, Chars.DoubleQuote);
-				PrintStringCore('"', false, PrintIntegerCore(value, style, new StringBuilder()).ToString(), typeMarker.Name);
-			}
-		}
-		StringBuilder PrintIntegerCore(ulong value, NodeStyle style, StringBuilder sb)
-		{
-			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral)
-				return PrintHelpers.AppendIntegerTo(sb, value, "0x", 16, 4, '_');
-			else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral)
-				return PrintHelpers.AppendIntegerTo(sb, value, "0b", 2, 8, '_');
-			else
-				return PrintHelpers.AppendIntegerTo(sb, value, "", 10, 3, '_');
-		}
-
-		private bool IsValidNumericMarker(Symbol typeMarker, NodeStyle numericStyle)
-		{
-			if (typeMarker.Name.TryGet(0, '\0') != '_' || !IsNormalIdentifier(typeMarker.Name))
-				return false;
-			char firstChar = typeMarker.Name.TryGet(1, '\0');
-			bool isHex = (numericStyle & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral;
-			if (firstChar.IsOneOf('p', 'P'))
-				return !isHex;
-			else if (firstChar >= 'a' && firstChar <= 'f' || firstChar >= 'A' && firstChar <= 'F')
-				return !isHex && !firstChar.IsOneOf('e', 'E');
-			return true;
-		}
-
-		void PrintFloat(float value, NodeStyle style, Symbol typeMarker)
-		{
-			PrintDouble((double)value, style, typeMarker);
-		}
-		void PrintDouble(double value, NodeStyle style, Symbol typeMarker)
-		{
-			string asStr;
-			bool useStringStyle = value < 0;
-			if (double.IsNaN(value)) {
-				asStr = "nan";
-				useStringStyle = true;
-			} else if (double.IsPositiveInfinity(value)) {
-				asStr = "inf";
-				useStringStyle = true;
-			} else if (double.IsNegativeInfinity(value)) {
-				asStr = "-inf";
-				useStringStyle = true;
-			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
-				asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0x", 4, typeMarker == _F).ToString();
-			} else if ((style & NodeStyle.BaseStyleMask) == NodeStyle.BinaryLiteral) {
-				asStr = DoubleToString_HexOrBinary(new StringBuilder(), value, "0b", 1, typeMarker == _F).ToString();
-			} else {
-				asStr = DoubleToString_Decimal(value);
-			}
-
-			if (useStringStyle || typeMarker != null && !IsValidNumericMarker(typeMarker, style)) {
-				StartToken(LesColorCode.Number, Chars.Id, Chars.NumberEnd);
-				PrintIdCore((typeMarker ?? _D).Name, startToken: false);
-				SB.Append('\"');
-				SB.Append(asStr);
-				SB.Append('\"');
-			} else {
-				StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-				SB.Append(asStr);
-				if (typeMarker == null || typeMarker == _number) {
-					if (!asStr.Contains(".") && !asStr.Contains("e"))
-						SB.Append(".0");
-				} else {
-					SB.Append(typeMarker.Name.Substring(1));
-				}
-			}
-		}
-
-		protected int HexNegativeExponentThreshold = -8;
-		const int MantissaBits = 52;
-
-		private StringBuilder DoubleToString_HexOrBinary(StringBuilder result, double value, string prefix, int bitsPerDigit, bool isFloat = false, bool forcePNotation = false)
-		{
-			Debug.Assert(!double.IsInfinity(value) && !double.IsNaN(value));
-			long bits = G.DoubleToInt64Bits(value);
-			long mantissa = bits & ((1L << MantissaBits) - 1);
-			int exponent = (int)(bits >> MantissaBits) & 0x7FF;
-			if (exponent == 0) // subnormal (a.k.a. denormal)
-				exponent = 1;
-			else
-				mantissa |= 1L << MantissaBits;
-			exponent -= 0x3FF;
-			int precision = isFloat ? 23 : MantissaBits;
-
-			char separator = _o.DigitSeparator ?? '\0';
-			int separatorInterval = 0;
-			if (_o.DigitSeparator.HasValue)
-				separatorInterval = bitsPerDigit == 1 ? 8 : 4;
-
-			if (bits < 0)
-				result.Append('-');
-
-			// Choose a scientific notation shift (the number that comes after "p") 
-			int scientificNotationShift = 0;
-			if (exponent > precision) {
-				scientificNotationShift = exponent & ~(bitsPerDigit - 1);
-			} else if (exponent < HexNegativeExponentThreshold) {
-				scientificNotationShift = -((-exponent | (bitsPerDigit - 1)) + 1);
-				// equal to this?
-				//scientificNotationShift = (exponent - 1) & ~(bitsPerDigit - 1);
-			}
-			
-			// Calculate the exponent on the "non-scientific" part of the number
-			exponent -= scientificNotationShift;
-
-			// Calculate the number of bits after the point (dot), then print the 
-			// whole and fractional parts of the number separately.
-			int fracBits = MantissaBits - exponent;
-			long wholePart, fracPart;
-			if (exponent >= 0) {
-				wholePart = mantissa >> fracBits;
-				fracPart = mantissa & ((1L << fracBits) - 1);
-			} else {
-				wholePart = 0;
-				fracPart = mantissa;
-			}
-
-			// Print whole-number part
-			PrintHelpers.AppendIntegerTo(result, (ulong)wholePart, prefix, 1 << bitsPerDigit, separatorInterval, separator);
-
-			// Print fractional part
-			if (fracPart == 0 && scientificNotationShift == 0)
-				result.Append(".0");
-			else {
-				result.Append('.');
-				int counter = 0;
-				int digitMask = ((1 << bitsPerDigit) - 1); // 1 or 0xF
-				int shift;
-				for (shift = fracBits - bitsPerDigit; shift >= 0; shift -= bitsPerDigit) {
-					int digit = (int)(fracPart >> shift) & digitMask;
-					result.Append(PrintHelpers.HexDigitChar(digit));
-					fracPart &= (1L << shift) - 1;
-					if (fracPart == 0)
-						break;
-					if (++counter == separatorInterval && shift != 0) {
-						counter = 0;
-						result.Append(separator);
-					}
-				}
-				if (fracPart != 0) {
-					int digit = ((int)fracPart << (shift + bitsPerDigit)) & digitMask;
-					result.Append(PrintHelpers.HexDigitChar(digit));
-				}
-			}
-
-			// Add shift suffix ("p0")
-			if (forcePNotation || scientificNotationShift != 0)
-				PrintHelpers.AppendIntegerTo(result, scientificNotationShift, "p", @base: 10, separatorInterval: 0);
-
-			return result;
-		}
-
-		private string DoubleToString_Decimal(double value)
-		{
-			// The "R" round-trip specifier makes sure that no precision is lost, and
-			// that parsing a printed version of double.MaxValue is possible.
-			var asStr = value.ToString("R", CultureInfo.InvariantCulture);
-			if (_o.DigitSeparator.HasValue && asStr.Length > 3) {
-				int iDot = asStr.IndexOf('.');
-				if (iDot <= -1) iDot = asStr.IndexOf('E');
-				if (iDot <= -1) iDot = asStr.Length;
-				// Add thousands separators
-				if (iDot > 3) {
-					StringBuilder sb = new StringBuilder(asStr);
-					for (int i = iDot - 3; i > 0; i -= 3)
-						sb.Insert(i, '_');
-					return sb.ToString();
-				}
-			}
-			return asStr;
 		}
 
 		#endregion

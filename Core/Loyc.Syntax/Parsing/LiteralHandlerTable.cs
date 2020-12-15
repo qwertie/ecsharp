@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 namespace Loyc.Syntax
 {
 	/// <summary>A central class for keeping track of literal parsers and literal printers.</summary>
-	/// <remarks>
-	/// 
-	/// </remarks>
+	/// <seealso cref="StandardLiteralHandlers"/>
 	public class LiteralHandlerTable : ILiteralParser, ILiteralPrinter
 	{
 		private static Symbol _null = (Symbol)"null";
@@ -66,9 +64,9 @@ namespace Loyc.Syntax
 		/// that occurred.</param>
 		/// <returns>true if the printer was installed (if replaceExisting is true, 
 		/// the method will return true unless the <c>type</c> is null.)</returns>
-		public bool AddPrinter(bool replaceExisting, Symbol type, Func<ILNode, StringBuilder, Either<Symbol, LogMessage>> printer) => AddPrinter(replaceExisting, type, printer);
+		public bool AddPrinter(bool replaceExisting, Symbol type, Func<ILNode, StringBuilder, Either<Symbol, LogMessage>> printer) => AddPrinter(replaceExisting, (object)type, printer);
 		/// <inheritdoc cref="AddPrinter(bool, Symbol, Func{ILNode, Either{UString, LogMessage}})"/>
-		public bool AddPrinter(bool replaceExisting, Type type, Func<ILNode, StringBuilder, Either<Symbol, LogMessage>> printer) => AddPrinter(replaceExisting, type, printer);
+		public bool AddPrinter(bool replaceExisting, Type type, Func<ILNode, StringBuilder, Either<Symbol, LogMessage>> printer) => AddPrinter(replaceExisting, (object)type, printer);
 		private bool AddPrinter(bool replaceExisting, object key, Func<ILNode, StringBuilder, Either<Symbol, LogMessage>> printer)
 		{
 			if (key == null)
@@ -119,15 +117,15 @@ namespace Loyc.Syntax
 		}
 
 		/// <inheritdoc cref="ILiteralParser.TryParse(UString, Symbol)"/>
-		public Either<object, LogMessage> TryParse(UString textValue, Symbol typeMarker)
+		public Either<object, ILogMessage> TryParse(UString textValue, Symbol typeMarker)
 		{
 			if (typeMarker != null && Parsers.TryGetValue(typeMarker, out var parser))
 				try {
-					return parser(textValue, typeMarker);
+					return parser(textValue, typeMarker).MapRight(m => (ILogMessage)m);
 				} catch (Exception e) {
-					return new LogMessage(Severity.Error, textValue, e.Description());
+					return new Either<object, ILogMessage>((ILogMessage) new LogMessage(Severity.Error, textValue, e.Description()));
 				}
-			return new LogMessage(Severity.Error, textValue, "There is no registered parser for type marker '{0}'".Localized(typeMarker));
+			return new Either<object, ILogMessage>((ILogMessage) new LogMessage(Severity.Note, textValue, "No parser is registered for type marker '{0}'".Localized(PrintHelpers.EscapeCStyle(typeMarker.Name))));
 		}
 
 		/// <summary>Searches <see cref="Printers"/> for a printer for the value and uses it 
@@ -145,7 +143,8 @@ namespace Loyc.Syntax
 		/// be able to print the value. If no printer succeeds, the <i>first</i> error that 
 		/// occurred is returned.
 		/// <para/>
-		/// When the literal is null, this funtion always returns an empty string.
+		/// When the literal is null and there is no printer associated with literal.TypeMarker,
+		/// this funtion produces no output and returns literal.TypeMarker.
 		/// <para/>
 		/// On success, the return value indicates which type marker is recommended based
 		/// on the data type of the literal. This is not guaranteed to match the TypeMarker
@@ -153,10 +152,10 @@ namespace Loyc.Syntax
 		/// use the type marker stored in the literal (regardless of what this method
 		/// returns) unless <c>literal.TypeMarker == null</c>.
 		/// </remarks>
-		public Either<Symbol, LogMessage> TryPrint(ILNode literal, StringBuilder sb)
+		public Either<Symbol, ILogMessage> TryPrint(ILNode literal, StringBuilder sb)
 		{
 			CheckParam.IsNotNull(nameof(sb), sb);
-			LogMessage? firstError = null;
+			ILogMessage firstError = null;
 			
 			var tm = literal.TypeMarker;
 			if (tm != null && TryPrint(literal, tm, sb, ref tm, ref firstError))
@@ -186,10 +185,11 @@ namespace Loyc.Syntax
 					AddBaseTypes(baseTypeQueue[i], baseTypeQueue);
 			}
 
-			return firstError ?? new LogMessage(Severity.Error, literal, 
-				"There is no printer for type '{0}'".Localized(literal.Value.GetType()));
+			return new Either<Symbol, ILogMessage>(firstError ??
+				new LogMessage(Severity.Error, literal, 
+					"There is no printer for type '{0}'".Localized(literal.Value.GetType())));
 		}
-		private bool TryPrint(ILNode literal, object key, StringBuilder sb, ref Symbol typeMarker, ref LogMessage? firstError)
+		private bool TryPrint(ILNode literal, object key, StringBuilder sb, ref Symbol typeMarker, ref ILogMessage firstError)
 		{
 			sb.Clear();
 			if (_printers.TryGetValue(key, out var printer))

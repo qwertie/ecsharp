@@ -115,6 +115,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Les3Lexer.ecs</DependentUpon>
     </Compile>
+    <None Include="LES\Les3Printer_CanPrintAsNumber.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Les3Printer_CanPrintAsNumber.out.cs</LastGenOutput>
+    </None>
     <Compile Include="LES\Les3Parser.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -125,6 +129,11 @@
     <Compile Include="LES\Les3.cs" />
     <Compile Include="LES\CustomLiteral.cs" />
     <Compile Include="LES\Les3PrinterOptions.cs" />
+    <Compile Include="LES\Les3Printer_CanPrintAsNumber.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Les3Printer_CanPrintAsNumber.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\TokenTree.cs" />
     <Compile Include="Lexing\TriviaSaver.cs" />
@@ -141,6 +150,7 @@
     <Compile Include="LNodes\StdCallNode.cs" />
     <Compile Include="LNodes\StdIdNode.cs" />
     <Compile Include="LNodes\StdLiteralNode.cs" />
+    <Compile Include="LNodes\UninterpretedLiteral.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />

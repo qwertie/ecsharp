@@ -11,6 +11,7 @@ namespace Loyc.Syntax.Les
 	/// <remarks>This structure is used as the value of an LESv3 token to 
 	/// represent non-standard numbers and strings such as <c>1.1unum</c> 
 	/// and <c>bytes"ab cd"</c></remarks>
+	[Obsolete("LNode and ILNode have a TypeMarker property, which should be used instead of CustomLiteral")]
 	public struct CustomLiteral : IEquatable<CustomLiteral>
 	{
 		public CustomLiteral(object value, Symbol typeMarker)

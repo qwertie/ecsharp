@@ -14,8 +14,8 @@ namespace Loyc.Syntax
 	using PrintFunc = Func<object, Symbol, Either<UString, LogMessage>>;
 
 	/// <summary>
-	/// A <see cref="LiteralHandlerTable"/> that is preinitialized with all standard literal 
-	/// parsers and printers.
+	/// A <see cref="LiteralHandlerTable"/> that is preinitialized with all standard 
+	/// literal parsers and printers.
 	/// </summary>
 	/// <remarks>
 	/// The following types are fully supported:
@@ -23,20 +23,26 @@ namespace Loyc.Syntax
 	/// <li>Int8 (type marker: _i8)
 	/// <li>Int16 (type marker: _i16)
 	/// <li>Int32 (type marker: _i32)
-	/// <li>Int64 (type marker: _i64)
+	/// <li>Int64 (type markers: _i64, _L)
 	/// <li>UInt8 (type marker: _u8)
 	/// <li>UInt16 (type marker: _u16)
 	/// <li>UInt32 (type marker: _u32)
-	/// <li>UInt64 (type marker: _u64)
+	/// <li>UInt64 (type markers: _u64, _uL)
 	/// <li>BigInteger (type marker: _z)
-	/// <li>Single (type marker: _r32)
-	/// <li>Double (type marker: _r64)
+	/// <li>Single (type markerS: _r32, _f)
+	/// <li>Double (type markerS: _r64, _d)
 	/// <li>Char (type marker: c)
 	/// <li>String (type marker: empty string)
 	/// <li>Symbol (type marker: s)
 	/// <li>Loyc.@void (type marker: void)
 	/// <li>Boolean (type marker: bool)
+	/// <li>UString (no specific type marker)
 	/// </ul>
+	/// There are also two general type markers, _ for a number of unspecified type,
+	/// and _U for an unsigned number of unspecified size. In LES, any type marker 
+	/// that is not on this list is legal, but will be left uninterpreted by default;
+	/// <see cref="LNode.Value"/> will return a string of type <see cref="UString"/>.
+	/// <para/>
 	/// The syntax corresponding to each type marker is standardized, meaning that 
 	/// all implementations of LES2 and LES3 that can parse these types must do so 
 	/// in exactly the same way.
@@ -137,6 +143,8 @@ namespace Loyc.Syntax
 	/// this trickery is to allow LES3 strings to faithfully represent arbitrary 
 	/// byte sequences in addition to Unicode strings.
 	/// </remarks>
+	/// <seealso cref="ParseHelpers"/>
+	/// <seealso cref="PrintHelpers"/>
 	public class StandardLiteralHandlers : LiteralHandlerTable
 	{
 		private static StandardLiteralHandlers _value = null;
@@ -154,6 +162,10 @@ namespace Loyc.Syntax
 		protected static Symbol __z = GSymbol.Get("_z"); // BigInt
 		protected static Symbol __r32 = GSymbol.Get("_r32"); // float
 		protected static Symbol __r64 = GSymbol.Get("_r64"); // double
+		protected static Symbol __L = GSymbol.Get("_L"); // long
+		protected static Symbol __uL = GSymbol.Get("_uL"); // ulong
+		protected static Symbol __f = GSymbol.Get("_f"); // float
+		protected static Symbol __d = GSymbol.Get("_d"); // double
 		protected static Symbol _s = GSymbol.Get("s"); // symbol (any string is valid)
 		protected static Symbol _void = GSymbol.Get("void"); // void""
 		protected static Symbol _bool = GSymbol.Get("bool"); // bool"true" or bool"false" (case insensitive)
@@ -191,8 +203,8 @@ namespace Loyc.Syntax
 			ParseFunc u16 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((ushort)n == n ? OK((ushort)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
 			ParseFunc i32 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((int)n == n ? OK((int)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
 			ParseFunc u32 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((uint)n == n ? OK((uint)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc i64 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((uint)n == n ? OK((long)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc u64 = (s, tm) => { ulong n; return ParseULong(s, out n) ? OK((ulong)n) : SyntaxError(s, tm); };
+			ParseFunc i64 = (s, tm) => { long n; return ParseSigned(s, out n) ? OK(n) : SyntaxError(s, tm); };
+			ParseFunc u64 = (s, tm) => { ulong n; return ParseULong(s, out n) ? OK(n) : SyntaxError(s, tm); };
 			ParseFunc u = (s, tm) => { ulong n; return ParseULong(s, out n) ? ((uint)n == n ? OK((uint)n) : OK((ulong)n)) : SyntaxError(s, tm); };
 			ParseFunc big = (s, tm) => { BigInteger n; return ParseBigInt(s, out n) ? OK((object)n) : SyntaxError(s, tm); };
 			ParseFunc f32 = (s, tm) => { double n; return ParseDouble(s, out n) ? OK((float)n) : SyntaxError(s, tm); };
@@ -200,6 +212,11 @@ namespace Loyc.Syntax
 
 			AddParser(true, _string, (s, tm) => OK(s.ToString()));
 			AddParser(true, _number, GeneralNumberParser);
+			AddParser(true, __u, u);
+			AddParser(true, __uL, u64);
+			AddParser(true, __L, i64);
+			AddParser(true, __f, f32);
+			AddParser(true, __d, f64);
 			AddParser(true, __u8, u8);
 			AddParser(true, __i8, i8);
 			AddParser(true, __u16, u16);
@@ -207,7 +224,6 @@ namespace Loyc.Syntax
 			AddParser(true, __u32, u32);
 			AddParser(true, __i32, i32);
 			AddParser(true, __u64, u64);
-			AddParser(true, __u, u);
 			AddParser(true, __i64, i64);
 			AddParser(true, __r32, f32);
 			AddParser(true, __r64, f64);
@@ -268,6 +284,8 @@ namespace Loyc.Syntax
 				{ sb.Append((string)lit.Value); return _string; });
 			AddPrinter(true, typeof(Symbol), (lit, sb) =>
 				{ sb.Append(((Symbol)lit.Value).Name); return _s; });
+			AddPrinter(true, typeof(UString), (lit, sb) =>
+				{ sb.Append((UString)lit.Value); return lit.TypeMarker; });
 
 			// NON-STANDARD TYPES
 

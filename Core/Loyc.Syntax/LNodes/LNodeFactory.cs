@@ -24,8 +24,21 @@ namespace Loyc.Syntax
 
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
+		
+		IMessageSink _errorSink;
+		/// <summary>Where errors should be sent if there is an error parsing a literal.</summary>
+		/// <remarks>Attempting to set this to null makes the getter return <see cref="MessageSink.Default"/>.</remarks>
+		public IMessageSink ErrorSink
+		{
+			get => _errorSink ?? MessageSink.Default;
+			set => _errorSink = value;
+		}
 
-		public LNodeFactory(ISourceFile file) { _file = file; }
+		public LNodeFactory(ISourceFile file, IMessageSink sink = null)
+		{
+			_file = file;
+			ErrorSink = sink;
+		}
 
 		#region Common literals, data types and access modifiers
 
@@ -112,14 +125,75 @@ namespace Loyc.Syntax
 				new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
-		public LNode Literal<V>(V value, int startIndex = -1, int endIndex = -1)
+		public LiteralNode Literal<V>(V value, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
-		public LNode Literal(Token t)
+		public LiteralNode Literal(object value, string typeMarker, int startIndex = -1, int endIndex = -1) => Literal(value, (Symbol)typeMarker, startIndex, endIndex);
+		public LiteralNode Literal(object value, Symbol typeMarker, int startIndex = -1, int endIndex = -1)
+		{
+			return new StdLiteralNode<LiteralFromParser>(
+				new LiteralFromParser(value, -1, -1, typeMarker), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+
+		/// <summary>Creates a literal from a <see cref="Token"/>. If the token style is
+		/// <see cref="NodeStyle.UninterpretedLiteral"/>, this method uses 
+		/// <see cref="StandardLiteralHandlers.Value"/> to parse the literal's value;
+		/// otherwise <see cref="LiteralFromValueOf(Token)"/> is called to create the 
+		/// literal based on the <see cref="Token.Value"/>.</summary>
+		/// <param name="t">Token to be converted</param>
+		public LiteralNode Literal(Token t) => Literal(t, StandardLiteralHandlers.Value);
+
+		/// <summary>Creates a literal from a <see cref="Token"/>. If it's an "ordinary"
+		/// token, this function simply calls <see cref="LiteralFromValueOf(Token)"/>.
+		/// If it is an "uninterpreted literal" (type marker with text), this function 
+		/// uses the parser provided to interpret the literal, or, <c>parser</c> is null, 
+		/// calls <see cref="UninterpretedLiteral(Token)"/> to create the node without 
+		/// parsing it.</summary>
+		/// <param name="t">Token to be converted</param>
+		/// <param name="parser">Used to obtain a value from an uninterpreted literal,
+		/// which becomes the <see cref="LNode.Value"/> property.</param>
+		public LiteralNode Literal(Token t, ILiteralParser parser)
+		{
+			if (t.IsUninterpretedLiteral)
+			{
+				if (parser != null)
+				{
+					var textValue = t.TextValue(_file.Text);
+					var parsed = parser.TryParse(textValue, t.TypeMarker);
+					if (parsed.Right.HasValue) {
+						var result = UninterpretedLiteral(t);
+						var lm = parsed.Right.Value;
+						ErrorSink.Write(new LogMessage(lm.Severity, result, lm.Format, lm.Args));
+						return result;
+					} else {
+						return t.UninterpretedTokenToLNode(_file, parsed.Left.Value);
+					}
+				}
+				return UninterpretedLiteral(t);
+			}
+			else
+				return LiteralFromValueOf(t);
+		}
+
+		/// <summary>Creates a literal whose <see cref="LNode.Value"/> is the same as the value of <c>t</c>.</summary>
+		public LiteralNode LiteralFromValueOf(Token t)
 		{
 			return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(t.Value), new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+		}
+		
+		/// <summary>This method produces a literal by assuming that the provided token 
+		/// is an uninterpreted literal (see <see cref="NodeStyle.UninterpretedLiteral"/>)
+		/// in the current file and that it does not need to be parsed. Therefore, 
+		/// <c>t.Value</c> becomes the <see cref="LNode.TypeMarker"/>, 
+		/// <c>t.TextValue(_file.Text)</c> becomes the <see cref="LNode.TextValue"/>, 
+		/// and the <see cref="LNode.Value"/> will be a boxed copy of TextValue.</summary>
+		public LiteralNode UninterpretedLiteral(Token t)
+		{
+			Debug.Assert(t.IsUninterpretedLiteral);
+			var litVal = new UninterpretedLiteral(t.TextValue(_file.Text), t.TypeMarker);
+			return new StdLiteralNode<UninterpretedLiteral>(litVal, t.Range(_file));
 		}
 
 		/// <summary>Creates a trivia node named <c>"%" + suffix</c> with the 

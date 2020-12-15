@@ -204,8 +204,6 @@
     </Compile>
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\Holder.cs" />
-    <Compile Include="Syntax\ILiteralParser.cs" />
-    <Compile Include="Syntax\ILiteralPrinter.cs" />
     <Compile Include="Utilities\IoC.cs" />
     <None Include="MessageSinks\MessageSink.ecs">
       <Generator>LeMP</Generator>

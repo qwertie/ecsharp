@@ -16,6 +16,7 @@ namespace Loyc.Syntax
 		public virtual bool CompactMode { get; set; }
 		public virtual string IndentString { get; set; }
 		public virtual string NewlineString { get; set; }
+		public virtual ILiteralPrinter LiteralPrinter { get; set; }
 
 		public void CopyFrom(ILNodePrinterOptions original)
 		{
@@ -27,6 +28,7 @@ namespace Loyc.Syntax
 			CompactMode = original.CompactMode;
 			IndentString = original.IndentString;
 			NewlineString = original.NewlineString;
+			LiteralPrinter = original.LiteralPrinter;
 		}
 	}
 }

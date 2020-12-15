@@ -55,12 +55,13 @@ public partial class Les3Lexer
 	token Number returns [object result] :
 		('\u2212')? // '−'
 		(HexNumber / BinNumber / DecNumber)
-		{UString numberText = Text(), suffix = UString.Empty;}
+		{ _textValue = Text(); }
+		{ UString suffix = UString.Empty; }
 		(	{ int suffixStart = InputPosition; }
 			NormalId
-			{suffix = Text(suffixStart);}
+			{ suffix = Text(suffixStart); }
 		)?
-		{return ParseLiteral2(suffix, numberText, true);};
+		{ return GetTypeMarkerSymbol(suffix, true); };
 
 	DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* ;
 	[inline] HexDigit  : '0'..'9' | 'a'..'f' | 'A'..'F' ;
@@ -88,28 +89,33 @@ public partial class Les3Lexer
 	
 	// Strings ---------------------------------------------------------------
 		
-	token SQChar returns [object result] :
+	// We're parsing UTF-16: one character is either a code unit or a surrogate 
+	// pair. Also accept an invalid surrogate code unit. This rule is used in 
+	// single-quoted strings, so some characters are excluded.
+	[inline] extern SingleChar : 0xD800..0xDBFF (0xDC00..0xDFFF)? / ~('\''|'\\'|'\r'|'\n');
+
+	token SQChar :
 		{bool parseNeeded = false;}
-		'\'' ('\\' _ {parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')) '\'' 
-		{return ParseSQStringValue(parseNeeded);};
+		'\'' ('\\' ~('\r'|'\n') ~('\r'|'\n'|'\'')* {parseNeeded = true;} | SingleChar) '\'' 
+		{ _textValue = UnescapeSQStringValue(parseNeeded); };
 	
-	token DQString returns [object result] :
+	token DQString :
 		{bool parseNeeded = false;}
-		(	'"' [ '\\' _ {parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
+		(	'"' [ '\\' ~('\r'|'\n') {parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
 			('"' / {parseNeeded = true;}) )
-		{return (string) ParseStringValue(parseNeeded, isTripleQuoted: false);};
+		{ _textValue = ParseStringValue(parseNeeded, isTripleQuoted: false); };
 	
-	[LL(4)] token TQString returns [object result] :
+	[LL(4)] token TQString :
 		{bool parseNeeded = true;}
 		{_style = NodeStyle.TDQStringLiteral;}
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
 		| {_style = NodeStyle.TQStringLiteral;}
 			"'''"       nongreedy(Newline(true) / _)* "'''" )
-		{return (string) ParseStringValue(parseNeeded, isTripleQuoted: true);};
+		{ _textValue = ParseStringValue(parseNeeded, isTripleQuoted: true); };
 
-	BQString [out bool parseNeeded]:
+	BQString [out bool parseNeeded] :
 		{parseNeeded = false;}
-		'`' ('\\' _ {parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))*
+		'`' ('\\' ~('\r'|'\n') {parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))*
 		('`' | error {parseNeeded = true; Error(0, "Expected closing backquote");});
 
 	// Nontrivial punctuation & operators -----------------------------------
@@ -145,11 +151,14 @@ public partial class Les3Lexer
 		(	BQString[out bool parseNeeded] { idText = ParseStringValue(parseNeeded, false); }
 		|	NormalId                       { idText = Text(); }
 		)
-		(	{ saveAndRestore(_startPosition); }
-			{ _startPosition = InputPosition; }
-			(value:TQString / value:DQString)
-			{ _type = TT.Literal; }
-			{ return ParseLiteral2(idText, value.ToString(), false); }
+		(
+			{
+				saveAndRestore(_startPosition);
+				_startPosition = InputPosition;
+				_type = TT.Literal;
+			}
+			(TQString / DQString)
+			{ return GetTypeMarkerSymbol(idText, false); }
 		/	{
 				if (_type != TT.BQId) // normal identifier
 				{
@@ -180,6 +189,7 @@ public partial class Les3Lexer
 		{
 			_startPosition = InputPosition;
 			_style = 0;
+			_textValue = default(UString);
 			if (LA0 == -1) { // EOF
 				return NoValue.Value;
 			}
@@ -191,9 +201,9 @@ public partial class Les3Lexer
 		/ {_type = TT.SLComment;}  value:SLComment
 		/ {_type = TT.MLComment;}  value:MLComment
 		/ {_type = TT.Literal;}    value:Number
-		/ {_type = TT.Literal;}    value:TQString
-		/ {_type = TT.Literal;}    value:DQString
-		/ {_type = TT.Literal;}    value:SQChar
+		/ {_type = TT.Literal;}    TQString { value = GSymbol.Empty; }
+		/ {_type = TT.Literal;}    DQString { value = GSymbol.Empty; }
+		/ {_type = TT.Literal;}    SQChar { value = @@c; }
 		/ {_type = TT.SingleQuote;} value:SQOperator
 		/ {_type = TT.Comma;}      ',' { value = S.Comma; }
 		/ {_type = TT.Semicolon;}  ';' { value = S.Semicolon; }
@@ -210,7 +220,7 @@ public partial class Les3Lexer
 		/ error _ {_type = TT.Unknown;}
 		)
 		{	Debug.Assert(InputPosition > _startPosition);
-			return new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, value);
+			return new Token((int) _type, _startPosition, Text(), _style, value, _textValue);
 		};
 
 	// Partial tokens used for syntax highlighting. An LES syntax highlighter

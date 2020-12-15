@@ -114,6 +114,7 @@ namespace Loyc.Syntax.Lexing
 				_sourceFile = new LexerSourceFile<CharSrc>(chars, fileName);
 			else
 				_sourceFile = null;
+			_lastErrorPosition = -1;
 		}
 		protected void Reset()
 		{
