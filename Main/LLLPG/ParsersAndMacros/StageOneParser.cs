@@ -133,7 +133,7 @@ namespace Loyc.LLParserGenerator
 			F = new LNodeFactory(file);
 		}
 
-		protected new static TT EOF = TT.EOF;
+		protected new const TT EOF = TT.EOF;
 
 		protected LNodeFactory F;
 		protected IList<Token> _tokensRoot; // only used for debugging

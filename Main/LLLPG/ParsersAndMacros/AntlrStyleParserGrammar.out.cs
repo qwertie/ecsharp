@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.8.0.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 2.8.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -289,8 +289,14 @@ namespace Loyc.LLParserGenerator
 							case TT.StartColon:
 								result.Add(Rule());
 								break;
-							default:
+							case TT.Semicolon:
 								result.Add(HostCall());
+								break;
+							default:
+								{
+									// line 179
+									Error(0, "Expected a rule definition here (or a block of code in the host language)");
+								}
 								break;
 							}
 						}
@@ -298,8 +304,14 @@ namespace Loyc.LLParserGenerator
 					case TT.At: case TT.Colon: case TT.Returns: case TT.StartColon:
 						result.Add(Rule());
 						break;
-					default:
+					case TT.LBrace:
 						result.Add(HostBlock());
+						break;
+					default:
+						{
+							// line 179
+							Error(0, "Expected a rule definition here (or a block of code in the host language)");
+						}
 						break;
 					}
 				}
@@ -307,8 +319,14 @@ namespace Loyc.LLParserGenerator
 			case TT.LParen:
 				result.Add(HostCall());
 				break;
-			default:
+			case TT.LBrace:
 				result.Add(HostBlock());
+				break;
+			default:
+				{
+					// line 179
+					Error(0, "Expected a rule definition here (or a block of code in the host language)");
+				}
 				break;
 			}
 			// Line 176: ( Rule | HostCall | HostBlock )*
@@ -330,8 +348,14 @@ namespace Loyc.LLParserGenerator
 								case TT.StartColon:
 									result.Add(Rule());
 									break;
-								default:
+								case TT.Semicolon:
 									result.Add(HostCall());
+									break;
+								default:
+									{
+										// line 179
+										Error(0, "Expected a rule definition here (or a block of code in the host language)");
+									}
 									break;
 								}
 							}
@@ -339,8 +363,14 @@ namespace Loyc.LLParserGenerator
 						case TT.At: case TT.Colon: case TT.Returns: case TT.StartColon:
 							result.Add(Rule());
 							break;
-						default:
+						case TT.LBrace:
 							result.Add(HostBlock());
+							break;
+						default:
+							{
+								// line 179
+								Error(0, "Expected a rule definition here (or a block of code in the host language)");
+							}
 							break;
 						}
 					}
@@ -351,12 +381,18 @@ namespace Loyc.LLParserGenerator
 				case TT.LBrace:
 					result.Add(HostBlock());
 					break;
-				default:
+				case EOF:
 					goto stop;
+				default:
+					{
+						// line 179
+						Error(0, "Expected a rule definition here (or a block of code in the host language)");
+					}
+					break;
 				}
 			}
 		stop:;
-			Match((int) EOF);
+			Skip();
 			return result;
 		}
 	

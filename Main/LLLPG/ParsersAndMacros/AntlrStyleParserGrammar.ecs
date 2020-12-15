@@ -175,7 +175,9 @@ namespace Loyc.LLParserGenerator
 		public rule LNodeList RulesAndStuff() @{ // Start rule
 			( result+:Rule
 			| result+:HostCall
-			| result+:HostBlock )+
+			| result+:HostBlock
+			| error { Error(0, "Expected a rule definition here (or a block of code in the host language)"); }
+			)+
 			EOF
 		};
 
