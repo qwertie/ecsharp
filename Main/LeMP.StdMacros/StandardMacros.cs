@@ -232,8 +232,8 @@ namespace LeMP
 		[LexicalMacro(@"x `code==` y", 
 			 "Returns the literal true if two or more syntax trees are equal, or false if not. "
 			+"The two arguments are macro-preprocessed, and trivia is ignored.", 
-			"tree==", "'tree==", "code==", "'code==", "codeEquals", "'codeEquals")]
-		public static LNode treeEquals(LNode node, IMacroContext context)
+			"code==", "'code==", "codeEquals", "'codeEquals")]
+		public static LNode codeEquals(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount < 2) return null;
 			node = context.PreProcessChildren();
