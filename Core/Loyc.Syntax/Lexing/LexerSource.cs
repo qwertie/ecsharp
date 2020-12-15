@@ -151,8 +151,8 @@ namespace Loyc.Syntax.Lexing
 		public new virtual void Error(int lookaheadIndex, string format)
 			{ Error(lookaheadIndex, format, EmptyArray<object>.Value); }
 		public new virtual void Error(int lookaheadIndex, string format, params object[] args) {
-			// That's right, this method is not any different, we're just making it public
-			base.Error(lookaheadIndex, format, args);
+			// This method is no different than base.Error(), we're just making it public
+			base.Error_Renamed(lookaheadIndex, format, args);
 		}
 
 		/// <inheritdoc/>
@@ -167,10 +167,12 @@ namespace Loyc.Syntax.Lexing
 		public LexerSourceWorkaround(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 			: base(source, fileName, inputPosition, newSourceFile) {}
 
-		protected abstract void Error_Renamed(int lookaheadIndex, string format);
+		protected virtual void Error_Renamed(int lookaheadIndex, string format)
+			{ base.Error(lookaheadIndex, format); }
 		protected override void Error(int lookaheadIndex, string format)
 			{ Error_Renamed(lookaheadIndex, format); }
-		protected abstract void Error_Renamed(int lookaheadIndex, string format, params object[] args);
+		protected virtual void Error_Renamed(int lookaheadIndex, string format, params object[] args)
+			{ base.Error(lookaheadIndex, format, args); }
 		protected override void Error(int lookaheadIndex, string format, params object[] args)
 			{ Error_Renamed(lookaheadIndex, format, args); }
 	}
