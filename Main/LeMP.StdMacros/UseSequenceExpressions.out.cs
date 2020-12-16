@@ -405,11 +405,6 @@ namespace LeMP
 							Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
 						
-						} else if ((attrs = expr.Attrs).IsEmpty | true && ((LNodeList) attrs).NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
-							if (varType.IsIdNamed(S.Missing))
-								Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
-							result = LNode.Call(LNode.List(_trivia_pure), (Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName.PlusAttrs(LNode.List(LNode.Id(CodeSymbols.Out)))));
-						
 						} else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_14 = expr.Args[1]) != null && tmp_14.Calls(CodeSymbols.Assign, 2) && (varName = tmp_14.Args[0]) != null && (value = tmp_14.Args[1]) != null)
 							if (stmtContext)
 								result = expr;	// no-op

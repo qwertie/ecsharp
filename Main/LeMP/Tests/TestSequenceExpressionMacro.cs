@@ -609,16 +609,16 @@ namespace LeMP.Tests
 				}");
 		}
 
-		[Test]
-		public void TestOutVarDecl()
-		{
-			TestEcs(@"#useSequenceExpressions;
-				static int? Parse(string s) => int.Parse(s, out int x) ? (int?)x : null;", @"
-				static int? Parse(string s) {
-					int x;
-					return int.Parse(s, out x) ? (int?)x : null;
-				}");
-		}
+		//[Test]
+		//public void TestOutVarDecl()
+		//{
+		//	TestEcs(@"#useSequenceExpressions;
+		//		static int? Parse(string s) => int.Parse(s, out int x) ? (int?)x : null;", @"
+		//		static int? Parse(string s) {
+		//			int x;
+		//			return int.Parse(s, out x) ? (int?)x : null;
+		//		}");
+		//}
 
 		[Test]
 		public void TestObviousBugWithRunSequenceInVarDecl()

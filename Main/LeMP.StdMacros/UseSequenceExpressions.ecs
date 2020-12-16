@@ -428,13 +428,14 @@ namespace LeMP
 						Context.Sink.Warning(expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 						result = expr;
 
-					// A variable declaration with no initializer and an `out` attribute attached
-					case { [$(...(attrs [((LNodeList)#).NodeNamed(S.Out) != null]))]
-							$varType $(varName [#.IsId]); }:
-						if (varType.IsIdNamed(S.Missing))
-							Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
-						result = quote( [$_trivia_pure] 
-							#runSequence($(expr.WithoutAttrNamed(S.Out)), out $varName) );
+					// A variable declaration with no initializer and an `out` attribute attached - no does not need to be handled in C# 7+
+					//case { [$(...(attrs [((LNodeList)#).NodeNamed(S.Out) != null]))]
+					//		$varType $(varName [#.IsId]); }:
+					//	if (varType.IsIdNamed(S.Missing))
+					//		Context.Sink.Error(expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
+					//	else
+					//		result = quote( [$_trivia_pure] 
+					//			#runSequence($(expr.WithoutAttrNamed(S.Out)), out $varName) );
 
 					// A variable declaration with an initializer (may have a `ref` attribute 
 					// attached, which should be transferred to the final expression)
