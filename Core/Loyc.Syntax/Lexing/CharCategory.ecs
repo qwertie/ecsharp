@@ -1,0 +1,461 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+compileTime // Read the unicode character database into a List<UnicodeDatabaseEntry>
+{
+	using System;
+	using System.Text;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Globalization;
+	using System.Linq;
+	using System.IO;
+	using Loyc;
+	using Loyc.Collections;
+
+	string unicodeDatabaseFile = File.ReadAllText(Path.Combine(#get(#inputFolder), "UnicodeData.txt"));
+	// Note: some PAIRS of lines are ranges. In the first row of the pair, 
+	// line[1] ends with "First>", and in the second row, line[1] ends with "Last>".
+	List<string[]> unicodeDatabaseLines = unicodeDatabaseFile.Split('\n')
+		.Select(line => line.Split(';'))
+		.Where(line => line.Length >= 14)
+		.ToList();
+
+	var categoryMap = new Dictionary<string, UnicodeCategory>()
+	{
+		["Lu"] = UnicodeCategory.UppercaseLetter,
+		["Ll"] = UnicodeCategory.LowercaseLetter,
+		["Lt"] = UnicodeCategory.TitlecaseLetter,
+		["Lm"] = UnicodeCategory.ModifierLetter,
+		["Lo"] = UnicodeCategory.OtherLetter,
+		["Mn"] = UnicodeCategory.NonSpacingMark, // e.g. accent marks, grave, horn, brave
+		["Mc"] = UnicodeCategory.SpacingCombiningMark,
+		["Me"] = UnicodeCategory.EnclosingMark,
+		["Nd"] = UnicodeCategory.DecimalDigitNumber, // various versions of 0 to 9
+		["Nl"] = UnicodeCategory.LetterNumber,
+		["No"] = UnicodeCategory.OtherNumber,
+		["Pc"] = UnicodeCategory.ConnectorPunctuation,
+		["Pd"] = UnicodeCategory.DashPunctuation,
+		["Ps"] = UnicodeCategory.OpenPunctuation,
+		["Pe"] = UnicodeCategory.ClosePunctuation,
+		["Pi"] = UnicodeCategory.InitialQuotePunctuation,
+		["Pf"] = UnicodeCategory.FinalQuotePunctuation,
+		["Po"] = UnicodeCategory.OtherPunctuation,
+		["Sm"] = UnicodeCategory.MathSymbol,
+		["Sc"] = UnicodeCategory.CurrencySymbol,
+		["Sk"] = UnicodeCategory.ModifierSymbol,
+		["So"] = UnicodeCategory.OtherSymbol, // emojis and icons
+		["Zs"] = UnicodeCategory.SpaceSeparator,
+		["Zl"] = UnicodeCategory.LineSeparator,
+		["Zp"] = UnicodeCategory.ParagraphSeparator,
+		["Cc"] = UnicodeCategory.Control,
+		["Cf"] = UnicodeCategory.Format,
+		["Cs"] = UnicodeCategory.Surrogate,
+		["Co"] = UnicodeCategory.PrivateUse,
+		["Cn"] = UnicodeCategory.OtherNotAssigned
+	};
+
+	class UnicodeDatabaseEntry {
+		public int First, Last;
+		public string Name;          // [1]
+		public string GeneralCategory; // [2]
+		public int CanonicalCombiningClass; // [3]
+		public string BidiClass;     // [4]
+		public string Decomposition; // [5]
+		public string NumericValue;  // [8]
+		public bool Mirrored;        // [9] == "Y"
+		public int UppercaseMapping; // [12] -1 if not applicable
+		public int LowercaseMapping; // [13] -1 if not applicable
+		public int TitlecaseMapping; // [14] -1 if not applicable
+	}
+
+	var unicodeDatabase = new List<UnicodeDatabaseEntry>();
+	for (int l = 0; l < unicodeDatabaseLines.Count; l++)
+	{
+		string[] line = unicodeDatabaseLines[l], end = null;
+		var entry = new UnicodeDatabaseEntry();
+		
+		entry.First = entry.Last = int.Parse(line[0], NumberStyles.HexNumber);
+		entry.Name = line[1];
+		if (line[1].EndsWith("First>")) {
+			l++;
+			end = unicodeDatabaseLines[l];
+			entry.Last = int.Parse(end[0], NumberStyles.HexNumber);
+			Debug.Assert(end[1].EndsWith("Last>"));
+			Debug.Assert(entry.Last > entry.First);
+		}
+		entry.GeneralCategory = line[2];
+		entry.CanonicalCombiningClass = int.Parse(line[3]);
+		entry.BidiClass = line[4];
+		entry.Decomposition = line[5];
+		entry.NumericValue = line[8];
+		entry.Mirrored = line[9] == "Y";
+		if (!int.TryParse(line[12], out entry.UppercaseMapping))
+			entry.UppercaseMapping = -1;
+		if (!int.TryParse(line[13], out entry.LowercaseMapping))
+			entry.LowercaseMapping = -1;
+		if (!int.TryParse(line[14], out entry.TitlecaseMapping))
+			entry.TitlecaseMapping = -1;
+		
+		unicodeDatabase.Add(entry);
+	}
+}
+
+compileTime // Write a little HTML file to help us understand the categories
+{
+	using System.Collections; // BitArray
+
+	string MakeHtmlFileWithCategories()
+	{
+		var	categories = new BDictionary<string, (string CatName, BList<int> Members)>(string.CompareOrdinal);
+		var seen = new BitArray(0x110000);
+		
+		foreach (var entry in unicodeDatabase)
+		{
+			for (int c = entry.First; c <= entry.Last; c++) {
+				seen[c] = true;
+				AddToCategory(c, entry.GeneralCategory, categoryMap[entry.GeneralCategory].ToString());
+			}
+		}
+		for (int c = 0; c <= 0x10FFFF; c++) // detect unmentioned characters
+		{
+			if (!seen[c])
+				AddToCategory(c, "\u00A0", "(unassigned)"); // 0xA0 = no-break space
+		}
+		void AddToCategory(int c, string cat, string catName)
+		{
+			if (categories.TryGetValue(cat, out var tuple))
+				tuple.Members.Add(c);
+			else
+				categories[cat] = (CatName: catName, Members: new BList<int>() { c });
+		}
+		List<(int lo, int hi)> BuildRangeList(BList<int> charList)
+		{
+			var ranges = new List<(int lo, int hi)>();
+			foreach (var c in charList) {
+				if (ranges.Count != 0 && c == ranges[ranges.Count-1].hi + 1)
+					ranges[ranges.Count-1] = ranges[ranges.Count-1].Do(r => { r.hi++; return r; });
+				else
+					ranges.Add((c, c));
+			}
+			return ranges;
+		}
+
+		static if (false) // old version
+		{
+			// Build list of table rows (HTML strings)
+			var rows = new List<string>();
+			foreach (var pair in categories)
+			{
+				(var cat, var tuple) = (pair.Key, pair.Value);
+				int bmpCount = tuple.Members.Count(c => c <= 0xFFFF);
+			
+				// Build list of hex ranges (e.g. "61-79 B5 ...")
+				var ranges = BuildRangeList(tuple.Members);
+				var rangesString = string.Join(" ", ranges.Select(r => r.lo == r.hi ? r.lo.ToString("X") : r.lo.ToString("X") + "-" + r.hi.ToString("X")));
+
+				// Build list of characters
+				var charsString = new StringBuilder();
+				if (cat == "Co" || cat == "Cs" || cat == "\u00A0") {
+					charsString.Append("Not applicable");
+				} else {
+					foreach (int c in tuple.Members) {
+						if (c == '&')
+							charsString.Append("&amp;");
+						else if (c == '<')
+							charsString.Append("&lt;");
+						else if (c >= 0xD800 && c <= 0xDFFF)
+							continue;
+						else {
+							// combining marks need something with which to combine
+							if (cat.StartsWith("M"))
+								charsString.Append("a");
+
+							charsString.AppendCodePoint(c);
+						}
+						charsString.Append(' ');
+					}
+				}
+
+				rows.Add($"""
+									<tr>
+										<td>{pair.Key}: {tuple.CatName}</td>
+										<td>{tuple.Members.Count} ({bmpCount}+{tuple.Members.Count-bmpCount})</td>
+										<td>{rangesString}</td>
+										<td>{charsString}</td>
+									</tr>""");
+			}
+			var rowsString = string.Join("", rows);
+
+			return $"""<!doctype html>
+				<html>
+					<head>
+						<style>
+							p {{ font-family: serif; }}
+							table {{
+								border-collapse:collapse;
+							}}
+							table td, table td {{
+								vertical-align: top;
+								border: 2px solid #BBB;
+							}}
+						</style>
+						<title>All Unicode characters by category</title>
+					</head>
+					<body>
+						<h1>Table of Unicode characters by category (old version)</h1>
+						<ul>
+							<li><a href="http://www.unicode.org/reports/tr44/#UnicodeData.txt">Field list</a>
+							<li><a href="https://www.unicode.org/charts/">Code chart PDFs</a>
+						</ul>
+						<table>
+						<colgroup>
+							<col span="1" style="width: 8%;">
+							<col span="1" style="width: 12%;">
+							<col span="1" style="width: 35%;">
+							<col span="1" style="width: 45%;">
+						</colgroup>
+						<thead>
+							<tr>
+							  <th>Category</th>
+							  <th>Count<br/>(BMP+astral)</th>
+							  <th>Members</th>
+							  <th>Glyphs</th>
+							</tr>
+						  </thead>
+						  <tbody>
+				{rowsString}
+						  </tbody>
+						</table>
+					</body>
+				</html>
+				""";
+		}
+		else // new version
+		{
+			// Build list of table rows (HTML strings)
+			var paragraphs = new List<string>();
+			foreach (var pair in categories)
+			{
+				(var cat, var tuple) = (pair.Key, pair.Value);
+				int bmpCount = tuple.Members.Count(c => c <= 0xFFFF);
+			
+				// Build list of hex ranges (e.g. "61-79 B5 ...")
+				var ranges = BuildRangeList(tuple.Members);
+
+				// For each range, report it together with its characters
+				paragraphs.Add($"<h2>{tuple.CatName}: {cat}</h2>");
+				paragraphs.Add($"<p>{tuple.Members.Count} characters ({bmpCount} BMP + {tuple.Members.Count-bmpCount} astral) in {ranges.Count} ranges</p>");
+				var sb = new StringBuilder("<p>");
+				int newlinePressure = 0;
+				(int lo, int hi) prev_r = (0, 0);
+				foreach (var r in ranges) {
+					if (newlinePressure > 20 || newlinePressure > 0 && (r.lo & ~0xFF) != (prev_r.lo & ~0xFF)) {
+						newlinePressure = 0;
+						sb.Append("</p>\n\t\t<p>");
+					}
+					sb.Append("<span class=R>| ");
+					sb.Append(r.lo == r.hi ? r.lo.ToString("X") : r.lo.ToString("X") + "-" + r.hi.ToString("X"));
+					sb.Append("</span>&nbsp;");
+					if (cat != "Co" && cat != "Cs" && cat != "Cc" && cat != "\u00A0") {
+						for (int c = r.lo; c <= r.hi; c++) {
+							if (c == '&')
+								sb.Append("&amp;");
+							else if (c == '<')
+								sb.Append("&lt;");
+							else if (c >= 0xD800 && c <= 0xDFFF)
+								continue;
+							else {
+								// combining marks need something with which to combine
+								if (cat.StartsWith("M"))
+									sb.Append("a");
+
+								sb.AppendCodePoint(c);
+							}
+							sb.Append(' ');
+							newlinePressure++;
+						}
+					}
+					prev_r = r;
+				}
+				sb.Append("</p>");
+				paragraphs.Add(sb.ToString());
+			}
+			var paragraphsJoined = string.Join("\n\t\t", paragraphs);
+
+			return $"""<!doctype html>
+				<html>
+					<head>
+						<style>
+							p {{
+								margin-top: 0.4em; margin-bottom: 0.4em;
+								text-indent: -0.4em; padding-left: 0.4em;
+								font-family: serif;
+							}}
+							.R {{ color: #88D; }}
+						</style>
+						<title>All Unicode characters by category</title>
+					</head>
+					<body>
+						<h1>List of Unicode characters by category</h1>
+						<ul>
+							<li><a href="https://www.unicode.org/charts/">Code chart PDFs</a>
+							<li><a href="https://www.unicode.org/Public/UCD/latest/charts/CodeCharts.pdf">110MB Giant PDF of all the characters</a>
+							<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/">Unicode character database files</a>
+							<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt">Unicode character database main file</a>
+							<li><a href="http://www.unicode.org/reports/tr44/#UnicodeData.txt">Description of fields in the UCD main file</a>
+							<li><a href="http://www.unicode.org/reports/tr44/#General_Category_Values">About the categories on this page</a>
+							<li><a href="https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/CharCategory.ecs">Enhanced C# code used to generate this page</a>
+						</ul>
+						<p>Sometimes I wish Unicode had a property for "stupid character that 
+						   we obviously never should have assigned in the first place because it's 
+						   yet another stylistic duplicate of the Latin alphabet like 𝚊 𝚋 𝚌 𝚍 𝚎 𝚏 𝚐
+						   or ⓐ ⓑ ⓒ ⓓ ⓔ ⓕ ⓖ, or maybe some stylistic units like 
+						   ㎌ ㎏ ㎐ ㎑ ㎒ ㎓ ㎖ ㎛ ㎞ ㎡ ㎤ ㎧ ㎨, or maybe Roman numerals like 
+						   Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ". Why are there tens of thousands of astral 
+						   CJK characters? I'm looking at you, U+20000...U+2CEA1. Somehow I doubt
+						   that China suddenly sprouted 50,000 new characters. Seriously, those of 
+						   us who build programming languages and want to support Unicode have no 
+						   practical way to tell the difference between legitimately useful 
+						   characters and confusing duplicates of existing characters that we shouldn't
+						   really allow as identifiers or waste disk space to keep track of.</p>
+						<p>How did the Unicode Consortium wander through life unaware that Fonts
+						   Exist, and that all of these extra characters are not only a waste of 
+						   everyone's time and resources but also a 
+						   <a href="https://www.unicode.org/faq/security.html">security threat</a>?
+						   The answer, I think, is that they knew and just didn't care. "We gave 
+						   ourselves a million-character codespace... we MUST find a way to use it 
+						   all up by 2100!™". P.S. unicode standards documents always have, like, 
+						   the worst explanations of everything, as if crushing bureaucracy and 
+						   confusing jargonfests give them a hard-on.</p>
+						<p>Here's hoping that someday they clue in and implement the following proposal:
+						   Reserve 0xD0000 to 0xDFFFF for all possible 16-bit vertical pixel patterns.
+						   That way anyone can express any 16x16 icon with a sequence of 16 characters,
+						   and Unicode no longer has total authority over which icons and emojis exist
+						   and which ones don't. And now, here's that Unicode table you wanted:
+						{paragraphsJoined}
+					</body>
+				</html>
+				""";
+		}
+	}
+	File.WriteAllText(Path.Combine(#get(#inputFolder), "CharCategories.html"), MakeHtmlFileWithCategories(), Encoding.UTF8); // includes BOM
+
+	//	.Select(line => {
+	//		UString rest = line;
+	//		int len1 = ParseHelpers.TryParseHex(ref rest, out int value1), len2 = 0, value2 = 0;
+	//		if (rest.StartsWith("..")) {
+	//			rest = rest.Slice(2);
+	//			len2 = ParseHelpers.TryParseHex(ref rest, out value2);
+	//		}
+	//		Debug.Assert(len1 >= 4);
+	//		string category = rest.SplitAt(';').Item2.Substring(1, 2).ToString();
+	//		return (From: value1, To: len2 != 0 ? value2 - value1 + 1 : 1, Category: categoryMap.TryGetValue(category, (UnicodeCategory)(-1)));
+	//	})
+	//	.OrderBy(t => t.From)
+	//	.ToList();
+
+
+	var F = new LNodeFactory(EmptySourceFile.Unknown);
+}
+
+
+//string propList_txt = includeFileText("PropList.txt");
+namespace Loyc.Syntax.Lexing
+{
+	class CharCategory
+	{
+		//precompute(categoryTable.Select(c => quote(( $(LNode.Literal(c.From)), $(LNode.Literal(c.To)), UnicodeCategory.$(LNode.Id(c.Category.ToString())) ))));
+		void f(){
+		}
+	}
+}
+/*
+	base2    base5 base8 base10 base12 base16 base36 base100
+	0        0     0     0      0      0      0      0
+	1        1     1     1      1      1      1      1
+	10       2     2     2      2      2      2      2
+	11       3     3     3      3      3      3      3
+	100      4     4     4      4      4      4      4
+	101      10    5     5      5      5      5      5
+	110      11    6     6      6      6      6      6
+	111      12    7     7      7      7      7      7
+	1000     13    10    8      8      8      8      8
+	1001     14    11    9      9      9      9      9
+	1010     20    12    10     ͻ      ͻ      A      A
+	1011     21    13    11     ͼ      ͼ      B      B
+	1100     22    14    12     10     გ      C      C
+	1101     23    15    13     11     დ      D      D
+	1110     24    16    14     12     ე      E      E
+	1111     30    17    15     13     ვ      F      F
+	10000    31    20    16     14     10     G      G
+	10001    32    21    17     15     11     H      H
+	10010    33    22    18     16     12     I      I
+
+	100011   120   43    35     2ͼ     19     Z      Z
+	100100   121   44    36     30     1A     10     
+	                     1234          64            10
+
+1/3 = 0.3333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+1/3 = 0.4(base12)
+1/4 = 0.3(base12)
+1/2 = 0.6(base12)
+2/3 = 0.8(base12)
+3/4 = 0.9(base12)
+5/6 = 0.ͻ(base12)
+1/6 = 0.2(base12)
+1/5 = 0.24972497249724972497249724972497249724972497249724972497249724972497249724972497249724972497249724972497249724972497249724972497(base12)
+
+
+
+5-digit number in base X: EDCBA
+
+X=8
+EDCBA=12345
+E*X^4 + D*X^3 + C*X^2 + B*X^1 + A*X^0
+1*8*8*8*8 + 2*8*8*8 + 3*8*8 + 4*8 + 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/

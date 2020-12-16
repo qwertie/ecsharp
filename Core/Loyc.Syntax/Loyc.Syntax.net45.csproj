@@ -135,6 +135,15 @@
       <DependentUpon>Les3Printer_CanPrintAsNumber.ecs</DependentUpon>
     </Compile>
     <Compile Include="Lexing\BaseILexer.cs" />
+    <None Include="Lexing\CharCategory.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>CharCategory.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Lexing\CharCategory.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CharCategory.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Lexing\TokenTree.cs" />
     <Compile Include="Lexing\TriviaSaver.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
