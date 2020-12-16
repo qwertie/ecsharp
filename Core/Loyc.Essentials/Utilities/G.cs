@@ -111,6 +111,15 @@ namespace Loyc
 			action(obj);
 			return obj;
 		}
+		
+		public delegate void ActionRefT<T>(ref T arg);
+		/// <summary>Calls <c>action(ref obj)</c>, then returns the same object.</summary>
+		public static T With<T>(this T obj, ActionRefT<T> action)
+		{
+			action(ref obj);
+			return obj;
+		}
+
 		/// <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
 		/// of this method, except that the action has a return value.</summary>
 		public static T With<T>(this T obj, Func<T, T> action) => Do(obj, action);
