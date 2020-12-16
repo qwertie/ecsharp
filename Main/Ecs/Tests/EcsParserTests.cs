@@ -45,7 +45,7 @@ namespace Loyc.Ecs.Tests
 				LNodeList results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
 
 				// Inject comments
-				var injector = new EcsTriviaInjector(preprocessed.TriviaList, preprocessed.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				var injector = new EcsTriviaInjector(preprocessed.TriviaList, preprocessed.SourceFile, (int)TokenType.Newline, "/*", "*/", "//", (mode & Mode.Expression) == 0);
 				results = LNode.List(injector.Run(results.GetEnumerator()).ToList());
 
 				LNode result = results.AsLNode(S.Splice);

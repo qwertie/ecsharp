@@ -80,7 +80,8 @@ namespace Loyc.Ecs
 			var results = Parse(treeified.Buffered(), input.SourceFile, msgs, options);
 			if (options.PreserveComments) {
 				var injector = new EcsTriviaInjector(preprocessed.TriviaList, input.SourceFile, 
-					(int)TokenType.Newline, "/*", "*/", "//");
+					(int)TokenType.Newline, "/*", "*/", "//", 
+					options.Mode.IsOneOf<Symbol>(ParsingMode.Expressions, ParsingMode.FormalArguments));
 				return injector.Run(results.GetEnumerator()).Buffered();
 			} else
 				return results;

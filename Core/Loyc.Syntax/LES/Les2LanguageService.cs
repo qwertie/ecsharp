@@ -69,7 +69,7 @@ namespace Loyc.Syntax.Les
 			if (options.PreserveComments) {
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);
 				var results = Parse(saver.Buffered(), input.SourceFile, msgs, options);
-				var injector = new StandardTriviaInjector(saver.TriviaList, saver.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				var injector = new StandardTriviaInjector(saver.TriviaList, saver.SourceFile, (int)TokenType.Newline, "/*", "*/", "//", options.Mode != ParsingMode.Expressions);
 				return injector.Run(results.GetEnumerator()).Buffered();
 			} else {
 				var lexer = new WhitespaceFilter(input);

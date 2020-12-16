@@ -516,15 +516,18 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Tuples()
 		{
-			Stmt("(a)", F.InParens(a));
+			Stmt ("(a)", F.InParens(a));
 			Exact("(a;)", F.Tuple(a));
-			Stmt("(;)", F.Tuple(_("")));
+			Stmt ("(;)", F.Tuple(_("")));
 			Exact("(``;)", F.Tuple(_("")));
-			Stmt("(a; ;)", F.Tuple(a, _("")));
-			Stmt("(a; b)", F.Tuple(a, b));
-			Stmt("(a; ``)", F.Tuple(a, _("")));
-			Stmt("(a; b; c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
-			Stmt("(a, b, c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
+			Stmt ("(a; ;)", F.Tuple(a, _("")));
+			Exact("(a; b;)", F.Tuple(a, b));
+			Stmt ("(a; b)", F.Tuple(a, b));
+			Stmt ("(a; ``)", F.Tuple(a, _("")));
+			Exact("(a; b; c + x;)", F.Tuple(a, b, F.Call(S.Add, c, x)));
+			Stmt ("(a, b, 2 + x)",  F.Tuple(a, b, F.Call(S.Add, two, x)));
+			Expr ("(a,)", F.Tuple(a, _("")));
+			Expr ("(,)", F.Tuple(_(""), _("")));
 		}
 
 		[Test]
@@ -805,12 +808,12 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Token Trees and Compact Expression Lists
+		#region Token lists (trees) and Compact Expression Lists
 
 		[Test]
-		public void BasicTokenTrees()
+		public void BasicTokenLists()
 		{
-			// TODO: add printer support
+			// TODO: add printer support and switch to Exact mode
 			Test(Mode.Stmt, 0, "(' a 2 'z')", F.Tuple(a, two, F.Literal('z', "c")));
 			Test(Mode.Stmt, 0, "Foo(' + x 1)", F.Call(Foo, _(S.Add), x, one));
 			Test(Mode.Stmt, 0, "' ()", F.Call(S.Parens));
@@ -819,7 +822,34 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void MoreTokenTrees()
+		public void MoreTokenLists()
+		{
+			// TODO: add printer support and switch to Exact mode
+			Test(Mode.Stmt, 0, "(' Hi! I'm Fred!)", F.Tuple(_("Hi"), _("'!"), _("I'm"), _("Fred"), _("'!")));
+			Test(Mode.Stmt, 0, "[' Hi! (I'm Sam)]", F.Call(S.Array, _("Hi"), _("'!"), F.Call(_("'()"), _("I'm"), _("Sam"))));
+			Test(Mode.Stmt, 0, "{' Hi, I'm Dave!}", F.Call(S.Braces, _("Hi"), _("',"), _("I'm"), _("Dave"), _("'!")));
+			Test(Mode.Expr, 0, "' Hi -- I'm John!", _("Hi"), _("'--"), _("I'm"), _("John"), _("'!"));
+
+			// Ways to embed normal expressions in an expression tree
+			Test(Mode.Expr, 0, "' [a + 1, b + 2] ...", F.Call(_("'[]"), F.Call(S.Add, a, one), F.Call(S.Add, b, two)), _("'..."));
+			Test(Mode.Expr, 0, "' {a: 1, b: 2} ...", F.Braces(F.Call(S.Colon, a, one), F.Call(S.Colon, b, two)), _("'..."));
+			Test(Mode.Expr, 0, "[' ... ' Foo(2), ' etc...]", F.Call(_("'[]"), _("'..."), F.Call(Foo, two), _("etc"), _("'...")));
+			Test(Mode.Expr, 0, "' .... ' Foo(2), ' etc...", _("'...."), F.Call(Foo, two), _("etc"), _("'..."));
+			string code = "{\n" +
+				"  ' (a += 1)\n" + // this is just a nested token list
+				"  [a += 2, b++];\n" + // but this is a normal-syntax subexpression
+				"  {a += 2, c--}\n" + // and so is this
+				"}";
+			LNode newline = AppendStatement(_("'\n"));
+			LNode tree = F.Braces(
+				F.Call("'()", a, _("'+="), one), newline,
+				F.Call("'[]", F.Call(S.AddAssign, a, two), F.Call(S.PostInc, b)), AppendStatement(_("';")), newline,
+				F.Call("'{}", F.Call(S.AddAssign, a, two), F.Call(S.PostDec, c)), newline);
+			Test(Mode.Stmt, 0, code, tree);
+		}
+
+		[Test]
+		public void EvenMoreTokenLists()
 		{
 			// If ' is used in a braces context, each node after the first gets %appendStatement 
 			// trivia because newline is expected between nodes inside braces
@@ -837,23 +867,22 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
-		public void TokenTreesWithNewlines()
+		public void TokenListsWithNewlines()
 		{
 			Test(Mode.Stmt, 0, "Foo(' \n  a[2 + 1] * \n  {\n    b('z')\n  })", F.Call(Foo,
 				OnNewLine(a), F.Call(S.Array, F.Call(S.Add, two, one)), _(S.Mul), 
 				OnNewLine(F.Braces(F.Call(b, F.Literal('z', "c"))))));
 
-			// Ugh, it's a mess of trivia.
-			var newline = AppendStatement(NewlineAfter(_("'\n")));
+			var newline = AppendStatement(_("'\n"));
 			var options = new Les3PrinterOptions { IndentString = "  ", PrintTriviaExplicitly = true };
 			Test(Mode.Stmt, 0, options,
 				"{'\n  a[1 + 2] >> \n  { b('y') }\n}", F.Braces(
-				newline, AppendStatement(a), AppendStatement(F.Call(S.Array, F.Call(S.Add, one, two))), AppendStatement(_(S.Shr)),
-				newline, AppendStatement(F.Braces(F.Call(b, F.Literal('y', "c"))).SetStyle(NodeStyle.OneLiner)),
+				newline, a, AppendStatement(F.Call(S.Array, F.Call(S.Add, one, two))), AppendStatement(_(S.Shr)),
+				newline, F.Braces(F.Call(b, F.Literal('y', "c"))).SetStyle(NodeStyle.OneLiner),
 				newline).SetBaseStyle(NodeStyle.Compact | NodeStyle.Alternate));
 			Test(Mode.Stmt, 0, options, "{ '\n  a[2 +\n  x] * \n\n  { b(c) }\n}", F.Braces(
-				newline, AppendStatement(a), AppendStatement(F.Call(S.Array, F.Call(S.Add, two, OnNewLine(x)))), AppendStatement(_(S.Mul)),
-				newline, newline, AppendStatement(F.Braces(F.Call(b, c)).SetStyle(NodeStyle.OneLiner)),
+				newline, a, AppendStatement(F.Call(S.Array, F.Call(S.Add, two, OnNewLine(x)))), AppendStatement(_(S.Mul)),
+				newline, _("'\n"), F.Braces(F.Call(b, c)).SetStyle(NodeStyle.OneLiner),
 				newline));
 		}
 
@@ -866,7 +895,7 @@ namespace Loyc.Syntax.Les
 			Stmt("Foo(. 1 a; b 1)", F.Call(Foo, one, a, semicolon, b, one).SetBaseStyle(NodeStyle.Compact));
 		}
 
-		[Test]//(Fails = "TODO: Printer support")]
+		[Test]
 		public void CompactModeTests2()
 		{
 			// In Julia you can use newline as a row separator:
@@ -882,6 +911,7 @@ namespace Loyc.Syntax.Les
 			Stmt("[. 1 a; b c]", F.Call(S.Array, one, a, semicolon, b, c));
 			Stmt("[. a b;\n  c 1]", F.Call(S.Array, a, b, semicolon, OnNewLine(c), one));
 			Stmt("Foo(. 1 a;\n  b 1)", F.Call(Foo, one, a, semicolon, OnNewLine(b), one).SetBaseStyle(NodeStyle.Compact));
+			Stmt("Foo(. ;)", F.Call(Foo, semicolon).SetBaseStyle(NodeStyle.Compact));
 			Stmt("(. 1 a;\n  b 1)", F.Tuple(one, a, semicolon, OnNewLine(b), one));
 			Stmt("[. a b;\n  c x\n  ]",
 				F.Call(S.Array, a, b, semicolon, OnNewLine(c), NewlineAfter(x)));
@@ -889,6 +919,15 @@ namespace Loyc.Syntax.Les
 			// A tab or newline acts like a space (a comment would too, except that `./*` parses as a 3-char operator)
 			Stmt("[.\ta b c!x]", F.Call(S.Array, a, b, F.Of(c, x)));
 			Stmt("[.\na b x!T]", F.Call(S.Array, OnNewLine(a), b, F.Of(x, T)));
+			Stmt("[. 123]", F.Call(S.Array, Number(123)));
+			Stmt("(. 123)", F.InParens(Number(123)));
+			// This is slightly odd: a compact list has an optional comma after each item,
+			// so (. 321,) has one item whereas (321,) has two items. Meanwhile, the tuple-of-one
+			// syntax (123;) becomes a tuple of two when you write (. 123;) because each 
+			// semicolon is a distinct list item.
+			Stmt("(. 321,)", F.Tuple(Number(321)));
+			Stmt("(. 321;)", F.Tuple(Number(321), semicolon));
+			Stmt("(. ,)", F.Tuple(F.Missing));
 
 			// Decided not to support this either (figuring out what the trivia should be is... nontrivial)
 			//Stmt("{\n  . a b\n  c x+1\n}", F.Braces(           a, AppendStatement(b), AppendStatement(semicolon), c, AppendStatement(F.Call(S.Add, x, one)), AppendStatement(semicolon)));

@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Loyc.Syntax.Lexing;
 
+// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
+#rawText("\n#pragma warning disable 162, 642\n");
+
 namespace Loyc.Syntax.Les
 {
 	partial class Les3Printer

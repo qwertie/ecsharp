@@ -69,7 +69,7 @@ namespace Loyc.Syntax.Les
 				// Filter out whitespace, including some newlines (those directly inside square brackets or parentheses)
 				var saver = new TriviaSaver(input, (int)TokenType.Newline);
 				var results = Parse(saver.Buffered(), input.SourceFile, msgs, options);
-				var injector = new StandardTriviaInjector(saver.TriviaList, input.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				var injector = new StandardTriviaInjector(saver.TriviaList, input.SourceFile, (int)TokenType.Newline, "/*", "*/", "//", options.Mode != ParsingMode.Expressions);
 				injector.SLCommentSuffix = @"\\";
 				return injector.Run(results.GetEnumerator()).Buffered();
 			} else {

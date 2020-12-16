@@ -44,8 +44,8 @@ namespace Loyc.Ecs.Parser
 	/// </remarks>
 	public class EcsTriviaInjector : StandardTriviaInjector
 	{
-		public EcsTriviaInjector(IListSource<Token> sortedTrivia, ISourceFile sourceFile, int newlineTypeInt, string mlCommentPrefix, string mlCommentSuffix, string slCommentPrefix) 
-			: base(sortedTrivia, sourceFile, newlineTypeInt, mlCommentPrefix, mlCommentSuffix, slCommentPrefix)
+		public EcsTriviaInjector(IListSource<Token> sortedTrivia, ISourceFile sourceFile, int newlineTypeInt, string mlCommentPrefix, string mlCommentSuffix, string slCommentPrefix, bool topLevelIsBlock) 
+			: base(sortedTrivia, sourceFile, newlineTypeInt, mlCommentPrefix, mlCommentSuffix, slCommentPrefix, topLevelIsBlock)
 		{
 		}
 

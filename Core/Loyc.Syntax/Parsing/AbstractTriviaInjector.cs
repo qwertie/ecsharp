@@ -363,10 +363,24 @@ namespace Loyc.Syntax
 					changed = true;
 			}
 
-			// At the end, gather up any remaining trivia
+			// At the end, gather up any remaining trivia in the node's range that wasn't 
+			// associated with a child.
+			//
+			// A newline is treated specially here, because sometimes (e.g. in LES3 token 
+			// lists) a newline can be reified into its own node but also exist in the trivia 
+			// list. In this case, node will be something like `'\n` when triviaRange equals 
+			// node.Range. So let's say the node stream is something like Ann, `'\n`, Bob. If 
+			// we attach the newline to the `'\n` node as usual (using the 
+			// TriviaLocation.Ambiguous attachment mode, since the newline is neither leading 
+			// nor trailing), the output node list will be something rather complicated:
+			//   Ann, @`%appendStatement` @(`%trailing`(`%newline`)) `'\n`, @`%appendStatement` Bob
+			// If we ignore the newline temporarily so that it gets treated as leading trivia
+			// of Bob instead, we get simpler output:
+			//   Ann, @`%appendStatement` `'\n`, Bob
 			InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
 			trivia = CurrentTrivia(out triviaRange);
-			while (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex) {
+			while (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && 
+			       !(IsNewline(trivia.Value) && triviaRange == node.Range)) {
 				triviaList.Add(trivia.Value);
 				trivia = AdvanceTrivia(out triviaRange);
 				changed = true;

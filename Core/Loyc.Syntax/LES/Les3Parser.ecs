@@ -72,28 +72,28 @@ partial class Les3Parser
 	NewlinesOpt : greedy("\n")*;
 
 	// In a list of CompactExpression, newlines, semicolons and commas behave as shown.
-	// In square brackets / parens, newlines are filtered out so they're invisible here.
+	// In square brackets / parens, newlines are filtered out so the parser won't see them here.
 	// [. a b, c d] => [a, b, c, d]
 	// [. a b; c d] => [a, b, `';`, c, d]
-	protected CompactExpression returns [LNode result] :
-		(	result:TopExpr[compactMode: true]             greedy(",")?
-		|	","  { result = F.Id(GSymbol.Empty, $","); }
-		|	";"  { result = F.Id(S.Semicolon, $";"); }
+	protected CompactExpression(ref TokenType separatorType) returns [LNode result] :
+		(	result:TopExpr[compactMode: true] greedy("," { separatorType = TT.Comma; })?
+		|	","  { result = F.Id(GSymbol.Empty, $",");     separatorType = TT.Comma; }
+		|	";"  { result = F.Id(S.Semicolon, $";");  }
 		|	"\n" { result = F.Id(S.Semicolon, $"\n"); }
 		);
 
 	[LL(1)]
-	protected NextExpression[ref TokenType separatorType, out Token separator, bool isBracedBlock] returns [LNode result] :
+	protected NextExpression[ref TokenType separatorType, out Token trailingSeparator, bool isBracedBlock] returns [LNode result] :
 		(";"|","|TopExpr) =>
-		{ separator = default(Token); }
 		(	result:TopExpr[compactMode: false]
 		/	{ result = F.Id(S.Missing, LT0); }
 		)
 		ErrorTokensOpt
 		greedy( &{isBracedBlock} (")"|"]") {Error(-1, "Ignoring unexpected closing bracket");} )?
-		greedy(separator=(";"|","|"\n"))?
+		{ trailingSeparator = default; }
+		greedy(trailingSeparator=(";"|","|"\n"))?
 		{
-			var curSepType = separator.Type();
+			var curSepType = trailingSeparator.Type();
 			if (curSepType == TT.Newline && !isBracedBlock) {
 				Error(-1, "Expected ',' or ';' here");
 			} else if (curSepType != 0) {
@@ -104,7 +104,7 @@ partial class Les3Parser
 						separatorType = curSepType;
 					} else if (!(separatorType == TT.Semicolon && curSepType == TT.EOF)) {
 						Error(-1, "Unexpected separator: {0} should be {1}",
-							ToString((int) separator.Type()), ToString((int) separatorType));
+							ToString((int) trailingSeparator.Type()), ToString((int) separatorType));
 					}
 				}
 			}
@@ -124,37 +124,35 @@ partial class Les3Parser
 				_isCommaSeparatedListContext = oldCommaSeparatedContext;
 				_listContextName = oldListContext;
 			}
-			var list = InternalList<LNode>.Empty;
+			LNodeList list = LNodeList.Empty;
 			if (firstItem != null) list.Add(firstItem);
 		}
 		NewlinesOpt
 		(	&!{isBracedBlock}
 			&!{IsConjoinedToken($LI+1)}
 			"."
-			greedy(list+=CompactExpression)*
-			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
-		/	"'"
-			TokenListEx
-			{ list.AddRange($TokenListEx); }
-			{ separatorType = TT.Comma; } // if the context is plain parens, recognize this as a tuple
-		/	{ var separator = default(Token); }
-			(	(";"|","|TopExpr) =>
-				{ _isCommaSeparatedListContext = presumeCommaSeparated ? separatorType != TT.Semicolon : separatorType == TT.Comma; }
-				list+=NextExpression[ref separatorType, out separator, isBracedBlock]
+			greedy(list+=CompactExpression(ref separatorType))*
+		/	{ Token trailingSeparator = default; }
+			(	"'"
+				TokenListEx
+				{ list.AddRange($TokenListEx); }
+				{ trailingSeparator = default; }
+			/	{ _isCommaSeparatedListContext = presumeCommaSeparated ? separatorType != TT.Semicolon : separatorType == TT.Comma; }
+				list+=NextExpression[ref separatorType, out trailingSeparator, isBracedBlock]
+			|	error { Error(0, "Expected an expression here"); } ErrorTokenList
 			)*
 			{
-				if (separator.Type() == TT.Comma)
-					list.Add(F.Id(S.Missing, separator));
+				if (trailingSeparator.Type() == TT.Comma)
+					list.Add(F.Id(S.Missing, trailingSeparator));
 			}
-		|	error { Error(0, "Expected an expression here"); } TokenListEx
 		)
-		{ return LNode.List(list); };
+		{ return list; };
 
 	ErrorTokensOpt :
 		<=> // Make TokenList invisible to prediction analysis, so LLLPG treats this as an empty rule
 		{int _errorPosition = InputPosition;}
-		TokenList {
-			if (!$TokenList.IsEmpty)
+		ErrorTokenList {
+			if (!$ErrorTokenList.IsEmpty)
 				Error(_errorPosition - InputPosition, "Expected end of expression (',', ';', etc.)");
 		};
 
@@ -167,25 +165,22 @@ partial class Les3Parser
 			&!{IsConjoinedToken($LI+1)}
 			"." { Error(0, "Expected a statement here"); }
 		)?
+
+		{ Token trailingSeparator = default; }
 		(	"'"
 			TokenListEx
-			{
-				foreach (var item in $TokenListEx)
-					yield return item;
-			}
-		|	{ var separator = default(Token); }
-			(	
-				NextExpression[ref separatorType.Value, out separator, isBracedBlock]
-				{
-					yield return $NextExpression;
-					break; // workaround for LLLPG not understanding difference between `return` and `yield return`
-				}
-			)*
-			{
-				if (separator.Type() == TT.Comma)
-					yield return F.Id(S.Missing, separator);
-			}
-		);
+			{ foreach (var item in $TokenListEx) yield return item; }
+			{ trailingSeparator = default; }
+		/	{ _isCommaSeparatedListContext = separatorType.Value == TT.Comma; }
+			NextExpression[ref separatorType.Value, out trailingSeparator, isBracedBlock] 
+			{ yield return $NextExpression; }
+			{ break; } // workaround for LLLPG not understanding difference between `return` and `yield return`
+		|	error { Error(0, "Expected an expression here"); } ErrorTokenList
+		)*
+		{
+			if (trailingSeparator.Type() == TT.Comma)
+				yield return F.Id(S.Missing, trailingSeparator);
+		};
 
 	[LL(1)] // Simplify the output
 	protected TopExpr[bool compactMode] returns [LNode result] :
@@ -358,10 +353,6 @@ partial class Les3Parser
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=TT.Literal // literal
 			{$result = F.Literal(lit);}
-		//|	// ' token list
-		//	op:=TT.SingleQuote TokenList
-		//	{$result = F.Call((Symbol)op.Value, $TokenList, op.StartIndex, 
-		//	                  $TokenList.IsEmpty ? op.EndIndex : $TokenList.Last.Range.EndIndex);}
 		|	// {statements; in; braces}
 			result:BracedBlock
 		|	// [list]
@@ -395,24 +386,27 @@ partial class Les3Parser
 		"[" list:=ExprList["square brackets"] "]"
 		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
 
-	// Token lists (TODO: add unit tests)
+	// This is for consuming error tokens
 	[LL(1), #new]
-	TokenList   returns [LNodeList result] @init {$result = LNode.List();} :
-		greedy( result+=TokenListParticle )*;
+	ErrorTokenList returns [LNodeList result] @init {$result = LNode.List();} :
+		greedy( result+=TokenListParticle | "'" )*;
+	
+	// Non-error token lists
 	[LL(1)]
 	TokenListEx returns [LNodeList result] :
 		( t:=(","|";") { $result.Add(F.Id(t)); } 
 		| t:="\n"      { $result.Add(F.Id(@@`'\n`, t)); }
 		| result+=TokenListParticle
-		)*;
+		)*
+		"'"?;
 	[LL(1)]
 	TokenListParticle returns [LNode result]
 		:	"(" TokenListEx ")"
 			{ return F.Call(@@`'()`, $TokenListEx, $"(".StartIndex, $")".EndIndex); }
-		/	SquareBracketList                { return $SquareBracketList; }
-		/	BracedBlock                      { return $BracedBlock; }
-		/	t:=TT.Literal                    { return F.Literal(t); }
-		/	t:=(~(","|";"|"\n"|")"|"]"|"}")) { return F.Id(t); };
+		/	SquareBracketList                    { return $SquareBracketList; }
+		/	BracedBlock                          { return $BracedBlock; }
+		/	t:=TT.Literal                        { return F.Literal(t); }
+		/	t:=(~(","|";"|"\n"|")"|"]"|"}"|"'")) { return F.Id(t); };
 
 	BracedBlock returns [LNode result] : 
 		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule

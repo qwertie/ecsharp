@@ -55,7 +55,7 @@ namespace Loyc.Syntax.Les
 		public void SemicolonCommaErrors()
 		{
 			MessageHolder msgs;
-			msgs = Test(Mode.Expr, 0, "a,\nb", a, b);
+			msgs = Test(Mode.Expr, 0, "a, b", a, b);
 			msgs = Test(Mode.Stmt, 1, "a,\nb", a, b);
 			ExpectMessageContains(msgs, "';'", "','");
 			msgs = Test(Mode.Stmt, 1, "(a, b)", F.Tuple(a, b));

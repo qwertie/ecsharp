@@ -12,6 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Loyc.Syntax.Lexing;
 
+// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
+
+#pragma warning disable 162, 642
+
 namespace Loyc.Syntax.Les
 {
 	partial class Les3Printer
@@ -24,17 +28,17 @@ namespace Loyc.Syntax.Les
 		{
 			int la0;
 			// Check if the typeMarker is potentially acceptable for printing as a number
-			// line 23
+			// line 26
 			if (typeMarker.Name.TryGet(0, '\0') != '_' || !IsNormalIdentifier(typeMarker.Name))
 				return false;
-			// line 25
+			// line 28
 			char firstTMChar = typeMarker.Name.TryGet(1, '\0');
-			// line 26
+			// line 29
 			if (firstTMChar == 'e' || firstTMChar == 'E' || firstTMChar == 'p' || firstTMChar == 'P')
 				return false;
 		
 			// Prepare LexerSource needed by LLLPG, and our error counter
-			// line 30
+			// line 33
 			if (src == null) {
 				src = new LexerSource<UString>(textValue, "", 0, false);
 				src.ErrorSink = msgCounter = new NullMessageSink();
@@ -44,9 +48,9 @@ namespace Loyc.Syntax.Les
 			}
 		
 			// Find out whether textValue is in numeric format
-			// line 39
+			// line 42
 			bool isHex = false;
-			// Line 41: ([−])?
+			// Line 44: ([−])?
 			do {
 				la0 = src.LA0;
 				if (la0 == '−')
@@ -56,7 +60,7 @@ namespace Loyc.Syntax.Les
 				else
 					src.Error(0, "In rule 'CanPrintAsNumber', expected one of: [\\$.0-9−]");
 			} while (false);
-			// Line 42: ( BinNumber / HexNumber / DecNumber )
+			// Line 45: ( BinNumber / HexNumber / DecNumber )
 			la0 = src.LA0;
 			if (la0 == '0') {
 				switch (src.LA(1)) {
@@ -66,7 +70,7 @@ namespace Loyc.Syntax.Les
 				case 'X': case 'x':
 					{
 						HexNumber();
-						// line 43
+						// line 46
 						isHex = true;
 					}
 					break;
@@ -85,7 +89,7 @@ namespace Loyc.Syntax.Les
 			else
 				src.Error(0, "In rule 'CanPrintAsNumber', expected one of: [.0-9]");
 			src.Match(-1);
-			// line 47
+			// line 50
 			return msgCounter.ErrorCount == 0 && 
 			!(isHex && (firstTMChar >= 'a' && firstTMChar <= 'f' || firstTMChar >= 'A' && firstTMChar <= 'F'));
 		}
@@ -95,7 +99,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			src.MatchRange('0', '9');
-			// Line 51: ([0-9])*
+			// Line 54: ([0-9])*
 			for (;;) {
 				la0 = src.LA0;
 				if (la0 >= '0' && la0 <= '9')
@@ -103,7 +107,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 51: greedy(['_] [0-9] ([0-9])*)*
+			// Line 54: greedy(['_] [0-9] ([0-9])*)*
 			for (;;) {
 				la0 = src.LA0;
 				if (la0 == '\'' || la0 == '_') {
@@ -111,7 +115,7 @@ namespace Loyc.Syntax.Les
 					if (la1 >= '0' && la1 <= '9') {
 						src.Skip();
 						src.Skip();
-						// Line 51: ([0-9])*
+						// Line 54: ([0-9])*
 						for (;;) {
 							la0 = src.LA0;
 							if (la0 >= '0' && la0 <= '9')
@@ -136,7 +140,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			src.Match(HexDigit_set0);
-			// Line 53: greedy([0-9A-Fa-f])*
+			// Line 56: greedy([0-9A-Fa-f])*
 			for (;;) {
 				la0 = src.LA0;
 				if (HexDigit_set0.Contains(la0))
@@ -144,7 +148,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 53: greedy(['_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
+			// Line 56: greedy(['_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
 			for (;;) {
 				la0 = src.LA0;
 				if (la0 == '\'' || la0 == '_') {
@@ -152,7 +156,7 @@ namespace Loyc.Syntax.Les
 					if (HexDigit_set0.Contains(la1)) {
 						src.Skip();
 						src.Skip();
-						// Line 53: greedy([0-9A-Fa-f])*
+						// Line 56: greedy([0-9A-Fa-f])*
 						for (;;) {
 							la0 = src.LA0;
 							if (HexDigit_set0.Contains(la0))
@@ -171,13 +175,13 @@ namespace Loyc.Syntax.Les
 		static void DecNumber()
 		{
 			int la0;
-			// Line 56: (DecDigits | [.] DecDigits => )
+			// Line 59: (DecDigits | [.] DecDigits => )
 			la0 = src.LA0;
 			if (la0 >= '0' && la0 <= '9')
 				DecDigits();
 			else if (la0 == '.') { } else
 				src.Error(0, "In rule 'DecNumber', expected one of: [.0-9]");
-			// Line 57: ([.] DecDigits)?
+			// Line 60: ([.] DecDigits)?
 			do {
 				switch (src.LA0) {
 				case '.':
@@ -194,12 +198,12 @@ namespace Loyc.Syntax.Les
 					break;
 				}
 			} while (false);
-			// Line 58: greedy([Ee] ([+\-])? DecDigits)?
+			// Line 61: greedy([Ee] ([+\-])? DecDigits)?
 			do {
 				la0 = src.LA0;
 				if (la0 == 'E' || la0 == 'e') {
 					src.Skip();
-					// Line 58: ([+\-])?
+					// Line 61: ([+\-])?
 					do {
 						la0 = src.LA0;
 						if (la0 == '+' || la0 == '-')
@@ -222,18 +226,18 @@ namespace Loyc.Syntax.Les
 			int la0;
 			src.Match('0');
 			src.Match('X', 'x');
-			// Line 62: (HexDigits | [.] HexDigits => )
+			// Line 65: (HexDigits | [.] HexDigits => )
 			la0 = src.LA0;
 			if (HexDigit_set0.Contains(la0))
 				HexDigits();
 			else if (la0 == '.') { } else
 				src.Error(0, "In rule 'HexNumber', expected one of: [.0-9A-Fa-f]");
-			// Line 63: ([.] ([Pp] | [0-9A-Fa-f]) => [.] greedy(HexDigits)? greedy([Pp] ([+\-])? DecDigits)?)?
+			// Line 66: ([.] ([Pp] | [0-9A-Fa-f]) => [.] greedy(HexDigits)? greedy([Pp] ([+\-])? DecDigits)?)?
 			do {
 				la0 = src.LA0;
 				if (la0 == '.') {
 					src.Skip();
-					// Line 64: greedy(HexDigits)?
+					// Line 67: greedy(HexDigits)?
 					do {
 						switch (src.LA0) {
 						case '0': case '1': case '2': case '3':
@@ -252,12 +256,12 @@ namespace Loyc.Syntax.Les
 							break;
 						}
 					} while (false);
-					// Line 65: greedy([Pp] ([+\-])? DecDigits)?
+					// Line 68: greedy([Pp] ([+\-])? DecDigits)?
 					do {
 						la0 = src.LA0;
 						if (la0 == 'P' || la0 == 'p') {
 							src.Skip();
-							// Line 65: ([+\-])?
+							// Line 68: ([+\-])?
 							do {
 								la0 = src.LA0;
 								if (la0 == '+' || la0 == '-')
@@ -285,13 +289,13 @@ namespace Loyc.Syntax.Les
 			int la0;
 			src.Match('0');
 			src.Match('B', 'b');
-			// Line 70: (DecDigits | [.] DecDigits => )
+			// Line 73: (DecDigits | [.] DecDigits => )
 			la0 = src.LA0;
 			if (la0 >= '0' && la0 <= '9')
 				DecDigits();
 			else if (la0 == '.') { } else
 				src.Error(0, "In rule 'BinNumber', expected one of: [.0-9]");
-			// Line 71: ([.] DecDigits)?
+			// Line 74: ([.] DecDigits)?
 			do {
 				switch (src.LA0) {
 				case '.':
@@ -308,12 +312,12 @@ namespace Loyc.Syntax.Les
 					break;
 				}
 			} while (false);
-			// Line 72: greedy([Pp] ([+\-])? DecDigits)?
+			// Line 75: greedy([Pp] ([+\-])? DecDigits)?
 			do {
 				la0 = src.LA0;
 				if (la0 == 'P' || la0 == 'p') {
 					src.Skip();
-					// Line 72: ([+\-])?
+					// Line 75: ([+\-])?
 					do {
 						la0 = src.LA0;
 						if (la0 == '+' || la0 == '-')

@@ -141,11 +141,6 @@ namespace Loyc.Syntax.Les
 				stmt);
 		}
 
-		[Test(Fails = "TODO")]
-		public void TokenLists()
-		{
-		}
-
 		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions printerOptions, string text, params LNode[] expected)
 		{
 			var messages = new MessageHolder();

@@ -74,6 +74,7 @@ namespace Loyc.Syntax
 		public string SLCommentSuffix { get; set; }
 		public string MLCommentPrefix { get; set; }
 		public string MLCommentSuffix { get; set; }
+		public bool TopLevelIsBlock { get; set; } // whether the root node list should expect newlines between items
 
 		/// <summary>Initializes <see cref="StandardTriviaInjector"/>.</summary>
 		/// <param name="sortedTrivia">A list of trivia that will be injected into the 
@@ -81,18 +82,27 @@ namespace Loyc.Syntax
 		/// text of comments is extracted from the provided <see cref="ISourceFile"/>,
 		/// but comment tokens could instead store their text as a string in their
 		/// <see cref="Token.Value"/>.</param>
-		/// <param name="sourceFile">This is used as the source file of the <see cref="LNode.Range"/> of all trivia attributes that the algorithm injects.</param>
-		/// <param name="newlineTypeInt">A token is interpreted as a newline when this value equals <see cref="Token.TypeInt"/>.</param>
-		/// <param name="mlCommentPrefix">If a token's text begins with this prefix it is assumed to be a multi-line comment and the prefix is removed.</param>
-		/// <param name="mlCommentSuffix">If a multi-line comment's text ends with this suffix, the suffix is removed.</param>
-		/// <param name="slCommentPrefix">If a token's text begins with this prefix it is assumed to be a single-line comment and the prefix is removed.</param>
-		public StandardTriviaInjector(IListSource<Token> sortedTrivia, ISourceFile sourceFile, int newlineTypeInt, string mlCommentPrefix, string mlCommentSuffix, string slCommentPrefix) : base(sortedTrivia)
+		/// <param name="sourceFile">This is used as the source file of the <see cref="LNode.Range"/> 
+		///   of all trivia attributes that the algorithm injects.</param>
+		/// <param name="newlineTypeInt">A token is interpreted as a newline when this value equals 
+		///   <see cref="Token.TypeInt"/>.</param>
+		/// <param name="mlCommentPrefix">If a token's text begins with this prefix it is assumed to be 
+		///   a multi-line comment and the prefix is removed.</param>
+		/// <param name="mlCommentSuffix">If a multi-line comment's text ends with this suffix, 
+		///   the suffix is removed.</param>
+		/// <param name="slCommentPrefix">If a token's text begins with this prefix it is assumed to be 
+		///   a single-line comment and the prefix is removed.</param>
+		/// <param name="topLevelIsBlock">If true, newlines are expected between items at the top level, 
+		///   like in a braced block, so that, for example, if two consecutive nodes are on the same line,
+		///   an @appendStatement trivia attribute will be attached to the second one.</param>
+		public StandardTriviaInjector(IListSource<Token> sortedTrivia, ISourceFile sourceFile, int newlineTypeInt, string mlCommentPrefix, string mlCommentSuffix, string slCommentPrefix, bool topLevelIsBlock = true) : base(sortedTrivia)
 		{
 			SourceFile = sourceFile;
 			NewlineTypeInt = newlineTypeInt;
 			MLCommentPrefix = mlCommentPrefix;
 			MLCommentSuffix = mlCommentSuffix;
 			SLCommentPrefix = slCommentPrefix;
+			TopLevelIsBlock = topLevelIsBlock;
 		}
 
 		protected override LNodeList GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
@@ -101,7 +111,7 @@ namespace Loyc.Syntax
 			int i = 0;
 			if (loc == TriviaLocation.Leading) {
 				// leading trivia
-				if (parent == null ? indexInParent > 0 : HasImplicitLeadingNewline(node, parent, indexInParent)) {
+				if (HasImplicitLeadingNewline(node, parent, indexInParent)) {
 					// ignore expected leading newline
 					if (trivia.Count > 0 && trivia[0].TypeInt == NewlineTypeInt)
 						i++;
@@ -134,9 +144,12 @@ namespace Loyc.Syntax
 		/// <summary>Called to find out if a newline is to be added implicitly 
 		/// before the current child of the specified node.</summary>
 		/// <returns>By default, returns true if the node is a braced block.</returns>
-		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode parent, int childIndex)
+		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode parent, int indexInParent)
 		{
-			return parent.Calls(S.Braces) && childIndex >= 0;
+			if (parent != null)
+				return parent.Calls(S.Braces) && indexInParent >= 0;
+			else
+				return indexInParent > 0 && TopLevelIsBlock;
 		}
 
 		/// <summary>Called to transform a trivia token into a trivia attribute.</summary>
