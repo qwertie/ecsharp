@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-compileTime // Read the unicode character database into a List<UnicodeDatabaseEntry>
+compileTime // Preamble
 {
 	using System;
 	using System.Text;
@@ -15,14 +15,6 @@ compileTime // Read the unicode character database into a List<UnicodeDatabaseEn
 	using System.IO;
 	using Loyc;
 	using Loyc.Collections;
-
-	string unicodeDatabaseFile = File.ReadAllText(Path.Combine(#get(#inputFolder), "UnicodeData.txt"));
-	// Note: some PAIRS of lines are ranges. In the first row of the pair, 
-	// line[1] ends with "First>", and in the second row, line[1] ends with "Last>".
-	List<string[]> unicodeDatabaseLines = unicodeDatabaseFile.Split('\n')
-		.Select(line => line.Split(';'))
-		.Where(line => line.Length >= 14)
-		.ToList();
 
 	var categoryMap = new Dictionary<string, UnicodeCategory>()
 	{
@@ -71,6 +63,17 @@ compileTime // Read the unicode character database into a List<UnicodeDatabaseEn
 		public int LowercaseMapping; // [13] -1 if not applicable
 		public int TitlecaseMapping; // [14] -1 if not applicable
 	}
+}
+
+compileTime // Read UnicodeData.txt and parse it into a List<UnicodeDatabaseEntry>
+{
+	string unicodeDatabaseFile = File.ReadAllText(Path.Combine(#get(#inputFolder), "UnicodeData.txt"));
+	// Note: some PAIRS of lines are ranges. In the first row of the pair, 
+	// line[1] ends with "First>", and in the second row, line[1] ends with "Last>".
+	List<string[]> unicodeDatabaseLines = unicodeDatabaseFile.Split('\n')
+		.Select(line => line.Split(';'))
+		.Where(line => line.Length >= 14)
+		.ToList();
 
 	var unicodeDatabase = new List<UnicodeDatabaseEntry>();
 	for (int l = 0; l < unicodeDatabaseLines.Count; l++)
@@ -104,7 +107,7 @@ compileTime // Read the unicode character database into a List<UnicodeDatabaseEn
 	}
 }
 
-compileTime // Write a little HTML file to help us understand the categories
+compileTime // Write an HTML file to help us understand the categories
 {
 	using System.Collections; // BitArray
 
@@ -120,6 +123,9 @@ compileTime // Write a little HTML file to help us understand the categories
 				AddToCategory(c, entry.GeneralCategory, categoryMap[entry.GeneralCategory].ToString());
 			}
 		}
+		int privateUseCount = categories["Co"].Members.Count;
+		int totalAssigned = categories.Values.Sum(t => t.Members.Count);
+
 		for (int c = 0; c <= 0x10FFFF; c++) // detect unmentioned characters
 		{
 			if (!seen[c])
@@ -300,16 +306,24 @@ compileTime // Write a little HTML file to help us understand the categories
 						<title>All Unicode characters by category</title>
 					</head>
 					<body>
-						<h1>List of Unicode characters by category</h1>
+						<h1>All Unicode Characters on One Page (by Category)</h1>
+						<p>By far the fastest way to understand Unicode categories is to see what
+						  characters are in each category. Good thing you found this page!</p>
 						<ul>
-							<li><a href="https://www.unicode.org/charts/">Code chart PDFs</a>
+							<li><a href="https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/CharCategory.ecs">Enhanced C# code used to generate this page</a>
 							<li><a href="https://www.unicode.org/Public/UCD/latest/charts/CodeCharts.pdf">110MB Giant PDF of all the characters</a>
 							<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/">Unicode character database files</a>
 							<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt">Unicode character database main file</a>
 							<li><a href="http://www.unicode.org/reports/tr44/#UnicodeData.txt">Description of fields in the UCD main file</a>
 							<li><a href="http://www.unicode.org/reports/tr44/#General_Category_Values">About the categories on this page</a>
-							<li><a href="https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/CharCategory.ecs">Enhanced C# code used to generate this page</a>
 						</ul>
+						{paragraphsJoined}
+						<hr/>
+						<p>Total characters assigned: {totalAssigned - privateUseCount} (not 
+						  including {privateUseCount} private-use code points). Assigned and private
+						  code points together make up {totalAssigned * 100.0 / 0x110000:0.0}% 
+						  of the 0x110000 total possible code points. Generated {DateTime.Now:yyyy-MM-dd}.</p>
+						<hr/>
 						<p>Sometimes I wish Unicode had a property for "stupid character that 
 						   we obviously never should have assigned in the first place because it's 
 						   yet another stylistic duplicate of the Latin alphabet like 𝚊 𝚋 𝚌 𝚍 𝚎 𝚏 𝚐
@@ -332,11 +346,10 @@ compileTime // Write a little HTML file to help us understand the categories
 						   the worst explanations of everything, as if crushing bureaucracy and 
 						   confusing jargonfests give them a hard-on.</p>
 						<p>Here's hoping that someday they clue in and implement the following proposal:
-						   Reserve 0xD0000 to 0xDFFFF for all possible 16-bit vertical pixel patterns.
+						   Reserve 0x70000 to 0x7FFFF for all possible 16-bit vertical pixel patterns.
 						   That way anyone can express any 16x16 icon with a sequence of 16 characters,
-						   and Unicode no longer has total authority over which icons and emojis exist
-						   and which ones don't. And now, here's that Unicode table you wanted:
-						{paragraphsJoined}
+						   and Unicode no longer has sole authority over which icons/emojis exist
+						   and which ones don't.</p>
 					</body>
 				</html>
 				""";
@@ -412,28 +425,12 @@ namespace Loyc.Syntax.Lexing
 
 
 5-digit number in base X: EDCBA
+where X=8
+      EDCBA=12345
 
-X=8
-EDCBA=12345
-E*X^4 + D*X^3 + C*X^2 + B*X^1 + A*X^0
-1*8*8*8*8 + 2*8*8*8 + 3*8*8 + 4*8 + 5
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+= E*X^4 + D*X^3 + C*X^2 + B*X^1 + A*X^0
+= E*X*X*X*X + D*X*X*X + C*X*X + B*X + A
+= 1*8*8*8*8 + 2*8*8*8 + 3*8*8 + 4*8 + 5
 
 
 

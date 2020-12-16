@@ -60,28 +60,12 @@ namespace Loyc.Syntax.Lexing
 
 
 5-digit number in base X: EDCBA
+where X=8
+      EDCBA=12345
 
-X=8
-EDCBA=12345
-E*X^4 + D*X^3 + C*X^2 + B*X^1 + A*X^0
-1*8*8*8*8 + 2*8*8*8 + 3*8*8 + 4*8 + 5
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+= E*X^4 + D*X^3 + C*X^2 + B*X^1 + A*X^0
+= E*X*X*X*X + D*X*X*X + C*X*X + B*X + A
+= 1*8*8*8*8 + 2*8*8*8 + 3*8*8 + 4*8 + 5
 
 
 
