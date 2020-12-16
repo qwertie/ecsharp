@@ -14,14 +14,26 @@ namespace Loyc
 		/// <summary>Returns a version of the string without the specified prefix.
 		/// If the string does not have the specified prefix, it is returned unchanged.
 		/// The prefix check is case-sensitive.</summary>
-		public static string WithoutPrefix(this string s, string prefix) =>
-			s.StartsWith(prefix) ? s.Substring(prefix.Length) : s;
+		public static string WithoutPrefix(this string s, string prefix, StringComparison mode = StringComparison.Ordinal) =>
+			s.StartsWith(prefix, mode) ? s.Substring(prefix.Length) : s;
 
 		/// <summary>Returns a version of the string without the specified suffix.
 		/// If the string does not have the specified suffix, it is returned unchanged.
 		/// The suffix check is case-sensitive.</summary>
-		public static string WithoutSuffix(this string s, string suffix) =>
-			s.EndsWith(suffix) ? s.Substring(0, s.Length - suffix.Length) : s;
+		public static string WithoutSuffix(this string s, string suffix, StringComparison mode = StringComparison.Ordinal) =>
+			s.EndsWith(suffix, mode) ? s.Substring(0, s.Length - suffix.Length) : s;
+
+		/// <summary>Returns a version of the string without the specified prefix.
+		/// If the string does not have the specified prefix, it is returned unchanged.
+		/// The prefix check is case-sensitive.</summary>
+		public static UString WithoutPrefix(this UString s, UString prefix, bool ignoreCase = false) =>
+			s.StartsWith(prefix, ignoreCase) ? s.Substring(prefix.Length) : s;
+
+		/// <summary>Returns a version of the string without the specified suffix.
+		/// If the string does not have the specified suffix, it is returned unchanged.
+		/// The suffix check is case-sensitive.</summary>
+		public static UString WithoutSuffix(this UString s, UString suffix, bool ignoreCase = false) =>
+			s.EndsWith(suffix, ignoreCase) ? s.Substring(0, s.Length - suffix.Length) : s;
 
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
 		/// <param name="s">String to split</param>
