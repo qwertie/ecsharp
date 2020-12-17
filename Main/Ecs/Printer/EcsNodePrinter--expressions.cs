@@ -169,17 +169,10 @@ namespace Loyc.Ecs
 		/// <summary>Context: middle of expression, top level (#var and named arguments not supported)</summary>
 		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
-		void PrintExpr(LNode n)
+		void PrintExpr(LNode n) => PrintExpr(n, _context);
+		void PrintExpr(LNode n, Precedence context, Ambiguity flags = 0)
 		{
-			PrintExpr(n, _context);
-		}
-		void PrintExpr(LNode n, Precedence context)
-		{
-			PrintExpr(n, context, _flags & Ambiguity.OneLiner);
-		}
-		void PrintExpr(LNode n, Precedence context, Ambiguity flags)
-		{
-			using (With(n, context, CheckOneLiner(flags, n)))
+			using (With(n, context, flags))
 				PrintCurrentExpr();
 		}
 
@@ -695,7 +688,7 @@ namespace Loyc.Ecs
 					if (expr.Calls(S.Braces))
 						using (With(expr, StartExpr))
 							PrintBracedBlockInNewExpr(0);
-					else if (expr.CallsMin(S.InitializerAssignment, 1)) {
+					else if (expr.CallsMin(S.DictionaryInitAssign, 1)) {
 						_out.Write('[', true);
 						PrintArgs(expr.Args.WithoutLast(1), 0, false);
 						_out.Write(']', true);
@@ -771,7 +764,7 @@ namespace Loyc.Ecs
 				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
 			} else { 
-				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl | (_flags & Ambiguity.OneLiner));
+				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl);
 				PrintInfixWithSpace(S.Lambda, _n.Target, EP.IfElse);
 				PrintExpr(_n.Args[1], EP.Lambda.RightContext(_context));
 			}
@@ -1106,7 +1099,7 @@ namespace Loyc.Ecs
 
 		protected void PrintType(LNode n, Precedence context, Ambiguity flags = 0)
 		{
-			using (With(n, context, CheckOneLiner(flags | Ambiguity.TypeContext, n)))
+			using (With(n, context, flags | Ambiguity.TypeContext))
 				PrintCurrentType();
 		}
 		void PrintCurrentType()

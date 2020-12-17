@@ -69,10 +69,12 @@ namespace LeMP.Tests
 		[Test]
 		public void TestReplaceInTokenTree()
 		{
-			TestLes("replace (foo => bar; bar => foo) { foo(@{ foo(*****) }); }", "bar(@{ bar(*****) });");
-			TestLes("replace (foo => bar; bar => foo) { foo(@{ foo(%bar%) }); }", "bar(@{ bar(%foo%) });");
-			TestLes("replace (foo => bar; bar => foo) { foo(@{ ***(%bar%) }); }", "bar(@{ ***(%foo%) });");
-			TestLes(@"unroll ((A; B) `in` ((Eh; Bee); ('a'; ""b""); (1; 2d))) { foo(B - A, @{A + B}); }",
+			// Subtlety: the test fails if there is no newline after `replace(...) {`.
+			// Without the newline, %appendStatement is attached to foo(), which the test does not expect.
+			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ foo(*****) }); }", "bar(@{ bar(*****) });");
+			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ foo(%bar%) }); }", "bar(@{ bar(%foo%) });");
+			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ ***(%bar%) }); }", "bar(@{ ***(%foo%) });");
+			TestLes("unroll ((A; B) `in` ((Eh; Bee); ('a'; \"b\"); (1; 2d))) {\n  foo(B - A, @{A + B}); }",
 				@"foo(Bee - Eh,  @{Eh + Bee});
 				  foo(""b"" - 'a', @{'a' + ""b""});
 				  foo(2d - 1, @{1 + 2d});");

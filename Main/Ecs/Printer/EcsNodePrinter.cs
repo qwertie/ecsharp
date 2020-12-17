@@ -251,17 +251,9 @@ namespace Loyc.Ecs
 
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(LNode inner, Precedence context, Ambiguity flags) { return new With_(this, inner, context, flags); }
-		With_ With(LNode inner, Precedence context) {
-			var oneliner = CheckOneLiner(_flags & Ambiguity.OneLiner, inner);
-			return new With_(this, inner, context, oneliner);
-		}
+		With_ With(LNode inner, Precedence context) { return new With_(this, inner, context, 0); }
 		WithFlags_ WithFlags(Ambiguity flags) { return new WithFlags_(this, flags); }
 		WithSpace_ WithSpace(Symbol spaceName) { return new WithSpace_(this, spaceName); }
-		Ambiguity CheckOneLiner(Ambiguity flags, LNode n) {
-			if ((n.Style & NodeStyle.OneLiner) != 0)
-				flags |= Ambiguity.OneLiner;
-			return flags;
-		}
 
 		void PrintInfixWithSpace(Symbol name, LNode target, Precedence p, bool useBacktick = false)
 		{
@@ -424,9 +416,6 @@ namespace Loyc.Ecs
 			/// <summary>A signal that IF there is no trivia indicating whether or not 
 			/// to print a newline before the current statement, one should be printed.</summary>
 			NewlineBeforeChildStmt = 0x80000,
-			/// <summary>Indicates that this node, or one of its parents, has the style
-			/// <see cref="NodeStyle.OneLiner"/> which suppresses newlines.</summary>
-			OneLiner = 0x100000,
 		}
 
 		bool Flagged(Ambiguity flag)

@@ -14,13 +14,16 @@ namespace Loyc.Ecs.Tests
 		public void TriviaTest_BlankLinesBetweenArgs()
 		{
 			// TODO: the arguments should be indented,
-			// and newlines should appear after `(` or `,`
+			// and newlines should appear after `,` (not before)
 			Stmt("Foo(\na, \nb, \nc);",
 				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(c)));
-			Stmt("Foo\n(\na\n, \nb\n, \nc);",
-				F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
-					NewlineAfter(OnNewLine(b)),
-					OnNewLine(c)));
+			Stmt("Foo(\n\na, \n\nb, \n\nc);",
+				F.Call(Foo, OnNewLine(OnNewLine(a)),
+					OnNewLine(OnNewLine(b)),
+					OnNewLine(OnNewLine(c))));
+			Stmt("Foo\n\n(\na, b, \n\nc);",
+				F.Call(NewlineAfter(NewlineAfter(Foo)), 
+					OnNewLine(a), b, OnNewLine(OnNewLine(c))));
 		}
 
 		[Test]
@@ -29,22 +32,24 @@ namespace Loyc.Ecs.Tests
 			LNode stmt;
 			stmt = F.Splice(F.Call(a), F.Call(b), AppendStmt(F.Call(c)));
 			Stmt("a();\nb(); c();", stmt);
-			stmt = F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner);
-			Stmt("{ a(); b(); }", stmt);
+			stmt = F.Braces(AppendStmt(F.Call(a)), F.Call(b));
+			Stmt("{ a();\n  b();\n}", stmt);
+			stmt = F.Braces(AppendStmt(F.Call(b, one)), AppendStmt(F.Call(a, two)));
+			Stmt("{ b(1); a(2); }", stmt);
 		}
 
 		[Test]
 		public void TriviaTest_BlankLinesBetweenStmts()
 		{
 			Stmt("int a;\n\nint b;\n\nint c;",
-				F.Splice(NewlineAfter(F.Var(F.Int32, a)),
-					NewlineAfter(F.Var(F.Int32, b)),
-					F.Var(F.Int32, c)));
+				F.Splice(F.Var(F.Int32, a),
+					OnNewLine(F.Var(F.Int32, b)),
+					OnNewLine(F.Var(F.Int32, c))));
 			Stmt("{\n\n  int a;\n\n  int b;\n\n  int c;\n\n}",
-				F.Call(NewlineAfter(F.Id(S.Braces)),
-					NewlineAfter(F.Var(F.Int32, a)),
-					NewlineAfter(F.Var(F.Int32, b)),
-					NewlineAfter(F.Var(F.Int32, c))));
+				F.Braces(
+					OnNewLine(F.Var(F.Int32, a)),
+					OnNewLine(F.Var(F.Int32, b)),
+					NewlineAfter(OnNewLine(F.Var(F.Int32, c)))));
 		}
 
 		[Test]
@@ -162,12 +167,12 @@ namespace Loyc.Ecs.Tests
 			var stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(F.Braces(
 				F.Assign(a, one), AppendStmt(b), AppendStmt(c), AppendStmt(F.Assign(x, F.Literal(24))))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
-			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(F.Braces(
-				F.Assign(a, one), b, c, F.Assign(x, F.Literal(24)))).SetStyle(NodeStyle.OneLiner));
-			Stmt("enum Foo : byte\n{ a = 1, b, c, x = 24 }", stmt);
-			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(
-				F.Assign(a, one), b, c, F.Assign(x, F.Literal(24)))).SetStyle(NodeStyle.OneLiner);
-			Stmt("enum Foo : byte { a = 1, b, c, x = 24 }", stmt);
+			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(BracesOnOneLine(
+				F.Assign(a, two), b, c, F.Assign(x, F.Literal(24)))));
+			Stmt("enum Foo : byte\n{ a = 2, b, c, x = 24 }", stmt);
+			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), BracesOnOneLine(
+				F.Assign(a, zero), F.Assign(b, one), c, F.Assign(x, F.Literal(24))));
+			Stmt("enum Foo : byte { a = 0, b = 1, c, x = 24 }", stmt);
 		}
 
 		[Test]

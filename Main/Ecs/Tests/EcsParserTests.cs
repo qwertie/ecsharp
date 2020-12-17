@@ -108,9 +108,11 @@ namespace Loyc.Ecs.Tests
 			// Trailing commas
 			Stmt("int[] Foo = { 0, 1, 2, };", F.Call(S.Var, F.Of(S.Array, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, zero, one, two))));
-			Stmt("int[,] Foo = { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+			// Note: the outer braces actually call #arrayInit but the inner braces call
+			// '{}, so to pacify the trivia injector we need newlines in the inner braces only.
+			Stmt("int[,] Foo = { {\n 0 }, {\n 1,\n 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
-			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+			Stmt("int[,] Foo = new[,] { {\n 0 }, {\n 1,\n 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 
 			// 2015-05-20: parsed incorrectly
@@ -123,13 +125,14 @@ namespace Loyc.Ecs.Tests
 			// This bug caused trivia to move upward so it is above the property.
 			// Cause: LNodeFactory.Property() wasn't updated to assign a definite target range on #property,
 			//        oops, I fixed it without checking why the autodetected range was so far off.
+			// 2020 edit: test changed because AbstractTriviaInjector uses trailing newlines less often in v29
 			LNode tree = F.Splice(
 				F.Attr(
 					F.Trivia(S.TriviaSLComment, " This bug is only triggered for properties in certain conditions,"),
 					F.Trivia(S.TriviaSLComment, " e.g. we need this comment."),
-					F.Property(F.Int32, a, F.Braces(F.Call(S.get, F.Braces(F.Call(S.Return, x))))))
-					.PlusTrailingTrivia(F.TriviaNewline),
+					F.Property(F.Int32, a, F.Braces(F.Call(S.get, F.Braces(F.Call(S.Return, x)))))),
 				F.Attr(
+					F.Id(S.TriviaNewline),
 					F.Trivia(S.TriviaSLComment, " The newlines seem important too."),
 					F.Var(F.Int32, b))
 			);

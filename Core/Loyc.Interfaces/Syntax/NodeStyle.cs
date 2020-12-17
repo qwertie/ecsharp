@@ -99,7 +99,7 @@ namespace Loyc.Syntax
 		/// <summary>Indicates that the there is no comment or newline trivia associated
 		/// with the children of this node, and therefore when printing this node,
 		/// automatic newlines can be suppressed.</summary>
-		[Obsolete("This flag has proven to be a hassle that should no longer be used")]
+		[Obsolete("Managing this flag has been a hassle, so it is no longer used")]
 		OneLiner = 64,
 
 		/// <summary>Indicates that some part of a compiler, or a macro, has seen 

@@ -70,6 +70,8 @@ compileTime // Read UnicodeData.txt and parse it into a List<UnicodeDatabaseEntr
 	string unicodeDatabaseFile = File.ReadAllText(Path.Combine(#get(#inputFolder), "UnicodeData.txt"));
 	// Note: some PAIRS of lines are ranges. In the first row of the pair, 
 	// line[1] ends with "First>", and in the second row, line[1] ends with "Last>".
+	// Like virtually everything related to Unicode, the documentation of this fact 
+	// is well-hidden; see 4.2.3 of http://www.unicode.org/reports/tr44/
 	List<string[]> unicodeDatabaseLines = unicodeDatabaseFile.Split('\n')
 		.Select(line => line.Split(';'))
 		.Where(line => line.Length >= 14)

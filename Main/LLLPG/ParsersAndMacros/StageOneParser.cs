@@ -123,11 +123,11 @@ namespace Loyc.LLParserGenerator
 		{
 			ErrorSink = messageSink;
 		}
-		protected override void Reset(IList<Token> tokens, Token eofToken, ISourceFile file, int startIndex = 0)
+		protected override void Reset(IList<Token> tokens, Func<Token,Token> getEofToken, int eof, ISourceFile file, int startIndex = 0)
 		{
 			// Called by base class constructor
-			Debug.Assert(eofToken.Type() == TT.EOF);
-			base.Reset(ReclassifyTokens(tokens), eofToken, file, startIndex);
+			Debug.Assert((TT)eof == TT.EOF);
+			base.Reset(ReclassifyTokens(tokens), getEofToken, eof, file, startIndex);
 			_hostLanguage = ParsingService.Default;
 			_tokensRoot = _tokenList;
 			F = new LNodeFactory(file);

@@ -98,7 +98,6 @@ namespace LeMP
 
 			LNode macroName = pattern.Target ?? pattern;
 			LNode replacement = body.AsList(S.Braces).AsLNode(S.Splice);
-			replacement.Style &= ~NodeStyle.OneLiner;
 
 			if (pattern.IsCall)
 				WarnAboutMissingDollarSigns(pattern.Args, context, pattern, replacement);

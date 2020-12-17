@@ -90,10 +90,6 @@ namespace LeMP
 						return F.Call(S.Assign, F.Id(p.Key), p.Value);
 				}).ToList()));
 
-				fn.Style &= ~NodeStyle.OneLiner;
-				foreach (var p in parts)
-					p.Style &= ~NodeStyle.OneLiner;
-
 				// Return output code
 				fn = fn.WithArgs(parts);
 				if (propOrFieldDecls.IsEmpty)

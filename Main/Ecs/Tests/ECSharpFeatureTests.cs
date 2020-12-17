@@ -208,8 +208,9 @@ namespace Loyc.Ecs.Tests
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
 			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
 			//Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
-			Expr("b + {\n  Foo.x=:a;\n  @`'*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
-			Expr("b + @`'{}`(Foo.x=:a, a * a + a)", F.Call(S.Add, b, AsStyle(NodeStyle.PrefixNotation, F.Braces(stmt1, stmt2))));
+			Expr("x + {\n  Foo.x=:a;\n  @`'*`(a, a) + a;\n}",  F.Call(S.Add, x, F.Braces(stmt1, stmt2)));
+			Expr("2 + @`'{}`(Foo.x=:a, a * a + a)", 
+				F.Call(S.Add, two, AsStyle(NodeStyle.PrefixNotation, BracesOnOneLine(stmt1, stmt2))));
 		}
 
 		[Test]
@@ -250,15 +251,15 @@ namespace Loyc.Ecs.Tests
 		public void EcsGenericProperties()
 		{
 			LNode stmt;
-			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), F.Braces(get, set)));
+			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), BracesOnOneLine(get, set)));
 			Stmt("private Foo<T> this<T>[T x] { get; set; }", stmt);
 
 			var T_where = Attr(F.Call(S.Where, @class), T);
-			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T_where), F.List(F.Var(T, x)), F.Braces(get, set)));
+			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T_where), F.List(F.Var(T, x)), BracesOnOneLine(get, set)));
 			Stmt("private Foo<T> this<T>[T x] where T: class { get; set; }", stmt);
 
 			// where clause requires arg list
-			stmt = F.Property(Foo, F.Of(x, T_where), F.List(), F.Braces(get, set));
+			stmt = F.Property(Foo, F.Of(x, T_where), F.List(), BracesOnOneLine(get, set));
 			Stmt("Foo x<T>[] where T: class { get; set; }", stmt);
 		}
 
@@ -430,7 +431,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
 			Stmt("public new partial static Foo x;",              AddWords(F.Vars(Foo, x)));
 			Stmt("public new partial static Foo operator==;",     AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
-			Stmt("public new partial static int x { get; }",      AddWords(F.Property(F.Int32, x, F.Braces(get))));
+			Stmt("public new partial static int x { get; }",      AddWords(F.Property(F.Int32, x, BracesOnOneLine(get))));
 			Stmt("public new partial static interface Foo { }",   AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
 			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
 			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Assign(a, Foo), F.List())));
@@ -563,9 +564,9 @@ namespace Loyc.Ecs.Tests
 		public void EcsPropertyDefinitionExpr()
 		{
 			Stmt("this(int Foo { get; }) { }", F.Call(S.Constructor, F.Missing, F.@this, F.List(
-				F.Property(F.Int32, Foo, F.Missing, F.Braces(get))), F.Braces()));
+				F.Property(F.Int32, Foo, F.Missing, BracesOnOneLine(get))), F.Braces()));
 			Stmt("Foo(x, int Foo { get; } = 0);", F.Call(Foo, x,
-				F.Property(F.Int32, Foo, F.Missing, F.Braces(get), zero)));
+				F.Property(F.Int32, Foo, F.Missing, BracesOnOneLine(get), zero)));
 		}
 
 		[Test]
@@ -624,7 +625,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Foo] default:",      Attr(Foo, F.Call(S.Label, F.Id(S.Default))));
 			Stmt("[Foo] case x:",       Attr(Foo, F.Call(S.Case, x)));
 			Stmt("partial case x:",     Attr(partialWA, F.Call(S.Case, x)));
-			var braces_Foo_x = F.Braces(F.Var(Foo, Operator(F.Call(S.Substitute, x)))).SetStyle(NodeStyle.OneLiner);
+			var braces_Foo_x = BracesOnOneLine(F.Var(Foo, Operator(F.Call(S.Substitute, x))));
 			Stmt("if ({ Foo $x; })\n  Foo();", F.Call(S.If, braces_Foo_x, OnNewLine(F.Call(Foo)))); ;
 		}
 
@@ -661,7 +662,7 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("case Foo x:", F.Call(S.Case, F.Var(Foo, x)));
 			Stmt("case Foo $x:", F.Call(S.Case, F.Var(Foo, Operator(F.Call(S.Substitute, x)))));
-			Stmt("case { Foo $x; }:", F.Call(S.Case, F.Braces(F.Var(Foo, Operator(F.Call(S.Substitute, x)))).SetStyle(NodeStyle.OneLiner)));
+			Stmt("case { Foo $x; }:", F.Call(S.Case, BracesOnOneLine(F.Var(Foo, Operator(F.Call(S.Substitute, x))))));
 		}
 
 		[Test]

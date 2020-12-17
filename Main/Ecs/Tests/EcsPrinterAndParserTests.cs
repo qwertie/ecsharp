@@ -64,6 +64,10 @@ namespace Loyc.Ecs.Tests
 		{
 			return F.Attr(trivia_appendStatement, node);
 		}
+		public LNode BracesOnOneLine(params LNode[] contents)
+		{
+			return F.Braces(contents.Select(n => AppendStmt(n)));
+		}
 		protected LNode MLComment(string text) { return F.Trivia(S.TriviaMLComment, text); }
 		protected LNode SLComment(string text) { return F.Trivia(S.TriviaSLComment, text); }
 

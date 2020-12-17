@@ -41,13 +41,13 @@ namespace Loyc.Ecs.Tests
 			Stmt("partial Foo a;", Attr(@partialWA, F.Vars(Foo, a)));
 			Stmt("public partial alt class BinaryTree<T> { }", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
-			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
+			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, BracesOnOneLine(get))));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone() {\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
 			Stmt("Foo<a> IDictionary<a, b>.Keys { }",
 				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
 			Stmt("T IDictionary<Symbol, T>.this[Symbol x] { get; set; }",
-				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
+				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), BracesOnOneLine(get, set)));
 			Stmt("Func<T, T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
 			Stmt("public static rule EmailAddress Parse(T x) { }",
@@ -66,7 +66,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("{\n  foreach (var x in Foo) { }\n  Foo();\n}", 
 				F.Braces(F.Call(S.ForEach, F.Vars(F.Missing, x), Foo, F.Braces()), F.Call(Foo)));
 			// 2016-10 bug: `property:` was applied to both attributes
-			stmt = F.Attr(a, F.Call(S.NamedArg, F.Id("property"), b), F.Private, F.Property(F.String, Foo, F.Braces(get, set)));
+			stmt = F.Attr(a, F.Call(S.NamedArg, F.Id("property"), b), F.Private, F.Property(F.String, Foo, BracesOnOneLine(get, set)));
 			Stmt("[a, property: b] private string Foo { get; set; }", stmt);
 			Stmt("[a] [property: b] public string Foo { get; set; }", stmt.WithAttrChanged(2, @public), Mode.ParserTest);
 			Stmt("a = (var b = x);", F.Call(S.Assign, a, F.InParens(F.Var(F.Missing, b, x))));

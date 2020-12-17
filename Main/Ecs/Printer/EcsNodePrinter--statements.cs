@@ -100,13 +100,9 @@ namespace Loyc.Ecs
 		
 		#endregion
 
-		void PrintStmt(LNode n)
+		void PrintStmt(LNode n, Ambiguity flags = 0)
 		{
-			PrintStmt(n, _flags & Ambiguity.OneLiner);
-		}
-		void PrintStmt(LNode n, Ambiguity flags)
-		{
-			using (With(n, StartStmt, CheckOneLiner(flags, n)))
+			using (With(n, StartStmt, flags))
 				PrintCurrentStmt();
 		}
 
@@ -386,13 +382,13 @@ namespace Loyc.Ecs
 			if (name == S.If && Flagged(Ambiguity.ElseClause))
 			{
 				if (EcsValidators.OtherBlockStmtType(_n, Pedantics) == S.If) {
-					PrintStmt(child, _flags & (Ambiguity.FinalStmt | Ambiguity.ElseClause | Ambiguity.OneLiner));
+					PrintStmt(child, _flags & (Ambiguity.FinalStmt | Ambiguity.ElseClause));
 					return false;
 				}
 			}
 			using (Indented)
 			{
-				PrintStmt(child, _flags & (Ambiguity.FinalStmt | Ambiguity.NoIfWithoutElse | Ambiguity.OneLiner) | Ambiguity.NewlineBeforeChildStmt);
+				PrintStmt(child, _flags & (Ambiguity.FinalStmt | Ambiguity.NoIfWithoutElse) | Ambiguity.NewlineBeforeChildStmt);
 				return false;
 			}
 		}
@@ -403,37 +399,34 @@ namespace Loyc.Ecs
 
 		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null, BraceMode mode = BraceMode.Normal)
 		{
-			using (WithFlags(CheckOneLiner(_flags, body)))
+			int oldLineNum = _out.LineNumber;
+			if (mode != BraceMode.BlockExpr)
 			{
-				int oldLineNum = _out.LineNumber;
-				if (mode != BraceMode.BlockExpr)
-				{
-					if (mode != BraceMode.BlockStmt)
-						PrintTrivia(body, trailingTrivia: false);
-					else
-						G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
-					if (oldLineNum == _out.LineNumber && beforeBrace != 0)
-						NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
-				}
-				_out.Write('{', true);
-				// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
-				PrintTrivia(body.Target, trailingTrivia: true);
-
-				using (WithSpace(spaceName))
-				{
-					if (mode == BraceMode.Initializer || mode == BraceMode.Enum)
-					{
-						Debug.Assert(!skipFirstStmt);
-						PrintExpressionsInBraces(body, mode == BraceMode.Initializer);
-					}
-					else
-						PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
-				}
-
-				_out.Write('}', true);
 				if (mode != BraceMode.BlockStmt)
-					PrintTrivia(body, trailingTrivia: true);
+					PrintTrivia(body, trailingTrivia: false);
+				else
+					G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
+				if (oldLineNum == _out.LineNumber && beforeBrace != 0)
+					NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
 			}
+			_out.Write('{', true);
+			// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
+			PrintTrivia(body.Target, trailingTrivia: true);
+
+			using (WithSpace(spaceName))
+			{
+				if (mode == BraceMode.Initializer || mode == BraceMode.Enum)
+				{
+					Debug.Assert(!skipFirstStmt);
+					PrintExpressionsInBraces(body, mode == BraceMode.Initializer);
+				}
+				else
+					PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
+			}
+
+			_out.Write('}', true);
+			if (mode != BraceMode.BlockStmt)
+				PrintTrivia(body, trailingTrivia: true);
 		}
 
 		private void PrintStatementsInBraces(LNode braces, bool skipFirstStmt = false, bool newlinesByDefault = true)
@@ -561,7 +554,7 @@ namespace Loyc.Ecs
 
 		private bool IsDefaultNewlineSuppressed(LNode node)
 		{
-			return node.AttrNamed(S.TriviaAppendStatement) != null || (_flags & Ambiguity.OneLiner) != 0;
+			return node.AttrNamed(S.TriviaAppendStatement) != null;
 		}
 
 		// e.g. given the method void f() {...}, prints "void f"
@@ -611,10 +604,7 @@ namespace Loyc.Ecs
 		}
 		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
-			var flags = _flags & Ambiguity.OneLiner;
-			if (allowUnassignedVarDecl)
-				flags |= Ambiguity.AllowUnassignedVarDecl;
-			using (WithFlags(flags)) {
+			using (WithFlags(allowUnassignedVarDecl ? Ambiguity.AllowUnassignedVarDecl : 0)) {
 				WriteOpenParen(kind);
 				_out.Indent();
 				PrintArgs(args, _flags, omitMissingArguments, separator);
@@ -992,7 +982,7 @@ namespace Loyc.Ecs
 				{
 					if (first) first = false;
 					else WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(arg, StartExpr, (_flags & Ambiguity.OneLiner) | Ambiguity.AllowUnassignedVarDecl);
+					PrintExpr(arg, StartExpr, Ambiguity.AllowUnassignedVarDecl);
 				}
 			}
 			_out.Write(':', true);

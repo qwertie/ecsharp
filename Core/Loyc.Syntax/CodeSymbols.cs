@@ -81,9 +81,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
 		public static readonly Symbol NullIndexBracks = GSymbol.Get("'?[]"); //!< "?[]" indexing operator of C# 6
 		                              //!< @`?[]`(foo, #(1, A)) <=> foo?[1, A] (TENTATIVE, may be changed later)
-		[Obsolete("Use EcsCodeSymbols.InitializerAssignment instead (Loyc.Ecs package)")]
-		public static readonly Symbol InitializerAssignment = GSymbol.Get("'[]="); //!< @`'[]=`(0, 1, x) <=> [0, 1]=x
-		                              // (TENTATIVE, and only supported in 'new' initializer blocks)
+		[Obsolete("Use EcsCodeSymbols.DictionaryInitAssign instead (Loyc.Ecs package)")]
+		public static readonly Symbol InitializerAssignment = GSymbol.Get("'[]="); //!< @`'[]=`(0, 1, x) <=> [0,1]=x
 		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
 		///     <c>#class(Derived, #(Base, IEnumerable), {...})</c>.

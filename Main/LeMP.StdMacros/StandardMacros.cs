@@ -362,9 +362,7 @@ namespace LeMP
 			if (node.ArgCount == 2 && !node.Args.Last.Calls(S.Braces))
 			{
 				context.DropRemainingNodes = true;
-				node = node.PlusArg(F.Braces(context.RemainingNodes).PlusAttr(F.TriviaNewline));
-				// avoid artifact: `namespace Xyz` tends to be on one line, but we don't want the output to be.
-				return node.SetStyle(node.Style & ~NodeStyle.OneLiner);
+				return node.PlusArg(F.Braces(context.RemainingNodes).PlusAttr(F.TriviaNewline));
 			}
 			return null;
 		}

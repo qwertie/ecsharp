@@ -407,16 +407,18 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CsArrayInitializers()
 		{
-			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
-				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
-					AsStyle(NodeStyle.Expression, F.Braces(zero)),
-					AsStyle(NodeStyle.Expression, F.Braces(one, two))))));
+			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", 
+				F.Call(S.Var,
+					F.Of(S.TwoDimensionalArray, S.Int32),
+					F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
+						AsStyle(NodeStyle.Expression, BracesOnOneLine(zero)),
+						AsStyle(NodeStyle.Expression, BracesOnOneLine(one, two))))));
 			Stmt("int[] Foo = { 0, 1, 2 };", F.Call(S.Var, F.Of(S.Array, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, zero, one, two))));
 			Stmt("int[,] Foo = { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit,
-					AsStyle(NodeStyle.Expression, F.Braces(zero)),
-					AsStyle(NodeStyle.Expression, F.Braces(one, two))))));
+					AsStyle(NodeStyle.Expression, BracesOnOneLine(zero)),
+					AsStyle(NodeStyle.Expression, BracesOnOneLine(one, two))))));
 		}
 
 		[Test]
@@ -584,10 +586,10 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CsPropertyStmts()
 		{
-			LNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
+			LNode stmt = F.Property(F.Int32, Foo, BracesOnOneLine(get, set));
 			Stmt("int Foo { get; set; }", stmt);
-			// was: #property(int, Foo, @``, {\n  get;\n  set;\n})
-			// but now, property expressions are supported
+			// This used to print as #property(int, Foo, @``, {\n  get;\n  set;\n})
+			// But now, property expressions are supported
 			Expr("int Foo { get; set; }", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 			            AsStyle(NodeStyle.Special, F.Call(get, F.Braces(F.Call(S.Return, x)))),
@@ -597,25 +599,25 @@ namespace Loyc.Ecs.Tests
 			      +"  set {\n    x = value;\n  }\n}", stmt);
 
 			Stmt("int Foo { protected get; private set; }",
-				F.Property(F.Int32, Foo, F.Braces(
+				F.Property(F.Int32, Foo, BracesOnOneLine(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
 
-			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Braces(get, set));
+			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), BracesOnOneLine(get, set));
 			Stmt("Foo this[long x] { get; set; }", stmt);
 
-			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, Foo), F.Braces(get));
+			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, Foo), BracesOnOneLine(get));
 			Stmt("a.b IFoo.Foo { get; }", stmt);
-			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, Foo), F.Braces(get));
+			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, Foo), BracesOnOneLine(get));
 			Stmt("a.b<x> IFoo.Foo { get; }", stmt);
-			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			stmt = F.Property(F.Dot(a, b), F.Dot(IFoo, F.Of(Foo, x)), BracesOnOneLine(get));
 			Stmt("a.b IFoo.Foo<x> { get; }", stmt);
-			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			stmt = F.Property(F.Dot(a, F.Of(b, x)), F.Dot(IFoo, F.Of(Foo, x)), BracesOnOneLine(get));
 			Stmt("a.b<x> IFoo.Foo<x> { get; }", stmt);
-			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, x)), F.Braces(get));
+			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, x)), BracesOnOneLine(get));
 			Stmt("a<b, c> IFoo.Foo<x> { get; }", stmt);
-			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, a, b)), F.Braces(get));
+			stmt = F.Property(F.Of(a, b, c), F.Dot(IFoo, F.Of(Foo, a, b)), BracesOnOneLine(get));
 			Stmt("a<b, c> IFoo.Foo<a, b> { get; }", stmt);
-			stmt = F.Property(F.Of(a, F.Dot(b, c)), F.Dot(IFoo, F.Of(Foo, a, b)), F.Braces(get));
+			stmt = F.Property(F.Of(a, F.Dot(b, c)), F.Dot(IFoo, F.Of(Foo, a, b)), BracesOnOneLine(get));
 			Stmt("a<b.c> IFoo.Foo<a, b> { get; }", stmt);
 		}
 
@@ -659,17 +661,17 @@ namespace Loyc.Ecs.Tests
 			Stmt("new public int x;",              F.Vars(F.Int32, x).PlusAttrs(@new, @public));
 			Stmt("public new Foo x;",              F.Vars(Foo, x).PlusAttrs(@public, @new));
 			Stmt("new public Foo x;",              F.Vars(Foo, x).PlusAttrs(@new, @public));
-			Stmt("protected override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
-			Stmt("protected override sealed int Foo { get; }",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
-			Stmt("new partial Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
-			Stmt("public new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
-			Stmt("partial public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
-			Stmt("public partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
-			Stmt("sealed override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
+			Stmt("protected override Foo Foo { get; }",F.Property(Foo, Foo, BracesOnOneLine(get)).PlusAttrs(F.Protected, _(S.Override)));
+			Stmt("protected override sealed int Foo { get; }",F.Property(F.Int32, Foo, BracesOnOneLine(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
+			Stmt("new partial Foo Foo { get; }",    F.Property(Foo, Foo, BracesOnOneLine(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new Foo Foo { get; }",    F.Property(Foo, Foo, BracesOnOneLine(get)).PlusAttrs(partialWA, @new));
+			Stmt("new partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(partialWA, @new));
+			Stmt("new public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(@new, F.Public));
+			Stmt("public new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(F.Public, @new));
+			Stmt("partial public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(@partialWA, F.Public));
+			Stmt("public partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, BracesOnOneLine(get)).PlusAttrs(F.Public, @partialWA));
+			Stmt("sealed override Foo Foo { get; }",F.Property(Foo, Foo, BracesOnOneLine(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
 			Stmt("Foo(out a, ref b);",              F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
 			Stmt("yield return x;",                 F.Call(S.Return, x).PlusAttrs(WordAttr("yield")));
 		}
@@ -770,12 +772,12 @@ namespace Loyc.Ecs.Tests
 			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.List(x)), Foo)));
 			Stmt("int Foo(int x) => x * x;",           F.Fn(F.Int32, Foo, F.List(F.Var(F.Int32, x)), F.Call(S.Mul, x, x)));
 			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, F.Literal(5)));
-			Stmt("int Foo { get; } = x * 5;",     F.Property(F.Int32, Foo, F.Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
+			Stmt("int Foo { get; } = x * 5;",     F.Property(F.Int32, Foo, F.Missing, BracesOnOneLine(get), F.Call(S.Mul, x, F.Literal(5))));
 			Stmt("public Foo this[long x] => get(x);", Attr(F.Public, F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Call(get, x))));
 			Stmt("new Foo { [0] = a, [1] = b };",
-				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, a), F.Call(S.InitializerAssignment, one, b)));
+				F.Call(S.New, F.Call(Foo), F.Call(S.DictionaryInitAssign, zero, a), F.Call(S.DictionaryInitAssign, one, b)));
 			Stmt("new Foo { [0, 1] = a, [2] = b };",
-				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, one, a), F.Call(S.InitializerAssignment, two, b)));
+				F.Call(S.New, F.Call(Foo), F.Call(S.DictionaryInitAssign, zero, one, a), F.Call(S.DictionaryInitAssign, two, b)));
 			Stmt("try {\n  Foo();\n} catch when (true) { }",
 				F.Call(S.Try, F.Braces(F.Call(Foo)), F.Call(S.Catch, F.Missing, F.True, F.Braces())));
 			Stmt("try { } catch (Foo b) when (c) {\n  x();\n}",

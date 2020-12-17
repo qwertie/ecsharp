@@ -22,19 +22,20 @@ namespace Loyc.Ecs.Parser
 	/// <li>Implicitly, there is a newline before every top-level statement except 
 	/// the first, and %appendStatement can be used to suppress it.</li>
 	/// <li>By default, the printer doesn't print a newline before an opening brace.
-	/// #trivia_newline can be added to the braced block node to represent one.</li>
+	/// %newline can be added (as an attribute) to the braced block node to represent 
+	/// one.</li>
 	/// <li>This injector explicitly encodes newlines in all other locations. 
 	/// However, the EC# printer is designed to print all syntax trees reasonably 
 	/// whether they have passed through the trivia injector or not. Therefore, on
 	/// non-braced-block child statements of certain nodes (if statements, while
 	/// loops, for loops, and other statements used without braces), the printer
-	/// will print a newline before a child statement if it (1) does not have 
-	/// #trivia_newline or %appendStatement attributes and (2) does not have 
-	/// an ancestor with the <see cref="NodeStyle.OneLiner"/> style.</li>
+	/// will print a newline before a child statement if it does not have %newline 
+	/// or %appendStatement attributes.</li>
 	/// <li>In an if-else statement, `else` has no representation in the syntax 
 	/// tree and may appear to the injector the same as a blank line. In this 
-	/// situation the first newline is attached to the child of #if at index 1,
-	/// and is deleted so that there is only one newline before the second child.</li>
+	/// situation two newlines are attached to the child of #if at index 2, and
+	/// one is deleted by this class so that there is only one newline before the 
+	/// second child.</li>
 	/// <li>Constructors that call another constructor (`: base(...)`) get a 
 	/// newline before the colon by default, which can be suppressed with 
 	/// %appendStatement. Note: These constructors have an unusual syntax 
@@ -49,18 +50,19 @@ namespace Loyc.Ecs.Parser
 		{
 		}
 
-		protected override LNodeList GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override LNodeList GetTriviaToAttach(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			int? nli;
-			if (loc == TriviaLocation.Trailing && indexInParent == 1 && parent != null && parent.Calls(CodeSymbols.If, 3) && 
-				(nli = trivia.FinalIndexWhere(t => t.Type() == TokenType.Newline)) != null) {
-				// The 'else' keyword is invisible here, but it often appears on a line by 
-				// itself; remove a newline to avoid creating a blank line when printing.
-				var triviaSans = new DList<Token>(trivia);
-				triviaSans.RemoveAt(nli.Value);
-				trivia = triviaSans;
+			// In an 'if' statement, the 'else' keyword is invisible to the trivia 
+			// injector, but it often appears on a line by itself; remove one of
+			// the two newline trivia to avoid creating a blank line when printing.
+			if (loc == TriviaLocation.Leading && indexInParent == 2 && parent != null 
+				&& parent.Calls(CodeSymbols.If, 3)
+				&& trivia.Count(t => t.Type() == TokenType.Newline) >= 2
+				&& (nli = trivia.FirstIndexWhere(t => t.Type() == TokenType.Newline)) != null) {
+				trivia = new VList<Token>(trivia).RemoveAt(nli.Value);
 			}
-			return base.GetAttachedTrivia(node, trivia, loc, parent, indexInParent);
+			return base.GetTriviaToAttach(node, trivia, loc, parent, indexInParent);
 		}
 
 		protected override LNode MakeTriviaAttribute(Token t)

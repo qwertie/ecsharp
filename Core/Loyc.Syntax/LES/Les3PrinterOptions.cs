@@ -109,9 +109,9 @@ namespace Loyc.Syntax.Les
 		/// mid-expression or to keep lines under a certain length, this option can 
 		/// avoid extremely long lines in some cases, by (1) inserting line breaks 
 		/// after commas in argument lists, or after very long attribute lists, and 
-		/// (2) ignoring the <see cref="NodeStyle.OneLiner"/> flag or 
-		/// <see cref="CodeSymbols.TriviaAppendStatement"/> attribute when an 
-		/// expression within a braced block starts after this column on a line.
+		/// (2) ignoring the <see cref="CodeSymbols.TriviaAppendStatement"/> 
+		/// attribute when an expression within a braced block starts after this 
+		/// column on a line.
 		/// </summary>
 		/// <remarks>
 		/// The default value is 120.

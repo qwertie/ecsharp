@@ -90,7 +90,6 @@ namespace LeMP
 				sink.Warning(fieldAttr, "The body of the property does not contain a 'get;' or 'set;' statement without a body, so no code was generated to get or set the backing field.");
 
 			prop = prop.WithAttrs(prop.Attrs.RemoveAt(i)).WithArgChanged(3, newBody);
-			prop.Style &= ~NodeStyle.OneLiner; // avoid collapsing output to one line
 			return F.Call(S.Splice, new LNodeList(field, prop));
 		}
 

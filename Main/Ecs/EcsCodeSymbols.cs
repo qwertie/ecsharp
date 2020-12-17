@@ -19,8 +19,7 @@ namespace Loyc.Ecs
 		public static new readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
 																	 // async is a normal contextual attribute so it needs no special parser support.
 		public static new readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
-		public static new readonly Symbol InitializerAssignment = GSymbol.Get("'[]="); //!< @`'[]=`(0, 1, x) <=> [0, 1]=x
-																					   // (TENTATIVE, and only supported in 'new' initializer blocks)
+		public static new readonly Symbol DictionaryInitAssign = GSymbol.Get("'[]="); //!< @`'[]=`(0, 1, x) <=> [0,1]=x (only supported in 'new' initializer blocks)
 
 		// Proposed: https://github.com/dotnet/csharplang/issues/74
 		public static readonly Symbol ForwardPipeArrow = GSymbol.Get("'|>"); //!< @`'|>`(a, b) <=> a |> b

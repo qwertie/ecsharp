@@ -2100,7 +2100,7 @@ namespace Loyc.Ecs.Parser
 				$result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex, lb.StartIndex, lb.EndIndex, NodeStyle.Expression);
 			  }
 			/ lb:="[" "]" eq:"=" e:=ExprStart(false)
-			  { $result = F.Call(S.InitializerAssignment, ExprListInside(lb).Add(e), lb.StartIndex, e.Range.EndIndex, eq.StartIndex, eq.EndIndex); }
+			  { $result = F.Call(S.DictionaryInitAssign, ExprListInside(lb).Add(e), lb.StartIndex, e.Range.EndIndex, eq.StartIndex, eq.EndIndex); }
 			/ result:ExprOpt(false)
 			)
 		};
