@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,7 +33,7 @@ namespace Loyc.Syntax.Les
 		public Les2Parser(IListAndListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this((IList<Token>)tokens, file, messageSink) {}
 		public Les2Parser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this(tokens.AsList(), file, messageSink) {}
 		public Les2Parser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
-			: base(tokens, default(Token), file, startIndex)
+			: base(tokens, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex)
 		{
 			ErrorSink = messageSink;
 		}
@@ -42,7 +42,7 @@ namespace Loyc.Syntax.Les
 		{
 			Reset(list, default(Token), file, startIndex);
 		}
-		protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+		protected override void Reset(IList<Token> list, Func<Token, Token> getEofToken, int eof, ISourceFile file, int startIndex = 0)
 		{
 			if (list is TokenTree) {
 				// Token trees can come from token literals, and the user of a
@@ -51,7 +51,7 @@ namespace Loyc.Syntax.Les
 				list = ((TokenTree)list).Flatten();
 			}
 			CheckParam.IsNotNull("file", file);
-			base.Reset(list, eofToken, file, startIndex);
+			base.Reset(list, getEofToken, eof, file, startIndex);
 			F = new LNodeFactory(file);
 		}
 

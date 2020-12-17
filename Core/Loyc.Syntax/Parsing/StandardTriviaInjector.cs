@@ -105,7 +105,7 @@ namespace Loyc.Syntax
 			TopLevelIsBlock = topLevelIsBlock;
 		}
 
-		protected override LNodeList GetAttachedTrivia(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override LNodeList GetTriviaToAttach(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			var newAttrs = LNode.List();
 			int i = 0;

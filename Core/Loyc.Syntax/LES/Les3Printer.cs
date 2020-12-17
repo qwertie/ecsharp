@@ -56,10 +56,6 @@ namespace Loyc.Syntax.Les
 		protected Precedence _context = Precedence.MinValue;
 		protected NewlineContext _nlContext = NewlineContext.NewlineUnsafe;
 		protected bool _inParensOrBracks = false;
-		/// <summary>Indicates whether the <see cref="NodeStyle.OneLiner"/> 
-		/// flag is present on the current node or any of its parents. It 
-		/// suppresses newlines within braced blocks.</summary>
-		protected bool _isOneLiner = false;
 
 		internal StringBuilder Print(IEnumerable<ILNode> list)
 		{
@@ -93,16 +89,13 @@ namespace Loyc.Syntax.Les
 			}
 			var oldContext = _context;
 			var oldNLContext = _nlContext;
-			var oldIsOneLiner = _isOneLiner;
 			try {
 				_context = context;
 				_nlContext = nlContext;
-				_isOneLiner |= (node.Style & NodeStyle.OneLiner) != 0;
 				PrintCore(node, suffix);
 			} finally {
 				_context = oldContext;
 				_nlContext = oldNLContext;
-				_isOneLiner = oldIsOneLiner;
 			}
 		}
 
@@ -630,7 +623,7 @@ namespace Loyc.Syntax.Les
 
 		bool ShouldAppendStmt(ILNode node)
 		{
-			return (!_o.PrintTriviaExplicitly && node.AttrNamed(S.TriviaAppendStatement) != null || _isOneLiner) &&
+			return (!_o.PrintTriviaExplicitly && node.AttrNamed(S.TriviaAppendStatement) != null) &&
 				PS.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 

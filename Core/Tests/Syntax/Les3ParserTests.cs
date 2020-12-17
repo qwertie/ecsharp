@@ -38,15 +38,15 @@ namespace Loyc.Syntax.Les
 		{
 			// Given that {;} is not an error, the grammar is a bit simpler if
 			// other things like Foo(x,) are also not errors.
-			Test(Mode.Stmt, 0, "{;}", F.Braces(F.Missing));
-			Test(Mode.Stmt, 0, "(x;)", F.Call(S.Tuple, x));
+			Test(Mode.Stmt, 0, "{\n  ;\n}", F.Braces(F.Missing));
+			Test(Mode.Stmt, 0, "(a;)", F.Call(S.Tuple, a));
 			Test(Mode.Stmt, 0, "(;;)", F.Call(S.Tuple, F.Missing, F.Missing));
-			Test(Mode.Stmt, 0, "(x,)", F.Call(S.Tuple, x, F.Missing));
+			Test(Mode.Stmt, 0, "(b,)", F.Call(S.Tuple, b, F.Missing));
 			Test(Mode.Stmt, 0, "(,x)", F.Call(S.Tuple, F.Missing, x));
 			Test(Mode.Stmt, 0, "(,)", F.Call(S.Tuple, F.Missing, F.Missing));
 			Test(Mode.Stmt, 0, "Foo(, x)", F.Call(Foo, F.Missing, x));
 			Test(Mode.Stmt, 0, "Foo(x,)", F.Call(Foo, x, F.Missing));
-			Test(Mode.Stmt, 0, "Foo(x;)", F.Call(Foo, x));
+			Test(Mode.Stmt, 0, "Foo(a;)", F.Call(Foo, a));
 			Test(Mode.Stmt, 0, "Foo(,)", F.Call(Foo, F.Missing, F.Missing));
 		}
 
@@ -66,8 +66,9 @@ namespace Loyc.Syntax.Les
 				a = 1)
 				b = 2
 			}", F.Braces(F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
-			Test(Mode.Stmt, 1, @"{ b(x }", F.Braces(F.Call(b, x)));
-			Test(Mode.Stmt, 1, @"{ b(x } + 1", F.Call(S.Add, F.Braces(F.Call(b, x)), one));
+			Test(Mode.Stmt, 1, @"{ b(x }", F.Braces(AppendStmt(F.Call(b, x))));
+			Test(Mode.Stmt, 1, "{\n  b(x }", F.Braces(F.Call(b, x)));
+			Test(Mode.Stmt, 1, "{\n  b(x } + 1", F.Call(S.Add, F.Braces(F.Call(b, x)), one));
 		}
 
 		[Test]
@@ -75,10 +76,10 @@ namespace Loyc.Syntax.Les
 		{
 			Test(Mode.Stmt, 1, "_u\"-2\";", F.Literal((UString)"-2", (Symbol)"_u"));
 			Test(Mode.Stmt, 1, "Foo(", F.Call(Foo));
-			Test(Mode.Stmt, 1, "{Foo", F.Braces(Foo));
-			Test(Mode.Stmt, 1, "{Foo(x", F.Braces(F.Call(Foo, x)));
-			Test(Mode.Stmt, 1, "{Foo(x,", F.Braces(F.Call(Foo, x, F.Missing)));
-			Test(Mode.Stmt, 1, "{Foo(x}\n a \n b (c)", F.Braces(F.Call(Foo, x)), a, F.Call(b, c));
+			Test(Mode.Stmt, 1, "{\n  Foo", F.Braces(Foo));
+			Test(Mode.Stmt, 1, "{\n  Foo(x", F.Braces(F.Call(Foo, x)));
+			Test(Mode.Stmt, 1, "{\n  Foo(x,", F.Braces(F.Call(Foo, x, F.Missing)));
+			Test(Mode.Stmt, 1, "{\n  Foo(x}\n a \n b (c)", F.Braces(F.Call(Foo, x)), a, F.Call(b, c));
 			Test(Mode.Stmt, 1, ".for (", F.Call(S.For, F.Tuple()));
 			// Ensure that the line b = x is not discarded
 			Test(Mode.Stmt, 1, @"{
@@ -91,6 +92,8 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "Foo(a; b;)", F.Call(Foo, a, b));
 
 			Test(Mode.Expr, 1, ".`Foo`", F.Dot(F.Missing, Foo));
+			Test(Mode.Stmt, 1, @"Foo(x, \hello)", F.Call(Foo, x, F.Missing));
+			Test(Mode.Stmt, 1, @"(\hello)", F.Tuple());
 		}
 
 		[Test]
@@ -124,12 +127,12 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 0, "{\n  MoveTo(x, a)\n  | .LineTo(x, b)\n}", F.Braces(
 				F.Call(F.Call(OnNewLine(F.Id(S.Dot)), F.Call("MoveTo", x, a), F.Id("LineTo")), x, b)));
 			var stmt = OnNewLine(F.Call(
-				S.If, NewlineAfter(F.Call(S.GT, a, b)),
-					OnNewLine(NewlineAfter(F.Call(
+				S.If, F.Call(S.GT, a, b),
+					OnNewLine(OnNewLine(F.Call(
 						F.Id(S.Braces).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, " comment")),
 						F.Call(_("aIsBigger"))))),
-					OnNewLine(F.Call("#else", 
-						F.Braces(F.Call(Foo))))));
+					OnNewLine(OnNewLine(F.Call("#else", 
+						F.Braces(AppendStmt(F.Call(Foo))))))));
 			Test(Mode.Stmt, 0, @"
 				.if a > b
 				|

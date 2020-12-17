@@ -36,11 +36,11 @@ namespace Loyc.Syntax.Les
 			// Invalid superexpressions
 			msgs = Test(Mode.Stmt, 1, "a;\n 5 c b; x();", a, F.Literal(5));
 			ExpectMessageContains(msgs, "';'");
-			msgs = Test(Mode.Stmt, 1, "get Foo { x } = 0;", F.Call(S.get, Foo, F.Braces(x)));
+			msgs = Test(Mode.Stmt, 1, "get Foo {\n  x\n} = 0;", F.Call(S.get, Foo, F.Braces(x)));
 			ExpectMessageContains(msgs, "Assignment", "';'");
 			msgs = Test(Mode.Stmt, 1, "if(a) > b { c(); };", F.Call(S.GT, F.Call("if", a), b));
 			ExpectMessageContains(msgs, "'{'", "';'");
-			msgs = Test(Mode.Stmt, 1, "{ a + b c };\nFoo();", F.Braces(F.Call(S.Add, a, b)), F.Call(Foo));
+			msgs = Test(Mode.Stmt, 1, "{\n  a + b c\n};\nFoo();", F.Braces(F.Call(S.Add, a, b)), F.Call(Foo));
 			ExpectMessageContains(msgs, "Id", "'}'");
 			msgs = Test(Mode.Stmt, 1, "a.b c", F.Dot(a, b));
 			msgs = Test(Mode.Stmt, 1, "a + b.c {} Foo", F.Call(S.Add, a, F.Dot(b, c)));

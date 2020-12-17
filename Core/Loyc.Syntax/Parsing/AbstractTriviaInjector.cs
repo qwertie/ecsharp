@@ -108,20 +108,15 @@ namespace Loyc.Syntax
 		/// </param>
 		/// <param name="parent">(Original version of) parent of <c>node</c>.</param>
 		/// <param name="indexInParent">Index of <c>node</c> within <c>parent</c>.</param>
-		/// <returns>The same node with trivia attributes added. If loc indicates trailing
-		/// trivia, the derived class can say "I don't want trivia to be associated with 
-		/// this node" by returning null; the base class will, if possible, associate it 
-		/// with the next node instead, but this doesn't work for the last child in a 
-		/// sequence; in that case this method is called again with the same trivia and
-		/// loc is set to TriviaLocation.TrailingExtra.</returns>
-		/// <remarks>This method may STILL called for a given node when there is no trivia 
-		/// associated with that node, IF the node is at the top level or its sibling 
-		/// nodes in the same parent have associated trivia.</remarks>
-		protected abstract LNodeList GetAttachedTrivia(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		/// <returns>A list of trivia attributes that should be attached to the node.</returns>
+		/// <remarks>This method will be called for a node when there is no trivia 
+		/// associated with that node; the derived class may, for example, want to add 
+		/// `%appendStatement` in certain cases.</remarks>
+		protected abstract LNodeList GetTriviaToAttach(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
 
 		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			var newAttrs = GetAttachedTrivia(node, trivia, loc, parent, indexInParent);
+			var newAttrs = GetTriviaToAttach(node, trivia, loc, parent, indexInParent);
 			if (loc == TriviaLocation.Leading)
 				return node.PlusAttrsBefore(newAttrs);
 			else
@@ -145,14 +140,17 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>This method is called when a node has no newlines or comments within it
-		/// (although the node may still have a leading or trailing comment). It informs the
-		/// derived class that <see cref="AbstractTriviaInjector{Trivia}"/> will not traverse 
-		/// into the node.</summary>
-		/// <remarks>The default implementation sets the <see cref="NodeStyle.OneLiner"/> 
-		/// style flag.</remarks>
-		protected virtual void MarkOneLiner(ref LNode node)
+		/// (although the node may still have a leading or trailing comment). The method
+		/// should add %appendStatement trivia inside blocks in the node, if necessary.</summary>
+		protected virtual void ProcessChildrenOfOneLiner(ref LNode node)
 		{
-			node.Style |= NodeStyle.OneLiner;
+			for (int i = node.Min; i <= node.Max; i++) {
+				LNode child = node[i], oldChild = child;
+				ProcessChildrenOfOneLiner(ref child);
+				child = AttachTriviaTo(child, EmptyList<Trivia>.Value, TriviaLocation.Leading, node, i);
+				if (child != oldChild)
+					node = node.WithChildChanged(i, child);
+			}
 		}
 
 		/// <summary>Gets the <see cref="SourceRange"/> for an element of trivia.</summary>
@@ -254,18 +252,24 @@ namespace Loyc.Syntax
 					// (1) a comment appears on the same line as the previous node AND the
 					//     current node is on a different line, e.g. Kill(p); /* end process */
 					// (2) a comment appears on the next line after the previous node AND
-					//     there is a blank line between that comment and the current node
-					// ...however, don't do this between attributes, or between the last 
-					// attribute and the target, because in that case we want to yield the 
-					// trivia into the attribute list of the parent using the special logic 
-					// below.
+					//     there is a blank line between that comment and the current node.
+					// Note: we don't have a way to check whether something is a "comment";
+					// if !IsNewline, it's probably a comment. But here we are not checking
+					// whether there is a non-newline/comment followed by a newline; for 
+					// simplicity we look for any kind of trivia followed by two newlines.
+					// So if there are three newlines between two nodes, two are associated
+					// with the previous node and the third with the current node.
+					//
+					// We don't do this between attributes, or between the last attribute 
+					// and the target, because in that case we want to yield the trivia into 
+					// the attribute list of the parent using 'yield return' later on.
 					bool canAssociateWithPrev = prev != null && !(prevIndexInParent < -1 && indexInParent <= -1);
 					int firstNewlineAt = -1;
 					while (triviaRange.StartIndex < node.Range.StartIndex) {
 						if (canAssociateWithPrev && IsNewline(trivia.Value)) {
 							if (firstNewlineAt == -1) {
 								firstNewlineAt = triviaList.Count;
-							} else if (!triviaList.IsEmpty && IsNewline(triviaList.Last)) {
+							} else if (triviaList.Count > 1 && IsNewline(triviaList.Last)) {
 								// case (2)
 								TryAttachTriviaTo(ref prev, ref triviaList, TriviaLocation.Trailing, parent, prevIndexInParent);
 								yield return YieldPrev(ref prev, parent, prevIndexInParent);
@@ -289,7 +293,7 @@ namespace Loyc.Syntax
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
 
 				// Attach leading trivia to current node
-				var newAttrs = GetAttachedTrivia(node, triviaList, TriviaLocation.Leading, parent, indexInParent);
+				var newAttrs = GetTriviaToAttach(node, triviaList, TriviaLocation.Leading, parent, indexInParent);
 
 				if (!(prevIndexInParent < -1 && indexInParent <= -1))
 					node = node.PlusAttrsBefore(newAttrs);
@@ -302,12 +306,31 @@ namespace Loyc.Syntax
 				}
 				triviaList.Clear();
 
-				// Attach trivia within this node's range to this node's children, if applicable
-				if (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && node.Range.EndIndex >= 0) {
-					node.Style &= ~NodeStyle.OneLiner;
+				// Attach trivia within this node's range (if any) to this node's children, if applicable.
+				//
+				// Historical note: we used to have an easy optimization here that allowed us to avoid
+				// traversing into children if the entire node was on one line. Consider this line:
+				// 
+				//     list.ForEach(item => { item.Process(); AndOtherStuff(); });
+				// 
+				// Ordinarily if a line of code has no newlines or trivia inside, we don't need to 
+				// process that line, so I added the NodeStyle.OneLiner style to mark nodes (usually 
+				// statements) that are entirely on one line. There are cases like this where there 
+				// is a block hidden within a single line - `item.Process()` and `OtherStuff()` should 
+				// have %appendStatement trivia attached to them - but OneLiner sidestepped that 
+				// problem and the trivia injector could skip the whole subtree.
+				//
+				// It worked, but it was a pain in the ass: printers needed special support for 
+				// OneLiner, yes, but even worse, _macros_ needed special support for it. If a macro 
+				// inserted a large block of code somewhere inside a one-line statement, the macro 
+				// should want to remove the OneLiner style, otherwise the large block of code would 
+				// end up on a single line (with, potentially, occasional line breaks due to %newline
+				// trivia in the larger block of code). For this reason I finally decided not to use
+				// OneLiner, but to process all children unconditionally.
+				if (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && node.Range.EndIndex >= 0)
 					InjectTriviaInChildren(parent, out triviaRange, out trivia, indexInParent, ref node);
-				} else
-					MarkOneLiner(ref node);
+				else
+					ProcessChildrenOfOneLiner(ref node);
 			}
 			if (prev != null)
 				yield return YieldPrev(ref prev, parent, prevIndexInParent);

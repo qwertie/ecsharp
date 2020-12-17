@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -47,38 +47,54 @@ namespace Loyc.Syntax
 	{
 		/// <summary>Initializes this object to begin parsing the specified tokens.</summary>
 		/// <param name="list">A list of tokens that the derived class will parse.</param>
-		/// <param name="eofToken">A token value to return when the input position 
-		/// reaches the end of the token list. Ideally <c>eofToken.StartIndex</c>
-		/// would contain the position of EOF, but the base class method
-		/// <see cref="BaseParser{Tok,MT}.LaIndexToCharIndex"/> does not trust this
-		/// value, and will ensure that the character index returned for EOF is at 
-		/// least as large as the character index of the last token in the file. 
-		/// This means that it is safe to set <c>ISimpleToken{MatchType}.StartIndex</c> 
-		/// to 0 in the EOF token, because when an error message involves EOF, the
-		/// base class will find a more accurate EOF position.</param>
+		/// <param name="getEofToken">This is either a token value to return when the 
+		///   input position reaches the end of the token list, or a function that
+		///   computes a "synthetic" EOF token given the final token in the file. 
+		///   Ideally the <c>StartIndex</c> of the EOF token contains the position of 
+		///   EOF for proper error handling; if your grammar has expects a certain 
+		///   token, it's usually possible to receive a different token or EOF instead,
+		///   which may not have a valid Value but should have correct position info so 
+		///   that you can construct your syntax tree. If your token stream is lazy-
+		///   loaded then you don't know the EOF position yet, which is why you may
+		///   wish to pass a method instead of just a token.
+		///   <para/>
+		///   In any case, <see cref="BaseParser{Tok,MT}.LaIndexToCharIndex"/> does 
+		///   not trust this value, and will ensure that the character index returned 
+		///   for EOF is at least as large as the character index of the last token in 
+		///   the file, so that error messages involving EOF won't be overly 
+		///   inaccurate.</param>
+		/// <param name="eof">The value of the EOF property used by LLLPG to detect EOF.</param>
 		/// <param name="file">A source file object that will be returned by the 
-		/// <see cref="SourceFile"/> property. By default, this object is used to 
-		/// get the file name, line number and column number shown in parser errors. 
-		/// If your lexer uses <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
-		/// you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
-		/// property. The <see cref="SourceFile"/> property (in this class) will 
-		/// return this value. If this parameter is null, then by default, error 
-		/// messages will only show the character index instead of the file, line 
-		/// number and column number.</param>
+		///   <see cref="SourceFile"/> property. By default, this object is used to 
+		///   get the file name, line number and column number shown in parser errors. 
+		///   If your lexer uses <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
+		///   you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
+		///   property. The <see cref="SourceFile"/> property (in this class) will 
+		///   return this value. If this parameter is null, then by default, error 
+		///   messages will only show the character index instead of the file, line 
+		///   number and column number.</param>
 		/// <param name="startIndex">The initial index from which to start reading
-		/// tokens from the list (normally 0).</param>
-		protected BaseParserForList(List list, Token eofToken, ISourceFile file, int startIndex = 0) : base(file, startIndex)
+		///   tokens from the list (normally 0).</param>
+		protected BaseParserForList(List list, Func<Token, Token> getEofToken, MatchType eof, ISourceFile file, int startIndex = 0) : base(file, startIndex)
 		{
-			Reset(list, eofToken, file, startIndex);
+			Reset(list, getEofToken, eof, file, startIndex);
 		}
-
+		/// <inheritdoc cref="BaseParserForList(List, Func{Token, Token}, ISourceFile, int)"/>
+		protected BaseParserForList(List list, Token getEofToken, ISourceFile file, int startIndex = 0)
+		{
+			Reset(list, getEofToken, file, startIndex);
+		}
+	
 		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
 		/// <remarks>See the constructor for documentation of the parameters.</remarks>
-		protected virtual void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0)
+		protected virtual void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0) => Reset(list, t => eofToken, eofToken.Type, file, startIndex);
+		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
+		/// <remarks>See the constructor for documentation of the parameters.</remarks>
+		protected virtual void Reset(List list, Func<Token, Token> getEofToken, MatchType eof, ISourceFile file, int startIndex = 0)
 		{
 			CheckParam.IsNotNull<object>("list", list);
-			EofToken = eofToken;
-			EOF = EofToken.Type;
+			_getEofToken = getEofToken;
+			EOF = eof;
 			_tokenList = list;
 			_listCount = list.Count; // to avoid 1st-chance exceptions
 			_sourceFile = file;
@@ -89,7 +105,14 @@ namespace Loyc.Syntax
 			Reset(TokenList, EofToken, SourceFile);
 		}
 
-		protected Token EofToken;
+		protected Func<Token, Token> _getEofToken;
+		protected Token EofToken
+		{
+			get {
+				int c = _tokenList.Count;
+				return _getEofToken(c > 0 ? _tokenList[c - 1] : default(Token));
+			}
+		}
 
 		/// <summary>The IList{Token} that was provided to the constructor, if any.</summary>
 		/// <remarks>Note: if you are starting to parse a new source file, you should call 
@@ -195,17 +218,23 @@ namespace Loyc.Syntax
 		where MatchType : IEquatable<MatchType>
 	{
 		/// <inheridoc/>
-		protected BaseParserForList(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
-			: base(list, eofToken, file, startIndex) { }
+		protected BaseParserForList(IList<Token> list, Token getEofToken, ISourceFile file, int startIndex = 0)
+			: base(list, getEofToken, file, startIndex) { }
+		/// <inheridoc/>
+		protected BaseParserForList(IList<Token> list, Func<Token,Token> getEofToken, MatchType eof, ISourceFile file, int startIndex = 0)
+			: base(list, getEofToken, eof, file, startIndex) { }
 		protected BaseParserForList(IListAndListSource<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
 			: base(list, eofToken, file, startIndex) { }
 		protected BaseParserForList(IListSource<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
 			: base(list.AsList(), eofToken, file, startIndex) { }
 		/// <inheridoc/>
-		protected BaseParserForList(IEnumerable<Token> list, Token eofToken, ISourceFile file, int startIndex = 0) 
-			: this(list.Buffered(), eofToken, file, startIndex) { }
+		protected BaseParserForList(IEnumerable<Token> list, Token getEofToken, ISourceFile file, int startIndex = 0) 
+			: this((IList<Token>)list.Buffered(), getEofToken, file, startIndex) { }
 		/// <inheridoc/>
-		protected BaseParserForList(IEnumerator<Token> list, Token eofToken, ISourceFile file, int startIndex = 0) 
-			: this(list.Buffered(), eofToken, file, startIndex) { }
+		protected BaseParserForList(IEnumerable<Token> list, Func<Token,Token> getEofToken, MatchType eof, ISourceFile file, int startIndex = 0)
+			: this(list.Buffered(), getEofToken, eof, file, startIndex) { }
+		/// <inheridoc/>
+		protected BaseParserForList(IEnumerator<Token> list, Token getEofToken, ISourceFile file, int startIndex = 0) 
+			: this(list.Buffered(), getEofToken, file, startIndex) { }
 	}
 }

@@ -41,9 +41,9 @@ namespace Loyc.Syntax.Les
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
 		RBrace     = TokenKind.RBrace,
-		TreeDef    = TokenKind.Other + 1, // LES3 only: @.xyz123
-		BackRef    = TokenKind.Other + 2, // LES3 only: @@xyz123
-		Unknown    = TokenKind.Other,
+		Unknown    = TokenKind.Other + 1,
+		TreeDef    = TokenKind.Other + 2, // LES3 only: @.xyz123
+		BackRef    = TokenKind.Other + 3, // LES3 only: @@xyz123
 	}
 
 	/// <summary>Provides the <c>Type()</c> extension method required by 

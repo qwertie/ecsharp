@@ -27,8 +27,9 @@ namespace Loyc.Syntax.Les
 		protected LNode Op(LNode node) => node.SetBaseStyle(NodeStyle.Operator);
 		protected LNode KeywordExpr(LNode node) => node.SetBaseStyle(NodeStyle.Special);
 		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
-		private LNode AppendStatement(LNode stmt) => stmt.PlusAttrBefore(F.Id(S.TriviaAppendStatement));
+		protected LNode AppendStmt(LNode stmt) => stmt.PlusAttrBefore(F.Id(S.TriviaAppendStatement));
 		protected LNode NewlineAfter(LNode node) => node.PlusTrailingTrivia(F.TriviaNewline);
+		public LNode BracesOnOneLine(params LNode[] contents) => F.Braces(contents.Select(n => AppendStmt(n)));
 
 		#region Literals
 		// Note: The most rigorous testing may be done in the Lexer tests,
@@ -534,17 +535,28 @@ namespace Loyc.Syntax.Les
 		public void Braces()
 		{
 			Expr("{\n  b(c);\n} + {\n  ;\n  Foo()\n}", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
-			Stmt(@"{ ""key"": ""value"", {""KEY"": ""VALUE""} }", F.Braces(
-				F.Call(S.Colon, String("key"), String("value")), F.Braces(
-				F.Call(S.Colon, String("KEY"), String("VALUE")))));
+			Stmt(@"{ ""key"": ""value"", {""KEY"": ""VALUE""} }", BracesOnOneLine(
+				F.Call(S.Colon, String("key"), String("value")), 
+				BracesOnOneLine(F.Call(S.Colon, String("KEY"), String("VALUE")))));
 			Exact("{\n  0 : zero\n  1 : one\n}", F.Braces(
 				F.Call(S.Colon, zero, _("zero")), F.Call(S.Colon, one, _("one"))));
 			Stmt("{\n  1 : one;\n  2 : two;\n}", F.Braces(
 				F.Call(S.Colon, one, _("one")), F.Call(S.Colon, two, _("two"))));
 			// Using commas in a braced block is a bit awkward since a newline counts 
-			// as a semicolon and you can't mix two separator types.
-			Stmt("{\n  2 : two,\n  4 : four }", F.Braces(
-				F.Call(S.Colon, Number(2), _("two")), F.Call(S.Colon, Number(4), _("four"))));
+			// as a semicolon (unless after ',' or followed by }) and you can't mix 
+			// ',' and ';'.
+			Stmt("{\n  2 : two,\n\n  4 : four }", F.Braces(
+				F.Call(S.Colon, Number(2), _("two")), OnNewLine(F.Call(S.Colon, Number(4), _("four")))));
+			Stmt("{\n  \n  Foo(),\n  \n  Foo(a),\n  Foo(b)\n}", F.Braces(
+				OnNewLine(F.Call(Foo)), OnNewLine(F.Call(Foo, a)), F.Call(Foo, b)));
+			Stmt("{\n  1 : a,\n  2 : b, 0 : x }", F.Braces(
+				F.Call(S.Colon, one, a), F.Call(S.Colon, two, b), AppendStmt(F.Call(S.Colon, zero, x))));
+			// "Unexpected separator: Newline should be Comma"
+			Test(Mode.Stmt, 1, "{\n  a(1),\n  b(2)\n  x(0) }", 
+				F.Braces(F.Call(a, one), F.Call(b, two), F.Call(x, zero)));
+			// "Unexpected separator: Semicolon should be Comma"
+			Test(Mode.Stmt, 1, "{\n  b(1),\n  a(2);\n  Foo() }",
+				F.Braces(F.Call(b, one), F.Call(a, two), F.Call(Foo)));
 		}
 
 		[Test]
@@ -560,7 +572,7 @@ namespace Loyc.Syntax.Les
 		{
 			Exact(@"x = [1, 2, ""three""]", F.Call(S.Assign, x, 
 				F.Call(S.Array, one, two, String("three"))));
-			Stmt(@"{ ""a"" : [null], ""b"" : [] }", F.Braces(
+			Stmt("{ \"a\" : [null], \"b\" : [] }", BracesOnOneLine(
 				F.Call(S.Colon, String("a"), F.Call(S.Array, F.Null)), 
 				F.Call(S.Colon, String("b"), F.Call(S.Array))));
 			Exact("++[x]", F.Call(S.PreInc, F.Call(S.Array, x)));
@@ -803,7 +815,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Stmt, 1, "Foo(T, .print a, b)", F.Call(Foo, T, KeywordExpr(F.Call("#print", a, b))));
 			Test(Mode.Stmt, 1, "Foo(.moveto a, b)",   F.Call(Foo,    KeywordExpr(F.Call("#moveto", a, b))));
 			Test(Mode.Stmt, 1, "{\n  a : b,\n  .input a, b }", F.Braces(F.Call(S.Colon, a, b), KeywordExpr(F.Call("#input", a, b))));
-			Test(Mode.Stmt, 1, "x, .input a, b", x, KeywordExpr(AppendStatement(F.Call("#input", a, b))));
+			Test(Mode.Stmt, 1, "x, .input a, b", x, KeywordExpr(AppendStmt(F.Call("#input", a, b))));
 		}
 
 		#endregion
@@ -827,12 +839,16 @@ namespace Loyc.Syntax.Les
 			// TODO: add printer support and switch to Exact mode
 			Test(Mode.Stmt, 0, "(' Hi! I'm Fred!)", F.Tuple(_("Hi"), _("'!"), _("I'm"), _("Fred"), _("'!")));
 			Test(Mode.Stmt, 0, "[' Hi! (I'm Sam)]", F.Call(S.Array, _("Hi"), _("'!"), F.Call(_("'()"), _("I'm"), _("Sam"))));
-			Test(Mode.Stmt, 0, "{' Hi, I'm Dave!}", F.Call(S.Braces, _("Hi"), _("',"), _("I'm"), _("Dave"), _("'!")));
+			Test(Mode.Stmt, 0, "{' Hi, I'm Dave!}", F.Call(S.Braces, 
+				AppendStmt(_("Hi")), AppendStmt(_("',")), 
+				AppendStmt(_("I'm")), AppendStmt(_("Dave")), AppendStmt(_("'!"))));
 			Test(Mode.Expr, 0, "' Hi -- I'm John!", _("Hi"), _("'--"), _("I'm"), _("John"), _("'!"));
 
 			// Ways to embed normal expressions in an expression tree
 			Test(Mode.Expr, 0, "' [a + 1, b + 2] ...", F.Call(_("'[]"), F.Call(S.Add, a, one), F.Call(S.Add, b, two)), _("'..."));
-			Test(Mode.Expr, 0, "' {a: 1, b: 2} ...", F.Braces(F.Call(S.Colon, a, one), F.Call(S.Colon, b, two)), _("'..."));
+			Test(Mode.Expr, 0, "' {a: 1, b: 2} ...", F.Braces(
+				AppendStmt(F.Call(S.Colon, a, one)), 
+				AppendStmt(F.Call(S.Colon, b, two))), _("'..."));
 			Test(Mode.Expr, 0, "[' ... ' Foo(2), ' etc...]", F.Call(_("'[]"), _("'..."), F.Call(Foo, two), _("etc"), _("'...")));
 			Test(Mode.Expr, 0, "' .... ' Foo(2), ' etc...", _("'...."), F.Call(Foo, two), _("etc"), _("'..."));
 			string code = "{\n" +
@@ -840,11 +856,11 @@ namespace Loyc.Syntax.Les
 				"  [a += 2, b++];\n" + // but this is a normal-syntax subexpression
 				"  {a += 2, c--}\n" + // and so is this
 				"}";
-			LNode newline = AppendStatement(_("'\n"));
+			LNode newline = AppendStmt(_("'\n"));
 			LNode tree = F.Braces(
 				F.Call("'()", a, _("'+="), one), newline,
-				F.Call("'[]", F.Call(S.AddAssign, a, two), F.Call(S.PostInc, b)), AppendStatement(_("';")), newline,
-				F.Call("'{}", F.Call(S.AddAssign, a, two), F.Call(S.PostDec, c)), newline);
+				F.Call("'[]", F.Call(S.AddAssign, a, two), F.Call(S.PostInc, b)), AppendStmt(_("';")), newline,
+				F.Call("'{}", AppendStmt(F.Call(S.AddAssign, a, two)), AppendStmt(F.Call(S.PostDec, c))), newline);
 			Test(Mode.Stmt, 0, code, tree);
 		}
 
@@ -853,17 +869,21 @@ namespace Loyc.Syntax.Les
 		{
 			// If ' is used in a braces context, each node after the first gets %appendStatement 
 			// trivia because newline is expected between nodes inside braces
-			Test(Mode.Stmt, 0, "{ ' a 2 'z' }", F.Braces(a, two, F.Literal('z', "c"))); // NodeStyle.OneLiner | NodeStyle.Compact | NodeStyle.Alternate
+			Test(Mode.Stmt, 0, "{ ' a 2 'z' }", F.Braces(
+				AppendStmt(a), AppendStmt(two), AppendStmt(F.Literal('z', "c")))); // NodeStyle.Compact | NodeStyle.Alternate
 			Test(Mode.Stmt, 0, new Les3PrinterOptions { PrintTriviaExplicitly = true },
-				"' a 2 'z'", a, AppendStatement(two), AppendStatement(F.Literal('z', "c")));
-			Test(Mode.Stmt, 0, "{' @public Foo: a? | b*; }",
-				F.Braces(_("'@"), _("public"), Foo, _(S.Colon), a, _(S.QuestionMark), _(S.OrBits), b, _(S.Mul), _(S.Semicolon)));
-			Test(Mode.Stmt, 0, "{' @public Foo: (a?) | (b*); }",
-				F.Braces(_("'@"), _("public"), Foo, _(S.Colon), F.Call(S.Parens, a, _(S.QuestionMark)), _(S.OrBits), F.Call(S.Parens, b, _(S.Mul)), _(S.Semicolon)));
+				"' a 2 'z'", a, AppendStmt(two), AppendStmt(F.Literal('z', "c")));
+			Test(Mode.Expr, 0, new Les3PrinterOptions { PrintTriviaExplicitly = true },
+				"' a 2 'z'", a, two, F.Literal('z', "c"));
+			var stmt = F.Tuple(_("'@"), _("public"), Foo, _(S.Colon), a, _(S.QuestionMark), _(S.OrBits), b, _(S.Mul), _(S.Semicolon));
+			Test(Mode.Stmt, 0, "(' @public Foo: a? | b*; )", stmt);
+			Test(Mode.Stmt, 0, "{' @public Foo: a? | b*; }", F.Braces().WithArgs(stmt.Args.SmartSelect(a => AppendStmt(a))));
+			stmt = F.Braces(_("'@"), _("public"), Foo, _(S.Colon), F.Call(S.Parens, a, _(S.QuestionMark)), _(S.OrBits), F.Call(S.Parens, b, _(S.Mul)), _(S.Semicolon));
+			Test(Mode.Stmt, 0, "{' @public Foo: (a?) | (b*); }", stmt.WithArgs(stmt.Args.SmartSelect(a => AppendStmt(a))));
 
 			// Switch back to normal parsing mode using [...] or {...}
 			Test(Mode.Stmt, 0, "Foo(' a[2 + 1] * { b('z') })",
-				F.Call(Foo, a, F.Call(S.Array, F.Call(S.Add, two, one)), _(S.Mul), F.Braces(F.Call(b, F.Literal('z', "c")))));
+				F.Call(Foo, a, F.Call(S.Array, F.Call(S.Add, two, one)), _(S.Mul), F.Braces(AppendStmt(F.Call(b, F.Literal('z', "c"))))));
 		}
 
 		[Test]
@@ -873,16 +893,16 @@ namespace Loyc.Syntax.Les
 				OnNewLine(a), F.Call(S.Array, F.Call(S.Add, two, one)), _(S.Mul), 
 				OnNewLine(F.Braces(F.Call(b, F.Literal('z', "c"))))));
 
-			var newline = AppendStatement(_("'\n"));
+			var newline = AppendStmt(_("'\n"));
 			var options = new Les3PrinterOptions { IndentString = "  ", PrintTriviaExplicitly = true };
 			Test(Mode.Stmt, 0, options,
 				"{'\n  a[1 + 2] >> \n  { b('y') }\n}", F.Braces(
-				newline, a, AppendStatement(F.Call(S.Array, F.Call(S.Add, one, two))), AppendStatement(_(S.Shr)),
-				newline, F.Braces(F.Call(b, F.Literal('y', "c"))).SetStyle(NodeStyle.OneLiner),
+				newline, a, AppendStmt(F.Call(S.Array, F.Call(S.Add, one, two))), AppendStmt(_(S.Shr)),
+				newline, F.Braces(AppendStmt(F.Call(b, F.Literal('y', "c")))),
 				newline).SetBaseStyle(NodeStyle.Compact | NodeStyle.Alternate));
 			Test(Mode.Stmt, 0, options, "{ '\n  a[2 +\n  x] * \n\n  { b(c) }\n}", F.Braces(
-				newline, a, AppendStatement(F.Call(S.Array, F.Call(S.Add, two, OnNewLine(x)))), AppendStatement(_(S.Mul)),
-				newline, _("'\n"), F.Braces(F.Call(b, c)).SetStyle(NodeStyle.OneLiner),
+				newline, a, AppendStmt(F.Call(S.Array, F.Call(S.Add, two, OnNewLine(x)))), AppendStmt(_(S.Mul)),
+				newline, _("'\n"), F.Braces(AppendStmt(F.Call(b, c))),
 				newline));
 		}
 
@@ -1049,14 +1069,11 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TriviaTest_Appending()
 		{
-			LNode[] stmts = {
-				F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner)
-			};
-			Test(Mode.Exact, 0, "{ a(); b() }", stmts);
-			stmts = new[] {
-				F.Call(a), F.Call(b), AppendStatement(F.Call(c))
-			};
-			Test(Mode.Exact, 0, "a()\nb(); c()", stmts);
+			Test(Mode.Exact, 0, "{ a()\n  b()\n}", F.Braces(AppendStmt(F.Call(a)), F.Call(b)));
+			// If all statements in a block are appended, the newline before } is omitted
+			Test(Mode.Stmt,  0, "{ a(x); b(); }", BracesOnOneLine(F.Call(a, x), F.Call(b)));
+			Test(Mode.Exact, 0, "{ a(x); b(2) }", BracesOnOneLine(F.Call(a, x), F.Call(b, two)));
+			Test(Mode.Exact, 0, "a()\nb(); c()", F.Call(a), F.Call(b), AppendStmt(F.Call(c)));
 		}
 
 		[Test]
@@ -1070,17 +1087,17 @@ namespace Loyc.Syntax.Les
 		public void TriviaTest_BlankLinesBetweenStmts()
 		{
 			Test(Mode.Exact, 0, "a()\n\nb()\n\nc()",
-				NewlineAfter(F.Call(a)),
-				NewlineAfter(F.Call(b)),
-				F.Call(c));
-			Exact("{\n\n  a()\n  \n  b()\n  \n  c()\n  \n}",
-				F.Call(NewlineAfter(F.Id(S.Braces)),
-					NewlineAfter(F.Call(a)),
-					NewlineAfter(F.Call(b)),
-					NewlineAfter(F.Call(c))));
+				F.Call(a),
+				OnNewLine(F.Call(b)),
+				OnNewLine(F.Call(c)));
+			Exact("{\n  \n  a()\n  \n  b()\n  \n  c()\n  \n}",
+				F.Call(S.Braces,
+					OnNewLine(F.Call(a)),
+					OnNewLine(F.Call(b)),
+					OnNewLine(NewlineAfter(F.Call(c)))));
 			Test(Mode.Exact, 0, "a()\n\n\nb()",
-				NewlineAfter(F.Call(a)),
-				OnNewLine(F.Call(b)));
+				NewlineAfter(NewlineAfter(F.Call(a))),
+				F.Call(b));
 		}
 
 		[Test]
@@ -1089,9 +1106,9 @@ namespace Loyc.Syntax.Les
 			Exact("Foo(\n  a, \n  b, \n  c)",
 				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(c)));
 
-			Exact("Foo(\n  a,\n  \n  b, \n  // see?\n  c)",
-				F.Call(Foo, NewlineAfter(OnNewLine(a)),
-					OnNewLine(b),
+			Exact("Foo(\n  1, \n  \n  2, \n  // see?\n  c)",
+				F.Call(Foo, OnNewLine(one),
+					OnNewLine(OnNewLine(two)),
 					c.PlusAttrs(F.TriviaNewline, F.Trivia(S.TriviaSLComment, " see?"))));
 		}
 

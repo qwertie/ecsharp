@@ -177,7 +177,7 @@ namespace Loyc.Syntax.Les
 		LNodeFactory F;
 
 		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, int startIndex = 0)
-			: base(list, default(Token), file, startIndex) { ErrorSink = sink; }
+			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex) { ErrorSink = sink; }
 
 		public new IMessageSink ErrorSink
 		{
@@ -189,10 +189,10 @@ namespace Loyc.Syntax.Les
 		{
 			Reset(list, default(Token), file, startIndex);
 		}
-		protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+		protected override void Reset(IList<Token> list, Func<Token, Token> getEofToken, int eof, ISourceFile file, int startIndex = 0)
 		{
 			CheckParam.IsNotNull("file", file);
-			base.Reset(list, eofToken, file, startIndex);
+			base.Reset(list, getEofToken, eof, file, startIndex);
 			F = new LNodeFactory(file);
 		}
 

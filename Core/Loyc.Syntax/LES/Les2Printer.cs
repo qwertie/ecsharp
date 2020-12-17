@@ -68,40 +68,29 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		/// <summary>Indicates whether the <see cref="NodeStyle.OneLiner"/> 
-		/// flag is present on the current node or any of its parents. It 
-		/// suppresses newlines within braced blocks.</summary>
-		bool _isOneLiner;
-
 		internal void Print(ILNode node, Precedence context, string terminator = null)
 		{
-			bool old_isOneLiner = _isOneLiner;
-			_isOneLiner |= (node.Style & NodeStyle.OneLiner) != 0;
-			try {
-				int parenCount = WriteAttrs(node, ref context);
+			int parenCount = WriteAttrs(node, ref context);
 
-				if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation)
-					PrintPrefixNotation(node, context);
-				else do {
-					if (AutoPrintBracesOrBracks(node))
-						break;
-					if (!LesPrecedence.Primary.CanAppearIn(context)) {
-						_out.Write("(@[] ", true);
-						parenCount++;
-						context = StartStmt;
-					}
-					int args = node.ArgCount();
-					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
-						break;
-					if (args == 2 && AutoPrintInfixOp(node, context))
-						break;
-					PrintPrefixNotation(node, context);
-				} while (false);
+			if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation)
+				PrintPrefixNotation(node, context);
+			else do {
+				if (AutoPrintBracesOrBracks(node))
+					break;
+				if (!LesPrecedence.Primary.CanAppearIn(context)) {
+					_out.Write("(@[] ", true);
+					parenCount++;
+					context = StartStmt;
+				}
+				int args = node.ArgCount();
+				if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
+					break;
+				if (args == 2 && AutoPrintInfixOp(node, context))
+					break;
+				PrintPrefixNotation(node, context);
+			} while (false);
 			
-				PrintSuffixTrivia(node, parenCount, terminator);
-			} finally {
-				_isOneLiner = old_isOneLiner;
-			}
+			PrintSuffixTrivia(node, parenCount, terminator);
 		}
 
 		#region Infix, prefix and suffix operators
@@ -230,7 +219,7 @@ namespace Loyc.Syntax.Les
 				_out.Indent();
 				bool anyNewlines = false;
 				foreach (var stmt in args) {
-					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null) && !_isOneLiner) {
+					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null)) {
 						_out.Newline();
 						anyNewlines = true;
 					} else

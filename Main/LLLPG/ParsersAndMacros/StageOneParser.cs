@@ -119,7 +119,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		internal StageOneParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink)
-			: base(ReclassifyTokens(tokens), default(Token), file)
+			: base(ReclassifyTokens(tokens), prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file)
 		{
 			ErrorSink = messageSink;
 		}

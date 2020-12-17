@@ -30,6 +30,8 @@ namespace Loyc.Syntax.Les
 		protected static LNode Op(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
 		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
 		protected LNode NewlineAfter(LNode node) => node.PlusTrailingTrivia(F.TriviaNewline);
+		protected LNode AppendStmt(LNode stmt) => stmt.PlusAttrBefore(F.Id(S.TriviaAppendStatement));
+		public LNode BracesOnOneLine(params LNode[] contents) => F.Braces(contents.Select(n => AppendStmt(n)));
 
 		[Test]
 		public void SimpleCalls()
@@ -189,12 +191,12 @@ namespace Loyc.Syntax.Les
 		{
 			Expr("a b c", F.Call(a, b, c));
 			Expr("a (b c)", F.Call(a, F.InParens(F.Call(b, c))));
-			Stmt("if a > b { c(); };", F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
-			Stmt("if (a > b) { c(); };", F.Call("if", F.InParens(F.Call(S.GT, a, b)), F.Braces(F.Call(c))));
-			Expr("a + (b c)", F.Call(S.Add, a, F.InParens(F.Call(b, c))));
+			Expr("if a > b {\n  c();\n};", F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
+			Stmt("if (a > b) {\n  c();\n};", F.Call("if", F.InParens(F.Call(S.GT, a, b)), F.Braces(F.Call(c))));
+			Stmt("a + (b c)", F.Call(S.Add, a, F.InParens(F.Call(b, c))));
 			var node = F.Call(a, F.Call(S.Add, b, F.InParens(F.Call(_("if"), c, F.Braces(a), _("else"), F.Braces(b)))));
-			Expr("a b + (if c {a;} else {b;})", node);
-			Stmt("get { x } = 0;", F.Call(S.get, F.Call(S.Assign, F.Braces(x), zero)));
+			Expr("a b + (if c {\n  a;\n} else {\n  b;\n})", node);
+			Stmt("get { x } = 0;", F.Call(S.get, F.Call(S.Assign, F.Braces(AppendStmt(x)), zero)));
 		}
 
 		[Test]
@@ -276,15 +278,10 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TriviaTest_Appending()
 		{
-			var append = F.Id(S.TriviaAppendStatement);
-			LNode[] stmts = {
-				F.Braces(F.Call(a), F.Call(b)).SetStyle(NodeStyle.OneLiner)
-			};
-			Test(Mode.Exact, 0, "{ a(); b(); };", stmts);
-			stmts = new[] {
-				F.Call(a), F.Call(b), F.Call(c).PlusAttr(append)
-			};
-			Test(Mode.Exact, 0, "a();\nb(); c();", stmts);
+			Test(Mode.Exact, 0, "{ a();\n  b();\n};", F.Braces(AppendStmt(F.Call(a)), F.Call(b)));
+			// If all statements in a block are appended, the newline before } is omitted
+			Test(Mode.Exact, 0, "{ a(x); b(); };", F.Braces(AppendStmt(F.Call(a, x)), AppendStmt(F.Call(b))));
+			Test(Mode.Exact, 0, "a();\nb(); c();", F.Call(a), F.Call(b), AppendStmt(F.Call(c)));
 		}
 
 		[Test]
@@ -306,14 +303,17 @@ namespace Loyc.Syntax.Les
 		public void TriviaTest_BlankLinesBetweenStmts()
 		{
 			Test(Mode.Exact, 0, "a();\n\nb();\n\nc();",
-				NewlineAfter(F.Call(a)),
-				NewlineAfter(F.Call(b)),
-				F.Call(c));
+				F.Call(a),
+				OnNewLine(F.Call(b)),
+				OnNewLine(F.Call(c)));
 			Exact("{\n\n  a();\n\n  b();\n\n  c();\n\n};",
-				F.Call(NewlineAfter(F.Id(S.Braces)),
-					NewlineAfter(F.Call(a)),
-					NewlineAfter(F.Call(b)),
-					NewlineAfter(F.Call(c))));
+				F.Call(S.Braces,
+					OnNewLine(F.Call(a)),
+					OnNewLine(F.Call(b)),
+					OnNewLine(NewlineAfter(F.Call(c)))));
+			Test(Mode.Exact, 0, "a();\n\n\nb();",
+				NewlineAfter(NewlineAfter(F.Call(a))),
+				F.Call(b));
 		}
 
 		[Test]
@@ -324,9 +324,9 @@ namespace Loyc.Syntax.Les
 			Exact("Foo(\na, \nb, \nc);",
 				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(c)));
 			Exact("Foo(\n\na, \n\nb, \n\nc);",
-				F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
-					NewlineAfter(OnNewLine(b)),
-					OnNewLine(c)));
+				F.Call(Foo, OnNewLine(OnNewLine(a)),
+					OnNewLine(OnNewLine(b)),
+					OnNewLine(OnNewLine(c))));
 		}
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)

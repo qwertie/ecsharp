@@ -89,27 +89,34 @@ partial class Les3Parser
 		/	{ result = F.Id(S.Missing, LT0); }
 		)
 		ErrorTokensOpt
-		greedy( &{isBracedBlock} (")"|"]") {Error(-1, "Ignoring unexpected closing bracket");} )?
-		{ trailingSeparator = default; }
-		greedy(trailingSeparator=(";"|","|"\n"))?
+		greedy( &{isBracedBlock} (")"|"]") { Error(-1, "Ignoring unexpected closing bracket"); } )?
+		greedy(
+			trailingSeparator=(";"|","|"\n")
+		/	{ trailingSeparator = default; }
+		)?
+		NewlinesOpt
+		{ bool endOfExprList = false; }
+		( (")"|"]"|"}"|EOF) => { endOfExprList = true; } )?
 		{
-			var curSepType = trailingSeparator.Type();
-			if (curSepType == TT.Newline && !isBracedBlock) {
-				Error(-1, "Expected ',' or ';' here");
-			} else if (curSepType != 0) {
-				if (curSepType == TT.Newline)
-					curSepType = TT.Semicolon;
-				if (curSepType != separatorType) {
-					if (separatorType == default(TT)) {
-						separatorType = curSepType;
-					} else if (!(separatorType == TT.Semicolon && curSepType == TT.EOF)) {
-						Error(-1, "Unexpected separator: {0} should be {1}",
-							ToString((int) trailingSeparator.Type()), ToString((int) separatorType));
-					}
-				}
+			// Correct behaviors for various suffixes:
+			// ',' => error if expected ';' else set separator type to ','.
+			// ';' => error if expected ',' else set separator type to ';'.
+			// '\n' and !endOfExprList => error if expected ',' else set separator type to ';'.
+			// '\n' and endOfExprList => OK
+			// missing separator and endOfExprList => OK
+			// missing separator and !endOfExprList => error
+			TokenType curSepType = trailingSeparator.Type();
+			if (!endOfExprList && curSepType == TT.Newline)
+				curSepType = TT.Semicolon;
+			if (separatorType != default(TT) && curSepType != separatorType
+				&& curSepType != TT.Newline && !(curSepType == 0 && endOfExprList)) {
+				Error(-1, "Unexpected separator: {0} should be {1}",
+					ToString((int) trailingSeparator.Type()), ToString((int) separatorType));
+				separatorType = default(TT); // minimize additional errors
+			} else if (curSepType == TT.Comma || curSepType == TT.Semicolon) {
+				separatorType = curSepType;
 			}
-		}
-		NewlinesOpt;
+		};
 
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
@@ -387,7 +394,7 @@ partial class Les3Parser
 		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
 
 	// This is for consuming error tokens
-	[LL(1), #new]
+	[LL(1)]
 	ErrorTokenList returns [LNodeList result] @init {$result = LNode.List();} :
 		greedy( result+=TokenListParticle | "'" )*;
 	
@@ -403,16 +410,15 @@ partial class Les3Parser
 	TokenListParticle returns [LNode result]
 		:	"(" TokenListEx ")"
 			{ return F.Call(@@`'()`, $TokenListEx, $"(".StartIndex, $")".EndIndex); }
-		/	SquareBracketList                    { return $SquareBracketList; }
-		/	BracedBlock                          { return $BracedBlock; }
-		/	t:=TT.Literal                        { return F.Literal(t); }
+		/	SquareBracketList { return $SquareBracketList; }
+		/	BracedBlock       { return $BracedBlock; }
+		/	t:=TT.Literal     { return F.Literal(t); }
 		/	t:=(~(","|";"|"\n"|")"|"]"|"}"|"'")) { return F.Id(t); };
 
 	BracedBlock returns [LNode result] : 
 		"{" => // simplify the output by forcing LL(1) analysis on rules using this rule
 		"{" 
 			{ endMarker := default(TT); }
-			greedy("\n")? // Avoid causing an expectation that ";" is the list separator
 			stmts:ExprList["braced block", ref endMarker, isBracedBlock: true, presumeCommaSeparated: false]
 		"}" 
 		{ return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock); };
