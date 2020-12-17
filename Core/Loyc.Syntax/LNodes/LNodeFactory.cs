@@ -34,6 +34,7 @@ namespace Loyc.Syntax
 			set => _errorSink = value;
 		}
 
+		public LNodeFactory() : this(EmptySourceFile.Unknown) { }
 		public LNodeFactory(ISourceFile file, IMessageSink sink = null)
 		{
 			_file = file;
