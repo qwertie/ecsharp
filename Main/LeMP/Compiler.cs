@@ -526,7 +526,7 @@ namespace LeMP
 				try {
 					var stream = File.OpenRead(filename);
 					var text = File.ReadAllText(filename, Encoding.UTF8);
-					var io = new InputOutput(new StreamCharSource(stream), filename);
+					var io = new InputOutput(new StreamCharSource(stream), Path.GetFullPath(filename));
 					openFiles.Add(io);
 				} catch (Exception ex) {
 					sink.Error(filename, ex.GetType().Name + ": " + ex.Message);

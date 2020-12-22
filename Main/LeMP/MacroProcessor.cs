@@ -25,7 +25,7 @@ namespace LeMP
 			Text = text; FileName = fileName ?? ""; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
 		}
 		public readonly ICharSource Text;
-		public readonly string FileName;
+		public readonly string FileName; // Should include the full path
 		public IParsingService InputLang;
 		public bool? PreserveComments; // null means unassigned (to use the Compiler default)
 		public ParsingMode ParsingMode; // inputType argument when parsing with IParsingService.Parse

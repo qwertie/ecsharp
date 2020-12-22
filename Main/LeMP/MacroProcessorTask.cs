@@ -157,10 +157,9 @@ namespace LeMP
 		{
 			using (ParsingService.SetDefault(io.InputLang ?? ParsingService.Default)) {
 				try {
-					string dir = Path.GetDirectoryName(io.FileName);
-					if (!string.IsNullOrEmpty(dir))
-						_rootScopedProperties[(Symbol)"#inputFolder"] = dir;
+					_rootScopedProperties[(Symbol)"#inputPath"] = io.FileName;
 					_rootScopedProperties[(Symbol)"#inputFileName"] = Path.GetFileName(io.FileName);
+					_rootScopedProperties[(Symbol)"#inputFolder"] = Path.GetDirectoryName(io.FileName);
 				} catch (ArgumentException) { }    // Path.* may throw
 				  catch (PathTooLongException) { } // Path.* may throw
 
