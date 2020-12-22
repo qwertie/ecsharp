@@ -70,6 +70,7 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1G-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -101,6 +102,12 @@ static readonly object&#160;</td><td class="memItemRight" valign="bottom"><a cla
 static readonly object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#aa11796c638519b8f6b3d6815fc3724e5">BoxedVoid</a> = new @<a class="el" href="structLoyc_1_1void.html">void</a>()</td></tr>
 <tr class="memdesc:aa11796c638519b8f6b3d6815fc3724e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Singleton void cast to object. <br /></td></tr>
 <tr class="separator:aa11796c638519b8f6b3d6815fc3724e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0be85bf9825a1bca71b3411dd1e97963"><td class="memItemLeft" align="right" valign="top"><a id="a0be85bf9825a1bca71b3411dd1e97963"></a>
+delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ActionRefT&lt; T &gt;</b> (ref T arg)</td></tr>
+<tr class="separator:a0be85bf9825a1bca71b3411dd1e97963"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -134,9 +141,15 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T 
 <tr class="memitem:a8b552ab7f99afe75149723e7c996b36d"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a8b552ab7f99afe75149723e7c996b36d">With&lt; T &gt;</a> (this T obj, Action&lt; T &gt; action)</td></tr>
 <tr class="memdesc:a8b552ab7f99afe75149723e7c996b36d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls <code>action(obj)</code>, then returns the same object.  <a href="classLoyc_1_1G.html#a8b552ab7f99afe75149723e7c996b36d">More...</a><br /></td></tr>
 <tr class="separator:a8b552ab7f99afe75149723e7c996b36d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62f94a7b90c1750fbc6f8620c7a99a96"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a62f94a7b90c1750fbc6f8620c7a99a96">With&lt; T &gt;</a> (this T obj, ActionRefT&lt; T &gt; action)</td></tr>
+<tr class="memdesc:a62f94a7b90c1750fbc6f8620c7a99a96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls <code>action(ref obj)</code>, then returns the same object.  <a href="classLoyc_1_1G.html#a62f94a7b90c1750fbc6f8620c7a99a96">More...</a><br /></td></tr>
+<tr class="separator:a62f94a7b90c1750fbc6f8620c7a99a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2449794f23bbac4ec1b6029269795bef"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a2449794f23bbac4ec1b6029269795bef">With&lt; T &gt;</a> (this T obj, Func&lt; T, T &gt; action)</td></tr>
 <tr class="memdesc:a2449794f23bbac4ec1b6029269795bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>action(obj)</code>. This is similar to the other overload of this method, except that the action has a return value.  <a href="classLoyc_1_1G.html#a2449794f23bbac4ec1b6029269795bef">More...</a><br /></td></tr>
 <tr class="separator:a2449794f23bbac4ec1b6029269795bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a679fb09e8e7c6313e72fc55a502e92a5"><td class="memItemLeft" align="right" valign="top">static R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a679fb09e8e7c6313e72fc55a502e92a5">Do&lt; T, R &gt;</a> (this T obj, Func&lt; T, R &gt; action)</td></tr>
+<tr class="memdesc:a679fb09e8e7c6313e72fc55a502e92a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>action(obj)</code>. This method lets you embed statements in any expression.  <a href="classLoyc_1_1G.html#a679fb09e8e7c6313e72fc55a502e92a5">More...</a><br /></td></tr>
+<tr class="separator:a679fb09e8e7c6313e72fc55a502e92a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14649b8261a791e8874bcab8f7682716"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a14649b8261a791e8874bcab8f7682716">True&lt; T &gt;</a> (T value)</td></tr>
 <tr class="memdesc:a14649b8261a791e8874bcab8f7682716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true. This method has no effect; it is used to do an action in a conditional expression.  <a href="classLoyc_1_1G.html#a14649b8261a791e8874bcab8f7682716">More...</a><br /></td></tr>
 <tr class="separator:a14649b8261a791e8874bcab8f7682716"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -200,6 +213,15 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>DecodeBase64Dig
 <tr class="memitem:a59dfd4527e3cc2a069877d11cdc498e7"><td class="memItemLeft" align="right" valign="top"><a id="a59dfd4527e3cc2a069877d11cdc498e7"></a>
 static char&#160;</td><td class="memItemRight" valign="bottom"><b>EncodeBase64Digit</b> (int digit, char digit62='+', char digit63='/')</td></tr>
 <tr class="separator:a59dfd4527e3cc2a069877d11cdc498e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a232e0617319ccd5647c32af7c7395b03"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">WordWrapCharType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a232e0617319ccd5647c32af7c7395b03">GetWordWrapCharType</a> (int c)</td></tr>
+<tr class="memdesc:a232e0617319ccd5647c32af7c7395b03"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function controls the default character categorization used by overloads of WordWrap(string, int, Func&lt;int, WordWrapCharType&gt;).  <a href="classLoyc_1_1G.html#a232e0617319ccd5647c32af7c7395b03">More...</a><br /></td></tr>
+<tr class="separator:a232e0617319ccd5647c32af7c7395b03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a829b93e9123d5a34dd676370bd92aa34"><td class="memItemLeft" align="right" valign="top">static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a829b93e9123d5a34dd676370bd92aa34">WordWrap</a> (string paragraph, int lineWidth)</td></tr>
+<tr class="memdesc:a829b93e9123d5a34dd676370bd92aa34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Breaks a paragraph into lines using a simple word-wrapping algorithm.  <a href="classLoyc_1_1G.html#a829b93e9123d5a34dd676370bd92aa34">More...</a><br /></td></tr>
+<tr class="separator:a829b93e9123d5a34dd676370bd92aa34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2fb1d8686545f602e72f271dfcdc873"><td class="memItemLeft" align="right" valign="top">static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ae2fb1d8686545f602e72f271dfcdc873">WordWrap</a> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; int, int &gt;&gt; paragraph, int lineWidth, Func&lt; int, <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">WordWrapCharType</a> &gt; getCharType=null)</td></tr>
+<tr class="memdesc:ae2fb1d8686545f602e72f271dfcdc873"><td class="mdescLeft">&#160;</td><td class="mdescRight">Breaks a paragraph into lines using a simple word-wrapping algorithm.  <a href="classLoyc_1_1G.html#ae2fb1d8686545f602e72f271dfcdc873">More...</a><br /></td></tr>
+<tr class="separator:ae2fb1d8686545f602e72f271dfcdc873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a745d19827dc7896187e50ebbde92aab1"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a745d19827dc7896187e50ebbde92aab1">IsInRangeExcludeHi</a> (this int num, int lo, int hi)</td></tr>
 <tr class="memdesc:a745d19827dc7896187e50ebbde92aab1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <code>num</code> is between <code>lo</code> and <code>hi</code>, excluding <code>hi</code> but not <code>lo</code>.  <a href="classLoyc_1_1G.html#a745d19827dc7896187e50ebbde92aab1">More...</a><br /></td></tr>
 <tr class="separator:a745d19827dc7896187e50ebbde92aab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -356,6 +378,72 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T 
 <p class="reference">References <a class="el" href="classLoyc_1_1G.html#ad811da2dd4a70924b9a28a6fb48e8c64">Loyc.G.CountOnes()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="classLoyc_1_1G.html#ad811da2dd4a70924b9a28a6fb48e8c64">Loyc.G.CountOnes()</a>.</p>
+
+</div>
+</div>
+<a id="a679fb09e8e7c6313e72fc55a502e92a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a679fb09e8e7c6313e72fc55a502e92a5">&#9670;&nbsp;</a></span>Do&lt; T, R &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static R Loyc.G.Do&lt; T, R &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T&#160;</td>
+          <td class="paramname"><em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; T, R &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns <code>action(obj)</code>. This method lets you embed statements in any expression. </p>
+
+</div>
+</div>
+<a id="a232e0617319ccd5647c32af7c7395b03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a232e0617319ccd5647c32af7c7395b03">&#9670;&nbsp;</a></span>GetWordWrapCharType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">WordWrapCharType</a> Loyc.G.GetWordWrapCharType </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This function controls the default character categorization used by overloads of WordWrap(string, int, Func&lt;int, WordWrapCharType&gt;). </p>
 
 </div>
 </div>
@@ -1423,7 +1511,7 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T 
 </div>
 </div>
 <a id="a8b552ab7f99afe75149723e7c996b36d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8b552ab7f99afe75149723e7c996b36d">&#9670;&nbsp;</a></span>With&lt; T &gt;() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b552ab7f99afe75149723e7c996b36d">&#9670;&nbsp;</a></span>With&lt; T &gt;() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1464,8 +1552,46 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T 
 
 </div>
 </div>
+<a id="a62f94a7b90c1750fbc6f8620c7a99a96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62f94a7b90c1750fbc6f8620c7a99a96">&#9670;&nbsp;</a></span>With&lt; T &gt;() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static T Loyc.G.With&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T&#160;</td>
+          <td class="paramname"><em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ActionRefT&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calls <code>action(ref obj)</code>, then returns the same object. </p>
+
+</div>
+</div>
 <a id="a2449794f23bbac4ec1b6029269795bef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2449794f23bbac4ec1b6029269795bef">&#9670;&nbsp;</a></span>With&lt; T &gt;() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2449794f23bbac4ec1b6029269795bef">&#9670;&nbsp;</a></span>With&lt; T &gt;() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1493,7 +1619,7 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T 
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1502,11 +1628,120 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PutInRange&lt; T 
 
 </div>
 </div>
+<a id="ae2fb1d8686545f602e72f271dfcdc873"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2fb1d8686545f602e72f271dfcdc873">&#9670;&nbsp;</a></span>WordWrap() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static List&lt;string&gt; Loyc.G.WordWrap </td>
+          <td>(</td>
+          <td class="paramtype">IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; int, int &gt;&gt;&#160;</td>
+          <td class="paramname"><em>paragraph</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>lineWidth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; int, <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">WordWrapCharType</a> &gt;&#160;</td>
+          <td class="paramname"><em>getCharType</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Breaks a paragraph into lines using a simple word-wrapping algorithm. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">paragraph</td><td>A sequence of characters that will be treated as a paragraph to be broken into lines as necessary. The first item in each pair is a 21-bit unicode character; the second item is the width of that character, e.g. in pixels. The width must be non-negative and no more than half of int.MaxValue.</td></tr>
+    <tr><td class="paramname">lineWidth</td><td>Line width. The unit used here is the same as the unit of the second item in each pair, e.g. pixels.</td></tr>
+    <tr><td class="paramname">getCharType</td><td>A function that determines how a character is relevant to the wrapping operation; see <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf" title="The set of character categories recognized by overloads of G.WordWrap(string, int,...">WordWrapCharType</a>. This function accepts 21-bit unicode characters from <code>paragraph</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A list of lines, each not too long.</dd></dl>
+<p>This algorithm may be unsuitable for some non-English languages, in which adjacent characters do not have independent widths because of the way they combine. It may still be useful if you only need to make sure lines don't get too long. </p>
+<p>Characters higher than 0xFFFF are converted into UTF-16 surrogate pairs. </p>
+<p>Whitespace characters at the end of a line are not counted toward the line length limit. As a result, strings in the output list can be longer than <code>lineWidth</code> unless you trim off spaces afterward. </p>
+<p>If the input contains a newline character, a line break occurs but the newline is preserved, e.g. "Foo\nBar" causes output like { "Foo\n", "Bar" }. Depending on how you intend to use the output, you may need to trim the newline from the end. </p>
+<p>By default, lines can be broken at the soft hyphen '\u00AD', in which case it is advisable for the caller to replace the trailing '\u00AD' with '-' before drawing to ensure that the hyphen is actually displayed on the screen. For simplicity, this replacement is not part of the wrapping algorithm itself. </p>
+
+</div>
+</div>
+<a id="a829b93e9123d5a34dd676370bd92aa34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829b93e9123d5a34dd676370bd92aa34">&#9670;&nbsp;</a></span>WordWrap() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static List&lt;string&gt; Loyc.G.WordWrap </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>paragraph</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>lineWidth</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Breaks a paragraph into lines using a simple word-wrapping algorithm. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">paragraph</td><td>Text to be broken apart if necessary.</td></tr>
+    <tr><td class="paramname">lineWidth</td><td>Line width in characters.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A list of lines, each not too long.</dd></dl>
+<p>The other overload of this function is more flexible, e.g. it supports variable-width characters. </p>
+<p>This algorithm may be unsuitable for some non-English languages, in which adjacent characters do not have independent widths because of the way they combine. It may still be useful if you only need to make sure lines don't get too long. </p>
+<p>Whitespace characters (including tabs and zero-width spaces) at the end of a line are not counted toward the line length limit. As a result, strings in the output list can be longer than <code>lineWidth</code> unless you trim spaces afterward. </p>
+<p>If the input contains a newline character, a line break occurs but the newline is preserved, e.g. "Ann\nBob" causes output like { "Ann\n", "Bob" }. Depending on how you intend to use the output, you may need to trim the newline from the end. </p>
+<p>By default, lines can be broken at the soft hyphen '\u00AD', in which case it is advisable for the caller to replace the trailing '\u00AD' with '-' before drawing to ensure that the hyphen is actually displayed on the screen. For simplicity, this replacement is not part of the wrapping algorithm itself. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

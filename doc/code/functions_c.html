@@ -97,10 +97,16 @@ $(function() {
 : <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a494101430520b6ca70b21de7627b1c74">Loyc.Syntax.Precedence</a>
 </li>
 <li>CanParse()
-: <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a2d2b5a804370c95545031ed1f5da0df3">Loyc.Syntax.Precedence</a>
+: <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralParser.html#a2186e3d0df94a7c58648bfe8a2d048e3">Loyc.Syntax.ILiteralParser</a>
+, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralHandlerTable.html#aa7c2d0f826ddec2a525f5666a84d32c5">Loyc.Syntax.LiteralHandlerTable</a>
+, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a2d2b5a804370c95545031ed1f5da0df3">Loyc.Syntax.Precedence</a>
 </li>
 <li>CanPreserveComments
 : <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#a935b134eb841d2923f0228445152e02b">Loyc.Syntax.IParsingService</a>
+</li>
+<li>CanPrint()
+: <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralPrinter.html#a4d72448d9161a1c9c6fbac890ccce96d">Loyc.Syntax.ILiteralPrinter</a>
+, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralHandlerTable.html#a23191a05323333d8c9fd717d04c64c7e">Loyc.Syntax.LiteralHandlerTable</a>
 </li>
 <li>Capacity
 : <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#ade5b302d17b19c2ae19ec38c12cf6834">Loyc.Collections.Impl.InternalList&lt; T &gt;</a>
@@ -166,7 +172,7 @@ $(function() {
 </li>
 <li>Clone()
 : <a class="el" href="classLoyc_1_1Collections_1_1BDictionary.html#a46b3057c2e6d5a89797aae750c1cde42">Loyc.Collections.BDictionary&lt; K, V &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1BList.html#adda7e8836de90f7260702d87415c573b">Loyc.Collections.BList&lt; T &gt;</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a50209baebb2a2da21a35b2266b25a97e">Loyc.Collections.BList&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a38ead3b0e6aed0621aa948e0df697fdd">Loyc.Collections.Impl.InternalList&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1MMap.html#aa810dce4c35711e91e17a68109488af0">Loyc.Collections.MMap&lt; K, V &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a3952e9ffb5f974d11edc04618b697233">Loyc.Collections.MSet&lt; T &gt;</a>
@@ -202,6 +208,9 @@ $(function() {
 <li>CompactMode
 : <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a89d83bfbc334a2dea0b25fa533af6d80">Loyc.Syntax.ILNodePrinterOptions</a>
 </li>
+<li>Compare
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa247500bb21deb6b651532fa932769d8">Loyc.Syntax.CodeSymbols</a>
+</li>
 <li>CompareTo()
 : <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html#a0b83b20e04cb0d36f9cd61709d70be03">Loyc.LLParserGenerator.IntRange</a>
 </li>
@@ -221,7 +230,7 @@ $(function() {
 : <a class="el" href="classLoyc_1_1Collections_1_1AListBase.html#af02669265178d07cdb52ca15efc35f94">Loyc.Collections.AListBase&lt; K, T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1BList.html#a66c9597e31ad76eda55c4e7d6c708dab">Loyc.Collections.BList&lt; T &gt;</a>
 , <a class="el" href="interfaceLoyc_1_1Collections_1_1IContains.html#af18fb028bdd55ed86fdebf069622e491">Loyc.Collections.IContains&lt; in in T &gt;</a>
-, <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#a34317facb311aaaa2acb074e6f571b93">Loyc.MiniTest.Assert</a>
+, <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ae4a94d8042c4b34ccadb51b4c2121e27">Loyc.MiniTest.Assert</a>
 </li>
 <li>ContainsEverything
 : <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#a80f09984f2ba29f5e2f7fc75e3a52ae2">Loyc.LLParserGenerator.IntSet</a>
@@ -230,6 +239,9 @@ $(function() {
 : <a class="el" href="classLoyc_1_1Collections_1_1BMultiMap.html#ab9c5c02e2f5460a9c64cb0699f22d6f2">Loyc.Collections.BMultiMap&lt; K, V &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie.html#ac56aa74ec4c0f2d454cc099cbe82fd1d">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie.html#a05a3a213151a2e3b28e0b89f2451facd">Loyc.Collections.Impl.CPIntTrie&lt; TValue &gt;</a>
+</li>
+<li>Context
+: <a class="el" href="interfaceLoyc_1_1ILogMessage.html#a5e94e67073d84e169e98dab59d04c9c0">Loyc.ILogMessage</a>
 </li>
 <li>ContextToString
 : <a class="el" href="classLoyc_1_1MessageSink.html#a2439b36e47c9d854335ac1ab0f236638">Loyc.MessageSink</a>
@@ -271,7 +283,7 @@ $(function() {
 </li>
 <li>CountMemory()
 : <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer.html#a3d7649fe9d6adf04933d11d50b368b32">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>
-, <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#ab2e5a175fc9857dc7038387c3c130578">Loyc.Collections.Impl.InternalSet&lt; T &gt;</a>
+, <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalSet.html#aa72ed88672a67fd6799f2c55fa78695b">Loyc.Collections.Impl.InternalSet&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1MapOrMMap.html#abef985f2f05147bde081cc076e5c51d1">Loyc.Collections.MapOrMMap&lt; K, V &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1MSet.html#a4cb309ca5999a0b3d7d85ecb2151d24c">Loyc.Collections.MSet&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1Set.html#a76470e1187cb9320b4358be7e9ee0139">Loyc.Collections.Set&lt; T &gt;</a>
@@ -280,7 +292,7 @@ $(function() {
 : <a class="el" href="classLoyc_1_1Collections_1_1CPTrie.html#a6d21e8d842b1e4e7079378d4fb98d0a0">Loyc.Collections.CPTrie&lt; T &gt;</a>
 </li>
 <li>CountOnes()
-: <a class="el" href="classLoyc_1_1G.html#a6871f9ddd2cf3e290932e91857ffd76e">Loyc.G</a>
+: <a class="el" href="classLoyc_1_1G.html#a8c5c04de1063b5464f7fafc7977d1893">Loyc.G</a>
 , <a class="el" href="interfaceLoyc_1_1Math_1_1IBinaryMath.html#a4a1d43b8744224c834897b0eaf7bf4f3">Loyc.Math.IBinaryMath&lt; T &gt;</a>
 </li>
 <li>CountSizeInBytes()
@@ -299,6 +311,9 @@ $(function() {
 : <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase</a>
 , <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#af03aa22d777a81d3eb5e467ebb0034ec">Loyc.LLParserGenerator.IPGCodeGenHelper</a>
 </li>
+<li>CsPPRawText
+: <a class="el" href="classLoyc_1_1Ecs_1_1EcsCodeSymbols.html#a7f20abf904dc77d250d2d36839b19d5d">Loyc.Ecs.EcsCodeSymbols</a>
+</li>
 <li>Current
 : <a class="el" href="classLeMP_1_1MacroProcessor.html#a9377afebd2e2daa6eaba2f32757a94f8">LeMP.MacroProcessor</a>
 , <a class="el" href="interfaceLoyc_1_1Collections_1_1IMEnumerator.html#a51988f766f18e65ecb785888134de736">Loyc.Collections.IMEnumerator&lt; T &gt;</a>
@@ -314,7 +329,7 @@ $(function() {
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

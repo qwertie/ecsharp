@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Bundles the optional original text of a value with an optional in-memory form of it; see remarks at <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it.">ILiteralValue</a>.  
+<p>Bundles the optional original text of a value with an optional in-memory form of it; see remarks at <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it.">ILiteralValue</a>. This struct can also be turned into an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> by calling LNode.Literal&lt;LiteralValue&gt;(SourceRange, LiteralValue, NodeStyle).  
  <a href="structLoyc_1_1Syntax_1_1LiteralValue.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LNodes/LiteralValue.cs'>/Core/Loyc.Syntax/LNodes/LiteralValue.cs</a></li>
@@ -89,12 +89,12 @@ Inheritance diagram for Loyc.Syntax.LiteralValue:</div>
   <map id="Loyc.Syntax.LiteralValue_map" name="Loyc.Syntax.LiteralValue_map">
 <area href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it." alt="Loyc.Syntax.ILiteralValue" shape="rect" coords="108,56,314,80"/>
 <area href="interfaceLoyc_1_1Syntax_1_1ILiteralValueProvider.html" title="The intention of this interface is that a struct implementing it can be embedded inside a LiteralNode..." alt="Loyc.Syntax.ILiteralValueProvider" shape="rect" coords="324,56,530,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html" title="Represents a serialized text form of a literal value." alt="Loyc.Syntax.ISerializedLiteral" shape="rect" coords="0,0,206,24"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html" title="Represents the text form of a literal value, without its parsed value." alt="Loyc.Syntax.IUninterpretedLiteral" shape="rect" coords="0,0,206,24"/>
 <area href="interfaceLoyc_1_1IHasValue.html" alt="Loyc.IHasValue&lt; object &gt;" shape="rect" coords="216,0,422,24"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Bundles the optional original text of a value with an optional in-memory form of it; see remarks at <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it.">ILiteralValue</a>. </p>
+<div class="textblock"><p>Bundles the optional original text of a value with an optional in-memory form of it; see remarks at <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it.">ILiteralValue</a>. This struct can also be turned into an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> by calling LNode.Literal&lt;LiteralValue&gt;(SourceRange, LiteralValue, NodeStyle). </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -107,13 +107,13 @@ object&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [ge
 <tr class="memitem:a53414249f789606f089f8c5ba6724be7"><td class="memItemLeft" align="right" valign="top"><a id="a53414249f789606f089f8c5ba6724be7"></a>
 <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TypeMarker</b><code> [get]</code></td></tr>
 <tr class="separator:a53414249f789606f089f8c5ba6724be7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html">Loyc.Syntax.ISerializedLiteral</a></td></tr>
-<tr class="memitem:ae275ff8206aecf9b28c07425ded4be10 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10">TextValue</a><code> [get]</code></td></tr>
-<tr class="memdesc:ae275ff8206aecf9b28c07425ded4be10 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the serialized text of the value.  <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10">More...</a><br /></td></tr>
-<tr class="separator:ae275ff8206aecf9b28c07425ded4be10 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92c1b32a3f2b7c07f5d468fb09fa1dc8 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#a92c1b32a3f2b7c07f5d468fb09fa1dc8">TypeMarker</a><code> [get]</code></td></tr>
-<tr class="memdesc:a92c1b32a3f2b7c07f5d468fb09fa1dc8 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the type of the value.  <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#a92c1b32a3f2b7c07f5d468fb09fa1dc8">More...</a><br /></td></tr>
-<tr class="separator:a92c1b32a3f2b7c07f5d468fb09fa1dc8 inherit properties_interfaceLoyc_1_1Syntax_1_1ISerializedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html">Loyc.Syntax.IUninterpretedLiteral</a></td></tr>
+<tr class="memitem:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#adfc8f55b708f40a34b325c936c0f1349">TextValue</a><code> [get]</code></td></tr>
+<tr class="memdesc:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the serialized text of the value.  <a href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#adfc8f55b708f40a34b325c936c0f1349">More...</a><br /></td></tr>
+<tr class="separator:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#a5e1bcfe585c816178bd61739bcc0eacc">TypeMarker</a><code> [get]</code></td></tr>
+<tr class="memdesc:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the type of the value.  <a href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#a5e1bcfe585c816178bd61739bcc0eacc">More...</a><br /></td></tr>
+<tr class="separator:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_interfaceLoyc_1_1IHasValue"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasValue')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasValue.html">Loyc.IHasValue&lt; object &gt;</a></td></tr>
 <tr class="memitem:a8b63e9edc4a6b4d3877a0621c17be20c inherit properties_interfaceLoyc_1_1IHasValue"><td class="memItemLeft" align="right" valign="top"><a id="a8b63e9edc4a6b4d3877a0621c17be20c"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Value</b><code> [get]</code></td></tr>
@@ -141,7 +141,7 @@ object ILiteralValueProvider.&#160;</td><td class="memItemRight" valign="bottom"
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

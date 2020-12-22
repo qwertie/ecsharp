@@ -259,6 +259,22 @@ Reads source code from the specified file, and inserts the syntax tree in place 
 
 For nostalgic purposes (to resemble C/C++), `#include` is a synonym of `includeFile`.
 
+### includeFileText ###
+
+~~~csharp
+string content = includeFileText("Filename.txt")
+~~~
+
+Converts a text file into a string literal.
+
+### includeFileBinary ###
+
+~~~csharp
+byte[] content = includeFileBinary("Filename.doc")
+~~~
+
+Converts a binary file into a byte array literal.
+
 ### macro_scope ###
 
 ~~~exec

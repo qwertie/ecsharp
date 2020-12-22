@@ -90,28 +90,43 @@ $(function() {
   </dd>
 </dl>
 <p>In contrast to NotifyCollectionChangedEventArgs, this object represents changes that are about to happen, not changes that have happened already. </p>
-<dl class="section see"><dt>See also</dt><dd>INotifyListChanging&lt;T&gt;</dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html">INotifyListChanging&lt;T&gt;</a></dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
-<tr class="memitem:aeebe1cbad046b0a7c5df6ed0535700a4"><td class="memItemLeft" align="right" valign="top">readonly NotifyCollectionChangedAction&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#aeebe1cbad046b0a7c5df6ed0535700a4">Action</a></td></tr>
-<tr class="memdesc:aeebe1cbad046b0a7c5df6ed0535700a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a value that indicates the type of change being made to the collection.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#aeebe1cbad046b0a7c5df6ed0535700a4">More...</a><br /></td></tr>
-<tr class="separator:aeebe1cbad046b0a7c5df6ed0535700a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b52f5b31e3d0a4a29627588ea6f41b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a>(<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; collection, NotifyCollectionChangedAction action, int index, int sizeChange, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; newItems=null) readonly NotifyCollectionChangedAction&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a0b52f5b31e3d0a4a29627588ea6f41b8">Action</a></td></tr>
+<tr class="memdesc:a0b52f5b31e3d0a4a29627588ea6f41b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">This contructor is meant for ListChanging events only (not ListChanged). It computes the OldItems property automatically, on-demand, if the user gets it.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a0b52f5b31e3d0a4a29627588ea6f41b8">More...</a><br /></td></tr>
+<tr class="separator:a0b52f5b31e3d0a4a29627588ea6f41b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a53c32b1bca0b64349fce3e46cd8c9b"><td class="memItemLeft" align="right" valign="top">readonly int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Index</a></td></tr>
-<tr class="memdesc:a1a53c32b1bca0b64349fce3e46cd8c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the index at which the add, remove, or change operation starts.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">More...</a><br /></td></tr>
+<tr class="memdesc:a1a53c32b1bca0b64349fce3e46cd8c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the index at which the add, remove, or change operation starts. If the collection is not a list (e.g. it is a dictionary), this should be Int32.MinValue.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">More...</a><br /></td></tr>
 <tr class="separator:a1a53c32b1bca0b64349fce3e46cd8c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a563eccc97f9af781867c36ffbffc7509"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a563eccc97f9af781867c36ffbffc7509">NewStartingIndex</a> =&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Index</a></td></tr>
+<tr class="memdesc:a563eccc97f9af781867c36ffbffc7509"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b" title="Gets the index at which the add, remove, or change operation starts. If the collection is not a list ...">Index</a>. Exists for compatibility with NotifyCollectionChangedEventArgs.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a563eccc97f9af781867c36ffbffc7509">More...</a><br /></td></tr>
+<tr class="separator:a563eccc97f9af781867c36ffbffc7509"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d47399e64bd430cce5490e2ffffb699"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1d47399e64bd430cce5490e2ffffb699">OldStartingIndex</a> =&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Index</a></td></tr>
+<tr class="memdesc:a1d47399e64bd430cce5490e2ffffb699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b" title="Gets the index at which the add, remove, or change operation starts. If the collection is not a list ...">Index</a>. Exists for compatibility with NotifyCollectionChangedEventArgs.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1d47399e64bd430cce5490e2ffffb699">More...</a><br /></td></tr>
+<tr class="separator:a1d47399e64bd430cce5490e2ffffb699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a650e767dbf7ce3c2a9116e06d9a76882"><td class="memItemLeft" align="right" valign="top">readonly int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a650e767dbf7ce3c2a9116e06d9a76882">SizeChange</a></td></tr>
 <tr class="memdesc:a650e767dbf7ce3c2a9116e06d9a76882"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the amount by which the collection size changes. When items are being added, this is positive, and when items are being removed, this is negative. This is 0 when existing items are only being replaced.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a650e767dbf7ce3c2a9116e06d9a76882">More...</a><br /></td></tr>
 <tr class="separator:a650e767dbf7ce3c2a9116e06d9a76882"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4c6e57862945546517346437e7feb17"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#ac4c6e57862945546517346437e7feb17">NewItems</a></td></tr>
-<tr class="memdesc:ac4c6e57862945546517346437e7feb17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents either new items that are being added to the collection, or items that are about to replace existing items in the collection. This member is null or empty when items are being removed.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#ac4c6e57862945546517346437e7feb17">More...</a><br /></td></tr>
-<tr class="separator:ac4c6e57862945546517346437e7feb17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1e429d744a0a4a31a668e35874fffcd"><td class="memItemLeft" align="right" valign="top"><a id="aa1e429d744a0a4a31a668e35874fffcd"></a>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_collection</b></td></tr>
+<tr class="separator:aa1e429d744a0a4a31a668e35874fffcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9c500b7a09537bc3fe895c8a3d6a642"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#af9c500b7a09537bc3fe895c8a3d6a642">NewItems</a> =&gt; _newItems</td></tr>
+<tr class="memdesc:af9c500b7a09537bc3fe895c8a3d6a642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents either new item(s) that are being added to the collection, or item(s) that are replacing existing item(s) in the collection. When items are being removed from an indexed list, this member is either null or empty.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#af9c500b7a09537bc3fe895c8a3d6a642">More...</a><br /></td></tr>
+<tr class="separator:af9c500b7a09537bc3fe895c8a3d6a642"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc11a74abb7fb266eb973353ee1fff45"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#abc11a74abb7fb266eb973353ee1fff45">OldItems</a> =&gt; _oldItems ?? ComputeOldItems()</td></tr>
+<tr class="memdesc:abc11a74abb7fb266eb973353ee1fff45"><td class="mdescLeft">&#160;</td><td class="mdescRight">This member may provide a list of old items that are being removed or replaced in the collection. It may be null when items are being added.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#abc11a74abb7fb266eb973353ee1fff45">More...</a><br /></td></tr>
+<tr class="separator:abc11a74abb7fb266eb973353ee1fff45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a1e876f77cbcf0a642c43cda0b6715369"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">ListChangeInfo</a> (NotifyCollectionChangedAction action, int index, int sizeChange, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; newItems)</td></tr>
 <tr class="memdesc:a1e876f77cbcf0a642c43cda0b6715369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the members of <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369" title="Initializes the members of ListChangeInfo&lt;T&gt;.">ListChangeInfo&lt;T&gt;</a>.  <a href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">More...</a><br /></td></tr>
 <tr class="separator:a1e876f77cbcf0a642c43cda0b6715369"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad046c5aa889510c40b47613561b79ea"><td class="memItemLeft" align="right" valign="top"><a id="aad046c5aa889510c40b47613561b79ea"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ListChangeInfo</b> (NotifyCollectionChangedAction action, int index, int sizeChange, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; newItems, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; oldItems)</td></tr>
+<tr class="separator:aad046c5aa889510c40b47613561b79ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a1e876f77cbcf0a642c43cda0b6715369"></a>
@@ -162,26 +177,30 @@ Public Member Functions</h2></td></tr>
 
 <p>Initializes the members of <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369" title="Initializes the members of ListChangeInfo&lt;T&gt;.">ListChangeInfo&lt;T&gt;</a>. </p>
 
-<p class="reference">References <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#aeebe1cbad046b0a7c5df6ed0535700a4">Loyc.Collections.ListChangeInfo&lt; T &gt;.Action</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Loyc.Collections.ListChangeInfo&lt; T &gt;.Index</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#ac4c6e57862945546517346437e7feb17">Loyc.Collections.ListChangeInfo&lt; T &gt;.NewItems</a>, and <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a650e767dbf7ce3c2a9116e06d9a76882">Loyc.Collections.ListChangeInfo&lt; T &gt;.SizeChange</a>.</p>
-
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="aeebe1cbad046b0a7c5df6ed0535700a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeebe1cbad046b0a7c5df6ed0535700a4">&#9670;&nbsp;</a></span>Action</h2>
+<a id="a0b52f5b31e3d0a4a29627588ea6f41b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b52f5b31e3d0a4a29627588ea6f41b8">&#9670;&nbsp;</a></span>Action</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">readonly NotifyCollectionChangedAction <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.Action</td>
+          <td class="memname"><a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">ListChangeInfo</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; collection, NotifyCollectionChangedAction action, int index, int sizeChange, <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; newItems = null) readonly NotifyCollectionChangedAction <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.Action</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>This contructor is meant for ListChanging events only (not ListChanged). It computes the OldItems property automatically, on-demand, if the user gets it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">collection</td><td>The list that is about to change.</td></tr>
+    <tr><td class="paramname">action</td><td>Should be Remove, Reset or Replace.</td></tr>
+  </table>
+  </dd>
+</dl>
 <p>Gets a value that indicates the type of change being made to the collection. </p>
-
-<p class="reference">Referenced by <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">Loyc.Collections.ListChangeInfo&lt; T &gt;.ListChangeInfo()</a>.</p>
 
 </div>
 </div>
@@ -197,27 +216,73 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the index at which the add, remove, or change operation starts. </p>
-
-<p class="reference">Referenced by <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">Loyc.Collections.ListChangeInfo&lt; T &gt;.ListChangeInfo()</a>.</p>
+<p>Gets the index at which the add, remove, or change operation starts. If the collection is not a list (e.g. it is a dictionary), this should be Int32.MinValue. </p>
 
 </div>
 </div>
-<a id="ac4c6e57862945546517346437e7feb17"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4c6e57862945546517346437e7feb17">&#9670;&nbsp;</a></span>NewItems</h2>
+<a id="af9c500b7a09537bc3fe895c8a3d6a642"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9c500b7a09537bc3fe895c8a3d6a642">&#9670;&nbsp;</a></span>NewItems</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">readonly <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.NewItems</td>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.NewItems =&gt; _newItems</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Represents either new items that are being added to the collection, or items that are about to replace existing items in the collection. This member is null or empty when items are being removed. </p>
+<p>Represents either new item(s) that are being added to the collection, or item(s) that are replacing existing item(s) in the collection. When items are being removed from an indexed list, this member is either null or empty. </p>
+<p>In a ListChanged event, the collection returned from this property could be a slice that will be invalid after the event is over. Avoid storing it without making a copy. </p>
 
-<p class="reference">Referenced by <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">Loyc.Collections.ListChangeInfo&lt; T &gt;.ListChangeInfo()</a>.</p>
+</div>
+</div>
+<a id="a563eccc97f9af781867c36ffbffc7509"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a563eccc97f9af781867c36ffbffc7509">&#9670;&nbsp;</a></span>NewStartingIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.NewStartingIndex =&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Index</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b" title="Gets the index at which the add, remove, or change operation starts. If the collection is not a list ...">Index</a>. Exists for compatibility with NotifyCollectionChangedEventArgs. </p>
+
+</div>
+</div>
+<a id="abc11a74abb7fb266eb973353ee1fff45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc11a74abb7fb266eb973353ee1fff45">&#9670;&nbsp;</a></span>OldItems</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.OldItems =&gt; _oldItems ?? ComputeOldItems()</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This member may provide a list of old items that are being removed or replaced in the collection. It may be null when items are being added. </p>
+<p>In a ListChanging event, the collection returned from this property may be empty if the list is being sorted in-place, since it is not known what the new list will be. In any case, this property is typically a slice and therefore is not valid after the event is over; avoid storing it without making a copy. </p>
+
+</div>
+</div>
+<a id="a1d47399e64bd430cce5490e2ffffb699"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d47399e64bd430cce5490e2ffffb699">&#9670;&nbsp;</a></span>OldStartingIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html">Loyc.Collections.ListChangeInfo</a>&lt; T &gt;.OldStartingIndex =&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b">Index</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1a53c32b1bca0b64349fce3e46cd8c9b" title="Gets the index at which the add, remove, or change operation starts. If the collection is not a list ...">Index</a>. Exists for compatibility with NotifyCollectionChangedEventArgs. </p>
 
 </div>
 </div>
@@ -235,15 +300,13 @@ Public Member Functions</h2></td></tr>
 
 <p>Gets the amount by which the collection size changes. When items are being added, this is positive, and when items are being removed, this is negative. This is 0 when existing items are only being replaced. </p>
 
-<p class="reference">Referenced by <a class="el" href="structLoyc_1_1Collections_1_1ListChangeInfo.html#a1e876f77cbcf0a642c43cda0b6715369">Loyc.Collections.ListChangeInfo&lt; T &gt;.ListChangeInfo()</a>.</p>
-
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

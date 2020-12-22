@@ -164,6 +164,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IHasValue.html">IHasValue</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface for things that have a Value property.  <a href="interfaceLoyc_1_1IHasValue.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1ILogMessage.html">ILogMessage</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A formatted message with an associated Context.  <a href="interfaceLoyc_1_1ILogMessage.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMaybe.html">IMaybe</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a></td></tr>
@@ -310,6 +313,17 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:aeb4d5c77591b654c8d37485b1dd00f5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A linear scale to categorize the importance and seriousness of messages sent to IMessageSink.  <a href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">More...</a><br /></td></tr>
 <tr class="separator:aeb4d5c77591b654c8d37485b1dd00f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad144493ce28d7ee89d1145b107fa47bf"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">WordWrapCharType</a> { <br />
+&#160;&#160;<a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfa93ac740a98eb4cc45b853c780ed16c44">WordWrapCharType.NoWrap</a> = 0, 
+<a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfad511f8439ecde36647437fbba67a4394">WordWrapCharType.Space</a> = 1, 
+<a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfab1bc0135c4ed4acaba7c49f7b6c700bf">WordWrapCharType.BreakBefore</a> = 2, 
+<br />
+&#160;&#160;<a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfa335fd5df48353c6fa61824458bde2e0c">WordWrapCharType.BreakAfter</a> = 4, 
+<a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfa755fee300780823fcf4df98383331745">WordWrapCharType.Newline</a> = 8
+<br />
+ }</td></tr>
+<tr class="memdesc:ad144493ce28d7ee89d1145b107fa47bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">The set of character categories recognized by overloads of G.WordWrap(string, int, Func&lt;int, WordWrapCharType&gt;).  <a href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">More...</a><br /></td></tr>
+<tr class="separator:ad144493ce28d7ee89d1145b107fa47bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -353,6 +367,42 @@ delegate string&#160;</td><td class="memItemRight" valign="bottom"><b>WriterDele
 <p>The numbers are Fatal=110, Critical=90, Error=70, Warning=60, Note=50, Debug=30, Verbose=10 and Detail=0. The severity numbers are based on those defined in log4net, divided by 1000, e.g. Warning=60000 in log4net but 60 in this enum. </p>
 <p>Some of the enumeration values begin with an underscore. These are values defined by Log4net that are deprecated in LoycCore. </p>
 <p>The "Detail" severity levels are meant to contain extra information associated with the most recent non-Detail message, e.g. stack traces or extra diagnostic information for Errors. </p>
+
+</div>
+</div>
+<a id="ad144493ce28d7ee89d1145b107fa47bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad144493ce28d7ee89d1145b107fa47bf">&#9670;&nbsp;</a></span>WordWrapCharType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bf">Loyc.WordWrapCharType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The set of character categories recognized by overloads of G.WordWrap(string, int, Func&lt;int, WordWrapCharType&gt;). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ad144493ce28d7ee89d1145b107fa47bfa93ac740a98eb4cc45b853c780ed16c44"></a>NoWrap&#160;</td><td class="fielddoc"><p>Represents a character on which not to wrap, such as a letter. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad144493ce28d7ee89d1145b107fa47bfad511f8439ecde36647437fbba67a4394"></a>Space&#160;</td><td class="fielddoc"><p>Represents a space character. Spaces are special because they do not consume physical space at the end of a line, so a line break never occurs before a space. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad144493ce28d7ee89d1145b107fa47bfab1bc0135c4ed4acaba7c49f7b6c700bf"></a>BreakBefore&#160;</td><td class="fielddoc"><p>Represents a character before which a line break can be added. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad144493ce28d7ee89d1145b107fa47bfa335fd5df48353c6fa61824458bde2e0c"></a>BreakAfter&#160;</td><td class="fielddoc"><p>Represents a character after which a line break can be added. The most common example of this category is a hyphen. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad144493ce28d7ee89d1145b107fa47bfa755fee300780823fcf4df98383331745"></a>Newline&#160;</td><td class="fielddoc"><p>Represents a forced-break (newline) character. </p>
+</td></tr>
+</table>
 
 </div>
 </div>
@@ -412,7 +462,7 @@ delegate string&#160;</td><td class="memItemRight" valign="bottom"><b>WriterDele
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

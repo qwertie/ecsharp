@@ -223,9 +223,9 @@ abstract bool&#160;</td><td class="memItemRight" valign="bottom"><b>RGet</b> (in
 <tr class="memitem:a5c283e724357c3ded5ddba8160f3d7dd"><td class="memItemLeft" align="right" valign="top"><a id="a5c283e724357c3ded5ddba8160f3d7dd"></a>
 virtual <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int _localCount, Func&lt; T, bool &gt; filter, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; T &gt; forWList)</td></tr>
 <tr class="separator:a5c283e724357c3ded5ddba8160f3d7dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4f45d0c4e28cfabee3bef45177de504"><td class="memItemLeft" align="right" valign="top"><a id="ab4f45d0c4e28cfabee3bef45177de504"></a>
-virtual <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SelectMany</b> (int _localCount, Func&lt; T, IList&lt; T &gt;&gt; map, bool isRList, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; T &gt; forWList)</td></tr>
-<tr class="separator:ab4f45d0c4e28cfabee3bef45177de504"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30ed94b28bd26afb0c593006726b4840"><td class="memItemLeft" align="right" valign="top"><a id="a30ed94b28bd26afb0c593006726b4840"></a>
+virtual <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SelectMany</b> (int _localCount, Func&lt; T, IReadOnlyList&lt; T &gt;&gt; map, bool isRList, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; T &gt; forWList)</td></tr>
+<tr class="separator:a30ed94b28bd26afb0c593006726b4840"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af14bc17ad3c7666912d996616c12bacd"><td class="memItemLeft" align="right" valign="top"><a id="af14bc17ad3c7666912d996616c12bacd"></a>
 virtual <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SmartSelect</b> (int _localCount, Func&lt; T, T &gt; map, <a class="el" href="classLoyc_1_1Collections_1_1WListProtected.html">WListProtected</a>&lt; T &gt; forWList)</td></tr>
 <tr class="separator:af14bc17ad3c7666912d996616c12bacd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -244,15 +244,15 @@ static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&
 <tr class="memitem:a25d8bb74c5651e4ccf82fbedafca35f3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">Insert</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, T item, int distanceFromFront)</td></tr>
 <tr class="memdesc:a25d8bb74c5651e4ccf82fbedafca35f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a new item in a <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a> where localCount is the number of items in the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>'s first block and distanceFromFront is the insertion position (0=front).  <a href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">More...</a><br /></td></tr>
 <tr class="separator:a25d8bb74c5651e4ccf82fbedafca35f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd5cc060806dd8ad69f7bd678137de4d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#abd5cc060806dd8ad69f7bd678137de4d">InsertRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, IList&lt; T &gt; items, int distanceFromFront, bool isRVList)</td></tr>
-<tr class="memdesc:abd5cc060806dd8ad69f7bd678137de4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items in the middle of a <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>, where localCount is the number of items in the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>'s first block and distanceFromFront is the insertion position (0=front).  <a href="classLoyc_1_1Collections_1_1VListBlock.html#abd5cc060806dd8ad69f7bd678137de4d">More...</a><br /></td></tr>
-<tr class="separator:abd5cc060806dd8ad69f7bd678137de4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bbec39cfc1f5797bc70118f965534d2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a9bbec39cfc1f5797bc70118f965534d2">InsertRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, IReadOnlyList&lt; T &gt; items, int distanceFromFront, bool isRVList)</td></tr>
+<tr class="memdesc:a9bbec39cfc1f5797bc70118f965534d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items in the middle of a <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>, where localCount is the number of items in the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>'s first block and distanceFromFront is the insertion position (0=front).  <a href="classLoyc_1_1Collections_1_1VListBlock.html#a9bbec39cfc1f5797bc70118f965534d2">More...</a><br /></td></tr>
+<tr class="separator:a9bbec39cfc1f5797bc70118f965534d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d70df73f23e8695e5b0810368e8073a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1VList.html">VList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a7d70df73f23e8695e5b0810368e8073a">AddRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, IEnumerator&lt; T &gt; items)</td></tr>
 <tr class="memdesc:a7d70df73f23e8695e5b0810368e8073a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable <a class="el" href="structLoyc_1_1Collections_1_1VList.html" title="VList represents a reference to a reverse-order FVList.">VList</a> (not a <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>).  <a href="classLoyc_1_1Collections_1_1VListBlock.html#a7d70df73f23e8695e5b0810368e8073a">More...</a><br /></td></tr>
 <tr class="separator:a7d70df73f23e8695e5b0810368e8073a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4defe27114f0c15484817b4afac04e72"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a4defe27114f0c15484817b4afac04e72">AddRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, IList&lt; T &gt; items, bool isRVList)</td></tr>
-<tr class="memdesc:a4defe27114f0c15484817b4afac04e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>.  <a href="classLoyc_1_1Collections_1_1VListBlock.html#a4defe27114f0c15484817b4afac04e72">More...</a><br /></td></tr>
-<tr class="separator:a4defe27114f0c15484817b4afac04e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a516541070a3fcb7a7dd13fd590f324c8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a516541070a3fcb7a7dd13fd590f324c8">AddRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, IReadOnlyList&lt; T &gt; items, bool isRVList)</td></tr>
+<tr class="memdesc:a516541070a3fcb7a7dd13fd590f324c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>.  <a href="classLoyc_1_1Collections_1_1VListBlock.html#a516541070a3fcb7a7dd13fd590f324c8">More...</a><br /></td></tr>
+<tr class="separator:a516541070a3fcb7a7dd13fd590f324c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef7e8a64c57b78e58573a0e5ec0b3c2e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#aef7e8a64c57b78e58573a0e5ec0b3c2e">AddRange</a> (<a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html">VListBlock</a>&lt; T &gt; self, int localCount, <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt; front, <a class="el" href="structLoyc_1_1Collections_1_1FVList.html">FVList</a>&lt; T &gt; back)</td></tr>
 <tr class="memdesc:aef7e8a64c57b78e58573a0e5ec0b3c2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a range of items to a <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a> where localCount is the number of items in the <a class="el" href="structLoyc_1_1Collections_1_1FVList.html" title="A reference to a FVList, a so-called persistent list data structure.">FVList</a>'s first block, front points to the beginning of the range to add and back points to the end of the range.  <a href="classLoyc_1_1Collections_1_1VListBlock.html#aef7e8a64c57b78e58573a0e5ec0b3c2e">More...</a><br /></td></tr>
 <tr class="separator:aef7e8a64c57b78e58573a0e5ec0b3c2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -574,12 +574,12 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 
 <p class="reference">References <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a0064a76e0a690cb2e44d4592c40115c7">Loyc.Collections.VListBlock&lt; T &gt;.Add()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#aef7e8a64c57b78e58573a0e5ec0b3c2e">Loyc.Collections.VListBlock&lt; T &gt;.AddRange()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">Loyc.Collections.VListBlock&lt; T &gt;.Insert()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#abd5cc060806dd8ad69f7bd678137de4d">Loyc.Collections.VListBlock&lt; T &gt;.InsertRange()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#aef7e8a64c57b78e58573a0e5ec0b3c2e">Loyc.Collections.VListBlock&lt; T &gt;.AddRange()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">Loyc.Collections.VListBlock&lt; T &gt;.Insert()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a9bbec39cfc1f5797bc70118f965534d2">Loyc.Collections.VListBlock&lt; T &gt;.InsertRange()</a>.</p>
 
 </div>
 </div>
-<a id="a4defe27114f0c15484817b4afac04e72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4defe27114f0c15484817b4afac04e72">&#9670;&nbsp;</a></span>AddRange() <span class="overload">[4/4]</span></h2>
+<a id="a516541070a3fcb7a7dd13fd590f324c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a516541070a3fcb7a7dd13fd590f324c8">&#9670;&nbsp;</a></span>AddRange() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -602,7 +602,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IList&lt; T &gt;&#160;</td>
+          <td class="paramtype">IReadOnlyList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>items</em>, </td>
         </tr>
         <tr>
@@ -913,8 +913,8 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 
 </div>
 </div>
-<a id="abd5cc060806dd8ad69f7bd678137de4d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abd5cc060806dd8ad69f7bd678137de4d">&#9670;&nbsp;</a></span>InsertRange()</h2>
+<a id="a9bbec39cfc1f5797bc70118f965534d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bbec39cfc1f5797bc70118f965534d2">&#9670;&nbsp;</a></span>InsertRange()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -937,7 +937,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IList&lt; T &gt;&#160;</td>
+          <td class="paramtype">IReadOnlyList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>items</em>, </td>
         </tr>
         <tr>
@@ -1616,7 +1616,7 @@ list" exception is also possible. </p>
 
 <p>Returns the number of immutable items in all previous blocks. </p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">Loyc.Collections.VListBlock&lt; T &gt;.Insert()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#abd5cc060806dd8ad69f7bd678137de4d">Loyc.Collections.VListBlock&lt; T &gt;.InsertRange()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#aa341816e5757a142512bccc887c1a80d">Loyc.Collections.VListBlock&lt; T &gt;.ReplaceAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#af613016ac9ecb1f638d1acbc00d40e83">Loyc.Collections.VListBlock&lt; T &gt;.Transform()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a25d8bb74c5651e4ccf82fbedafca35f3">Loyc.Collections.VListBlock&lt; T &gt;.Insert()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#a9bbec39cfc1f5797bc70118f965534d2">Loyc.Collections.VListBlock&lt; T &gt;.InsertRange()</a>, <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#aa341816e5757a142512bccc887c1a80d">Loyc.Collections.VListBlock&lt; T &gt;.ReplaceAt()</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlock.html#af613016ac9ecb1f638d1acbc00d40e83">Loyc.Collections.VListBlock&lt; T &gt;.Transform()</a>.</p>
 
 </div>
 </div>
@@ -1702,7 +1702,7 @@ list" exception is also possible. </p>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

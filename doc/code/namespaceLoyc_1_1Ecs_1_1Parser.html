@@ -94,7 +94,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trivia injector customized for Enhanced C#.  <a href="classLoyc_1_1Ecs_1_1Parser_1_1EcsTriviaInjector.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html">TokenExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#a94e2c2e19079de89e40d2a1a04588166" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7" title="Expresses an EC# token as a string.">ToString(Token)</a> method to express an EC# token as a string, for tokens that contain sufficient information to do so.  <a href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#a94e2c2e19079de89e40d2a1a04588166" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the ToString(Token) method to express an EC# token as a string, for tokens that contain sufficient information to do so.  <a href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -103,7 +103,7 @@ Typedefs</h2></td></tr>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>TT</b> = TokenType</td></tr>
 <tr class="separator:a6d5345f25cc9de06efc09ff0805a2169"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a01b6a5183ead9c0a943c6e6d089fa4"><td class="memItemLeft" align="right" valign="top"><a id="a4a01b6a5183ead9c0a943c6e6d089fa4"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>S</b> = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html">CodeSymbols</a></td></tr>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>S</b> = <a class="el" href="classLoyc_1_1Ecs_1_1EcsCodeSymbols.html">EcsCodeSymbols</a></td></tr>
 <tr class="separator:a4a01b6a5183ead9c0a943c6e6d089fa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8ed23900f8d54db8509617440278491"><td class="memItemLeft" align="right" valign="top"><a id="ad8ed23900f8d54db8509617440278491"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>EP</b> = <a class="el" href="classLoyc_1_1Ecs_1_1EcsPrecedence.html">EcsPrecedence</a></td></tr>
@@ -192,6 +192,14 @@ Enumerations</h2></td></tr>
 <b>Out</b> = TokenKind.OtherKeyword + 57, 
 <b>Stackalloc</b> = TokenKind.OtherKeyword + 58, 
 <br />
+&#160;&#160;<b>CSIreference</b> = TokenKind.OtherKeyword + 60, 
+<b>CSIload</b> = TokenKind.OtherKeyword + 61, 
+<b>CSIhelp</b> = TokenKind.OtherKeyword + 62, 
+<br />
+&#160;&#160;<b>CSIclear</b> = TokenKind.OtherKeyword + 63, 
+<b>CSIreset</b> = TokenKind.OtherKeyword + 64, 
+<b>PPnullable</b> = TokenKind.OtherKeyword + 65, 
+<br />
 &#160;&#160;<b>PPif</b> = TokenKind.Other + 64, 
 <b>PPelse</b> = TokenKind.Other + 65, 
 <b>PPelif</b> = TokenKind.Other + 66, 
@@ -248,16 +256,19 @@ Enumerations</h2></td></tr>
 <b>GT</b> = TokenKind.Operator + 21, 
 <b>LEGE</b> = TokenKind.Operator + 22, 
 <br />
-&#160;&#160;<b>DotDot</b> = TokenKind.Operator + 23, 
-<b>QuestionMark</b> = TokenKind.Operator + 24, 
-<b>NullCoalesce</b> = TokenKind.Operator + 25, 
+&#160;&#160;<b>Compare</b> = TokenKind.Operator + 23, 
+<b>DotDot</b> = TokenKind.Operator + 24, 
+<b>QuestionMark</b> = TokenKind.Operator + 25, 
 <br />
-&#160;&#160;<b>QuickBind</b> = TokenKind.Operator + 26, 
-<b>Forward</b> = TokenKind.Operator + 27, 
-<b>Substitute</b> = TokenKind.Operator + 28, 
+&#160;&#160;<b>NullCoalesce</b> = TokenKind.Operator + 26, 
+<b>QuickBind</b> = TokenKind.Operator + 27, 
+<b>Forward</b> = TokenKind.Operator + 28, 
 <br />
-&#160;&#160;<b>LambdaArrow</b> = TokenKind.Operator + 29, 
-<b>Unknown</b> = TokenKind.Other
+&#160;&#160;<b>Substitute</b> = TokenKind.Operator + 29, 
+<b>LambdaArrow</b> = TokenKind.Operator + 30, 
+<b>PipeArrow</b> = TokenKind.Operator + 31, 
+<br />
+&#160;&#160;<b>Unknown</b> = TokenKind.Other
 <br />
  }</td></tr>
 <tr class="separator:adbfcb983b0794c7e4c69f15ad4e976ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -268,7 +279,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

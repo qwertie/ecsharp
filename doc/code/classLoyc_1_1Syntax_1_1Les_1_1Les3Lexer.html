@@ -72,9 +72,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected fields</a> &#124;
-<a href="#pro-static-attribs">Protected static fields</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.Les.Les3Lexer Class Reference</div>  </div>
@@ -173,9 +171,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>MLCommentLine</b> (re
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a5aecb6695a6f8c14f798ae7b1e1d1b94"><td class="memItemLeft" align="right" valign="top"><a id="a5aecb6695a6f8c14f798ae7b1e1d1b94"></a>
-static object&#160;</td><td class="memItemRight" valign="bottom"><b>ParseLiteral</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> typeMarker, <a class="el" href="structLoyc_1_1UString.html">UString</a> parsedText, out string syntaxError)</td></tr>
-<tr class="separator:a5aecb6695a6f8c14f798ae7b1e1d1b94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4509c9d939ac1f6b9a275e4b60e7d2a5"><td class="memItemLeft" align="right" valign="top"><a id="a4509c9d939ac1f6b9a275e4b60e7d2a5"></a>
+static object&#160;</td><td class="memItemRight" valign="bottom"><b>ParseLiteral</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> typeMarker, <a class="el" href="structLoyc_1_1UString.html">UString</a> unescapedText, out string syntaxError)</td></tr>
+<tr class="separator:a4509c9d939ac1f6b9a275e4b60e7d2a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b6fbc3fb51ff0ac551e8b8566d03e2f"><td class="memItemLeft" align="right" valign="top">static TokenType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#a0b6fbc3fb51ff0ac551e8b8566d03e2f">GetOperatorTokenType</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> op)</td></tr>
 <tr class="memdesc:a0b6fbc3fb51ff0ac551e8b8566d03e2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Under the assumption that <code>op</code> is a sequence of punctuation marks that forms a legal operator, this method decides its TokenType.  <a href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#a0b6fbc3fb51ff0ac551e8b8566d03e2f">More...</a><br /></td></tr>
 <tr class="separator:a0b6fbc3fb51ff0ac551e8b8566d03e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,9 +195,9 @@ sealed override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td>
 <tr class="memitem:a9128a9f9d6c3702e4df1561f82bf795d"><td class="memItemLeft" align="right" valign="top"><a id="a9128a9f9d6c3702e4df1561f82bf795d"></a>
 <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseStringValue</b> (bool parseNeeded, bool isTripleQuoted)</td></tr>
 <tr class="separator:a9128a9f9d6c3702e4df1561f82bf795d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a475b3e597b8744cd176c7a43e0e41a52"><td class="memItemLeft" align="right" valign="top"><a id="a475b3e597b8744cd176c7a43e0e41a52"></a>
-object&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSQStringValue</b> (bool parseNeeded)</td></tr>
-<tr class="separator:a475b3e597b8744cd176c7a43e0e41a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf4ce50417f2ce2a1e60e7ff90519fcf"><td class="memItemLeft" align="right" valign="top"><a id="abf4ce50417f2ce2a1e60e7ff90519fcf"></a>
+<a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>UnescapeSQStringValue</b> (bool parseNeeded)</td></tr>
+<tr class="separator:abf4ce50417f2ce2a1e60e7ff90519fcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae284eb974d3262d596e7d864d4b98608"><td class="memItemLeft" align="right" valign="top"><a id="ae284eb974d3262d596e7d864d4b98608"></a>
 <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseOp</b> (out TokenType type)</td></tr>
 <tr class="separator:ae284eb974d3262d596e7d864d4b98608"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -216,12 +214,6 @@ object&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSQStringValue<
 <tr class="memdesc:a575a6df8ad461f0e9558174a542d1fe5 inherit pro_methods_classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scans indentation at the beginning of a line and updates the <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#abc10a725c6d7aeeeb40d6134b34c7b9e" title="Gets the number of spaces that were used to indent the current line, where a tab counts as rounding u...">IndentLevel</a> and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a113c71fefb8ecb8a468447d0801aec6e" title="Gets a string slice that holds the spaces or tabs that were used to indent the current line.">IndentString</a> properties. This function is called automatically by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#acdb9de5430c8ac55299c19736deeef7c" title="The lexer must call this method exactly once after it advances past each newline, even inside comment...">AfterNewline()</a>, but should be called manually on the very first line of the file.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a575a6df8ad461f0e9558174a542d1fe5">More...</a><br /></td></tr>
 <tr class="separator:a575a6df8ad461f0e9558174a542d1fe5 inherit pro_methods_classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:abf7cd231fda22580cee98b1505e4c54c"><td class="memItemLeft" align="right" valign="top"><a id="abf7cd231fda22580cee98b1505e4c54c"></a>
-static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, Func&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, object &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>InitLiteralParsers</b> ()</td></tr>
-<tr class="separator:abf7cd231fda22580cee98b1505e4c54c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
 <tr class="memitem:a4f284d3ade7be85103f5f44a0d77b87f"><td class="memItemLeft" align="right" valign="top"><a id="a4f284d3ade7be85103f5f44a0d77b87f"></a>
@@ -233,6 +225,9 @@ TokenType&#160;</td><td class="memItemRight" valign="bottom"><b>_type</b></td></
 <tr class="memitem:a44411777aeae1f80de3bf307b765c755"><td class="memItemLeft" align="right" valign="top"><a id="a44411777aeae1f80de3bf307b765c755"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_startPosition</b></td></tr>
 <tr class="separator:a44411777aeae1f80de3bf307b765c755"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85847e9dd24c333f516e30bf5081eec8"><td class="memItemLeft" align="right" valign="top"><a id="a85847e9dd24c333f516e30bf5081eec8"></a>
+<a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_textValue</b></td></tr>
+<tr class="separator:a85847e9dd24c333f516e30bf5081eec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87907dcbd6238b8401eca6f303161aff"><td class="memItemLeft" align="right" valign="top"><a id="a87907dcbd6238b8401eca6f303161aff"></a>
 Dictionary&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, bool &gt;, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_typeMarkers</b> = new Dictionary&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;<a class="el" href="structLoyc_1_1UString.html">UString</a>, bool&gt;, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&gt;()</td></tr>
 <tr class="separator:a87907dcbd6238b8401eca6f303161aff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -246,15 +241,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_indentLevel</b></td><
 <tr class="memitem:a382c2597490fbb6a1cbbda547747f6d8 inherit pro_attribs_classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a382c2597490fbb6a1cbbda547747f6d8">_current</a></td></tr>
 <tr class="memdesc:a382c2597490fbb6a1cbbda547747f6d8 inherit pro_attribs_classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer"><td class="mdescLeft">&#160;</td><td class="mdescRight">The token that will be returned from the Current property.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer.html#a382c2597490fbb6a1cbbda547747f6d8">More...</a><br /></td></tr>
 <tr class="separator:a382c2597490fbb6a1cbbda547747f6d8 inherit pro_attribs_classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
-Protected static fields</h2></td></tr>
-<tr class="memitem:ac1f4986af62561bbc04917b4931b8ff6"><td class="memItemLeft" align="right" valign="top"><a id="ac1f4986af62561bbc04917b4931b8ff6"></a>
-static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, Func&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, object &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>LiteralParsers</b> = InitLiteralParsers()</td></tr>
-<tr class="separator:ac1f4986af62561bbc04917b4931b8ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addd006a5400d159de08bbec4c396a8f6"><td class="memItemLeft" align="right" valign="top"><a id="addd006a5400d159de08bbec4c396a8f6"></a>
-static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_AtAt</b> = GSymbol.Get(&quot;@@&quot;)</td></tr>
-<tr class="separator:addd006a5400d159de08bbec4c396a8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0b6fbc3fb51ff0ac551e8b8566d03e2f"></a>
@@ -315,7 +301,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a32ebbe5070576a7e48a2fc58fde99703">Loyc.Syntax.Lexing.ILexer&lt; Token &gt;</a>.</p>
 
-<p class="reference">References <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a7dc8b3b6a3187b791861a1480ae1bf95">Loyc.Syntax.Lexing.ILexer&lt; Token &gt;.InputPosition</a>, and <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a2e2aa75122e0f772381b5bc7a1a4fd03">Loyc.Syntax.Lexing.Spaces</a>.</p>
+<p class="reference">References <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#a7dc8b3b6a3187b791861a1480ae1bf95">Loyc.Syntax.Lexing.ILexer&lt; Token &gt;.InputPosition</a>, and <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103da2e2aa75122e0f772381b5bc7a1a4fd03">Loyc.Syntax.Lexing.Spaces</a>.</p>
 
 </div>
 </div>
@@ -378,7 +364,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

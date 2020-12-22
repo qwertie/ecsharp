@@ -124,8 +124,11 @@ Properties</h2></td></tr>
 <tr class="memdesc:ab7f39549b84ec729a461c784f3a3a0ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets information about all macros registered with the macro processor, including macros whose namespace has not been opened with <code>#importMacros</code>.  <a href="interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab">More...</a><br /></td></tr>
 <tr class="separator:ab7f39549b84ec729a461c784f3a3a0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4ba92c4e19b86ca5f7ed0972518df7e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#ad4ba92c4e19b86ca5f7ed0972518df7e">NextTempCounter</a><code> [get]</code></td></tr>
-<tr class="memdesc:ad4ba92c4e19b86ca5f7ed0972518df7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next number to use as a suffix for temporary variables (without incrementing).  <a href="interfaceLeMP_1_1IMacroContext.html#ad4ba92c4e19b86ca5f7ed0972518df7e">More...</a><br /></td></tr>
+<tr class="memdesc:ad4ba92c4e19b86ca5f7ed0972518df7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next number to use as a suffix for temporary variables (without incrementing it).  <a href="interfaceLeMP_1_1IMacroContext.html#ad4ba92c4e19b86ca5f7ed0972518df7e">More...</a><br /></td></tr>
 <tr class="separator:ad4ba92c4e19b86ca5f7ed0972518df7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad0a1be2216aba421027819b290dd6a2"><td class="memItemLeft" align="right" valign="top">ICollection&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#aad0a1be2216aba421027819b290dd6a2">OpenMacroNamespaces</a><code> [get]</code></td></tr>
+<tr class="memdesc:aad0a1be2216aba421027819b290dd6a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the list of namespaces that are being searched for macros in the current scope. You can modify this collection.  <a href="interfaceLeMP_1_1IMacroContext.html#aad0a1be2216aba421027819b290dd6a2">More...</a><br /></td></tr>
+<tr class="separator:aad0a1be2216aba421027819b290dd6a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -229,6 +232,7 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramname">asRoot</td><td>If false, the nodes are treated as children of the current node (using the current list of ancestors as a basis); if true, the list of parent nodes is cleared.</td></tr>
     <tr><td class="paramname">resetOpenNamespaces</td><td>If false, the set of open namespaces stays the same; if true it is cleared to the set of pre-opened namespaces (<a class="el" href="classLeMP_1_1MacroProcessor.html#ac7d649b15f5b12c664854825151a5fc1" title="Macros in these namespaces will be available without an explicit import command (#importMacros)....">MacroProcessor.PreOpenedNamespaces</a>) and macros defined with <a class="el" href="interfaceLeMP_1_1IMacroContext.html#aecf41ab5e772b73344f442e010a1a61f" title="Registers a new macro in the current scope.">RegisterMacro</a> are forgotten.</td></tr>
     <tr><td class="paramname">resetProperties</td><td>If true, <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a12883b70ba50042d8fbda2e89e43b4f5" title="Returns a table of &quot;properties&quot; (arbitrary key-value pairs) that exist in the current scope....">ScopedProperties</a> is reset to contain only predefined properties.</td></tr>
+    <tr><td class="paramname">areAttributes</td><td>This parameter controls the value of <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a1af6d218898eab6b531fc296fd915c9a" title="Returns true if the current node is in the attribute list of its immediate parent.">IsAttribute</a> while the items in the list are processed.</td></tr>
   </table>
   </dd>
 </dl>
@@ -276,11 +280,12 @@ Public Member Functions</h2></td></tr>
 <p>Registers a new macro in the current scope. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">macroInfo</td><td></td></tr>
+    <tr><td class="paramname">macroInfo</td><td>Information about the macro</td></tr>
   </table>
   </dd>
 </dl>
-<p>The macro will be forgotten at the end of the current scope. Macros in child scopes do not shadow macros in outer scopes; if there are macros with the same name in the outer scope, conflicts are handled in the same way as with groups of macros that are imported in the same scope. For example, <code>Mode = <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a66057e7fb1b999cf202660a21fee7471" title="High priority. If this macro is ambiguous with another macro that doesn&#39;t have this flag nor Override...">MacroMode.PriorityOverride</a></code> can be used to make macros that override normal-priority macros.</p>
+<p>The macro will be forgotten at the end of the current scope (regardless of which namespace it is assigned to). </p>
+<p>Macros defined in child scopes do not shadow macros in outer scopes; if there are macros with the same name in the outer scopes, conflicts are handled in the same way as with groups of macros that are imported in the same scope. For example, <code>Mode = <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a66057e7fb1b999cf202660a21fee7471" title="High priority. If this macro is ambiguous with another macro that doesn&#39;t have this flag nor Override...">MacroMode.PriorityOverride</a></code> can be used to make macros that override normal-priority macros.</p>
 
 </div>
 </div>
@@ -429,7 +434,32 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Gets the next number to use as a suffix for temporary variables (without incrementing). </p>
+<p>Gets the next number to use as a suffix for temporary variables (without incrementing it). </p>
+
+</div>
+</div>
+<a id="aad0a1be2216aba421027819b290dd6a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad0a1be2216aba421027819b290dd6a2">&#9670;&nbsp;</a></span>OpenMacroNamespaces</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ICollection&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&gt; LeMP.IMacroContext.OpenMacroNamespaces</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the list of namespaces that are being searched for macros in the current scope. You can modify this collection. </p>
+<p>The naming scheme of namespaces is not standardized in cases where the namespace name is not a "normal" identifier. It is recommended that macros be placed in namespaces whose names are valid identifiers in most languages (C++, C#, Java, Python, etc.). It's okay to put macros in nested namespaces. </p>
 
 </div>
 </div>
@@ -548,7 +578,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:14 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:29 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

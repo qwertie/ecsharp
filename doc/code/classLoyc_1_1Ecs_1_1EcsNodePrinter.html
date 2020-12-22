@@ -120,8 +120,7 @@ Public Types</h2></td></tr>
 <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a2e1b04fc1a8e5adcc2f231bb548232e9">Ambiguity.NoIfWithoutElse</a> = 0x10000, 
 <br />
 &#160;&#160;<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0ab289057209fe117d670c8789aa9a932f">Ambiguity.ForceAttributeList</a> = 0x40000, 
-<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a8eddef7a68e17828528bec111e473d1e">Ambiguity.NewlineBeforeChildStmt</a> = 0x80000, 
-<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a758ec9536a977816029beb9f33c90daf">Ambiguity.OneLiner</a> = 0x100000
+<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a8eddef7a68e17828528bec111e473d1e">Ambiguity.NewlineBeforeChildStmt</a> = 0x80000
 <br />
  }</td></tr>
 <tr class="memdesc:a9c3b95fe21e2ff70c95988196f563bf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal enum (marked public for an obscure technical reason). These are flags that represent special situations in EC# syntax.  <a href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0">More...</a><br /></td></tr>
@@ -232,8 +231,6 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 <tr><td class="fieldname"><a id="a9c3b95fe21e2ff70c95988196f563bf0ab289057209fe117d670c8789aa9a932f"></a>ForceAttributeList&#160;</td><td class="fielddoc"><p>Force PrintAttrs to print an empty attribute list <code>[]</code> which has the effect of allowing unassigned variable declarations anywhere. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a9c3b95fe21e2ff70c95988196f563bf0a8eddef7a68e17828528bec111e473d1e"></a>NewlineBeforeChildStmt&#160;</td><td class="fielddoc"><p>A signal that IF there is no trivia indicating whether or not to print a newline before the current statement, one should be printed. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a9c3b95fe21e2ff70c95988196f563bf0a758ec9536a977816029beb9f33c90daf"></a>OneLiner&#160;</td><td class="fielddoc"><p>Indicates that this node, or one of its parents, has the style NodeStyle.OneLiner which suppresses newlines. </p>
 </td></tr>
 </table>
 
@@ -379,6 +376,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 </div><div class="memdoc">
 
 <p>Any error that occurs during printing is printed to this object. </p>
+<p>The most common error is an unprintable literal.</p>
 
 </div>
 </div>
@@ -386,7 +384,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

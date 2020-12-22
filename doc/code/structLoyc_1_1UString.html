@@ -186,6 +186,12 @@ uchar&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bo
 <tr class="memitem:aa11346193aaed4db876c79e73246eff6"><td class="memItemLeft" align="right" valign="top"><a id="aa11346193aaed4db876c79e73246eff6"></a>
 uchar&#160;</td><td class="memItemRight" valign="bottom"><b>PopLast</b> (out bool fail)</td></tr>
 <tr class="separator:aa11346193aaed4db876c79e73246eff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48782b8abd50289a5b42e1d5d5636164"><td class="memItemLeft" align="right" valign="top"><a id="a48782b8abd50289a5b42e1d5d5636164"></a>
+<a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; uchar &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst</b> ()</td></tr>
+<tr class="separator:a48782b8abd50289a5b42e1d5d5636164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a683b17f130e3b6ec8208d8c2b0b538a0"><td class="memItemLeft" align="right" valign="top"><a id="a683b17f130e3b6ec8208d8c2b0b538a0"></a>
+<a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; uchar &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast</b> ()</td></tr>
+<tr class="separator:a683b17f130e3b6ec8208d8c2b0b538a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af40705a65da0e9db28af489f55ab4aac"><td class="memItemLeft" align="right" valign="top"><a id="af40705a65da0e9db28af489f55ab4aac"></a>
 char <a class="el" href="interfaceLoyc_1_1Collections_1_1IFRange.html">IFRange</a>&lt; char &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool fail)</td></tr>
 <tr class="separator:af40705a65da0e9db28af489f55ab4aac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -745,7 +751,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p class="reference">References <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">Loyc.StringExt.EliminateNamedArgs()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#a8f4fdf9713b4a3820b6481e2444e1aff">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#ad6ccf1c86673c3288d9ccc60c0d42f00">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperatorToken()</a>, <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef">Loyc.Syntax.ParseHelpers.TryParseInt()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">Loyc.StringExt.EliminateNamedArgs()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#a8f4fdf9713b4a3820b6481e2444e1aff">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#ad6ccf1c86673c3288d9ccc60c0d42f00">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperatorToken()</a>, <a class="el" href="structLoyc_1_1UString.html#ac04687a61c925bc61476fb6c63f221f8">Loyc.UString.Slice()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9c2fe21bbc5244a9219071059815de9d">Loyc.Syntax.Lexing.Token.Token()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#adbd6242277228b3c780f57b58c17d8ef">Loyc.Syntax.ParseHelpers.TryParseInt()</a>.</p>
 
 </div>
 </div>
@@ -1014,6 +1020,8 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>Returns true if the internal string is a null reference. Caution: an "empty" <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> is "equal" to a "null" <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange&lt;T&gt; of 21-bit UC...">UString</a> because the list of characters is the same. If you want to know if the internal string reference is null, you must use this property instead of comparing with null. </p>
 
+<p class="reference">Referenced by <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0f3c1089c73436919d18db796a7ba0ac">Loyc.Syntax.Lexing.Token.Token()</a>.</p>
+
 </div>
 </div>
 <a id="ac824ea42089ecb6e9f95122a7f56153c"></a>
@@ -1030,7 +1038,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>Gets the length of the string in code units (which may be greater than the number of actual characters or code points). </p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1StringBuilderExt.html#a9aea19fcf610a9eceaee876cf191e3e5">Loyc.StringBuilderExt.EndsWith()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, <a class="el" href="structLoyc_1_1UString.html#a74e5690f2f6376500c566343a43cbb61">Loyc.UString.Find()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a2773dda73a60796c009c72876adb6721">Loyc.StringBuilderExt.FirstIndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#a0b6fbc3fb51ff0ac551e8b8566d03e2f">Loyc.Syntax.Les.Les3Lexer.GetOperatorTokenType()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#a8f4fdf9713b4a3820b6481e2444e1aff">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#ad6ccf1c86673c3288d9ccc60c0d42f00">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperatorToken()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a25343b4c0462d71d97c12ff5c1b5e9a5">Loyc.StringBuilderExt.LastIndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="structLoyc_1_1UString.html#aa10969232f461b9540f28395faf5eaf0">Loyc.UString.Replace()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#affc1387abde2f9df416eb36236e16071">Loyc.StringBuilderExt.StartsWith()</a>, <a class="el" href="structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee">Loyc.UString.StartsWith()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a296fd5a48cee038edd7d3a93e5b6b850">Loyc.StringBuilderExt.SubstringEquals()</a>, <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">Loyc.Syntax.ParseHelpers.UnescapeCStyle()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1StringBuilderExt.html#a9aea19fcf610a9eceaee876cf191e3e5">Loyc.StringBuilderExt.EndsWith()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, <a class="el" href="structLoyc_1_1UString.html#a74e5690f2f6376500c566343a43cbb61">Loyc.UString.Find()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a2773dda73a60796c009c72876adb6721">Loyc.StringBuilderExt.FirstIndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#a0b6fbc3fb51ff0ac551e8b8566d03e2f">Loyc.Syntax.Les.Les3Lexer.GetOperatorTokenType()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#a8f4fdf9713b4a3820b6481e2444e1aff">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les2PrecedenceMap.html#ad6ccf1c86673c3288d9ccc60c0d42f00">Loyc.Syntax.Les.Les2PrecedenceMap.IsNaturalOperatorToken()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a25343b4c0462d71d97c12ff5c1b5e9a5">Loyc.StringBuilderExt.LastIndexOf()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a4d73bf9c11500448b77c3a57c6c7a9f9">Loyc.Syntax.StandardTriviaInjector.MakeTriviaAttribute()</a>, <a class="el" href="structLoyc_1_1UString.html#aa10969232f461b9540f28395faf5eaf0">Loyc.UString.Replace()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#affc1387abde2f9df416eb36236e16071">Loyc.StringBuilderExt.StartsWith()</a>, <a class="el" href="structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee">Loyc.UString.StartsWith()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a296fd5a48cee038edd7d3a93e5b6b850">Loyc.StringBuilderExt.SubstringEquals()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9c2fe21bbc5244a9219071059815de9d">Loyc.Syntax.Lexing.Token.Token()</a>, <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">Loyc.Syntax.ParseHelpers.UnescapeCStyle()</a>.</p>
 
 </div>
 </div>
@@ -1058,7 +1066,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <p>Returns the original string. </p>
 <p>Ideally, the string would be private and there would be no way to access its contents beyond the boundaries of the slice. However, the reality in .NET today is that many methods accept "slices" in the form of a triple (string, start index, count). In order to call such an old-style API using a slice, one must be able to extract the internal string and start index values.</p>
 
-<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0f3c1089c73436919d18db796a7ba0ac">Loyc.Syntax.Lexing.Token.Token()</a>.</p>
 
 </div>
 </div>
@@ -1144,7 +1152,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:30 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

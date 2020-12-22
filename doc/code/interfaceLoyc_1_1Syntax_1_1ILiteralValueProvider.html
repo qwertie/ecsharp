@@ -78,7 +78,7 @@ $(function() {
 <p>The intention of this interface is that a <code>struct</code> implementing it can be embedded inside a <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;.">LiteralNode</a> in order to lazily obtain the text of a literal, or even parse it lazily.  
  <a href="interfaceLoyc_1_1Syntax_1_1ILiteralValueProvider.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LNodes/LiteralValue.cs'>/Core/Loyc.Syntax/LNodes/LiteralValue.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LNodes/ILiteralValueProvider.cs'>/Core/Loyc.Syntax/LNodes/ILiteralValueProvider.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.ILiteralValueProvider:</div>
@@ -87,7 +87,7 @@ Inheritance diagram for Loyc.Syntax.ILiteralValueProvider:</div>
   <img src="interfaceLoyc_1_1Syntax_1_1ILiteralValueProvider.png" usemap="#Loyc.Syntax.ILiteralValueProvider_map" alt=""/>
   <map id="Loyc.Syntax.ILiteralValueProvider_map" name="Loyc.Syntax.ILiteralValueProvider_map">
 <area href="structLoyc_1_1Syntax_1_1LiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it; see remarks at I..." alt="Loyc.Syntax.LiteralValue" shape="rect" coords="0,56,206,80"/>
-<area href="structLoyc_1_1Syntax_1_1ParsedValue.html" title="This structure is intended to be stored in a LiteralNode, where it holds the value of a literal while..." alt="Loyc.Syntax.ParsedValue" shape="rect" coords="216,56,422,80"/>
+<area href="structLoyc_1_1Syntax_1_1UninterpretedLiteral.html" title="A simple implementation of IUninterpretedLiteral which can also be turned into an LNode by calling LN..." alt="Loyc.Syntax.UninterpretedLiteral" shape="rect" coords="216,56,422,80"/>
   </map>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -113,7 +113,7 @@ object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="in
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

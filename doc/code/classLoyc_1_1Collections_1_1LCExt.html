@@ -83,6 +83,7 @@ $(function() {
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/ListSourceAsSparse.cs'>/Core/Loyc.Essentials/Collections/Adapters/ListSourceAsSparse.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs'>/Core/Loyc.Essentials/Collections/Adapters/NegListSlice.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/NegListSource.cs'>/Core/Loyc.Essentials/Collections/Adapters/NegListSource.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/ReadOnlyListAsListSource.cs'>/Core/Loyc.Essentials/Collections/Adapters/ReadOnlyListAsListSource.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/Adapters/SourceAsCollection.cs'>/Core/Loyc.Essentials/Collections/Adapters/SourceAsCollection.cs</a></li>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Collections/ExtensionMethods/LCExtensions.cs'>/Core/Loyc.Essentials/Collections/ExtensionMethods/LCExtensions.cs</a></li>
 </ul>
@@ -95,8 +96,14 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ac4c80a49adb7d5fc0d0725759632a456"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ac4c80a49adb7d5fc0d0725759632a456">AsListSource&lt; T &gt;</a> (this IList&lt; T &gt; c)</td></tr>
 <tr class="memdesc:ac4c80a49adb7d5fc0d0725759632a456"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats any IList{T} object as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>{T}.  <a href="classLoyc_1_1Collections_1_1LCExt.html#ac4c80a49adb7d5fc0d0725759632a456">More...</a><br /></td></tr>
 <tr class="separator:ac4c80a49adb7d5fc0d0725759632a456"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8211cef6e4801fc9c23c42337108c3ed"><td class="memItemLeft" align="right" valign="top"><a id="a8211cef6e4801fc9c23c42337108c3ed"></a>
-static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsListSource&lt; T &gt;</b> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; c)</td></tr>
+<tr class="memitem:a8f4424565c469ca6f19ff1ab3b341353"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a8f4424565c469ca6f19ff1ab3b341353">AsListSource&lt; T &gt;</a> (this List&lt; T &gt; c)</td></tr>
+<tr class="memdesc:a8f4424565c469ca6f19ff1ab3b341353"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats List{T} as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>.  <a href="classLoyc_1_1Collections_1_1LCExt.html#a8f4424565c469ca6f19ff1ab3b341353">More...</a><br /></td></tr>
+<tr class="separator:a8f4424565c469ca6f19ff1ab3b341353"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50ea41354b28a1ea8b2dd70983bcc819"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a50ea41354b28a1ea8b2dd70983bcc819">AsListSource&lt; T &gt;</a> (this T[] c)</td></tr>
+<tr class="memdesc:a50ea41354b28a1ea8b2dd70983bcc819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats T[] as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>.  <a href="classLoyc_1_1Collections_1_1LCExt.html#a50ea41354b28a1ea8b2dd70983bcc819">More...</a><br /></td></tr>
+<tr class="separator:a50ea41354b28a1ea8b2dd70983bcc819"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8211cef6e4801fc9c23c42337108c3ed"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a8211cef6e4801fc9c23c42337108c3ed">AsListSource&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt; c)</td></tr>
+<tr class="memdesc:a8211cef6e4801fc9c23c42337108c3ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">No-op.  <a href="classLoyc_1_1Collections_1_1LCExt.html#a8211cef6e4801fc9c23c42337108c3ed">More...</a><br /></td></tr>
 <tr class="separator:a8211cef6e4801fc9c23c42337108c3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1caecbf8238f4acc5a0aa5f62b4fa16"><td class="memItemLeft" align="right" valign="top">static IList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ac1caecbf8238f4acc5a0aa5f62b4fa16">AsList&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; c)</td></tr>
 <tr class="memdesc:ac1caecbf8238f4acc5a0aa5f62b4fa16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts any <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>{T} object to a read-only IList{T}.  <a href="classLoyc_1_1Collections_1_1LCExt.html#ac1caecbf8238f4acc5a0aa5f62b4fa16">More...</a><br /></td></tr>
@@ -113,6 +120,12 @@ static <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice.html">NegLi
 <tr class="memitem:a901a20be3508a24caf12469d86e63aef"><td class="memItemLeft" align="right" valign="top"><a id="a901a20be3508a24caf12469d86e63aef"></a>
 static <a class="el" href="structLoyc_1_1Collections_1_1NegListSource.html">NegListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a901a20be3508a24caf12469d86e63aef">AsNegList&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, int zeroOffset)</td></tr>
 <tr class="separator:a901a20be3508a24caf12469d86e63aef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac167b7098103de795eadd439d294a1d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#aac167b7098103de795eadd439d294a1d">AsListSource&lt; T &gt;</a> (this IReadOnlyList&lt; T &gt; c)</td></tr>
+<tr class="memdesc:aac167b7098103de795eadd439d294a1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats any IReadOnlyList{T} object as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>{T}.  <a href="classLoyc_1_1Collections_1_1LCExt.html#aac167b7098103de795eadd439d294a1d">More...</a><br /></td></tr>
+<tr class="separator:aac167b7098103de795eadd439d294a1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4f0f843b648ce28f2faae90b01171a5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#ac4f0f843b648ce28f2faae90b01171a5">AsListSource&lt; T &gt;</a> (this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; c)</td></tr>
+<tr class="memdesc:ac4f0f843b648ce28f2faae90b01171a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">No-op.  <a href="classLoyc_1_1Collections_1_1LCExt.html#ac4f0f843b648ce28f2faae90b01171a5">More...</a><br /></td></tr>
+<tr class="separator:ac4f0f843b648ce28f2faae90b01171a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10751599a72fcd15e0402a9e6cc55207"><td class="memItemLeft" align="right" valign="top">static ICollection&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a10751599a72fcd15e0402a9e6cc55207">AsCollection&lt; T &gt;</a> (this IReadOnlyCollection&lt; T &gt; c)</td></tr>
 <tr class="memdesc:a10751599a72fcd15e0402a9e6cc55207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter: treats any IReadOnlyCollection{T} as a read-only ICollection{T}.  <a href="classLoyc_1_1Collections_1_1LCExt.html#a10751599a72fcd15e0402a9e6cc55207">More...</a><br /></td></tr>
 <tr class="separator:a10751599a72fcd15e0402a9e6cc55207"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,7 +199,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Join</b> (th
 </div>
 </div>
 <a id="ac4c80a49adb7d5fc0d0725759632a456"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4c80a49adb7d5fc0d0725759632a456">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4c80a49adb7d5fc0d0725759632a456">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -211,6 +224,147 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Join</b> (th
 
 <p>Adapter: treats any IList{T} object as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>{T}. </p>
 <p>This method is named "AsListSource" and not "ToListSource" because, in contrast to methods like ToArray() and ToList(), it does not make a copy of the sequence.</p>
+
+</div>
+</div>
+<a id="a8211cef6e4801fc9c23c42337108c3ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8211cef6e4801fc9c23c42337108c3ed">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; Loyc.Collections.LCExt.AsListSource&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListAndListSource.html">IListAndListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>No-op. </p>
+
+</div>
+</div>
+<a id="ac4f0f843b648ce28f2faae90b01171a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4f0f843b648ce28f2faae90b01171a5">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; Loyc.Collections.LCExt.AsListSource&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>No-op. </p>
+
+</div>
+</div>
+<a id="aac167b7098103de795eadd439d294a1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac167b7098103de795eadd439d294a1d">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; Loyc.Collections.LCExt.AsListSource&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IReadOnlyList&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adapter: treats any IReadOnlyList{T} object as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html" title="A read-only list indexed by an integer.">IListSource</a>{T}. </p>
+<p>This method is named "AsListSource" and not "ToListSource" because, in contrast to methods like ToArray() and ToList(), it does not make a copy of the sequence.</p>
+
+</div>
+</div>
+<a id="a8f4424565c469ca6f19ff1ab3b341353"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f4424565c469ca6f19ff1ab3b341353">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; Loyc.Collections.LCExt.AsListSource&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this List&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adapter: treats List{T} as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. </p>
+
+</div>
+</div>
+<a id="a50ea41354b28a1ea8b2dd70983bcc819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50ea41354b28a1ea8b2dd70983bcc819">&#9670;&nbsp;</a></span>AsListSource&lt; T &gt;() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt;T&gt; Loyc.Collections.LCExt.AsListSource&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T[]&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adapter: treats T[] as <a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource&lt;T&gt;</a>. </p>
 
 </div>
 </div>
@@ -274,7 +428,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Join</b> (th
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

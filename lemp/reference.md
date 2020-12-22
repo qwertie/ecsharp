@@ -42,6 +42,8 @@ Look up by category
     - [Easy method forwarding](ref-other.html#method-forwarding)
     - `in` and in-range operator combinations
     - `includeFile`
+    - `includeFileBinary`
+    - `includeFileText`
     - `namespace` without braces
     - `??=`
     - `stringify`

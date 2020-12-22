@@ -94,15 +94,15 @@ Inheritance diagram for Loyc.Collections.Impl.TestHelpers:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memItemLeft" align="right" valign="top"><a id="ad6bbb77af4b425b361cb19b4db27ac40"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, params T[] expected)</td></tr>
-<tr class="separator:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c0e28bdd65e95b26aca0c776063102"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102">ExpectListByEnumerator&lt; T &gt;</a> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, params T[] expected)</td></tr>
-<tr class="memdesc:a65c0e28bdd65e95b26aca0c776063102"><td class="mdescLeft">&#160;</td><td class="mdescRight">When testing a buggy collection type, the enumerator might behave differently than the indexer, so this alternate comparer is provided.  <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102">More...</a><br /></td></tr>
-<tr class="separator:a65c0e28bdd65e95b26aca0c776063102"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memItemLeft" align="right" valign="top"><a id="a7c56789bcdc182e7161fbde501c6f1e3"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator=false)</td></tr>
-<tr class="separator:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80bb29260a4a9713c98d5f2b68d3f790"><td class="memItemLeft" align="right" valign="top"><a id="a80bb29260a4a9713c98d5f2b68d3f790"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IReadOnlyList&lt; T &gt; list, params T[] expected)</td></tr>
+<tr class="separator:a80bb29260a4a9713c98d5f2b68d3f790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8ece1aca591c74af741cd5e44024968"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#af8ece1aca591c74af741cd5e44024968">ExpectListByEnumerator&lt; T &gt;</a> (IReadOnlyList&lt; T &gt; list, params T[] expected)</td></tr>
+<tr class="memdesc:af8ece1aca591c74af741cd5e44024968"><td class="mdescLeft">&#160;</td><td class="mdescRight">When testing a buggy collection type, the enumerator might behave differently than the indexer, so this alternate comparer is provided.  <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#af8ece1aca591c74af741cd5e44024968">More...</a><br /></td></tr>
+<tr class="separator:af8ece1aca591c74af741cd5e44024968"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02a6005ed6efd7660ee8f8ae93d60006"><td class="memItemLeft" align="right" valign="top"><a id="a02a6005ed6efd7660ee8f8ae93d60006"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IReadOnlyList&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator=false)</td></tr>
+<tr class="separator:a02a6005ed6efd7660ee8f8ae93d60006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a162f5208e9356cb3ca49597766aee0eb"><td class="memItemLeft" align="right" valign="top"><a id="a162f5208e9356cb3ca49597766aee0eb"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IEnumerable&lt; T &gt; list, IEnumerable&lt; T &gt; expected)</td></tr>
 <tr class="separator:a162f5208e9356cb3ca49597766aee0eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -441,8 +441,8 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="separator:abd3e880da2ea067fdde7747223fed23f inherit pro_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a65c0e28bdd65e95b26aca0c776063102"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65c0e28bdd65e95b26aca0c776063102">&#9670;&nbsp;</a></span>ExpectListByEnumerator&lt; T &gt;()</h2>
+<a id="af8ece1aca591c74af741cd5e44024968"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8ece1aca591c74af741cd5e44024968">&#9670;&nbsp;</a></span>ExpectListByEnumerator&lt; T &gt;()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -453,7 +453,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
         <tr>
           <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.Impl.TestHelpers.ExpectListByEnumerator&lt; T &gt; </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Collections_1_1IListSource.html">IListSource</a>&lt; T &gt;&#160;</td>
+          <td class="paramtype">IReadOnlyList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -483,7 +483,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:17 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:32 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

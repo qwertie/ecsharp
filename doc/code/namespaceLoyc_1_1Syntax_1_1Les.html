@@ -134,7 +134,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing....">INodePrinterWriter</a>. Has an protected <code>_indentLevel</code> field that is increased by Indent() and decreased by Dedent().  <a href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html">TokenExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a2b235277a8c04166b8432c27715a5240" title="Expresses a token as a string, using LES printers for identifiers and literals.">ToString(Token)</a> method to express an LES token as a string, for tokens that contain sufficient information to do so.  <a href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#a3ece121074cdd2a655c30564c2885bcc" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the ToString(Token) method to express an LES token as a string, for tokens that contain sufficient information to do so.  <a href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -213,10 +213,10 @@ Enumerations</h2></td></tr>
 <b>LBrace</b> = TokenKind.LBrace, 
 <br />
 &#160;&#160;<b>RBrace</b> = TokenKind.RBrace, 
-<b>TreeDef</b> = TokenKind.Other + 1, 
-<b>BackRef</b> = TokenKind.Other + 2, 
+<b>Unknown</b> = TokenKind.Other + 1, 
+<b>TreeDef</b> = TokenKind.Other + 2, 
 <br />
-&#160;&#160;<b>Unknown</b> = TokenKind.Other
+&#160;&#160;<b>BackRef</b> = TokenKind.Other + 3
 <br />
  }</td></tr>
 <tr class="separator:afe2b2df7a1a16f56d226545d64951eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -253,7 +253,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

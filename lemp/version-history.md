@@ -357,7 +357,7 @@ EC# parser & printer:
 
 - Wrote and tested `matchCode` macro.
 - Wrote and tested `alt class`, a macro for building algebraic data types
-- `use_symbols` now gives valid identifier names to symbols that contain punctuation.
+- `use_symbols` (later renamed to `#useSymbols`) now gives valid identifier names to symbols that contain punctuation.
 - Changed EC# parser so pattern matching `class X:$(..bases) {}` works even if there are no base classes.
 - Changed code `quote` macro to avoid needing an `LNodeFactory F`.
 - Bug fix: certain macros did not enable reprocessing of children
@@ -365,7 +365,7 @@ EC# parser & printer:
 
 ### July updates: forgot to raise version number ###
 
-- Added `use_symbols` macro to generate field declarations for `@@symbols` in LES/EC#.
+- Added `use_symbols` macro (later renamed to `#useSymbols`) to generate field declarations for `@@symbols` in LES/EC#
 - LeMP: tuples: added support for deconstruction + declaration: `(var x, var y) = tuple`
 - LeMP: `nameof()`: split into `nameof()` and `stringify()`, with `nameof()` matching C# 6 behavior
 - Oops, `LNodeExt.FindAndReplace()` and `LNode.ReplaceRecursive()` are duplicates. Deleted `FindAndReplace()`

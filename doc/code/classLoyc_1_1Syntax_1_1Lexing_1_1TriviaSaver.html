@@ -95,7 +95,7 @@ Inheritance diagram for Loyc.Syntax.Lexing.TriviaSaver:</div>
 </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A lexer wrapper that saves whitespace tokens into a list (TriviaList). </p>
-<p>This wrapper filters out all whitespace tokens (where <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> is WhitespaceTag.Value) and saves them in a list. It is typically used with </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html" title="Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as tri...">StandardTriviaInjector</a></dd></dl>
+<p>This wrapper filters out all whitespace tokens (where <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token, if this structure was initialized with one of the constructors that ac...">Token.Value</a> is WhitespaceTag.Value) and saves them in a list. It is typically used with </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Syntax_1_1StandardTriviaInjector.html" title="Encapsulates an algorithm that consumes trivia (comments and newlines) from a list and adds it as tri...">StandardTriviaInjector</a></dd></dl>
 <p>. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -221,7 +221,7 @@ Additional Inherited Members</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">lexer</td><td>Lexer to wrap.</td></tr>
-    <tr><td class="paramname">newlineTypeInt</td><td>In some languages, newlines are not considered whitespace but they still need to be saved in the trivia list. If the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aec247d67d4c8cf23acde5735127c5387" title="Token type.">Token.TypeInt</a> equals this value, the token is saved but NOT filtered out.</td></tr>
+    <tr><td class="paramname">newlineTypeInt</td><td>In some languages, newlines are not considered whitespace but they still need to be saved in the trivia list. If the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a25ec9f2c4ffb2c6ed1c9592a726d2af7" title="Token type.">Token.TypeInt</a> equals this value, the token is saved but NOT filtered out.</td></tr>
   </table>
   </dd>
 </dl>
@@ -262,7 +262,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

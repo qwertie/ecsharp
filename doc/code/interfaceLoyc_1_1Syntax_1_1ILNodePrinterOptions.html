@@ -122,6 +122,9 @@ Properties</h2></td></tr>
 <tr class="memitem:a93c28e48be11370475af2b284ae94748"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a93c28e48be11370475af2b284ae94748">NewlineString</a><code> [get]</code></td></tr>
 <tr class="memdesc:a93c28e48be11370475af2b284ae94748"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the string to use for line breaks (typically "\n").  <a href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a93c28e48be11370475af2b284ae94748">More...</a><br /></td></tr>
 <tr class="separator:a93c28e48be11370475af2b284ae94748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9252db9ad5000ed1841ac6942825f57"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralPrinter.html">ILiteralPrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#ac9252db9ad5000ed1841ac6942825f57">LiteralPrinter</a><code> [get]</code></td></tr>
+<tr class="memdesc:ac9252db9ad5000ed1841ac6942825f57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requests that a specific printer be used to convert literals into strings.  <a href="interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#ac9252db9ad5000ed1841ac6942825f57">More...</a><br /></td></tr>
+<tr class="separator:ac9252db9ad5000ed1841ac6942825f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Property Documentation</h2>
 <a id="a591f28b23a1a6c17b36f8a72202c0d18"></a>
@@ -222,6 +225,31 @@ Properties</h2></td></tr>
 <p>Specifies the string to use for each level of indentation of nested constructs in the language, e.g. a tab or four spaces. </p>
 <p>If this option is null, the printer should use its default indent string. </p>
 <p>Indentation-sensitive languages should treat an empty string as one space or tab. </p>
+
+</div>
+</div>
+<a id="ac9252db9ad5000ed1841ac6942825f57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9252db9ad5000ed1841ac6942825f57">&#9670;&nbsp;</a></span>LiteralPrinter</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralPrinter.html">ILiteralPrinter</a> Loyc.Syntax.ILNodePrinterOptions.LiteralPrinter</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Requests that a specific printer be used to convert literals into strings. </p>
+<p>The printer may choose to only use this printer for type markers it doesn't have built-in support for, or it may use this printer for all literals. </p>
 
 </div>
 </div>
@@ -332,7 +360,7 @@ Properties</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

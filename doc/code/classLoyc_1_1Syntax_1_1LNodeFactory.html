@@ -99,6 +99,9 @@ Properties</h2></td></tr>
 <tr class="memitem:a423f37b50d2aa1a956cfb88f67964e64"><td class="memItemLeft" align="right" valign="top"><a id="a423f37b50d2aa1a956cfb88f67964e64"></a>
 <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>File</b><code> [get, set]</code></td></tr>
 <tr class="separator:a423f37b50d2aa1a956cfb88f67964e64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a876577d55f41a08f16e88c489e5672c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;??&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a876577d55f41a08f16e88c489e5672c3">ErrorSink</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a876577d55f41a08f16e88c489e5672c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where errors should be sent if there is an error parsing a literal.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a876577d55f41a08f16e88c489e5672c3">More...</a><br /></td></tr>
+<tr class="separator:a876577d55f41a08f16e88c489e5672c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48ad6fe37c99302fadab81a0fe355363"><td class="memItemLeft" align="right" valign="top"><a id="a48ad6fe37c99302fadab81a0fe355363"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>true</b><code> [get]</code></td></tr>
 <tr class="separator:a48ad6fe37c99302fadab81a0fe355363"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,9 +126,9 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a2b0e20c0350fc37a604c1d6eb60063ec"><td class="memItemLeft" align="right" valign="top"><a id="a2b0e20c0350fc37a604c1d6eb60063ec"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LNodeFactory</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file)</td></tr>
-<tr class="separator:a2b0e20c0350fc37a604c1d6eb60063ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a138951b7663ba38acf73cdf33e6fbfd7"><td class="memItemLeft" align="right" valign="top"><a id="a138951b7663ba38acf73cdf33e6fbfd7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LNodeFactory</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink=null)</td></tr>
+<tr class="separator:a138951b7663ba38acf73cdf33e6fbfd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acca802e9cb45bc9d267cf4ceada44243"><td class="memItemLeft" align="right" valign="top"><a id="acca802e9cb45bc9d267cf4ceada44243"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>?? this[0, Missing_].&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdNamed</b> (S.TriviaNewline)) return node</td></tr>
 <tr class="separator:acca802e9cb45bc9d267cf4ceada44243"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,12 +144,27 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4dc5b00a216fd46c872a8e9fb8849e48"><td class="memItemLeft" align="right" valign="top"><a id="a4dc5b00a216fd46c872a8e9fb8849e48"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
 <tr class="separator:a4dc5b00a216fd46c872a8e9fb8849e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada2214d8d1884e28c131a5aafe2ddc9e"><td class="memItemLeft" align="right" valign="top"><a id="ada2214d8d1884e28c131a5aafe2ddc9e"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal&lt; V &gt;</b> (V value, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:ada2214d8d1884e28c131a5aafe2ddc9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a59946820e6c3b0ec278effe3f8380cab"><td class="memItemLeft" align="right" valign="top"><a id="a59946820e6c3b0ec278effe3f8380cab"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
-<tr class="separator:a59946820e6c3b0ec278effe3f8380cab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ba14aae8a7907b3e0ebac819b375539"><td class="memItemLeft" align="right" valign="top"><a id="a2ba14aae8a7907b3e0ebac819b375539"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal&lt; V &gt;</b> (V value, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a2ba14aae8a7907b3e0ebac819b375539"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90597435e0ae532fcd9175ee48de0ce8"><td class="memItemLeft" align="right" valign="top"><a id="a90597435e0ae532fcd9175ee48de0ce8"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, string typeMarker, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a90597435e0ae532fcd9175ee48de0ce8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47b936a3d13ba387ccbc024a351db366"><td class="memItemLeft" align="right" valign="top"><a id="a47b936a3d13ba387ccbc024a351db366"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> typeMarker, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a47b936a3d13ba387ccbc024a351db366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fa2d037c6426551599fd2d369da8628"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a9fa2d037c6426551599fd2d369da8628">Literal</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memdesc:a9fa2d037c6426551599fd2d369da8628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a literal from a Token. If the token style is NodeStyle.UninterpretedLiteral, this method uses StandardLiteralHandlers.Value to parse the literal's value; otherwise <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb" title="Creates a literal whose LNode.Value is the same as the value of t.">LiteralFromValueOf(Token)</a> is called to create the literal based on the Token.Value.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a9fa2d037c6426551599fd2d369da8628">More...</a><br /></td></tr>
+<tr class="separator:a9fa2d037c6426551599fd2d369da8628"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17c787efa1d66e1b65ee2d7a55007241"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a17c787efa1d66e1b65ee2d7a55007241">Literal</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralParser.html">ILiteralParser</a> parser)</td></tr>
+<tr class="memdesc:a17c787efa1d66e1b65ee2d7a55007241"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a literal from a Token. If it's an "ordinary" token, this function simply calls <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb" title="Creates a literal whose LNode.Value is the same as the value of t.">LiteralFromValueOf(Token)</a>. If it is an "uninterpreted literal" (type marker with text), this function uses the parser provided to interpret the literal, or, <code>parser</code> is null, calls <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a125b069c164d0c7fe93d76a5e8869e03" title="This method produces a literal by assuming that the provided token is an uninterpreted literal (see N...">UninterpretedLiteral(Token)</a> to create the node without parsing it.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a17c787efa1d66e1b65ee2d7a55007241">More...</a><br /></td></tr>
+<tr class="separator:a17c787efa1d66e1b65ee2d7a55007241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9761bf5632f6323dfbd8afb1f1826bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb">LiteralFromValueOf</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memdesc:ae9761bf5632f6323dfbd8afb1f1826bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a literal whose <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">LNode.Value</a> is the same as the value of <code>t</code>.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb">More...</a><br /></td></tr>
+<tr class="separator:ae9761bf5632f6323dfbd8afb1f1826bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a125b069c164d0c7fe93d76a5e8869e03"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a125b069c164d0c7fe93d76a5e8869e03">UninterpretedLiteral</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memdesc:a125b069c164d0c7fe93d76a5e8869e03"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method produces a literal by assuming that the provided token is an uninterpreted literal (see NodeStyle.UninterpretedLiteral) in the current file and that it does not need to be parsed. Therefore, <code>t.Value</code> becomes the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a13ae0768f2b18f562ae336642d7870a2" title="If this node IsLiteral, gets the type marker associated with the literal. This property is null if th...">LNode.TypeMarker</a>, <code>t.TextValue(_file.Text)</code> becomes the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a871aa205f75785fbe4a139f50a1e9d06" title="If this node IsLiteral, gets the original text of the literal, if it is available....">LNode.TextValue</a>, and the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">LNode.Value</a> will be a boxed copy of TextValue.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a125b069c164d0c7fe93d76a5e8869e03">More...</a><br /></td></tr>
+<tr class="separator:a125b069c164d0c7fe93d76a5e8869e03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91cb041440ebd71756f0025c0cdf3279"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a91cb041440ebd71756f0025c0cdf3279">Trivia</a> (string suffix, object value)</td></tr>
 <tr class="memdesc:a91cb041440ebd71756f0025c0cdf3279"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a trivia node named <code>"%" + suffix</code> with the specified Value attached.  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a91cb041440ebd71756f0025c0cdf3279">More...</a><br /></td></tr>
 <tr class="separator:a91cb041440ebd71756f0025c0cdf3279"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -410,6 +428,111 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a781d3149c8a37e00ef76fe2a45bf3aa5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9fa2d037c6426551599fd2d369da8628"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fa2d037c6426551599fd2d369da8628">&#9670;&nbsp;</a></span>Literal() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a> Loyc.Syntax.LNodeFactory.Literal </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a literal from a Token. If the token style is NodeStyle.UninterpretedLiteral, this method uses StandardLiteralHandlers.Value to parse the literal's value; otherwise <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb" title="Creates a literal whose LNode.Value is the same as the value of t.">LiteralFromValueOf(Token)</a> is called to create the literal based on the Token.Value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>Token to be converted</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a17c787efa1d66e1b65ee2d7a55007241"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17c787efa1d66e1b65ee2d7a55007241">&#9670;&nbsp;</a></span>Literal() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a> Loyc.Syntax.LNodeFactory.Literal </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralParser.html">ILiteralParser</a>&#160;</td>
+          <td class="paramname"><em>parser</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a literal from a Token. If it's an "ordinary" token, this function simply calls <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb" title="Creates a literal whose LNode.Value is the same as the value of t.">LiteralFromValueOf(Token)</a>. If it is an "uninterpreted literal" (type marker with text), this function uses the parser provided to interpret the literal, or, <code>parser</code> is null, calls <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a125b069c164d0c7fe93d76a5e8869e03" title="This method produces a literal by assuming that the provided token is an uninterpreted literal (see N...">UninterpretedLiteral(Token)</a> to create the node without parsing it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>Token to be converted</td></tr>
+    <tr><td class="paramname">parser</td><td>Used to obtain a value from an uninterpreted literal, which becomes the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">LNode.Value</a> property.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="reference">References <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a876577d55f41a08f16e88c489e5672c3">Loyc.Syntax.LNodeFactory.ErrorSink</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#ae9761bf5632f6323dfbd8afb1f1826bb">Loyc.Syntax.LNodeFactory.LiteralFromValueOf()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a595e70ac4bacf2dd9b356e4779464425">Loyc.Syntax.Lexing.Token.TextValue()</a>, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralParser.html#a4cc35cfef612fe11315d6091b9a49374">Loyc.Syntax.ILiteralParser.TryParse()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a1021d4e46e651bcc41d1cc4931727d6a">Loyc.Syntax.Lexing.Token.TypeMarker</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a125b069c164d0c7fe93d76a5e8869e03">Loyc.Syntax.LNodeFactory.UninterpretedLiteral()</a>.</p>
+
+</div>
+</div>
+<a id="ae9761bf5632f6323dfbd8afb1f1826bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9761bf5632f6323dfbd8afb1f1826bb">&#9670;&nbsp;</a></span>LiteralFromValueOf()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a> Loyc.Syntax.LNodeFactory.LiteralFromValueOf </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a literal whose <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">LNode.Value</a> is the same as the value of <code>t</code>. </p>
+
+<p class="reference">References <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#addbc91500d19b51ec2f3d525c10d69aa">Loyc.Syntax.Lexing.Token.Length</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#aa538690df728897ea4e37c8a25eb4e95">Loyc.Syntax.Lexing.Token.StartIndex</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a9ca5d5ce34192300dd9005f6116aaac8">Loyc.Syntax.Lexing.Token.Style</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910">Loyc.Syntax.Lexing.Token.Value</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a17c787efa1d66e1b65ee2d7a55007241">Loyc.Syntax.LNodeFactory.Literal()</a>.</p>
+
+</div>
+</div>
 <a id="a91cb041440ebd71756f0025c0cdf3279"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a91cb041440ebd71756f0025c0cdf3279">&#9670;&nbsp;</a></span>Trivia() <span class="overload">[1/2]</span></h2>
 
@@ -500,11 +623,71 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a125b069c164d0c7fe93d76a5e8869e03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a125b069c164d0c7fe93d76a5e8869e03">&#9670;&nbsp;</a></span>UninterpretedLiteral()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a> Loyc.Syntax.LNodeFactory.UninterpretedLiteral </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method produces a literal by assuming that the provided token is an uninterpreted literal (see NodeStyle.UninterpretedLiteral) in the current file and that it does not need to be parsed. Therefore, <code>t.Value</code> becomes the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a13ae0768f2b18f562ae336642d7870a2" title="If this node IsLiteral, gets the type marker associated with the literal. This property is null if th...">LNode.TypeMarker</a>, <code>t.TextValue(_file.Text)</code> becomes the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a871aa205f75785fbe4a139f50a1e9d06" title="If this node IsLiteral, gets the original text of the literal, if it is available....">LNode.TextValue</a>, and the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">LNode.Value</a> will be a boxed copy of TextValue. </p>
+
+<p class="reference">References <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#ad5208f945c07472140059a8c01148abf">Loyc.Syntax.Lexing.Token.Range()</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a595e70ac4bacf2dd9b356e4779464425">Loyc.Syntax.Lexing.Token.TextValue()</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a1021d4e46e651bcc41d1cc4931727d6a">Loyc.Syntax.Lexing.Token.TypeMarker</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a17c787efa1d66e1b65ee2d7a55007241">Loyc.Syntax.LNodeFactory.Literal()</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Property Documentation</h2>
+<a id="a876577d55f41a08f16e88c489e5672c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a876577d55f41a08f16e88c489e5672c3">&#9670;&nbsp;</a></span>ErrorSink</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt;?? Loyc.Syntax.LNodeFactory.ErrorSink</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Where errors should be sent if there is an error parsing a literal. </p>
+<p>Attempting to set this to null makes the getter return MessageSink.Default.</p>
+
+<p class="reference">Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html#a17c787efa1d66e1b65ee2d7a55007241">Loyc.Syntax.LNodeFactory.Literal()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -68,15 +68,11 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#properties">Properties</a> &#124;
 <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.ISerializedLiteral Interface Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Represents a serialized text form of a literal value.  
- <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Interfaces/Syntax/ILiteralValue.cs'>/Core/Loyc.Interfaces/Syntax/ILiteralValue.cs</a></li>
 </ul>
@@ -86,88 +82,25 @@ Inheritance diagram for Loyc.Syntax.ISerializedLiteral:</div>
  <div class="center">
   <img src="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.png" usemap="#Loyc.Syntax.ISerializedLiteral_map" alt=""/>
   <map id="Loyc.Syntax.ISerializedLiteral_map" name="Loyc.Syntax.ISerializedLiteral_map">
-<area href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it." alt="Loyc.Syntax.ILiteralValue" shape="rect" coords="380,56,560,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1ILNode.html" title="A read-only interface for objects that act as Loyc trees." alt="Loyc.Syntax.ILNode" shape="rect" coords="190,112,370,136"/>
-<area href="structLoyc_1_1Syntax_1_1LiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it; see remarks at I..." alt="Loyc.Syntax.LiteralValue" shape="rect" coords="380,112,560,136"/>
-<area href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class." alt="Loyc.Syntax.LNode" shape="rect" coords="570,112,750,136"/>
-<area href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class." alt="Loyc.Syntax.LNode" shape="rect" coords="190,168,370,192"/>
-<area href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y,..." alt="Loyc.Syntax.CallNode" shape="rect" coords="380,168,560,192"/>
-<area href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)." alt="Loyc.Syntax.IdNode" shape="rect" coords="570,168,750,192"/>
-<area href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;." alt="Loyc.Syntax.LiteralNode" shape="rect" coords="760,168,940,192"/>
-<area href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y,..." alt="Loyc.Syntax.CallNode" shape="rect" coords="0,224,180,248"/>
-<area href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)." alt="Loyc.Syntax.IdNode" shape="rect" coords="190,224,370,248"/>
-<area href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;." alt="Loyc.Syntax.LiteralNode" shape="rect" coords="380,224,560,248"/>
+<area href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html" title="Represents the text form of a literal value, without its parsed value." alt="Loyc.Syntax.IUninterpretedLiteral" shape="rect" coords="0,0,200,24"/>
   </map>
 </div></div>
-<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Represents a serialized text form of a literal value. </p>
-</div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
-Properties</h2></td></tr>
-<tr class="memitem:ae275ff8206aecf9b28c07425ded4be10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10">TextValue</a><code> [get]</code></td></tr>
-<tr class="memdesc:ae275ff8206aecf9b28c07425ded4be10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the serialized text of the value.  <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10">More...</a><br /></td></tr>
-<tr class="separator:ae275ff8206aecf9b28c07425ded4be10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92c1b32a3f2b7c07f5d468fb09fa1dc8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#a92c1b32a3f2b7c07f5d468fb09fa1dc8">TypeMarker</a><code> [get]</code></td></tr>
-<tr class="memdesc:a92c1b32a3f2b7c07f5d468fb09fa1dc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the type of the value.  <a href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#a92c1b32a3f2b7c07f5d468fb09fa1dc8">More...</a><br /></td></tr>
-<tr class="separator:a92c1b32a3f2b7c07f5d468fb09fa1dc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html">Loyc.Syntax.IUninterpretedLiteral</a></td></tr>
+<tr class="memitem:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#adfc8f55b708f40a34b325c936c0f1349">TextValue</a><code> [get]</code></td></tr>
+<tr class="memdesc:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the serialized text of the value.  <a href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#adfc8f55b708f40a34b325c936c0f1349">More...</a><br /></td></tr>
+<tr class="separator:adfc8f55b708f40a34b325c936c0f1349 inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#a5e1bcfe585c816178bd61739bcc0eacc">TypeMarker</a><code> [get]</code></td></tr>
+<tr class="memdesc:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the type of the value.  <a href="interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#a5e1bcfe585c816178bd61739bcc0eacc">More...</a><br /></td></tr>
+<tr class="separator:a5e1bcfe585c816178bd61739bcc0eacc inherit properties_interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Property Documentation</h2>
-<a id="ae275ff8206aecf9b28c07425ded4be10"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae275ff8206aecf9b28c07425ded4be10">&#9670;&nbsp;</a></span>TextValue</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1UString.html">UString</a> Loyc.Syntax.ISerializedLiteral.TextValue</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">get</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Represents the serialized text of the value. </p>
-<p>Typically this will be a parsed form of the string; for example in LES3, if the TextValue is <code>C:\Users</code>, the raw text may be <code>C:\\Users</code> which was parsed so that the double backslash became a single backslash.</p>
-
-</div>
-</div>
-<a id="a92c1b32a3f2b7c07f5d468fb09fa1dc8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92c1b32a3f2b7c07f5d468fb09fa1dc8">&#9670;&nbsp;</a></span>TypeMarker</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.ISerializedLiteral.TypeMarker</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">get</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Represents the type of the value. </p>
-<p>The Type Marker indicates not just the type but also the syntax of the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10" title="Represents the serialized text of the value.">TextValue</a>. If the syntax of a TextValue is not compatible with the syntax used in LES, it should not use the same type marker as used in LES. </p>
-<p>The TypeMarker can be null if this is a <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILiteralValue.html" title="Bundles the optional original text of a value with an optional in-memory form of it.">ILiteralValue</a> and the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISerializedLiteral.html#ae275ff8206aecf9b28c07425ded4be10" title="Represents the serialized text of the value.">TextValue</a> is empty. </p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

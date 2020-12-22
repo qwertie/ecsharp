@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
-<title>Enhanced C#: Loyc.Collections.INotifyListChanging&lt; T &gt; Interface Template Reference</title>
+<title>Enhanced C#: Loyc.Collections.INotifyListChanging&lt; T, TCollection &gt; Interface Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -67,71 +67,33 @@ $(function() {
 </div>
 </div><!-- top -->
 <div class="header">
-  <div class="summary">
-<a href="#events">Events</a> &#124;
-<a href="interfaceLoyc_1_1Collections_1_1INotifyListChanging-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Loyc.Collections.INotifyListChanging&lt; T &gt; Interface Template Reference</div>  </div>
+<div class="title">Loyc.Collections.INotifyListChanging&lt; T, TCollection &gt; Interface Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Encapsulates the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event that notifies listeners of dynamic changes to an indexed list, such as when items get added and removed or the whole list is refreshed.  
+<p>Encapsulates the ListChanging event that notifies listeners of dynamic changes to a collection, such as when items are about to be added and removed or the whole list is about to be refreshed.  
  <a href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Interfaces/Collections/INotifyListChanging.cs'>/Core/Loyc.Interfaces/Collections/INotifyListChanging.cs</a></li>
 </ul>
-<div class="dynheader">
-Inheritance diagram for Loyc.Collections.INotifyListChanging&lt; T &gt;:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="interfaceLoyc_1_1Collections_1_1INotifyListChanging.png" usemap="#Loyc.Collections.INotifyListChanging_3C_20T_20_3E_map" alt=""/>
-  <map id="Loyc.Collections.INotifyListChanging_3C_20T_20_3E_map" name="Loyc.Collections.INotifyListChanging_3C_20T_20_3E_map">
-<area href="classLoyc_1_1Collections_1_1AListBase.html" title="Manages a collection of IAListTreeObserver&lt;K, T&gt;." alt="Loyc.Collections.AListBase&lt; K, T &gt;" shape="rect" coords="0,56,250,80"/>
-  </map>
-</div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Encapsulates the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event that notifies listeners of dynamic changes to an indexed list, such as when items get added and removed or the whole list is refreshed. </p>
+<div class="textblock"><p>Encapsulates the ListChanging event that notifies listeners of dynamic changes to a collection, such as when items are about to be added and removed or the whole list is about to be refreshed. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Type of items in the list</td></tr>
+    <tr><td class="paramname">TCollection</td><td>Type of the first argument of the event</td></tr>
   </table>
   </dd>
 </dl>
 <p>This approach to change notification is more lightweight than the standard INotifyCollectionChanged interface because that interface sends both a list of new items and a list of old items, so many changes require a pair of temporary objects to be created that hold the two lists of items. </p>
-<p>In contrast, the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event includes only one list that specifies the set of new items. In the case of Remove events, no change list is included. Since the collection has not been modified yet, the user handling the event can examine the list to learn which item(s) are being removed; if the list is being changed, it can similarly examine the list to see the old set of items. </p>
+<p>In contrast, the ListChanging event includes only one list that specifies the set of new items. In the case of Remove events, no change list is included. Since the collection has not been modified yet, the user handling the event can examine the list to learn which item(s) are being removed; if the list is being changed, it can similarly examine the list to see the old set of items. </p>
 <p>An optimization is available when only a single item is being added or changed. In that case, the collection class should create a lightweight read-only single-item list by calling <a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a113e21367fef9583bcbe11ff88058c02" title="Returns a helper object that stores one value, but acts like a read-only list of one item.">ListExt.Single&lt;T&gt;(T)</a>. Such a list has less overhead than List&lt;T&gt; and the same overhead as an array of one item. </p>
-</div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="events"></a>
-Events</h2></td></tr>
-<tr class="memitem:a5371a11becb3c1c655b33b5d52a2af32"><td class="memItemLeft" align="right" valign="top">ListChangingHandler&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32">ListChanging</a></td></tr>
-<tr class="memdesc:a5371a11becb3c1c655b33b5d52a2af32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Occurs when the collection associated with this interface is about to change.  <a href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32">More...</a><br /></td></tr>
-<tr class="separator:a5371a11becb3c1c655b33b5d52a2af32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<h2 class="groupheader">Event Documentation</h2>
-<a id="a5371a11becb3c1c655b33b5d52a2af32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5371a11becb3c1c655b33b5d52a2af32">&#9670;&nbsp;</a></span>ListChanging</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">ListChangingHandler&lt;T&gt; <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging.html">Loyc.Collections.INotifyListChanging</a>&lt; T &gt;.ListChanging</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Occurs when the collection associated with this interface is about to change. </p>
-<p>The event handler receives a ListChangeInfo&lt;T&gt; argument, which describes the change. </p>
-<p>The event handler is not allowed to modify the list that is changing while it is handling the event, but it can read the list. </p>
-<p>IMPORTANT: if the event handler throws an exception, the change does not actually happen. <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource&lt;T&gt;, ranges, etc....">Collections</a> that support this event must ensure that the collection is not left in an invalid state in the event that a ListChanging event handler throws an exception. </p>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:15 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

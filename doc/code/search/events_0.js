@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['listchanging_3604',['ListChanging',['../interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a5371a11becb3c1c655b33b5d52a2af32',1,'Loyc::Collections::INotifyListChanging']]]
+  ['listchanged_3772',['ListChanged',['../interfaceLoyc_1_1Collections_1_1INotifyListChanged.html#a6e9c789b15110ebae97e2fe4ba23e99c',1,'Loyc::Collections::INotifyListChanged']]],
+  ['listchanging_3773',['ListChanging',['../interfaceLoyc_1_1Collections_1_1INotifyListChanging.html#a3deed7c0571542ede27c4a73f76f811f',1,'Loyc::Collections::INotifyListChanging']]]
 ];

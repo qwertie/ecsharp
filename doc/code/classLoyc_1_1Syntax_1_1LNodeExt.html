@@ -107,7 +107,7 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 <tr class="memdesc:a308df64e5a7042f4bf8b2b77cf16bac4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a new list with any trailing attributes removed.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a308df64e5a7042f4bf8b2b77cf16bac4">More...</a><br /></td></tr>
 <tr class="separator:a308df64e5a7042f4bf8b2b77cf16bac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4552b88d65b7698f783e6c3d1fa3f501"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a4552b88d65b7698f783e6c3d1fa3f501">WithoutTrailingTrivia</a> (this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> attrs, out <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> trailingTrivia)</td></tr>
-<tr class="memdesc:a4552b88d65b7698f783e6c3d1fa3f501"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a new list with any trailing attributes removed. Those trivia are returned in an <code>out</code> parameter.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a4552b88d65b7698f783e6c3d1fa3f501">More...</a><br /></td></tr>
+<tr class="memdesc:a4552b88d65b7698f783e6c3d1fa3f501"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a new list with any trailing attributes removed. Trailing trivia inside those attributes are returned in an <code>out</code> parameter.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a4552b88d65b7698f783e6c3d1fa3f501">More...</a><br /></td></tr>
 <tr class="separator:a4552b88d65b7698f783e6c3d1fa3f501"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab32c30c5f383c20bb863832aa4212d2d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ab32c30c5f383c20bb863832aa4212d2d">PlusTrailingTrivia</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> trivia)</td></tr>
 <tr class="memdesc:ab32c30c5f383c20bb863832aa4212d2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds additional trailing trivia to a node.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#ab32c30c5f383c20bb863832aa4212d2d">More...</a><br /></td></tr>
@@ -124,6 +124,15 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 <tr class="memitem:a9a5c58aedfcd8152532b667838cf2758"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a9a5c58aedfcd8152532b667838cf2758">AsList</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> block, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listIdentifier)</td></tr>
 <tr class="memdesc:a9a5c58aedfcd8152532b667838cf2758"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interprets a node as a list by returning <code>block.Args</code> if <code>block.Calls(listIdentifier)</code>, otherwise returning a one-item list of nodes with <code>block</code> as the only item.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a9a5c58aedfcd8152532b667838cf2758">More...</a><br /></td></tr>
 <tr class="separator:a9a5c58aedfcd8152532b667838cf2758"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaeeca5420d99c5db8eb338bf8ef948c5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#aaeeca5420d99c5db8eb338bf8ef948c5">Unsplice</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
+<tr class="memdesc:aaeeca5420d99c5db8eb338bf8ef948c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an expression to a list. Similar to calling <code>AsList(block, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549" title="When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding co...">CodeSymbols.Splice</a>)</code>, if the expression calls #splice then the arguments of the splice are returned, and if not then the argument is converted to a list with one item. However, if the call to #splice has attached trivia/attributes, those attributes are attached to the output list using PlusAttributes(LNodeList, LNodeList).  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#aaeeca5420d99c5db8eb338bf8ef948c5">More...</a><br /></td></tr>
+<tr class="separator:aaeeca5420d99c5db8eb338bf8ef948c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ddf3a96b6af6a94458b67cadd8553a3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7ddf3a96b6af6a94458b67cadd8553a3">IncludingTriviaFrom</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> otherNode)</td></tr>
+<tr class="memdesc:a7ddf3a96b6af6a94458b67cadd8553a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds trivia attributes attached directly to <code>otherNode</code>, and returns a new version of <code>node</code> with these attributes added.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7ddf3a96b6af6a94458b67cadd8553a3">More...</a><br /></td></tr>
+<tr class="separator:a7ddf3a96b6af6a94458b67cadd8553a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dca8e764bbee83b7d93a0452edb3fa6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a4dca8e764bbee83b7d93a0452edb3fa6">IncludingAttributes</a> (this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> list, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> attributes)</td></tr>
+<tr class="memdesc:a4dca8e764bbee83b7d93a0452edb3fa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepends attributes to the first item in a list, except for trailing trivia (trailing(...)), which is appended to the last item in the list. If the list is empty, the attributes are ignored.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a4dca8e764bbee83b7d93a0452edb3fa6">More...</a><br /></td></tr>
+<tr class="separator:a4dca8e764bbee83b7d93a0452edb3fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a798fbe18be39b5b41584f2c5073dd0ae"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a798fbe18be39b5b41584f2c5073dd0ae">AsLNode</a> (this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> list, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listIdentifier)</td></tr>
 <tr class="memdesc:a798fbe18be39b5b41584f2c5073dd0ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a list of LNodes to a single <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> by using the list as the argument list in a call to the specified identifier, or, if the list contains a single item, by returning that single item.  <a href="classLoyc_1_1Syntax_1_1LNodeExt.html#a798fbe18be39b5b41584f2c5073dd0ae">More...</a><br /></td></tr>
 <tr class="separator:a798fbe18be39b5b41584f2c5073dd0ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -169,6 +178,9 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexWithName</
 <tr class="memitem:a215cba97c8c08b3586e2a12c352efe0a"><td class="memItemLeft" align="right" valign="top"><a id="a215cba97c8c08b3586e2a12c352efe0a"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NodeNamed</b> (this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a215cba97c8c08b3586e2a12c352efe0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9279a627985d16e08ee7d8245b762aa1"><td class="memItemLeft" align="right" valign="top"><a id="a9279a627985d16e08ee7d8245b762aa1"></a>
+static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RecursiveReplace</b> (this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> self, Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>?&gt; matcher, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">LNode.ReplaceOpt</a> options=<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67">LNode.ReplaceOpt.Default</a>)</td></tr>
+<tr class="separator:a9279a627985d16e08ee7d8245b762aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15381ee19f4e781e0b6c789956f1594d"><td class="memItemLeft" align="right" valign="top"><a id="a15381ee19f4e781e0b6c789956f1594d"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsParenthesizedExpr</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
 <tr class="separator:a15381ee19f4e781e0b6c789956f1594d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -302,14 +314,12 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
 <p>Interprets a node as a list by returning <code>block.Args</code> if <code>block.Calls(listIdentifier)</code>, otherwise returning a one-item list of nodes with <code>block</code> as the only item. </p>
-
-<p class="reference">References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad3ec7b52473d300f29a79ef919590631">Loyc.Syntax.LNode.Args</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a48ba76d2600b73aca2aa8f04fe17bfc6">Loyc.Syntax.LNode.Calls()</a>.</p>
 
 </div>
 </div>
@@ -461,6 +471,83 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 
 <p>Gets all trailing trivia attached to the specified node. </p>
 <p>Trailing trivia is represented by a call to <code>trailing</code> in a node's attribute list; each argument to trailing represents one piece of trivia. If the attribute list has multiple calls to trailing, this method combines those lists into a single list.</p>
+
+</div>
+</div>
+<a id="a4dca8e764bbee83b7d93a0452edb3fa6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4dca8e764bbee83b7d93a0452edb3fa6">&#9670;&nbsp;</a></span>IncludingAttributes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> Loyc.Syntax.LNodeExt.IncludingAttributes </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>&#160;</td>
+          <td class="paramname"><em>attributes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Prepends attributes to the first item in a list, except for trailing trivia (trailing(...)), which is appended to the last item in the list. If the list is empty, the attributes are ignored. </p>
+<dl class="section return"><dt>Returns</dt><dd>A modified version of the list with attributes added. If the attribute list is empty, the empty <code>list</code> is returned unchanged. </dd></dl>
+
+</div>
+</div>
+<a id="a7ddf3a96b6af6a94458b67cadd8553a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ddf3a96b6af6a94458b67cadd8553a3">&#9670;&nbsp;</a></span>IncludingTriviaFrom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNodeExt.IncludingTriviaFrom </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>node</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>otherNode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Finds trivia attributes attached directly to <code>otherNode</code>, and returns a new version of <code>node</code> with these attributes added. </p>
 
 </div>
 </div>
@@ -846,6 +933,44 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 
 </div>
 </div>
+<a id="aaeeca5420d99c5db8eb338bf8ef948c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaeeca5420d99c5db8eb338bf8ef948c5">&#9670;&nbsp;</a></span>Unsplice()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a> Loyc.Syntax.LNodeExt.Unsplice </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>node</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts an expression to a list. Similar to calling <code>AsList(block, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549" title="When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding co...">CodeSymbols.Splice</a>)</code>, if the expression calls #splice then the arguments of the splice are returned, and if not then the argument is converted to a list with one item. However, if the call to #splice has attached trivia/attributes, those attributes are attached to the output list using PlusAttributes(LNodeList, LNodeList). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">block</td><td>A node that may or may not be a call to #splice</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A list of nodes that <code>block</code> is equivalent to.</dd></dl>
+<p>Attributes attached to #splice are ordinarily attached to the first item in the output list, but any trailing attribute is attached to the last item instead. If the #splice() call has no arguments, then (i) if it has no trivia attributes, an empty list is returned, but (ii) if it has trivia attributes, the attributes themselves are returned as the content of the list. This assumes that printers can print </p>
+
+<p class="reference">References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abf3de752eba7246f31daf77fc1d371ed">Loyc.Syntax.LNode.Attrs</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549">Loyc.Syntax.CodeSymbols.Splice</a>.</p>
+
+</div>
+</div>
 <a id="af682a17fd5cbd3cbfa9dd951db72d3c4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af682a17fd5cbd3cbfa9dd951db72d3c4">&#9670;&nbsp;</a></span>WithoutOuterParens()</h2>
 
@@ -940,7 +1065,7 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 </table>
 </div><div class="memdoc">
 
-<p>Gets a new list with any trailing attributes removed. Those trivia are returned in an <code>out</code> parameter. </p>
+<p>Gets a new list with any trailing attributes removed. Trailing trivia inside those attributes are returned in an <code>out</code> parameter. </p>
 
 <p class="reference">References <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html#a5f2e3995308719446d8245cbe6cb7acf">Loyc.Syntax.LNodeList.SmartWhere()</a>.</p>
 
@@ -1031,7 +1156,7 @@ static <a class="el" href="structLoyc_1_1Syntax_1_1LNodeList.html">LNodeList</a>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 3 2020 16:52:18 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 22 2020 11:06:34 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
