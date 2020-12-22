@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Loyc.Collections
 {
 	/// <summary>A collection wrapper that provides ListChanging and ListChanged events.
-	/// Shorthand for <see cref="Loyc.Collections.Impl.CollectionWithChangeEvents{T,ICollection{T}}"/>.</summary>
+	/// Shorthand for Loyc.Collections.Impl.CollectionWithChangeEvents{T,ICollection{T}}.</summary>
 	public class CollectionWithChangeEvents<T> : Loyc.Collections.Impl.CollectionWithChangeEvents<T, ICollection<T>>
 	{
 		public CollectionWithChangeEvents(ICollection<T> obj) : base(obj) { }

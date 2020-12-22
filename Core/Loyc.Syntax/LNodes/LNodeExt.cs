@@ -120,9 +120,9 @@ namespace Loyc.Syntax
 		/// then the arguments of the splice are returned, and if not then the 
 		/// argument is converted to a list with one item. However, if the call to 
 		/// #splice has attached trivia/attributes, those attributes are attached to
-		/// the output list using <see cref="PlusAttributes(LNodeList, LNodeList)"/>.
+		/// the output list using <see cref="IncludingAttributes(LNodeList, LNodeList)"/>.
 		/// </summary>
-		/// <param name="block">A node that may or may not be a call to #splice</param>
+		/// <param name="node">A node that may or may not be a call to #splice</param>
 		/// <returns>A list of nodes that <c>block</c> is equivalent to.</returns>
 		/// <remarks>
 		/// Attributes attached to #splice are ordinarily attached to the first item 

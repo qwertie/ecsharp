@@ -19,7 +19,7 @@ namespace Loyc.Collections
 	/// <ul>
 	/// <li>MMap allows null as a key (assuming it is based on the second version
 	/// of <see cref="Impl.InternalSet{T}"/>).</li>
-	/// <li><see cref="MapOrMMap{K, V}.TryGet"/> and <see cref="MapOrMMap{K, V}.ContainsKey"/> do not throw
+	/// <li><see cref="MapOrMMap{K, V}.TryGetValue"/> and <see cref="MapOrMMap{K, V}.ContainsKey"/> do not throw
 	/// an incredibly annoying exception if you have the audacity to ask whether 
 	/// there is a null key in the collection.</li>
 	/// <li>This class supports fast cloning in O(1) time.</li>

@@ -17,8 +17,8 @@ namespace Loyc.Syntax
 		/// be null, but <c>TextValue.IsNull</c> can be true when this interface is part of
 		/// <see cref="ILiteralValue"/> or <see cref="ILNode"/>. This means either that the 
 		/// original text form of the literal has been discarded, or that it never existed. 
-		/// For example if you call <see cref="Loyc.Syntax.LNode.Literal(123)"/> it will 
-		/// create a "synthetic" node representing the integer 123. In that case, there is no 
+		/// For example if you call Loyc.Syntax.LNode.Literal(123) it will create
+		/// a "synthetic" node representing the integer 123. In that case, there is no 
 		/// text form, <c>TextValue.IsNull</c> will be true and <c>TypeMarker</c> will be 
 		/// null.
 		/// </remarks>

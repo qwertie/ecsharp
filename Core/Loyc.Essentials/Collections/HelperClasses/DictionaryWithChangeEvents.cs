@@ -9,7 +9,7 @@ using Loyc.Collections;
 namespace Loyc.Collections
 {
 	/// <summary>A dictionary wrapper that provides ListChanging and ListChanged events.
-	/// Shorthand for <see cref="Loyc.Collections.Impl.DictionaryWithChangeEvents{K,V,IDictionary{K,V}}"/>.</summary>
+	/// Shorthand for Loyc.Collections.Impl.DictionaryWithChangeEvents{K,V,IDictionary{K,V}}.</summary>
 	public class DictionaryWithChangeEvents<K, V> : Impl.DictionaryWithChangeEvents<K, V, IDictionary<K, V>>
 	{
 		public DictionaryWithChangeEvents(IDictionary<K, V> wrappedObject) : base(wrappedObject) { }
@@ -22,11 +22,11 @@ namespace Loyc.Collections.Impl
 	///	<summary>A dictionary wrapper that provides ListChanging and ListChanged events.
 	///	You can also implement custom behavior by overriding its methods.</summary>
 	///	<remarks>
-	///	The <see cref="Keys"/> and <see cref="Values"/> properties return ICollection, but
-	///	this class assumes that mutating these collections is not allowed (mutating them
-	///	is not allowed, for example, by Dictionary{K,V}). Therefore change notification
-	///	is not implemented for changes to these collections; these properties simply 
-	///	return the original collection.
+	///	The Keys and Values properties return ICollection, but this class assumes that 
+	///	mutating these collections is not allowed (mutating them is not allowed, for 
+	///	example, by Dictionary{K,V}). Therefore change notification is not implemented 
+	///	for changes to these collections; these properties simply return the original 
+	///	collection.
 	/// </remarks>
 	///	<seealso cref="ListWrapper{TList,T}"/>
 	public class DictionaryWithChangeEvents<K, V, TDictionary> : DictionaryWrapper<K, V, TDictionary>,

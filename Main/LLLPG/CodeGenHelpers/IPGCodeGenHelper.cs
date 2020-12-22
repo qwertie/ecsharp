@@ -201,7 +201,7 @@ namespace Loyc.LLParserGenerator
 		/// LLParserGenerator inside the method.</param>
 		/// <returns>A method definition for the rule.</returns>
 		/// <remarks>To generate the default method, simply call 
-		/// <see cref="Rule.CreateMethod(VList{LNode})"/>.</remarks>
+		/// <see cref="Rule.CreateMethod(LNodeList)"/>.</remarks>
 		LNode CreateRuleMethod(Rule rule, LNodeList methodBody);
 
 		/// <summary>Generates the try-wrapper for a recognizer rule.</summary>

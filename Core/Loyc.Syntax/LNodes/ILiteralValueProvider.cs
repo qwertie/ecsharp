@@ -7,11 +7,11 @@ namespace Loyc.Syntax
 	/// the provider has access to the original source code text.</remarks>
 	public interface ILiteralValueProvider
 	{
-		/// <summary><see cref="LNode.Value"/> returns whatever this returns.</param>
+		/// <summary><see cref="LNode.Value"/> returns whatever this returns.</summary>
 		object GetValue(SourceRange range);
-		/// <summary><see cref="LNode.TextValue"/> returns whatever this returns.</param>
+		/// <summary><see cref="LNode.TextValue"/> returns whatever this returns.</summary>
 		UString GetTextValue(SourceRange range);
-		/// <summary><see cref="LNode.TypeMarker"/> returns whatever this returns.</param>
+		/// <summary><see cref="LNode.TypeMarker"/> returns whatever this returns.</summary>
 		Symbol GetTypeMarker(SourceRange range);
 	}
 }

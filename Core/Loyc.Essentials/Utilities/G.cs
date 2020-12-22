@@ -430,7 +430,7 @@ namespace Loyc
 		static Func<int, WordWrapCharType> _getWordWrapCharType = GetWordWrapCharType;
 
 		/// <summary>This function controls the default character categorization used by 
-		/// overloads of <see cref="WordWrap(string, int, Func{int, WordWrapCharType})"/>.</summary>
+		/// overloads of <see cref="WordWrap(IEnumerable{Pair{int, int}}, int, Func{int, WordWrapCharType})"/>.</summary>
 		public static WordWrapCharType GetWordWrapCharType(int c)
 		{
 			switch (c)
@@ -575,7 +575,7 @@ namespace Loyc
 	}
 
 	/// <summary>The set of character categories recognized by overloads of 
-	/// <see cref="G.WordWrap(string, int, Func{int, WordWrapCharType})"/>.</summary>
+	/// <see cref="G.WordWrap(IEnumerable{Pair{int, int}}, int, Func{int, WordWrapCharType})"/>.</summary>
 	[Flags]
 	public enum WordWrapCharType
 	{

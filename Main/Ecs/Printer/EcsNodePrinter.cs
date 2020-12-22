@@ -1329,14 +1329,14 @@ namespace Loyc.Ecs
 		public bool OmitMissingArguments { get; set; }
 
 		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
+		/// (e.g. <see cref="CodeSymbols.TriviaSpaces"/>).</summary>
 		/// <remarks>Note: since EcsNodePrinter inserts its own spaces 
 		/// automatically, space trivia (if any) may be redundant unless you set 
 		/// <see cref="SpaceOptions"/> and/or <see cref="NewlineOptions"/> to zero.</remarks>
 		public bool OmitSpaceTrivia { get; set; }
 
 		/// <summary>When this flag is set, raw text trivia attributes (e.g. <see 
-		/// cref="CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
+		/// cref="CodeSymbols.TriviaRawText"/>) are obeyed (cause raw text 
 		/// output); otherwise such attributes are treated as unknown trivia and, 
 		/// if <see cref="LNodePrinterOptions.OmitUnknownTrivia"/> is false, 
 		/// printed as attributes.</summary>

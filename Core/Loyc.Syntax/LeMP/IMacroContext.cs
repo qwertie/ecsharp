@@ -110,7 +110,7 @@ namespace LeMP
 		///   <see cref="IsAttribute"/> while the items in the list are processed.</param>
 		/// <remarks>The node(s)</remarks>
 		LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false);
-		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool, bool)"/>
+		/// <inheritdoc cref="PreProcess(LNodeList, bool, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool isTarget = false);
 
 		/// <summary>Gets information about all macros registered with the macro 

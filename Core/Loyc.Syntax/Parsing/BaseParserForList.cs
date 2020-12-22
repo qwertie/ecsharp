@@ -79,7 +79,7 @@ namespace Loyc.Syntax
 		{
 			Reset(list, getEofToken, eof, file, startIndex);
 		}
-		/// <inheritdoc cref="BaseParserForList(List, Func{Token, Token}, ISourceFile, int)"/>
+		/// <inheritdoc cref="BaseParserForList(List, Func{Token, Token}, MatchType, ISourceFile, int)"/>
 		protected BaseParserForList(List list, Token getEofToken, ISourceFile file, int startIndex = 0)
 		{
 			Reset(list, getEofToken, file, startIndex);

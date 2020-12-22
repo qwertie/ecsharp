@@ -47,8 +47,8 @@ namespace Loyc.Syntax.Lexing
 	///    from <see cref="TypeMarker"/> (uninterpreted literals do not use the Value 
 	///    property). 16 bits of information enables the TextValue feature to work without
 	///    memory allocation in many cases; see the documentation of the constructor 
-	///    <see cref="Token(int, int, UString, NodeStyle, object, int, int)"/> for more
-	///    information about the purpose and usage of this feature.
+	///    <see cref="Token(int, int, UString, NodeStyle, Symbol, int, int)"/> for more
+	///    information about the purpose and usage of this feature.</li>
 	/// </ol>
 	/// To save space (and because .NET doesn't handle large structures well),
 	/// tokens do not know what source file they came from and cannot convert 
@@ -92,7 +92,7 @@ namespace Loyc.Syntax.Lexing
 			_value = value;
 		}
 
-		/// <inheritdoc cref="Token(ushort, int, int, NodeStyle, object)"/>
+		/// <inheritdoc cref="Token(int, int, int, NodeStyle, object)"/>
 		public Token(int type, int startIndex, int length, object value)
 		{
 			_typeInt = type;
@@ -191,7 +191,7 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="textValue">Value returned from <see cref="TextValue(ICharSource)"/>.</param>
 		/// <remarks>
 		/// As explained in the documentation of the other constructor 
-		/// (<see cref="Token(ushort, int, UString, NodeStyle, object, int, int)"/>,
+		/// (<see cref="Token(int, int, UString, NodeStyle, Symbol, int, int)"/>,
 		/// some literals have two parts which we call the TypeMarker and the 
 		/// TextValue. Since the Token structure only contains a single heap 
 		/// reference, this contructor combines TypeMarker with TextValue in a 
@@ -343,6 +343,8 @@ namespace Loyc.Syntax.Lexing
 
 		private byte SubstringOffset => (byte)(_stuff >> 8);
 		private byte SubstringOffsetFromEnd => (byte)(_stuff >> 16);
+		/// <summary>Indicates that the token was initialized with a pair of values
+		/// (type marker and text value) representing an uninterpreted literal.</summary>
 		public bool IsUninterpretedLiteral => (_stuff & 0x01000000) != 0;
 		/// <summary>8 bits of nonsemantic information about the token. The style 
 		/// is used to distinguish hex literals from decimal literals, or triple-
@@ -398,10 +400,10 @@ namespace Loyc.Syntax.Lexing
 
 		/// <summary>Helps get the "text value" from tokens that used one of the 
 		/// constructors designed to support this use case, e.g.
-		/// <see cref="Token(int type, int startIndex, UString tokenText, NodeStyle style, object value, int valueStart, int valueEnd)"/>.
+		/// <see cref="Token(int, int, UString, NodeStyle, Symbol, int, int)"/>.
 		/// If one of the other constructors was used, this function returns the same
 		/// value as <see cref="SourceText(ICharSource)"/>.</summary>
-		/// <param name="chars">Original source code or lexer from which this token was derived.</param>
+		/// <param name="source">Original source code or lexer from which this token was derived.</param>
 		public UString TextValue(ICharSource source)
 		{
 			if (SubstringOffset == 0xFF)

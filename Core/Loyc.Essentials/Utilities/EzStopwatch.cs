@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,12 +29,11 @@ namespace Loyc
 	/// trials of three operations in a loop, and the loop was programmed to run 
 	/// until the total elapsed time for one of the operations exceeded 100 ms. On 
 	/// each iteration I restarted the timer three times because there were three 
-	/// operations to measure, and when I replaced <see cref="SimpleTimer"/> with 
-	/// <see cref="EzStopwatch"/> for greater accuracy, the loop ran forever! The
-	/// problem was that (depending on the benchmark's input parameters) the 
-	/// operation could take less than 1 millisecond to complete, so 
-	/// <see cref="Millisec"/> always returned zero, and the total never reached
-	/// 100.
+	/// operations to measure, and when I replaced SimpleTimer with EzStopwatch
+	/// for greater accuracy, the loop ran forever! The problem was that (depending 
+	/// on the benchmark's input parameters) the operation could take less than 1 
+	/// millisecond to complete, so <see cref="Millisec"/> always returned zero, 
+	/// and the total never reached 100.
 	/// <para/>
 	/// To solve this problem, when you "<see cref="Restart"/>" the timer, it is
 	/// not completely reset to zero, but rather the current value of Millisec is

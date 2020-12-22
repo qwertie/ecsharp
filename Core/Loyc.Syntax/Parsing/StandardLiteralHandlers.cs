@@ -20,23 +20,23 @@ namespace Loyc.Syntax
 	/// <remarks>
 	/// The following types are fully supported:
 	/// <ul>
-	/// <li>Int8 (type marker: _i8)
-	/// <li>Int16 (type marker: _i16)
-	/// <li>Int32 (type marker: _i32)
-	/// <li>Int64 (type markers: _i64, _L)
-	/// <li>UInt8 (type marker: _u8)
-	/// <li>UInt16 (type marker: _u16)
-	/// <li>UInt32 (type marker: _u32)
-	/// <li>UInt64 (type markers: _u64, _uL)
-	/// <li>BigInteger (type marker: _z)
-	/// <li>Single (type markerS: _r32, _f)
-	/// <li>Double (type markerS: _r64, _d)
-	/// <li>Char (type marker: c)
-	/// <li>String (type marker: empty string)
-	/// <li>Symbol (type marker: s)
-	/// <li>Loyc.@void (type marker: void)
-	/// <li>Boolean (type marker: bool)
-	/// <li>UString (no specific type marker)
+	/// <li>Int8 (type marker: _i8)			  </li>
+	/// <li>Int16 (type marker: _i16)		  </li>
+	/// <li>Int32 (type marker: _i32)		  </li>
+	/// <li>Int64 (type markers: _i64, _L)	  </li>
+	/// <li>UInt8 (type marker: _u8)		  </li>
+	/// <li>UInt16 (type marker: _u16)		  </li>
+	/// <li>UInt32 (type marker: _u32)		  </li>
+	/// <li>UInt64 (type markers: _u64, _uL)  </li>
+	/// <li>BigInteger (type marker: _z)	  </li>
+	/// <li>Single (type markerS: _r32, _f)	  </li>
+	/// <li>Double (type markerS: _r64, _d)	  </li>
+	/// <li>Char (type marker: c)			  </li>
+	/// <li>String (type marker: empty string)</li>
+	/// <li>Symbol (type marker: s)			  </li>
+	/// <li>Loyc.@void (type marker: void)	  </li>
+	/// <li>Boolean (type marker: bool)		  </li>
+	/// <li>UString (no specific type marker) </li>
 	/// </ul>
 	/// There are also two general type markers, _ for a number of unspecified type,
 	/// and _U for an unsigned number of unspecified size. In LES, any type marker 

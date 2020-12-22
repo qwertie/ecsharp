@@ -57,7 +57,7 @@ namespace Loyc.Syntax
 		/// <summary>Adds a printer to the <see cref="Printers"/> collection.</summary>
 		/// <param name="replaceExisting">If the specified type already has a printer 
 		/// assigned to it, it will be replaced only if this flag is true.</param>
-		/// <param name="type">The printer will be invoked by <see cref="TryPrint(ILNode)"/>
+		/// <param name="type">The printer will be invoked by <see cref="TryPrint(ILNode, StringBuilder)"/>
 		/// when this Type or type marker Symbol matches the literal being printed.</param>
 		/// <param name="printer">A printer function that prints into the provided 
 		/// StringBuilder and returns null on success, or a description of the error 
