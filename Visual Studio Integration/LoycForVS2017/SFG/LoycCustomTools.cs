@@ -102,7 +102,8 @@ namespace Loyc.VisualStudio
 				var options = new LNodePrinterOptions {
 					IndentString = IndentString, NewlineString = NewlineString
 				};
-				LNode.Printer.Print(results, Output, Sink, ParsingMode.File, options);
+				using (LNode.SetPrinter(io.OutPrinter ?? LNode.Printer))
+					LNode.Printer.Print(results, Output, Sink, ParsingMode.File, options);
 			}
 		}
 
