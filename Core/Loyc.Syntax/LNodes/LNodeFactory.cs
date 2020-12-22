@@ -25,10 +25,10 @@ namespace Loyc.Syntax
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
 		
-		IMessageSink _errorSink;
+		IMessageSink<LNode> _errorSink;
 		/// <summary>Where errors should be sent if there is an error parsing a literal.</summary>
 		/// <remarks>Attempting to set this to null makes the getter return <see cref="MessageSink.Default"/>.</remarks>
-		public IMessageSink ErrorSink
+		public IMessageSink<LNode> ErrorSink
 		{
 			get => _errorSink ?? MessageSink.Default;
 			set => _errorSink = value;
@@ -166,7 +166,7 @@ namespace Loyc.Syntax
 					if (parsed.Right.HasValue) {
 						var result = UninterpretedLiteral(t);
 						var lm = parsed.Right.Value;
-						ErrorSink.Write(new LogMessage(lm.Severity, result, lm.Format, lm.Args));
+						ErrorSink.Write(lm.Severity, result, lm.Format, lm.Args);
 						return result;
 					} else {
 						return t.UninterpretedTokenToLNode(_file, parsed.Left.Value);

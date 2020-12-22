@@ -277,10 +277,6 @@ namespace Loyc.Syntax.Lexing
 		private int _startIndex;
 		private int _length;
 		private int _stuff; // JIT somehow uses 3 words for 4 bytes of info, so pack manualy
-		private byte SubstringOffset => (byte)(_stuff >> 8);
-		private byte SubstringOffsetFromEnd => (byte)(_stuff >> 16);
-		static int Stuff(NodeStyle style, byte substringOffset, byte substringOffsetFromEnd, bool isUninterpretedLiteral)
-			=> (byte)style | (substringOffset << 8) | (substringOffsetFromEnd << 16) | (isUninterpretedLiteral ? 0x01000000 : 0);
 		private object _value;
 
 		/// <summary>Token type.</summary>
@@ -301,11 +297,6 @@ namespace Loyc.Syntax.Lexing
 		/// or implied token.</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public int Length => _length;
-		/// <summary>8 bits of nonsemantic information about the token. The style 
-		/// is used to distinguish hex literals from decimal literals, or triple-
-		/// quoted strings from double-quoted strings.</summary>
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public NodeStyle Style => (NodeStyle)_stuff;
 
 		/// <summary>The parsed value of the token, if this structure was initialized
 		/// with one of the constructors that accepts a value.</summary>
@@ -347,10 +338,20 @@ namespace Loyc.Syntax.Lexing
 			}
 		}
 
-		public bool IsUninterpretedLiteral => (_stuff & 0x01000000) != 0;
-
 		/// <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
-		public TokenTree Children { get { return Value as TokenTree; } }
+		public TokenTree Children { get { return _value as TokenTree; } }
+
+		private byte SubstringOffset => (byte)(_stuff >> 8);
+		private byte SubstringOffsetFromEnd => (byte)(_stuff >> 16);
+		public bool IsUninterpretedLiteral => (_stuff & 0x01000000) != 0;
+		/// <summary>8 bits of nonsemantic information about the token. The style 
+		/// is used to distinguish hex literals from decimal literals, or triple-
+		/// quoted strings from double-quoted strings.</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public NodeStyle Style => (NodeStyle)_stuff;
+		
+		static int Stuff(NodeStyle style, byte substringOffset, byte substringOffsetFromEnd, bool isUninterpretedLiteral)
+			=> (byte)style | (substringOffset << 8) | (substringOffsetFromEnd << 16) | (isUninterpretedLiteral ? 0x01000000 : 0);
 
 		/// <summary>Returns StartIndex + Length.</summary>
 		public int EndIndex { get { return StartIndex + Length; } }
