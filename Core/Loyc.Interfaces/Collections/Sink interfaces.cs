@@ -26,12 +26,27 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Represents a write-only indexable list class.</summary>
+	/// <remarks>The extension method <see cref="ListExt.AsSink{T}(IList{T})"/> 
+	/// adapts any <see cref="IList{T}"/> to this interface.</remarks>
 	public interface IListSink<in T> : ICollectionSink<T>, IArraySink<T>
 	{
 	}
 
+	/// <summary>Represents a <c>V this[K key] { set; }</c> property.</summary>
+	/// <remarks>
+	/// The extension method <see cref="DictionaryExt.AsSink{K, V}(IDictionary{K, V})"/>
+	/// adapts any <see cref="IDictionary{K,V}"/> to this interface.
+	/// </remarks>
+	public interface IIndexedSink<in K, in V>
+	{
+		V this[K key] { set; }
+	}
+
 	/// <summary>Represents a write-only dictionary class.</summary>
 	/// <remarks>
+	/// The extension method <see cref="DictionaryExt.AsSink{K, V}(IDictionary{K, V})"/>
+	/// adapts any <see cref="IDictionary{K,V}"/> to this interface.
+	/// <para/>
 	/// The methods here are a subset of the methods of IDictionary, so that a class 
 	/// that already implements IDictionary can support this interface also just by
 	/// adding it to the interface list. However, one of the reasons you might want
@@ -54,9 +69,8 @@ namespace Loyc.Collections
 	/// because it would defeat contravariance, because structs do not support variance
 	/// (KeyValuePair is a struct).
 	/// </remarks>
-	public interface IDictionarySink<in K, in V>
+	public interface IDictionarySink<in K, in V> : IIndexedSink<K, V>
 	{
-		V this[K key] { set; }
 		void Add(K key, V value);
 		bool Remove(K key);
 		void Clear();

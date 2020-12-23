@@ -108,6 +108,8 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\Adapters\DictionaryAsSink.cs" />
+    <Compile Include="Collections\Adapters\ListAsSink.cs" />
     <Compile Include="Collections\Adapters\ReadOnlyListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ROLSlice.cs" />
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
