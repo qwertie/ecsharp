@@ -16,6 +16,9 @@ namespace Loyc.Syntax
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Synthetic, -1, 0);
 
+		public static SourceRange New<IndexRange>(ISourceFile source, IndexRange range) where IndexRange : IIndexRange
+			=> new SourceRange(source, range.StartIndex, range.Length);
+
 		public SourceRange(ISourceFile source, int beginIndex = -1, int length = 0)
 		{
 			_source = source;

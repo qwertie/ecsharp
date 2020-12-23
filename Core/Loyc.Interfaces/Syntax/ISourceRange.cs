@@ -5,13 +5,19 @@ using System.Text;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Represents a (contiguous) region of text in a source file.</summary>
-	public interface ISourceRange
+	/// <summary>Represents a pair of integers that represents a range of indices:
+	/// either start & end or start & length. Invariant: Length == EndIndex-StartIndex.</summary>
+	public interface IIndexRange
 	{
-		ISourceFile Source { get; }
 		int StartIndex { get; }
 		int EndIndex { get; }
 		int Length { get; }
+	}
+
+	/// <summary>Represents a (contiguous) region of text in a source file.</summary>
+	public interface ISourceRange : IIndexRange
+	{
+		ISourceFile Source { get; }
 	}
 
 	/// <summary>Standard extension methods for <see cref="ISourceRange"/>.</summary>

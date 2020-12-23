@@ -118,6 +118,7 @@
     <Compile Include="Concrete\Either.cs" />
     <Compile Include="Concrete\EmptySourceFile.cs" />
     <Compile Include="Concrete\Exceptions.cs" />
+    <Compile Include="Concrete\IndexRange.cs" />
     <Compile Include="Concrete\KeyCollection.cs" />
     <Compile Include="Concrete\ListChangeInfo.cs" />
     <Compile Include="Concrete\MemoizedTypeName.cs" />
