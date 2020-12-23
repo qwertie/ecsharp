@@ -249,7 +249,7 @@ namespace Loyc.Syntax.Les
 				case LNodeKind.Id:
 					PrintIdOrSymbol(node.Name, false); break;
 				case LNodeKind.Literal:
-					PrintLiteral(node); break;
+					PrintLiteralCore(node); break;
 				case LNodeKind.Call: default:
 					Print(node.Target, LesPrecedence.Primary.LeftContext(context), "(");
 					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "", ')', null);
@@ -393,10 +393,6 @@ namespace Loyc.Syntax.Les
 			return (value ?? rawTextNode.Name).ToString();
 		}
 
-		#endregion
-
-		#region Parts of expressions: identifiers, literals (strings, numbers)
-
 		private void PrintSpaces(string spaces)
 		{
 			for (int i = 0; i < spaces.Length; i++) {
@@ -413,35 +409,49 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
+		#endregion
 
-		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
+		#region Static methods for printing literals, identifiers and strings
 
-		static StringBuilder _staticStringBuilder = new StringBuilder();
-		static Les2PrinterWriter _staticWriter = new Les2PrinterWriter(_staticStringBuilder);
-		static Les2Printer _staticPrinter = new Les2Printer(_staticStringBuilder);
+		[ThreadStatic] static StringBuilder _staticStringBuilder = new StringBuilder();
+		[ThreadStatic] static Les2PrinterWriter _staticWriter;
+		[ThreadStatic] static Les2Printer _staticPrinter;
 
+		static void MaybeInitThread()
+		{
+			_staticPrinter = _staticPrinter ?? new Les2Printer(_staticStringBuilder);
+			_staticWriter = _staticWriter ?? new Les2PrinterWriter(_staticStringBuilder);
+			_staticStringBuilder = _staticStringBuilder ?? new StringBuilder();
+		}
 		public static string PrintId(Symbol name)
 		{
+			MaybeInitThread();
 			_staticWriter.Reset();
 			_staticStringBuilder.Length = 0; // Clear() only exists in .NET 4
 			_staticPrinter.PrintIdOrSymbol(name, false);
 			return _staticStringBuilder.ToString();
 		}
-		public static string PrintLiteral(object value, NodeStyle style = 0)
+		public static string PrintLiteral(object value, NodeStyle style = 0) => PrintLiteral(LNode.Literal(value, null, style));
+		public static string PrintLiteral(ILNode literal)
 		{
+			MaybeInitThread();
 			_staticWriter.Reset();
 			_staticStringBuilder.Length = 0;
-			if (!_staticPrinter.PrintLiteralCore(value, style))
-				return null;
+			_staticPrinter.PrintLiteralCore(literal);
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintString(string text, char quoteType, bool tripleQuoted)
 		{
+			MaybeInitThread();
 			_staticWriter.Reset();
 			_staticStringBuilder.Length = 0;
 			_staticPrinter.PrintStringCore(quoteType, tripleQuoted, text);
 			return _staticStringBuilder.ToString();
 		}
+
+		#endregion
+
+		#region Printing of identifiers and literals
 
 		/// <summary>Returns true if the given symbol can be printed as a 
 		/// normal identifier, without an "@" prefix. Note: identifiers 
@@ -470,9 +480,9 @@ namespace Loyc.Syntax.Les
 				first = false;
 			}
 			
-			// Watch out for @`-inf_d` and @`-inf_f`, because they will be
-			// interpreted as named literals if we don't backquote them.
-			if (special && !backquote && (name == "-inf_d" || name == "-inf_f"))
+			// Watch out for named literals with punctuation e.g. @`-inf_d` and @`-inf_f`:
+			// they will be interpreted as named literals if we don't backquote them.
+			if (special && !backquote && Les2Lexer.NamedLiterals.ContainsKey(name))
 				backquote = true;
 			return special || backquote;
 		}
@@ -490,7 +500,14 @@ namespace Loyc.Syntax.Les
 				_out.Write(name.Name, true);
 		}
 
-		private void PrintStringCore(char quoteType, bool tripleQuoted, string text)
+		private void PrintString(Symbol typeMarker, char quoteType, bool tripleQuoted, UString text)
+		{
+			if (typeMarker != null && typeMarker.Name.Length != 0)
+				PrintIdOrSymbol(typeMarker, isSymbol: false);
+			PrintStringCore(quoteType, tripleQuoted, text);
+		}
+
+		private void PrintStringCore(char quoteType, bool tripleQuoted, UString text)
 		{
 			_out.Write(quoteType, false);
 			if (tripleQuoted) {
@@ -516,143 +533,111 @@ namespace Loyc.Syntax.Les
 			_out.Write(quoteType, true);
 		}
 
-		static Pair<RuntimeTypeHandle,Action<Les2Printer, object, NodeStyle>> P<T>(Action<Les2Printer, object, NodeStyle> handler) 
-			{ return Pair.Create(typeof(T).TypeHandle, handler); }
-		static Pair<K,V> P<K,V>(K key, V value) 
-			{ return Pair.Create(key, value); }
-		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
-		{
-			var d = new Dictionary<K,V>();
-			for (int i = 0; i < input.Length; i++)
-				d.Add(input[i].Key, input[i].Value);
-			return d;
-		}
-		static Dictionary<RuntimeTypeHandle,Action<Les2Printer, object, NodeStyle>> LiteralPrinters = Dictionary(
-			P<int>       ((np, value, style) => np.PrintIntegerToString(value, style, "")),
-			P<long>      ((np, value, style) => np.PrintIntegerToString(value, style, "L")),
-			P<uint>      ((np, value, style) => np.PrintIntegerToString(value, style, "u")),
-			P<ulong>     ((np, value, style) => np.PrintIntegerToString(value, style, "uL")),
-			P<BigInteger>((np, value, style) => np.PrintIntegerToString(value, style, "z")),
-			P<short>     ((np, value, style) => np.PrintShortInteger(value, style, "Int16")), // Unnatural. Not produced by parser.
-			P<ushort>    ((np, value, style) => np.PrintShortInteger(value, style, "UInt16")), // Unnatural. Not produced by parser.
-			P<sbyte>     ((np, value, style) => np.PrintShortInteger(value, style, "Int8")), // Unnatural. Not produced by parser.
-			P<byte>      ((np, value, style) => np.PrintShortInteger(value, style, "UInt8")), // Unnatural. Not produced by parser.
-			P<double>    ((np, value, style) => np.PrintDoubleToString((double)value)),
-			P<float>     ((np, value, style) => np.PrintFloatToString((float)value)),
-			P<decimal>   ((np, value, style) => np.PrintValueToString(value, "m")),
-			P<bool>      ((np, value, style) => np._out.Write((bool)value? "@true" : "@false", true)),
-			P<@void>     ((np, value, style) => np._out.Write("@void", true)),
-			P<char>      ((np, value, style) => np.PrintStringCore('\'', false, value.ToString())),
-			P<string>    ((np, value, style) => {
-				NodeStyle bs = (style & NodeStyle.BaseStyleMask);
-				if (bs == NodeStyle.TQStringLiteral)
-					np.PrintStringCore('\'', true, value.ToString());
-				else
-					np.PrintStringCore('"', bs == NodeStyle.TDQStringLiteral, value.ToString());
-			}),
-			P<Symbol> ((np, value, style) => np.PrintIdOrSymbol((Symbol)value, true)),
-			P<TokenTree> ((np, value, style) => {
-				np._out.Write("@{ ", true);
-				np._out.Write(((TokenTree)value).ToString(TokenExt.ToString), true);
-				np._out.Write(" }", true);
-			}));
+		static readonly Symbol sy_bool = (Symbol)"bool", sy_c = (Symbol)"c", sy_s = (Symbol)"s", sy__ = (Symbol)"_";
 
-		private void PrintShortInteger(object value, NodeStyle style, string type)
+		internal static Dictionary<object, string> NamedLiterals = new Dictionary<object, string>()
 		{
-			ErrorSink.Write(Severity.Warning, null, "LesNodePrinter: Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
-			PrintIntegerToString(value, style, "");
-		}
-		void PrintValueToString(object value, string suffix)
-		{
-			_out.Write(value.ToString(), false);
-			_out.Write(suffix, true);
-		}
-		void PrintIntegerToString(object value, NodeStyle style, string suffix)
-		{
-			string asStr;
-			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
-				var valuef = (IFormattable)value;
-				_out.Write("0x", false);
-				asStr = valuef.ToString("x", null);
-			} else
-				asStr = value.ToString();
-			
-			if (suffix == "")
-				_out.Write(asStr, true);
-			else {
-				_out.Write(asStr, false);
-				_out.Write(suffix, true);
-			}
-		}
+			[true] = "@true",
+			[false] = "@false",
+			[@void.Value] = "@void",
+			[float.NaN] = "@nan.f",
+			[double.NaN] = "@nan.d",
+			[float.PositiveInfinity] = "@inf.f",
+			[double.PositiveInfinity] = "@inf.d",
+			[float.NegativeInfinity] = "@-inf.f",
+			[double.NegativeInfinity] = "@-inf.d",
+		};
 
-		const string NaNPrefix = "@nan_";
-		const string PositiveInfinityPrefix = "@inf_";
-		const string NegativeInfinityPrefix = "@-inf_";
+		private void PrintLiteralCore(ILNode node)
+		{
+			var typeMarker = node.TypeMarker;
+			var textValue = node.TextValue;
+			var value = node.Value;
 
-		void PrintFloatToString(float value)
-		{
-			if (float.IsNaN(value))
-				_out.Write(NaNPrefix, false);
-			else if (float.IsPositiveInfinity(value))
-				_out.Write(PositiveInfinityPrefix, false);
-			else if (float.IsNegativeInfinity(value))
-				_out.Write(NegativeInfinityPrefix, false);
-			else
-			{
-				// The "R" round-trip specifier makes sure that no precision is lost, and
-				// that parsing a printed version of float.MaxValue is possible.
-				_out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
-			}
-			_out.Write("f", true);
-		}
-		void PrintDoubleToString(double value)
-		{
-			if (double.IsNaN(value))
-				_out.Write(NaNPrefix, false);
-			else if (double.IsPositiveInfinity(value))
-				_out.Write(PositiveInfinityPrefix, false);
-			else if (double.IsNegativeInfinity(value))
-				_out.Write(NegativeInfinityPrefix, false);
-			else
-			{
-				// The "R" round-trip specifier makes sure that no precision is lost, and
-				// that parsing a printed version of double.MaxValue is possible.
-				_out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
-			}
-			_out.Write("d", true);
-		}
-
-		private void PrintLiteral(ILNode node)
-		{
-			object value = node.Value;
-			if (!PrintLiteralCore(value, node.Style))
-			{
-				ErrorSink.Error(node, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
-
-				bool quote = _o.QuoteUnprintableLiterals;
-				string unprintable;
-				try {
-					unprintable = value.ToString();
-				} catch (Exception ex) {
-					unprintable = ex.Message;
-					quote = true;
-				}
-				if (quote)
-					PrintStringCore('"', true, unprintable);
-				else
-					_out.Write(unprintable, true);
-			}
-		}
-		private bool PrintLiteralCore(object value, NodeStyle style)
-		{
-			Action<Les2Printer, object, NodeStyle> p;
 			if (value == null)
+			{
 				_out.Write("@null", true);
-			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
-				p(this, value, style);
-			else 
-				return false;
-			return true;
+			}
+			else if (NamedLiterals.TryGetValue(value, out var text))
+			{
+				_out.Write(text, true);
+			}
+			else if (value is char c && (typeMarker == null || typeMarker == sy_c))
+			{
+				PrintStringCore('\'', false, c.ToString());
+			}
+			else if (value is Symbol s && (typeMarker == null || typeMarker == sy_s))
+			{
+				PrintIdOrSymbol(s, isSymbol: true);
+			}
+			else if (typeMarker == null || textValue.IsNull) // Convert to string for printing
+			{
+				var printer = _o.LiteralPrinter ?? StandardLiteralHandlers.Value;
+				var sb = new StringBuilder();
+				var result = printer.TryPrint(node, sb);
+				if (result.Right.HasValue)
+				{
+					ErrorSink.Error(node, "Les2Printer: Encountered unprintable literal of type {0}", value.GetType().Name);
+					ErrorSink.Write(result.Right.Value);
+
+					typeMarker = typeMarker ?? (Symbol)MemoizedTypeName.Get(value.GetType());
+					if (textValue.IsEmpty)
+					{
+						if (sb.Length != 0)
+							textValue = sb.ToString();
+						else if (node.Value != null)
+						{
+							try
+							{
+								textValue = node.Value.ToString();
+							}
+							catch (Exception e)
+							{
+								ErrorSink.Write(Severity.Error, node, "Exception in Value.ToString: {0}", e.Description());
+							}
+						}
+					}
+				}
+				else
+				{
+					typeMarker = typeMarker ?? result.Left.Value;
+					textValue = sb.ToString();
+				}
+				PrintStringOrNumber(textValue, node.Style, typeMarker);
+			}
+			else // Serialized form is already provided
+			{
+				// Note: other languages should not store TextValue for any standard 
+				// TypeMarker unless they use the same syntax as LES, or a subset.
+				// Accepting the TextValue without verifying that it matches the Value
+				// should work fine as long as the creator of the node followed this rule.
+				PrintStringOrNumber(textValue, node.Style, typeMarker);
+			}
+		}
+
+		private void PrintStringOrNumber(UString text, NodeStyle stringStyle, Symbol typeMarker)
+		{
+			if (typeMarker != null && typeMarker.Name.StartsWith("_"))
+			{
+				// Detect if we should print it as a number instead. One-digit numbers optimized:
+				if (typeMarker == sy__ && text.Length == 1 && text[0] >= '0' && text[0] <= '9')
+				{
+					_out.Write(text[0], true);
+					return;
+				}
+				else if (Les3Printer.CanPrintAsNumber(text, typeMarker))
+				{
+					_out.Write(text.ToString(), false);
+					_out.Write(typeMarker.Name.Slice(1).ToString(), true);
+					return;
+				}
+			}
+
+			NodeStyle bs = (stringStyle & NodeStyle.BaseStyleMask);
+			if (bs == NodeStyle.TQStringLiteral)
+				PrintString(typeMarker, '\'', true, text);
+			else
+				PrintString(typeMarker, '"', bs == NodeStyle.TDQStringLiteral, text);
 		}
 
 		#endregion

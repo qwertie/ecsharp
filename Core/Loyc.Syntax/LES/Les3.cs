@@ -78,12 +78,12 @@ namespace Loyc.Syntax.Les
 			return result.Left.Or(null);
 		}
 
-		protected UString ParseStringValue(bool parseNeeded, bool isTripleQuoted)
+		protected UString GetUnescapedString(bool hasEscapes, bool isTripleQuoted)
 		{
 			UString value;
-			if (parseNeeded) {
+			if (hasEscapes) {
 				UString original = Text();
-				value = Les2Lexer.UnescapeQuotedString(ref original, Error, IndentString, true);
+				value = UnescapeQuotedString(ref original, Error, IndentString, true);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
@@ -95,13 +95,254 @@ namespace Loyc.Syntax.Les
 			return value;
 		}
 
-		protected UString UnescapeSQStringValue(bool parseNeeded)
+		protected UString UnescapeSQStringValue(bool hasBackslash)
 		{
 			var text = Text();
-			if (!parseNeeded)
+			if (!hasBackslash)
 				return text.Slice(1, text.Length - 2);
 			else
-				return Les2Lexer.UnescapeQuotedString(ref text, Error);
+				return UnescapeQuotedString(ref text, Error);
+		}
+
+		/// <summary>Parses a normal or triple-quoted string that still includes 
+		/// the quotes. Supports quote types '\'', '"' and '`'.</summary>
+		/// <param name="sourceText">input text</param>
+		/// <param name="onError">Called in case of parsing error (unknown escape sequence or missing end quotes)</param>
+		/// <param name="indentation">Inside a triple-quoted string, any text
+		/// following a newline is ignored as long as it matches this string. 
+		/// For example, if the text following a newline is "\t\t Foo" and this
+		/// string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
+		/// <param name="les3TQIndents">Enable EC# triple-quoted string indent
+		/// rules, which allow an additional one tab or three spaces of indent.
+		/// (I'm leaning toward also supporting this in LES; switched on in v3)</param>
+		/// <returns>The decoded string</returns>
+		/// <remarks>This method recognizes LES and EC#-style string syntax.
+		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These 
+		/// strings enjoy special newline handling: the newline is always 
+		/// interpreted as \n regardless of the actual kind of newline (\r and 
+		/// \r\n newlines come out as \n), and indentation following the newline
+		/// can be stripped out. Triple-quoted strings can have escape sequences
+		/// that use both kinds of slash, like so: <c>\n/ \r/ \'/ \"/ \0/</c>.
+		/// However, there are no unicode escapes (\u1234/ is NOT supported).
+		/// <para/>
+		/// Secondly, it recognizes normal strings (' " `). These strings stop 
+		/// parsing (with an error) at a newline, and can contain C-style escape 
+		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
+		/// NOT supported.
+		/// </remarks>
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool les3TQIndents = false)
+		{
+			var sb = new StringBuilder();
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, les3TQIndents);
+			return sb.ToString();
+		}
+
+		/// <summary>Parses a normal or triple-quoted string that still includes 
+		/// the quotes (see documentation of the first overload) into a 
+		/// StringBuilder.</summary>
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
+		{
+			bool isTripleQuoted = false, fail;
+			char quoteType = (char)sourceText.PopFirst(out fail);
+			if (sourceText[0, '\0'] == quoteType &&
+				sourceText[1, '\0'] == quoteType)
+			{
+				sourceText = sourceText.Substring(2);
+				isTripleQuoted = true;
+			}
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents))
+				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
+		}
+
+		/// <summary>Parses a normal or triple-quoted string whose starting quotes 
+		/// have been stripped out. If triple-quote parsing was requested, stops 
+		/// parsing at three quote marks; otherwise, stops parsing at a single 
+		/// end-quote or newline.</summary>
+		/// <returns>true if parsing stopped at one or three quote marks, or false
+		/// if parsing stopped at the end of the input string or at a newline (in
+		/// a string that is not triple-quoted).</returns>
+		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
+		{
+			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
+			bool fail;
+			for (; ; )
+			{
+				if (sourceText.IsEmpty)
+					return false;
+				int i0 = sourceText.InternalStart;
+				if (!isTripleQuoted)
+				{
+					EscapeC category = 0;
+					int c = ParseHelpers.UnescapeChar(ref sourceText, ref category);
+					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1)
+					{
+						return c == quoteType; // end of string
+					}
+					if ((category & EscapeC.Unrecognized) != 0)
+					{
+						// This backslash was ignored by UnescapeChar
+						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(PrintHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+					}
+					else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
+						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
+					sb.AppendCodePoint(c);
+					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
+						DetectUtf8(sb);
+					else if (c.IsInRange(0xDC00, 0xDFFF))
+						RecodeSurrogate(sb);
+				}
+				else
+				{
+					// Inside triple-quoted string
+					int c;
+					if (sourceText[2, '\0'] == '/')
+					{
+						// Detect escape sequence
+						c = ParseHelpers.UnescapeChar(ref sourceText);
+						if (sourceText.InternalStart > i0 + 1)
+							G.Verify(sourceText.PopFirst(out fail) == '/');
+					}
+					else
+					{
+						c = sourceText.PopFirst(out fail);
+						if (fail)
+							return false;
+						if (c == quoteType)
+						{
+							if (sourceText[0, '\0'] == quoteType &&
+								sourceText[1, '\0'] == quoteType)
+							{
+								sourceText = sourceText.Substring(2);
+								// end of string
+								return true;
+							}
+						}
+						if (c == '\r' || c == '\n')
+						{
+							// To ensure platform independency of source code, CR and 
+							// CR-LF become LF.
+							if (c == '\r')
+							{
+								c = '\n';
+								var copy = sourceText.Clone();
+								if (sourceText.PopFirst(out fail) != '\n')
+									sourceText = copy;
+							}
+							// Inside a triple-quoted string, the indentation following a newline 
+							// is ignored, as long as it matches the indentation of the first line.
+							UString src = sourceText, ind = indentation;
+							int sp;
+							while ((sp = src.PopFirst(out fail)) == ind.PopFirst(out fail) && !fail)
+								sourceText = src;
+							if (les3TQIndents && fail)
+							{
+								// Allow an additional one tab or three spaces when initial indent matches
+								if (sp == '\t')
+									sourceText = src;
+								else if (sp == ' ')
+								{
+									sourceText = src;
+									if (src.PopFirst(out fail) == ' ')
+										sourceText = src;
+									if (src.PopFirst(out fail) == ' ')
+										sourceText = src;
+								}
+							}
+						}
+					}
+
+					sb.AppendCodePoint(c);
+				}
+			}
+		}
+
+		// This function is called after every "\xNN" escape where 0xNN > 0x80.
+		// Now, in LESv3, the input must be valid UTF-8, but strings can contain
+		// raw bytes as \x escape sequences. We must evaluate sequences of such
+		// characters as UTF-8 and figure out if they're valid or invalid.
+		// They can write "\xE2\x82\xAC" = "\u20AC" = "€", and also invalid 
+		// bytes or byte sequences. An invalid byte like "\xFF" is recoded as an
+		// invalid single surrogate like 0xDCFF. 
+		//   This function is in charge of performing that translation. See also:
+		// https://github.com/sunfishcode/design/pull/3#issuecomment-236777361
+		// Note: this function is shared by LESv2 too, because, who cares, why not.
+		static void DetectUtf8(StringBuilder sb)
+		{
+			int minus1 = sb[sb.Length - 1];
+			Debug.Assert(minus1.IsInRange((char)128, (char)255));
+			minus1 = sb[sb.Length - 1] = (char)(minus1 | 0xDC00);
+			if (sb.Length > 1 && minus1.IsInRange(0xDC80, 0xDCBF))
+			{
+				int minus2 = sb[sb.Length - 2];
+				if (minus2.IsInRange(0xDCC0, 0xDCDF))
+				{
+					// 2-byte UTF8 character detected; decode into UTF16
+					int c = ((minus2 & 0x1F) << 6) | (minus1 & 0x3F);
+					if (c > 0x7F)
+					{ // ignore overlong characters
+						sb.Remove(sb.Length - 1, 1);
+						sb[sb.Length - 1] = (char)c;
+					}
+				}
+				else if (sb.Length > 2 && minus2.IsInRange(0xDC80, 0xDCBF))
+				{
+					int minus3 = sb[sb.Length - 3];
+					if (minus3.IsInRange(0xDCE0, 0xDCEF))
+					{
+						// 3-byte UTF8 character detected; decode into UTF16 unless
+						// the character is in the low surrogate range 0xDC00..0xDFFF.
+						// This avoids collisions with the 0xDCxx space reserved for 
+						// encodings of arbitrary bytes, and and also avoids 
+						// translating UTF-8 encodings of UTF-16 surrogate pairs, 
+						// which wouldn't round trip, e.g. \xED\xA0\xBD\xED\xB2\xA9
+						// !=> \uD83D\uDCA9 (UTF16) => \u1F4A9 => \xF0\x9F\x92\xA9 (UTF8).
+						int c = ((minus3 & 0xF) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
+						if (c > 0x7FF && !c.IsInRange(0xDC00, 0xDFFF))
+						{ // ignore overlong characters
+							sb.Remove(sb.Length - 2, 2);
+							sb[sb.Length - 1] = (char)c;
+						}
+					}
+					else if (sb.Length > 3 && minus3.IsInRange(0xDC80, 0xDCBF))
+					{
+						int minus4 = sb[sb.Length - 4];
+						if (minus4.IsInRange(0xDCF0, 0xDCF7))
+						{
+							// 4-byte UTF8 character detected; decode into UTF16 surrogate pair
+							int c = ((minus4 & 0x7) << 18) | ((minus3 & 0x3F) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
+							if (c > 0xFFFF)
+							{ // ignore overlong characters
+								sb.Remove(sb.Length - 4, 4);
+								sb.AppendCodePoint(c);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// To prevent collisions between the single invalid UTF-8 byte 0xFF,
+		// which is coded as 0xDCFF and the three-byte sequence represented
+		// by \uDCFF, and also to allow round-tripping of UTF8 encodings of 
+		// UTF16 surrogates, this function's job is to treat "low" surrogates 
+		// in range 0xDC00 to 0xDFFF as if they were three UTF-8 bytes 
+		// recoded individually:
+		//     \uDCFF => 0xED 0xB3 0xBF => 0xDCED 0xDCB3 0xDCBF
+		// by avoiding collisions, the UTF-16 output from this lexer can be 
+		// used to reconstruct the byte stream it represents in all cases.
+		// If the final LESv3 spec disallows individual surrogate characters
+		// then we can just print an error instead of doing this trick.
+		static void RecodeSurrogate(StringBuilder sb)
+		{
+			int c = sb[sb.Length - 1];
+			Debug.Assert(c.IsInRange(0xDC00, 0xDFFF));
+			int b1 = 0xE0 | (c >> 12);
+			int b2 = 0x80 | ((c >> 6) & 0x3F);
+			int b3 = 0x80 | (c & 0x3F);
+			sb[sb.Length - 1] = (char)(b1 | 0xDC00);
+			sb.Append((char)(b2 | 0xDC00));
+			sb.Append((char)(b3 | 0xDC00));
 		}
 
 		#region Operator parsing

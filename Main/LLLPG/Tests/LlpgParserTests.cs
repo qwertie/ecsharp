@@ -23,6 +23,8 @@ namespace Loyc.LLParserGenerator
 		static Symbol Greedy = GSymbol.Get("greedy"), Nongreedy = GSymbol.Get("nongreedy");
 		static Symbol Default = GSymbol.Get("default"), Error = GSymbol.Get("error");
 		static LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c");
+		static LNode Literal(char c) => F.Literal(c, "c");
+		static LNode Literal(int n) => F.Literal(n, "_");
 
 		[SetUp]
 		void SetUp()
@@ -35,8 +37,8 @@ namespace Loyc.LLParserGenerator
 		public void Stage1Les_SimpleTests()
 		{
 			TestStage1("a", a);
-			TestStage1("'a'", F.Literal('a'));
-			TestStage1("123", F.Literal(123));
+			TestStage1("'a'", Literal('a'), tryECSharp: false);
+			TestStage1("123", Literal(123), tryECSharp: false);
 			TestStage1("a...b", F.Call(S.DotDotDot, a, b));
 			TestStage1("a..b", F.Call(S.DotDot, a, b));
 			TestStage1("~a", F.Call(S.NotBits, a));
@@ -88,11 +90,11 @@ namespace Loyc.LLParserGenerator
 			TestStage1("nongreedy a+",   F.Call(Plus, F.Call(Nongreedy, a)));
 			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Tuple(a, b)), c), false);
 			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Tuple(a, b)), c));
-			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), F.Literal('c')))));
+			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), Literal('c')))), false);
 			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
 				F.Tuple(F.Call(S.QuickBindAssign, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Assign, F.Id("x"), F.Id("t")))),
-				F.Tuple(F.Literal('-'), F.Call(S.QuickBindAssign, F.Id("t"), F.Id("num")), F.Braces())),
-				F.Tuple(F.Literal('('), F.Literal(')'))));
+				F.Tuple(Literal('-'), F.Call(S.QuickBindAssign, F.Id("t"), F.Id("num")), F.Braces())),
+				F.Tuple(Literal('('), Literal(')'))), tryECSharp: false);
 		}
 
 		void TestStage1(string text, LNode expected, bool tryECSharp = true)
@@ -136,7 +138,7 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "aeiou",     @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
 			TestStage2(true, "PrefixGate", "(=> ('a'; 'b')) / 'c'", "( => [a] [b] / [c])");
 			TestStage2(false, "AB+orCD",  @"@`'suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
-			TestStage2(true,  "EOF1",     "('a'; 'b'; 'c'; -1)", @"[a] [b] [c] (-1)");
+			TestStage2(true,  "EOF1", "('a'; 'b'; 'c'; −1)", @"[a] [b] [c] (-1)");
 			TestStage2(false, "EOF2",     "('a'; 'b'; 'c'; EOF)", @"'a' 'b' 'c' EOF");
 			TestStage2(false, "Slashes1", "(a3;{}) | ((a4;{}) | a5) / a6", "( a3 | ((a4 | a5) / a6) )");
 			TestStage2(false, "Slashes2", "((a8;{}) | a9) / ((a10;{}) | (a11;{}) / a12)", "( (a8 | a9) / (a10 | (a11 / a12)) )");

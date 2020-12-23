@@ -23,9 +23,11 @@ namespace Loyc.Syntax.Les
 		
 		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
 		protected LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
-		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		protected LNode zero = F.Literal(0, "_"), one = F.Literal(1, "_"), two = F.Literal(2, "_");
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
+		protected LNode Number(object value) { return F.Literal(value, "_"); }
+		protected LNode String(object value) { return F.Literal(value, (string)null); }
 
 		protected static LNode Op(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
 		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
@@ -38,7 +40,8 @@ namespace Loyc.Syntax.Les
 		{
 			Expr("x", x);
 			Expr("x()", F.Call(x));
-			Expr(@"x(1, ""Hello"", '!', 1.0)", F.Call(x, one, F.Literal("Hello"), F.Literal('!'), F.Literal(1.0)));
+			Expr(@"x(1, ""Hello"")", F.Call(x, one, String("Hello")));
+			Expr(@"x('!', 1.0)", F.Call(x, F.Literal('!', "c"), Number(1.0)));
 			Expr(@"x(@true, @false, @null)",   F.Call(x, F.Literal(true), F.Literal(false), F.Null));
 			Expr("Foo(a, b, c)", F.Call(Foo, a, b, c));
 			Expr("Foo(a(b, c), b(c))", F.Call(Foo, F.Call(a, b, c), F.Call(b, c)));
@@ -48,34 +51,45 @@ namespace Loyc.Syntax.Les
 		public void NegativeLiteral()
 		{
 			Exact("-x;", F.Call(S.Sub, x));
-			Stmt ("-2u;", F.Call(S.Sub, F.Literal(2u)));
-			Stmt ("-2uL;", F.Call(S.Sub, F.Literal(2uL)));
-			Exact("- 2;", F.Call(S.Sub, two));
-			Exact("-2;", F.Literal(-2));
-			Exact("-2z;", F.Literal(new BigInteger(-2)));
-			Exact("-111222333444z;", F.Literal(new BigInteger(-111222333444)));
-			Stmt ("-111222333444;", F.Literal(-111222333444));
-			Exact("-2L;", F.Literal(-2L));
-			Stmt ("-2.0;", F.Literal(-2.0));
-			Stmt ("-2d;",  F.Literal(-2.0));
-			Exact("-2f;",   F.Literal(-2.0f));
-			Stmt ("-2.0f;", F.Literal(-2.0f));
+			Stmt ("−2u;", F.Literal((UString)"−2", "_u"));
+			Stmt ("−2uL;", F.Literal((UString)"−2", "_uL"));
+			Exact("-2;", F.Call(S.Sub, two));
+			Stmt ("−3;", Number(-3));
+			Exact(@"_""-4"";", Number(-4));
+			Exact("-5;", F.Call(S.Sub, Number(5)));
+			Exact("_z\"-6\";", F.Literal(new BigInteger(-6), "_z"));
+			Stmt ("−7z;", F.Literal(new BigInteger(-7), "_z"));
+			Stmt ("−111222333444z;", F.Literal(new BigInteger(-111222333444), "_z"));
+			Stmt ("−111222333445;", Number(-111222333445));
+			Stmt ("−2L;", F.Literal(-2L, "_L"));
+			Stmt ("−2.0;", F.Literal(-2.0, "_"));
+			Stmt ("−2d;",  F.Literal(-2.0, "_d"));
+			Stmt ("−2f;",   F.Literal(-2.0f, "_f"));
+			Stmt ("−2.0f;", F.Literal(-2.0f, "_f"));
 		}
 
 		[Test]
 		public void NamedFloatLiteral()
 		{
 			// Test if named float literals are implemented.
-			Exact("@-inf_f;", F.Literal(float.NegativeInfinity));
-			Exact("@inf_f;", F.Literal(float.PositiveInfinity));
-			Exact("@nan_f;", F.Literal(float.NaN));
-			Exact("@-inf_d;", F.Literal(double.NegativeInfinity));
-			Exact("@inf_d;", F.Literal(double.PositiveInfinity));
-			Exact("@nan_d;", F.Literal(double.NaN));
+			Exact("@-inf.f;", F.Literal(float.NegativeInfinity));
+			Exact("@inf.f;", F.Literal(float.PositiveInfinity));
+			Exact("@nan.f;", F.Literal(float.NaN));
+			Exact("@-inf.d;", F.Literal(double.NegativeInfinity));
+			Exact("@inf.d;", F.Literal(double.PositiveInfinity));
+			Exact("@nan.d;", F.Literal(double.NaN));
+
+			// Test old names
+			Stmt("@-inf_f;", F.Literal(float.NegativeInfinity));
+			Stmt("@inf_f;", F.Literal(float.PositiveInfinity));
+			Stmt("@nan_f;", F.Literal(float.NaN));
+			Stmt("@-inf_d;", F.Literal(double.NegativeInfinity));
+			Stmt("@inf_d;", F.Literal(double.PositiveInfinity));
+			Stmt("@nan_d;", F.Literal(double.NaN));
 
 			// Make sure that round-tripping identifiers that
 			// overlap with named float literals is safe.
-			Exact("@`-inf_f`;", F.Id("-inf_f"));
+			Exact("@`-inf.f`;", F.Id("-inf.f"));
 			Exact("@`-inf_d`;", F.Id("-inf_d"));
 
 			// Also check that we don't overreact and enclose
@@ -150,6 +164,9 @@ namespace Loyc.Syntax.Les
 			Stmt("> a = %b;", F.Call(S.GT, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Stmt(@"!! !!a", F.Call(S.PreBangBang, F.Call(S.PreBangBang, a)));
 			Stmt(".a**b;", F.Call(S.Exp, F.Call(S.Dot, a), b));
+			
+			Stmt("-a**b;", F.Call(S.Sub, F.Call(S.Exp, a, b)));
+			Stmt("-2**b;", F.Call(S.Sub, F.Call(S.Exp, two, b)));
 		}
 
 		[Test]

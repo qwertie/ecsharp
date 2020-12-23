@@ -74,10 +74,10 @@ namespace LeMP.Tests
 			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ foo(*****) }); }", "bar(@{ bar(*****) });");
 			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ foo(%bar%) }); }", "bar(@{ bar(%foo%) });");
 			TestLes("replace (foo => bar; bar => foo) {\n  foo(@{ ***(%bar%) }); }", "bar(@{ ***(%foo%) });");
-			TestLes("unroll ((A; B) `in` ((Eh; Bee); ('a'; \"b\"); (1; 2d))) {\n  foo(B - A, @{A + B}); }",
-				@"foo(Bee - Eh,  @{Eh + Bee});
-				  foo(""b"" - 'a', @{'a' + ""b""});
-				  foo(2d - 1, @{1 + 2d});");
+			TestLes("unroll ((A; B) `in` ((Eh; Bee); ('a'; \"b\"); (1; 2.0))) {\n  foo(B - A, @{A + B}); }",
+				@"foo(Bee - Eh,  TokenTree""Eh '+ Bee"");
+				  foo(""b"" - 'a', TokenTree""'a' '+ \""b\"""");
+				  foo(2.0 - 1, TokenTree""1 '+ 2.0"");");
 		}
 
 		[Test]

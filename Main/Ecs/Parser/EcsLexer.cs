@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
+using System.Numerics;
 
 namespace Loyc.Ecs.Parser
 {
@@ -169,7 +170,7 @@ namespace Loyc.Ecs.Parser
 				return sb.ToString();
 			} else {
 				// triple-quoted or normal string: let LES lexer handle it
-				return Les2Lexer.UnescapeQuotedString(ref source, onError, indentation, true);
+				return Les3Lexer.UnescapeQuotedString(ref source, onError, indentation, true);
 			}
 		}
 
@@ -295,6 +296,7 @@ namespace Loyc.Ecs.Parser
 		static Symbol _U = GSymbol.Get("U");
 		static Symbol _L = GSymbol.Get("L");
 		static Symbol _UL = GSymbol.Get("UL");
+		static Symbol _Z = GSymbol.Get("Z");
 
 		void ParseNumberValue()
 		{
@@ -307,7 +309,7 @@ namespace Loyc.Ecs.Parser
 
 			UString digits = CharSource.Slice(start, stop - start);
 			string error;
-			if ((_value = Les2Lexer.ParseNumberCore(digits, false, _numberBase, _isFloat, _typeSuffix, out error)) == null)
+			if ((_value = ParseNumberCore(digits, false, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
 			else if (_value == CodeSymbols.Sub) {
 				InputPosition = _startPosition + 1;
@@ -315,6 +317,231 @@ namespace Loyc.Ecs.Parser
 			}
 			if (error != null)
 				Error(_startPosition - InputPosition, error);
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////
+		// The following number-parsing methods were taken from LES2 (they were removed
+		// from LES2 because of the switchover to uninterpreted literals)
+		/////////////////////////////////////////////////////////////////////////////////
+
+		/// <summary>Parses the digits of a literal (integer or floating-point),
+		/// not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
+		/// <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
+		/// <param name="isFloat">Whether the number is floating-point</param>
+		/// <param name="numberBase">Radix. Must be 2 (binary), 10 (decimal) or 16 (hexadecimal).</param>
+		/// <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
+		/// <param name="error">Set to an error message in case of error.</param>
+		/// <returns>Boxed value of the literal, null if total failure (result 
+		/// is not null in case of overflow), or <see cref="CodeSymbols.Sub"/> (-)
+		/// if isNegative is true but the type suffix is unsigned or the number 
+		/// is larger than long.MaxValue.</returns>
+		protected static object ParseNumberCore(UString source, bool isNegative, int numberBase, bool isFloat, Symbol typeSuffix, out string error)
+		{
+			error = null;
+			if (!isFloat)
+			{
+				return ParseIntegerValue(source, isNegative, numberBase, typeSuffix, ref error);
+			}
+			else
+			{
+				if (numberBase == 10)
+					return ParseNormalFloat(source, isNegative, typeSuffix, ref error);
+				else
+					return ParseSpecialFloatValue(source, isNegative, numberBase, typeSuffix, ref error);
+			}
+		}
+
+		static object ParseBigIntegerValue(UString source, bool isNegative, int numberBase, ref string error)
+		{
+			BigInteger bigIntResult;
+			bool overflow = !ParseHelpers.TryParseUInt(ref source, out bigIntResult, numberBase, ParseNumberFlag.SkipUnderscores);
+			if (!source.IsEmpty)
+			{
+				// I'm not sure if this can ever happen
+				error = Localize.Localized("Syntax error in integer literal");
+			}
+
+			// Overflow means that an out-of-memory exception has occurred.
+			// This should be a rare sight indeed, though it's not impossible.
+			if (overflow)
+				error = Localize.Localized("Overflow in big integer literal (could not parse beyond {0}).", bigIntResult);
+
+			// Optionally negate the result.
+			if (isNegative)
+				bigIntResult = -bigIntResult;
+
+			return bigIntResult;
+		}
+
+		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol typeSuffix, ref string error)
+		{
+			if (source.IsEmpty)
+			{
+				error = Localize.Localized("Syntax error in integer literal");
+				return CG.Cache(0);
+			}
+
+			bool overflow;
+			if (typeSuffix == _Z)
+			{
+				// Fast path for BigInteger values.
+				return ParseBigIntegerValue(source, isNegative, numberBase, ref error);
+			}
+
+			// Create a copy of the input, in case we need to re-parse it as
+			// a BigInteger.
+			var srcCopy = source;
+
+			// Parse the integer
+			ulong unsigned;
+			overflow = !ParseHelpers.TryParseUInt(ref source, out unsigned, numberBase, ParseNumberFlag.SkipUnderscores);
+			if (!source.IsEmpty)
+			{
+				// I'm not sure if this can ever happen
+				error = Localize.Localized("Syntax error in integer literal");
+			}
+
+			// If no suffix, automatically choose int, uint, long, ulong or BigInteger.
+			if (typeSuffix == null)
+			{
+				if (overflow)
+				{
+					// If we tried to parse a plain integer literal (no suffix)
+					// as a ulong, but failed due to overflow, then we'll parse
+					// it as a BigInteger instead.
+					return ParseBigIntegerValue(srcCopy, isNegative, numberBase, ref error);
+				}
+				else if (isNegative && -(long)unsigned > 0)
+				{
+					// We parsed a literal whose absolute value fits in a ulong,
+					// but which cannot be represented as a long. Return a
+					// BigInteger literal instead.
+					return -new BigInteger(unsigned);
+				}
+				else if (unsigned > long.MaxValue)
+					typeSuffix = _UL;
+				else if (unsigned > uint.MaxValue)
+					typeSuffix = _L;
+				else if (unsigned > int.MaxValue)
+					typeSuffix = isNegative ? _L : _U;
+			}
+
+			if (isNegative && (typeSuffix == _U || typeSuffix == _UL))
+			{
+				// Oops, an unsigned number can't be negative, so treat 
+				// '-' as a separate token and let the number be reparsed.
+				return CodeSymbols.Sub;
+			}
+
+			// Create boxed integer of the appropriate type 
+			object value;
+			if (typeSuffix == _UL)
+			{
+				value = unsigned;
+				typeSuffix = null;
+			}
+			else if (typeSuffix == _U)
+			{
+				overflow = overflow || (uint)unsigned != unsigned;
+				value = (uint)unsigned;
+				typeSuffix = null;
+			}
+			else if (typeSuffix == _L)
+			{
+				if (isNegative)
+				{
+					overflow = overflow || -(long)unsigned > 0;
+					value = -(long)unsigned;
+				}
+				else
+				{
+					overflow = overflow || (long)unsigned < 0;
+					value = (long)unsigned;
+				}
+				typeSuffix = null;
+			}
+			else
+			{
+				value = isNegative ? -(int)unsigned : (int)unsigned;
+			}
+
+			if (overflow)
+				error = Localize.Localized("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
+			if (typeSuffix == null)
+				return value;
+			else
+				return new CustomLiteral(value, typeSuffix);
+		}
+
+		static object ParseNormalFloat(UString source, bool isNegative, Symbol typeSuffix, ref string error)
+		{
+			string token = (string)source;
+			token = token.Replace("_", "");
+			if (typeSuffix == _F)
+			{
+				float f;
+				if (float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f))
+					return isNegative ? -f : f;
+			}
+			else if (typeSuffix == _M)
+			{
+				decimal m;
+				if (decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m))
+					return isNegative ? -m : m;
+			}
+			else
+			{
+				double d;
+				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
+				{
+					if (isNegative)
+						d = -d;
+					if (typeSuffix == null || typeSuffix == _D)
+						return d;
+					else
+						return new CustomLiteral(d, typeSuffix);
+				}
+			}
+			error = Localize.Localized("Syntax error in float literal");
+			return null;
+		}
+
+		private static object ParseSpecialFloatValue(UString source, bool isNegative, int radix, Symbol typeSuffix, ref string error)
+		{
+			if (typeSuffix == _F)
+			{
+				float result = ParseHelpers.TryParseFloat(ref source, radix, ParseNumberFlag.SkipUnderscores);
+				if (float.IsNaN(result))
+					error = Localize.Localized("Syntax error in '{0}' literal", "float");
+				else if (float.IsInfinity(result))
+					error = Localize.Localized("Overflow in '{0}' literal", "float");
+				if (isNegative)
+					result = -result;
+				return result;
+			}
+			else
+			{
+				string type = "double";
+				if (typeSuffix == _M)
+				{
+					error = "Support for hex and binary literals of type decimal is not implemented. Converting from double instead.";
+					type = "decimal";
+				}
+
+				double result = ParseHelpers.TryParseDouble(ref source, radix, ParseNumberFlag.SkipUnderscores);
+				if (double.IsNaN(result))
+					error = Localize.Localized("Syntax error in '{0}' literal", type);
+				else if (double.IsInfinity(result))
+					error = Localize.Localized("Overflow in '{0}' literal", type);
+				if (isNegative)
+					result = -result;
+				if (typeSuffix == _M)
+					return (decimal)result;
+				if (typeSuffix == null || typeSuffix == _D)
+					return result;
+				else
+					return new CustomLiteral(result, typeSuffix);
+			}
 		}
 
 		#endregion

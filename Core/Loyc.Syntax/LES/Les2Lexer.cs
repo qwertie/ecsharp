@@ -28,16 +28,18 @@ namespace Loyc.Syntax.Les
 		}
 
 		public bool AllowNestedComments = true;
+		
 		/// <summary>Used for syntax highlighting, which doesn't care about token values.
 		/// This option causes the Token.Value to be set to a default, like '\0' for 
 		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
 		public bool SkipValueParsing = false;
-		protected bool _isFloat, _parseNeeded, _isNegative;
+
+		protected bool _isFloat, _hasEscapes, _isNegative;
 		protected NodeStyle _style;
 		protected int _numberBase;
-		protected Symbol _typeSuffix;
 		protected TokenType _type; // predicted type of the current token
 		protected object _value;
+		protected UString _textValue;
 		protected int _startPosition;
 
 		//now we use LexerSourceFile instead
@@ -51,7 +53,7 @@ namespace Loyc.Syntax.Les
 
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
-			_parseNeeded = true; // don't use the "fast" code path
+			_hasEscapes = true; // don't use the "fast" code path
 			base.Error(lookaheadIndex, message, args);
 		}
 
@@ -65,7 +67,7 @@ namespace Loyc.Syntax.Les
 		{
 			base.AfterNewline();
 		}
-		protected override bool SupportDotIndents() { return true; }
+		protected override bool SupportDotIndents() => true;
 		
 		public Les2Lexer Clone()
 		{
@@ -78,27 +80,22 @@ namespace Loyc.Syntax.Les
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
 
-		#region String parsing (including public UnescapeQuotedString())
+		#region String unescaping (including public UnescapeQuotedString())
 
-		static readonly object BoxedZeroChar = '\0';
-
-		protected object ParseSQStringValue()
+		protected void UnescapeSQStringValue()
 		{
-			if (SkipValueParsing)
-				return null;
-			else {
-				var text = Text();
-				if (!_parseNeeded && text.Length == 3)
-					return _value = text[1];
-				else
-					return _value = ParseSQStringValue(text, Error);
-			}
+			_value = _c;
+			var text = Text();
+			if (!_hasEscapes)
+				_textValue = text.Slice(1, text.Length - 2);
+			else
+				_textValue = Les3Lexer.UnescapeQuotedString(ref text, Error);
 		}
 
 		protected internal static object ParseSQStringValue(UString text, Action<int, string> Error)
 		{
 			var sb = TempSB();
-			UnescapeQuotedString(ref text, Error, sb, "\t");
+			Les3Lexer.UnescapeQuotedString(ref text, Error, sb, "\t");
 			Debug.Assert(text.IsEmpty);
 			if (sb.Length == 1)
 				return CG.Cache(sb[0]);
@@ -114,33 +111,27 @@ namespace Loyc.Syntax.Les
 
 		protected Symbol ParseBQStringValue()
 		{
-			UString s = ParseStringCore(false);
+			UString s = UnescapeString(false);
+			_textValue = default; // UnescapeString thinks it's a literal, so it sets _textValue, but it's not.
 			return IdToSymbol(s);
 		}
 
-		protected object ParseStringValue(bool isTripleQuoted, bool les3TQIndents = false)
-		{
-			var s = ParseStringCore(isTripleQuoted, les3TQIndents);
-			return _value = s.Length < 16 ? CG.Cache(s) : s;
-		}
-
-		protected string ParseStringCore(bool isTripleQuoted, bool les3TQindents = false)
+		protected UString UnescapeString(bool isTripleQuoted, bool les3TQindents = false)
 		{
 			if (SkipValueParsing)
 				return "";
-			string value;
-			if (_parseNeeded) {
+			if (_hasEscapes) {
 				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
-				value = UnescapeQuotedString(ref original, Error, IndentString, les3TQindents);
+				_textValue = Les3Lexer.UnescapeQuotedString(ref original, Error, IndentString, les3TQindents);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
 				if (isTripleQuoted)
-					value = CharSource.Slice(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
+					_textValue = CharSource.Slice(_startPosition + 3, InputPosition - _startPosition - 6).ToString();
 				else
-					value = CharSource.Slice(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
+					_textValue = CharSource.Slice(_startPosition + 1, InputPosition - _startPosition - 2).ToString();
 			}
-			return value;
+			return _textValue;
 		}
 
 		/// <summary>Parses a normal or triple-quoted string that still includes 
@@ -169,29 +160,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
+		[Obsolete("Please call the same method in Les3Lexer instead")]
 		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool les3TQIndents = false)
-		{
-			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation, les3TQIndents);
-			return sb.ToString();
-		}
-		
+			=> Les3Lexer.UnescapeQuotedString(ref sourceText, onError, indentation, les3TQIndents);
+
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
+		[Obsolete("Please call the same method in Les3Lexer instead")]
 		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
-		{
-			bool isTripleQuoted = false, fail;
-			char quoteType = (char)sourceText.PopFirst(out fail);
-			if (sourceText[0, '\0'] == quoteType &&
-				sourceText[1, '\0'] == quoteType) {
-				sourceText = sourceText.Substring(2);
-				isTripleQuoted = true;
-			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents))
-				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
-		}
-		
+			=> Les3Lexer.UnescapeQuotedString(ref sourceText, onError, sb, indentation, les3TQIndents);
+
 		/// <summary>Parses a normal or triple-quoted string whose starting quotes 
 		/// have been stripped out. If triple-quote parsing was requested, stops 
 		/// parsing at three quote marks; otherwise, stops parsing at a single 
@@ -200,163 +179,9 @@ namespace Loyc.Syntax.Les
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
-		{
-			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
-			bool fail;
-			for (;;) {
-				if (sourceText.IsEmpty)
-					return false;
-				int i0 = sourceText.InternalStart;
-				if (!isTripleQuoted) {
-					EscapeC category = 0;
-					int c = ParseHelpers.UnescapeChar(ref sourceText, ref category);
-					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1) {
-						return c == quoteType; // end of string
-					}
-					if ((category & EscapeC.Unrecognized) != 0) {
-						// This backslash was ignored by UnescapeChar
-						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(PrintHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
-					} else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
-						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
-					sb.AppendCodePoint(c);
-					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
-						DetectUtf8(sb);
-					else if (c.IsInRange(0xDC00, 0xDFFF))
-						RecodeSurrogate(sb);
-				} else {
-					// Inside triple-quoted string
-					int c;
-					if (sourceText[2, '\0'] == '/') {
-						// Detect escape sequence
-						c = ParseHelpers.UnescapeChar(ref sourceText);
-						if (sourceText.InternalStart > i0 + 1)
-							G.Verify(sourceText.PopFirst(out fail) == '/');
-					} else {
-						c = sourceText.PopFirst(out fail);
-						if (fail)
-							return false;
-						if (c == quoteType) {
-							if (sourceText[0, '\0'] == quoteType &&
-								sourceText[1, '\0'] == quoteType) {
-								sourceText = sourceText.Substring(2);
-								// end of string
-								return true;
-							}
-						}
-						if (c == '\r' || c == '\n') {
-							// To ensure platform independency of source code, CR and 
-							// CR-LF become LF.
-							if (c == '\r') {
-								c = '\n';
-								var copy = sourceText.Clone();
-								if (sourceText.PopFirst(out fail) != '\n')
-									sourceText = copy;
-							}
-							// Inside a triple-quoted string, the indentation following a newline 
-							// is ignored, as long as it matches the indentation of the first line.
-							UString src = sourceText, ind = indentation;
-							int sp;
-							while ((sp = src.PopFirst(out fail)) == ind.PopFirst(out fail) && !fail)
-								sourceText = src;
-							if (les3TQIndents && fail) {
-								// Allow an additional one tab or three spaces when initial indent matches
-								if (sp == '\t')
-									sourceText = src;
-								else if (sp == ' ') { 
-									sourceText = src;
-									if (src.PopFirst(out fail) == ' ')
-										sourceText = src;
-									if (src.PopFirst(out fail) == ' ')
-										sourceText = src;
-								}
-							}
-						}
-					}
-					
-					sb.AppendCodePoint(c);
-				}
-			}
-		}
-
-		// This function is called after every "\xNN" escape where 0xNN > 0x80.
-		// Now, in LESv3, the input must be valid UTF-8, but strings can contain
-		// raw bytes as \x escape sequences. We must evaluate sequences of such
-		// characters as UTF-8 and figure out if they're valid or invalid.
-		// They can write "\xE2\x82\xAC" = "\u20AC" = "€", and also invalid 
-		// bytes or byte sequences. An invalid byte like "\xFF" is recoded as an
-		// invalid single surrogate like 0xDCFF. 
-		//   This function is in charge of performing that translation. See also:
-		// https://github.com/sunfishcode/design/pull/3#issuecomment-236777361
-		// Note: this function is shared by LESv2 too, because, who cares, why not.
-		static void DetectUtf8(StringBuilder sb)
-		{
-			int minus1 = sb[sb.Length - 1];
-			Debug.Assert(minus1.IsInRange((char)128, (char)255));
-			minus1 = sb[sb.Length - 1] = (char)(minus1 | 0xDC00);
-			if (sb.Length > 1 && minus1.IsInRange(0xDC80, 0xDCBF)) {
-				int minus2 = sb[sb.Length - 2];
-				if (minus2.IsInRange(0xDCC0, 0xDCDF)) {
-					// 2-byte UTF8 character detected; decode into UTF16
-					int c = ((minus2 & 0x1F) << 6) | (minus1 & 0x3F);
-					if (c > 0x7F) { // ignore overlong characters
-						sb.Remove(sb.Length - 1, 1);
-						sb[sb.Length - 1] = (char)c;
-					}
-				}
-				else if (sb.Length > 2 && minus2.IsInRange(0xDC80, 0xDCBF)) {
-					int minus3 = sb[sb.Length - 3];
-					if (minus3.IsInRange(0xDCE0, 0xDCEF)) {
-						// 3-byte UTF8 character detected; decode into UTF16 unless
-						// the character is in the low surrogate range 0xDC00..0xDFFF.
-						// This avoids collisions with the 0xDCxx space reserved for 
-						// encodings of arbitrary bytes, and and also avoids 
-						// translating UTF-8 encodings of UTF-16 surrogate pairs, 
-						// which wouldn't round trip, e.g. \xED\xA0\xBD\xED\xB2\xA9
-						// !=> \uD83D\uDCA9 (UTF16) => \u1F4A9 => \xF0\x9F\x92\xA9 (UTF8).
-						int c = ((minus3 & 0xF) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
-						if (c > 0x7FF && !c.IsInRange(0xDC00, 0xDFFF)) { // ignore overlong characters
-							sb.Remove(sb.Length - 2, 2);
-							sb[sb.Length - 1] = (char)c;
-						}
-					}
-					else if (sb.Length > 3 && minus3.IsInRange(0xDC80, 0xDCBF)) {
-						int minus4 = sb[sb.Length - 4];
-						if (minus4.IsInRange(0xDCF0, 0xDCF7)) {
-							// 4-byte UTF8 character detected; decode into UTF16 surrogate pair
-							int c = ((minus4 & 0x7) << 18) | ((minus3 & 0x3F) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
-							if (c > 0xFFFF) { // ignore overlong characters
-								sb.Remove(sb.Length - 4, 4);
-								sb.AppendCodePoint(c);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// To prevent collisions between the single invalid UTF-8 byte 0xFF,
-		// which is coded as 0xDCFF and the three-byte sequence represented
-		// by \uDCFF, and also to allow round-tripping of UTF8 encodings of 
-		// UTF16 surrogates, this function's job is to treat "low" surrogates 
-		// in range 0xDC00 to 0xDFFF as if they were three UTF-8 bytes 
-		// recoded individually:
-		//     \uDCFF => 0xED 0xB3 0xBF => 0xDCED 0xDCB3 0xDCBF
-		// by avoiding collisions, the UTF-16 output from this lexer can be 
-		// used to reconstruct the byte stream it represents in all cases.
-		// If the final LESv3 spec disallows individual surrogate characters
-		// then we can just print an error instead of doing this trick.
-		static void RecodeSurrogate(StringBuilder sb)
-		{
-			int c = sb[sb.Length - 1];
-			Debug.Assert(c.IsInRange(0xDC00, 0xDFFF));
-			int b1 = 0xE0 | (c >> 12);
-			int b2 = 0x80 | ((c >> 6) & 0x3F);
-			int b3 = 0x80 | (c & 0x3F);
-			sb[sb.Length - 1] = (char)(b1 | 0xDC00);
-			sb.Append((char)(b2 | 0xDC00));
-			sb.Append((char)(b3 | 0xDC00));
-		}
+		[Obsolete("Please call the same method in Les3Lexer instead")]
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false) =>
+			Les3Lexer.UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents);
 
 		#endregion
 
@@ -368,14 +193,14 @@ namespace Loyc.Syntax.Les
 			{ "false", false },
 			{ "null", null },
 			{ "void", new @void() },
-			// LESv2 names
+			// Old names
 			{ "nan_f", float.NaN },
 			{ "nan_d", double.NaN },
 			{ "inf_f", float.PositiveInfinity },
 			{ "inf_d", double.PositiveInfinity },
 			{ "-inf_f", float.NegativeInfinity },
 			{ "-inf_d", double.NegativeInfinity },
-			// New names in LESv3 
+			// New names
 			{ "nan.f", float.NaN },
 			{ "nan.d", double.NaN },
 			{ "inf.f", float.PositiveInfinity },
@@ -408,25 +233,24 @@ namespace Loyc.Syntax.Les
 			return _value = IdToSymbol(id);
 		}
 
-		protected object ParseSymbolValue(bool lesv3 = false)
+		static readonly Symbol _s = (Symbol)"s";
+		static readonly Symbol _c = (Symbol)"c";
+
+		protected void UnescapeSymbolValue()
 		{
-			if (SkipValueParsing)
-			{
-				return _value = GSymbol.Empty;
-			}
 			Debug.Assert(CharSource[_startPosition] == '@' && CharSource[_startPosition + 1] == '@');
+			if (SkipValueParsing)
+				return;
+
+			_value = _s;
 			UString original = CharSource.Slice(_startPosition + 2, InputPosition - _startPosition - 2);
-			if (_parseNeeded) {
-				string text = UnescapeQuotedString(ref original, Error);
+			if (_hasEscapes) {
+				_textValue = Les3Lexer.UnescapeQuotedString(ref original, Error);
 				Debug.Assert(original.IsEmpty);
-				return _value = IdToSymbol(text);
 			} else if (original[0, '\0'] == '`')
-				return _value = IdToSymbol(original.Substring(1, original.Length - 2));
-			else {
-				if (lesv3 && NamedLiterals.TryGetValue(original, out _value))
-					return _value;
-				return _value = IdToSymbol(original);
-			}
+				_textValue = original.Substring(1, original.Length - 2);
+			else
+				_textValue = original;
 		}
 
 		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
@@ -440,7 +264,7 @@ namespace Loyc.Syntax.Les
 			return sym;
 		}
 
-		/// <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
+		/// <summary>Parses an LES2-style identifier such as <c>foo</c>, <c>@foo</c>, 
 		/// <c>@`foo`</c> or <c>@--punctuation--</c>.
 		/// </summary>
 		/// <param name="source">Text to parse. On return, the range has been 
@@ -463,7 +287,7 @@ namespace Loyc.Syntax.Les
 				// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
 				c = source.PopFirst(out fail);
 				if (c == '`') {
-					UnescapeString(ref source, (char)c, false, onError, parsed);
+					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed);
 				} else {
 					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
 						parsed.Append((char)c);
@@ -485,247 +309,11 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Number parsing
-
-		protected static Symbol _sub = GSymbol.Get("-");
-		protected static Symbol _U = GSymbol.Get("U");
-		protected static Symbol _L = GSymbol.Get("L");
-		protected static Symbol _UL = GSymbol.Get("UL");
-		protected static Symbol _Z = GSymbol.Get("Z");
-		protected static Symbol _F = GSymbol.Get("F");
-		protected static Symbol _D = GSymbol.Get("D");
-		protected static Symbol _M = GSymbol.Get("M");
-
-		protected object ParseNumberValue(int numberEndPosition)
-		{
-			if (SkipValueParsing)
-			{
-				return _value = CG.Cache(0);
-			}
-			// Optimize the most common case: a one-digit integer
-			if (InputPosition == _startPosition + 1) {
-				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				return _value = CG.Cache((int)(CharSource[_startPosition] - '0'));
-			}
-
-			int start = _startPosition;
-			if (_isNegative)
-				start++;
-			if (_numberBase != 10)
-				start += 2;
-
-			UString digits = CharSource.Slice(start, numberEndPosition - start);
-			string error;
-			if ((_value = ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
-				_value = 0;
-			else if (_value == CodeSymbols.Sub) {
-				InputPosition = _startPosition + 1;
-				_type = TT.NormalOp;
-			}
-			if (error != null)
-				Error(_startPosition, error);
-			return _value;
-		}
-
-		/// <summary>Parses the digits of a literal (integer or floating-point),
-		/// not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
-		/// <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
-		/// <param name="isFloat">Whether the number is floating-point</param>
-		/// <param name="numberBase">Radix. Must be 2 (binary), 10 (decimal) or 16 (hexadecimal).</param>
-		/// <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
-		/// <param name="error">Set to an error message in case of error.</param>
-		/// <returns>Boxed value of the literal, null if total failure (result 
-		/// is not null in case of overflow), or <see cref="CodeSymbols.Sub"/> (-)
-		/// if isNegative is true but the type suffix is unsigned or the number 
-		/// is larger than long.MaxValue.</returns>
-		public static object ParseNumberCore(UString source, bool isNegative, int numberBase, bool isFloat, Symbol typeSuffix, out string error)
-		{
-			error = null;
-			if (!isFloat) {
-				return ParseIntegerValue(source, isNegative, numberBase, typeSuffix, ref error);
-			} else {
-				if (numberBase == 10)
-					return ParseNormalFloat(source, isNegative, typeSuffix, ref error);
-				else
-					return ParseSpecialFloatValue(source, isNegative, numberBase, typeSuffix, ref error);
-			}
-		}
-
-		static object ParseBigIntegerValue(UString source, bool isNegative, int numberBase, ref string error)
-		{
-			BigInteger bigIntResult;
-			bool overflow = !ParseHelpers.TryParseUInt(ref source, out bigIntResult, numberBase, ParseNumberFlag.SkipUnderscores);
-			if (!source.IsEmpty) {
-				// I'm not sure if this can ever happen
-				error = Localize.Localized("Syntax error in integer literal");
-			}
-
-			// Overflow means that an out-of-memory exception has occurred.
-			// This should be a rare sight indeed, though it's not impossible.
-			if (overflow)
-				error = Localize.Localized("Overflow in big integer literal (could not parse beyond {0}).", bigIntResult);
-
-			// Optionally negate the result.
-			if (isNegative)
-				bigIntResult = -bigIntResult;
-
-			return bigIntResult;
-		}
-
-		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol typeSuffix, ref string error)
-		{
-			if (source.IsEmpty) {
-				error = Localize.Localized("Syntax error in integer literal");
-				return CG.Cache(0);
-			}
-
-			bool overflow;
-			if (typeSuffix == _Z) {
-				// Fast path for BigInteger values.
-				return ParseBigIntegerValue(source, isNegative, numberBase, ref error);
-			}
-
-			// Create a copy of the input, in case we need to re-parse it as
-			// a BigInteger.
-			var srcCopy = source;
-
-			// Parse the integer
-			ulong unsigned;
-			overflow = !ParseHelpers.TryParseUInt(ref source, out unsigned, numberBase, ParseNumberFlag.SkipUnderscores);
-			if (!source.IsEmpty) {
-				// I'm not sure if this can ever happen
-				error = Localize.Localized("Syntax error in integer literal");
-			}
-
-			// If no suffix, automatically choose int, uint, long, ulong or BigInteger.
-			if (typeSuffix == null) {
-				if (overflow) {
-					// If we tried to parse a plain integer literal (no suffix)
-					// as a ulong, but failed due to overflow, then we'll parse
-					// it as a BigInteger instead.
-					return ParseBigIntegerValue(srcCopy, isNegative, numberBase, ref error);
-				}
-				else if (isNegative && -(long)unsigned > 0) {
-					// We parsed a literal whose absolute value fits in a ulong,
-					// but which cannot be represented as a long. Return a
-					// BigInteger literal instead.
-					return -new BigInteger(unsigned);
-				}
-				else if (unsigned > long.MaxValue)
-					typeSuffix = _UL;
-				else if (unsigned > uint.MaxValue)
-					typeSuffix = _L;
-				else if (unsigned > int.MaxValue)
-	 				typeSuffix = isNegative ? _L : _U;
-			}
-
-			if (isNegative && (typeSuffix == _U || typeSuffix == _UL)) {
-				// Oops, an unsigned number can't be negative, so treat 
-				// '-' as a separate token and let the number be reparsed.
-				return CodeSymbols.Sub;
-			}
-
-			// Create boxed integer of the appropriate type 
-			object value;
-			if (typeSuffix == _UL) {
-				value = unsigned;
-				typeSuffix = null;
-			} else if (typeSuffix == _U) {
-				overflow = overflow || (uint)unsigned != unsigned;
-				value = (uint)unsigned;
-				typeSuffix = null;
-			} else if (typeSuffix == _L) {
-				if (isNegative) {
-					overflow = overflow || -(long)unsigned > 0;
-					value = -(long)unsigned;
-				} else {
-					overflow = overflow || (long)unsigned < 0;
-					value = (long)unsigned;
-				}
-				typeSuffix = null;
-			} else {
-				value = isNegative ? -(int)unsigned : (int)unsigned;
-			}
-
-			if (overflow)
-				error = Localize.Localized("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
-			if (typeSuffix == null)
-				return value;
-			else
-				return new CustomLiteral(value, typeSuffix);
-		}
-
-		static object ParseNormalFloat(UString source, bool isNegative, Symbol typeSuffix, ref string error)
-		{
-			string token = (string)source;
-			token = token.Replace("_", "");
-			if (typeSuffix == _F) {
-				float f;
-				if (float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out f))
-					return isNegative ? -f : f;
-			} else if (typeSuffix == _M) {
-				decimal m;
-				if (decimal.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out m))
-					return isNegative ? -m : m;
-			} else {
-				double d;
-				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d)) {
-					if (isNegative)
-						d = -d;
-					if (typeSuffix == null || typeSuffix == _D)
-						return d;
-					else
-						return new CustomLiteral(d, typeSuffix);
-				}
-			}
-			error = Localize.Localized("Syntax error in float literal");
-			return null;
-		}
-
-		private static object ParseSpecialFloatValue(UString source, bool isNegative, int radix, Symbol typeSuffix, ref string error)
-		{
-			if (typeSuffix == _F)
-			{
-				float result = ParseHelpers.TryParseFloat(ref source, radix, ParseNumberFlag.SkipUnderscores);
-				if (float.IsNaN(result))
-					error = Localize.Localized("Syntax error in '{0}' literal", "float");
-				else if (float.IsInfinity(result))
-					error = Localize.Localized("Overflow in '{0}' literal", "float");
-				if (isNegative)
-					result = -result;
-				return result;
-			}
-			else
-			{
-				string type = "double";
-				if (typeSuffix == _M) {
-					error = "Support for hex and binary literals of type decimal is not implemented. Converting from double instead.";
-					type = "decimal";
-				}
-
-				double result = ParseHelpers.TryParseDouble(ref source, radix, ParseNumberFlag.SkipUnderscores);
-				if (double.IsNaN(result))
-					error = Localize.Localized("Syntax error in '{0}' literal", type);
-				else if (double.IsInfinity(result))
-					error = Localize.Localized("Overflow in '{0}' literal", type);
-				if (isNegative)
-					result = -result;
-				if (typeSuffix == _M)
-					return (decimal)result;
-				if (typeSuffix == null || typeSuffix == _D)
-					return result;
-				else
-					return new CustomLiteral(result, typeSuffix);
-			}
-		}
-
-		#endregion
-
 		#region Operator parsing
 
 		protected object ParseNormalOp()
 		{
-			_parseNeeded = false;
+			_hasEscapes = false;
 			return ParseOp();
 		}
 

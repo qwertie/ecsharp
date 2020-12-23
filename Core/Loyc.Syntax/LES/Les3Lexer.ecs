@@ -103,15 +103,14 @@ public partial class Les3Lexer
 		{bool parseNeeded = false;}
 		(	'"' [ '\\' ~('\r'|'\n') {parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
 			('"' / {parseNeeded = true;}) )
-		{ _textValue = ParseStringValue(parseNeeded, isTripleQuoted: false); };
+		{ _textValue = GetUnescapedString(parseNeeded, isTripleQuoted: false); };
 	
 	[LL(4)] token TQString :
-		{bool parseNeeded = true;}
-		{_style = NodeStyle.TDQStringLiteral;}
-		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
-		| {_style = NodeStyle.TQStringLiteral;}
+		(	{ _style = NodeStyle.TDQStringLiteral; }
+			'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
+		|	{ _style = NodeStyle.TQStringLiteral; }
 			"'''"       nongreedy(Newline(true) / _)* "'''" )
-		{ _textValue = ParseStringValue(parseNeeded, isTripleQuoted: true); };
+		{ _textValue = GetUnescapedString(true, isTripleQuoted: true); };
 
 	BQString [out bool parseNeeded] :
 		{parseNeeded = false;}
@@ -148,7 +147,7 @@ public partial class Les3Lexer
 	[LL(3)]
 	token Id returns [object result] :
 		{ UString idText; }
-		(	BQString[out bool parseNeeded] { idText = ParseStringValue(parseNeeded, false); }
+		(	BQString[out bool parseNeeded] { idText = GetUnescapedString(parseNeeded, false); }
 		|	NormalId                       { idText = Text(); }
 		)
 		(

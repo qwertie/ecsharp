@@ -31,10 +31,10 @@ namespace Loyc.Syntax.Les
 			// Invalid call
 			msgs = Test(Mode.Stmt, 1, "x = Foo ();", F.Call(S.Assign, x, Foo));
 			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
-			msgs = Test(Mode.Stmt, 1, "5 (x);", F.Literal(5));
+			msgs = Test(Mode.Stmt, 1, "5 (x);", Number(5));
 			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
 			// Invalid superexpressions
-			msgs = Test(Mode.Stmt, 1, "a;\n 5 c b; x();", a, F.Literal(5));
+			msgs = Test(Mode.Stmt, 1, "a;\n 5 c b; x();", a, Number(5));
 			ExpectMessageContains(msgs, "';'");
 			msgs = Test(Mode.Stmt, 1, "get Foo {\n  x\n} = 0;", F.Call(S.get, Foo, F.Braces(x)));
 			ExpectMessageContains(msgs, "Assignment", "';'");
