@@ -1,21 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Loyc.Collections
 {
+	/// <summary>Combines <see cref="IReadOnlyCollection{T}"/> with related interfaces
+	/// <see cref="ICount"/> and <see cref="IIsEmpty"/>.</summary>
+	public interface ISource<out T> : IReadOnlyCollection<T>, ICount, IIsEmpty
+	{
+		/// <summary>Gets the number of items in the collection.</summary>
+		/// <remarks>This property exists only to resolve the supposed "ambiguity" between 
+		/// <see cref="IReadOnlyCollection{T}.Count"/> and <see cref="ICount.Count"/>.
+		new int Count { get; }
+	}
+
 	/// <summary>Holds the Count property found in nearly all collection interfaces.</summary>
-	/// <remarks>
-	/// Microsoft has made this interface unusable by not defining it themselves in 
-	/// .NET 4.5. Now that I've replaced my original interface 
-	/// <code>
-	///     interface ISource&lt;out T> : IEnumerable&lt;T>, ICount {}
-	/// </code>
-	/// with Microsoft's IReadOnlyCollection(T), the compiler complains constantly about 
-	/// "Ambiguity between IReadOnlyCollection(T).Count and ICount.Count". Eliminating
-	/// ICount from most places seems to be the only solution.
-	/// </remarks>
-	public interface ICount : IIsEmpty
+	public interface ICount
 	{
 		/// <summary>Gets the number of items in the collection.</summary>
 		int Count { get; }

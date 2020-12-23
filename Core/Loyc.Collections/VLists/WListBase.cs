@@ -370,6 +370,7 @@ namespace Loyc.Collections
 		public new int IndexOf(T item) { return base.IndexOf(item); }
 		public new bool Contains(T item) { return base.Contains(item); }
 		public new void CopyTo(T[] array, int arrayIndex) { base.CopyTo(array, arrayIndex); }
+		public bool IsEmpty => base.Count == 0;
 		public new int Count { get { return base.Count; } }
 		public bool IsReadOnly { get { return false; } }
 		public new bool Remove(T item) { return base.Remove(item); }

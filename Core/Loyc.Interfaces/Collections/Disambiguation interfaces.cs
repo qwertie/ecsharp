@@ -99,18 +99,19 @@ namespace Loyc.Collections
 	/// of <see cref="IListImpl{T}"/>.) Variables should not have this type (except in
 	/// disambiguation methods, which immediately cast the variable to another type).
 	/// </remarks>
-	public interface IDictionaryAndReadOnly<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V>, IIndexed<K, V> { }
+	public interface IDictionaryAndReadOnly<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V>, IIndexed<K, V>, ICollectionAndReadOnly<KeyValuePair<K, V>> { }
 
 	/// <summary>This interface is intended to be implemented by all Loyc collections 
 	/// that implement <see cref="IDictionary{K,V}"/>. It combines the original 
 	/// <see cref="IDictionary{K,V}"/> interface with its component interfaces 
-	/// <see cref="IReadOnlyDictionary{K,V}"/> and <see cref="IDictionarySink{K,V}"/>.</summary>
+	/// <see cref="IReadOnlyDictionary{K,V}"/> and <see cref="IDictionarySink{K,V}"/>,
+	/// as well as the trivial interface <see cref="IMIndexed{K,V}"/>.</summary>
 	/// <remarks>
 	/// This interface is used in C# for disambiguation (as explained in the description
 	/// of <see cref="IListImpl{T}"/>.) Variables should not have this type (except in
 	/// disambiguation methods, which immediately cast the variable to another type).
 	/// </remarks>
-	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V> { }
+	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, IDictionarySource<K, V>, IMIndexed<K, V> { }
 
 	#endregion
 }

@@ -495,6 +495,8 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { var c = Children; return c == null ? 0 : c.Count; }
 		}
+		public bool IsEmpty => Count == 0;
+
 		IRange<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<Token> Slice(int start, int count) { return new Slice_<Token>(this, start, count); }
 

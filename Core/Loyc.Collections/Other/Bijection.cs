@@ -144,6 +144,12 @@ namespace Loyc.Collections
 		{
 			return _map.TryGetValue(key, out value);
 		}
+		public K2 TryGet(K1 key, out bool fail)
+		{
+			K2 value = default;
+			fail = key == null || !TryGetValue(key, out value);
+			return value;
+		}
 
 		public K2 this[K1 key]
 		{
@@ -187,10 +193,8 @@ namespace Loyc.Collections
 			_map.CopyTo(array, arrayIndex);
 		}
 
-		public int Count
-		{
-			get { return _map.Count; }
-		}
+		public int Count => _map.Count;
+		public bool IsEmpty => _map.Count == 0;
 
 		public bool IsReadOnly
 		{

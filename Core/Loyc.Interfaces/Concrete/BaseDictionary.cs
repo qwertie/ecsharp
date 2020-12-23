@@ -28,9 +28,12 @@ namespace Loyc.Collections.Impl
         /// in C# so a separate method is required.</remarks>
         protected abstract void SetValue(TKey key, TValue value);
 
-        public bool IsReadOnly
+        public bool IsReadOnly => false;
+        public bool IsEmpty => Count != 0;
+        public TValue TryGet(TKey key, out bool fail)
         {
-            get { return false; }
+            fail = !TryGetValue(key, out TValue value);
+            return value;
         }
 
         public ICollection<TKey> Keys

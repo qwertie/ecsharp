@@ -44,10 +44,9 @@ namespace Loyc.Collections
 	{
 		public ListAsListSource(IList<T> obj) : base(obj) { }
 
-		public int Count
-		{
-			get { return _obj.Count; }
-		}
+		public bool IsEmpty => _obj.Count == 0;
+		public int Count => _obj.Count;
+
 		public bool Contains(T item)
 		{
 			return _obj.Contains(item);

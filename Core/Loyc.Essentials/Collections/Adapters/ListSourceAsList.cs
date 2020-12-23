@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/10/2011
@@ -64,10 +64,9 @@ namespace Loyc.Collections
 		{
 			throw new NotSupportedException("Collection is read-only.");
 		}
-		public int Count
-		{
-			get { return _obj.Count; }
-		}
+
+		public int Count => _obj.Count;
+		
 		public bool Contains(T item)
 		{
 			return _obj.Contains(item);
@@ -95,6 +94,7 @@ namespace Loyc.Collections
 
 		#endregion
 
+		public bool IsEmpty => _obj.Count == 0;
 		public T TryGet(int index, out bool fail)
 		{
 			return _obj.TryGet(index, out fail);

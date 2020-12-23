@@ -25,6 +25,7 @@ namespace Loyc.Collections.Impl
 		public virtual void Clear() => _obj.Clear();
 		public virtual bool Remove(T item) => _obj.Remove(item);
 
+		public bool IsEmpty => Count == 0;
 		public virtual int Count => _obj.Count;
 		public virtual bool IsReadOnly => _obj.IsReadOnly;
 		public virtual bool Contains(T item) => _obj.Contains(item);

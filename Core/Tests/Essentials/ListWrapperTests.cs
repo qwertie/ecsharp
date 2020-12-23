@@ -15,8 +15,6 @@ namespace Loyc.Essentials.Tests
 		public ListWrapperForTesting() : base(new List<T>()) { }
 		public ListWrapperForTesting(List<T> obj) : base(obj) { }
 
-		public bool IsEmpty => throw new NotImplementedException();
-
 		public void AddRange(IEnumerable<T> e) => ListExt.AddRange(_obj, e);
 
 		public void AddRange(IReadOnlyCollection<T> s) => ListExt.AddRange(_obj, s);

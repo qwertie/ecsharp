@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -463,6 +463,7 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return _ranges.Count; }
 		}
+		public bool IsEmpty => Count == 0;
 
 		public override bool Equals(object obj)
 		{

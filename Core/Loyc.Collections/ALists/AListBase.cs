@@ -1227,10 +1227,8 @@ namespace Loyc.Collections
 		}
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		public int Count
-		{
-			get { return _list.Count; }
-		}
+		public int Count => _list.Count;
+		public bool IsEmpty => _list.Count == 0;
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }

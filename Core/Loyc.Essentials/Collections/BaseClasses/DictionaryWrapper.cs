@@ -32,6 +32,16 @@ namespace Loyc.Collections.Impl
 
 		public virtual bool ContainsKey(K key) => _obj.ContainsKey(key);
 		public virtual bool TryGetValue(K key, out V value) => _obj.TryGetValue(key, out value);
+		public V TryGet(K key, out bool fail)
+		{
+			if (key != null) {
+				fail = !TryGetValue(key, out V value);
+				return value;
+			} else {
+				fail = true;
+				return default(V);
+			}
+		}
 
 		public virtual ICollection<K> Keys => _obj.Keys;
 		public virtual ICollection<V> Values => _obj.Values;

@@ -15,8 +15,6 @@ namespace Loyc.Essentials.Tests
 		public DictionaryWrapperForTesting() : base(new Dictionary<K, V>()) { }
 		public DictionaryWrapperForTesting(Dictionary<K, V> obj) : base(obj) { }
 
-		public bool IsEmpty => throw new NotImplementedException();
-
 		public void AddRange(IEnumerable<KeyValuePair<K, V>> e) => DictionaryExt.AddRange(_obj, e);
 
 		public void AddRange(IReadOnlyCollection<KeyValuePair<K, V>> s) => DictionaryExt.AddRange(_obj, s);

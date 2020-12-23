@@ -35,6 +35,7 @@ namespace Loyc.Collections
 		public ReadOnlyListAsListSource(IReadOnlyList<T> obj) : base(obj) { }
 
 		public int Count => _obj.Count;
+		public bool IsEmpty => Count == 0;
 		public bool Contains(T item) => _obj.Contains(item);
 
 		public T this[int index] => _obj[index];

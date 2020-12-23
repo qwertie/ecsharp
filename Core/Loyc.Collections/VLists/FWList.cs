@@ -229,12 +229,6 @@ namespace Loyc.Collections
 				return Block.Front(LocalCount);
 			}
 		}
-		public bool IsEmpty
-		{
-			get {
-				return Count == 0;
-			}
-		}
 		/// <summary>Removes the front item (at index 0) from the list and returns it.</summary>
 		public T Pop()
 		{

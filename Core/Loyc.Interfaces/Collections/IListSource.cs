@@ -42,7 +42,7 @@ namespace Loyc.Collections
 	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface more quickly.
 	/// </remarks>
-	public interface IListSource<out T> : IReadOnlyList<T>, ITryGet<int, T>, IIndexed<int, T>
+	public interface IListSource<out T> : IReadOnlyList<T>, ISource<T>, ITryGet<int, T>, IIndexed<int, T>
 	{
 		/// <summary>Returns a sub-range of this list.</summary>
 		/// <param name="start">The new range will start at this index in the current

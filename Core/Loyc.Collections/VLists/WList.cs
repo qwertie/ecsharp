@@ -231,12 +231,6 @@ namespace Loyc.Collections
 				SetAtDff(0, value);
 			}
 		}
-		public bool IsEmpty
-		{
-			get {
-				return Count == 0;
-			}
-		}
 		/// <summary>Removes the back item (at index Count-1) from the list and returns it.</summary>
 		public T Pop()
 		{
