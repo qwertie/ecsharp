@@ -119,7 +119,8 @@ namespace Loyc.Syntax
 		/// <inheritdoc cref="ILiteralParser.TryParse(UString, Symbol)"/>
 		public Either<object, ILogMessage> TryParse(UString textValue, Symbol typeMarker)
 		{
-			if (typeMarker != null && Parsers.TryGetValue(typeMarker, out var parser))
+			typeMarker = typeMarker ?? GSymbol.Empty;
+			if (Parsers.TryGetValue(typeMarker, out var parser))
 				try {
 					return parser(textValue, typeMarker).MapRight(m => (ILogMessage)m);
 				} catch (Exception e) {

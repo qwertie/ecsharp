@@ -1110,32 +1110,25 @@ namespace Loyc.Syntax.Les
 				F.Call(Foo, OnNewLine(one),
 					OnNewLine(OnNewLine(two)),
 					c.PlusAttrs(F.TriviaNewline, F.Trivia(S.TriviaSLComment, " see?"))));
-		}
-
-		[Test(Fails = "Hard to do this right in the printer")]
-		public void TriviaTest_NewlineAtTarget()
-		{
-			// TODO: this fails in printer because the newline after Foo cannot
-			// be printed before '(' and is suppressed. Solution will be to wait
-			// until after '(' before printing trivia attached to Foo, but this
-			// is not easy to accomplish.
-			Stmt("Foo(\n  \n  a, \n  \n  b, \n  \n  c)",
-				F.Call(NewlineAfter(Foo), NewlineAfter(OnNewLine(a)),
-					NewlineAfter(OnNewLine(b)),
-					OnNewLine(c)));
+			
+			Exact("Foo(\n  \n  a, \n  \n  b, \n  \n  c)",
+				F.Call(Foo, OnNewLine(OnNewLine(a)),
+					OnNewLine(OnNewLine(b)),
+					OnNewLine(OnNewLine(c))));
 		}
 
 		[Test(Fails = "Hard to do this right in the printer")]
 		public void StrategicallyPlacedNewlines()
 		{
-			Test(Mode.Stmt, 0, "{\n\nFoo(x, 1) +\n\na\n\n- b\n\n}", F.Call(NewlineAfter(_(S.Braces)),
-				NewlineAfter(F.Call(NewlineAfter(_(S.Add)), F.Call(Foo, x, one), OnNewLine(a))),
-				NewlineAfter(F.Call(S._Negate, b))));
+			Test(Mode.Stmt, 0, "{\n\n\nFoo(x, 1) +\n\na\n\n- b\n\n}",
+				F.Call(NewlineAfter(NewlineAfter(_(S.Braces))),
+					F.Call(S.Add, F.Call(Foo, x, one), OnNewLine(OnNewLine(a))),
+					NewlineAfter(OnNewLine(F.Call(S._Negate, b)))));
 			// 2020/04 Newline is not allowed before "," or ";" or ")" or "]"
 			Test(Mode.Stmt, 0, 
-				"{\nFoo(\n\nx,\n\n2) + a\n\n-\n\nb\n\n}", F.Braces(
-				NewlineAfter(F.Call(S.Add, F.Call(NewlineAfter(Foo), OnNewLine(NewlineAfter(x)), OnNewLine(two)), a)),
-				NewlineAfter(F.Call(NewlineAfter(_(S._Negate)), OnNewLine(b)))));
+				"{\nFoo(\n\n\nx,\n\n2) + a\n\n-\n\n\nb\n\n}", F.Braces(
+				F.Call(S.Add, F.Call(NewlineAfter(NewlineAfter(Foo)), OnNewLine(x), OnNewLine(OnNewLine(two))), a),
+				OnNewLine(NewlineAfter(F.Call(NewlineAfter(NewlineAfter(_(S._Negate))), OnNewLine(b))))));
 		}
 
 		#endregion

@@ -208,8 +208,9 @@ namespace Loyc.Syntax.Lexing
 			_value = new Tuple<Symbol, UString>(typeMarker, textValue);
 		}
 
-		/// <summary>Initializes a kind of token designed to store two parts of a 
-		/// literal (see the Remarks for details).</summary>
+		/// <summary>This is the most general Token constructor. Depending on its 
+		/// parameters, it will initialize either a simple token with a Value, or an 
+		/// "uninterpreted literal" that has a TypeMarker and a TextValue.</summary>
 		/// <param name="type">Value of <see cref="TypeInt"/></param>
 		/// <param name="startIndex">Value of <see cref="StartIndex"/></param>
 		/// <param name="sourceText">A substring of the token in the original source 
@@ -223,14 +224,14 @@ namespace Loyc.Syntax.Lexing
 		///   are not (according to the textValue parameter.)</param>
 		/// <param name="textValue">If this Token does NOT represent an 
 		///   uninterpreted literal, this parameter must be default(UString).
-		///   In any case, this parameter will become the value of 
+		///   If this value is non-default, this parameter will become the value of 
 		///   <see cref="TextValue(ICharSource)"/> if that method is correctly given 
 		///   the same <see cref="ICharSource"/> object from which <c>sourceText</c> 
 		///   was extracted.</param>
 		/// <remarks>
 		/// As explained in the documentation of the other constructor 
 		/// (<see cref="Token(int, int, UString, NodeStyle, Symbol, int, int)"/>,
-		/// some literals have two parts which we call the Value and the TextValue.
+		/// some literals have two parts which we call the TypeMarker and the TextValue.
 		/// This constructor is designed to be used when the TextValue is sometimes
 		/// a substring of the source code and sometimes merely derived from the 
 		/// source code. For example, given the literal "Hello", the correct 
@@ -241,10 +242,9 @@ namespace Loyc.Syntax.Lexing
 		/// characters of <c>Hi!\n</c> in the original source code.
 		/// <para/>
 		/// This constructor uses memory intelligently. If <c>textValue</c> is a 
-		/// substring of <c>sourceText</c>, or if <c>textValue.Length</c> is zero,
-		/// it will avoid allocating memory for a reference to <c>textValue</c> 
-		/// (the optimization is described in more detail in the other 
-		/// constructor's documentation.)
+		/// substring of <c>sourceText</c>, it will avoid allocating memory for a 
+		/// reference to <c>textValue</c> (the optimization is described in more 
+		/// detail in the other constructor's documentation.)
 		/// </remarks>
 		public Token(int type, int startIndex, UString sourceText, NodeStyle style, object valueOrTypeMarker, UString textValue)
 		{
@@ -252,7 +252,8 @@ namespace Loyc.Syntax.Lexing
 			_startIndex = startIndex;
 			_length = sourceText.Length;
 			_value = valueOrTypeMarker;
-			if (!textValue.IsNull && valueOrTypeMarker is Symbol)
+			Symbol typeMarker;
+			if (!textValue.IsNull && (typeMarker = valueOrTypeMarker as Symbol) == valueOrTypeMarker)
 			{
 				if (ReferenceEquals(sourceText.InternalString, textValue.InternalString))
 				{
@@ -265,7 +266,7 @@ namespace Loyc.Syntax.Lexing
 					}
 				}
 				_stuff = Stuff(style, 0xFF, 0xFF, true);
-				_value = new Tuple<Symbol, UString>((Symbol)valueOrTypeMarker, textValue);
+				_value = new Tuple<Symbol, UString>(typeMarker, textValue);
 			}
 			else
 			{

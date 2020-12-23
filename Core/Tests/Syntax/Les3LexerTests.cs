@@ -354,6 +354,7 @@ namespace Loyc.Syntax.Les
 			Case("``'''123'''  '''1234'''", A(TT.Literal, TT.Literal), L("123", ""), L("1234", ""));
 			Case("123``",       A(TT.Literal, TT.BQId), "123", _(""));
 			Case(@"_""\x31\x32\x33""", A(TT.Literal), L("123", "_"));
+			Case("foo'''string'''", A(TT.Literal), L("string", "foo"));
 		}
 
 		[Test]

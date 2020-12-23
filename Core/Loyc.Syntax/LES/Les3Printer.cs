@@ -456,7 +456,6 @@ namespace Loyc.Syntax.Les
 				{
 					typeMarker = typeMarker ?? result.Left.Value;
 					textValue = sb.ToString();
-					var tv = textValue;
 				}
 				PrintStringOrNumber(textValue, node.Style, typeMarker);
 			}
