@@ -631,16 +631,20 @@ namespace Loyc.Syntax
 				// Note: When a literal doesn't have a parsed value, it is expected that
 				// Value will return a boxed form of TextValue which is a UString. 
 				// Therefore, by comparing Values we have already compared the most
-				// important info. The type markers should also be equal. It could be
-				// argued that nodes with no type marker (TypeMarker == null) should compare 
-				// equal to another node as long as the Values are equal, but I have a 
-				// feeling that there should be a CompareNode demanding such a lax 
-				// comparison and I haven't made one, yet.
-				//   We don't need to compare the two TextValues unless we are comparing
-				// by "style" in the comparison, implying that 12_345 should not be treated 
-				// as equal to 12345.
-				if (a.TypeMarker != b.TypeMarker)
-					return false;
+				// important info. Should we also demand that the type markers be equal?
+				// On the one hand, type markers may be considered merely stylistic, e.g. 
+				// if `1.0` and `1.0d` are both double values, they should probably 
+				// compare equal. However, unrecognized custom literals like `wx"foo"`
+				// and `yz"foo"` should be considered different, and if a parser was used 
+				// without a literal parser then differing type markers must be assumed 
+				// to be different (e.g. `1.0` is different from `1.0d` if the parser 
+				// doesn't recognize that both are double values.)
+				if (a.TypeMarker != b.TypeMarker) {
+					if ((mode & CompareMode.TypeMarkers) != 0)
+						return false;
+					if (a.Value is UString || a.Value is string)
+						return false;
+				}
 				if ((mode & CompareMode.Styles) != 0 && !a.TextValue.Equals(b.TextValue))
 					return false;
 			}
@@ -677,8 +681,24 @@ namespace Loyc.Syntax
 			return true;
 		}
 
+		/// <summary>Used with <see cref="LNode.Equals(ILNode, CompareMode)"/>.</summary>
 		[Flags]
-		public enum CompareMode { Normal = 0, Styles = 1, IgnoreTrivia = 2 }
+		public enum CompareMode { 
+			/// <summary>This is the default value. In this mode, the <see cref="Style"/> 
+			/// of each node is ignored, the trivia attributes are significant, and the 
+			/// <see cref="TypeMarker"/>s of a literal are compared only if the type of each
+			/// <see cref="Value"/> is string or <see cref="UString"/>.</summary>
+			Normal = 0,
+			/// <summary>When this flag is used, two nodes are not equal if their 
+			/// <see cref="Style"/>s are different.</summary>
+			Styles = 1,
+			/// <summary>When this flag is used, trivia attributes are ignored so that 
+			/// two nodes can be "equal" even if they have different trivia.</summary>
+			IgnoreTrivia = 2,
+			/// <summary>When this flag is used, two literals are never equal if their 
+			/// <see cref="TypeMarker"/>s are unequal.</summary>
+			TypeMarkers = 4,
+		}
 
 		/// <summary>Compares two nodes for structural equality. Two nodes are 
 		/// considered equal if they have the same kind, the same name, the same 

@@ -60,7 +60,11 @@ namespace Loyc.Ecs.Tests
 					if (expected == null)
 						return;
 				}
-				AreEqual(expected, result);
+				if (!expected.Equals(result, LNode.CompareMode.TypeMarkers))
+				{
+					AreEqual(expected, result);
+					Fail("{0} has a different type marker than {1}", expected, result);
+				}
 			}
 		}
 

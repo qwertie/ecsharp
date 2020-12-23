@@ -94,7 +94,12 @@ namespace Loyc.Syntax.Les
 				AreEqual(errorsExpected, messages.List.Count, "Wrong error count for {0}", str); // fail
 			}
 			for (int i = 0; i < expected.Length; i++)
-				AreEqual(expected[i], results[i]);
+			{
+				if (!expected[i].Equals(results[i], LNode.CompareMode.TypeMarkers)) {
+					AreEqual(expected[i], results[i]);
+					Fail("{0} has a different type marker than {1}", expected[i], results[i]);
+				}
+			}
 			AreEqual(expected.Length, results.Count);
 			return messages;
 		}

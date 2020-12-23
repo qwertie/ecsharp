@@ -158,10 +158,11 @@ namespace Loyc.Syntax.Les
 			}
 			for (int i = 0; i < expected.Length; i++) {
 				LNode expect = expected[i], actual = results.TryGet(i, null);
-				if (!expect.Equals(actual)) {
+				if (!expect.Equals(actual, LNode.CompareMode.TypeMarkers)) {
 					var options = new Les3PrinterOptions { PrintTriviaExplicitly = true, IndentString = "  " };
 					AreEqual(les3.Print(expect, null, null, options), les3.Print(actual, null, null, options));
 					AreEqual(expect, actual);
+					Fail("{0} has a different type marker than {1}", expect, actual);
 				}
 			}
 			AreEqual(expected.Length, results.Count, "Got more result nodes than expected");
