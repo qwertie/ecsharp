@@ -9,24 +9,24 @@ namespace Loyc.Utilities
 	/// Please see the following article for an introduction to the bloom filter:
 	/// 
 	/// http://www.devsource.com/c/a/Languages/Bloom-Filters-in-C/
-	/// 
+	/// <para/>
 	/// This bloom filter's parameters are m=64 and k=2, so it contains just a
 	/// single long value. If item hashes are random, the false positive rate (p)
 	/// is under 5% if the set contains no more than 8 items, and under 10% if the
 	/// set holds no more than 12 items. This is according to the calculator at 
 	/// 
 	/// http://www-static.cc.gatech.edu/~manolios/bloom-filters/calculator.html
-	///
+	/// <para/>
 	/// The two 6-bit hashes this filter uses are simply the lowest 12 bits of the
 	/// hashcode.
-	/// 
+	/// <para/>
 	/// If this filter is used to hold Symbols, it should be noted that the IDs 
 	/// are not random but sequentially allocated, so it is likely to have
 	/// a different false positive rate. Tentatively, I believe the number of bits
 	/// set will be higher, leading to a worse false positive rate on random
 	/// membership tests; but when testing related inputs, the false positive rate
 	/// should be lower than the worst case.
-	/// 
+	/// <para/>
 	/// In any case, this filter performs increasing poorly as the number of
 	/// elements increases: at 40 items, p exceeds 50%.
 	/// </remarks>

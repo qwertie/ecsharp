@@ -459,11 +459,8 @@ namespace Loyc.LLParserGenerator
 		{
 			return _ranges.TryGet(index, out fail);
 		}
-		public int Count
-		{
-			get { return _ranges.Count; }
-		}
-		public bool IsEmpty => Count == 0;
+		public int Count => _ranges.Count;
+		public bool IsEmpty => _ranges.Count == 0;
 
 		public override bool Equals(object obj)
 		{

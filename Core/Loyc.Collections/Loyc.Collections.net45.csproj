@@ -105,7 +105,6 @@
     <Compile Include="Other\Co.cs" />
     <Compile Include="Other\NestedEnumerator.cs" />
     <Compile Include="Other\SimpleCache.cs" />
-    <Compile Include="Other\TestHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sets\InternalSet.cs" />
     <Compile Include="Sets\InternalSetV1.cs" />
@@ -139,7 +138,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

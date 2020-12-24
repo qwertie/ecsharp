@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 
-namespace Loyc.Utilities
+namespace Loyc.Utilities.Tests
 {
 	[TestFixture]
 	public class TagsInWListTests

@@ -180,12 +180,14 @@
     <Compile Include="Syntax\StreamCharSourceTests.cs" />
     <Compile Include="Syntax\TokensToTreeTests.cs" />
     <Compile Include="Syntax\TokenTests.cs" />
+    <Compile Include="TestHelpers.cs" />
     <Compile Include="Utilities\AListSummaryTrackerTests.cs" />
     <Compile Include="Utilities\GoInterfaceTests.cs" />
     <Compile Include="Utilities\IntSetTests.cs" />
     <Compile Include="Math\LineMathTests.cs" />
     <Compile Include="Math\PointMathTests.cs" />
     <Compile Include="Utilities\TagsInWListTests.cs" />
+    <Compile Include="Utilities\UGTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
