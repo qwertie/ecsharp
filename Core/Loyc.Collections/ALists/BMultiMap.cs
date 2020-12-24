@@ -237,10 +237,14 @@ namespace Loyc.Collections
 
 		/// <summary>Represents the set of values associated with a particular key 
 		/// in a <see cref="BMultiMap{K,V}"/> collection.</summary>
-		/// <remarks>Renamed from <c>Values</c> because C# wouldn't let me 
+		/// <remarks>
+		/// This class doesn't keep track its own range in the 
+		/// <see cref="BMultiMap{K, V}"/>; searches for the key are done as needed.
+		/// on-demand.
+		/// Renamed from <c>Values</c> because C# wouldn't let me 
 		/// implement a <c>Values</c> property (for the <c>IReadOnlyDictionary</c>
 		/// interface) at the same time.</remarks>
-		public struct ValueList : IReadOnlyCollection<V>, ICollection<V>
+		public struct ValueList : ISource<V>, ICollection<V>
 		{
 			readonly BMultiMap<K, V> _map;
 			readonly K _key;
@@ -253,6 +257,7 @@ namespace Loyc.Collections
 
 			#region ISource<V> members
 
+			public bool IsEmpty => !_map.ContainsKey(_key);
 			public int Count
 			{
 				get {
@@ -264,6 +269,17 @@ namespace Loyc.Collections
 					return upper - lower;
 				}
 			}
+
+			/// <summary>Gets the index where the sublist for the current key begins in the BMultiMap.</summary>
+			/// <remarks>If the key does not exist, this returns the index of the item 
+			/// with the next greater key, or Count if the key is greater than the keys 
+			/// of all items in the list.</remarks>
+			public int StartIndex => _map.FindLowerBound(_key);
+
+			/// <summary>Gets the index where the sublist for the current key ends in the BMultiMap.</summary>
+			/// <remarks>This returns the index of the item with the next greater key, 
+			/// or Count if the key is greater than the keys of all items in the list.</remarks>
+			public int EndIndex => _map.FindUpperBound(_key);
 
 			public IEnumerator<V> GetEnumerator()
 			{
@@ -343,18 +359,9 @@ namespace Loyc.Collections
 		#region FindLowerBound, FindUpperBound
 
 		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
-		public int FindLowerBound(K key)
-		{
-			bool found;
-			V value;
-			return FindLowerBound(ref key, out value, out found);
-		}
+		public int FindLowerBound(K key) => FindLowerBound(ref key, out V value, out bool found);
 		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
-		public int FindLowerBound(K key, out bool found)
-		{
-			V value;
-			return FindLowerBound(ref key, out value, out found);
-		}
+		public int FindLowerBound(K key, out bool found) => FindLowerBound(ref key, out V value, out found);
 		/// <summary>Finds the lowest index of an item that is equal to or greater than the specified item.</summary>
 		/// <param name="key">The key to find.</param>
 		/// <param name="value">The first value associated with the specified key,
@@ -363,10 +370,7 @@ namespace Loyc.Collections
 		/// <returns>The index of the item that was found, or of the next greater
 		/// item, or Count if the given key is greater than the keys of all items 
 		/// in the list.</returns>
-		public int FindLowerBound(K key, out V value, out bool found)
-		{
-			return FindLowerBound(ref key, out value, out found);
-		}
+		public int FindLowerBound(K key, out V value, out bool found) => FindLowerBound(ref key, out value, out found);
 		/// <inheritdoc cref="FindLowerBound(K, out V, out bool)"/>
 		public int FindLowerBound(ref K key, out V value, out bool found)
 		{
