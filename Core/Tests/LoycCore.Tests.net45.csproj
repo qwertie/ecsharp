@@ -168,6 +168,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Syntax\LNodeRangeMapperTests.cs" />
     <Compile Include="Syntax\LNodeTests.cs" />
     <Compile Include="Syntax\MiscTests.cs" />
     <Compile Include="Syntax\ParseHelperTests.cs" />

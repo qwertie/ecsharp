@@ -201,6 +201,7 @@
     <Compile Include="Parsing\Precedence.cs" />
     <Compile Include="PrinterState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NodeLocationMapper.cs" />
     <Compile Include="SourceFiles\IndexPositionMapper.cs" />
     <Compile Include="SourceFiles\LineRemapper.cs" />
     <Compile Include="SourceFiles\SourceFile.cs" />

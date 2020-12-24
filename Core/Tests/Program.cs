@@ -163,6 +163,7 @@ namespace Loyc.Tests
 			return MiniTest.RunTests.RunMany(
 				new TokenTests(),
 				new IndexPositionMapperTests(),
+				new LNodeRangeMapperTests(),
 				new IndentTokenGeneratorTests(),
 				new StandardTriviaInjectorTests(),
 				new Les2LexerTests(),
