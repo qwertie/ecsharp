@@ -112,9 +112,9 @@ namespace Loyc.Syntax.Les
 		/// following a newline is ignored as long as it matches this string. 
 		/// For example, if the text following a newline is "\t\t Foo" and this
 		/// string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
-		/// <param name="les3TQIndents">Enable EC# triple-quoted string indent
-		/// rules, which allow an additional one tab or three spaces of indent.
-		/// (I'm leaning toward also supporting this in LES; switched on in v3)</param>
+		/// <param name="allowExtraIndent">Enable EC#/LES triple-quoted string 
+		/// indent rules, which allow an additional one tab or three spaces of 
+		/// indent beyond what the identation parameter specifies.</param>
 		/// <returns>The decoded string</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.
 		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These 
@@ -130,17 +130,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool les3TQIndents = false)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool allowExtraIndent = false)
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation, les3TQIndents);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, allowExtraIndent);
 			return sb.ToString();
 		}
 
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFirst(out fail);
@@ -150,7 +150,7 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents))
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, allowExtraIndent))
 				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 
@@ -162,7 +162,7 @@ namespace Loyc.Syntax.Les
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
@@ -235,7 +235,7 @@ namespace Loyc.Syntax.Les
 							int sp;
 							while ((sp = src.PopFirst(out fail)) == ind.PopFirst(out fail) && !fail)
 								sourceText = src;
-							if (les3TQIndents && fail)
+							if (allowExtraIndent && fail)
 							{
 								// Allow an additional one tab or three spaces when initial indent matches
 								if (sp == '\t')

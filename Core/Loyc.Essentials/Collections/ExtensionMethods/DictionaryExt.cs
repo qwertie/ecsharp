@@ -88,6 +88,9 @@ namespace Loyc.Collections
 				return defaultValue;
 			return value;
 		}
+		/// <summary>Disambiguating overload.</summary>
+		public static V TryGetValue<K, V>(this IDictionaryAndReadOnly<K, V> dict, K key, V defaultValue)
+			=> TryGetValue((IReadOnlyDictionary<K,V>)dict, key, defaultValue);
 
 		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
 		/// not throw an exception when <c>key==null</c> (it simply returns NoValue),

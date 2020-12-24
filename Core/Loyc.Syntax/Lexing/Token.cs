@@ -7,6 +7,7 @@ using Loyc.Collections;
 using Loyc.Collections.MutableListExtensionMethods;
 using Loyc.Threading;
 using Loyc.Collections.Impl;
+using System.ComponentModel;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -380,13 +381,10 @@ namespace Loyc.Syntax.Lexing
 			set { ToStringStrategyTLV.Value = value ?? Loyc.Syntax.Les.TokenExt.ToString; }
 		}
 
-		/// <summary>Gets the <see cref="SourceRange"/> of a token, under the 
-		/// assumption that the token came from the specified source file.</summary>
-		public SourceRange Range(ISourceFile sf)
-		{
-			return new SourceRange(sf, StartIndex, Length);
-		}
-		public SourceRange Range(ILexer<Token> l) { return Range(l.SourceFile); }
+		/// <summary>Converts Token to SourceRange using <c>SourceRange.New(sourceFile, this)</c>.</summary>
+		public SourceRange Range(ISourceFile sourceFile) => SourceRange.New(sourceFile, this);
+		/// <summary>Converts Token to SourceRange using <c>SourceRange.New(l.SourceFile, this)</c>.</summary>
+		public SourceRange Range(ILexer<Token> l) => SourceRange.New(l.SourceFile, this);
 
 		/// <summary>Gets the original source text for a token if available, under the 
 		/// assumption that the specified source file correctly specifies where the
@@ -418,10 +416,10 @@ namespace Loyc.Syntax.Lexing
 		{
 			if (SubstringOffset == 0xFF) {
 				var lv = new LiteralValue(value, TextValue(file.Text), TypeMarker);
-				return new StdLiteralNode<LiteralValue>(lv, Range(file), Style);
+				return new StdLiteralNode<LiteralValue>(lv, SourceRange.New(file, this), Style);
 			} else {
 				var lfp = new LiteralFromParser(value, _startIndex + SubstringOffset, _length - SubstringOffset - SubstringOffsetFromEnd, TypeMarker);
- 				return new StdLiteralNode<LiteralFromParser>(lfp, Range(file), Style);
+ 				return new StdLiteralNode<LiteralFromParser>(lfp, SourceRange.New(file, this), Style);
 			}
 		}
 
@@ -491,11 +489,12 @@ namespace Loyc.Syntax.Lexing
 			return GetEnumerator();
 		}
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		[EditorBrowsable(EditorBrowsableState.Never)] // explicit impl of Count is preferred, but we'd need three of them :(
 		public int Count
 		{
 			get { var c = Children; return c == null ? 0 : c.Count; }
 		}
-		public bool IsEmpty => Count == 0;
+		bool IIsEmpty.IsEmpty => Count == 0;
 
 		IRange<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<Token> Slice(int start, int count) { return new Slice_<Token>(this, start, count); }
@@ -612,18 +611,16 @@ namespace Loyc.Syntax.Lexing
 		object Value { get; }
 		#endif
 	}
-	
-	/// <summary>Alias for ISimpleToken{int}.</summary>
-	public interface ISimpleToken : ISimpleToken<Int32> { }
+
+	/// <summary>Alias for <see cref="ISimpleToken{int}"/>.</summary>
+	public interface ISimpleToken : ISimpleToken<int> { }
 
 	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>
 	/// <typeparam name="TT">Token Type: the data type of the Type property of 
-	/// <see cref="ISimpleToken{LaType}"/> (one often uses int).</typeparam>
-	public interface IToken<TT> : ISimpleToken<TT>, ICloneable<IToken<TT>>
+	/// <see cref="ISimpleToken{TT}"/> (one often uses int).</typeparam>
+	public interface IToken<TT> : ISimpleToken<TT>, ICloneable<IToken<TT>>, IIndexRange
 	{
-		int Length { get; }
-
-		IToken<TT> WithType(int type);
+		IToken<TT> WithType(TT type);
 
 		TokenKind Kind { get; }
 
@@ -631,4 +628,7 @@ namespace Loyc.Syntax.Lexing
 
 		IListSource<IToken<TT>> Children { get; }
 	}
+
+	/// <summary>Alias for <see cref="IToken{int}"/>.</summary>
+	public interface IToken : IToken<int> { }
 }

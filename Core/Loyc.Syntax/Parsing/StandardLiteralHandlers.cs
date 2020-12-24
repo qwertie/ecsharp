@@ -197,18 +197,18 @@ namespace Loyc.Syntax
 
 		private void AddStandardParsers()
 		{
-			ParseFunc i8 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((sbyte)n == n ? OK((sbyte)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc u8 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((byte)n == n ? OK((byte)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc i16 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((short)n == n ? OK((short)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc u16 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((ushort)n == n ? OK((ushort)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc i32 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((int)n == n ? OK((int)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc u32 = (s, tm) => { long n; return ParseSigned(s, out n) ? ((uint)n == n ? OK((uint)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
-			ParseFunc i64 = (s, tm) => { long n; return ParseSigned(s, out n) ? OK(n) : SyntaxError(s, tm); };
-			ParseFunc u64 = (s, tm) => { ulong n; return ParseULong(s, out n) ? OK(n) : SyntaxError(s, tm); };
-			ParseFunc u = (s, tm) => { ulong n; return ParseULong(s, out n) ? ((uint)n == n ? OK((uint)n) : OK((ulong)n)) : SyntaxError(s, tm); };
-			ParseFunc big = (s, tm) => { BigInteger n; return ParseBigInt(s, out n) ? OK((object)n) : SyntaxError(s, tm); };
-			ParseFunc f32 = (s, tm) => { double n; return ParseDouble(s, out n) ? OK((float)n) : SyntaxError(s, tm); };
-			ParseFunc f64 = (s, tm) => { double n; return ParseDouble(s, out n) ? OK(n) : SyntaxError(s, tm); };
+			ParseFunc i8  = (s, tm) => { return ParseSigned(s, out long n) ? ((sbyte)n == n ? OK((sbyte)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc u8  = (s, tm) => { return ParseSigned(s, out long n) ? ((byte)n == n ? OK((byte)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc i16 = (s, tm) => { return ParseSigned(s, out long n) ? ((short)n == n ? OK((short)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc u16 = (s, tm) => { return ParseSigned(s, out long n) ? ((ushort)n == n ? OK((ushort)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc i32 = (s, tm) => { return ParseSigned(s, out long n) ? ((int)n == n ? OK((int)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc u32 = (s, tm) => { return ParseSigned(s, out long n) ? ((uint)n == n ? OK((uint)n) : Overflow(s, tm)) : SyntaxError(s, tm); };
+			ParseFunc i64 = (s, tm) => { return ParseSigned(s, out long n) ? OK(n) : SyntaxError(s, tm); };
+			ParseFunc u64 = (s, tm) => { return ParseULong(s, out ulong n) ? OK(n) : SyntaxError(s, tm); };
+			ParseFunc u   = (s, tm) => { return ParseULong(s, out ulong n) ? ((uint)n == n ? OK((uint)n) : OK((ulong)n)) : SyntaxError(s, tm); };
+			ParseFunc big = (s, tm) => { return ParseBigInt(s, out BigInteger n) ? OK((object)n) : SyntaxError(s, tm); };
+			ParseFunc f32 = (s, tm) => { return ParseDouble(s, out double n) ? OK((float)n) : SyntaxError(s, tm); };
+			ParseFunc f64 = (s, tm) => { return ParseDouble(s, out double n) ? OK(n) : SyntaxError(s, tm); };
 
 			AddParser(true, _string, (s, tm) => OK(s.ToString()));
 			AddParser(true, _number, GeneralNumberParser);

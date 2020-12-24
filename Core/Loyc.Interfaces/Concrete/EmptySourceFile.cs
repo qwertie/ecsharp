@@ -14,8 +14,8 @@ namespace Loyc.Syntax
 	{
 		[Obsolete("Please use another instance, such as Synthetic or Unknown")]
 		public static readonly EmptySourceFile Default = new EmptySourceFile("");
-		public static readonly EmptySourceFile Synthetic = new EmptySourceFile("Synthetic".Localized());
-		public static readonly EmptySourceFile Unknown = new EmptySourceFile("Unknown".Localized());
+		public static readonly EmptySourceFile Synthetic = new EmptySourceFile("<Synthetic Code>".Localized());
+		public static readonly EmptySourceFile Unknown = new EmptySourceFile("<Unknown Location>".Localized());
 
 		public EmptySourceFile(string fileName)
 		{

@@ -116,13 +116,13 @@ namespace Loyc.Syntax.Les
 			return IdToSymbol(s);
 		}
 
-		protected UString UnescapeString(bool isTripleQuoted, bool les3TQindents = false)
+		protected UString UnescapeString(bool isTripleQuoted, bool allowExtraIndent = false)
 		{
 			if (SkipValueParsing)
 				return "";
 			if (_hasEscapes) {
 				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
-				_textValue = Les3Lexer.UnescapeQuotedString(ref original, Error, IndentString, les3TQindents);
+				_textValue = Les3Lexer.UnescapeQuotedString(ref original, Error, IndentString, allowExtraIndent);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));

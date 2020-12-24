@@ -137,12 +137,12 @@ namespace LeMP
 		void RegisterMacro(MacroInfo macroInfo);
 
 		/// <summary>Gets the list of namespaces that are being searched for macros in 
-		/// the current scope. You can modify this collection.</summary>
+		/// the current scope. LeMP allows you to modify this collection.</summary>
 		/// <remarks>The naming scheme of namespaces is not standardized in cases where
 		/// the namespace name is not a "normal" identifier. It is recommended that 
 		/// macros be placed in namespaces whose names are valid identifiers in most 
 		/// languages (C++, C#, Java, Python, etc.). It's okay to put macros in nested
-		/// namespaces.
+		/// namespaces; the Symbol.Name will have a format like "Namespace1.Namespace2".
 		/// </remarks>
 		ICollection<Symbol> OpenMacroNamespaces { get; }
 	}

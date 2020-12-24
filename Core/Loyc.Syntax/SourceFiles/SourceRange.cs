@@ -16,9 +16,6 @@ namespace Loyc.Syntax
 	{
 		public static readonly SourceRange Nowhere = new SourceRange(EmptySourceFile.Synthetic, -1, 0);
 
-		public static SourceRange New<IndexRange>(ISourceFile source, IndexRange range) where IndexRange : IIndexRange
-			=> new SourceRange(source, range.StartIndex, range.Length);
-
 		public SourceRange(ISourceFile source, int beginIndex = -1, int length = 0)
 		{
 			_source = source;
@@ -35,12 +32,10 @@ namespace Loyc.Syntax
 				_length = range.Length;
 			}
 		}
-		//public SourceRange(ISourceFile source, Lexing.Token token)
-		//{
-		//	_source = source;
-		//	_startIndex = token.StartIndex;
-		//	_length = token.Length;
-		//}
+
+		public static SourceRange New<IndexRange>(ISourceFile source, IndexRange range) where IndexRange : IIndexRange
+			=> new SourceRange(source, range.StartIndex, range.Length);
+		public static explicit operator IndexRange(SourceRange r) => new IndexRange(r.StartIndex, r.Length);
 
 		private ISourceFile _source;
 		private int _startIndex;
@@ -54,13 +49,22 @@ namespace Loyc.Syntax
 		/// </summary>
 		public ISourceFile Source { [DebuggerStepThrough] get { return _source; } }
 		public int StartIndex { [DebuggerStepThrough] get { return _startIndex; } }
-		public int EndIndex { [DebuggerStepThrough] get { return _startIndex + System.Math.Max(_length, 0); } }
+		public int EndIndex { [DebuggerStepThrough] get { return _startIndex + _length; } }
 		public int Length { [DebuggerStepThrough] get { return _length; } }
 
 		public UString SourceText => SourceRangeExt.SourceText(this);
 
 		public ILineColumnFile Start => SourceRangeExt.Start(this);
 		public ILineColumnFile End => SourceRangeExt.End(this);
+
+		/// <summary>If the Length is negative so StartIndex > EndIndex, this returns a 
+		/// copy of the range with StartIndex and EndIndex swapped; otherwise the same 
+		/// range is returned.</summary>
+		/// <exception cref="OverflowException">An integer overflow occurred.</exception>
+		public SourceRange Normalized()
+		{
+			return _length < 0 ? new SourceRange(_source, checked(_startIndex + _length), checked(-_length)) : this;
+		}
 
 		[Obsolete("I never ended up using this. Anyone else using it?")]
 		public char this[int subIndex]
@@ -97,6 +101,26 @@ namespace Loyc.Syntax
 				Source.FileName, start.Line, start.Column, end.Line, end.Column);
 		}
 
+		/// <summary>Assuming both ranges are normalized, returns the range of overlap between them.
+		/// If the ranges are in different files or do not overlap, null is returned. If the two
+		/// ranges share a border, this method returns a zero-Length range.</summary>
+		public SourceRange? GetRangeOfOverlap(SourceRange other)
+		{
+			if (Source == other.Source) {
+				var overlap = ((IndexRange)this).GetRangeOfOverlap((IndexRange)other);
+				if (overlap.Length >= 0)
+					return New(Source, overlap);
+			}
+			return null;
+		}
+		/// <summary>Returns true if, assuming both ranges are normalized, the two regions 
+		/// share at least one common character.</summary>
+		/// <remarks>Note: this returns false if either of the ranges has a Length of zero 
+		/// and is at the boundary of the other range.</remarks>
+		public bool Overlaps(SourceRange other)
+		{
+			return Source == other.Source && EndIndex > other.StartIndex && StartIndex < other.EndIndex;
+		}
 		public bool Contains(SourceRange inner)
 		{
 			return Source == inner.Source && StartIndex <= inner.StartIndex && EndIndex >= inner.EndIndex;

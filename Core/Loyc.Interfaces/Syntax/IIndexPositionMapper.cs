@@ -7,7 +7,7 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Contains <see cref="IndexToLine"/> method.</summary>
+	/// <summary>Contains an <see cref="IndexToLine"/> method.</summary>
 	/// <remarks>
 	/// The FileName property gets the name of the file on which results returned by 
 	/// <see cref="IndexToLine(int)"/> are based. It is not guaranteed that <i>all</i> 
@@ -24,11 +24,8 @@ namespace Loyc.Syntax
 		ILineColumnFile IndexToLine(int index);
 	}
 
-	/// <summary>
-	/// This interface is for classes that can convert indexes to SourcePos
-	/// structures and back.
-	/// </summary>
-	public interface IIndexPositionMapper : IIndexToLine
+	/// <summary>Contains <see cref="LineToIndex"/> methods.</summary>
+	public interface ILineToIndex : IHasFileName
 	{
 		/// <summary>Returns the index in a source file of the beginning of the 
 		/// specified line, where the first line is number 1, not 0.</summary>
@@ -37,5 +34,13 @@ namespace Loyc.Syntax
 		/// number, this method should return the index of end-of-file.</remarks>
 		int LineToIndex(int lineNo);
 		int LineToIndex(ILineAndColumn pos);
+	}
+
+	/// <summary>
+	/// This interface is for classes that can convert indexes to SourcePos
+	/// structures and back.
+	/// </summary>
+	public interface IIndexPositionMapper : ILineToIndex, IIndexToLine
+	{
 	}
 }

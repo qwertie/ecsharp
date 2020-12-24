@@ -138,7 +138,7 @@ namespace Loyc.LLParserGenerator
 		public static AndPred And   (object test) { return new AndPred(null, test, not: false, local: false); }
 		public static AndPred AndNot(object test) { return new AndPred(null, test, not: true, local: false); }
 
-		static LNodeFactory F = new LNodeFactory(LNode.SyntheticSource);
+		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 		public static Pred Set(string varName, Pred pred) {
 			pred.ResultSaver = res => {
 				return F.Assign(F.Id(varName), res);

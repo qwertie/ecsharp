@@ -194,7 +194,7 @@ namespace Loyc.Syntax
 		{
 			Debug.Assert(t.IsUninterpretedLiteral);
 			var litVal = new UninterpretedLiteral(t.TextValue(_file.Text), t.TypeMarker);
-			return new StdLiteralNode<UninterpretedLiteral>(litVal, t.Range(_file));
+			return new StdLiteralNode<UninterpretedLiteral>(litVal, SourceRange.New(_file, t));
 		}
 
 		/// <summary>Creates a trivia node named <c>"%" + suffix</c> with the 
@@ -663,7 +663,7 @@ namespace Loyc.Syntax
 		}
 		public LNode InParens(LNode inner, int startIndex, int endIndex)
 		{
-			return LNodeExt.InParens(inner, File, startIndex, endIndex - startIndex);
+			return LNodeExt.InParens(inner, File, startIndex, endIndex);
 		}
 
 		public LNode Result(LNode expr)

@@ -66,10 +66,11 @@ namespace Loyc.Syntax
 		{
 			RAS = new RangeAndStyle(range, style);
 			if (RAS.Source == null)
-				RAS.Source = SyntheticSource;
+				RAS.Source = EmptySourceFile.Synthetic;
 		}
 
-		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<Synthetic Code>");
+		[Obsolete("Please use EmptySourceFile.Synthetic instead")]
+		public static readonly EmptySourceFile SyntheticSource = EmptySourceFile.Synthetic;
 
 		/// <summary>The empty identifier, used to represent missing information.</summary>
 		public static readonly IdNode Missing = Id(CodeSymbols.Missing);

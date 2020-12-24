@@ -79,6 +79,10 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
+		/// <summary>Gets the number of items that have already been pulled from the 
+		/// enumerator and stored in this object's buffer.</summary>
+		public int BufferedCount => _buffer.Count;
+
 		public override int Count
 		{
 			get {
@@ -90,4 +94,5 @@ namespace Loyc.Collections
 			}
 		}
 	}
+
 }

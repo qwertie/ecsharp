@@ -179,7 +179,7 @@ namespace Loyc.Syntax
 				}
 				if (commentType == null)
 					return null;
-				return LNode.Trivia(commentType, text.ToString(), t.Range(SourceFile));
+				return LNode.Trivia(commentType, text.ToString(), SourceRange.New(SourceFile, t));
 			}
 		}
 

@@ -24,16 +24,17 @@ namespace LeMP
 	/// <returns>A node to replace the original <c>node</c>, or null if this 
 	/// macro rejects the input node. Returning null can allow a different macro 
 	/// to accept the node instead.</returns>
-	/// <remarks>If there are multiple macros in scope with the same name, they 
-	/// are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
-	/// the input. If no macros accept the input, the error message given by each
-	/// macro is printed; if multiple macros accept the input, an ambiguity error
-	/// is printed.
-	/// <para/>
+	/// <remarks>
 	/// When the macro processor scans an assembly looking for macros, it requires
 	/// <see cref="ContainsMacrosAttribute"/> on the containing class, and 
 	/// <see cref="LexicalMacroAttribute"/> on each macro in the class. The macros 
 	/// must be public static methods.
+	/// <para/>
+	/// If there are multiple macros in scope with the same name, they 
+	/// are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
+	/// the input. If no macros accept the input, the error message given by each
+	/// macro is printed; if multiple macros accept the input, an ambiguity error
+	/// is printed (which is downgraded to a warning if their outputs are the same).
 	/// </remarks>
 	public delegate LNode LexicalMacro(LNode node, IMacroContext context);
 
