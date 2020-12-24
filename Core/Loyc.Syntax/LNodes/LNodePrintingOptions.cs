@@ -1,3 +1,4 @@
+using Loyc.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Loyc.Syntax
 		public virtual string IndentString { get; set; }
 		public virtual string NewlineString { get; set; }
 		public virtual ILiteralPrinter LiteralPrinter { get; set; }
+		public virtual Action<ILNode, IndexRange> SaveRange { get; set; }
 
 		public void CopyFrom(ILNodePrinterOptions original)
 		{
@@ -29,6 +31,7 @@ namespace Loyc.Syntax
 			IndentString = original.IndentString;
 			NewlineString = original.NewlineString;
 			LiteralPrinter = original.LiteralPrinter;
+			SaveRange = original.SaveRange;
 		}
 	}
 }

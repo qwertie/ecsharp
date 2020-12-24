@@ -4,14 +4,17 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Loyc.Syntax;
+using Loyc.Collections;
 
 namespace Loyc.Ecs
 {
 	/// <summary>Helper class of <see cref="EcsNodePrinter"/></summary>
 	internal class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
 	{
-		public EcsNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
-		public EcsNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }
+		public EcsNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange> saveRange = null)
+			: base(sb, indentString, lineSeparator, labelIndent, saveRange) { }
+		public EcsNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
+			: base(@out, indentString, lineSeparator, labelIndent) { }
 
 		char _lastStartCh; // character at beginning of previous token
 

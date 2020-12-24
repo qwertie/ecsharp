@@ -69,6 +69,68 @@ namespace Loyc.Syntax.Les
 			Exact("..a & b && c;",   F.Call(S.And, F.Call(S.AndBits, F.Call(S.DotDot, a), b), c));
 		}
 
+		[Test]
+		public void SaveRangeIsCalled()
+		{
+			var ranges = new List<Pair<ILNode, IndexRange>>();
+			var options = new LNodePrinterOptions { SaveRange = (n, r) => ranges.Add(Pair.Create(n, r)) };
+
+			LNode node = F.Call(_("var"), F.Call(S.Assign, x, F.Call(S.Sub, two)));
+			Stmt("var(x = -2);", node);
+			string output = Les2LanguageService.Value.Print(node, null, ParsingMode.Statements, options);
+			ExpectSavedRange(ranges, output, node, "var(x = -2);");
+			// "(" is part of the target because if there is %trailing trivia on the target, it appears after "("
+			ExpectSavedRange(ranges, output, node.Target, "var(");
+			ExpectSavedRange(ranges, output, node[0], "x = -2");
+			ExpectSavedRange(ranges, output, node[0][0], "x");
+			ExpectSavedRange(ranges, output, node[0][1], "-2");
+			ExpectSavedRange(ranges, output, node[0][1].Target, "-");
+			ExpectSavedRange(ranges, output, node[0][1][0], "2");
+			// The space is included because suffix trivia on an operator Target is printed after the space
+			ExpectSavedRange(ranges, output, node[0].Target, "= ");
+
+			ranges.Clear();
+			LNode body, signature;
+			node = F.Call(S.Lambda, signature = F.Call("MyMethod", F.Call(S.Colon, x, F.Call(S.Array, _("int")))),
+			               F.Braces(body = F.Call(Foo, F.Call("'.+", x, F.Literal(123)), F.Tuple(a, b))));
+			Exact("MyMethod(x : [int]) => {\n  Foo(x .+ 123, (a; b));\n};", node);
+			output = Les2LanguageService.Value.Print(node, null, ParsingMode.Statements, options);
+			ExpectSavedRange(ranges, output, node.Target, "=> ");
+			ExpectSavedRange(ranges, output, signature, "MyMethod(x : [int])");
+			ExpectSavedRange(ranges, output, signature.Target, "MyMethod(");
+			// Yeah, ideally that tab wouldn't be there
+			ExpectSavedRange(ranges, output, body, "\tFoo(x .+ 123, (a; b));");
+			ExpectSavedRange(ranges, output, body.Target, "\tFoo(");
+			ExpectSavedRange(ranges, output, signature[0], "x : [int]");
+			ExpectSavedRange(ranges, output, signature[0].Target, ": ");
+			ExpectSavedRange(ranges, output, signature[0][1], "[int]");
+			ExpectSavedRange(ranges, output, signature[0][1][0], "int");
+			// It could be argued that the comma shouldn't be included, but it allows suffix trivia to appear after the comma
+			ExpectSavedRange(ranges, output, body[0], "x .+ 123, ");
+			ExpectSavedRange(ranges, output, body[0][0], "x");
+			ExpectSavedRange(ranges, output, body[0][1], "123");
+			ExpectSavedRange(ranges, output, body[0].Target, ".+ ");
+			ExpectSavedRange(ranges, output, body[1], "(a; b)");
+			ExpectSavedRange(ranges, output, body[1][0], "a; ");
+			ExpectSavedRange(ranges, output, body[1][1], "b");
+		}
+
+		private void ExpectSavedRange(List<Pair<ILNode, IndexRange>> ranges, string output, LNode node, string expectedSubstring)
+		{
+			foreach (var pair in ranges)
+			{
+				// Subtlety: if(node==pair.A) doesn't work for typical Target nodes, which 
+				//           are regenerated each time Target is called; use Equals instead
+				if (node.Equals(pair.A))
+				{
+					AreEqual(expectedSubstring, output.Substring(pair.B.StartIndex, pair.B.Length));
+					return;
+				}
+			}
+			Fail("Saved range not found for {0}", node);
+		}
+
+
 		protected override MessageHolder Test(Mode mode, int parseErrors, string expected, params LNode[] inputs)
 		{
 			var messages = new MessageHolder();

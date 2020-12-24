@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using Loyc.Collections;
+using System.Diagnostics;
 
 namespace Loyc.Syntax.Les
 {
@@ -23,7 +25,18 @@ namespace Loyc.Syntax.Les
 		protected int _lastNewlineAt = 0;
 		protected TextWriter _out;
 
-		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null) : this(new StringWriter(sb), indentString, lineSeparator, labelIndent) { }
+		// _sb and _startingIndices are used to help send info to _saveRange.
+		protected StringBuilder _sb;
+		protected Stack<Pair<ILNode, int>> _startingIndices;
+		protected Action<ILNode, IndexRange> _saveRange;
+
+		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null, Action<ILNode, IndexRange> saveRange = null)
+			: this(new StringWriter(sb), indentString, lineSeparator, labelIndent)
+		{
+			_sb = sb;
+			if ((_saveRange = saveRange) != null)
+				_startingIndices = new Stack<Pair<ILNode, int>>();
+		}
 		public DefaultNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null)
 		{
 			_indentString = indentString;
@@ -115,14 +128,30 @@ namespace Loyc.Syntax.Les
 		public override char LastCharWritten { get { return _lastCh; } }
 
 		public override int LineNumber { get { return _lineNumber; } }
+
+		public override void Push(ILNode newNode)
+		{
+			if (_startingIndices != null)
+				_startingIndices.Push(Pair.Create(newNode, _sb.Length));
+		}
+
+		public override void Pop()
+		{
+			if (_startingIndices != null) {
+				var pair = _startingIndices.Pop();
+				_saveRange(pair.A, new IndexRange(pair.B) { EndIndex = _sb.Length });
+			}
+		}
 	}
 
 	/// <summary>Helper class of <see cref="Les2Printer"/> that ensures 
 	/// tokens are spaced apart properly.</summary>
 	internal class Les2PrinterWriter : DefaultNodePrinterWriter
 	{
-		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
-		public Les2PrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }
+		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange> saveRange = null)
+			: base(sb, indentString, lineSeparator, labelIndent, saveRange) { }
+		public Les2PrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
+			: base(@out, indentString, lineSeparator, labelIndent) { }
 
 		protected override void StartToken(char nextCh)
 		{

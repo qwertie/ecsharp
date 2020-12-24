@@ -182,5 +182,53 @@ namespace Loyc.Ecs.Tests
 			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));
 		}
+
+		[Test]
+		public void SaveRangeIsCalled()
+		{
+			var ranges = new List<Pair<ILNode, IndexRange>>();
+			var options = new LNodePrinterOptions { SaveRange = (n, r) => ranges.Add(Pair.Create(n, r)) };
+
+			LNode node = F.Var(F.Int32, F.Call(S.Assign, x, two));
+			Stmt("int x = 2;", node);
+			string output = EcsLanguageService.Value.Print(node, null, ParsingMode.Statements, options);
+			ExpectSavedRange(ranges, output, node, "int x = 2;");
+			ExpectSavedRange(ranges, output, node[0], "int");
+			ExpectSavedRange(ranges, output, node[1], "x = 2");
+			ExpectSavedRange(ranges, output, node[1][0], "x");
+			ExpectSavedRange(ranges, output, node[1][1], "2");
+			ExpectSavedRange(ranges, output, node[1].Target, "=");
+
+			ranges.Clear();
+			LNode body;
+			node = F.Fn(F.Void, _("MyMethod"), F.List(), body = F.Call(Foo, F.Call(S.Add, x, one)));
+			Stmt("void MyMethod() => Foo(x + 1);", node);
+			output = EcsLanguageService.Value.Print(node, null, ParsingMode.Statements, options);
+			ExpectSavedRange(ranges, output, node, "void MyMethod() => Foo(x + 1);");
+			ExpectSavedRange(ranges, output, node[0], "void");
+			ExpectSavedRange(ranges, output, node[1], "MyMethod");
+			ExpectSavedRange(ranges, output, node[2], "()");
+			ExpectSavedRange(ranges, output, body, "Foo(x + 1)");
+			ExpectSavedRange(ranges, output, body.Target, "Foo");
+			ExpectSavedRange(ranges, output, body[0], "x + 1");
+			ExpectSavedRange(ranges, output, body[0][0], "x");
+			ExpectSavedRange(ranges, output, body[0][1], "1");
+			ExpectSavedRange(ranges, output, body[0].Target, "+");
+		}
+
+		private void ExpectSavedRange(List<Pair<ILNode, IndexRange>> ranges, string output, LNode node, string expectedSubstring)
+		{
+			foreach (var pair in ranges)
+			{
+				// Subtlety: if(node==pair.A) doesn't work for typical Target nodes, which 
+				//           are regenerated each time Target is called; use Equals instead
+				if (node.Equals(pair.A))
+				{
+					AreEqual(expectedSubstring, output.Substring(pair.B.StartIndex, pair.B.Length));
+					return;
+				}
+			}
+			Fail("Saved range not found for {0}", node);
+		}
 	}
 }

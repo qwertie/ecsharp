@@ -88,14 +88,14 @@ namespace Loyc.Ecs
 		Symbol _spaceName; // for detecting constructor ambiguity (= S.Fn inside functions/lambdas/properties/constructors)
 		IMessageSink _errors;
 
-		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
+		public INodePrinterWriter Writer { get => _out; set => _out = value; }
 
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
 		/// <remarks>The most common error is an unprintable literal.</remarks>
-		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
+		public IMessageSink ErrorSink { get => _errors; set => _errors = value ?? MessageSink.Null; }
 
 		EcsPrinterOptions _o;
-		public EcsPrinterOptions Options { get { return _o; } }
+		public EcsPrinterOptions Options => _o;
 		public void SetOptions(ILNodePrinterOptions options)
 		{
 			_o = options as EcsPrinterOptions ?? new EcsPrinterOptions(options);
@@ -140,13 +140,14 @@ namespace Loyc.Ecs
 		/// with <see cref="Print(LNode, ParsingMode)"/>.</summary>
 		internal void Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode)
 		{
-			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n", "", _o.SaveRange);
 			ErrorSink = sink;
 			Print(node, mode);
 		}
 
 		/// <summary>Attaches a new <see cref="TextWriter"/>, then prints a node 
-		/// with <see cref="Print(LNode, ParsingMode)"/>.</summary>
+		/// with <see cref="Print(LNode, ParsingMode)"/>. 
+		/// Note: this method doesn't support <see cref="ILNodePrinterOptions.SaveRange"/>.</summary>
 		internal void Print(LNode node, TextWriter target, IMessageSink sink, ParsingMode mode)
 		{
 			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
@@ -194,13 +195,14 @@ namespace Loyc.Ecs
 			public With_(EcsNodePrinter self, LNode inner, Precedence context, Ambiguity flags)
 			{
 				_self = self;
-				self._out.Push(_old_n = self._n);
+				_old_n = self._n;
+				self._out.Push(inner);
 				_old_name = self._name;
 				_old_context = self._context;
 				_old_flags = self._flags;
 				if (inner == null) {
 					self.ErrorSink.Error(self._n, "EC# Printer: Encountered null LNode");
-					self._n = LNode.Id("(null)");
+					self._n = LNode.Id("(null reference)".Localized());
 					self._name = null;
 				} else {
 					self._n = inner;
@@ -211,7 +213,8 @@ namespace Loyc.Ecs
 			}
 			public void Dispose()
 			{
-				_self._out.Pop(_self._n = _old_n);
+				_self._n = _old_n;
+				_self._out.Pop();
 				_self._name = _old_name;
 				_self._context = _old_context;
 				_self._flags = _old_flags;
@@ -268,11 +271,13 @@ namespace Loyc.Ecs
 
 		private void WriteOperatorNameWithTrivia(Symbol name, LNode target, bool useBacktick = false)
 		{
+			_out.Push(target);
 			if (target != null)
 				PrintTrivia(target, trailingTrivia: false);
 			WriteOperatorName(name, useBacktick);
 			if (target != null)
 				PrintTrivia(target, trailingTrivia: true);
+			_out.Pop();
 		}
 
 		void PrefixSpace(Precedence p)

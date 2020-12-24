@@ -43,7 +43,7 @@ namespace Loyc.Syntax.Les
 			var oldSink = p.ErrorSink;
 			p.ErrorSink = sink;
 			p.SetOptions(options);
-			p.Writer = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n");
+			p.Writer = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n", "", p.Options.SaveRange);
 
 			if (mode == ParsingMode.Expressions)
 				p.Print(node, StartStmt, "");
@@ -68,8 +68,11 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		/// <summary>Top-level non-static printing method</summary>
 		internal void Print(ILNode node, Precedence context, string terminator = null)
 		{
+			_out.Push(node);
+			
 			int parenCount = WriteAttrs(node, ref context);
 
 			if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation)
@@ -91,6 +94,8 @@ namespace Loyc.Syntax.Les
 			} while (false);
 			
 			PrintSuffixTrivia(node, parenCount, terminator);
+			
+			_out.Pop();
 		}
 
 		#region Infix, prefix and suffix operators
@@ -131,6 +136,8 @@ namespace Loyc.Syntax.Les
 		
 		private void WriteOpName(Symbol op, ILNode target, Precedence prec, bool spaceAfter = false)
 		{
+			_out.Push(target);
+
 			// Note: if the operator has a space after it, there's a subtle reason why 
 			// we want to print that space before the trivia and not after. Consider
 			// the input "a == //comment\n    b". After trivia injection this becomes
@@ -155,6 +162,8 @@ namespace Loyc.Syntax.Les
 			SpaceIf(spaceAfter);
 			if (target != null)
 				PrintSuffixTrivia(target, 0, null);
+
+			_out.Pop();
 		}
 
 		private void SpaceIf(bool cond)
@@ -196,19 +205,20 @@ namespace Loyc.Syntax.Les
 		private bool AutoPrintBracesOrBracks(ILNode node)
 		{
 			var name = node.Name;
-			if ((name == S.Array || name == S.Braces) && node.IsCall() && !HasPAttrs(node.Target)) {
-				if (name == S.Array) {
-					PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "[", ']', node.Target);
-					return true;
-				} else if (name == S.Braces) {
-					PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', node.Target);
-					return true;
-				}
+			if (name == S.Array && node.IsCall() && !HasPAttrs(node.Target)) {
+				PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "[", ']', null, node.Target);
+				return true;
+			} else if (name == S.Tuple && node.ArgCount() != 1 && node.IsCall() && !HasPAttrs(node.Target)) {
+				PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "(", ')', "; ", node.Target);
+				return true;
+			} else if (name == S.Braces && node.IsCall() && !HasPAttrs(node.Target)) {
+				PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', null, node.Target);
+				return true;
 			}
 			return false;
 		}
 
-		private void PrintArgList(NegListSlice<ILNode> args, bool stmtMode, string leftDelim, char rightDelim, ILNode target = null)
+		private void PrintArgList(NegListSlice<ILNode> args, bool stmtMode, string leftDelim, char rightDelim, string separator = null, ILNode target = null)
 		{
 			if (target != null)
 				PrintPrefixTrivia(target);
@@ -224,7 +234,7 @@ namespace Loyc.Syntax.Les
 						anyNewlines = true;
 					} else
 						SpaceIf(_o.SpacesBetweenAppendedStatements);
-					Print(stmt, StartStmt, ";");
+					Print(stmt, StartStmt, separator ?? ";");
 				}
 				_out.Dedent();
 				if (anyNewlines)
@@ -233,7 +243,7 @@ namespace Loyc.Syntax.Les
 					SpaceIf(_o.SpacesBetweenAppendedStatements);
 			} else {
 				for (int i = 0; i < args.Count; )
-					Print(args[i], StartStmt, ++i == args.Count ? "" : ", ");
+					Print(args[i], StartStmt, ++i == args.Count ? "" : separator ?? ", ");
 			}
 			_out.Write(rightDelim, true);
 		}

@@ -517,7 +517,7 @@ namespace Loyc.Ecs
 				PrintExpr(targetVarName, EP.Primary, Ambiguity.InDefinitionName);
 			}
 			if (tuple != null)
-				PrintArgList(tuple.Args, ParenFor.MethodCall, true, false);
+				PrintArgList(tuple, ParenFor.MethodCall, true, false);
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
@@ -619,9 +619,9 @@ namespace Loyc.Ecs
 			bool needParens;
 			Debug.Assert(CanAppearHere(precedence, out needParens) && !needParens);
 
-			LNode cons = _n.Args[0];
-			LNode type = cons.Target;
-			var consArgs = cons.Args;
+			LNode constructorCall = _n.Args[0];
+			LNode type = constructorCall.Target;
+			var consArgs = constructorCall.Args;
 
 			// There are two basic uses of new: for objects, and for arrays.
 			// In all cases, 'new has 1 arg plus optional initializer arguments,
@@ -633,9 +633,9 @@ namespace Loyc.Ecs
 			//                    2b. new[,] { ... }.         <=> @'new(@`'[,]`(), ...)
 			//                    2c. new int[10,10] { ... }, <=> @'new(@`'of`(@`'[,]`, int)(10,10), ...)
 			//                    2d. new int[10][] { ... },  <=> @'new(@`'of`(@`'[]`, @`'of`(@`'[]`, int))(10), ...)
-			if (HasPAttrs(cons))
+			if (HasPAttrs(constructorCall))
 				return false;
-			if (type == null ? !cons.IsIdNamed(S.Missing) : HasPAttrs(type) || !IsComplexIdentifier(type))
+			if (type == null ? !constructorCall.IsIdNamed(S.Missing) : HasPAttrs(type) || !IsComplexIdentifier(type))
 				return false;
 
 			// Okay, we can now be sure that it's printable, but is it an array decl?
@@ -652,13 +652,13 @@ namespace Loyc.Ecs
 			} else {
 				_out.Write("new ", true);
 				int dims = CountDimensionsIfArrayType(type);
-				if (dims > 0 && cons.Args.Count == dims) {
-					PrintTypeWithArraySizes(cons);
+				if (dims > 0 && constructorCall.Args.Count == dims) {
+					PrintTypeWithArraySizes(constructorCall);
 				} else {
 					// Otherwise we can print the type name without caring if it's an array or not.
 					PrintType(type, EP.Primary.LeftContext(_context));
-					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
-						PrintArgList(cons.Args, ParenFor.MethodCall, false, _o.OmitMissingArguments);
+					if (constructorCall.ArgCount != 0 || (argCount == 1 && dims == 0))
+						PrintArgList(constructorCall, ParenFor.MethodCall, false, _o.OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
 					PrintBracedBlockInNewExpr(1);
@@ -761,7 +761,7 @@ namespace Loyc.Ecs
 
 			if (oldStyle) {
 				_out.Write("delegate", true);
-				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
+				PrintArgList(_n.Args[0], ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
 			} else { 
 				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl);

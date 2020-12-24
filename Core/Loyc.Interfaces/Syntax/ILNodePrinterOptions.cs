@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Loyc.Syntax
 {
@@ -78,5 +75,12 @@ namespace Loyc.Syntax
 		/// doesn't have built-in support for, or it may use this printer for all literals.
 		/// </remarks>
 		ILiteralPrinter LiteralPrinter { get; }
+
+		/// <summary>If this property is not null, it requests that the printer call the
+		/// method to record the location of each node in the printer's output.</summary>
+		/// <remarks>The printer should call this function only once per node printed.
+		/// However, the same node can appear more than once in the tree being printed,
+		/// which can cause this method to be called multiple times for the same node..</remarks>
+		Action<ILNode, IndexRange> SaveRange { get; }
 	}
 }

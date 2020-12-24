@@ -139,9 +139,11 @@ namespace Loyc.Syntax.Les
 			Stmt("(a);", F.InParens(a));
 			Stmt("(a;);", F.Tuple(a));
 			Stmt("(a; @``;);", F.Tuple(a, _("")));
-			Expr("(a;)", F.Tuple(a));
+			Exact("(x; @``);", F.Tuple(x, _("")));
+			Expr("(x;)", F.Tuple(x));
 			Stmt("(a; b);", F.Tuple(a, b));
-			Stmt("(a; b; c + x);", F.Tuple(a, b, F.Call(S.Add, c, x)));
+			Exact("(a; c);", F.Tuple(a, c));
+			Exact("(a; b; c + x);", F.Tuple(a, b, F.Call(S.Add, c, x)));
 		}
 
 		[Test]

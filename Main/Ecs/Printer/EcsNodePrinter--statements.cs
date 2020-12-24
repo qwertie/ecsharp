@@ -531,7 +531,7 @@ namespace Loyc.Ecs
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
 			PrintTrivia(args, trailingTrivia: false);
-			PrintArgList(args.Args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
+			PrintArgList(args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 			PrintTrivia(args, trailingTrivia: true);
 
 			PrintWhereClauses(name);
@@ -601,6 +601,12 @@ namespace Loyc.Ecs
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName | Ambiguity.NoParentheses);
 				}
 			}
+		}
+		private void PrintArgList(LNode node, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
+		{
+			_out.Push(node);
+			PrintArgList(node.Args, kind, allowUnassignedVarDecl, omitMissingArguments, separator);
+			_out.Pop();
 		}
 		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{

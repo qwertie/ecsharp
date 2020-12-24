@@ -28,8 +28,8 @@ namespace Loyc.Syntax.Les
 		void Newline(bool pending = false);
 		void BeginStatement();
 		void BeginLabel();
-		void Push(LNode newNode);
-		void Pop(LNode oldNode);
+		void Push(ILNode newNode);
+		void Pop();
 		char LastCharWritten { get; }
 		int LineNumber { get; }
 		/// <summary>Called when a new, separate printing operation begins.</summary>
@@ -58,8 +58,8 @@ namespace Loyc.Syntax.Les
 		{
 			return --_indentLevel;
 		}
-		public virtual void Push(LNode n) { }
-		public virtual void Pop(LNode n) { }
+		public virtual void Push(ILNode newNode) { }
+		public virtual void Pop() { }
 		public abstract char LastCharWritten { get; }
 		public abstract int LineNumber { get; }
 		public abstract void Reset();
