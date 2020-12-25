@@ -54,10 +54,9 @@ namespace Loyc.VisualStudio
 		{
 			get { return _ss[index]; }
 		}
-		public int Count
-		{
-			get { return _ss.Length; }
-		}
+		public int Count => _ss.Length;
+		public bool IsEmpty => Count != 0;
+
 		public IEnumerator<char> GetEnumerator()
 		{
 			for (int i = 0; i < Count; i++)
