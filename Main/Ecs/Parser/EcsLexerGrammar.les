@@ -23,8 +23,8 @@ namespace Loyc.Ecs.Parser
 		@[#new] def Newline() {
 			base.Newline();
 			_allowPPAt = InputPosition;
-			_value = WhitespaceTag.Value;
 		};
+
 		@[private] token DotIndent @{
 			&{_startPosition == _lineStartAt}
 			{startPosition::int = InputPosition;}
@@ -125,8 +125,8 @@ namespace Loyc.Ecs.Parser
 		@[k(4), private]
 		token TQString @{
 			{_parseNeeded = true;}
-			( '"' '"' '"' nongreedy(_)* '"' '"' '"' {_style = NodeStyle.TDQStringLiteral;}
-			| "'''"       nongreedy(_)* "'''"       {_style = NodeStyle.TQStringLiteral;}
+			( '"' '"' '"' nongreedy(Newline / _)* '"' '"' '"' {_style = NodeStyle.TDQStringLiteral;}
+			| "'''"       nongreedy(Newline / _)* "'''"       {_style = NodeStyle.TQStringLiteral;}
 			)
 			{ParseStringValue();}
 		};
@@ -152,7 +152,7 @@ namespace Loyc.Ecs.Parser
 		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		};
 		@[k(9), private]
-		rule IdContChars @{ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* };
+		rule IdContChars @{ ('0'..'9'|'\''|IdStartChar|IdUniLetter)* };
 		@[private] rule NormalId @{ (IdStartChar|IdUniLetter) IdContChars };
 		
 		@[private] rule CommentStart @{ '/' ('/'|'*') };
@@ -202,7 +202,7 @@ namespace Loyc.Ecs.Parser
 		/ "&="  { _type = TT.CompoundSet; _value = S.AndBitsAssign; }
 		/ "&"   { _type = TT.AndBits; _value = S.AndBits; }
 		| "|>"  { _type = TT.PipeArrow; _value = S.ForwardPipeArrow; }
-		| "|=>" { _type = TT.PipeArrow; _value = S.ForwardAssign; }
+		/ "|=>" { _type = TT.PipeArrow; _value = S.ForwardAssign; }
 		/ "||"  { _type = TT.OrXor; _value = S.Or; }
 		/ "|="  { _type = TT.CompoundSet; _value = S.OrBitsAssign; }
 		/ "|"   { _type = TT.OrBits; _value = S.OrBits; }
@@ -250,7 +250,10 @@ namespace Loyc.Ecs.Parser
 
 		// Shebang ---------------------------------------------------------------
 
-		@[private] token Shebang @{ "#!" ~('\r'|'\n')* Newline? };
+		@[private] token Shebang @{
+			"#!" ~('\r'|'\n')* Newline?
+			{ _value = WhitespaceTag.Value; }
+		};
 
 		// Keywords --------------------------------------------------------------
 
@@ -417,7 +420,7 @@ namespace Loyc.Ecs.Parser
 
 		@[k(3), private]
 		token Token @{
-			( {_type = TT.Newline;}    Newline
+			( {_type = TT.Newline;}    Newline   { _value = WhitespaceTag.Value; }
 			/ {_type = TT.Literal;}    Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /

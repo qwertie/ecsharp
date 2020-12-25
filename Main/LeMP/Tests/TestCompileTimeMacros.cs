@@ -37,21 +37,41 @@ namespace LeMP.Tests
 		[Test]
 		public void ErrorIsCorrectlyMappedToOriginalSourceCode()
 		{
-			string inputText = @"compileTime {
-				int X = 24.0; // Roslyn reports an error at `24.0`
-			}";
+			string inputText = @"
+				compileTime {
+					// Correct code should not affect error location
+					float X = 7f;
+					double Y = X + 77.7;
+					string s = '''
+						2020/12/25: there was a separate bug in triple-quoted strings
+						which affected ALL error locations afterward in EC# code (not 
+						just compileTime!) The bug was that the 'current line number' was
+						not advanced inside triple-quoted strings because the rule did
+						not call BaseLexer.AfterNewline() nor BaseLexer.NewLine().
+						So the test doesn't belong here but, er, we don't have any
+						tests like this one in the usual spot (EcsPrinterAndParserTests)
+					''';
+				}
+				compileTime {
+					int Z = 42.0; // Roslyn reports an error at `24.0`
+				}";
 
+			var errors = RunLeMPAndCaptureErrors(inputText);
+			Assert.AreEqual(1, errors.Count);
+			if (errors[0].Location is SourceRange range)
+				Assert.AreEqual("42.0", inputText.Substring(range.StartIndex, range.Length));
+			else
+				Assert.Fail("{0}", errors[0]);
+		}
+
+		private List<LogMessage> RunLeMPAndCaptureErrors(UString inputText)
+		{
 			MessageHolder messages = new MessageHolder();
 			MacroProcessor lemp = NewLemp(0xFFFF, EcsLanguageService.Value).With(mp => mp.Sink = messages);
 			IListSource<LNode> inputCode = EcsLanguageService.Value.Parse(inputText, MessageSink.Default);
 			lemp.ProcessSynchronously(LNode.List(inputCode));
 
-			var errors = messages.List.Where(m => m.Severity == Severity.Error).ToList();
-			Assert.AreEqual(1, errors.Count);
-			if (errors[0].Location is SourceRange range)
-				Assert.AreEqual("24.0", inputText.Substring(range.StartIndex, range.Length));
-			else
-				Assert.Fail("{0}", errors[0]);
+			return messages.List.Where(m => m.Severity == Severity.Error).ToList();
 		}
 
 		[Test]
@@ -179,7 +199,7 @@ namespace LeMP.Tests
 				int x, y = 0;");
 		}
 
-#if !NoReflectionEmit // Oops, can't generate assemblies in .NET Standard
+		#if !NoReflectionEmit // Oops, can't generate assemblies in .NET Standard
 
 		[Test]
 		public void LoadReferenceTest()

@@ -284,6 +284,7 @@ namespace LeMP
 			_roslynSessionLog?.WriteLine(codeText);
 			_roslynSessionLog?.Flush();
 
+			_roslynScriptState.GetVariable(__macro_context).Value = context;
 			try
 			{
 				// Allow users to write messages via MessageSink.Default
@@ -293,8 +294,6 @@ namespace LeMP
 					context.Sink.Write(sev, ctx, msg, args);
 				})))
 				{
-					_roslynScriptState.GetVariable(__macro_context).Value = context;
-
 					_roslynScriptState = _roslynScriptState.ContinueWithAsync(codeText).Result;
 				}
 				return _roslynScriptState.ReturnValue;
@@ -335,7 +334,8 @@ namespace LeMP
 			{
 				while (e is AggregateException ae && ae.InnerExceptions.Count == 1)
 					e = ae.InnerExceptions[0];
-				context.Sink.Error(parent, e.ExceptionMessageAndType());
+				context.Sink.Error(parent, "An exception was thrown from your code:".Localized() + 
+				                   " " + e.ExceptionMessageAndType());
 				LogRoslynError(e, context.Sink, parent, compiling: false);
 			}
 			return NoValue.Value;
