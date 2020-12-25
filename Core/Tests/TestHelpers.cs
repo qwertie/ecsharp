@@ -22,7 +22,7 @@ namespace Loyc.Collections.Impl
 		{
 			ExpectList(list, expected as IList<T>, true);
 		}
-		protected static void ExpectList<T>(IReadOnlyList<T> list, IList<T> expected, bool useEnumerator = false)
+		public static void ExpectList<T>(IReadOnlyList<T> list, IList<T> expected, bool useEnumerator = false)
 		{
 			Assert.AreEqual(expected.Count, list.Count);
 			if (useEnumerator)
@@ -33,7 +33,7 @@ namespace Loyc.Collections.Impl
 					Assert.AreEqual(expected[i], list[i]);
 			}
 		}
-		protected static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
+		public static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
 		{
 			IEnumerator<T> listE = list.GetEnumerator();
 			int i = 0;
@@ -57,11 +57,11 @@ namespace Loyc.Collections.Impl
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
 		}
 
-		protected static void ExpectSet<T>(IEnumerable<T> set, params T[] expected)
+		public static void ExpectSet<T>(IEnumerable<T> set, params T[] expected)
 		{
 			ExpectSet(set, new HashSet<T>(expected));
 		}
-		protected static void ExpectSet<T>(IEnumerable<T> set, HashSet<T> expected)
+		public static void ExpectSet<T>(IEnumerable<T> set, HashSet<T> expected)
 		{
 			int count = 0;
 			foreach (T item in set) {

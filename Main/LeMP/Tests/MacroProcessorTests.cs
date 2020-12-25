@@ -5,6 +5,7 @@ using System.Text;
 using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
+using Loyc.Syntax.Les;
 using Loyc.Collections;
 using Loyc;
 using S = Loyc.Syntax.CodeSymbols;
@@ -61,7 +62,7 @@ namespace LeMP.Tests
 					{
 						return node.WithTarget(outerNode[1]);
 					}));
-			return LNode.Call(S.Splice);
+			return LNode.Call(S.Splice); // delete this node
 		}
 
 		[LexicalMacro("overrideTarget(oldTarget, newTarget)", "Register a macro that changes its target from one identifier to another.")]
@@ -103,6 +104,50 @@ namespace LeMP.Tests
 			if (node.IsCall && node.Name.Name.StartsWith("P"))
 				return node.WithName((Symbol)("p" + node.Name.Name.Substring(1)));
 			return null;
+		}
+
+		// Oops, we can't reference TestHelpers from a production assembly (LeMP).
+		// Using duplicate code instead - maybe MiniTest should have its own collection comparer
+		private static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
+		{
+			IEnumerator<T> listE = list.GetEnumerator();
+			int i = 0;
+			foreach (T expectedItem in expected)
+			{
+				Assert.That(listE.MoveNext());
+				Assert.AreEqual(expectedItem, listE.Current);
+				i++;
+			}
+			Assert.IsFalse(listE.MoveNext());
+		}
+
+		[LexicalMacro("", "Asserts that the ancestor stack has the items passed to the macro")]
+		public static LNode ExpectAncestorStack(LNode node, IMacroContext context)
+		{
+			// Verify AncestorsAndPreviousSiblings
+			Assert.AreEqual(node.ArgCount, context.AncestorsAndPreviousSiblings.Count);
+			int index = 0;
+			foreach (var expect in node.Args)
+			{
+				Assert.IsTrue(expect.Calls(S.Tuple));
+				var pair = context.AncestorsAndPreviousSiblings[index];
+				ExpectList(pair.Item1, expect.Args.WithoutLast(1));
+				if (!expect.Args.Last.IsIdNamed("#skip"))
+					Assert.AreEqual(expect.Args.Last, pair.Item2.Target);
+				index++;
+			}
+
+			// Verify PreviousSiblings
+			var expectedPreviousSiblings = node.Args.Last.Args.WithoutLast(1);
+			int i = 0;
+			foreach (var expected in expectedPreviousSiblings)
+			{
+				if (!expected.IsIdNamed("#skip"))
+					Assert.AreEqual(expected, context.PreviousSiblings[i]);
+				i++;
+			}
+
+			return LNode.Call(S.Splice); // delete this node
 		}
 	}
 
@@ -168,7 +213,7 @@ namespace LeMP
 			var c = new TestCompiler(sink, new UString(input), preOpenedNamespaces);
 			c.MaxExpansions = maxExpand;
 			c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
-			c.Run();
+			c.Run(); // uses ParsingService.Default and default LNode.Printer
 			Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
 		}
 
@@ -364,11 +409,82 @@ namespace LeMP
 			Test("#importMacros(LeMP.Tests.A); import_macros LeMP.Tests.B; UpperCaseMacro;", "UPPERCASE;");
 		}
 
+		[Test]
+		public void AncestorsAndPreviousSiblings_WorksAsExpected()
+		{
+			Test(@"
+				#importMacros(LeMP.Tests);
+				Import System;
+				Import Loyc;
+				ExpectAncestorStack((#splice;), (Import System; Import Loyc; ExpectAncestorStack));
+				Class C {
+				    Var x = 1;
+				    Var y = 2;
+				    ExpectAncestorStack((#splice;),
+				                        (Import System; Import(Loyc); Class), 
+				                        (C; @`'{}`),
+				                        (Var x = 1; Var y = 2; ExpectAncestorStack));
+				    ExpectAncestorStack((#splice;),
+				                        (Import System; Import(Loyc); Class), 
+				                        (C; @`'{}`),
+				                        (Var x = 1; Var y = 2; ExpectAncestorStack));
+				}
+				", @"
+				Import(System);
+				Import(Loyc);
+				Class(C, {
+				    Var(x = 1);
+				    Var(y = 2);
+				});");
+
+			Test(@"
+				Import Loyc;
+				#importMacros(LeMP.Tests);
+				Namespace NS {
+					Class C {
+						Oof(1);
+						Foo(123 - ExpectAncestorStack(
+							(#splice;),
+							(@[@`%newline`] Import Loyc; Namespace),
+							(NS; @`'{}`),
+							(Class;),
+							(C; @`'{}`),
+							(Oof(1); Foo),
+							(@'-;),
+							(123; ExpectAncestorStack)
+						));
+						Oof(2);
+					};
+					// Special case: ExpectAncestorStack is the Target of a call.
+					(ExpectAncestorStack(
+						(#splice;),
+						(@[@`%newline`] Import Loyc; Namespace),
+						(NS; @`'{}`),
+						(Class C {
+						  Oof(1);
+						  Foo(-123);
+						  Oof(2);
+						}; #skip),
+						(ExpectAncestorStack;)))();
+				}
+				", @"
+				Import(Loyc);
+				Namespace(NS, {
+					Class(C, {
+						Oof(1);
+						Foo(-123);
+						Oof(2);
+					});
+					#splice()();
+				});", 0xFFFF, Les2LanguageService.Value, Les2LanguageService.Value);
+		}
+
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
 
-		private void Test(string input, string output, int maxExpand = 0xFFFF)
+		private void Test(string input, string output, int maxExpand = 0xFFFF, IParsingService parser = null, ILNodePrinter printer = null)
 		{
-			using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+			using (ParsingService.SetDefault(parser ?? Les2LanguageService.Value))
+			using (LNode.SetPrinter(printer ?? EcsLanguageService.WithPlainCSharpPrinter))
 				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.Prelude.Les");
 		}
 	}

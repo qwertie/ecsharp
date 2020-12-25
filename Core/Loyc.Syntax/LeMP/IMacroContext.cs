@@ -38,6 +38,53 @@ namespace LeMP
 		/// so the ancestor list may occasionally seem incoherent.</remarks>
 		IReadOnlyList<LNode> Ancestors { get; }
 
+		/// <summary>Returns a list of nodes that are previous siblings of the current 
+		/// node, and have already been processed by the macro processor.</summary>
+		/// <remarks>
+		/// Previous nodes cannot be altered and will typically end up in the output.
+		/// However, if the current macro was invoked because another macro called
+		/// PreProcess or <see cref="PreProcessChildren()"/>, the other macro will
+		/// not necessarily include the results of the preprocess operation in its
+		/// own output. In that case, the output will include neither PreviousSiblings 
+		/// nor the output from the current macro.
+		/// <para/>
+		/// This property is the same as AncestorsAndPreviousSiblings.Last().Item1.
+		/// </remarks>
+		IReadOnlyList<LNode> PreviousSiblings { get; }
+
+		/// <summary>Returns a list of pairs in which the second item is an ancestor
+		/// of the current node (except the final item, which is the current node)
+		/// and the first item is the previously processed siblings of that node.</summary>
+		/// <remarks>
+		/// For example, given code such as this:
+		/// <code>
+		///   using System;
+		///   class C {
+		///       int x;
+		///       int y;
+		///       foo();
+		///       oof();
+		///   }
+		/// </code>
+		/// If the macro foo() is being processed, this property will contain two
+		/// items. The first item is
+		/// <code>
+		///   ( LNode.List(quote { using System; }), 
+		///     quote {
+		///       class C {
+		///         int x;
+		///         int y;
+		///         foo();
+		///         oof();
+		///     } )
+		/// </code>
+		/// And the second is 
+		/// <code>
+		///   (LNode.List(quote { int x; }, quote { int y; }), quote(foo()))
+		/// </code>
+		/// </remarks>
+		IReadOnlyList<Pair<IReadOnlyList<LNode>, LNode>> AncestorsAndPreviousSiblings { get; }
+
 		/// <summary>Gets the logical parent of the current node, which is 
 		/// <c>Ancestors[Ancestors.Count - 2]</c>, or null if the current node
 		/// is the root node.</summary>

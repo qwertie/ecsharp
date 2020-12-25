@@ -109,8 +109,9 @@ namespace LeMP
 		public int MacrosInvoked { get; set; }
 		public int NodesReplaced { get; set; }
 
-		// Ancestors of current node, and the current node itself as the final item
-		DList<LNode> _ancestorStack;
+		// Ancestors of current node with their previous siblings, with the current node itself as the final item
+		DList<Pair<LNodeList, LNode>> _ancestorStack;
+		// Previously-processed Siblings of current node
 		CurNodeState _s;
 		int _reentrancyCounter = 0;
 		
@@ -200,7 +201,7 @@ namespace LeMP
 				Debug.Assert(reentrant || _ancestorStack == null);
 				
 				if (asRoot)
-					_ancestorStack = new DList<LNode>();
+					_ancestorStack = new DList<Pair<LNodeList, LNode>>();
 				_s = new CurNodeState();
 				if (asRoot || resetOpenNamespaces || resetProperties) {
 					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces : _curScope._openNamespaces;
@@ -212,13 +213,13 @@ namespace LeMP
 				}
 				if (single != null) {
 					DList<Pair<LNode, int>> _ = null;
-					return ApplyMacros(single, maxExpansions, areAttributesOrIsTarget, true, ref _) ?? single;
+					return ApplyMacros(single, LNode.List(), maxExpansions, areAttributesOrIsTarget, true, ref _) ?? single;
 				} else {
 					int oldStackCount = _ancestorStack.Count;
 					LNode splice = null;
 					if (asRoot) {
 						splice = list.AsLNode(S.Splice);
-						_ancestorStack.PushLast(splice);
+						_ancestorStack.PushLast(Pair.Create(LNode.List(), splice));
 					}
 					list = ApplyMacrosToList(list, maxExpansions, areAttributesOrIsTarget);
 					if (asRoot)
@@ -285,13 +286,22 @@ namespace LeMP
 				}
 			}
 
+			public IReadOnlyList<LNode> PreviousSiblings
+			{
+				get => _task._ancestorStack.Last.A;
+			}
 			public IReadOnlyList<LNode> Ancestors
 			{
-				get { return _task._ancestorStack; }
+				get => _task._ancestorStack.Select(p => p.B);
 			}
+			public IReadOnlyList<Pair<IReadOnlyList<LNode>, LNode>> AncestorsAndPreviousSiblings
+			{
+				get => _task._ancestorStack.Select(p => new Pair<IReadOnlyList<LNode>, LNode>(p.A, p.B));
+			}
+
 			public LNode Parent
 			{
-				get { var st = _task._ancestorStack; return st[st.Count - 2, null]; }
+				get { var st = _task._ancestorStack; return st[st.Count - 2, default].B; }
 			}
 
 			public LNodeList PreProcess(LNodeList input, bool asRoot = false, bool resetOpenNamespaces = false, bool resetProperties = false, bool areAttributes = false)
@@ -677,7 +687,7 @@ namespace LeMP
 		/// change the syntax tree at any level).</returns>
 		/// <remarks>EnqueueSplice is used if the input is #splice(...), but this
 		/// function doesn't notice if the output is #splice().</remarks>
-		LNode ApplyMacros(LNode input, int maxExpansions, bool isTargetNode, bool isSingleNode, ref DList<Pair<LNode, int>> nodeQueue)
+		LNode ApplyMacros(LNode input, LNodeList previousSiblings, int maxExpansions, bool isTargetNode, bool isSingleNode, ref DList<Pair<LNode, int>> nodeQueue)
 		{
 			_s.NodeQueue = nodeQueue;
 			int maxExpansionsBefore = maxExpansions;
@@ -705,7 +715,7 @@ namespace LeMP
 					_scopes.Add(null);
 
 				MacroResult result;
-				_ancestorStack.PushLast(curNode);
+				_ancestorStack.PushLast(Pair.Create(previousSiblings, curNode));
 				try {
 					if (_s.FoundMacros.Count == 0) {
 						nodeQueue = _s.NodeQueue;
@@ -746,6 +756,7 @@ namespace LeMP
 					// same result. Don't do that, just process children.
 					return ApplyMacrosToChildrenOf(resultNode, maxExpansions - 1) ?? resultNode;
 				} else {
+					// Apply macros to the output of the previous macro.
 					// Avoid deepening the call stack like we used to do...
 					//   result2 = ApplyMacros(result.NewNode, s.MaxExpansions - 1, s.IsTarget);
 					//   if (result2 != null) result.DropRemainingNodesRequested |= _s.DropRemainingNodesRequested;
@@ -888,7 +899,7 @@ namespace LeMP
 				var s = _s;
 				_s = new CurNodeState();
 				try {
-					Debug.Assert(s.Input == _ancestorStack.Last);
+					Debug.Assert(s.Input == _ancestorStack.Last.B);
 					s.Preprocessed = ApplyMacrosToChildrenOf(s.Input, s.MaxExpansions - 1) ?? s.Input;
 				} finally {
 					_s = s;
@@ -933,10 +944,10 @@ namespace LeMP
 
 				_s.StartListItem(list, i, areAttributes);
 				LNode input = list[i];
-				result = ApplyMacros(input, maxExpansions, false, false, ref nodeQueue);
+				results = list.Initial(i);
+				result = ApplyMacros(input, results, maxExpansions, false, false, ref nodeQueue);
 				if (result != null)
 				{
-					results = list.Initial(i);
 					Add(ref results, ref emptySplice, result);
 					// restore possibly-clobbered state
 					_s.StartListItem(list, i, areAttributes);
@@ -953,7 +964,7 @@ namespace LeMP
 					input2.A = input2.A.PlusAttrsBefore(TriviaFromEmptySplice(emptySplice));
 					emptySplice = null;
 				}
-				result = ApplyMacros(input2.A, input2.B, false, false, ref nodeQueue);
+				result = ApplyMacros(input2.A, results, input2.B, false, false, ref nodeQueue);
 				Add(ref results, ref emptySplice, result ?? input2.A);
 			}
 			_s.NodeQueue = null;
@@ -1015,7 +1026,7 @@ namespace LeMP
 				if (target != null && target.Kind != LNodeKind.Literal)
 				{
 					DList<Pair<LNode, int>> _ = null;
-					LNode newTarget = ApplyMacros(target, maxExpansions, true, true, ref _);
+					LNode newTarget = ApplyMacros(target, LNode.List(), maxExpansions, true, true, ref _);
 					if (newTarget != null)
 					{
 						if (newTarget.Calls(S.Splice, 1))
