@@ -32,6 +32,15 @@ namespace LeMP
 		[ThreadStatic] static StreamWriter _roslynSessionLog;
 		[ThreadStatic] static string _roslynSessionLogFileName;
 
+		// TODO: add LeMP feature for disposing/end of file/end of block
+		public static void ResetRoslyn()
+		{
+			_roslynSessionLog.Dispose();
+			_roslynScriptState = null;
+			_roslynSessionLog = null;
+			_roslynSessionLogFileName = null;
+		}
+
 		[LexicalMacro("compileTime { /* EC# code to run at compile time */ }",
 			"Runs code at compile time using the Microsoft Roslyn interactive engine. " +
 			"LeMP will preprocess the code before giving it to Roslyn, so LeMP " +
@@ -41,6 +50,12 @@ namespace LeMP
 			"The code inside this block will disappear from the output.", Mode = MacroMode.NoReprocessing)]
 		public static LNode compileTime(LNode node, IMacroContext context) => 
 			CompileTimeMacro(nameof(compileTime), node, context, false);
+
+		[LexicalMacro("rawCompileTime { /* C# code to run at compile time */ }",
+			"Like compileTime {...}, this macro runs code at compile time. This version of " +
+			"the macro does not preprocess the code, so it must already be plain C# code.", Mode = MacroMode.NoReprocessing)]
+		public static LNode rawCompileTime(LNode node, IMacroContext context) =>
+			CompileTimeMacro(nameof(rawCompileTime), node, context, alsoRuntime: false, wantPreprocess: false);
 
 		[LexicalMacro("compileTimeAndRuntime { /* EC# declarations available at both compile-time and runtime */ }",
 			"Runs code at compile time using the Microsoft Roslyn interactive engine. " +
@@ -52,6 +67,13 @@ namespace LeMP
 			"declarations therein will be available at runtime.", Mode = MacroMode.NoReprocessing)]
 		public static LNode compileTimeAndRuntime(LNode node, IMacroContext context) => 
 			CompileTimeMacro(nameof(compileTimeAndRuntime), node, context, true);
+
+		[LexicalMacro("rawCompileTimeAndRuntime { /* C# code to run at compile time */ }",
+			"Like compileTimeAndRuntime {...}, this macro runs code at compile time and " +
+			"also emits the code block to the output file. This version of the macro does not " +
+			"preprocess the code, so it must already be plain C# code.", Mode = MacroMode.NoReprocessing)]
+		public static LNode rawCompileTimeAndRuntime(LNode node, IMacroContext context) =>
+			CompileTimeMacro(nameof(rawCompileTimeAndRuntime), node, context, alsoRuntime: true, wantPreprocess: false);
 
 		[LexicalMacro("precompute(_expression_)",
 			"Evaluates an expression at compile time using the Microsoft Roslyn interactive engine. " +
@@ -74,19 +96,23 @@ namespace LeMP
 		public static LNode rawPrecompute(LNode node, IMacroContext context) =>
 			PrecomputeMacro(nameof(rawPrecompute), node, context, true);
 
-		private static LNode CompileTimeMacro(string macroName, LNode node, IMacroContext context, bool alsoRuntime)
+		private static LNode CompileTimeMacro(string macroName, LNode node, IMacroContext context, bool alsoRuntime, bool wantPreprocess = true)
 		{
 			if (node.ArgCount != 1 || !node[0].Calls(S.Braces)) {
 				context.Error(node.Target, "{0} should have a single argument: a braced block.", macroName);
 				return null;
 			}
-			if (context.Ancestors.Take(context.Ancestors.Count - 1).Any(
-					n => n.Name.IsOneOf(S.Class, S.Struct, S.Enum, S.Namespace)
-					  || n.Name.IsOneOf(S.Constructor, S.Fn, S.Property, S.Var)))
-				context.Error(node.Target, "{0} is designed for use only at the top level of the file. It will be executed as though it is at the top level: any outer scopes will be ignored.", macroName);
 
 			LNodeList code = node[0].Args;
-			code = context.PreProcess(code);
+			if (wantPreprocess)
+			{
+				if (context.Ancestors.Take(context.Ancestors.Count - 1).Any(
+					n => n.Name.IsOneOf(S.Class, S.Struct, S.Enum, S.Namespace)
+					  || n.Name.IsOneOf(S.Constructor, S.Fn, S.Property, S.Var)))
+					context.Error(node.Target, "{0} is designed for use only at the top level of the file. It will be executed as though it is at the top level: any outer scopes will be ignored.", macroName);
+
+				code = context.PreProcess(code);
+			}
 
 			WriteHeaderCommentInSessionLog(node, context.Sink);
 

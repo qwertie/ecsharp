@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace LeMP
 {
@@ -81,11 +81,13 @@ namespace LeMP
 
 			LNode lmAttribute = quote(global::LeMP.LexicalMacroAttribute($syntax, $description, $(..extraArgs)));
 			
+			// Create a matchCode statement unless the pattern is MacroName($(.._)), which always matches
 			unless (pattern'.HasSimpleHeadWithoutPAttrs() && pattern'.Target.IsId 
 				&& pattern'.ArgCount == 1 && pattern'[0].Equals(rawQuote($(.._))))
 			{
 				if (!body.Calls(S.Braces))
 					body = quote { return $body; };
+				
 				body = quote {
 					{
 						matchCode(node) {
@@ -97,8 +99,19 @@ namespace LeMP
 				};
 			}
 
+			body = context.PreProcess(body);
+			
+			// Look for "using" and "#r" statements at the beginning of the body
+			LNodeList usingDirectives = default;
+			if (body.Calls(S.Braces)) {
+				usingDirectives = LNode.List(body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference)));
+				body = body.WithArgs(body.Args.Slice(usingDirectives.Count));
+			}
+
 			return quote {
-				compileTime {
+				rawCompileTime {
+					$(..usingDirectives);
+
 					[$lmAttribute, $(..attrs)]
 					public static LNode $macroName(LNode node, global::LeMP.IMacroContext context) => $body;
 				}

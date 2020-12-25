@@ -32,8 +32,32 @@ namespace LeMP.Tests
 		}
 
 		[Test]
+		public void MacroWithUsingDirective()
+		{
+			// TODO: add LeMP feature for disposing/end of file/end of block
+			//       until then Reset manually to avoid interference from other tests
+			StandardMacros.ResetRoslyn();
+
+			TestEcs(@"
+				macro poop($(.._))
+				{
+					using System.Text;
+
+					var sb = new StringBuilder(""POOP"");
+					return node.WithTarget((Symbol) sb.ToString());
+				}
+				int i = poop(123);
+				", @"
+				int i = POOP(123);");
+		}
+
+		[Test]
 		public void PriorityTest()
 		{
+			// TODO: add LeMP feature for disposing/end of file/end of block
+			//       until then Reset manually to avoid interference from other tests
+			StandardMacros.ResetRoslyn();
+
 			TestEcs(@"[""Change first argument to HELLO if it's not an identifier"", Passive]
 				macro StupidDemoMacro($(arg0 && !arg0.IsId), $(..rest))
 				{

@@ -449,6 +449,7 @@ namespace Loyc.Syntax
 
 		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new LNodeList(attrs)); }
 		public CallNode WithArgs(params LNode[] args) { return WithArgs(new LNodeList(args)); }
+		public CallNode WithArgs(IEnumerable<LNode> args) { return WithArgs(new LNodeList(args)); }
 		public LNode PlusAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
 		public LNode PlusAttrs(IEnumerable<LNode> attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
 		public LNode PlusAttrs(params LNode[] attrs) { return WithAttrs(Attrs.AddRange(attrs)); }

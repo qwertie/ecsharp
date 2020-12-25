@@ -35,7 +35,7 @@ namespace LeMP.Tests
 		}
 
 		[Test]
-		public void ErrorReportingTest()
+		public void ErrorIsCorrectlyMappedToOriginalSourceCode()
 		{
 			string inputText = @"compileTime {
 				int X = 24.0; // Roslyn reports an error at `24.0`
