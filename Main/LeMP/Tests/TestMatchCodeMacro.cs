@@ -13,20 +13,22 @@ namespace LeMP.Tests
 		public void TestMatchCode()
 		{
 			TestLes(@"matchCode var { 777 => Yay(); 666 => Boo(); $_ => @Huh?(); }",
-				@"#if(777.Equals(var.Value), Yay(), 
-					#if(666.Equals(var.Value), Boo(), @Huh?()));");
+				@"#if(777.Equals(var.Value), { Yay(); }, 
+					#if(666.Equals(var.Value), { Boo(); }, { @Huh?(); }));");
 			TestEcs(@"matchCode(code) {
 					case { '2' + 2; }: Weird();
 				}", @"
-					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && 2.Equals(code.Args[1].Value))
-						Weird();");
+					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && 2.Equals(code.Args[1].Value)) {
+						Weird();
+					}");
 			TestEcs(@"matchCode(Get.Var) {
 					case Do($stuff): Do(stuff);
 				}", @"{
 						var tmp_1 = Get.Var;
 						LNode stuff;
-						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null)
+						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null) {
 							Do(stuff);
+						}
 					}"
 				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			TestEcs(@"matchCode(code) { 
@@ -36,12 +38,13 @@ namespace LeMP.Tests
 				}",
 				@"{
 					LNode id, lit;
-					if ((lit = code) != null && lit.IsLiteral)
+					if ((lit = code) != null && lit.IsLiteral) {
 						Literal();
-					else if ((id = code) != null && id.IsId)
+					} else if ((id = code) != null && id.IsId) {
 						Id();
-					else
+					} else {
 						Call();
+					}
 				}");
 			TestEcs(@"matchCode(code) { 
 					case foo, FOO:  Foo(); 
@@ -49,25 +52,28 @@ namespace LeMP.Tests
 					case $whatever: Whatever();
 				}", @"{
 					LNode whatever;
-					if (code.IsIdNamed((Symbol) ""foo"") || code.IsIdNamed((Symbol) ""FOO""))
+					if (code.IsIdNamed((Symbol) ""foo"") || code.IsIdNamed((Symbol) ""FOO"")) {
 						Foo();
-					else if (1.Equals(code.Value) || 1d.Equals(code.Value))
+					} else if (1.Equals(code.Value) || 1d.Equals(code.Value)) {
 						One();
-					else if ((whatever = code) != null)
+					} else if ((whatever = code) != null) {
 						Whatever();
+					}
 				}");
 			TestEcs(@"matchCode(code) { 
 					case 1, one: One();
 				}", @"
-					if (1.Equals(code.Value) || code.IsIdNamed((Symbol) ""one""))
+					if (1.Equals(code.Value) || code.IsIdNamed((Symbol) ""one"")) {
 						One();
+					}
 				");
 			TestEcs(@"matchCode(code) { 
 					case $binOp($_, $_): BinOp(binOp);
 				}", @"{
 					LNode binOp;
-					if (code.Args.Count == 2 && (binOp = code.Target) != null)
+					if (code.Args.Count == 2 && (binOp = code.Target) != null) {
 						BinOp(binOp);
+					}
 				}");
 			TestEcs(@"matchCode(code) { 
 					case ($a, $b, $(...args), $c):                Three(a, b, c);
@@ -81,9 +87,9 @@ namespace LeMP.Tests
 						args = new LNodeList(code.Args.Slice(2, code.Args.Count - 3));
 						Three(a, b, c);
 					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true 
-						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true)
+						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true) {
 						Tuple(first, args);
-					else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
+					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
 						args = code.Args.WithoutLast(1);
 						Unreachable();
 					} else if (code.Calls(CodeSymbols.Tuple)) {
@@ -103,9 +109,9 @@ namespace LeMP.Tests
 				}", @"{
 					LNode op          = null, tmp_1 = null, x, x_ = null, y = null;
 					LNodeList attrs;
-					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
+					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null) {
 						Assign(x, y);
-					else if ( 
+					} else if ( 
 						(attrs = code.Attrs).IsEmpty | true && code.Calls(CodeSymbols.Assign, 2) && 
 						(x = code.Args[0]) != null && (tmp_1 = code.Args[1]) != null && tmp_1.Calls(CodeSymbols.Add, 2) && 
 						(x_ = tmp_1.Args[0]) != null && x_.Equals(x) && 1.Equals(tmp_1.Args[1].Value) || 
@@ -113,8 +119,9 @@ namespace LeMP.Tests
 						(x = code.Args[0]) != null && (y = code.Args[1]) != null) {
 						Handle(attrs);
 						Handle(x, y);
-					} else
+					} else {
 						Other();
+					}
 				}"
 				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			// Ideally this generated code would use a tmp_n variable, but I'll accept the current output
@@ -140,14 +147,17 @@ namespace LeMP.Tests
 			TestEcs(@"matchCode(code) {
 					case { '2' + $(ref rhs); }: Weird();
 				}", @"
-					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && (rhs = code.Args[1]) != null)
-						Weird();");
+					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && (rhs = code.Args[1]) != null) {
+						Weird();
+					}");
 			TestEcs(@"matchCode (code) {
 					case $_<$(.._)>:
 					default: Nope();
 				}", @"
-					if (code.CallsMin(CodeSymbols.Of, 1)) { } 
-					else Nope();
+					if (code.CallsMin(CodeSymbols.Of, 1)) {
+					} else {
+						Nope();
+					}
 				");
 			TestEcs(@"matchCode (stmt) {
 					case { alt $altName; }: 
@@ -155,8 +165,9 @@ namespace LeMP.Tests
 					}",
 				@"{
 					LNode altName;
-					if (stmt.Calls(CodeSymbols.Var, 2) && stmt.Args[0].IsIdNamed((Symbol) ""alt"") && (altName = stmt.Args[1]) != null)
+					if (stmt.Calls(CodeSymbols.Var, 2) && stmt.Args[0].IsIdNamed((Symbol) ""alt"") && (altName = stmt.Args[1]) != null) {
 						WriteLine(altName.ToString());
+					}
 				}");
 		}
 
@@ -164,7 +175,7 @@ namespace LeMP.Tests
 		public void TestMatchCodePreservesTrivia()
 		{
 			TestEcs(@"/*before*/ matchCode (var) { case 777: Yay(); case 666: Boo(); default: Huh(); } /*after*/",
-				@"/*before*/ if (777.Equals(var.Value)) Yay(); else if (666.Equals(var.Value)) Boo(); else Huh(); /*after*/");
+				@"/*before*/ if (777.Equals(var.Value)) { Yay(); } else if (666.Equals(var.Value)) { Boo(); } else { Huh(); } /*after*/");
 			TestEcs(@"/*before*/ 
 					matchCode(Get.Var) {
 						case Do($stuff):
@@ -174,8 +185,9 @@ namespace LeMP.Tests
 					{
 						var tmp_1 = Get.Var;
 						LNode stuff;
-						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null)
+						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null) {
 							Do(stuff);
+						}
 					} /*after*/"
 				.Replace("tmp_1", "tmp_" + MacroProcessor.NextTempCounter));
 		}

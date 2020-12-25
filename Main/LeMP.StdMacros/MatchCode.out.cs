@@ -69,7 +69,7 @@ namespace LeMP
 					} else
 						testExpr = cmc.MakeTopTestExpr(@case .Key[0], var);
 				}
-				var handler = @case .Value.AsLNode(S.Braces);
+				var handler = F.Braces(@case .Value);
 				if (cmc.ThenClause.Count > 0)
 					handler = LNode.MergeLists(F.Braces(cmc.ThenClause), handler, S.Braces);
 				ifClauses.Add(Pair.Create(testExpr, handler));

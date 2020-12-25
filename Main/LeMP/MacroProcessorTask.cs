@@ -286,17 +286,17 @@ namespace LeMP
 				}
 			}
 
-			public IReadOnlyList<LNode> PreviousSiblings
+			public IListSource<LNode> PreviousSiblings
 			{
 				get => _task._ancestorStack.Last.A;
 			}
-			public IReadOnlyList<LNode> Ancestors
+			public IListSource<LNode> Ancestors
 			{
 				get => _task._ancestorStack.Select(p => p.B);
 			}
-			public IReadOnlyList<Pair<IReadOnlyList<LNode>, LNode>> AncestorsAndPreviousSiblings
+			public IListSource<Pair<IListSource<LNode>, LNode>> AncestorsAndPreviousSiblings
 			{
-				get => _task._ancestorStack.Select(p => new Pair<IReadOnlyList<LNode>, LNode>(p.A, p.B));
+				get => _task._ancestorStack.Select(p => new Pair<IListSource<LNode>, LNode>(p.A, p.B));
 			}
 
 			public LNode Parent

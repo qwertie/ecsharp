@@ -25,7 +25,7 @@ namespace LeMP
 		/// Scopes are bounded by curly brace nodes (Call nodes named "{}").
 		/// </remarks>
 		IDictionary<object, object> ScopedProperties { get; }
-		
+
 		/// <summary>Returns a list of ancestors of the current node being 
 		/// processed. Normally Ancestors[0] is a #splice node that contains a list 
 		/// of all top-level statements in the file, and Ancestors.Last() is the
@@ -36,7 +36,7 @@ namespace LeMP
 		/// child node is changed by a macro, the parent is not updated in this 
 		/// list, but macro processing continues for the descendants of that child,
 		/// so the ancestor list may occasionally seem incoherent.</remarks>
-		IReadOnlyList<LNode> Ancestors { get; }
+		IListSource<LNode> Ancestors { get; }
 
 		/// <summary>Returns a list of nodes that are previous siblings of the current 
 		/// node, and have already been processed by the macro processor.</summary>
@@ -50,7 +50,7 @@ namespace LeMP
 		/// <para/>
 		/// This property is the same as AncestorsAndPreviousSiblings.Last().Item1.
 		/// </remarks>
-		IReadOnlyList<LNode> PreviousSiblings { get; }
+		IListSource<LNode> PreviousSiblings { get; }
 
 		/// <summary>Returns a list of pairs in which the second item is an ancestor
 		/// of the current node (except the final item, which is the current node)
@@ -83,7 +83,7 @@ namespace LeMP
 		///   (LNode.List(quote { int x; }, quote { int y; }), quote(foo()))
 		/// </code>
 		/// </remarks>
-		IReadOnlyList<Pair<IReadOnlyList<LNode>, LNode>> AncestorsAndPreviousSiblings { get; }
+		IListSource<Pair<IListSource<LNode>, LNode>> AncestorsAndPreviousSiblings { get; }
 
 		/// <summary>Gets the logical parent of the current node, which is 
 		/// <c>Ancestors[Ancestors.Count - 2]</c>, or null if the current node

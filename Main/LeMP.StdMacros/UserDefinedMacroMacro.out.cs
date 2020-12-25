@@ -87,26 +87,30 @@ namespace LeMP
 		
 			LNode lmAttribute = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "LexicalMacroAttribute"))).SetStyle(NodeStyle.Operator), LNode.List().Add(syntax).Add(description).AddRange(extraArgs));
 		
+			if (!body.Calls(S.Braces))
+				body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.StatementBlock);
+		
+			body = context.PreProcess(body);
+		
+			// Look for "using" statements above the macro() call
+			LNodeList usingDirectives = LNode.List(context.PreviousSiblings.TakeNowWhile(n => n.Calls(S.Import)));
+		
+			// Look for "using" and "#r" statements at the beginning of the body
+			if (body.Calls(S.Braces)) {
+				var bodyUsings = body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference));
+				usingDirectives.AddRange(bodyUsings);
+				body = body.WithArgs(body.Args.Slice(bodyUsings.Count));
+			}
+		
 			// Create a matchCode statement unless the pattern is MacroName($(.._)), which always matches
 			if (!(pattern_apos.HasSimpleHeadWithoutPAttrs() && pattern_apos.Target.IsId 
 			&& pattern_apos.ArgCount == 1 && pattern_apos[0].Equals(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Call(CodeSymbols.DotDot, LNode.List(LNode.Id((Symbol) "_"))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator))))
 			{
-				if (!body.Calls(S.Braces))
-					body = LNode.Call(CodeSymbols.Return, LNode.List(body));
-			
-				body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) "matchCode", LNode.List(LNode.Id((Symbol) "node"), LNode.Call(CodeSymbols.Braces, LNode.List().Add(LNode.Call(CodeSymbols.Case, LNode.List(pattern))).AddRange(body.AsList(S.Braces))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special), LNode.Call(CodeSymbols.Return, LNode.List(LNode.Literal(null))))).SetStyle(NodeStyle.StatementBlock);
+				// Note: the body is already preprocessed; #noLexicalMacros prevents double-processing
+				body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) "matchCode", LNode.List(LNode.Id((Symbol) "node"), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Case, LNode.List(pattern)), LNode.Call((Symbol) "#noLexicalMacros", LNode.List(body.AsList(S.Braces))))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special), LNode.Call(CodeSymbols.Return, LNode.List(LNode.Literal(null))))).SetStyle(NodeStyle.StatementBlock);
 			}
 		
-			body = context.PreProcess(body);
-		
-			// Look for "using" and "#r" statements at the beginning of the body
-			LNodeList usingDirectives = default;
-			if (body.Calls(S.Braces)) {
-				usingDirectives = LNode.List(body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference)));
-				body = body.WithArgs(body.Args.Slice(usingDirectives.Count));
-			}
-		
-			return LNode.Call((Symbol) "rawCompileTime", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(usingDirectives).Add(LNode.Call(LNode.List().Add(lmAttribute).AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)).Add(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(LNode.Id((Symbol) "LNode"), macroName, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id((Symbol) "LNode"), LNode.Id((Symbol) "node"))), LNode.Call(CodeSymbols.Var, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "IMacroContext"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "context"))))), body)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special);
+			return LNode.Call((Symbol) "compileTime", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(usingDirectives).Add(LNode.Call(LNode.List().Add(lmAttribute).AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)).Add(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(LNode.Id((Symbol) "LNode"), macroName, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id((Symbol) "LNode"), LNode.Id((Symbol) "node"))), LNode.Call(CodeSymbols.Var, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "IMacroContext"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "context"))))), body)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special);
 		}
 	}
 }

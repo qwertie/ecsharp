@@ -39,15 +39,31 @@ namespace LeMP.Tests
 			StandardMacros.ResetRoslyn();
 
 			TestEcs(@"
+				macro digits($(str && str.Value is string strValue))
+				{
+					using System.Text.RegularExpressions;
+
+					var re = new Regex(""[0-9]"");
+					return LNode.Literal(re.Matches(strValue).Count);
+				}
+				int i = digits(""I have 25 apples an 7 bananas"");
+				", @"
+				int i = 3;");
+
+			StandardMacros.ResetRoslyn();
+			TestEcs(@"
+				using System.Text;
+
 				macro poop($(.._))
 				{
-					using System.Text;
-
 					var sb = new StringBuilder(""POOP"");
 					return node.WithTarget((Symbol) sb.ToString());
 				}
+
 				int i = poop(123);
 				", @"
+				using System.Text;
+
 				int i = POOP(123);");
 		}
 

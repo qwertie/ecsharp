@@ -80,36 +80,40 @@ namespace LeMP
 				extraArgs.Add(quote(Mode = $modesExpr));
 
 			LNode lmAttribute = quote(global::LeMP.LexicalMacroAttribute($syntax, $description, $(..extraArgs)));
+
+			if (!body.Calls(S.Braces))
+				body = quote { { return $body; } };
+
+			body = context.PreProcess(body);
+
+			// Look for "using" statements above the macro() call
+			LNodeList usingDirectives = LNode.List(context.PreviousSiblings.TakeNowWhile(n => n.Calls(S.Import)));
+			
+			// Look for "using" and "#r" statements at the beginning of the body
+			if (body.Calls(S.Braces)) {
+				var bodyUsings = body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference));
+				usingDirectives.AddRange(bodyUsings);
+				body = body.WithArgs(body.Args.Slice(bodyUsings.Count));
+			}
 			
 			// Create a matchCode statement unless the pattern is MacroName($(.._)), which always matches
 			unless (pattern'.HasSimpleHeadWithoutPAttrs() && pattern'.Target.IsId 
 				&& pattern'.ArgCount == 1 && pattern'[0].Equals(rawQuote($(.._))))
 			{
-				if (!body.Calls(S.Braces))
-					body = quote { return $body; };
-				
+				// Note: the body is already preprocessed; #noLexicalMacros prevents double-processing
 				body = quote {
 					{
 						matchCode(node) {
 							case $pattern:
-								$(..body.AsList(S.Braces));
+								#noLexicalMacros($(..body.AsList(S.Braces)));
 						}
 						return null;
 					}
 				};
 			}
 
-			body = context.PreProcess(body);
-			
-			// Look for "using" and "#r" statements at the beginning of the body
-			LNodeList usingDirectives = default;
-			if (body.Calls(S.Braces)) {
-				usingDirectives = LNode.List(body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference)));
-				body = body.WithArgs(body.Args.Slice(usingDirectives.Count));
-			}
-
 			return quote {
-				rawCompileTime {
+				compileTime {
 					$(..usingDirectives);
 
 					[$lmAttribute, $(..attrs)]
