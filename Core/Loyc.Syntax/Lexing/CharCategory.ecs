@@ -245,9 +245,10 @@ compileTime // Write an HTML file to help us understand the categories
 		else // new version
 		{
 			// Build list of table rows (HTML strings)
-			var paragraphs = new List<string>();
+			var sections = new List<string>();
 			foreach (var pair in categories)
 			{
+				var paragraphs = new List<string>();
 				(var cat, var tuple) = (pair.Key, pair.Value);
 				int bmpCount = tuple.Members.Count(c => c <= 0xFFFF);
 			
@@ -255,7 +256,6 @@ compileTime // Write an HTML file to help us understand the categories
 				var ranges = BuildRangeList(tuple.Members);
 
 				// For each range, report it together with its characters
-				paragraphs.Add($"<h2>{tuple.CatName}: {cat}</h2>");
 				paragraphs.Add($"<p>{tuple.Members.Count} characters ({bmpCount} BMP + {tuple.Members.Count-bmpCount} astral) in {ranges.Count} ranges</p>");
 				var sb = new StringBuilder("<p>");
 				int newlinePressure = 0;
@@ -263,7 +263,7 @@ compileTime // Write an HTML file to help us understand the categories
 				foreach (var r in ranges) {
 					if (newlinePressure > 20 || newlinePressure > 0 && (r.lo & ~0xFF) != (prev_r.lo & ~0xFF)) {
 						newlinePressure = 0;
-						sb.Append("</p>\n\t\t<p>");
+						sb.Append("</p>\n\t<p>");
 					}
 					sb.Append("<span class=R>| ");
 					sb.Append(r.lo == r.hi ? r.lo.ToString("X") : r.lo.ToString("X") + "-" + r.hi.ToString("X"));
@@ -291,20 +291,58 @@ compileTime // Write an HTML file to help us understand the categories
 				}
 				sb.Append("</p>");
 				paragraphs.Add(sb.ToString());
+
+				// Build a section from the paragraphs. Hide the giant CJK regions.
+				var expanded = tuple.CatName != nameof(UnicodeCategory.OtherLetter) ? "checked" : "";
+				var paragraphsJoined = string.Join("\n\t", paragraphs);
+				sections.Add($"""<div class="collapsable">
+						<h2><label for="{cat}"><span style="text-decoration: underline dotted gray">
+						    {tuple.CatName}: {cat}</span></label></h2>
+						    <input id="{cat}" type="checkbox" {expanded}>
+						{paragraphsJoined}
+					</div>""".Replace("\n", "\n\t\t"));
 			}
-			var paragraphsJoined = string.Join("\n\t\t", paragraphs);
+			var sectionsJoined = string.Join("\n\t\t", sections);
+			var styles = """
+				p {
+					margin-top: 0.4em; margin-bottom: 0.4em;
+					text-indent: -0.4em; padding-left: 0.4em;
+					font-family: serif;
+				}
+				.R { color: #88D; }
+
+				/* Makes sections collapsable */
+				.collapsable > input[type=checkbox] {
+					position: absolute;
+					top: -9999px;
+					left: -9999px;
+				}
+				.collapsable > input[type=checkbox] ~ * {
+					max-height: 1000em;
+					/*transition: 0.6s cubic-bezier(1,0,1,0);*/
+					overflow: hidden;
+				}
+				.collapsable > input[type=checkbox]:not(:checked) ~ * {
+					max-height: 0;
+					margin-top: 0; margin-bottom: 0;
+					/*transition: 0.6s cubic-bezier(0,1,0,1);*/
+				}
+				.collapsable label > span {
+					text-decoration: underline dotted gray;
+				}""".Replace("\n", "\n\t\t\t");
+			var script = """
+				function showCategories(show, except) {{
+					for (c of document.querySelectorAll(".collapsable input[type=checkbox]"))
+						c.checked = show != (except ? c.id.match(except) != null : false);
+				}}""".Replace("\n", "\n\t\t\t");
 
 			return $"""<!doctype html>
 				<html>
 					<head>
-						<style>
-							p {{
-								margin-top: 0.4em; margin-bottom: 0.4em;
-								text-indent: -0.4em; padding-left: 0.4em;
-								font-family: serif;
-							}}
-							.R {{ color: #88D; }}
+						<style>{styles}
 						</style>
+						<script>{script}
+						</script>
 						<title>All Unicode characters by category</title>
 					</head>
 					<body>
@@ -319,7 +357,17 @@ compileTime // Write an HTML file to help us understand the categories
 							<li><a href="http://www.unicode.org/reports/tr44/#UnicodeData.txt">Description of fields in the UCD main file</a>
 							<li><a href="http://www.unicode.org/reports/tr44/#General_Category_Values">About the categories on this page</a>
 						</ul>
-						{paragraphsJoined}
+						<p>The OtherLetter (Lo) category contains over 127,000 (mostly Chinese) 
+						  characters so it has been collapsed by default. Click a heading to hide 
+						  or show the contents of the category.</p>
+						<hr/>
+						<button onclick="showCategories(true)">Expand all</button>
+						<button onclick="showCategories(false)">Collapse all</button>
+						<button onclick="showCategories(true, /^Lo/)">Expand all except OtherLetter</button>
+						<button onclick="showCategories(true, /^L/)">Expand all except letters/CJK</button>
+						<button onclick="showCategories(true, /^(?!So)/)">Expand only OtherSymbol</button>
+						<hr/>
+						{sectionsJoined}
 						<hr/>
 						<p>Total characters assigned: {totalAssigned - privateUseCount} (not 
 						  including {privateUseCount} private-use code points). Assigned and private
@@ -358,20 +406,6 @@ compileTime // Write an HTML file to help us understand the categories
 		}
 	}
 	File.WriteAllText(Path.Combine(#get(#inputFolder), "CharCategories.html"), MakeHtmlFileWithCategories(), Encoding.UTF8); // includes BOM
-
-	//	.Select(line => {
-	//		UString rest = line;
-	//		int len1 = ParseHelpers.TryParseHex(ref rest, out int value1), len2 = 0, value2 = 0;
-	//		if (rest.StartsWith("..")) {
-	//			rest = rest.Slice(2);
-	//			len2 = ParseHelpers.TryParseHex(ref rest, out value2);
-	//		}
-	//		Debug.Assert(len1 >= 4);
-	//		string category = rest.SplitAt(';').Item2.Substring(1, 2).ToString();
-	//		return (From: value1, To: len2 != 0 ? value2 - value1 + 1 : 1, Category: categoryMap.TryGetValue(category, (UnicodeCategory)(-1)));
-	//	})
-	//	.OrderBy(t => t.From)
-	//	.ToList();
 
 
 	var F = new LNodeFactory(EmptySourceFile.Unknown);
