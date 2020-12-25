@@ -30,7 +30,7 @@ namespace Loyc.Syntax
 
 		public ICharSource Text
 		{
-			get { return UString.Empty; }
+			get { return UString.Null; }
 		}
 
 		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);

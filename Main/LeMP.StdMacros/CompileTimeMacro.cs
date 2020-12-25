@@ -251,8 +251,10 @@ namespace LeMP
 				}
 				return LNode.List(stmt);
 			});
-			
-			string codeText = EcsLanguageService.WithPlainCSharpPrinter.Print(code, context.Sink, printMode, new LNodePrinterOptions { IndentString = "  " });
+
+			var outputLocationMapper = new LNodeRangeMapper();
+			var options = new LNodePrinterOptions { IndentString = "  ", SaveRange = outputLocationMapper.SaveRange };
+			string codeText = EcsLanguageService.WithPlainCSharpPrinter.Print(code, context.Sink, printMode, options);
 			_roslynSessionLog?.WriteLine(codeText);
 			_roslynSessionLog?.Flush();
 
@@ -273,16 +275,34 @@ namespace LeMP
 			}
 			catch (CompilationErrorException e) when (e.Diagnostics.Length > 0 && e.Diagnostics[0].Location.IsInSource)
 			{
+				// Determine the best location in the source code at which to report the error.
+				// Keep in mind that the error may have occurred in a synthetic location not 
+				// found in the original code, and we cannot report such a location.
+				Microsoft.CodeAnalysis.Text.TextSpan range = e.Diagnostics[0].Location.SourceSpan;
+				var errorLocation = new IndexRange(range.Start, range.Length);
+				var mappedErrorLocation = outputLocationMapper.FindRelatedNodes(errorLocation, 10)
+					.FirstOrDefault(p => !p.A.Range.Source.Text.IsEmpty);
+				string locationCaveat = "";
+				if (mappedErrorLocation.A != null)
+				{
+					bool mappedIsEarly = mappedErrorLocation.B.EndIndex <= errorLocation.StartIndex;
+					if (mappedIsEarly || mappedErrorLocation.B.StartIndex >= errorLocation.EndIndex)
+						locationCaveat = "; " +
+							"The error occurred at a location ({0}) that doesn't seem to exist in the original code.".Localized(
+							mappedIsEarly ? "after the location indicated".Localized()
+							              : "before the location indicated".Localized());
+				}
+
 				// Extract the line where the error occurred, for inclusion in the error message
-				var range = e.Diagnostics[0].Location.SourceSpan;
 				int column = e.Diagnostics[0].Location.GetLineSpan().StartLinePosition.Character;
 				int lineStart = range.Start - column;
 				int lineEnd = codeText.IndexOf('\n', lineStart);
 				if (lineEnd < lineStart)
 					lineEnd = codeText.Length;
 				string line = codeText.Substring(lineStart, lineEnd - lineStart);
-				string errorMsg = e.Message + " - in «{0}»".Localized(line);
-				context.Sink.Error(parent, errorMsg);
+				
+				string errorMsg = e.Message + " - in «{0}»{1}".Localized(line, locationCaveat);
+				context.Sink.Error(mappedErrorLocation.A ?? parent, errorMsg);
 				LogRoslynError(e, context.Sink, parent, compiling: true);
 			}
 			catch (Exception e)

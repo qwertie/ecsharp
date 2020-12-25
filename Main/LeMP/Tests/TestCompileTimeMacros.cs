@@ -1,4 +1,8 @@
+using Loyc;
+using Loyc.Collections;
+using Loyc.Ecs;
 using Loyc.MiniTest;
+using Loyc.Syntax;
 using Loyc.Threading;
 using System;
 using System.Collections.Generic;
@@ -14,8 +18,6 @@ namespace LeMP.Tests
 	[TestFixture]
 	public class TestCompileTimeMacros : MacroTesterBase
 	{
-		// TODO: Test error reporting
-
 		[Test]
 		public void BasicTest()
 		{
@@ -30,6 +32,26 @@ namespace LeMP.Tests
 				}
 				const string Z = precompute((++Y).ToString());",
 				@"const string Z = ""26"";");
+		}
+
+		[Test]
+		public void ErrorReportingTest()
+		{
+			string inputText = @"compileTime {
+				int X = 24.0; // Roslyn reports an error at `24.0`
+			}";
+
+			MessageHolder messages = new MessageHolder();
+			MacroProcessor lemp = NewLemp(0xFFFF, EcsLanguageService.Value).With(mp => mp.Sink = messages);
+			IListSource<LNode> inputCode = EcsLanguageService.Value.Parse(inputText, MessageSink.Default);
+			lemp.ProcessSynchronously(LNode.List(inputCode));
+
+			var errors = messages.List.Where(m => m.Severity == Severity.Error).ToList();
+			Assert.AreEqual(1, errors.Count);
+			if (errors[0].Location is SourceRange range)
+				Assert.AreEqual("24.0", inputText.Substring(range.StartIndex, range.Length));
+			else
+				Assert.Fail("{0}", errors[0]);
 		}
 
 		[Test]
