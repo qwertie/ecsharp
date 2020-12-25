@@ -12,18 +12,17 @@
 			/* Makes sections collapsable */
 			.collapsable > input[type=checkbox] {
 				position: absolute;
-				top: -9999px;
 				left: -9999px;
 			}
 			.collapsable > input[type=checkbox] ~ * {
 				max-height: 1000em;
-				/*transition: 0.6s cubic-bezier(1,0,1,0);*/
+				transition: 0.6s cubic-bezier(1,0,1,0);
 				overflow: hidden;
 			}
 			.collapsable > input[type=checkbox]:not(:checked) ~ * {
 				max-height: 0;
 				margin-top: 0; margin-bottom: 0;
-				/*transition: 0.6s cubic-bezier(0,1,0,1);*/
+				transition: 0.6s cubic-bezier(0,1,0,1);
 			}
 			.collapsable label > span {
 				text-decoration: underline dotted gray;
