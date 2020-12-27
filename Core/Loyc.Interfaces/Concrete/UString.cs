@@ -612,7 +612,9 @@ namespace Loyc
 				return new Pair<UString, UString>(this, UString.Null);
 		}
 
+		[Obsolete("Please call the non-static method AppendTo(StringBuilder) instead")]
 		public static StringBuilder Append(StringBuilder sb, UString s) { return sb.Append(s._str, s._start, s._count); }
+		public StringBuilder AppendTo(StringBuilder sb) => sb.Append(_str, _start, _count);
 
 		public static UString operator+(string a, UString b)
 		{
@@ -621,7 +623,7 @@ namespace Loyc
 			if (a.Length == 0)
 				return b;
 			var sb = new StringBuilder(a, a.Length + b.Length);
-			return Append(sb, b).ToString();
+			return b.AppendTo(sb).ToString();
 		}
 		public static UString operator+(UString a, string b)
 		{
@@ -639,7 +641,7 @@ namespace Loyc
 			if (a.Length == 0)
 				return b;
 			var sb = new StringBuilder(a._str, a._start, a._count, a.Length + b.Length);
-			return Append(sb, b).ToString();
+			return b.AppendTo(sb).ToString();
 		}
 	}
 }
