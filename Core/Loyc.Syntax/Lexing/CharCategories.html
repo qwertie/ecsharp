@@ -2,12 +2,36 @@
 <html>
 	<head>
 		<style>
+			body {
+				font-family: "Segoe UI",Helvetica,Arial,sans-serif;
+				padding: 0.5em;
+				margin: 0;
+			}
+			header {
+				margin: -0.5em -0.5em 1.5em -0.5em; /*TRBL*/
+				padding: 1px 0.5em 0.5em 0.5em; /* need padding on all sides to avoid margin collapse */
+				background-color: #222230;
+				color: #fff;
+				box-shadow: 0 0 5px 1px #334;
+			}
 			p {
 				margin-top: 0.4em; margin-bottom: 0.4em;
 				text-indent: -0.4em; padding-left: 0.4em;
+			}
+			input[type=checkbox].serif:checked ~ * > p {
 				font-family: serif;
 			}
-			.R { color: #88D; }
+			input[type=checkbox].bold:checked ~ * > p {
+				font-weight: bold;
+			}
+			input[type=checkbox].italic:checked ~ * > p {
+				font-style: italic;
+			}
+			.R {
+				color: #88D;
+				font-style: normal;
+				font-weight: normal;
+			}
 			
 			/* Makes sections collapsable */
 			.collapsable > input[type=checkbox] {
@@ -37,14 +61,17 @@
 		<title>All Unicode characters by category</title>
 	</head>
 	<body>
-		<h1>All Unicode Characters on One Page (by Category)</h1>
+		<header>
+			<h1>All Unicode Characters on One Page (by Category)</h1>
+		</header>
 		<p>By far the fastest way to understand Unicode categories is to see what
 		  characters are in each category. Good thing you found this page!</p>
 		<ul>
-			<li><a href="https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/CharCategory.ecs">Enhanced C# code used to generate this page</a>
-			<li><a href="https://www.unicode.org/Public/UCD/latest/charts/CodeCharts.pdf">110MB Giant PDF of all the characters</a>
-			<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/">Unicode character database files</a>
-			<li><a href="https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt">Unicode character database main file</a>
+			<li>Install <a href="https://savannah.gnu.org/projects/unifont">Unifont</a> to ensure most of the characters on this page are visible
+			<li>Here's the <a href="https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/Lexing/CharCategory.ecs">Enhanced C# code used to generate this page</a>
+			<li>Here's a <a href="https://www.unicode.org/Public/UCD/latest/charts/CodeCharts.pdf">110MB Giant PDF of all the characters</a>
+			<li>The <a href="https://www.unicode.org/Public/UCD/latest/ucd/">Unicode character database files</a>
+			<li>The <a href="https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt">Unicode character database main file</a>
 			<li><a href="http://www.unicode.org/reports/tr44/#UnicodeData.txt">Description of fields in the UCD main file</a>
 			<li><a href="http://www.unicode.org/reports/tr44/#General_Category_Values">About the categories on this page</a>
 		</ul>
@@ -57,6 +84,9 @@
 		<button onclick="showCategories(true, /^Lo/)">Expand all except OtherLetter</button>
 		<button onclick="showCategories(true, /^L/)">Expand all except letters/CJK</button>
 		<button onclick="showCategories(true, /^(?!So)/)">Expand only OtherSymbol</button>
+		<input type="checkbox" class="serif" checked>Serif</input>
+		<input type="checkbox" class="bold">Bold</input>
+		<input type="checkbox" class="italic">Italic</input>
 		<hr/>
 		<div class="collapsable">
 			<h2><label for="Cc"><span style="text-decoration: underline dotted gray">
@@ -1200,7 +1230,7 @@
 		<p>Total characters assigned: 145972 (not 
 		  including 137468 private-use code points). Assigned and private
 		  code points together make up 25.4% 
-		  of the 0x110000 total possible code points. Generated 2020-12-25.</p>
+		  of the 0x110000 total possible code points. Generated 2020-12-27.</p>
 		<hr/>
 		<p>Sometimes I wish Unicode had a property for "stupid character that 
 		   we obviously never should have assigned in the first place because it's 
