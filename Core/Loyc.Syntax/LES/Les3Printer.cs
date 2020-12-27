@@ -48,10 +48,10 @@ namespace Loyc.Syntax.Les
 			MessageSink = sink;
 			SetOptions(options);
 			var newline = string.IsNullOrEmpty(_o.NewlineString) ? "\n" : _o.NewlineString;
-			PS = new PrinterState(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline);
+			PS = new LNodePrinterHelper(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline);
 		}
 
-		protected PrinterState PS;
+		protected LNodePrinterHelper PS;
 		protected ILNode _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected NewlineContext _nlContext = NewlineContext.NewlineUnsafe;
@@ -62,7 +62,7 @@ namespace Loyc.Syntax.Les
 			var neglist = list as INegListSource<ILNode> ?? list.ToList().AsNegList(0);
 			PrintStmtList(new NegListSlice<ILNode>(neglist), false);
 
-			if (PS.AtStartOfLine)
+			if (PS.IsAtStartOfLine)
 				PS.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
 			return SB;
 		}
@@ -72,7 +72,7 @@ namespace Loyc.Syntax.Les
 			_avoidExtraNewline = false;
 			Print(node, Precedence.MinValue, suffix, NewlineContext.NewlineSafeBefore | NewlineContext.NewlineSafeAfter);
 
-			if (PS.AtStartOfLine)
+			if (PS.IsAtStartOfLine)
 				PS.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
 			return SB;
 		}
@@ -256,16 +256,16 @@ namespace Loyc.Syntax.Les
 		}
 
 		bool _avoidExtraNewline = false;
-		PrinterState.Checkpoint _newlineCheckpoint;
+		LNodePrinterOutputLocation _newlineCheckpoint;
 
 		protected void Newline(bool avoidExtraNewline = false)
 		{
-			if (!(_avoidExtraNewline && PS.AtStartOfLine)) {
+			if (!(_avoidExtraNewline && PS.IsAtStartOfLine)) {
 				if (_curSet != Chars.Space) {
 					_curSet = Chars.Space;
 					StartToken(LesColorCode.None);
 				}
-				_newlineCheckpoint = PS.Newline();
+				_newlineCheckpoint = PS.Newline(0);
 			}
 			_avoidExtraNewline = avoidExtraNewline;
 			if (!avoidExtraNewline)
@@ -607,7 +607,7 @@ namespace Loyc.Syntax.Les
 				string semicolon = (style == ArgListStyle.Normal ? null : ";");
 				for (int i = 0; i < args.Count; i++) {
 					if (i != 0)
-						Space(_o.SpaceAfterComma && !PS.AtStartOfLine);
+						Space(_o.SpaceAfterComma && !PS.IsAtStartOfLine);
 					var stmt = args[i];
 					Print(stmt, Precedence.MinValue, suffix: semicolon ?? (i + 1 != args.Count ? "," : null));
 					MaybeForceLineBreak();
@@ -965,7 +965,7 @@ namespace Loyc.Syntax.Les
 						normalAttrs++;
 						WriteToken('@', LesColorCode.Attribute, Chars.Delimiter);
 						Print(attr, AttributeContext, nlContext: NewlineContext.NewlineSafeAfter);
-						if (!PS.AtStartOfLine && !MaybeForceLineBreak())
+						if (!PS.IsAtStartOfLine && !MaybeForceLineBreak())
 							Space();
 					}
 				}
