@@ -94,7 +94,13 @@ namespace LeMP
 
 				if (argList.Count == 0)
 				{
-					filter.Error(null, "No input files provided, stopping.");
+					Console.WriteLine();
+					filter.Error(null, "No input files provided, stopping. Add --help for usage info.".Localized());
+					// Give users a simple way to find out which copy they're using:
+					// Windows doesn't have `which` and the dotnet tools version of 
+					// LeMP.exe is not the real one anyway (it's not a .NET module)
+					Console.WriteLine("You're using {0}".Localized(typeof(MacroProcessor).Assembly.Location));
+					Console.WriteLine("  ({0})".Localized(typeof(MacroProcessor).Assembly.FullName));
 					return;
 				}
 				else

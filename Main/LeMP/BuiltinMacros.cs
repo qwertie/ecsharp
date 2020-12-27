@@ -81,10 +81,24 @@ namespace LeMP.Prelude
 			return null;
 		}
 
+		[LexicalMacro("#statement { ... } // EC#/LES2 syntax",
+			"This macro simply replaces itself with the contents of the braced block, " +
+			"e.g. `#statements { x = 1; }` becomes `x = 1`. This allows statements to be " +
+			"written in an expression context. If there are multiple statements, they " +
+			"are enclosed in a #splice() node, e.g. `#statements { x = 1; y = 2; }` " +
+			"becomes `#splice(x = 1, y = 2)`.", "#statement")]
+		public static LNode _statement(LNode node, IMacroContext context)
+		{
+			LNode braces;
+			if (node.ArgCount != 1 || !(braces = node[0]).Calls(S.Braces))
+				return null;
+			return braces.ArgCount == 1 ? braces[0] : braces.WithName(S.Splice);
+		}
+
 		static readonly Symbol _macros = GSymbol.Get("macros");
 		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 
-		[LexicalMacro("import_macros Namespace",
+		[LexicalMacro("import_macros(Namespace);",
 			"Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.")]
 		public static LNode import_macros(LNode node, IMacroContext sink)
 		{
