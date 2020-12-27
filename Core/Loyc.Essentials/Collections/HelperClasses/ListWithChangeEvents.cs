@@ -30,8 +30,6 @@ namespace Loyc.Collections.Impl
 		public virtual event ListChangingHandler<T, IListSource<T>> ListChanging;
 		public virtual event ListChangingHandler<T, IListSource<T>> ListChanged;
 
-		public bool IsEmpty => Count == 0;
-
 		public override T this[int index]
 		{
 			get => _obj[index];

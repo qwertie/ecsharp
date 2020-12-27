@@ -9,6 +9,7 @@ namespace Loyc.Syntax
 	/// syntax of a particular programming language.</summary>
 	/// <remarks>The ToString() method of an object that implements this interface should
 	/// return the name of the programming language that it is able to print.</remarks>
+	/// <seealso cref="LNodePrinter"/>
 	public interface ILNodePrinter
 	{
 		/// <summary>Serializes the specified syntax tree to a StringBuilder in the syntax supported by this object.</summary>

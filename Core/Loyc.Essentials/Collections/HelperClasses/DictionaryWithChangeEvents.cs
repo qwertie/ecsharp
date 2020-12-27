@@ -38,8 +38,6 @@ namespace Loyc.Collections.Impl
 		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanging;
 		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanged;
 
-		public bool IsEmpty => _obj.Count == 0;
-
 		public override V this[K key]
 		{
 			get => _obj[key];

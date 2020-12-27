@@ -37,8 +37,6 @@ namespace Loyc.Collections.Impl
 		public virtual event ListChangingHandler<T, ICollection<T>> ListChanged;
 		public ISet<T> _asSet;
 
-		public bool IsEmpty => Count == 0;
-
 		void ICollection<T>.Add(T item) => Add(item);
 		public override void Add(T item) => TryAdd(item);
 

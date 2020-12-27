@@ -15,7 +15,7 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("#runSequence { Stmts; };",
+		[LexicalMacro("#runSequence(expression or statement list); };", 
 			"Allows #runSequence at brace-scope without the use of #useSequenceExpressions",
 			"#runSequence", Mode = MacroMode.Passive)]
 		public static LNode runSequence(LNode node, IMacroContext context)

@@ -23,6 +23,7 @@ namespace Loyc.Syntax
 	/// programming language represented by this object, e.g. "Enhanced C#".
 	/// </remarks>
 	/// <seealso cref="ParsingService"/>
+	/// <seealso cref="ILNodePrinter"/>
 	public interface IParsingService
 	{
 		/// <summary>Standard file extensions for this language, without leading 
