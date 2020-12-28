@@ -54,8 +54,9 @@ namespace LeMP
 			{ "nostdmacros", Pair.Create("", "Don't scan LeMP.StdMacros.dll or pre-import LeMP and LeMP.Prelude") },
 			{ "set",       Pair.Create("key=literal", "Associate a value with a key (use #get(key) to read it back)") },
 			{ "snippet",   Pair.Create("key=code", "Associate code with a key (use #get(key) to read it back)") },
-			{ "preserve-comments", Pair.Create("bool", "Preserve comments and newlines (where supported)\n  Default value: true") },
-			{ "o-indent-spaces",   Pair.Create("count", "Sets number of spaces per indentation level (0 for tabs)") },
+			{ "eval",      Pair.Create("statement(s)", "Process one or more statements and print their expansion") },
+			{ "preserve-comments",     Pair.Create("bool", "Preserve comments and newlines (where supported)\n  Default value: true") },
+			{ "o-indent-spaces",       Pair.Create("count", "Sets number of spaces per indentation level (0 for tabs)") },
 			{ "o-allow-change-parens", Pair.Create("bool", "Sets ILNodePrintingOptions.AllowChangeParentheses") },
 			{ "o-omit-comments",       Pair.Create("bool", "Sets ILNodePrintingOptions.OmitComments") },
 			{ "o-omit-unknown-trivia", Pair.Create("bool", "Sets ILNodePrintingOptions.OmitUnknownTrivia") },
@@ -71,8 +72,6 @@ namespace LeMP
 		{
 			if (!args.Contains("--nologo"))
 				Console.WriteLine("LeMP macro compiler ({0})", typeof(Compiler).Assembly.GetName().Version.ToString());
-
-			KnownOptions["editor"] = Pair.Create("", "Show built-in text editor");
 
 			Severity minSeverity = Severity.NoteDetail;
 			#if DEBUG
@@ -92,7 +91,7 @@ namespace LeMP
 				WarnAboutUnknownOptions(options, filter,
 					KnownOptions.With("nologo", Pair.Create("", "")));
 
-				if (argList.Count == 0)
+				if (c.Files.Count == 0)
 				{
 					Console.WriteLine();
 					filter.Error(null, "No input files provided, stopping. Add --help for usage info.".Localized());
@@ -231,11 +230,10 @@ namespace LeMP
 		/// </remarks>
 		public bool ProcessArguments(BMultiMap<string, string> options, bool warnAboutUnknownOptions, IList<string> inputFiles = null)
 		{
-			Compiler c = this;
 			string value;
 			bool? flag;
 			double? num;
-			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.NoteDetail);
+			var filter = Sink as SeverityMessageFilter ?? new SeverityMessageFilter(Sink, Severity.NoteDetail);
 
 			if (warnAboutUnknownOptions)
 				WarnAboutUnknownOptions(options, Sink, KnownOptions);
@@ -251,10 +249,10 @@ namespace LeMP
 				}
 			}
 			
-			IMessageSink sink = c.Sink = filter;
+			IMessageSink sink = Sink = filter;
 			
 			if ((num = ParseNumericOption(options, "max-expand", sink, 0, 99999)) != null)
-				c.MaxExpansions = (int)num.Value;
+				MaxExpansions = (int)num.Value;
 
 			foreach (var macroDll in options["macros"])
 			{
@@ -277,7 +275,7 @@ namespace LeMP
 					string path = Path.Combine(Environment.CurrentDirectory, macroDll);
 					byte[] bytes = File.ReadAllBytes(path);
 					assembly = Assembly.Load(bytes);
-					c.AddMacros(assembly);
+					AddMacros(assembly);
 				});
 			}
 			foreach (string macroDll in options["macros-longname"])
@@ -286,29 +284,29 @@ namespace LeMP
 				TryCatch("While opening " + macroDll, sink, () =>
 				{
 					assembly = Assembly.Load(macroDll);
-					c.AddMacros(assembly);
+					AddMacros(assembly);
 				});
 			}
 			if ((flag = ParseBoolOption(options, "noparallel", sink)) != null)
-				c.Parallel = flag.Value;
-			if (options.TryGetValue("outext", out c.OutExt)) {
-				if (c.OutExt != null && !c.OutExt.StartsWith("."))
-					c.OutExt = "." + c.OutExt;
+				Parallel = flag.Value;
+			if (options.TryGetValue("outext", out OutExt)) {
+				if (OutExt != null && !OutExt.StartsWith("."))
+					OutExt = "." + OutExt;
 			}
 			if (options.TryGetValue("inlang", out value)) {
-				ApplyLanguageOption(sink, "--inlang", value, ref c.InLang);
+				ApplyLanguageOption(sink, "--inlang", value, ref InLang);
 			}
 			if (options.TryGetValue("outlang", out value)) {
 				IParsingService lang = null;
 				ApplyLanguageOption(sink, "--outlang", value, ref lang);
-				c.OutLang = (lang as ILNodePrinter) ?? c.OutLang;
+				OutLang = (lang as ILNodePrinter) ?? OutLang;
 			}
 			if ((flag = ParseBoolOption(options, "forcelang", sink)) != null)
-				c.ForceInLang = flag.Value;
-			if (!options.ContainsKey("outlang") && c.OutExt != null && ParsingService.GetServiceForFileName(c.OutExt) == null)
-				sink.Error("--outext", "No language was found for extension «{0}»", c.OutExt);
+				ForceInLang = flag.Value;
+			if (!options.ContainsKey("outlang") && OutExt != null && ParsingService.GetServiceForFileName(OutExt) == null)
+				sink.Error("--outext", "No language was found for extension «{0}»", OutExt);
 			if ((num = ParseNumericOption(options, "timeout", sink)) != null)
-				c.AbortTimeout = TimeSpan.FromSeconds(num.Value);
+				AbortTimeout = TimeSpan.FromSeconds(num.Value);
 
 			foreach (string exprStr in options["set"])
 				SetPropertyHelper(exprStr, quote: false);
@@ -337,8 +335,12 @@ namespace LeMP
 			if ((flag = ParseBoolOption(options, "o-compact-mode", sink)) != null)
 				OutOptions.CompactMode = flag.Value;
 
+			Files = new List<InputOutput>();
+			foreach (var expr in options["eval"])
+				Files.Add(new InputOutput((UString)expr, "--eval", null, null, "") { ParsingMode = ParsingMode.Statements });
+
 			if (inputFiles != null) {
-				this.Files = new List<InputOutput>(OpenSourceFiles(Sink, inputFiles));
+				Files.AddRange(OpenSourceFiles(Sink, inputFiles));
 				if (inputFiles.Count != 0 && Files.Count == 0)
 					return false;
 			}
@@ -560,12 +562,22 @@ namespace LeMP
 		{
 			Debug.Assert(io.FileName != io.OutFileName);
 
-			Sink.Write(Severity.Verbose, io, "Writing output file: {0}", io.OutFileName);
-
-			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
-			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
+			if (io.OutFileName == "" && io.FileName.StartsWith("--eval"))
+			{
+				// Print result of --eval to console
 				var str = io.OutPrinter.Print(io.Output, Sink, null, io.OutOptions);
-				writer.Write(str);
+				Console.WriteLine(str);
+			}
+			else
+			{
+				Sink.Write(Severity.Verbose, io, "Writing output file: {0}", io.OutFileName);
+
+				using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
+				using (var writer = new StreamWriter(stream, Encoding.UTF8))
+				{
+					var str = io.OutPrinter.Print(io.Output, Sink, null, io.OutOptions);
+					writer.Write(str);
+				}
 			}
 		}
 
