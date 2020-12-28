@@ -200,7 +200,7 @@
     <Compile Include="Parsing\AbstractTriviaInjector.cs" />
     <Compile Include="Parsing\ParserSource.cs" />
     <Compile Include="Parsing\Precedence.cs" />
-    <Compile Include="PrinterState.cs" />
+    <Compile Include="LNodePrinterHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NodeLocationMapper.cs" />
     <Compile Include="SourceFiles\IndexPositionMapper.cs" />
