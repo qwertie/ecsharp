@@ -640,11 +640,16 @@ namespace Loyc.Syntax
 				// and `yz"foo"` should be considered different, and if a parser was used 
 				// without a literal parser then differing type markers must be assumed 
 				// to be different (e.g. `1.0` is different from `1.0d` if the parser 
-				// doesn't recognize that both are double values.)
+				// doesn't recognize that both are double values.) Given two string 
+				// literals where one's TypeMarker is an empty string and the other is 
+				// null, they should compare equal by default, but other markers on 
+				// strings, such as "RegEx", will not be treated as equal to the null 
+				// marker.
 				if (a.TypeMarker != b.TypeMarker) {
 					if ((mode & CompareMode.TypeMarkers) != 0)
 						return false;
-					if (a.Value is UString || a.Value is string)
+					if ((a.Value is UString || a.Value is string) && 
+						(a.TypeMarker ?? GSymbol.Empty) != (a.TypeMarker ?? GSymbol.Empty))
 						return false;
 				}
 				if ((mode & CompareMode.Styles) != 0 && !a.TextValue.Equals(b.TextValue))
