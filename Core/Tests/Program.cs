@@ -164,6 +164,7 @@ namespace Loyc.Tests
 				new TokenTests(),
 				new IndexPositionMapperTests(),
 				new LNodeRangeMapperTests(),
+				new LNodePrinterHelperTests(),
 				new IndentTokenGeneratorTests(),
 				new StandardTriviaInjectorTests(),
 				new Les2LexerTests(),

@@ -31,7 +31,6 @@ namespace Loyc.Syntax.Les
 		void Push(ILNode newNode);
 		void Pop();
 		char LastCharWritten { get; }
-		int LineNumber { get; }
 		/// <summary>Called when a new, separate printing operation begins.</summary>
 		void Reset();
 	}
@@ -61,7 +60,6 @@ namespace Loyc.Syntax.Les
 		public virtual void Push(ILNode newNode) { }
 		public virtual void Pop() { }
 		public abstract char LastCharWritten { get; }
-		public abstract int LineNumber { get; }
 		public abstract void Reset();
 	}
 }

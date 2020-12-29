@@ -256,7 +256,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		bool _avoidExtraNewline = false;
-		LNodePrinterOutputLocation _newlineCheckpoint;
+		LNodePrinterHelperLocation _newlineCheckpoint;
 
 		protected void Newline(bool avoidExtraNewline = false)
 		{

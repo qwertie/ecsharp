@@ -399,14 +399,13 @@ namespace Loyc.Ecs
 
 		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null, BraceMode mode = BraceMode.Normal)
 		{
-			int oldLineNum = _out.LineNumber;
 			if (mode != BraceMode.BlockExpr)
 			{
 				if (mode != BraceMode.BlockStmt)
 					PrintTrivia(body, trailingTrivia: false);
 				else
 					G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
-				if (oldLineNum == _out.LineNumber && beforeBrace != 0)
+				if (!_out.LastCharWritten.IsOneOf('\n', ' ', '\t') && beforeBrace != 0)
 					NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
 			}
 			_out.Write('{', true);

@@ -28,11 +28,16 @@ namespace Loyc.Syntax.Impl
 		/// <summary>Requests that a newline be written at this location. If this method is 
 		/// called multiple times at the same location, or if <see cref="Newline(int)"/> is 
 		/// called immediately afterward, only a single newline is written.</summary>
+		/// <remarks>
+		/// This method does not officially write a newline; if you call this method followed 
+		/// by <see cref="Dedent"/>, for example, the newline that is eventually written will 
+		/// be followed by a lower amount of indentation.
+		/// </remarks>
 		Self NewlineIsRequiredHere();
 		/// <summary>Informs the helper that the printer is starting to write the specified 
 		/// node. The printer must call <see cref="EndNode"/> when it is done.</summary>
 		/// <param name="kind">Tells the helper what kind of node this is, either 
-		/// <see cref="LNodePrinterHelperExt.Subexpression"/> or <see cref="LNodePrinterHelperExt.Label"/>,
+		/// <see cref="PrinterIndentHint.Subexpression"/> or <see cref="PrinterIndentHint.Label"/>,
 		/// which may affect indentation. See Remarks.</param>
 		/// <remarks>
 		/// Consider a statement <c>x = 2 * (1 + Method(@`%newline` parameter1, parameter2))</c>
@@ -40,7 +45,7 @@ namespace Loyc.Syntax.Impl
 		/// trivia and call <see cref="Newline"/>, but in this case the newline should 
 		/// include some extra indentation to indicate that a new statement does not begin
 		/// here. To this end, the printer should call BeginNode with kind = 
-		/// <see cref="LNodePrinterHelperExt.Subexpression"/> for each node that is not at the 
+		/// <see cref="PrinterIndentHint.Subexpression"/> for each node that is not at the 
 		/// statement level. Then, the helper can detect the need for extra indentation by 
 		/// noticing that four subexpressions have begun but not ended at the time 
 		/// <see cref="Newline"/> is called:
@@ -57,7 +62,7 @@ namespace Loyc.Syntax.Impl
 		/// <para/>
 		/// Another kind of interesting node is labels (targets of goto statements). A typical
 		/// style is that labels are printed with less indentation than a normal statement.
-		/// kind = <see cref="LNodePrinterHelperExt.Label"/> represents a label. To print a label 
+		/// kind = <see cref="PrinterIndentHint.Label"/> represents a label. To print a label 
 		/// properly, the printer needs to call this method before calling <see cref="Newline"/> 
 		/// so that the indentation after the newline is correct.
 		/// </remarks>
@@ -72,9 +77,6 @@ namespace Loyc.Syntax.Impl
 		Self Indent();
 		/// <summary>Decreases the current indent level.</summary>
 		Self Dedent();
-		/// <summary>Gets the current line number, which is incremented when <see cref="Newline"/> 
-		/// is called.</summary>
-		int LineNumber { get; }
 		/// <summary>Returns true iff nothing has been written since the last call to 
 		/// <see cref="Newline"/> or <see cref="NewlineIsRequiredHere"/>.</summary>
 		bool IsAtStartOfLine { get; }
@@ -86,13 +88,16 @@ namespace Loyc.Syntax.Impl
 	/// <summary>Alias for <see cref="ILNodePrinterHelper{Self}"/> without a type parameter.</summary>
 	public interface ILNodePrinterHelper : ILNodePrinterHelper<ILNodePrinterHelper> { }
 
+	/// <summary>Values used with <see cref="ILNodePrinterHelper{Self}.BeginNode(ILNode, Symbol)"/>.</summary>
+	public static class PrinterIndentHint
+	{
+		public static Symbol Subexpression = (Symbol)nameof(Subexpression);
+		public static Symbol Label = (Symbol)nameof(Label);
+	}
+
+	/// <summary>Standard extension methods for <see cref="ILNodePrinterHelper{Self}"/></summary>
 	public static class LNodePrinterHelperExt
 	{
-		/// <summary>Used with <see cref="ILNodePrinterHelper{Self}.BeginNode(ILNode, Symbol)"/></summary>
-		public static Symbol Subexpression = (Symbol)nameof(Subexpression);
-		/// <summary>Used with <see cref="ILNodePrinterHelper{Self}.BeginNode(ILNode, Symbol)"/></summary>
-		public static Symbol Label = (Symbol)nameof(Label);
-
 		/// <summary>Appends a string, except newline ('\n') characters which are translated
 		/// into calls to <see cref="Newline()"/>.</summary>
 		public static Helper WriteSmartly<Helper>(this Helper self, UString s) where Helper : ILNodePrinterHelper<Helper>
@@ -129,6 +134,16 @@ namespace Loyc.Syntax.Impl
 		public static Helper NewlineOrSpace<Helper>(this Helper self, bool newline) where Helper : ILNodePrinterHelper<Helper>
 		{
 			return newline ? self.Newline() : self.Write(' ');
+		}
+
+		/// <summary>Creates an newline that cannot be revoked later by calling 
+		/// NewlineIsRequiredHere() followed by Newline().</summary>
+		/// <remarks>This should be an extension method for <see cref="ILNodePrinterHelperWithRevokableNewlines{C,Helper}"/>
+		/// but C# 9 fails to infer type argument C in that case.</remarks>
+		public static Helper IrrevokableNewline<Helper>(this Helper self) where Helper : ILNodePrinterHelper<Helper>
+		{
+			self.NewlineIsRequiredHere();
+			return self.Newline();
 		}
 	}
 
@@ -203,9 +218,9 @@ namespace Loyc.Syntax.Impl
 		int LineWidth { get; }
 		/// <summary>Deletes uncommitted newlines that were written after the specified checkpoint.</summary>
 		/// <returns>The number of newlines that were just revoked.</returns>
-		/// <remarks>newlines created after a call to 
-		/// <see cref="ILNodePrinterHelper{Self}.NewlineIsRequiredHere"/>
-		/// are not revoked.</remarks>
+		/// <remarks>Newlines created after a call to 
+		/// <see cref="ILNodePrinterHelper{Self}.NewlineIsRequiredHere"/> or 
+		/// <see cref="LNodePrinterHelperExt.IrrevokableNewline"/> are not revoked.</remarks>
 		int RevokeNewlinesSince(Checkpoint cp);
 		/// <summary>Commits all uncommitted newlines permanently.</summary>
 		/// <returns>The number of newlines that were just committed.</returns>

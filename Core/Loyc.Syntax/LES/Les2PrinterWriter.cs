@@ -127,8 +127,6 @@ namespace Loyc.Syntax.Les
 
 		public override char LastCharWritten { get { return _lastCh; } }
 
-		public override int LineNumber { get { return _lineNumber; } }
-
 		public override void Push(ILNode newNode)
 		{
 			if (_startingIndices != null)

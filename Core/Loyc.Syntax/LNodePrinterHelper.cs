@@ -13,7 +13,7 @@ namespace Loyc.Syntax.Impl
 	{
 		public PrinterState(StringBuilder s, string indent = "\t", string newline = "\n") : base(s, indent, newline) { }
 
-		[Obsolete("PrinterState.Checkpoint was renamed to " + nameof(LNodePrinterOutputLocation))]
+		[Obsolete("PrinterState.Checkpoint was renamed to " + nameof(LNodePrinterHelperLocation))]
 		public struct Checkpoint { }
 	}
 
@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Impl
 	/// <see cref="ILNodePrinterHelper{S}"/>, its derived interface
 	/// <see cref="ILNodePrinterHelperWithRevokableNewlines{S,C}"/>, and the documentation of the
 	/// constructor <see cref="LNodePrinterHelper(StringBuilder, string, string, bool, string, string, int)"/>.</summary>
-	public class LNodePrinterHelper : ILNodePrinterHelperWithRevokableNewlines<LNodePrinterOutputLocation, LNodePrinterHelper>
+	public class LNodePrinterHelper : ILNodePrinterHelperWithRevokableNewlines<LNodePrinterHelperLocation, LNodePrinterHelper>
 	{
 		protected int _indentLevel;
 		protected int _lineNo;
@@ -30,11 +30,13 @@ namespace Loyc.Syntax.Impl
 		private bool _newlineIsRequiredHere;
 		public string IndentString { get; set; }
 		public string NewlineString { get; set; }
+		public string LabelIndentString { get; set; }
+		public string SubexpressionIndentString { get; set; }
 		protected StringBuilder _s;
 		private InternalList<Revokable> _revokableNewlines;
-		private InternalList<IndexRange> _unsavedRanges;
+		private InternalList<Pair<ILNode, IndexRange>> _unsavedRanges;
+		private InternalList<Triplet<ILNode, int, Symbol>> _nodeStack;
 		private Action<ILNode, IndexRange> _saveRange;
-		protected Stack<Pair<ILNode, int>> _startingIndexes;
 
 		public StringBuilder S
 		{
@@ -46,7 +48,7 @@ namespace Loyc.Syntax.Impl
 		public int IndexInCurrentLineAfterIndent => S.Length - _lineStartAfterIndent;
 		[Obsolete("Renamed to IsAtStartOfLine")]
 		public bool AtStartOfLine => IsAtStartOfLine;
-		public bool IsAtStartOfLine => S.Length == _lineStartAfterIndent;
+		public bool IsAtStartOfLine => S.Length == _lineStartAfterIndent || _newlineIsRequiredHere;
 		public char LastCharWritten => S.TryGet(S.Length - 1, '\uFFFF');
 		public int LineWidth => S.Length - _lineStartIndex;
 		public int LineNumber => _lineNo;
@@ -58,29 +60,55 @@ namespace Loyc.Syntax.Impl
 				_indentLevel = value;
 			}
 		}
+		public Action<ILNode, IndexRange> SaveRange
+		{
+			get => _saveRange;
+			set => _saveRange = value;
+		}
 
-		public LNodePrinterHelper(StringBuilder s, string indent = "\t", string newline = "\n", bool allowNewlineRevocation = true, string labelIndent = "  ", string subexprIndent = "  ", int maxSubexprIndent = 1)
+		public LNodePrinterHelper(StringBuilder s, string indent = "\t", string newline = "\n", bool allowNewlineRevocation = true, string labelIndent = "  ", string subexprIndent = "\t\t")
 		{
 			S = s ?? new StringBuilder();
 			IndentLevel = 0;
 			IndentString = indent;
 			NewlineString = newline;
+			LabelIndentString = labelIndent;
+			SubexpressionIndentString = subexprIndent;
 			_lineStartIndex = 0;
 			_lineStartAfterIndent = 0;
 			_lineNo = 1;
+			_nodeStack = InternalList<Triplet<ILNode, int, Symbol>>.Empty;
 			if (allowNewlineRevocation)
 			{
 				_revokableNewlines = InternalList<Revokable>.Empty;
-				_unsavedRanges = InternalList<IndexRange>.Empty;
+				_unsavedRanges = InternalList<Pair<ILNode, IndexRange>>.Empty;
 			}
 		}
 
 		/// <inheritdoc/>
-		public LNodePrinterHelper Write(char c) { S.Append(c); return this; }
+		public LNodePrinterHelper Write(char c)
+		{
+			if (_newlineIsRequiredHere)
+				Newline();
+			S.Append(c);
+			return this;
+		}
 		/// <inheritdoc/>
-		public LNodePrinterHelper Write(string s) { S.Append(s); return this; }
+		public LNodePrinterHelper Write(string s)
+		{
+			if (_newlineIsRequiredHere && s.Length != 0)
+				Newline();
+			S.Append(s);
+			return this;
+		}
 		/// <inheritdoc/>
-		public LNodePrinterHelper Write(UString s) { s.AppendTo(S); return this; }
+		public LNodePrinterHelper Write(UString s)
+		{
+			if (_newlineIsRequiredHere && s.Length != 0)
+				Newline();
+			S.Append(s);
+			return this;
+		}
 
 		[Obsolete("This method was renamed to Write(s)")]
 		public StringBuilder Append(string s) { Write(s); return S; }
@@ -94,7 +122,7 @@ namespace Loyc.Syntax.Impl
 
 		/// <summary>Older version of Newline method, which returns a checkpoint instead of <c>this</c>.</summary>
 		/// <param name="changeIndentLevel">Amount by which to change the indent level (positive, negative or zero).</param>
-		public LNodePrinterOutputLocation Newline(int changeIndentLevel)
+		public LNodePrinterHelperLocation Newline(int changeIndentLevel)
 		{
 			IndentLevel += changeIndentLevel;
 			Contract.Assert(IndentLevel >= 0);
@@ -104,15 +132,23 @@ namespace Loyc.Syntax.Impl
 		/// <inheritdoc/>
 		public LNodePrinterHelper Newline()
 		{
-			var r = new Revokable(_lineStartIndex, S.Length, NewlineString.Length + IndentString.Length * IndentLevel);
+			int oldLineStartIndex = _lineStartIndex;
+			int newlineIndex = S.Length;
 			S.Append(NewlineString);
 			_lineNo++;
 			_lineStartIndex = S.Length;
-			for (int i = 0; i < IndentLevel; i++)
+
+			var curNodeKind = _nodeStack[_nodeStack.Count - 1, default].C;
+			for (int i = IndentLevel - (curNodeKind == PrinterIndentHint.Label ? 1 : 0); i > 0; i--)
 				S.Append(IndentString);
+			if (curNodeKind == PrinterIndentHint.Label)
+				S.Append(LabelIndentString);
+			else if (curNodeKind == PrinterIndentHint.Subexpression)
+				S.Append(SubexpressionIndentString);
+
 			_lineStartAfterIndent = S.Length;
 			if (!_newlineIsRequiredHere && _revokableNewlines.InternalArray != null)
-				_revokableNewlines.Add(r);
+				_revokableNewlines.Add(new Revokable(oldLineStartIndex, newlineIndex, S.Length - newlineIndex));
 			_newlineIsRequiredHere = false;
 			return this;
 		}
@@ -131,17 +167,28 @@ namespace Loyc.Syntax.Impl
 
 		public LNodePrinterHelper BeginNode(ILNode node, Symbol kind)
 		{
+			_nodeStack.Add(Triplet.Create(node, S.Length, kind));
 			return this;
 		}
 
 		public LNodePrinterHelper EndNode()
 		{
+			var triplet = _nodeStack.Last;
+			_nodeStack.RemoveAt(_nodeStack.Count - 1);
+			if (_saveRange != null)
+			{
+				var range = new IndexRange(triplet.B) { EndIndex = S.Length };
+				if (_revokableNewlines.InternalArray == null)
+					_saveRange(triplet.A, range);
+				else
+					_unsavedRanges.Add(Pair.Create(triplet.A, range));
+			}
 			return this;
 		}
 
 		/// <inheritdoc/>
-		public LNodePrinterOutputLocation GetCheckpoint() { 
-			return new LNodePrinterOutputLocation { 
+		public LNodePrinterHelperLocation GetCheckpoint() { 
+			return new LNodePrinterHelperLocation { 
 				_oldLineStart = _lineStartIndex, 
 				_oldLineNo = _lineNo, 
 				_oldLineStartAfterIndent = _lineStartAfterIndent
@@ -149,7 +196,7 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public LNodePrinterOutputLocation NewlineWithCheckpoint()
+		public LNodePrinterHelperLocation NewlineWithCheckpoint()
 		{
 			var cp = GetCheckpoint();
 			Newline();
@@ -157,33 +204,33 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public int RevokeOrCommitNewlines(LNodePrinterOutputLocation cp, int maxLineWidth)
+		public int RevokeOrCommitNewlines(LNodePrinterHelperLocation cp, int maxLineWidth)
 		{
-			// Length before revokation
-			int nonNewlineLength = S.Length - cp._oldLineStart;
 			// Figure out which newlines we can revoke and what the total 
 			// length would be if they were revoked
+			int lengthWithoutNewlines = S.Length - cp._oldLineStart;
 			int i0;
 			bool anyRevokables = false;
 			for (i0 = _revokableNewlines.Count; i0 > 0 && _revokableNewlines[i0 - 1]._index >= cp._oldLineStart; i0--) {
-				nonNewlineLength -= _revokableNewlines[i0].Length;
+				lengthWithoutNewlines -= _revokableNewlines[i0 - 1].Length;
 				anyRevokables = true;
 			}
 
 			if (anyRevokables)
 			{
 				var tooLong = false;
-				if (nonNewlineLength > maxLineWidth)
+				if (lengthWithoutNewlines > maxLineWidth)
 				{
 					// Line length appears to be exceeded, but it may be that there are 
-					// non-revokable newlines so that the actual line length is lower.
+					// non-revokable newlines so that the actual max line length is lower.
 					// Find out the maximum line length considering non-revokables.
 					int i1 = i0, lineStart = cp._oldLineStart, charsRevocableOnThisLine = 0;
 					for (int iChar = lineStart; iChar <= S.Length; iChar++)
 					{
-						while (iChar == _revokableNewlines[i1]._index) {
+						while (i1 < _revokableNewlines.Count && iChar == _revokableNewlines[i1]._index) {
 							charsRevocableOnThisLine += _revokableNewlines[i1].Length;
 							iChar                    += _revokableNewlines[i1].Length;
+							i1++;
 						}
 						if (iChar == S.Length || S[iChar] == '\n') {
 							int lineLength = iChar - lineStart - charsRevocableOnThisLine;
@@ -220,13 +267,15 @@ namespace Loyc.Syntax.Impl
 		public int CommitNewlines()
 		{
 			int count = _revokableNewlines.Count;
-			if (_revokableNewlines.InternalArray != null)
+			if (_revokableNewlines.InternalArray != null) {
 				_revokableNewlines.Clear();
+				SaveRanges();
+			}
 			return count;
 		}
 
 		/// <inheritdoc/>
-		public int RevokeNewlinesSince(LNodePrinterOutputLocation cp)
+		public int RevokeNewlinesSince(LNodePrinterHelperLocation cp)
 		{
 			int i0;
 			for (i0 = _revokableNewlines.Count; i0 > 0 && _revokableNewlines[i0 - 1]._index >= cp._oldLineStart; i0--) { }
@@ -238,17 +287,29 @@ namespace Loyc.Syntax.Impl
 		public void Dispose()
 		{
 			CommitNewlines();
-			Contract.Assert(_startingIndexes.Count == 0, "{0} calls to BeginNode without matching calls to EndNode".Localized(_startingIndexes.Count));
+			Contract.Assert(_nodeStack.Count == 0, "{0} calls to BeginNode without matching calls to EndNode".Localized(_nodeStack.Count));
 		}
 
 		private int RevokeNewlinesStartingAtIndex(int i0)
 		{
+			// Actually perform the revokations
 			int count = _revokableNewlines.Count - i0;
 			for (int i = _revokableNewlines.Count - 1; i >= i0; i--) {
 				Revoke(_revokableNewlines[i]);
 				_revokableNewlines.RemoveAt(i);
 			}
+			if (_revokableNewlines.IsEmpty)
+				SaveRanges();
 			return count;
+		}
+
+		private void SaveRanges()
+		{
+			if (_saveRange != null)
+				foreach (var pair in _unsavedRanges)
+					_saveRange(pair.A, pair.B);
+
+			_unsavedRanges.Clear();
 		}
 
 		/// <summary>Revokes (deletes) the last newline created, and its indent.</summary>
@@ -258,6 +319,22 @@ namespace Loyc.Syntax.Impl
 		/// they are revoked in the reverse order in which they were created.</remarks>
 		private void Revoke(Revokable r)
 		{
+			// Adjust indexes in _nodeStack if necessary
+			for (int i = _nodeStack.Count - 1; i >= 0; i--)
+				if (_nodeStack[i].B > r._index)
+					_nodeStack.InternalArray[i].B -= r._length;
+				else
+					break;
+
+			// Adjust indexes in uncommitted ranges
+			for (int i = _unsavedRanges.Count - 1; i >= 0; i--)
+				if (_unsavedRanges[i].B.EndIndex > r._index)
+					if (_unsavedRanges[i].B.StartIndex > r._index)
+						_unsavedRanges.InternalArray[i].B.StartIndex -= r._length;
+					else
+						_unsavedRanges.InternalArray[i].B.Length -= r._length;
+
+			// Finally remove the character(s)
 			S.Remove(r._index, r._length);
 			_lineStartIndex = r._oldLineStartIndex;
 			_lineNo--;
@@ -269,9 +346,9 @@ namespace Loyc.Syntax.Impl
 			internal int _index;
 			internal int _length; // length of newline + indent
 			internal int _oldLineStartIndex;
-			public Revokable(int oldNewlineIndex, int index, int length)
+			public Revokable(int oldLineStartIndex, int index, int length)
 			{
-				_oldLineStartIndex = oldNewlineIndex;
+				_oldLineStartIndex = oldLineStartIndex;
 				_index = index;
 				_length = length;
 			}
@@ -280,11 +357,11 @@ namespace Loyc.Syntax.Impl
 	}
 	
 	/// <summary>A location in the output stream of <see cref="LNodePrinterHelper"/>.</summary>
-	public struct LNodePrinterOutputLocation
+	public struct LNodePrinterHelperLocation
 	{
 		internal int _oldLineStart; // at start of line
 		internal int _oldLineStartAfterIndent;
 		internal int _oldLineNo;
-		public int LineNo { get { return _oldLineNo; } }
+		public int LineNumber { get { return _oldLineNo; } }
 	}
 }
