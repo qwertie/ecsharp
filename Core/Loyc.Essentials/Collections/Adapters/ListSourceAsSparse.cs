@@ -1,4 +1,4 @@
-﻿using Loyc.Collections.Impl;
+using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,6 +82,11 @@ namespace Loyc.Collections
 			var result = _list.TryGet(index.Value, out fail);
 			if (fail) index = null;
 			return result;
+		}
+
+		ISparseListSource<T> ISparseListSource<T>.Slice(int start, int count)
+		{
+			return new SparseListSourceSlice<T, ISparseListSource<T>>(this, start, count);
 		}
 	}
 }

@@ -113,6 +113,7 @@
     <Compile Include="Collections\Adapters\ReadOnlyListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ROLSlice.cs" />
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
+    <Compile Include="Collections\Adapters\SparseListSourceSlice.cs" />
     <Compile Include="Collections\BaseClasses\CollectionWrapper.cs" />
     <Compile Include="Collections\HelperClasses\DictionaryWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\DictionaryWrapper.cs" />

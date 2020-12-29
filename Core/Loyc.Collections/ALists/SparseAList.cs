@@ -340,6 +340,10 @@ namespace Loyc.Collections
 			return _root == null ? 0 : (int)_root.GetImmutableCount(true);
 		}
 		public int GetRealItemCount() { return _root == null ? 0 : (int)_root.GetRealItemCount(); }
+
+		ISparseListSource<T> ISparseListSource<T>.Slice(int start, int count) => Slice(start, count);
+		public new SparseListSourceSlice<T, ISparseListSource<T>> Slice(int start, int count = int.MaxValue) 
+			=> new SparseListSourceSlice<T, ISparseListSource<T>>(this, start, count);
 	}
 }
 

@@ -99,10 +99,10 @@ namespace Loyc.Essentials.Tests
 	}
 
 	[TestFixture]
-	public class ROLSliceTests : SliceTests<ROLSlice<InternalList<string>, string>>
+	public class ROLSliceTests : SliceTests<ROLSlice<string, InternalList<string>>>
 	{
 		public ROLSliceTests() : base((list, start, count) => 
-			new ROLSlice<InternalList<string>, string>(new InternalList<string>(list, list.Length), start, count)) { }
+			new ROLSlice<string, InternalList<string>>(new InternalList<string>(list, list.Length), start, count)) { }
 	}
 
 	[TestFixture]

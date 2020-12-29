@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -80,6 +80,9 @@ namespace Loyc.Collections
 		/// if index is part of an empty space, or is outside the range of indexes
 		/// that exist.</returns>
 		bool IsSet(int index);
+
+		/// <inheritdoc/>
+		new ISparseListSource<T> Slice(int start, int count = int.MaxValue);
 	}
 
 	public partial class LCInterfaces

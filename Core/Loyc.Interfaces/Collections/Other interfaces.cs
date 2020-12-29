@@ -19,7 +19,7 @@ namespace Loyc.Collections
 	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 	/// </code>
 	/// </remarks>
-	public interface IArray<T> : IListSource<T>, IArraySink<T>
+	public interface IArray<T> : IListSource<T>, IArraySink<T>, IIndexed<int, T>
 	{
 		/// <summary>Gets or sets an element of the array-like collection.</summary>
 		/// <returns>The value of the array at the specified index.</returns>

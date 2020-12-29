@@ -2,24 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Collections;
-using Loyc.Math;
+using System.Threading.Tasks;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
-	public static partial class ListExt
-	{
-		// C# generally can't infer the arguments
-		//public static ROLSlice<T, TList> Slice<T, TList>(this TList list, int start, int count = int.MaxValue) where TList : IReadOnlyList<T>
-		//	=> new ROLSlice<T, TList>(list, start, count);
-		public static ROLSlice<T, IReadOnlyList<T>> Slice<T>(this IReadOnlyList<T> list, int start, int count = int.MaxValue)
-			=> new ROLSlice<T, IReadOnlyList<T>>(list, start, count);
-	}
-
-	/// <summary>Adapter: a random-access range for a slice of an <see cref="IReadOnlyList{T}"/>.</summary>
-	/// <typeparam name="T">Item type in the list</typeparam>
-	/// <typeparam name="TList">List type</typeparam>
-	public struct ROLSlice<T, TList> : IListSource<T>, IRange<T>, ICloneable<ROLSlice<T, TList>> where TList : IReadOnlyList<T>
+	public struct SparseListSourceSlice<T, TList> : ISparseListSource<T>, IFRange<T>, ICloneable<SparseListSourceSlice<T, TList>> where TList : ISparseListSource<T>
 	{
 		TList _list;
 		int _start, _count;
@@ -35,7 +23,7 @@ namespace Loyc.Collections
 		/// slice is reduced to <c>list.Count - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public ROLSlice(TList list, int start, int count = int.MaxValue)
+		public SparseListSourceSlice(TList list, int start, int count = int.MaxValue)
 		{
 			_list = list;
 			_start = start;
@@ -45,30 +33,11 @@ namespace Loyc.Collections
 			if (count > _list.Count - start)
 				_count = System.Math.Max(_list.Count - start, 0);
 		}
-		[Obsolete("Not being used, planning to remove")]
-		public ROLSlice(TList list)
-		{
-			_list = list;
-			_start = 0;
-			_count = list.Count;
-		}
 
-		public int Count
-		{
-			get { return _count; }
-		}
-		public bool IsEmpty
-		{
-			get { return _count == 0; }
-		}
-		public T First
-		{
-			get { return this[0]; }
-		}
-		public T Last
-		{
-			get { return this[_count - 1]; }
-		}
+		public int Count => _count;
+		public bool IsEmpty => _count == 0;
+
+		public T First => this[0];
 
 		public T PopFirst(out bool empty)
 		{
@@ -81,28 +50,15 @@ namespace Loyc.Collections
 			empty = true;
 			return default(T);
 		}
-		public T PopLast(out bool empty)
-		{
-			if (_count != 0)
-			{
-				empty = false;
-				_count--;
-				return _list[_start + _count];
-			}
-			empty = true;
-			return default(T);
-		}
 
-		ROLSlice<T, TList> ICloneable<ROLSlice<T, TList>>.Clone() => this;
-		IRange<T> ICloneable<IRange<T>>.Clone() => this;
+		SparseListSourceSlice<T, TList> ICloneable<SparseListSourceSlice<T, TList>>.Clone() => this;
 		IFRange<T> ICloneable<IFRange<T>>.Clone() => this;
-		IBRange<T> ICloneable<IBRange<T>>.Clone() => this;
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-		public RangeEnumerator<ROLSlice<T, TList>, T> GetEnumerator()
+		public RangeEnumerator<SparseListSourceSlice<T, TList>, T> GetEnumerator()
 		{
-			return new RangeEnumerator<ROLSlice<T, TList>, T>(this);
+			return new RangeEnumerator<SparseListSourceSlice<T, TList>, T>(this);
 		}
 
 		public T this[int index]
@@ -130,18 +86,62 @@ namespace Loyc.Collections
 				return default(T);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) => Slice(start, count);
-		public ROLSlice<T, TList> Slice(int start, int count = int.MaxValue)
+		IRange<T> IListSource<T>.Slice(int start, int count)
+		{
+			var slice = Slice(start, count);
+			return new Slice_<T>(_list, slice._start, slice._count);
+		}
+		ISparseListSource<T> ISparseListSource<T>.Slice(int start, int count) => Slice(start, count);
+		public SparseListSourceSlice<T, TList> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0) throw new ArgumentException("The start index was below zero.");
 			if (count < 0) throw new ArgumentException("The count was below zero.");
-			var slice = new ROLSlice<T, TList>();
+			var slice = new SparseListSourceSlice<T, TList>();
 			slice._list = this._list;
 			slice._start = this._start + start;
 			slice._count = count;
 			if (slice._count > this._count - start)
 				slice._count = System.Math.Max(this._count - start, 0);
 			return slice;
+		}
+
+		public T NextHigherItem(ref int? index)
+		{
+			index += _start;
+			T next = _list.NextHigherItem(ref index);
+			index -= _start;
+			if (index >= _count)
+			{
+				index = null;
+				return default;
+			}
+			return next;
+		}
+
+		public T NextLowerItem(ref int? index)
+		{
+			index += _start;
+			T next = _list.NextLowerItem(ref index);
+			index -= _start;
+			if (index < 0)
+			{
+				index = null;
+				return default;
+			}
+			return next;
+		}
+
+		public bool IsSet(int index) => _list.IsSet(_start + index);
+
+		public IEnumerator<KeyValuePair<int, T>> GetItemEnumerator()
+		{
+			int? index = null;
+			T item = NextHigherItem(ref index);
+			while (index != null)
+			{
+				yield return new KeyValuePair<int, T>(index.Value, item);
+				item = NextHigherItem(ref index);
+			}
 		}
 	}
 }
