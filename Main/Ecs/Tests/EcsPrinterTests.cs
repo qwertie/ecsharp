@@ -186,8 +186,8 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void SaveRangeIsCalled()
 		{
-			var ranges = new List<Pair<ILNode, IndexRange>>();
-			var options = new LNodePrinterOptions { SaveRange = (n, r) => ranges.Add(Pair.Create(n, r)) };
+			var ranges = new List<Triplet<ILNode, IndexRange, int>>();
+			var options = new LNodePrinterOptions { SaveRange = (n, r, d) => ranges.Add(Triplet.Create(n, r, d)) };
 
 			LNode node = F.Var(F.Int32, F.Call(S.Assign, x, two));
 			Stmt("int x = 2;", node);
@@ -216,7 +216,7 @@ namespace Loyc.Ecs.Tests
 			ExpectSavedRange(ranges, output, body[0].Target, "+");
 		}
 
-		private void ExpectSavedRange(List<Pair<ILNode, IndexRange>> ranges, string output, LNode node, string expectedSubstring)
+		private void ExpectSavedRange(List<Triplet<ILNode, IndexRange, int>> ranges, string output, LNode node, string expectedSubstring)
 		{
 			foreach (var pair in ranges)
 			{

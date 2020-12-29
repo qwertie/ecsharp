@@ -80,7 +80,10 @@ namespace Loyc.Syntax
 		/// method to record the location of each node in the printer's output.</summary>
 		/// <remarks>The printer should call this function only once per node printed.
 		/// However, the same node can appear more than once in the tree being printed,
-		/// which can cause this method to be called multiple times for the same node..</remarks>
-		Action<ILNode, IndexRange> SaveRange { get; }
+		/// which can cause this method to be called multiple times for the same node.
+		/// <para/>
+		/// The third parameter of the method is the node's depth in the
+		/// syntax tree (e.g. 3 means that the node has three printed parents).</remarks>
+		Action<ILNode, IndexRange, int> SaveRange { get; }
 	}
 }

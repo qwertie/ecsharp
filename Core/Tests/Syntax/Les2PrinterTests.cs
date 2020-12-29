@@ -23,7 +23,7 @@ namespace Loyc.Syntax.Les
 			                     Foo.PlusAttr(F.Trivia(S.TriviaMLComment, "<")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, ">")),
 			                       x.PlusAttr(F.Trivia(S.TriviaMLComment, "{")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "}"))
 			             ).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " after "));
-			Exact("/*<*/Foo /*>*///[\n== //]\n/*{*/x /*}*/; /* after */", node);
+			Exact("/*<*/Foo /*>*/ //[\n== //]\n  /*{*/x /*}*/; /* after */", node);
 			node = F.Call(Foo).PlusAttrs(a, F.Trivia(S.TriviaSLComment, "Comment after a"), b, F.Trivia(S.TriviaMLComment, "Comment after b"), c);
 			Exact("@[a] //Comment after a\n"+
 			      "@[b] /*Comment after b*/@[c] Foo();", node);
@@ -72,8 +72,8 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void SaveRangeIsCalled()
 		{
-			var ranges = new List<Pair<ILNode, IndexRange>>();
-			var options = new LNodePrinterOptions { SaveRange = (n, r) => ranges.Add(Pair.Create(n, r)) };
+			var ranges = new List<Triplet<ILNode, IndexRange, int>>();
+			var options = new LNodePrinterOptions { SaveRange = (n, r, d) => ranges.Add(Triplet.Create(n, r, d)) };
 
 			LNode node = F.Call(_("var"), F.Call(S.Assign, x, F.Call(S.Sub, two)));
 			Stmt("var(x = -2);", node);
@@ -98,9 +98,8 @@ namespace Loyc.Syntax.Les
 			ExpectSavedRange(ranges, output, node.Target, "=> ");
 			ExpectSavedRange(ranges, output, signature, "MyMethod(x : [int])");
 			ExpectSavedRange(ranges, output, signature.Target, "MyMethod(");
-			// Yeah, ideally that tab wouldn't be there
-			ExpectSavedRange(ranges, output, body, "\tFoo(x .+ 123, (a; b));");
-			ExpectSavedRange(ranges, output, body.Target, "\tFoo(");
+			ExpectSavedRange(ranges, output, body, "Foo(x .+ 123, (a; b));");
+			ExpectSavedRange(ranges, output, body.Target, "Foo(");
 			ExpectSavedRange(ranges, output, signature[0], "x : [int]");
 			ExpectSavedRange(ranges, output, signature[0].Target, ": ");
 			ExpectSavedRange(ranges, output, signature[0][1], "[int]");
@@ -115,7 +114,7 @@ namespace Loyc.Syntax.Les
 			ExpectSavedRange(ranges, output, body[1][1], "b");
 		}
 
-		private void ExpectSavedRange(List<Pair<ILNode, IndexRange>> ranges, string output, LNode node, string expectedSubstring)
+		private void ExpectSavedRange(List<Triplet<ILNode, IndexRange, int>> ranges, string output, LNode node, string expectedSubstring)
 		{
 			foreach (var pair in ranges)
 			{

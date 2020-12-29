@@ -278,7 +278,7 @@ namespace Loyc.Syntax.Les
 			node = F.Call(F.Id(S.Eq).PlusAttr(                 F.Trivia(S.TriviaMLComment, "[")).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "]")), 
 			                 Foo, x.PlusAttrs(F.TriviaNewline, F.Trivia(S.TriviaMLComment, "{")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "}"))
 			                              ).PlusAttr(   F.Trivia(S.TriviaMLComment, " before ")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " after "));
-			Exact("/* before */Foo /*[*/== //]\n/*{*/x /*}*/; /* after */", node);
+			Exact("/* before */Foo /*[*/== //]\n  /*{*/x /*}*/; /* after */", node);
 
 			node = F.Call(Foo).PlusAttrs(a.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "Comment after a")), 
 			                          b, F.Trivia(S.TriviaMLComment, "Comment before c"), c);
@@ -325,7 +325,7 @@ namespace Loyc.Syntax.Les
 				F.Call(a),
 				OnNewLine(F.Call(b)),
 				OnNewLine(F.Call(c)));
-			Exact("{\n\n  a();\n\n  b();\n\n  c();\n\n};",
+			Exact("{\n  \n  a();\n  \n  b();\n  \n  c();\n  \n};",
 				F.Call(S.Braces,
 					OnNewLine(F.Call(a)),
 					OnNewLine(F.Call(b)),
@@ -338,11 +338,9 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TriviaTest_BlankLinesBetweenArgs()
 		{
-			// TODO: the arguments should be indented,
-			// and maybe newlines should appear after `(` or `,`
-			Exact("Foo(\na, \nb, \nc);",
-				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(c)));
-			Exact("Foo(\n\na, \n\nb, \n\nc);",
+			Exact("Foo(\n  a, \n  b, \n  x);",
+				F.Call(Foo, OnNewLine(a), OnNewLine(b), OnNewLine(x)));
+			Exact("Foo(\n  \n  a, \n  \n  b, \n  \n  c);",
 				F.Call(Foo, OnNewLine(OnNewLine(a)),
 					OnNewLine(OnNewLine(b)),
 					OnNewLine(OnNewLine(c))));

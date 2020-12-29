@@ -11,7 +11,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Tests
 {
-	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = "  ", string newline = "\n", Action<ILNode, IndexRange> saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "\t\t") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
+	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = "  ", string newline = "\n", Action<ILNode, IndexRange, int> saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "\t\t") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
 
 	public class LNodePrinterHelperTests<PrinterHelper> : TestHelpers where PrinterHelper : ILNodePrinterHelper<PrinterHelper>
 	{
@@ -119,8 +119,8 @@ namespace Loyc.Syntax.Tests
 				var newExpr = stmt[1][0];
 				helper.BeginNode(newExpr, SE);
 				{
-					helper.BeginNode(newExpr.Attrs[0], SE).WriteSmartly("\n").EndNode();
-					helper.BeginNode(newExpr.Attrs[1], SE).WriteSmartly("// comment").NewlineIsRequiredHere().EndNode();
+					helper.BeginNode(newExpr.Attrs[0], SE).Newline().EndNode();
+					helper.BeginNode(newExpr.Attrs[1], SE).Write("// comment").NewlineIsRequiredHere().EndNode();
 					var constructor = newExpr[0];
 					helper.Write("new ").BeginNode(constructor, SE);
 					helper.BeginNode(constructor.Target, SE).Write("StreamCharSource").EndNode();
@@ -168,7 +168,7 @@ namespace Loyc.Syntax.Tests
 		public void TestSaveRanges()
 		{
 			var ranges = new Dictionary<ILNode, IndexRange>();
-			var pair = _factory("  ", "\n", (node, range) => ranges[node] = range, false);
+			var pair = _factory("  ", "\n", (node, range, depth) => ranges[node] = range, false);
 			var sb = pair.B;
 			using (var helper = pair.A)
 			{
@@ -233,8 +233,7 @@ namespace Loyc.Syntax.Tests
 			LNode braces = NewlineRevocationExampleTree, first = braces[0], second = braces[1], third = braces[2];
 			helper.BeginNode(braces).Write('{').Indent();
 
-			helper.BeginNode(first).Newline().CommitNewlines();
-			var checkpoint1 = helper.GetCheckpoint();
+			var checkpoint1 = helper.BeginNode(first).Newline().CommitNewlines().GetCheckpoint();
 			helper.BeginNode(first[0], SE).Write("VariableNameOfUnusualSize").EndNode().Write(' ');
 			helper.BeginNode(first.Target, SE).Write("= ").Newline().EndNode(); // revokable!
 			helper.BeginNode(first[1], SE).BeginNode(first[1].Target, SE).Write("FunctionNameOfUnusualSize").EndNode().Write('(');
@@ -243,18 +242,16 @@ namespace Loyc.Syntax.Tests
 			helper.Write(';').EndNode(); // end first
 			AreEqual(2, helper.RevokeOrCommitNewlines(checkpoint1, 60));
 
-			helper.BeginNode(second).Newline();
-			var checkpoint2 = helper.GetCheckpoint();
+			var checkpoint2 = helper.BeginNode(second).Newline().GetCheckpoint();
 			helper.BeginNode(second.Target, SE).Write("ReasonableMethod").EndNode().Write('(');
 			helper.BeginNode(second[0], SE).Newline().Write("notAsLong").EndNode().Write(", ");
 			helper.BeginNode(second[1], SE).Newline().Write("so").EndNode().Write(')');
 			helper.Write(';').EndNode(); // end second
 			AreEqual(-2, helper.RevokeOrCommitNewlines(checkpoint2, 60));
 
-			helper.BeginNode(third).Newline().CommitNewlines();
-			var checkpoint3 = helper.GetCheckpoint();
+			var checkpoint3 = helper.BeginNode(third).Newline().CommitNewlines().GetCheckpoint();
 			helper.BeginNode(third.Target, SE).Write("WantToRevoke").EndNode().Write('(');
-			helper.BeginNode(third[0], SE).BeginNode(third[0].Attrs[0], SE).Write("// but can't").IrrevokableNewline().EndNode()
+			helper.BeginNode(third[0], SE).BeginNode(third[0].Attrs[0], SE).Write("// but can't").NewlineIsRequiredHere().Newline().EndNode()
 			                          .Write("otherParameter").EndNode().Write(')');
 			helper.Write(';').EndNode(); // end third
 			AreEqual(0, helper.RevokeNewlinesSince(checkpoint3));
@@ -278,7 +275,7 @@ namespace Loyc.Syntax.Tests
 		public void TestNewlineRevocationWithSavedRanges()
 		{
 			var ranges = new Dictionary<ILNode, IndexRange>();
-			var pair = _factory("  ", "\n", (node, range) => ranges[node] = range, true);
+			var pair = _factory("  ", "\n", (node, range, depth) => ranges[node] = range, true);
 			var sb = pair.B;
 			using (var helper = pair.A)
 			{

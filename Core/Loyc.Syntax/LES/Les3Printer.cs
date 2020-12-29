@@ -21,8 +21,8 @@ namespace Loyc.Syntax.Les
 
 		public StringBuilder SB
 		{ 
-			get { return PS.S; }
-			set { CheckParam.IsNotNull("value", value); PS.S = value; }
+			get { return _out.StringBuilder; }
+			set { CheckParam.IsNotNull("value", value); _out.StringBuilder = value; }
 		}
 
 		IMessageSink _messageSink;
@@ -48,10 +48,10 @@ namespace Loyc.Syntax.Les
 			MessageSink = sink;
 			SetOptions(options);
 			var newline = string.IsNullOrEmpty(_o.NewlineString) ? "\n" : _o.NewlineString;
-			PS = new LNodePrinterHelper(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline);
+			_out = new LNodePrinterHelper(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline) { SaveRange = _o.SaveRange };
 		}
 
-		protected LNodePrinterHelper PS;
+		protected LNodePrinterHelper _out;
 		protected ILNode _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected NewlineContext _nlContext = NewlineContext.NewlineUnsafe;
@@ -62,8 +62,8 @@ namespace Loyc.Syntax.Les
 			var neglist = list as INegListSource<ILNode> ?? list.ToList().AsNegList(0);
 			PrintStmtList(new NegListSlice<ILNode>(neglist), false);
 
-			if (PS.IsAtStartOfLine)
-				PS.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
+			if (_out.IsAtStartOfLine)
+				_out.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
 			return SB;
 		}
 
@@ -72,8 +72,8 @@ namespace Loyc.Syntax.Les
 			_avoidExtraNewline = false;
 			Print(node, Precedence.MinValue, suffix, NewlineContext.NewlineSafeBefore | NewlineContext.NewlineSafeAfter);
 
-			if (PS.IsAtStartOfLine)
-				PS.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
+			if (_out.IsAtStartOfLine)
+				_out.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
 			return SB;
 		}
 
@@ -214,7 +214,7 @@ namespace Loyc.Syntax.Les
 		protected void StartToken(LesColorCode kind, Chars startSet, Chars endSet)
 		{
 			if (_curSet == Chars.SLComment)
-				SB.Append(@"\\"); // terminate single-line comment in order to print something after it
+				_out.Write(@"\\"); // terminate single-line comment in order to print something after it
 			Space((startSet & _curSet) != 0);
 			_curSet = endSet;
 			StartToken(kind);
@@ -227,17 +227,17 @@ namespace Loyc.Syntax.Les
 		protected void WriteToken(char firstChar, LesColorCode kind, Chars tokenSet)
 		{
 			StartToken(kind, tokenSet);
-			SB.Append(firstChar);
+			_out.Write(firstChar);
 		}
 		protected void WriteToken(string text, LesColorCode kind, Chars tokenSet)
 		{
 			StartToken(kind, tokenSet);
-			SB.Append(text);
+			_out.Write(text);
 		}
 		protected void WriteToken(string text, LesColorCode kind, Chars startSet, Chars endSet)
 		{
 			StartToken(kind, startSet, endSet);
-			SB.Append(text);
+			_out.Write(text);
 		}
 
 		protected virtual void StartToken(LesColorCode kind)
@@ -247,12 +247,12 @@ namespace Loyc.Syntax.Les
 		protected void WriteOutsideToken(char space)
 		{
 			if (_curSet == Chars.SLComment)
-				SB.Append(@"\\");
+				_out.Write(@"\\");
 			if (_curSet != Chars.Space) {
 				_curSet = Chars.Space;
 				StartToken(LesColorCode.None);
 			}
-			SB.Append(space);
+			_out.Write(space);
 		}
 
 		bool _avoidExtraNewline = false;
@@ -260,16 +260,16 @@ namespace Loyc.Syntax.Les
 
 		protected void Newline(bool avoidExtraNewline = false)
 		{
-			if (!(_avoidExtraNewline && PS.IsAtStartOfLine)) {
+			if (!(_avoidExtraNewline && _out.IsAtStartOfLine)) {
 				if (_curSet != Chars.Space) {
 					_curSet = Chars.Space;
 					StartToken(LesColorCode.None);
 				}
-				_newlineCheckpoint = PS.Newline(0);
+				_newlineCheckpoint = _out.Newline(0);
 			}
 			_avoidExtraNewline = avoidExtraNewline;
 			if (!avoidExtraNewline)
-				PS.CommitNewlines();
+				_out.CommitNewlines();
 		}
 
 		protected void Space(bool condition = true)
@@ -310,7 +310,7 @@ namespace Loyc.Syntax.Les
 			} else {
 				if (startToken)
 					StartToken(ColorCodeForId(name), Chars.Id, Chars.Id);
-				SB.Append(name);
+				_out.Write(name);
 			}
 		}
 
@@ -322,12 +322,12 @@ namespace Loyc.Syntax.Les
 				PrintIdCore(prefix, startToken: false);
 		restart:
 			int startAt = SB.Length;
-			SB.Append(quoteType);
+			_out.Write(quoteType);
 			if (tripleQuoted)
 			{
 				// Print triple-quoted
-				SB.Append(quoteType);
-				SB.Append(quoteType);
+				_out.Write(quoteType);
+				_out.Write(quoteType);
 
 				UString fullText = text;
 				char a = '\0', b = '\0';
@@ -335,21 +335,21 @@ namespace Loyc.Syntax.Les
 					char c = text[0], d;
 					if (c == quoteType && ((b == quoteType && a == quoteType) || text.Length == 1)) {
 						// Escape triple quote, or a quote at end-of-string
-						SB.Append('\\');
-						SB.Append(c);
-						SB.Append('/');
+						_out.Write('\\');
+						_out.Write(c);
+						_out.Write('/');
 					} else if (c == '\0') {
-						SB.Append(@"\0/");
+						_out.Write(@"\0/");
 					} else if (c == '\r') {
-						SB.Append(@"\r/");
+						_out.Write(@"\r/");
 					} else if (c == '\\' && text.Length >= 3 && text[2] == '/' &&
 						((d = text[1]) == 'r' || d == 'n' || d == 't' || d == '0' || d == '\\' || d == '\'' || d == '"')) {
 						// avoid writing a false escape sequence
-						SB.Append(@"\\/");
+						_out.Write(@"\\/");
 					} else if (c == '\n') {
-						PS.Newline();
-						PS.CommitNewlines();
-						SB.Append(PS.IndentString.EndsWith("\t") ? "\t" : "   ");
+						_out.Newline();
+						_out.CommitNewlines();
+						_out.Write(_out.IndentString.EndsWith("\t") ? "\t" : "   ");
 					} else if (c >= 0xDC80 && c <= 0xDCFF && !(b >= 0xD800 && b <= 0xDBFF)) {
 						// invalid UTF8 byte encoded as UTF16: CANNOT print in 
 						// triple-quoted string! Start over as DQ string.
@@ -359,13 +359,13 @@ namespace Loyc.Syntax.Les
 						text = fullText;
 						goto restart;
 					} else {
-						SB.Append(c);
+						_out.Write(c);
 					}
 					a = b; b = c;
 				}
 
-				SB.Append(quoteType);
-				SB.Append(quoteType);
+				_out.Write(quoteType);
+				_out.Write(quoteType);
 			}
 			else 
 			{
@@ -390,7 +390,7 @@ namespace Loyc.Syntax.Les
 					PrintHelpers.EscapeCStyle(c, SB, flags, quoteType);
 				}
 			}
-			SB.Append(quoteType);
+			_out.Write(quoteType);
 		}
 
 		#endregion
@@ -478,13 +478,13 @@ namespace Loyc.Syntax.Les
 				if (typeMarker == sy__ && text.Length == 1 && text[0] >= '0' && text[0] <= '9')
 				{
 					StartToken(LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-					SB.Append(text[0]);
+					_out.Write(text[0]);
 					return;
 				}
 				else if (CanPrintAsNumber(text, typeMarker))
 				{
 					WriteToken(text.ToString(), kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
-					SB.Append(typeMarker.Name.Slice(1));
+					_out.Write(typeMarker.Name.Slice(1));
 					return;
 				}
 				else if (typeMarker != GSymbol.Empty)
@@ -594,25 +594,25 @@ namespace Loyc.Syntax.Les
 			if (leftBracket != null)
 				PrintTrailingTrivia(leftBracket, 0, null, NewlineContext.NewlineSafeAfter);
 			Space(spacesInside);
-			PS.Indent();
+			_out.Indent();
 			if (style == ArgListStyle.BracedBlock) {
 				if (PrintStmtList(args, initialNewline: true)) {
-					PS.Dedent();
+					_out.Dedent();
 					Newline();
 				} else {
-					PS.Dedent();
+					_out.Dedent();
 					Space(_o.SpacesBetweenAppendedStatements);
 				}
 			} else {
 				string semicolon = (style == ArgListStyle.Normal ? null : ";");
 				for (int i = 0; i < args.Count; i++) {
 					if (i != 0)
-						Space(_o.SpaceAfterComma && !PS.IsAtStartOfLine);
+						Space(_o.SpaceAfterComma && !_out.IsAtStartOfLine);
 					var stmt = args[i];
 					Print(stmt, Precedence.MinValue, suffix: semicolon ?? (i + 1 != args.Count ? "," : null));
 					MaybeForceLineBreak();
 				}
-				PS.Dedent();
+				_out.Dedent();
 			}
 			Space(spacesInside);
 			WriteToken(rightDelim, LesColorCode.Closer, Chars.Delimiter);
@@ -623,7 +623,7 @@ namespace Loyc.Syntax.Les
 		bool ShouldAppendStmt(ILNode node)
 		{
 			return (!_o.PrintTriviaExplicitly && node.AttrNamed(S.TriviaAppendStatement) != null) &&
-				PS.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
+				_out.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 
 		// For printing at the top level, or in a braced block where newlines are significant
@@ -760,8 +760,8 @@ namespace Loyc.Syntax.Les
 			}
 			
 			StartToken(LesColorCode.Operator, startSet, endSet);
-			
-			SB.Append(opName.Name, skipApostrophe, opName.Name.Length - skipApostrophe);
+
+			_out.Write(new UString(opName.Name, skipApostrophe, opName.Name.Length - skipApostrophe));
 
 			bool newlineSafe = isBinaryOp && opName.Name.Any(c => Les3PrecedenceMap.IsOpChar(c));
 			if (target != null) {
@@ -849,7 +849,7 @@ namespace Loyc.Syntax.Les
 			var target = node.Target;
 			int parens = PrintAttrsAndLeadingTrivia(target, NewlineContext.NewlineUnsafe);
 			WriteToken('.', LesColorCode.Keyword, Chars.Dot | Chars.Id);
-			SB.Append(node.Name.Name, 1, node.Name.Name.Length-1);
+			_out.Write(new UString(node.Name.Name, 1, node.Name.Name.Length-1));
 			PrintTrailingTrivia(target, 0, null, NewlineContext.NewlineUnsafe);
 			if (args.Count == 0)
 				return true;
@@ -965,7 +965,7 @@ namespace Loyc.Syntax.Les
 						normalAttrs++;
 						WriteToken('@', LesColorCode.Attribute, Chars.Delimiter);
 						Print(attr, AttributeContext, nlContext: NewlineContext.NewlineSafeAfter);
-						if (!PS.IsAtStartOfLine && !MaybeForceLineBreak())
+						if (!_out.IsAtStartOfLine && !MaybeForceLineBreak())
 							Space();
 					}
 				}
@@ -975,7 +975,7 @@ namespace Loyc.Syntax.Les
 
 		private bool MaybeForceLineBreak()
 		{
-			if (PS.IndexInCurrentLineAfterIndent > _o.ForcedLineBreakThreshold) {
+			if (_out.IndexInCurrentLineAfterIndent > _o.ForcedLineBreakThreshold) {
 				Newline(true);
 				return true;
 			}
@@ -1056,10 +1056,10 @@ namespace Loyc.Syntax.Les
 					else {
 						WriteToken("//", LesColorCode.Comment, Chars.Punc, Chars.SLComment);
 						// Insert zero-width space in the middle of "\\" to avoid ending the comment early
-						SB.Append(text.Replace(@"\\", "\\\u200B\\"));
+						_out.Write(text.Replace(@"\\", "\\\u200B\\"));
 						if (!PrintNewlineTriviaIfPossible(newlineSafePoint, true))
 							if (text.EndsWith(@"\"))
-								SB.Append(" "); // in case the comment is closed with `\\`, avoid ending in `\\\`
+								_out.Write(' '); // in case the comment is closed with `\\`, avoid ending in `\\\`
 					}
 				}
 				return true;
@@ -1093,7 +1093,7 @@ namespace Loyc.Syntax.Les
 		private void WriteMLComment(string text)
 		{
 			StartToken(LesColorCode.Comment, Chars.Punc, Chars.Delimiter);
-			SB.Append("/*");
+			_out.Write("/*");
 			// Print carefully, changing "*/" to "*\" if necessary to avoid ending 
 			// the comment early, or adding extra "*/"s to un-nest nested comments.
 			int nesting = 0;
@@ -1102,7 +1102,7 @@ namespace Loyc.Syntax.Les
 				c = text[i];
 				if (c == '/' && prev_c == '*' && nesting == 0)
 					c = '\\';
-				SB.Append(c);
+				_out.Write(c);
 				if (c == '*' && prev_c == '/') {
 					nesting++;
 					c = '\0'; // ensure `/*/` is not treated the same as `/**/`
@@ -1113,7 +1113,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 			for (; nesting >= 0; nesting--)
-				SB.Append("*/");
+				_out.Write("*/");
 		}
 
 		private void PrintSpaces(string spaces)

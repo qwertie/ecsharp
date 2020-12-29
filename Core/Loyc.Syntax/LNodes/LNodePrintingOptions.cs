@@ -18,7 +18,7 @@ namespace Loyc.Syntax
 		public virtual string IndentString { get; set; }
 		public virtual string NewlineString { get; set; }
 		public virtual ILiteralPrinter LiteralPrinter { get; set; }
-		public virtual Action<ILNode, IndexRange> SaveRange { get; set; }
+		public virtual Action<ILNode, IndexRange, int> SaveRange { get; set; }
 
 		public void CopyFrom(ILNodePrinterOptions original)
 		{

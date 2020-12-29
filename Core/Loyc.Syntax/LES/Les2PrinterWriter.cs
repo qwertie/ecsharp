@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Loyc.Collections;
 using System.Diagnostics;
+using Loyc.Collections;
+using Loyc.Syntax.Impl;
 
 namespace Loyc.Syntax.Les
 {
@@ -28,9 +29,9 @@ namespace Loyc.Syntax.Les
 		// _sb and _startingIndices are used to help send info to _saveRange.
 		protected StringBuilder _sb;
 		protected Stack<Pair<ILNode, int>> _startingIndices;
-		protected Action<ILNode, IndexRange> _saveRange;
+		protected Action<ILNode, IndexRange, int> _saveRange;
 
-		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null, Action<ILNode, IndexRange> saveRange = null)
+		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null, Action<ILNode, IndexRange, int> saveRange = null)
 			: this(new StringWriter(sb), indentString, lineSeparator, labelIndent)
 		{
 			_sb = sb;
@@ -137,28 +138,23 @@ namespace Loyc.Syntax.Les
 		{
 			if (_startingIndices != null) {
 				var pair = _startingIndices.Pop();
-				_saveRange(pair.A, new IndexRange(pair.B) { EndIndex = _sb.Length });
+				_saveRange(pair.A, new IndexRange(pair.B) { EndIndex = _sb.Length }, _startingIndices.Count);
 			}
 		}
 	}
 
-	/// <summary>Helper class of <see cref="Les2Printer"/> that ensures 
-	/// tokens are spaced apart properly.</summary>
-	internal class Les2PrinterWriter : DefaultNodePrinterWriter
+	internal sealed class Les2PrinterWriter : LNodePrinterHelper
 	{
-		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange> saveRange = null)
-			: base(sb, indentString, lineSeparator, labelIndent, saveRange) { }
-		public Les2PrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
-			: base(@out, indentString, lineSeparator, labelIndent) { }
+		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange, int> saveRange = null)
+			: base(sb, indentString, lineSeparator, false, labelIndent, "  ") { SaveRange = saveRange; }
 
-		protected override void StartToken(char nextCh)
+		protected override void OnNodeStarting(char nextCh)
 		{
-			if (_newlinePending)
-				Newline();
+			var _lastCh = LastCharWritten;
 			if (Les2Lexer.IsIdContChar(_lastCh) && Les2Lexer.IsIdContChar(nextCh))
-				_out.Write(' ');
+				StringBuilder.Append(' ');
 			else if (Les2Lexer.IsOpContChar(_lastCh) && Les2Lexer.IsOpContChar(nextCh))
-				_out.Write(' ');
+				StringBuilder.Append(' ');
 		}
 	}
 }

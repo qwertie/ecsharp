@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using System.Globalization;
+using Loyc.Syntax.Impl;
 
 namespace Loyc.Syntax.Les
 {
@@ -17,10 +18,9 @@ namespace Loyc.Syntax.Les
 	/// <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
 	public class Les2Printer
 	{
-		INodePrinterWriter _out;
+		Les2PrinterWriter _out;
 		IMessageSink _errors;
 
-		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		Les2PrinterOptions _o;
@@ -37,33 +37,28 @@ namespace Loyc.Syntax.Les
 
 		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
 		{
-			var p = _printer = _printer ?? new Les2Printer(TextWriter.Null, null);
+			var p = _printer = _printer ?? new Les2Printer(new StringBuilder(), null);
 			var oldOptions = p._o;
-			var oldWriter = p.Writer;
+			var oldWriter = p._out;
 			var oldSink = p.ErrorSink;
 			p.ErrorSink = sink;
 			p.SetOptions(options);
-			p.Writer = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n", "", p.Options.SaveRange);
+			p._out = new Les2PrinterWriter(target, p.Options.IndentString ?? "\t", p.Options.NewlineString ?? "\n", "", p.Options.SaveRange);
 
 			if (mode == ParsingMode.Expressions)
 				p.Print(node, StartStmt, "");
 			else
 				p.Print(node, StartStmt, ";");
 
-			p.Writer = oldWriter;
+			p._out = oldWriter;
 			p._o = oldOptions;
 			p.ErrorSink = oldSink;
 		}
 
-		internal Les2Printer(TextWriter target, ILNodePrinterOptions options = null)
-		{
-			SetOptions(options);
-			Writer = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
-		}
 		internal Les2Printer(StringBuilder target, ILNodePrinterOptions options = null)
 		{
 			SetOptions(options);
-			Writer = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			_out = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
 		}
 
 		#endregion
@@ -71,7 +66,7 @@ namespace Loyc.Syntax.Les
 		/// <summary>Top-level non-static printing method</summary>
 		internal void Print(ILNode node, Precedence context, string terminator = null)
 		{
-			_out.Push(node);
+			_out.BeginNode(node, context == StartStmt ? null : PrinterIndentHint.Subexpression);
 			
 			int parenCount = WriteAttrs(node, ref context);
 
@@ -81,9 +76,9 @@ namespace Loyc.Syntax.Les
 				if (AutoPrintBracesOrBracks(node))
 					break;
 				if (!LesPrecedence.Primary.CanAppearIn(context)) {
-					_out.Write("(@[] ", true);
+					_out.Write("(@[] ");
 					parenCount++;
-					context = StartStmt;
+					context = StartSubexpr;
 				}
 				int args = node.ArgCount();
 				if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
@@ -95,7 +90,7 @@ namespace Loyc.Syntax.Les
 			
 			PrintSuffixTrivia(node, parenCount, terminator);
 			
-			_out.Pop();
+			_out.EndNode();
 		}
 
 		#region Infix, prefix and suffix operators
@@ -136,7 +131,7 @@ namespace Loyc.Syntax.Les
 		
 		private void WriteOpName(Symbol op, ILNode target, Precedence prec, bool spaceAfter = false)
 		{
-			_out.Push(target);
+			_out.BeginNode(target);
 
 			// Note: if the operator has a space after it, there's a subtle reason why 
 			// we want to print that space before the trivia and not after. Consider
@@ -157,13 +152,13 @@ namespace Loyc.Syntax.Les
 				PrintStringCore('`', false, op.Name);
 			else {
 				Debug.Assert(op.Name.StartsWith("'"));
-				_out.Write(op.Name.Substring(1), true);
+				_out.Write(op.Name.Substring(1));
 			}
 			SpaceIf(spaceAfter);
 			if (target != null)
 				PrintSuffixTrivia(target, 0, null);
 
-			_out.Pop();
+			_out.EndNode();
 		}
 
 		private void SpaceIf(bool cond)
@@ -222,36 +217,40 @@ namespace Loyc.Syntax.Les
 		{
 			if (target != null)
 				PrintPrefixTrivia(target);
-			_out.Write(leftDelim, true);
+			_out.Write(leftDelim);
 			if (target != null)
 				PrintSuffixTrivia(target, 0, "");
 			if (stmtMode) {
 				_out.Indent();
 				bool anyNewlines = false;
+				var  childContext = rightDelim == '}' ? StartStmt : StartSubexpr;
+				separator = separator ?? ";";
 				foreach (var stmt in args) {
 					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null)) {
-						_out.Newline();
+						_out.Newline(rightDelim == '}' ? PrinterIndentHint.Normal : null);
 						anyNewlines = true;
 					} else
 						SpaceIf(_o.SpacesBetweenAppendedStatements);
-					Print(stmt, StartStmt, separator ?? ";");
+					Print(stmt, childContext, separator);
 				}
 				_out.Dedent();
 				if (anyNewlines)
-					_out.Newline();
+					_out.Newline(PrinterIndentHint.Normal);
 				else
 					SpaceIf(_o.SpacesBetweenAppendedStatements);
 			} else {
 				for (int i = 0; i < args.Count; )
-					Print(args[i], StartStmt, ++i == args.Count ? "" : separator ?? ", ");
+					Print(args[i], StartSubexpr, ++i == args.Count ? "" : separator ?? ", ");
 			}
-			_out.Write(rightDelim, true);
+			_out.Write(rightDelim);
 		}
 
 		#endregion
 
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
-		protected static readonly Precedence StartStmt      = Precedence.MinValue;
+		protected static readonly Precedence StartStmt = Precedence.MinValue;
+		/// <summary>Context: beginning of subexpression (potential superexpression)</summary>
+		protected static readonly Precedence StartSubexpr = new Precedence(Precedence.MinValue.Left + 1);
 
 		void PrintPrefixNotation(ILNode node, Precedence context)
 		{
@@ -277,13 +276,13 @@ namespace Loyc.Syntax.Les
 
 		private int WriteAttrs(ILNode node, ref Precedence context)
 		{
-			bool wroteBrack = false, needParen = (context != StartStmt);
+			bool wroteBrack = false, needParen = (context.Lo > StartSubexpr.Lo);
 			int parenCount = 0;
 			foreach (var attr in node.Attrs()) {
 				if (attr.IsIdNamed(S.TriviaInParens)) {
 					MaybeCloseBrack(ref wroteBrack);
 					parenCount++;
-					_out.Write('(', true);
+					_out.Write('(');
 					// need extra paren when writing @[..] because (@[..] ...) doesn't count as %inParens
 					needParen = true;
 					continue;
@@ -300,25 +299,25 @@ namespace Loyc.Syntax.Les
 					if (needParen) {
 						needParen = false;
 						parenCount++;
-						_out.Write('(', true);
+						_out.Write('(');
 					}
-					_out.Write("@[", true);
+					_out.Write("@[");
 				} else {
-					_out.Write(',', true);
+					_out.Write(',');
 					_out.Space();
 				}
-				Print(attr, StartStmt);
+				Print(attr, StartSubexpr);
 			}
 			MaybeCloseBrack(ref wroteBrack);
 			if (parenCount != 0)
-				context = StartStmt;
+				context = StartSubexpr;
 			return parenCount;
 		}
 
 		private void MaybeCloseBrack(ref bool wroteBrack)
 		{
 			if (wroteBrack) {
-				_out.Write("] ", true);
+				_out.Write("] ");
 				wroteBrack = false;
 			}
 		}
@@ -333,31 +332,31 @@ namespace Loyc.Syntax.Les
 		private void PrintSuffixTrivia(ILNode _n, int parenCount, string terminator)
 		{
 			while (--parenCount >= 0)
-				_out.Write(')', true);
+				_out.Write(')');
 			if (terminator != null)
-				_out.Write(terminator, true);
+				_out.Write(terminator);
 			foreach (var attr in _n.GetTrailingTrivia())
-				MaybePrintTrivia(attr, needSpace: true);
+				MaybePrintTrivia(attr, needSpace: true, testOnly: false, hint: _out.HintOnTopOfStack);
 		}
 
 		private bool IsConsumedTrivia(ILNode attr)
 		{
 			return MaybePrintTrivia(attr, false, testOnly: true);
 		}
-		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false)
+		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false, Symbol hint = null)
 		{
 			var name = attr.Name;
 			if (S.IsTriviaSymbol(name)) {
 				if ((name == S.TriviaRawText) && _o.ObeyRawText) {
 					if (!testOnly)
-						_out.Write(GetRawText(attr), true);
+						_out.Write(GetRawText(attr));
 					return true;
 				} else if (_o.PrintTriviaExplicitly) {
 					return false;
 				} else {
 					if (name == S.TriviaNewline) {
 						if (!testOnly && !_o.OmitSpaceTrivia)
-							_out.Newline();
+							_out.Newline(hint);
 						return true;
 					} else if ((name == S.TriviaSpaces)) {
 						if (!testOnly && !_o.OmitSpaceTrivia)
@@ -366,19 +365,19 @@ namespace Loyc.Syntax.Les
 					} else if (name == S.TriviaSLComment) {
 						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t'))
-								_out.Write('\t', true);
-							_out.Write("//", false);
-							_out.Write(GetRawText(attr), true);
-							_out.Newline(pending: true);
+								_out.Write('\t');
+							_out.Write("//");
+							_out.Write(GetRawText(attr));
+							_out.NewlineIsRequiredHere();
 						}
 						return true;
 					} else if (name == S.TriviaMLComment) {
 						if (!testOnly && !_o.OmitComments) {
 							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 								_out.Space();
-							_out.Write("/*", false);
-							_out.Write(GetRawText(attr), false);
-							_out.Write("*/", false);
+							_out.Write("/*");
+							_out.Write(GetRawText(attr));
+							_out.Write("*/");
 						}
 						return true;
 					} else if (name == S.TriviaAppendStatement)
@@ -408,7 +407,7 @@ namespace Loyc.Syntax.Les
 			for (int i = 0; i < spaces.Length; i++) {
 				char c = spaces[i];
 				if (c == ' ' || c == '\t')
-					_out.Write(c, false);
+					_out.Write(c);
 				else if (c == '\n')
 					_out.Newline();
 				else if (c == '\r') {
@@ -503,11 +502,11 @@ namespace Loyc.Syntax.Les
 			bool backquote, special = IsSpecialIdentifier(name.Name, out backquote); 
 
 			if (special || isSymbol)
-				_out.Write(isSymbol ? "@@" : "@", false);
+				_out.Write(isSymbol ? "@@" : "@");
 			if (backquote)
 				PrintStringCore('`', false, name.Name);
 			else
-				_out.Write(name.Name, true);
+				_out.Write(name.Name);
 		}
 
 		private void PrintString(Symbol typeMarker, char quoteType, bool tripleQuoted, UString text)
@@ -519,28 +518,28 @@ namespace Loyc.Syntax.Les
 
 		private void PrintStringCore(char quoteType, bool tripleQuoted, UString text)
 		{
-			_out.Write(quoteType, false);
+			_out.Write(quoteType);
 			if (tripleQuoted) {
-				_out.Write(quoteType, false);
-				_out.Write(quoteType, false);
+				_out.Write(quoteType);
+				_out.Write(quoteType);
 
 				char a = '\0', b = '\0';
 				foreach (char c in text) {
 					if (c == quoteType && b == quoteType && a == quoteType)
-						_out.Write(@"\\", false);
+						_out.Write(@"\\");
 					// prevent false escape sequences
 					if (a == '\\' && b == '\\' && (c == quoteType || c == 'n' || c == 'r' || c == '\\'))
-						_out.Write(@"\\", false);
-					_out.Write(c, false);
+						_out.Write(@"\\");
+					_out.Write(c);
 					a = b; b = c;
 				}
 				
-				_out.Write(quoteType, false);
-				_out.Write(quoteType, false);
+				_out.Write(quoteType);
+				_out.Write(quoteType);
 			} else {
-				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
+				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control, quoteType));
 			}
-			_out.Write(quoteType, true);
+			_out.Write(quoteType);
 		}
 
 		static readonly Symbol sy_bool = (Symbol)"bool", sy_c = (Symbol)"c", sy_s = (Symbol)"s", sy__ = (Symbol)"_";
@@ -566,11 +565,11 @@ namespace Loyc.Syntax.Les
 
 			if (value == null)
 			{
-				_out.Write("@null", true);
+				_out.Write("@null");
 			}
 			else if (NamedLiterals.TryGetValue(value, out var text))
 			{
-				_out.Write(text, true);
+				_out.Write(text);
 			}
 			else if (value is char c && (typeMarker == null || typeMarker == sy_c))
 			{
@@ -632,13 +631,13 @@ namespace Loyc.Syntax.Les
 				// Detect if we should print it as a number instead. One-digit numbers optimized:
 				if (typeMarker == sy__ && text.Length == 1 && text[0] >= '0' && text[0] <= '9')
 				{
-					_out.Write(text[0], true);
+					_out.Write(text[0]);
 					return;
 				}
 				else if (Les3Printer.CanPrintAsNumber(text, typeMarker))
 				{
-					_out.Write(text.ToString(), false);
-					_out.Write(typeMarker.Name.Slice(1).ToString(), true);
+					_out.Write(text.ToString());
+					_out.Write(typeMarker.Name.Slice(1).ToString());
 					return;
 				}
 			}

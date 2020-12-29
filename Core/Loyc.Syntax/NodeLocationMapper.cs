@@ -35,13 +35,15 @@ namespace Loyc.Syntax
 	public class LNodeRangeMapper
 	{
 		// These dictionaries map locations in a file to input nodes
-		public BMultiMap<int, Pair<ILNode, int>> _startLocations = new BMultiMap<int, Pair<ILNode, int>>(null, (p, q) => p.B.CompareTo(q.B));
-		public BMultiMap<int, Pair<ILNode, int>> _endLocations   = new BMultiMap<int, Pair<ILNode, int>>(null, (p, q) => p.B.CompareTo(q.B));
+		public BMultiMap<int, Pair<ILNode, int>> _startLocations = new BMultiMap<int, Pair<ILNode, int>>(null, null);
+		public BMultiMap<int, Pair<ILNode, int>> _endLocations   = new BMultiMap<int, Pair<ILNode, int>>(null, null);
 
 		/// <summary>Associates a node with a range.</summary>
 		/// <remarks>Typically this method is set as the value of 
-		/// <see cref="ILNodePrinterOptions.SaveRange"/> so that range info is captured while converting a node to text.</remarks>
-		public void SaveRange(ILNode node, IndexRange range)
+		/// <see cref="ILNodePrinterOptions.SaveRange"/> so that range info is captured
+		/// while converting a node to text. This class does not need or use the third 
+		/// parameter (depth).</remarks>
+		public void SaveRange(ILNode node, IndexRange range, int depth = -1)
 		{
 			_startLocations[range.StartIndex].Add(Pair.Create(node, range.EndIndex));
 			_endLocations  [range.EndIndex].Add(Pair.Create(node, range.StartIndex));
