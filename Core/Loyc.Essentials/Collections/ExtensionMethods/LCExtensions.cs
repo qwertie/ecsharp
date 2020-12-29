@@ -17,58 +17,6 @@ namespace Loyc.Collections
 	{
 		#region Conversion between Loyc and BCL collection interfaces
 
-#if false
-		public static IteratorEnumerator<T> AsEnumerator<T>(this Iterator<T> it)
-		{
-			return new IteratorEnumerator<T>(it);
-		}
-		
-		public static Iterator<T> AsIterator<T>(this IEnumerator<T> e)
-		{
-			return delegate(ref bool ended)
-			{
-				if (e.MoveNext())
-					return e.Current;
-				else
-				{
-					ended = true;
-					return default(T);
-				}
-			};
-		}
-		
-		public static IEnumerable<T> AsEnumerable<T>(this IIterable<T> list)
-		{
-			var listE = list as IEnumerable<T>;
-			if (listE != null)
-				return listE;
-			return AsEnumerableCore(list);
-		}
-		private static IEnumerable<T> AsEnumerableCore<T>(IIterable<T> list)
-		{
-			bool ended = false;
-			for (var it = list.GetIterator();;)
-			{
-				T item = it(ref ended);
-				if (ended)
-					yield break;
-				yield return item;
-			}
-		}
-
-		/// <summary>Converts any IEnumerable object to IIterable.</summary>
-		/// <remarks>This method is named "AsIterable" and not "ToIterable" because,
-		/// in contrast to methods like ToArray() and ToList(), it does not make a 
-		/// copy of the sequence.</remarks>
-		public static IIterable<T> AsIterable<T>(this IEnumerable<T> list)
-		{
-			var listI = list as IIterable<T>;
-			if (listI != null)
-				return listI;
-			return new EnumerableAsIterable<T>(list);
-		}
-#endif
-
 		[Obsolete(".NET 4+ can upcast by itself without this method")]
 		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
@@ -91,6 +39,7 @@ namespace Loyc.Collections
 
 	/// <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
 	/// <see cref="LCExt.UpCast{T, TResult}(IListSource{T})"/>
+	[Obsolete("Not being used, will probably remove in the future")]
 	public class UpCastSource<T, TOut> : ReadOnlyCollectionBase<TOut> where T : TOut
 	{
 		protected IReadOnlyCollection<T> s;
@@ -108,6 +57,9 @@ namespace Loyc.Collections
 
 	/// <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
 	/// <see cref="LCExt.UpCast{T, TResult}(IReadOnlyCollection{T})"/>
+	/// <remarks>This class is rarely needed because generic variance allows casting 
+	/// IListSource{DerivedClass} to IListSource{BaseClass}. However, it is still useful
+	/// to convert a list of structs from IListSource{Struct} to IListSource{IInterface}.</remarks>
 	public class UpCastListSource<T, TOut> : ListSourceBase<TOut> where T : TOut
 	{
 		IListSource<T> _list;

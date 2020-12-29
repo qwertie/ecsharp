@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -365,8 +365,8 @@ namespace Loyc.Syntax.Lexing
 	/// that are equal to the token types you've chosen for <c>{ braces }</c> (e.g.  
 	/// (<see cref="TokenKind.LBrace"/> and <see cref="TokenKind.RBrace"/>), the 
 	/// only indent trigger is a colon (:), and you set <see cref="EolToken"/> to 
-	/// the token type you're using for semicolons. Then the token stream from 
-	/// input such as
+	/// the token type you're using for semicolons. Then this class will convert
+	/// the token stream from input such as
 	/// <code>
 	///	def Sqrt(value):
 	///		if value == 0: return 0
@@ -380,7 +380,7 @@ namespace Loyc.Syntax.Lexing
 	///		while (bshft-- > 0)
 	///		return g
 	/// </code>
-	/// will be converted to a token stream equivalent to
+	/// to a token stream equivalent to
 	/// <code>
 	///	def Sqrt(value): {
 	///		if value == 0: { return 0;

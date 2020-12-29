@@ -533,7 +533,6 @@ namespace LeMP
 			foreach (var filename in fileNames) {
 				try {
 					var stream = File.OpenRead(filename);
-					var text = File.ReadAllText(filename, Encoding.UTF8);
 					var io = new InputOutput(new StreamCharSource(stream), Path.GetFullPath(filename));
 					openFiles.Add(io);
 				} catch (Exception ex) {

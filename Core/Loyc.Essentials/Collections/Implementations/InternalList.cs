@@ -14,12 +14,18 @@ namespace Loyc.Collections.Impl
 	/// An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
 	/// about this class is available.
 	/// <para/>
-	/// InternalList is a struct, not a class, in order to save memory; and for 
+	/// InternalList is a struct, not a class, in order to save memory, and for 
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used. Besides that, it has an 
 	/// InternalArray property that provides access to the internal array. 
+	/// This is useful, for example, when you have a list of structs and you
+	/// want to change a property of one of them (this is combersome in a 
+	/// standard <see cref="List{T}"/> because `list[i].P = value` is illegal
+	/// in that context, but in InternalList, `list.InternalArray[i].P = value` 
+	/// is legal.)
+	/// <para/>
 	/// For all these reasons one should not expose it in a public API, and 
-	/// it should only be used when performance trumps all other concerns.
+	/// it should mainly be used when performance trumps all other concerns.
 	/// <para/>
 	/// Passing this structure by value is dangerous because changes to a copy 
 	/// of the structure may or may not be reflected in the original list. It's
