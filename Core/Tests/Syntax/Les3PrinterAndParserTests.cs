@@ -1133,6 +1133,13 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		[Test]
+		public void BugFixes()
+		{
+			var tree = F.Braces(F.Call(S.Assign, x, zero).PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "Comment")));
+			Exact("{\n  x = 0\t//Comment\n}", tree);
+		}
+
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)
 		{
 			Test(Mode.Expr, errorsExpected, text, new[] { expr });

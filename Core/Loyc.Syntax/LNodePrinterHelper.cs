@@ -252,7 +252,7 @@ namespace Loyc.Syntax.Impl
 		private void FlushPending(char firstChar)
 		{
 			var action = _pendingAction;
-			_pendingAction = 0;
+			_pendingAction &= PendingAction.Newline;
 
 			if ((action & PendingAction.Newline) != 0)
 				Newline(deferIndent: false);

@@ -70,7 +70,6 @@ namespace Loyc.Syntax.Les
 
 		public StringBuilder Print(ILNode node, string suffix = null)
 		{
-			_avoidExtraNewline = false;
 			Print(node, Precedence.MinValue, suffix, NewlineContext.NewlineSafeBefore | NewlineContext.NewlineSafeAfter);
 
 			if (_out.IsAtStartOfLine)
@@ -257,21 +256,20 @@ namespace Loyc.Syntax.Les
 			_out.Write(space);
 		}
 
-		bool _avoidExtraNewline = false;
 		LNodePrinterHelperLocation _newlineCheckpoint;
 
 		protected void Newline(bool avoidExtraNewline = false)
 		{
-			if (!(_avoidExtraNewline && _out.IsAtStartOfLine)) {
-				if (_curSet != Chars.Space) {
-					_curSet = Chars.Space;
-					StartToken(LesColorCode.None);
-				}
-				_newlineCheckpoint = _out.Newline(0);
+			if (_curSet != Chars.Space) {
+				_curSet = Chars.Space;
+				StartToken(LesColorCode.None);
 			}
-			_avoidExtraNewline = avoidExtraNewline;
-			if (!avoidExtraNewline)
+			if (avoidExtraNewline) {
+				_out.NewlineIsRequiredHere();
+			} else {
 				_out.CommitNewlines();
+				_newlineCheckpoint = _out.NewlineAfterCheckpoint();
+			}
 		}
 
 		protected void Space(bool condition = true)
@@ -599,9 +597,10 @@ namespace Loyc.Syntax.Les
 			_out.Indent();
 			if (style == ArgListStyle.BracedBlock) {
 				if (PrintStmtList(args, initialNewline: true)) {
+					// There were newlines in the block
 					_out.Dedent();
 					Newline();
-				} else {
+				} else { // no newlines in the block
 					_out.Dedent();
 					Space(_o.SpacesBetweenAppendedStatements);
 				}
@@ -615,8 +614,8 @@ namespace Loyc.Syntax.Les
 					MaybeForceLineBreak();
 				}
 				_out.Dedent();
+				Space(spacesInside);
 			}
-			Space(spacesInside);
 			WriteToken(rightDelim, LesColorCode.Closer, Chars.Delimiter);
 
 			_inParensOrBracks = outerInParensOrBracks;
@@ -729,7 +728,7 @@ namespace Loyc.Syntax.Les
 					Print(node[0], prec.LeftContext(_context));
 					Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
 					bool newlineSafe = PrintOpName(opName, node.Target, isBinaryOp: true);
-					if (SB.Last() != '\n')
+					if (!_out.IsAtStartOfLine)
 						Space(prec.Lo < _o.SpaceAroundInfixStopPrecedence);
 					var nlContext = NewlineContext.AutoDetect;
 					if (newlineSafe)
