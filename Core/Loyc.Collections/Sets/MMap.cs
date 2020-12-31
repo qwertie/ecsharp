@@ -97,7 +97,7 @@ namespace Loyc.Collections
 				_count++;
 				return;
 			}
-			throw new ArgumentException("The specified key already exists in the map.");
+			CheckParam.ThrowBadArgument("The specified key already exists in the map.");
 		}
 		public void Clear()
 		{

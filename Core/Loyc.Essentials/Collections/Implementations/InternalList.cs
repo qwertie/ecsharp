@@ -258,7 +258,7 @@ namespace Loyc.Collections.Impl
 
 		private void InsertRangeSizeMismatch()
 		{
-			throw new ArgumentException("InsertRange: Input collection's Count is different from the number of items enumerated");
+			CheckParam.ThrowBadArgument("InsertRange: Input collection's Count is different from the number of items enumerated");
 		}
 
 		/// <summary>Clears the list and frees the memory used by the list. Can 

@@ -80,7 +80,7 @@ namespace Loyc.Syntax
 			if (bufSize <= MaxSeqSize)
 				throw new ArgumentException("bufSize <= " + MaxSeqSize.ToString());
 			if (!stream.CanSeek)
-				throw new ArgumentException("stream does not support seeking.");
+				CheckParam.ThrowBadArgument("stream does not support seeking.");
 			_buf = new byte[bufSize];
 			_blk = _blk2 = EmptyArray<char>.Value;
 			_stream = stream;
@@ -218,15 +218,15 @@ namespace Loyc.Syntax
 				while((cc = _decoder.GetCharCount(_buf, amtProcessed, n)) == 0) {
 					n++;
 					if (amtProcessed + n == _buf.Length)
-						throw new ArgumentException(Localize.Localized("StreamCharSource cannot use the supplied decoder because it can produce single characters from byte sequences longer than {0} characters", MaxSeqSize));
+						throw new ArgumentException("The StreamCharSource constructor was given a decoder that cannot be used because it can produce single characters from byte sequences longer than {0} characters".Localized(MaxSeqSize));
 				}
 				try {
 					_blkLen += AutoResizeAndGetChars(_buf.Slice(amtProcessed, n), ref _blk, _blkLen, _blkLen + cc, true);
 					amtProcessed += n;
-				} catch(Exception exc) { 
+				} catch(Exception exc) {
 					// assume index-out-of-range encountered. Note that this exception 
 					// may never happen even if the decoder is incompatible.
-					throw new ArgumentException(Localize.Localized("StreamCharSource cannot use the supplied decoder because it seems to divide characters on bit boundaries"), exc);
+					throw new ArgumentException("The StreamCharSource constructor was given a decoder that cannot be used because it seems to divide characters on bit boundaries".Localized(exc));
 				}
 
 				// compute & record location of end of block

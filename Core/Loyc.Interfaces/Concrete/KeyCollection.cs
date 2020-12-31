@@ -61,14 +61,14 @@ namespace Loyc.Collections
 		public void CopyTo (TKey [] array, int index)
 		{
 			if (array == null)
-				throw new ArgumentNullException ("array");
+				CheckParam.ThrowArgumentNull(nameof(array));
 			if (index < 0)
-				throw new ArgumentOutOfRangeException ("index");
+				CheckParam.ThrowOutOfRange(nameof(index));
 			// we want no exception for index==array.Length && dictionary.Count == 0
 			if (index > array.Length)
-				throw new ArgumentException ("index larger than largest valid index of array");
+				CheckParam.ThrowBadArgument("index larger than largest valid index of array");
 			if (array.Length - index < dictionary.Count)
-				throw new ArgumentException ("Destination array cannot hold the requested elements!");
+				CheckParam.ThrowBadArgument("Destination array cannot hold the requested elements!");
 
 			foreach (TKey k in this)
 				array [index++] = k;

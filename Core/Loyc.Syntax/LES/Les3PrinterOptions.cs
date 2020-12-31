@@ -137,7 +137,7 @@ namespace Loyc.Syntax.Les
 			get { return _digitSeparator; }
 			set {
 				if (value.HasValue && value.Value != '_' && value.Value != '\'')
-					throw new ArgumentException("DigitSeparator must be '_' or single quote.".Localized());
+					CheckParam.ThrowBadArgument("DigitSeparator must be '_' or single quote.");
 				_digitSeparator = value;
 			}
 		}

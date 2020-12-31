@@ -156,7 +156,7 @@ namespace Loyc
 		void IDictionary<Symbol, ValueT>.Add(Symbol key, ValueT value)
 		{
 			if (this.HasTag(key))
-				throw new ArgumentException(string.Format("The key '{0}' already exists in the IDictionary", key.Name));
+				CheckParam.ThrowBadArgument(nameof(key), "The key '{0}' already exists in the IDictionary", key.Name);
 			this.SetTag(key, value);
 		}
 		
@@ -194,7 +194,7 @@ namespace Loyc
 		void ICollection<KeyValuePair<Symbol, ValueT>>.CopyTo(KeyValuePair<Symbol, ValueT>[] array, int arrayIndex)
 		{
 			if (((IDictionary<Symbol, ValueT>)this).Count > array.Length - arrayIndex)
-				throw new ArgumentException("Insufficient space in supplied array");
+				CheckParam.ThrowBadArgument("Insufficient space in supplied array");
 			if (_attrs == null)
 				((ICollection<KeyValuePair<Symbol, ValueT>>)_attrs).CopyTo(array, arrayIndex);
 			if (_cachedAttrKey != null)

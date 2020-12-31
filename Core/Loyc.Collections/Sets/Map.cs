@@ -136,7 +136,7 @@ namespace Loyc.Collections
 		public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
 		{
 			if (_count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.Localized("CopyTo: Insufficient space in supplied array"));
+				CheckParam.ThrowBadArgument("CopyTo: Insufficient space in supplied array");
 			_set.CopyTo(array, arrayIndex);
 		}
 		public int Count

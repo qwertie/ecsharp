@@ -42,8 +42,8 @@ namespace Loyc.Collections
 			_list = list;
 			_start = start;
 			_count = count;
-			if (start < 0) throw new ArgumentException("The start index was below zero.");
-			if (count < 0) throw new ArgumentException("The count was below zero.");
+			if (start < 0) CheckParam.ThrowBadArgument("The start index was below zero.");
+			if (count < 0) CheckParam.ThrowBadArgument("The count was below zero.");
 			if (count > _list.Length - start)
 				_count = System.Math.Max(_list.Length - start, 0);
 		}
@@ -141,7 +141,7 @@ namespace Loyc.Collections
 		public ArraySlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0)
-				throw new ArgumentException("The start index was below zero.");
+				CheckParam.ThrowBadArgument("The start index was below zero.");
 			if (count < 0)
 				count = 0;
 			var slice = new ArraySlice<T>();

@@ -98,7 +98,7 @@ namespace Loyc.Collections
 		{
 			int space = array.Length - arrayIndex;
 			if (c.Count > space)
-				throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, c.Count));
+				CheckParam.ThrowBadArgument(nameof(array), "CopyTo: array is too small ({0} < {1})", space, c.Count);
 			foreach (var item in c)
 				array[arrayIndex++] = item;
 		}

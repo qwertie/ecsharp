@@ -327,7 +327,7 @@ namespace Loyc.Syntax.Impl
 		public virtual LNodePrinterHelper Dedent(Symbol modeHint = null)
 		{
 			if (modeHint != null && modeHint != _indentStack.Last)
-				throw new ArgumentException("Dedent mismatch: arg {0} != {1} on stack".Localized(modeHint, _indentStack.Last));
+				CheckParam.ThrowBadArgument(nameof(modeHint), "Dedent mismatch: arg {0} != {1} on stack", modeHint, _indentStack.Last);
 			_indentStack.RemoveAt(_indentStack.Count - 1);
 			return this;
 		}

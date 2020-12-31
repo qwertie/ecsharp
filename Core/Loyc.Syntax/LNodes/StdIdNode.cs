@@ -11,12 +11,12 @@ namespace Loyc.Syntax
 		public StdIdNode(Symbol name, LNode ras) : base(ras)
 		{
 			if ((_name = name) == null)
-				throw new ArgumentException("Cannot set IdNode.Name to null.");
+				CheckParam.ThrowBadArgument("Cannot set IdNode.Name to null.");
 		}
 		public StdIdNode(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) : base(range, style)
 		{
 			if ((_name = name) == null)
-				throw new ArgumentException("Cannot set IdNode.Name to null.");
+				CheckParam.ThrowBadArgument("Cannot set IdNode.Name to null.");
 		}
 
 		protected Symbol _name;

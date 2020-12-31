@@ -76,7 +76,7 @@ namespace Loyc.Collections
 		{
 			if (_set.Add(ref item, _comparer, false))
 				_count++;
-			throw new ArgumentException("The item already exists in the set.");
+			CheckParam.ThrowBadArgument("The item already exists in the set.");
 		}
 
 		/// <summary>Searches for an item. If the item is found, the copy in the 
@@ -172,7 +172,7 @@ namespace Loyc.Collections
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			if (_count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.Localized("CopyTo: Insufficient space in supplied array"));
+				CheckParam.ThrowBadArgument("CopyTo: Insufficient space in supplied array");
 			_set.CopyTo(array, arrayIndex);
 		}
 		public int Count

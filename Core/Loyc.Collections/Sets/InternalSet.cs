@@ -1,4 +1,4 @@
-﻿// Author: David Piepgrass
+// Author: David Piepgrass
 // License: LGPL
 using System;
 using System.Collections.Generic;

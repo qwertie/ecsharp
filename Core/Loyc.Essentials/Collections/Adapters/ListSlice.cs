@@ -58,8 +58,8 @@ namespace Loyc.Collections
 			_list = list;
 			_start = start;
 			_count = count;
-			if (start < 0) throw new ArgumentException("The start index was below zero.".Localized());
-			if (count < 0) throw new ArgumentException("The count was below zero.".Localized());
+			if (start < 0) CheckParam.ThrowBadArgument("The start index was below zero.");
+			if (count < 0) CheckParam.ThrowBadArgument("The count was below zero.");
 			if (count > _list.Count - start)
 				_count = System.Math.Max(_list.Count - start, 0);
 		}
@@ -158,7 +158,7 @@ namespace Loyc.Collections
 		public ListSlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0)
-				throw new ArgumentException("The start index was below zero.");
+				CheckParam.ThrowBadArgument("The start index was below zero.");
 			if (count < 0)
 				count = 0;
 			var slice = new ListSlice<T>();
@@ -235,9 +235,9 @@ namespace Loyc.Collections
 			int count = Count;
 			if (space < count) {
 				if ((uint)arrayIndex >= (uint)count)
-					throw new ArgumentOutOfRangeException("arrayIndex");
+					CheckParam.ThrowOutOfRange("arrayIndex");
 				else
-					throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, count));
+					CheckParam.ThrowBadArgument(nameof(array), "CopyTo: array is too small ({0} < {1})", space, count);
 			}
 			
 			for (int i = 0; i < count; i++)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -394,7 +394,7 @@ namespace Loyc.Math
 		public static int Log2Floor(long x)
 		{
 			if (x < 0)
-				throw new ArgumentException("Log2Floor({0}) called".Localized(x));
+				CheckParam.ThrowOutOfRange(nameof(x), "Log2Floor({0}) called", x);
 			return Log2Floor((ulong)x);
 		}
 		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>

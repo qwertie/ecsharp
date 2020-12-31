@@ -355,7 +355,6 @@ namespace Loyc.Syntax
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("%commaSeparated");
 		public static readonly Symbol TriviaInParens = GSymbol.Get("%inParens");                     //!< "%inParens" an attribute attached to an expression that has parenthesis around it.
 		public static readonly Symbol TriviaMacroAttribute = GSymbol.Get("%macroAttribute");         //!< "%macroAttribute" an attribute attached to a EC# statement that uses a macro-style call, e.g. foo {...} <=> [%macroAttribute] foo({...});
-		public static readonly Symbol TriviaDoubleVerbatim = GSymbol.Get("%doubleVerbatim");         //!< obsolete
 		public static readonly Symbol TriviaUseOperatorKeyword = GSymbol.Get("%useOperatorKeyword"); //!< "%useOperatorKeyword" e.g. Foo.operator+(a, b) <=> Foo.([`%useOperatorKeyword`]`'+`)(a, b)
 		public static readonly Symbol TriviaForwardedProperty = GSymbol.Get("%forwardedProperty");   //!< "%forwardedProperty" e.g. get ==> _x; <=> [`%forwardedProperty`] get(`'==>`(_x));
 		public static readonly Symbol TriviaRawText = GSymbol.Get("%rawText");                 //!< "%rawText" - Arbitrary text to be emitted unchanged, e.g. `[`%rawText`("cue!")] q;` is printed as `cue!q;`.
@@ -408,7 +407,7 @@ namespace Loyc.Syntax
 		/// dimensions, e.g. <c>GetArrayKeyword(3)</c> returns <c>[,,]</c>.</summary>
 		public static Symbol GetArrayKeyword(int dims)
 		{
-			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
+			if (dims <= 0) CheckParam.ThrowBadArgument("GetArrayKeyword(dims <= 0)");
 			if (dims == 1) return Array;
 			if (dims == 2) return TwoDimensionalArray;
 			return GSymbol.Get("'[" + new string(',', dims-1) + "]");

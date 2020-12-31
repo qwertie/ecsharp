@@ -104,13 +104,11 @@ namespace Loyc.Collections.Impl
         private static void Copy<T>(ICollection<T> source, T[] array, int arrayIndex)
         {
             if (array == null)
-                throw new ArgumentNullException("array");
-
-            if (arrayIndex < 0 || arrayIndex > array.Length)
-                throw new ArgumentOutOfRangeException("arrayIndex");
-
+                CheckParam.ThrowArgumentNull(nameof(array));
+            if ((uint)arrayIndex > (uint)array.Length)
+                CheckParam.ThrowOutOfRange(nameof(arrayIndex));
             if ((array.Length - arrayIndex) < source.Count)
-                throw new ArgumentException("Destination array is not large enough. Check array.Length and arrayIndex.");
+                CheckParam.ThrowBadArgument("Destination array is not large enough. Check array.Length and arrayIndex.");
 
             foreach (T item in source)
                 array[arrayIndex++] = item;

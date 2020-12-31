@@ -24,7 +24,7 @@ namespace Loyc.Collections.Impl
 		{
 			KeyWalker kw = new KeyWalker(key, key.Length);
 			if (base.Set(ref kw, ref value, CPMode.Create))
-				throw new ArgumentException(Localize.Localized("Key already exists: ") + key);
+				CheckParam.ThrowBadArgument(nameof(key), "Key already exists: {0}", key);
 		}
 		/// <summary>Adds the specified key-value pair to the trie, throwing an
 		/// exception if the key is already present.</summary>
@@ -35,7 +35,7 @@ namespace Loyc.Collections.Impl
 			KeyWalker kw = new KeyWalker(key, offset, length);
 			Check(ref kw, "Add");
 			if (base.Set(ref kw, ref value, CPMode.Create))
-				throw new ArgumentException(Localize.Localized("Key already exists: ") + key);
+				CheckParam.ThrowBadArgument(nameof(key), "Key already exists: {0}", key);
 		}
 
 		/// <summary>Adds the specified key-value pair only if the specified key is
@@ -72,9 +72,9 @@ namespace Loyc.Collections.Impl
 		private void Check(ref KeyWalker kw, string operation)
 		{
 			if ((kw.Offset | kw.Left) < 0)
-				throw new ArgumentException(operation + ": " + Localize.Localized("offset or length are negative"));
+				CheckParam.ThrowOutOfRange(kw.Offset < 0 ? "offset" : "length", "{0}: offset or length are negative", operation);
 			if (kw.Offset + kw.Left > kw.Buffer.Length)
-				throw new ArgumentException(operation + ": " + Localize.Localized("offset+length exceeds buffer length"));
+				throw new ArgumentException("{0}: offset+length exceeds buffer length".Localized(operation));
 		}
 
 		/// <summary>Searches for the specified key, returning true if it is

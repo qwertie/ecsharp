@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Collections;
@@ -52,7 +52,7 @@ namespace Loyc.Utilities
 		public void SetTag(Symbol key, ValueT val)
 		{
 			if (key == null)
-				throw new ArgumentException(Localize.Localized("SetTag: key is null"));
+				CheckParam.ThrowBadArgument("SetTag: key is null");
 			
 			int count = Count;
 			KeyValuePair<Symbol, ValueT> kvp;
@@ -168,7 +168,7 @@ namespace Loyc.Utilities
 		void IDictionary<Symbol, ValueT>.Add(Symbol key, ValueT value)
 		{
 			if (HasTag(key))
-				throw new ArgumentException(string.Format("The key '{0}' already exists in the IDictionary", key.Name));
+				CheckParam.ThrowBadArgument(nameof(key), "The key '{0}' already exists in the IDictionary", key.Name);
 			SetTag(key, value);
 		}
 		

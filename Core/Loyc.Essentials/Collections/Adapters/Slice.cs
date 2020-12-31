@@ -54,11 +54,7 @@ namespace Loyc.Collections
 		{
 			_list = list;
 			_start = start;
-			_count = count;
-			if (start < 0) throw new ArgumentException("The start index was below zero.");
-			if (count < 0) throw new ArgumentException("The count was below zero.");
-			if (count > _list.Count - start)
-				_count = System.Math.Max(_list.Count - start, 0);
+			_count = CheckParam.ThrowIfStartOrCountAreBelowZeroAndLimitCountIfNecessary(start, count, _list.Count);
 		}
 		public Slice_(IListSource<T> list)
 		{
@@ -147,14 +143,10 @@ namespace Loyc.Collections
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count = int.MaxValue)
 		{
-			if (start < 0) throw new ArgumentException("The start index was below zero.");
-			if (count < 0) throw new ArgumentException("The count was below zero.");
 			var slice = new Slice_<T>();
 			slice._list = this._list;
 			slice._start = this._start + start;
-			slice._count = count;
-			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - start, 0);
+			slice._count = CheckParam.ThrowIfStartOrCountAreBelowZeroAndLimitCountIfNecessary(start, count, this._count);
 			return slice;
 		}
 	}

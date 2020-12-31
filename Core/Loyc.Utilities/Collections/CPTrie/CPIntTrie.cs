@@ -175,7 +175,7 @@ namespace Loyc.Collections.Impl
 
 		private void ThrowKeyAlreadyExists(long key)
 		{
-			throw new ArgumentException(Localize.Localized("Key already exists: ") + key.ToString());
+			CheckParam.ThrowBadArgument(nameof(key), "Key already exists: {0}", key);
 		}
 
 		private KeyWalker Encode(int key)
@@ -389,7 +389,7 @@ namespace Loyc.Collections.Impl
 		public void Add(ulong key, TValue value)
 		{
 			if (!TryAdd(key, value))
-				throw new ArgumentException(Localize.Localized("Key already exists: ") + key.ToString());
+				CheckParam.ThrowBadArgument(nameof(key), "Key already exists: {0}", key);
 		}
 		
 		/// <summary>Searches for the specified key, returning true if it is

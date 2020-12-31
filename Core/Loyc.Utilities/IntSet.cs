@@ -574,7 +574,7 @@ namespace Loyc.LLParserGenerator
 		public IntRange(int lo, int hi) {
 			Lo = lo; Hi = hi;
 			if (lo > hi)
-				throw new ArgumentException(Localize.Localized("Character range Lo > Hi: '{0}' > '{1}'", lo, hi));
+				throw new ArgumentException("Character range Lo > Hi: '{0}' > '{1}'".Localized(lo, hi));
 		}
 
 		public int Lo, Hi;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Loyc
@@ -72,6 +73,14 @@ namespace Loyc
 		{
 			throw new ArgumentOutOfRangeException(argName);
 		}
+		public static void ThrowOutOfRange(string argName, string message)
+		{
+			throw new ArgumentOutOfRangeException(argName, message.Localized());
+		}
+		public static void ThrowOutOfRange(string argName, string message, object arg1, object arg2 = null)
+		{
+			throw new ArgumentOutOfRangeException(argName, message.Localized(arg1, arg2));
+		}
 		public static void ThrowOutOfRange(string argName, int value, int min, int max)
 		{
 			throw new ArgumentOutOfRangeException(argName, @"Argument ""{0}"" value '{1}' is not within the expected range ({2}...{3})".Localized(argName, value, min, max)); 
@@ -80,9 +89,30 @@ namespace Loyc
 		{
 			throw new ArgumentNullException(argName);
 		}
-		public static void ThrowBadArgument(string message, string argName)
+		public static void ThrowBadArgument(string message)
 		{
-			throw new ArgumentException(message, argName);
+			throw new ArgumentException(message.Localized());
+		}
+		public static void ThrowBadArgument(string argName, string message)
+		{
+			throw new ArgumentException(message.Localized(), argName);
+		}
+		public static void ThrowBadArgument(string argName, string message, object arg1, object arg2 = null)
+		{
+			throw new ArgumentException(message.Localized(arg1, arg2), argName);
+		}
+
+		/// <summary>Captures a common code sequence from many slice classes.</summary>
+		/// <param name="start">Start location in the slice</param>
+		/// <param name="count">Desired length of the slice</param>
+		/// <param name="listCount">Count of the list being sliced</param>
+		/// <returns>Returns count or, if start + count > listCount, Max(listCount - start, 0).</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int ThrowIfStartOrCountAreBelowZeroAndLimitCountIfNecessary(int start, int count, int outerCount)
+		{
+			if (start < 0) CheckParam.ThrowBadArgument("The start index was below zero.");
+			if (count < 0) CheckParam.ThrowBadArgument("The count was below zero.");
+			return count <= outerCount - start ? count : System.Math.Max(outerCount - start, 0);
 		}
 		public static void Arg(string argName, bool condition, object argValue)
 		{

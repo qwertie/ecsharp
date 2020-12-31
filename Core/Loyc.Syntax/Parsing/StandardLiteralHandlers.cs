@@ -184,7 +184,7 @@ namespace Loyc.Syntax
 			get => _digitSeparator == '\0' ? (char?)null : _digitSeparator;
 			set {
 				if (value != null && value != '\'' && value != '_')
-					throw new ArgumentException("DigitSeparatorChar must be _ or ' or null".Localized());
+					CheckParam.ThrowBadArgument("DigitSeparatorChar must be _ or ' or null");
 				_digitSeparator = value ?? '\0';
 			}
 		}

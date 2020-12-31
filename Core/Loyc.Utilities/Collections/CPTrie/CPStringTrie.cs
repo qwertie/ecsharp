@@ -25,7 +25,7 @@ namespace Loyc.Collections
 		{
 			KeyWalker kw = StringToBytes(key);
 			if (base.Set(ref kw, ref value, CPMode.Create))
-				throw new ArgumentException(Localize.Localized("Key already exists: ") + key);
+				CheckParam.ThrowBadArgument(nameof(key), "Key already exists: {0}", key);
 		}
 
 		/// <summary>Adds the specified key-value pair only if the specified key is
