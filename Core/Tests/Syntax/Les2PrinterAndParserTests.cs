@@ -268,6 +268,12 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void SpacingChallenge()
+		{
+			Exact("@'Foo .(a; b);", F.Dot(F.Id("'Foo"), F.Tuple(a, b)));
+		}
+
+		[Test]
 		public void TriviaTest_Comments()
 		{
 			LNode node;
@@ -283,7 +289,7 @@ namespace Loyc.Syntax.Les
 			node = F.Call(Foo).PlusAttrs(a.PlusTrailingTrivia(F.Trivia(S.TriviaSLComment, "Comment after a")), 
 			                          b, F.Trivia(S.TriviaMLComment, "Comment before c"), c);
 			Exact("@[a\t//Comment after a\n"+
-			      ", b] /*Comment before c*/@[c] Foo();", node);
+			      "  , b] /*Comment before c*/@[c] Foo();", node);
 			// TODO: The following example parses as shown but is printed out differently.
 			// Either we should change AbstractTriviaInjector to emit the comment at the 
 			// "top level" of the attribute list (not attached to `a`) or we should change 

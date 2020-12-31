@@ -23,7 +23,7 @@ namespace Loyc.Syntax.Les
 			                     Foo.PlusAttr(F.Trivia(S.TriviaMLComment, "<")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, ">")),
 			                       x.PlusAttr(F.Trivia(S.TriviaMLComment, "{")).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "}"))
 			             ).PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, " after "));
-			Exact("/*<*/Foo /*>*/ //[\n== //]\n  /*{*/x /*}*/; /* after */", node);
+			Exact("/*<*/Foo /*>*/ //[\n  == //]\n  /*{*/x /*}*/; /* after */", node);
 			node = F.Call(Foo).PlusAttrs(a, F.Trivia(S.TriviaSLComment, "Comment after a"), b, F.Trivia(S.TriviaMLComment, "Comment after b"), c);
 			Exact("@[a] //Comment after a\n"+
 			      "@[b] /*Comment after b*/@[c] Foo();", node);
@@ -93,7 +93,8 @@ namespace Loyc.Syntax.Les
 			LNode body, signature;
 			node = F.Call(S.Lambda, signature = F.Call("MyMethod", F.Call(S.Colon, x, F.Call(S.Array, _("int")))),
 			               F.Braces(body = F.Call(Foo, F.Call("'.+", x, F.Literal(123)), F.Tuple(a, b))));
-			Exact("MyMethod(x : [int]) => {\n  Foo(x .+ 123, (a; b));\n};", node);
+			// There's extra indent inside the braces because the braces are a subexpression of `=>`
+			Exact("MyMethod(x : [int]) => {\n    Foo(x .+ 123, (a; b));\n  };", node);
 			output = Les2LanguageService.Value.Print(node, null, ParsingMode.Statements, options);
 			ExpectSavedRange(ranges, output, node.Target, "=> ");
 			ExpectSavedRange(ranges, output, signature, "MyMethod(x : [int])");

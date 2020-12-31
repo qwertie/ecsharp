@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -79,6 +79,10 @@ namespace Loyc
 		public static void ThrowArgumentNull(string argName)
 		{
 			throw new ArgumentNullException(argName);
+		}
+		public static void ThrowBadArgument(string message, string argName)
+		{
+			throw new ArgumentException(message, argName);
 		}
 		public static void Arg(string argName, bool condition, object argValue)
 		{

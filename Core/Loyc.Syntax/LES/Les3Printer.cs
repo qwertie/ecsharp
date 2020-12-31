@@ -48,7 +48,7 @@ namespace Loyc.Syntax.Les
 			MessageSink = sink;
 			SetOptions(options);
 			var newline = string.IsNullOrEmpty(_o.NewlineString) ? "\n" : _o.NewlineString;
-			_out = new LNodePrinterHelper(target ?? new StringBuilder(), _o.IndentString ?? "\t", newline) { SaveRange = _o.SaveRange };
+			_out = new LNodePrinterHelper(target ?? new StringBuilder(), _o.SaveRange, true, _o.IndentString ?? "\t", newline);
 		}
 
 		protected LNodePrinterHelper _out;
@@ -64,6 +64,7 @@ namespace Loyc.Syntax.Les
 
 			if (_out.IsAtStartOfLine)
 				_out.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
+			_out.CommitNewlines();
 			return SB;
 		}
 
@@ -74,6 +75,7 @@ namespace Loyc.Syntax.Les
 
 			if (_out.IsAtStartOfLine)
 				_out.RevokeNewlinesSince(_newlineCheckpoint); // if optional newline not yet committed
+			_out.CommitNewlines();
 			return SB;
 		}
 

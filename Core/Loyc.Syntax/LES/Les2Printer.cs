@@ -66,17 +66,17 @@ namespace Loyc.Syntax.Les
 		/// <summary>Top-level non-static printing method</summary>
 		internal void Print(ILNode node, Precedence context, string terminator = null)
 		{
-			_out.BeginNode(node, context == StartStmt ? null : PrinterIndentHint.Subexpression);
-			
+			_out.BeginNode(node);
 			int parenCount = WriteAttrs(node, ref context);
+			_out.FlushIndent().Indent(PrinterIndentHint.Subexpression);
 
-			if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation)
+			if (!node.IsCall() || node.BaseStyle() == NodeStyle.PrefixNotation) {
 				PrintPrefixNotation(node, context);
-			else do {
-				if (AutoPrintBracesOrBracks(node))
+			} else do {
+				if (AutoPrintBracesOrBracks(node, context))
 					break;
 				if (!LesPrecedence.Primary.CanAppearIn(context)) {
-					_out.Write("(@[] ");
+					_out.WriteOpening("(@[] ");
 					parenCount++;
 					context = StartSubexpr;
 				}
@@ -87,9 +87,9 @@ namespace Loyc.Syntax.Les
 					break;
 				PrintPrefixNotation(node, context);
 			} while (false);
-			
+
+			_out.Dedent();
 			PrintSuffixTrivia(node, parenCount, terminator);
-			
 			_out.EndNode();
 		}
 
@@ -197,7 +197,7 @@ namespace Loyc.Syntax.Les
 
 		#region Other stuff: braces, TODO: superexpressions, indexing, generics, tuples
 
-		private bool AutoPrintBracesOrBracks(ILNode node)
+		private bool AutoPrintBracesOrBracks(ILNode node, Precedence context)
 		{
 			var name = node.Name;
 			if (name == S.Array && node.IsCall() && !HasPAttrs(node.Target)) {
@@ -207,6 +207,8 @@ namespace Loyc.Syntax.Les
 				PrintArgList(node.Args(), node.BaseStyle() == NodeStyle.StatementBlock, "(", ')', "; ", node.Target);
 				return true;
 			} else if (name == S.Braces && node.IsCall() && !HasPAttrs(node.Target)) {
+				if (context.Lo == StartStmt.Lo)
+					_out.Dedent(PrinterIndentHint.Subexpression).Indent(PrinterIndentHint.NoIndent);
 				PrintArgList(node.Args(), node.BaseStyle() != NodeStyle.Expression, "{", '}', null, node.Target);
 				return true;
 			}
@@ -218,6 +220,7 @@ namespace Loyc.Syntax.Les
 			if (target != null)
 				PrintPrefixTrivia(target);
 			_out.Write(leftDelim);
+			_out.JustWroteSymbolOrSpecialId = false;
 			if (target != null)
 				PrintSuffixTrivia(target, 0, "");
 			if (stmtMode) {
@@ -227,7 +230,7 @@ namespace Loyc.Syntax.Les
 				separator = separator ?? ";";
 				foreach (var stmt in args) {
 					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null)) {
-						_out.Newline(rightDelim == '}' ? PrinterIndentHint.Normal : null);
+						_out.Newline();
 						anyNewlines = true;
 					} else
 						SpaceIf(_o.SpacesBetweenAppendedStatements);
@@ -235,7 +238,7 @@ namespace Loyc.Syntax.Les
 				}
 				_out.Dedent();
 				if (anyNewlines)
-					_out.Newline(PrinterIndentHint.Normal);
+					_out.Newline();
 				else
 					SpaceIf(_o.SpacesBetweenAppendedStatements);
 			} else {
@@ -243,6 +246,7 @@ namespace Loyc.Syntax.Les
 					Print(args[i], StartSubexpr, ++i == args.Count ? "" : separator ?? ", ");
 			}
 			_out.Write(rightDelim);
+			_out.JustWroteSymbolOrSpecialId = false;
 		}
 
 		#endregion
@@ -282,7 +286,7 @@ namespace Loyc.Syntax.Les
 				if (attr.IsIdNamed(S.TriviaInParens)) {
 					MaybeCloseBrack(ref wroteBrack);
 					parenCount++;
-					_out.Write('(');
+					_out.WriteOpening('(');
 					// need extra paren when writing @[..] because (@[..] ...) doesn't count as %inParens
 					needParen = true;
 					continue;
@@ -299,9 +303,9 @@ namespace Loyc.Syntax.Les
 					if (needParen) {
 						needParen = false;
 						parenCount++;
-						_out.Write('(');
+						_out.WriteOpening('(');
 					}
-					_out.Write("@[");
+					_out.WriteOpening("@[");
 				} else {
 					_out.Write(',');
 					_out.Space();
@@ -317,7 +321,7 @@ namespace Loyc.Syntax.Les
 		private void MaybeCloseBrack(ref bool wroteBrack)
 		{
 			if (wroteBrack) {
-				_out.Write("] ");
+				_out.WriteClosing("] ");
 				wroteBrack = false;
 			}
 		}
@@ -332,18 +336,18 @@ namespace Loyc.Syntax.Les
 		private void PrintSuffixTrivia(ILNode _n, int parenCount, string terminator)
 		{
 			while (--parenCount >= 0)
-				_out.Write(')');
+				_out.Write(')').Dedent();
 			if (terminator != null)
 				_out.Write(terminator);
 			foreach (var attr in _n.GetTrailingTrivia())
-				MaybePrintTrivia(attr, needSpace: true, testOnly: false, hint: _out.HintOnTopOfStack);
+				MaybePrintTrivia(attr, needSpace: true, testOnly: false);
 		}
 
 		private bool IsConsumedTrivia(ILNode attr)
 		{
 			return MaybePrintTrivia(attr, false, testOnly: true);
 		}
-		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false, Symbol hint = null)
+		private bool MaybePrintTrivia(ILNode attr, bool needSpace, bool testOnly = false)
 		{
 			var name = attr.Name;
 			if (S.IsTriviaSymbol(name)) {
@@ -356,7 +360,7 @@ namespace Loyc.Syntax.Les
 				} else {
 					if (name == S.TriviaNewline) {
 						if (!testOnly && !_o.OmitSpaceTrivia)
-							_out.Newline(hint);
+							_out.Newline();
 						return true;
 					} else if ((name == S.TriviaSpaces)) {
 						if (!testOnly && !_o.OmitSpaceTrivia)
@@ -501,8 +505,10 @@ namespace Loyc.Syntax.Les
 			// Figure out what style we need to use: plain, @special, or @`backquoted`
 			bool backquote, special = IsSpecialIdentifier(name.Name, out backquote); 
 
-			if (special || isSymbol)
+			if (special || isSymbol) {
 				_out.Write(isSymbol ? "@@" : "@");
+				_out.JustWroteSymbolOrSpecialId = true;
+			}
 			if (backquote)
 				PrintStringCore('`', false, name.Name);
 			else

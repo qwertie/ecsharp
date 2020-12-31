@@ -1,3 +1,4 @@
+using Loyc.Collections;
 using Loyc.Collections.Impl;
 using Loyc.MiniTest;
 using Loyc.Syntax.Impl;
@@ -11,7 +12,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Tests
 {
-	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = "  ", string newline = "\n", Action<ILNode, IndexRange, int> saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "\t\t") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
+	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = ". ", string newline = "\n", Action<ILNode, IndexRange, int> saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "  ") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
 
 	public class LNodePrinterHelperTests<PrinterHelper> : TestHelpers where PrinterHelper : ILNodePrinterHelper<PrinterHelper>
 	{
@@ -43,7 +44,7 @@ namespace Loyc.Syntax.Tests
 			AreEqual(LongStatementExampleText + "\n" + LabelExampleText, sb.ToString());
 
 			// Make sure it accepts different initialization parameters
-			pair = _factory(".  ", "\r\n", null, false, ". ", "\t\t");
+			pair = _factory("...", "\r\n", null, false, "\t", "\b");
 			sb = pair.B;
 			using (var helper = pair.A)
 			{
@@ -52,7 +53,7 @@ namespace Loyc.Syntax.Tests
 				WriteLabelExampleTo(helper);
 			}
 			var expect = LoopExampleText + "\n" + LongStatementExampleText + "\n" + LabelExampleText;
-			expect = expect.Replace("\n    ", "\n.  .  ").Replace("\n   ", "\n.  . ").Replace("\n  ", "\n.  ").Replace("\n", "\r\n");
+			expect = expect.Replace(". ", "...").Replace("  ", "\b").Replace(" myLabel:", "\tmyLabel:").Replace("\n", "\r\n");
 			AreEqual(expect, sb.ToString());
 		}
 
@@ -75,7 +76,7 @@ namespace Loyc.Syntax.Tests
 			helper.EndNode(); // end @var
 		}
 		
-		const string LoopExampleText = "while (i > 0) {\n  i--;\n}";
+		const string LoopExampleText = "while (i > 0) {\n. i--;\n}";
 		static LNode LoopExampleTree = 
 			F.Call(S.While, F.Call(S.GT, F.Id("i"), F.Literal(0)),
 				F.Braces(F.Call(S.PostDec, F.Id("i"))));
@@ -95,69 +96,83 @@ namespace Loyc.Syntax.Tests
 			helper.Dedent().Newline().Write('}').EndNode().NewlineIsRequiredHere().EndNode(); // end braces and loop
 		}
 
-		const string LongStatementExampleText = "{\n  tokenList = parser.ReadAllTokens(\n  \t\t// comment\n  \t\tnew StreamCharSource(File.OpenRead(filename)));\n}";
+		const string LongStatementExampleText = "{" +
+			"\n. tokenList = parser.ReadAllTokens(" +
+			"\n.   // comment" +
+			"\n.   new StreamCharSource(" +
+			"\n.     File.OpenRead(filename)));" +
+			"\n}";
 		static LNode LongStatementExampleTree = F.Braces(
 			F.Call(S.Assign, F.Id("tokenList"), F.Call(F.Dot(F.Id("parser"), F.Id("ReadAllTokens")),
 				F.Attr(F.TriviaNewline, F.Trivia(S.TriviaSLComment, " comment"),
-				F.Call(S.New, F.Call("StreamCharSource", F.Call(F.Dot(F.Id("File"), F.Id("OpenRead")), F.Id("filename"))))))));
+				F.Call(S.New, F.Call("StreamCharSource", F.Attr(F.TriviaNewline, 
+					F.Call(F.Dot(F.Id("File"), F.Id("OpenRead")), F.Id("filename")))))))));
 		private static void WriteLongStatementExampleTo(PrinterHelper helper)
 		{
-			var SE = PrinterIndentHint.Subexpression;
+			Symbol SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
 			var braces = LongStatementExampleTree;
 			var stmt = braces[0];
 			helper.BeginNode(braces).Write('{').Indent();
 			{
 				helper.Newline().BeginNode(stmt);
-				helper.BeginNode(stmt[0], SE).Write("tokenList").EndNode().Write(' ');
-				helper.BeginNode(stmt.Target, SE).Write("= ").EndNode();
+				helper.BeginNode(stmt[0], SE).Write("tokenList").EndNode(SE).Write(' ');
+				helper.BeginNode(stmt.Target, SE).Write("= ").EndNode(SE);
 				helper.BeginNode(stmt[1], SE);
-				helper.BeginNode(stmt[1].Target);
-				helper.BeginNode(stmt[1].Target[0], SE).Write("parser").EndNode();
-				helper.BeginNode(stmt[1].Target.Target, SE).Write(".").EndNode();
-				helper.BeginNode(stmt[1].Target[1], SE).Write("ReadAllTokens").EndNode();
-				helper.EndNode().Write('('); // end stmt[1].Target
-				var newExpr = stmt[1][0];
-				helper.BeginNode(newExpr, SE);
 				{
-					helper.BeginNode(newExpr.Attrs[0], SE).Newline().EndNode();
-					helper.BeginNode(newExpr.Attrs[1], SE).Write("// comment").NewlineIsRequiredHere().EndNode();
-					var constructor = newExpr[0];
-					helper.Write("new ").BeginNode(constructor, SE);
-					helper.BeginNode(constructor.Target, SE).Write("StreamCharSource").EndNode();
-					helper.Write('(').BeginNode(constructor[0], SE);
-					helper.BeginNode(constructor[0].Target, SE);
-					helper.BeginNode(constructor[0].Target[0], SE).Write("File").EndNode();
-					helper.BeginNode(constructor[0].Target.Target, SE).Write(".").EndNode();
-					helper.BeginNode(constructor[0].Target[1], SE).Write("OpenRead").EndNode();
-					helper.EndNode().Write('('); // end constructor[0].Target
-					helper.BeginNode(constructor[0][0], SE).Write("filename").EndNode();
-					helper.Write(')').EndNode().Write(')').EndNode(); // end constructor
+					helper.BeginNode(stmt[1].Target);
+					helper.BeginNode(stmt[1].Target[0], SE).Write("parser").EndNode(SE);
+					helper.BeginNode(stmt[1].Target.Target, SE).Write(".").EndNode(SE);
+					helper.BeginNode(stmt[1].Target[1], SE).Write("ReadAllTokens").EndNode(SE);
+					helper.EndNode(); // end stmt[1].Target
+					helper.Write('(').Indent(B);
+					var newExpr = stmt[1][0];
+					helper.BeginNode(newExpr, SE);
+					{
+						helper.BeginNode(newExpr.Attrs[0], SE).Newline().EndNode(SE);
+						helper.BeginNode(newExpr.Attrs[1], SE).Write("// comment").NewlineIsRequiredHere().EndNode(SE);
+						var constructor = newExpr[0];
+						helper.Write("new ").BeginNode(constructor, SE);
+						helper.BeginNode(constructor.Target, SE).Write("StreamCharSource").EndNode(SE);
+						helper.Write('(').Indent(B).BeginNode(constructor[0], SE).Newline();
+						helper.BeginNode(constructor[0].Target, SE);
+						helper.BeginNode(constructor[0].Target[0], SE).Write("File").EndNode(SE);
+						helper.BeginNode(constructor[0].Target.Target, SE).Write(".").EndNode(SE);
+						helper.BeginNode(constructor[0].Target[1], SE).Write("OpenRead").EndNode(SE);
+						helper.EndNode(SE).Write('(').Indent(B); // end constructor[0].Target
+						helper.BeginNode(constructor[0][0], SE).Write("filename").EndNode(SE);
+						helper.Write(')').Dedent(B).EndNode(SE);
+						helper.Write(')').Dedent(B).EndNode(SE); // end constructor
+					}
+					helper.EndNode(SE); // end newExpr
 				}
-				helper.EndNode(); // end newExpr
-				helper.Write(')').EndNode(); // end stmt[1]
+				helper.Write(')').Dedent(B).EndNode(SE); // end stmt[1]
 				helper.Write(';').EndNode(); // end stmt
 			}
 			helper.Dedent().Newline().Write('}').NewlineIsRequiredHere().EndNode(); // end braces
 		}
 
-		const string LabelExampleText = "{\n  goto myLabel;\n  {\n   myLabel:\n    return;\n  }\n}";
+		const string LabelExampleText = "{\n. goto myLabel;\n. {\n.  myLabel:\n. . return;\n. }\n}";
 		static LNode LabelExampleTree = F.Braces(
 			F.Call(S.Goto, F.Id("myLabel")),
 			F.Braces(F.Call(S.Label, F.Id("myLabel")), F.Call(S.Return)));
 		private static void WriteLabelExampleTo(PrinterHelper helper)
 		{
+			var SE = PrinterIndentHint.Subexpression;
 			var ex = LabelExampleTree;
 			helper.BeginNode(ex).Write('{').Indent();
 			{
 				var @goto = ex[0];
 				helper.Newline().BeginNode(@goto);
-				helper.Write("goto ").BeginNode(@goto[0], PrinterIndentHint.Subexpression).Write("myLabel").EndNode().Write(';').EndNode();
+				helper.Write("goto ").BeginNode(@goto[0], SE).Write("myLabel").EndNode(SE).Write(';').EndNode();
 				var braces = ex[1];
 				helper.Newline().BeginNode(braces).Write('{').Indent();
 				{
-					helper.BeginNode(braces[0], PrinterIndentHint.Label).Newline();
-					helper.BeginNode(braces[0][0]).Write("myLabel").EndNode().Write(':').EndNode();
-					helper.BeginNode(braces[1]).Newline().Write("return;").EndNode();
+					helper.Newline(deferIndent: true);
+					helper.BeginNode(braces[0], PrinterIndentHint.Label).FlushIndent();
+					helper.BeginNode(braces[0][0], SE).Write("myLabel").EndNode(SE);
+					helper.Write(':').EndNode(PrinterIndentHint.Label);
+					helper.Newline(deferIndent: true);
+					helper.BeginNode(braces[1]).Write("return;").EndNode();
 				}
 				helper.Dedent().Newline().Write('}').EndNode();
 			}
@@ -168,7 +183,7 @@ namespace Loyc.Syntax.Tests
 		public void TestSaveRanges()
 		{
 			var ranges = new Dictionary<ILNode, IndexRange>();
-			var pair = _factory("  ", "\n", (node, range, depth) => ranges[node] = range, false);
+			var pair = _factory(". ", "\n", (node, range, depth) => ranges[node] = range, false);
 			var sb = pair.B;
 			using (var helper = pair.A)
 			{
@@ -184,6 +199,8 @@ namespace Loyc.Syntax.Tests
 
 		protected static void CheckRanges(Dictionary<ILNode, IndexRange> ranges, StringBuilder sb)
 		{
+			sb.Replace(". ", "  ");
+
 			foreach (var p in ranges)
 			{
 				ILNode node = p.Key;
@@ -217,44 +234,56 @@ namespace Loyc.Syntax.Tests
 		public LNodePrinterHelperTestsWithRevocation(LNodePrinterHelperFactory<PrinterHelper> factory) : base(factory) { }
 
 		const string NewlineRevocationExampleText = "{" +
-			"\n  VariableNameOfUnusualSize = \n  \t\tFunctionNameOfUnusualSize(\n  \t\tparameterOfUnusualSize);" +
-			"\n  ReasonableMethod(notAsLong, so);" +
-			"\n  WantToRevoke(// but can't" +
-			"\n  \t\totherParameter);" +
+			"\n. VariableNameOfUnusualSize = " +
+			"\n.   FunctionNameOfUnusualSize(" +
+			"\n.   parameterOfUnusualSize);" +
+			"\n. SimpleMethod(123);" +
+			"\n. ReasonableMethod(notAsLong, so);" +
+			"\n. WantToRevoke(// but can't" +
+			"\n.   otherParameter);" +
 			"\n}";
 		static LNode NewlineRevocationExampleTree = F.Braces(
 				F.Call(S.Assign, F.Id("VariableNameOfUnusualSize"), F.Call("FunctionNameOfUnusualSize", F.Id("parameterOfUnusualSize"))),
+				F.Call("SimpleMethod", F.Literal(123)),
 				F.Call("ReasonableMethod", F.Id("notAsLong"), F.Id("so")),
 				F.Call("WantToRevoke", F.Attr(F.Trivia(S.TriviaSLComment, " but can't"), F.Id("otherParameter")))
 			);
 		static void WriteNewlineRevocationExampleTo(PrinterHelper helper)
 		{
-			Symbol SE = PrinterIndentHint.Subexpression;
-			LNode braces = NewlineRevocationExampleTree, first = braces[0], second = braces[1], third = braces[2];
+			Symbol SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
+			LNode braces = NewlineRevocationExampleTree, first = braces[0], second = braces[1], third = braces[2], fourth = braces[3];
 			helper.BeginNode(braces).Write('{').Indent();
 
 			var checkpoint1 = helper.BeginNode(first).Newline().CommitNewlines().GetCheckpoint();
-			helper.BeginNode(first[0], SE).Write("VariableNameOfUnusualSize").EndNode().Write(' ');
-			helper.BeginNode(first.Target, SE).Write("= ").Newline().EndNode(); // revokable!
-			helper.BeginNode(first[1], SE).BeginNode(first[1].Target, SE).Write("FunctionNameOfUnusualSize").EndNode().Write('(');
-			helper.BeginNode(first[1][0], SE).Newline().Write("parameterOfUnusualSize").EndNode();
-			helper.Write(')').EndNode(); // end first[1]
+			helper.BeginNode(first[0], SE).Write("VariableNameOfUnusualSize").EndNode(SE).Write(' ');
+			helper.BeginNode(first.Target, SE).Write("= ").Newline().EndNode(SE); // revokable!
+			helper.BeginNode(first[1], SE).BeginNode(first[1].Target, SE).Write("FunctionNameOfUnusualSize").EndNode(SE).Write('(');
+			helper.BeginNode(first[1][0], B).Newline().Write("parameterOfUnusualSize").EndNode(B);
+			helper.Write(')').EndNode(SE); // end first[1]
 			helper.Write(';').EndNode(); // end first
 			AreEqual(2, helper.RevokeOrCommitNewlines(checkpoint1, 60));
 
 			var checkpoint2 = helper.BeginNode(second).Newline().GetCheckpoint();
-			helper.BeginNode(second.Target, SE).Write("ReasonableMethod").EndNode().Write('(');
-			helper.BeginNode(second[0], SE).Newline().Write("notAsLong").EndNode().Write(", ");
-			helper.BeginNode(second[1], SE).Newline().Write("so").EndNode().Write(')');
+			helper.BeginNode(second.Target, SE).Write("SimpleMethod").EndNode(SE).Write('(').Indent(B);
+			helper.BeginNode(second[0], SE).Newline().Write("123").EndNode(SE).Write(')').Dedent(B);
 			helper.Write(';').EndNode(); // end second
-			AreEqual(-2, helper.RevokeOrCommitNewlines(checkpoint2, 60));
+			AreEqual(-1, helper.RevokeOrCommitNewlines(checkpoint2, 60));
 
-			var checkpoint3 = helper.BeginNode(third).Newline().CommitNewlines().GetCheckpoint();
-			helper.BeginNode(third.Target, SE).Write("WantToRevoke").EndNode().Write('(');
-			helper.BeginNode(third[0], SE).BeginNode(third[0].Attrs[0], SE).Write("// but can't").NewlineIsRequiredHere().Newline().EndNode()
-			                          .Write("otherParameter").EndNode().Write(')');
+			var checkpoint3 = helper.BeginNode(third).Newline(deferIndent: true).GetCheckpoint();
+			helper.FlushIndent(); // shouldn't disrupt the checkpoint
+			helper.BeginNode(third.Target, SE).Write("ReasonableMethod").EndNode(SE).Write('(').Indent(B);
+			helper.BeginNode(third[0], SE).Newline().Write("notAsLong").EndNode(SE).Write(", ");
+			helper.BeginNode(third[1], SE).Newline().Write("so").EndNode(SE).Write(')').Dedent(B);
 			helper.Write(';').EndNode(); // end third
-			AreEqual(0, helper.RevokeNewlinesSince(checkpoint3));
+			AreEqual(-2, helper.RevokeOrCommitNewlines(checkpoint3, 60));
+
+			var checkpoint4 = helper.BeginNode(fourth).Newline().CommitNewlines().GetCheckpoint();
+			helper.BeginNode(fourth.Target, SE).Write("WantToRevoke").EndNode(SE).Write('(').Indent(B);
+			helper.BeginNode(fourth[0], SE)
+			      .BeginNode(fourth[0].Attrs[0], SE).Write("// but can't").NewlineIsRequiredHere().Newline().EndNode(SE)
+			      .Write("otherParameter").EndNode(SE).Write(')').Dedent(B);
+			helper.Write(';').EndNode(); // end fourth
+			AreEqual(0, helper.RevokeNewlinesSince(checkpoint4));
 
 			helper.Dedent().Newline().Write('}').EndNode(); // end braces
 		}
@@ -269,13 +298,31 @@ namespace Loyc.Syntax.Tests
 				WriteNewlineRevocationExampleTo(helper);
 			}
 			AreEqual(NewlineRevocationExampleText, sb.ToString());
+
+
+			var wrote = new List<string>();
+			pair = _factory();
+			sb = pair.B;
+			using (var helper = pair.A)
+			{
+				var cp = helper.Indent().GetCheckpoint();
+				
+				helper.Write("By the way, if you have revokable newlines ".With(wrote.Add)).Newline();
+				helper.Write("mixed with irrevokable ones...".With(wrote.Add)).NewlineIsRequiredHere().Newline(); // irrevokable
+				helper.Write("It's currently ".With(wrote.Add)).Newline().Write("all-or-nothing.".With(wrote.Add));
+				// ideally it would be able to revoke just the first newline and not the third.
+				// but no.
+				AreEqual(2, helper.RevokeOrCommitNewlines(cp, 60));
+				helper.Dedent();
+			}
+			AreEqual(string.Join("\n. ", wrote), sb.ToString());
 		}
 
 		[Test]
 		public void TestNewlineRevocationWithSavedRanges()
 		{
 			var ranges = new Dictionary<ILNode, IndexRange>();
-			var pair = _factory("  ", "\n", (node, range, depth) => ranges[node] = range, true);
+			var pair = _factory(". ", "\n", (node, range, depth) => ranges[node] = range, true);
 			var sb = pair.B;
 			using (var helper = pair.A)
 			{
@@ -294,10 +341,8 @@ namespace Loyc.Syntax.Tests
 			(indent, newline, saveRange, allowNewlineRevocation, labelIndent, subexprIndent) =>
 			{
 				var sb = new StringBuilder();
-				return Pair.Create(
-					new LNodePrinterHelper(
-						sb, indent, newline, allowNewlineRevocation, labelIndent, subexprIndent
-					) { SaveRange = saveRange },
+				return Pair.Create(new LNodePrinterHelper(
+						sb, saveRange, allowNewlineRevocation, indent, newline, labelIndent, subexprIndent, 4),
 					sb);
 			})
 		{ }

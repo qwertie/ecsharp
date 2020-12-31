@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics.Contracts;
 using System.Diagnostics;
+using Loyc;
 using Loyc.Collections.Impl;
 
 namespace Loyc.Syntax.Impl
@@ -11,7 +12,8 @@ namespace Loyc.Syntax.Impl
 	[Obsolete("This class has been renamed to LNodePrinterHelper")]
 	public class PrinterState : LNodePrinterHelper
 	{
-		public PrinterState(StringBuilder s, string indent = "\t", string newline = "\n") : base(s, indent, newline) { }
+		public PrinterState(StringBuilder s, string indent = "\t", string newline = "\n")
+			: base(s, null, true, indent, newline) { }
 
 		[Obsolete("PrinterState.Checkpoint was renamed to " + nameof(LNodePrinterHelperLocation))]
 		public struct Checkpoint { }
@@ -20,25 +22,26 @@ namespace Loyc.Syntax.Impl
 	/// <summary>A helper type for printer objects; for details, please see
 	/// <see cref="ILNodePrinterHelper{S}"/>, its derived interface
 	/// <see cref="ILNodePrinterHelperWithRevokableNewlines{S,C}"/>, and the documentation of the
-	/// constructor <see cref="LNodePrinterHelper(StringBuilder, string, string, bool, string, string, int)"/>.</summary>
+	/// constructor <see cref="LNodePrinterHelper(StringBuilder, string, string, bool, string, string)"/>.</summary>
 	public class LNodePrinterHelper : ILNodePrinterHelperWithRevokableNewlines<LNodePrinterHelperLocation, LNodePrinterHelper>, ILNodePrinterHelper
 	{
 		protected int _indentLevel;
 		protected int _lineNo;
 		private int _lineStartIndex;
 		private int _lineStartAfterIndent;
-		private bool _newlineIsRequiredHere;
+		private PendingAction _pendingAction;
 		public string IndentString { get; set; }
 		public string NewlineString { get; set; }
 		public string LabelIndentString { get; set; }
-		public string SubexpressionIndentString { get; set; }
-		private int _indexWhereNodeBegan = -1;
+		public string BracketIndentString { get; set; }
+		public int MaxBracketIndents { get; set; }
 		protected StringBuilder _s;
+		protected InternalList<Pair<ILNode, int>> _nodeStack;
+		protected InternalList<object> _indentStack;
 		private InternalList<Revokable> _revokableNewlines;
 		private InternalList<Triplet<ILNode, IndexRange, int>> _unsavedRanges;
-		protected InternalList<Triplet<ILNode, int, Symbol>> _nodeStack;
-		protected Action<ILNode, IndexRange, int> _saveRange;
-		
+		private Action<ILNode, IndexRange, int> _saveRange;
+
 		public StringBuilder StringBuilder
 		{
 			get => _s;
@@ -49,19 +52,11 @@ namespace Loyc.Syntax.Impl
 		public int IndexInCurrentLineAfterIndent => _s.Length - _lineStartAfterIndent;
 		[Obsolete("Renamed to IsAtStartOfLine")]
 		public bool AtStartOfLine => IsAtStartOfLine;
-		public bool IsAtStartOfLine => _s.Length == _lineStartAfterIndent || _newlineIsRequiredHere;
+		public bool IsAtStartOfLine => _s.Length <= _lineStartAfterIndent | (_pendingAction & PendingAction.Newline) != 0;
 		public char LastCharWritten => _s.TryGet(_s.Length - 1, '\uFFFF');
 		public int LineWidth => _s.Length - _lineStartIndex;
 		public int LineNumber => _lineNo;
-		public Symbol HintOnTopOfStack => _nodeStack.IsEmpty ? null : _nodeStack.Last.C;
-		public int IndentLevel
-		{
-			get => _indentLevel;
-			set {
-				CheckParam.IsNotNegative(nameof(IndentLevel), value);
-				_indentLevel = value;
-			}
-		}
+
 		/// <summary>Gets or sets a method that is called when the node's range in the 
 		/// output is locked in (after you call <see cref="EndNode()"/>).</summary>
 		/// <remarks>The third parameter of the method is the node's depth in the
@@ -69,18 +64,26 @@ namespace Loyc.Syntax.Impl
 		public Action<ILNode, IndexRange, int> SaveRange
 		{
 			get => _saveRange;
-			set => _saveRange = value;
 		}
 
-		public LNodePrinterHelper(StringBuilder s, string indent = "\t", string newline = "\n", bool allowNewlineRevocation = true, string labelIndent = "  ", string subexprIndent = "\t\t")
+		public LNodePrinterHelper(StringBuilder s, Action<ILNode, IndexRange, int> saveRange = null,
+			bool allowNewlineRevocation = true,
+			string indent = "\t", string newline = "\n",
+			string labelIndent = "  ", string bracketIndent = "  ",
+			int maxBracketIndents = 4)
 		{
 			_s = s ?? new StringBuilder();
 			IndentString = indent;
 			NewlineString = newline;
 			LabelIndentString = labelIndent;
-			SubexpressionIndentString = subexprIndent;
+			BracketIndentString = bracketIndent;
+			MaxBracketIndents = maxBracketIndents;
+			_saveRange = saveRange;
+			_indentStack = InternalList<object>.Empty;
 			if (allowNewlineRevocation)
 				_revokableNewlines = InternalList<Revokable>.Empty;
+			//if (saveRange != null)
+			_nodeStack = InternalList<Pair<ILNode, int>>.Empty;
 			Reset();
 		}
 
@@ -89,26 +92,44 @@ namespace Loyc.Syntax.Impl
 		public virtual void Reset()
 		{
 			Dispose();
-			IndentLevel = 0;
 			_lineStartIndex = 0;
 			_lineStartAfterIndent = 0;
 			_lineNo = 1;
-			_indexWhereNodeBegan = -1;
-			_nodeStack = InternalList<Triplet<ILNode, int, Symbol>>.Empty;
+			_pendingAction = 0;
+			_indentStack = InternalList<object>.Empty;
+
 			if (_revokableNewlines.InternalArray != null)
 			{
 				_revokableNewlines = InternalList<Revokable>.Empty;
 				_unsavedRanges = InternalList<Triplet<ILNode, IndexRange, int>>.Empty;
 			}
+			if (_nodeStack.InternalArray != null)
+			{
+				_nodeStack = InternalList<Pair<ILNode, int>>.Empty;
+			}
 		}
 
-		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Write(char c)
+		[Flags]
+		enum PendingAction
 		{
-			if (_newlineIsRequiredHere)
-				Newline();
-			if (_indexWhereNodeBegan == _s.Length)
-				OnNodeStarting(c);
+			/// <summary>A "collapsable" newline requested by NewlineIsRequiredHere</summary>
+			Newline = 1,
+			/// <summary>A delayed indent requested by Newline(deferIndent: true)</summary>
+			Indent = 2,
+			/// <summary>Flag set by <see cref="BeginNode"/>/
+			NodeStarted = 4,
+			/// <summary>Flag set by <see cref="EndNode"/></summary>
+			NodeEnded = 8,
+			NodeChanged = NodeStarted | NodeEnded,
+			/// <summary>A special flag that is needed to stop FlushIndent from interfering with newlines</summary>
+			CollapsableNewlineWasJustWritten = 16
+	}
+
+	/// <inheritdoc/>
+	public virtual LNodePrinterHelper Write(char c)
+		{
+			if (_pendingAction != 0)
+				FlushPending(c);
 			_s.Append(c);
 			return this;
 		}
@@ -117,10 +138,8 @@ namespace Loyc.Syntax.Impl
 		{
 			if (s.Length != 0)
 			{
-				if (_newlineIsRequiredHere)
-					Newline();
-				if (_indexWhereNodeBegan == _s.Length)
-					OnNodeStarting(s[0]);
+				if (_pendingAction != 0)
+					FlushPending(s[0]);
 				_s.Append(s);
 			}
 			return this;
@@ -130,23 +149,26 @@ namespace Loyc.Syntax.Impl
 		{
 			if (s.Length != 0)
 			{
-				if (_newlineIsRequiredHere)
-					Newline();
-				if (_indexWhereNodeBegan == _s.Length)
-					OnNodeStarting(s[0]);
+				if (_pendingAction != 0)
+					FlushPending(s[0]);
 				_s.Append(s);
 			}
 			return this;
 		}
 
-		/// <summary>Synonym for Write(' ').</summary>
-		public LNodePrinterHelper Space() => Write(' ');
+		/// <inheritdoc/>
+		public LNodePrinterHelper Space()
+		{
+			if (LastCharWritten != ' ')
+				Write(' ');
+			return this;
+		}
 
 		/// <summary>This method, which does nothing by default, is called by all three 
 		/// versions of Write() when the first character is written after a call to
-		/// <see cref="BeginNode"/>. You can override this method can detect conflicts
-		/// between this character and the previous characters in the stream
-		/// (<see cref="LastCharWritten"/>).</summary>
+		/// <see cref="BeginNode(ILNode)"/> or <see cref="EndNode()"/>. You can override 
+		/// this method can detect conflicts between this character and the previous 
+		/// characters in the stream (<see cref="LastCharWritten"/>).</summary>
 		/// <param name="firstChar">First character in the new node, which has not
 		/// been written yet</param>
 		/// <remarks>
@@ -159,7 +181,7 @@ namespace Loyc.Syntax.Impl
 		/// (If you call <see cref="Write(char)"/> to do this, it will cause this 
 		/// method to be called again.)
 		/// </remarks>
-		protected virtual void OnNodeStarting(char firstChar) { }
+		protected virtual void OnNodeChanged(char firstChar) { }
 
 		[Obsolete("This method was renamed to Write(s)")]
 		public StringBuilder Append(string s) { Write(s); return _s; }
@@ -175,73 +197,183 @@ namespace Loyc.Syntax.Impl
 		/// <param name="changeIndentLevel">Amount by which to change the indent level (positive, negative or zero).</param>
 		public LNodePrinterHelperLocation Newline(int changeIndentLevel)
 		{
-			IndentLevel += changeIndentLevel;
-			Contract.Assert(IndentLevel >= 0);
+			while (changeIndentLevel > 0)
+			{
+				changeIndentLevel--;
+				Indent();
+			}
+			while (changeIndentLevel < 0)
+			{
+				changeIndentLevel++;
+				Dedent();
+			}
 			return NewlineAfterCheckpoint();
 		}
 
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Newline(Symbol hint = null)
+		public virtual LNodePrinterHelper Newline(bool deferIndent = false)
 		{
-			int oldLineStartIndex = _lineStartIndex;
-			int newlineIndex = _s.Length;
-			_s.Append(NewlineString);
-			_lineNo++;
-			_lineStartIndex = _s.Length;
+			if ((_pendingAction & PendingAction.CollapsableNewlineWasJustWritten) == 0)
+			{
+				int oldLineStartIndex = _lineStartIndex;
+				int newlineIndex = _s.Length;
+				_s.Append(NewlineString);
 
-			AppendIndentAfterNewline(hint);
+				_lineNo++;
+				_lineStartIndex = _s.Length;
 
+				if ((_pendingAction & PendingAction.Newline) == 0 && _revokableNewlines.InternalArray != null)
+					_revokableNewlines.Add(new Revokable(oldLineStartIndex, newlineIndex, _s.Length - newlineIndex));
+
+				_pendingAction &= ~(PendingAction.Newline | PendingAction.Indent);
+
+				if (deferIndent) {
+					_pendingAction |= PendingAction.Indent;
+					_lineStartAfterIndent = _s.Length;
+				} else
+					FlushIndentCore();
+			}
+			_pendingAction &= ~(PendingAction.CollapsableNewlineWasJustWritten);
+			return this;
+		}
+
+		private void FlushIndentCore()
+		{
+			Debug.Assert(_s.Last() == '\n');
+			bool isRevokable = _revokableNewlines.Count != 0 && _revokableNewlines.Last._index == _s.Length - 1;
+
+			AppendIndentAfterNewline(_indentStack.Count);
 			_lineStartAfterIndent = _s.Length;
-			if (!_newlineIsRequiredHere && _revokableNewlines.InternalArray != null)
-				_revokableNewlines.Add(new Revokable(oldLineStartIndex, newlineIndex, _s.Length - newlineIndex));
-			_newlineIsRequiredHere = false;
+
+			if (isRevokable)
+				_revokableNewlines.InternalArray[_revokableNewlines.Count - 1]._length = _s.Length - _revokableNewlines.Last._index;
+		}
+
+		private void FlushPending(char firstChar)
+		{
+			var action = _pendingAction;
+			_pendingAction = 0;
+
+			if ((action & PendingAction.Newline) != 0)
+				Newline(deferIndent: false);
+			else if ((action & PendingAction.Indent) != 0)
+				FlushIndentCore();
+
+			if ((action & PendingAction.NodeChanged) != 0)
+				OnNodeChanged(firstChar);
+		}
+
+		public LNodePrinterHelper FlushIndent()
+		{
+			if ((_pendingAction & PendingAction.Newline) != 0)
+			{
+				if ((_pendingAction & PendingAction.CollapsableNewlineWasJustWritten) == 0)
+					Newline(deferIndent: false);
+				_pendingAction |= PendingAction.CollapsableNewlineWasJustWritten;
+			}
+			else if ((_pendingAction & PendingAction.Indent) != 0)
+				FlushIndentCore();
+
+			_pendingAction &= ~(PendingAction.Indent | PendingAction.Newline);
 			return this;
 		}
 
 		/// <summary>Called just after a newline is emitted to append indentation.</summary>
 		/// <param name="hint">The hint that was passed to <see cref="Newline"/></param>
-		protected virtual void AppendIndentAfterNewline(Symbol hint)
+		protected virtual void AppendIndentAfterNewline(int indentStackSize)
 		{
-			var curNodeKind = hint ?? _nodeStack[_nodeStack.Count - 1, default].C;
-			for (int i = IndentLevel - (curNodeKind == PrinterIndentHint.Label ? 1 : 0); i > 0; i--)
+			int indents = 0, brackets = 0;
+			int subexpr = 0, label = 0; // boolean
+			for (int i = _indentStack.Count - 1; i >= 0; i--)
+			{
+				var hint = _indentStack[i];
+				if (hint == PrinterIndentHint.Subexpression)
+					subexpr = 1;
+				else if (hint == PrinterIndentHint.Brackets)
+					brackets++;
+				else if (hint == PrinterIndentHint.Label)
+					label = 1;
+				//else if (hint == PrinterIndentHint.CancelSubexpression)
+				//	for (object prev; 
+				//		(prev = _indentStack[i - 1]) == PrinterIndentHint.Brackets || prev == PrinterIndentHint.Subexpression || prev == PrinterIndentHint.NoIndent; 
+				//		i--) { }
+				else if (hint != PrinterIndentHint.NoIndent)
+					indents++;
+			}
+		
+			for (int i = indents - label; i > 0; i--)
 				_s.Append(IndentString);
-			if (curNodeKind == PrinterIndentHint.Label)
+			if (label != 0)
 				_s.Append(LabelIndentString);
-			else if (curNodeKind == PrinterIndentHint.Subexpression)
-				_s.Append(SubexpressionIndentString);
+			for (int i = System.Math.Min(System.Math.Max(brackets, subexpr), MaxBracketIndents); i > 0; i--)
+				_s.Append(BracketIndentString);
 		}
 
 		/// <inheritdoc/>
 		public virtual LNodePrinterHelper NewlineIsRequiredHere()
 		{
-			_newlineIsRequiredHere = true;
+			if ((_pendingAction & PendingAction.CollapsableNewlineWasJustWritten) == 0)
+				_pendingAction |= PendingAction.Newline;
 			return this;
 		}
 
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Indent() { IndentLevel++; return this; }
-		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Dedent() { IndentLevel--; return this; }
-
-		public virtual LNodePrinterHelper BeginNode(ILNode node, Symbol kind = null)
+		public virtual LNodePrinterHelper Indent(Symbol modeHint = null)
 		{
-			_indexWhereNodeBegan = _s.Length;
-			_nodeStack.Add(Triplet.Create(node, _s.Length, kind));
+			_indentStack.Add(modeHint);
+			return this;
+		}
+		/// <inheritdoc/>
+		public virtual LNodePrinterHelper Dedent(Symbol modeHint = null)
+		{
+			if (modeHint != null && modeHint != _indentStack.Last)
+				throw new ArgumentException("Dedent mismatch: arg {0} != {1} on stack".Localized(modeHint, _indentStack.Last));
+			_indentStack.RemoveAt(_indentStack.Count - 1);
 			return this;
 		}
 
+		/// <inheritdoc/>
+		public virtual LNodePrinterHelper BeginNode(ILNode node)
+		{
+			_pendingAction |= PendingAction.NodeStarted;
+			if (_nodeStack.InternalArray != null)
+				_nodeStack.Add(Pair.Create(node, _s.Length));
+			return this;
+		}
+
+		/// <inheritdoc/>
 		public virtual LNodePrinterHelper EndNode()
 		{
-			var triplet = _nodeStack.Last;
-			_nodeStack.RemoveAt(_nodeStack.Count - 1);
-			if (_saveRange != null)
+			_pendingAction |= PendingAction.NodeEnded;
+			if (_nodeStack.InternalArray != null)
 			{
-				var range = new IndexRange(triplet.B) { EndIndex = _s.Length };
-				if (_revokableNewlines.InternalArray == null)
-					_saveRange(triplet.A, range, _nodeStack.Count);
-				else
-					_unsavedRanges.Add(Triplet.Create(triplet.A, range, _nodeStack.Count));
+				var triplet = _nodeStack.Last;
+				_nodeStack.RemoveAt(_nodeStack.Count - 1);
+				if (_saveRange != null)
+				{
+					var range = new IndexRange(triplet.B) { EndIndex = _s.Length };
+					if (_revokableNewlines.InternalArray == null)
+						_saveRange(triplet.A, range, _nodeStack.Count);
+					else
+						_unsavedRanges.Add(Triplet.Create(triplet.A, range, _nodeStack.Count));
+				}
 			}
+			return this;
+		}
+
+		/// <inheritdoc/>
+		public LNodePrinterHelper BeginNode(ILNode node, Symbol indentHint)
+		{
+			BeginNode(node);
+			Indent(indentHint);
+			return this;
+		}
+
+		/// <inheritdoc/>
+		public LNodePrinterHelper EndNode(Symbol indentHint)
+		{
+			EndNode();
+			Dedent(indentHint);
 			return this;
 		}
 
@@ -344,7 +476,8 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <summary>Commits uncommitted newlines and node ranges. Throws if 
-		/// EndNode has not been called the correct number of times.</summary>
+		/// a SaveRange method was provided but EndNode has not been called 
+		/// the correct number of times.</summary>
 		public void Dispose()
 		{
 			CommitNewlines();
@@ -395,9 +528,9 @@ namespace Loyc.Syntax.Impl
 					else
 						_unsavedRanges.InternalArray[i].B.Length -= r._length;
 
-			// Adjust
-			if (_indexWhereNodeBegan > r._index)
-				_indexWhereNodeBegan -= r._length;
+			// TODO: I think we're not updating this properly, may have so save old value as we do for _lineStartIndex
+			if (_lineStartAfterIndent > r._index)
+				_lineStartAfterIndent -= r._length;
 
 			// Finally remove the character(s)
 			_s.Remove(r._index, r._length);
@@ -408,12 +541,17 @@ namespace Loyc.Syntax.Impl
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(char c) => Write(c);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(string s) => Write(s);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(UString s) => Write(s);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Newline(Symbol hint) => Newline(hint);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Space() => Space();
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Newline(bool deferIndent) => Newline(deferIndent);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.NewlineIsRequiredHere() => NewlineIsRequiredHere();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, Symbol kind) => BeginNode(node, kind);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.FlushIndent() => FlushIndent();
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node) => BeginNode(node);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode() => EndNode();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Indent() => Indent();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Dedent() => Dedent();
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Indent(Symbol modeHint) => Indent(modeHint);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Dedent(Symbol modeHint) => Dedent(modeHint);
+
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, Symbol indentHint) => BeginNode(node, indentHint);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode(Symbol indentHint) => EndNode(indentHint);
 
 		// Represents something (a newline) that can be revoked
 		private struct Revokable
