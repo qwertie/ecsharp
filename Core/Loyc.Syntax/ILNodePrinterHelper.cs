@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace Loyc.Syntax.Impl
 {
-	/// <summary>A fluent interface for classes that help you print syntax trees (<see cref="ILNode"/>s).</summary>
-	/// <typeparam name="Self">The return type of methods in this interface.</typeparam>
-	public interface ILNodePrinterHelper<out Self> : IDisposable
-		where Self : ILNodePrinterHelper<Self>
+	public interface IPrinterHelper<out Self> : IDisposable
 	{
 		/// <summary>Appends a character to the output stream or StringBuilder.</summary>
 		/// <remarks>Do not call <c>Write('\n')</c>; call <see cref="Newline()"/> instead.</remarks>
@@ -58,18 +55,6 @@ namespace Loyc.Syntax.Impl
 		/// information may be used to record range information (to understand why this is
 		/// useful, please read about <see cref="LNodeRangeMapper"/>)</summary>
 		/// <param name="node">The node that begins here.</param>
-		Self BeginNode(ILNode node);
-		/// <summary>Informs the helper that the printer is done writing the most recently
-		/// started node. The helper may save the range of the node, e.g. by calling 
-		/// <see cref="ILNodePrinterOptions.SaveRange"/>.</summary>
-		/// <param name="abort">Indicates that the range of this node should not be saved.</param>
-		Self EndNode();
-		/// <summary>Combines the <see cref="BeginNode"/> and <see cref="Indent"/> operations.</summary>
-		/// <param name="indentHint">Typically a member of <see cref="PrinterIndentHint"/> 
-		/// that influences how indentation is performed</param>
-		Self BeginNode(ILNode node, Symbol indentHint);
-		/// <summary>Combines the <see cref="EndNode"/> and <see cref="Dedent"/> operations.</summary>
-		Self EndNode(Symbol indentHint);
 		/// <summary>Increases the current indent level.</summary>
 		/// <param name="hint">Information associated with the indent, typically a member 
 		/// of <see cref="PrinterIndentHint"/> that influences how indentation is performed.
@@ -126,12 +111,32 @@ namespace Loyc.Syntax.Impl
 		/// throw an exception if not.</param>
 		/// <exception cref="ArgumentException">Hint provided doesn't match Indent hint</exception>
 		Self Dedent(Symbol hint = null);
+
 		/// <summary>Returns true iff nothing has been written since the last call to 
 		/// <see cref="Newline"/> or <see cref="NewlineIsRequiredHere"/>.</summary>
 		bool IsAtStartOfLine { get; }
 		/// <summary>Gets the character most recently written to the stream, or 
 		/// '\uFFFF' if no characters have been written.</summary>
 		char LastCharWritten { get; }
+	}
+
+	/// <summary>A fluent interface for classes that help you print syntax trees (<see cref="ILNode"/>s).</summary>
+	/// <typeparam name="Self">The return type of methods in this interface.</typeparam>
+	public interface ILNodePrinterHelper<out Self> : IPrinterHelper<Self>
+		where Self : ILNodePrinterHelper<Self>
+	{
+		Self BeginNode(ILNode node);
+		/// <summary>Informs the helper that the printer is done writing the most recently
+		/// started node. The helper may save the range of the node, e.g. by calling 
+		/// <see cref="ILNodePrinterOptions.SaveRange"/>.</summary>
+		/// <param name="abort">Indicates that the range of this node should not be saved.</param>
+		Self EndNode();
+		/// <summary>Combines the <see cref="BeginNode"/> and <see cref="Indent"/> operations.</summary>
+		/// <param name="indentHint">Typically a member of <see cref="PrinterIndentHint"/> 
+		/// that influences how indentation is performed</param>
+		Self BeginNode(ILNode node, Symbol indentHint);
+		/// <summary>Combines the <see cref="EndNode"/> and <see cref="Dedent"/> operations.</summary>
+		Self EndNode(Symbol indentHint);
 	}
 
 	/// <summary>A version of <see cref="ILNodePrinterHelper{Self}"/> without a type parameter.</summary>

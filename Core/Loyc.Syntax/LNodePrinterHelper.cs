@@ -538,18 +538,17 @@ namespace Loyc.Syntax.Impl
 			_lineNo--;
 		}
 
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(char c) => Write(c);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(string s) => Write(s);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Write(UString s) => Write(s);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Space() => Space();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Newline(bool deferIndent) => Newline(deferIndent);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.NewlineIsRequiredHere() => NewlineIsRequiredHere();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.FlushIndent() => FlushIndent();
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Write(char c) => Write(c);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Write(string s) => Write(s);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Write(UString s) => Write(s);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Space() => Space();
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Newline(bool deferIndent) => Newline(deferIndent);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.NewlineIsRequiredHere() => NewlineIsRequiredHere();
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.FlushIndent() => FlushIndent();
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Indent(Symbol modeHint) => Indent(modeHint);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Dedent(Symbol modeHint) => Dedent(modeHint);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node) => BeginNode(node);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode() => EndNode();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Indent(Symbol modeHint) => Indent(modeHint);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.Dedent(Symbol modeHint) => Dedent(modeHint);
-
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, Symbol indentHint) => BeginNode(node, indentHint);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode(Symbol indentHint) => EndNode(indentHint);
 
