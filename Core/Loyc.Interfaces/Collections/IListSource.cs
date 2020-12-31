@@ -91,13 +91,6 @@ namespace Loyc.Collections
 			return true;
 		}
 
-		// These methods disambiguate other extension methods: IReadOnlyList.TryGet and ITryGet.TryGet
-		/// <summary>Tries to get a value from the list at the specified index.</summary>
-		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
-		/// <param name="defaultValue">A value to return if the index is not valid.</param>
-		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue) => TryGetExt.TryGet(list, index, defaultValue);
-		public static Maybe<T> TryGet<T>(this IListSource<T> list, int index) => TryGetExt.TryGet(list, index);
-
 		/// <summary>Uses list.TryGet(index) to find out if the specified index is valid.</summary>
 		/// <returns>true if the specified index is valid, false if not.</returns>
 		[Obsolete("Use TryGet(index).HasValue instead, or compare index to Count")]

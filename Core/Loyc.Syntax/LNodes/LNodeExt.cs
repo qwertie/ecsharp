@@ -699,5 +699,10 @@ namespace Loyc.Syntax
 		public static LNodeList ToLNodeList(this VList<LNode> list) => new LNodeList(list);
 
 		#endregion
+
+		// Workarounds: even though LNode includes ITryGet<int, LNode>, C# in 2020 is 
+		// too stupid to figure out how to call the overload for ITryGet<K, V>.
+		public static Maybe<LNode> TryGet(this LNode self, int key) => TryGetExt.TryGet((ITryGet<int, LNode>)self, key);
+		public static LNode TryGet(this LNode self, int key, LNode defaultValue) => TryGetExt.TryGet((ITryGet<int, LNode>)self, key, defaultValue);
 	}
 }

@@ -1,3 +1,4 @@
+using Loyc.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,6 +65,12 @@ namespace Loyc.Collections
 			return fail ? default(Maybe<V>) : new Maybe<V>(value);
 		}
 
+		public static Maybe<T> TryGet<T>(this ITryGet<int, T> self, int key)
+		{
+			T value = self.TryGet(key, out bool fail);
+			return fail ? default(Maybe<T>) : new Maybe<T>(value);
+		}
+
 		/// <summary>Returns the value at the specified key or index, or the specified
 		/// default value if the key was not found.</summary>
 		/// <param name="key">A lookup key that might be associated with a value in this 
@@ -75,6 +82,30 @@ namespace Loyc.Collections
 			V value = self.TryGet(key, out bool fail);
 			return fail ? defaultValue : value;
 		}
+
+		// Workarounds: even though interfaces such as IListSource include ITryGet<int, T>,
+		// C# in 2020 is too stupid to figure out how to call the overload for ITryGet<K, V>.
+		// But in the case of IListSource, it includes IReadOnlyList which has its own
+		// TryGet(), so we'd need to disambiguate anyway.
+
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K)"/>
+		public static Maybe<T> TryGet<T>(this INegListSource<T> self, int key) => TryGet((ITryGet<int, T>)self, key);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K)"/>
+		public static Maybe<T> TryGet<T>(this IListSource<T> self, int key) => TryGet((ITryGet<int, T>)self, key);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K)"/>
+		public static Maybe<T> TryGet<T>(this IArray<T> self, int key) => TryGet((ITryGet<int, T>)self, key);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K)"/>
+		public static Maybe<ILNode> TryGet(this ILNode self, int key) => TryGet((ITryGet<int, ILNode>)self, key);
+
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K, V)"/>
+		public static T TryGet<T>(this INegListSource<T> self,  int key, T defaultValue) => TryGet((ITryGet<int, T>)self, key, defaultValue);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K, V)"/>
+		public static T TryGet<T>(this IListSource<T> self,     int key, T defaultValue) => TryGet((ITryGet<int, T>)self, key, defaultValue);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K, V)"/>
+		public static T TryGet<T>(this IArray<T> self,          int key, T defaultValue) => TryGet((ITryGet<int, T>)self, key, defaultValue);
+		/// <inheritdoc cref="TryGet{K,V}(ITryGet{K,V}, K, V)"/>
+		public static ILNode TryGet(this ILNode self, int key, ILNode defaultValue) => TryGet((ITryGet<int, ILNode>)self, key, defaultValue);
+
 	}
 
 	/// <summary>Combines <see cref="IReadOnlyDictionary{K, V}"/> with related interfaces
