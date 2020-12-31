@@ -335,7 +335,7 @@ namespace LeMP
 			if ((flag = ParseBoolOption(options, "o-compact-mode", sink)) != null)
 				OutOptions.CompactMode = flag.Value;
 
-			Files = new List<InputOutput>();
+			Files = Files ?? new List<InputOutput>();
 			foreach (var expr in options["eval"])
 				Files.Add(new InputOutput((UString)expr, "--eval", null, null, "") { ParsingMode = ParsingMode.Statements });
 

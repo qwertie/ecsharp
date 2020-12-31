@@ -362,7 +362,6 @@ namespace LeMP.Tests
 			       @"Contract.Assert(condition, ""Assertion failed in ``: condition"");");
 		}
 
-
 		[Test]
 		public void TestStringify()
 		{
@@ -384,6 +383,9 @@ namespace LeMP.Tests
 		{
 			TestBoth(@"@1stprog = hello `##` world;", @"@1stprog = hello `##` world;", @"@1stprog = helloworld;");
 			TestLes(@"##(call, ""_func_"", with(argument));", @"call_func_with(argument);");
+			TestLes(@"concatId(@[x] 123, @[y, z] ""456"")();", @"(@[x, y, z] @123456)();");
+			TestLes(@"concat(@[x] 123, @[y, z] ""456"")();", @"(@[x, y, z] ""123456"")();");
+			TestLes(@"concat(I, Like, Ike) + 1;", @"""ILikeIke"" + 1;");
 		}
 
 		[Test]

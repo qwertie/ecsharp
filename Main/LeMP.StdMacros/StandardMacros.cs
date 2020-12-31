@@ -162,43 +162,63 @@ namespace LeMP
 
 		#region concatId (##), nameof
 
+		[LexicalMacro(@"concat(a, b)",
+			"Concatenates identifiers and/or literals to produce a string. For example, " +
+			"the output of `concat(abc, 123)` is `abc123`.\n")]
+		public static LNode concat(LNode node, IMacroContext context)
+		{
+			var result = ConcatCore(node, out var attrs, context.Sink);
+			return result == null ? null : LNode.Literal(result.ToString(), node).WithAttrs(attrs);
+		}
+
 		[LexicalMacro(@"a `##` b; concatId(a, b)", 
 			"Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`.\n"
 			+"\n**Note**: concatId cannot be used directly as a variable or method name unless you use `$(out concatId(...))`.", 
 			"##", "concatId")]
-		public static LNode concatId(LNode node, IMessageSink sink)
+		public static LNode concatId(LNode node, IMacroContext context)
 		{
-			var args = node.Args;
-			if (args.Count == 0)
+			StringBuilder sb = ConcatCore(node, out var attrs, context.Sink, allowLastToBeCall: true);
+			if (sb == null)
 				return null;
-			if (args.Slice(0, args.Count - 1).Any(n => n.IsCall))
-				return Reject(sink, node, "All arguments to ##() or concat() must be identifiers or literals (except the last one)");
-
-			LNodeList attrs = node.Attrs;
-			LNode arg = null;
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < args.Count; i++)
-			{
-				arg = args[i];
-				attrs.AddRange(arg.Attrs);
-
-				if (arg.IsLiteral)
-					sb.Append(arg.Value ?? "null");
-				else if (arg.IsId)
-					sb.Append(arg.Name);
-				else { // call
-					if (i + 1 != args.Count || !arg.HasSimpleHead())
-						return Reject(sink, arg, "Expected simple identifier or literal");
-					sb.Append(arg.Name);
-				}
-			}
+			
 			Symbol combined = GSymbol.Get(sb.ToString());
 			LNode result;
-			if (arg.IsCall)
-				result = arg.WithTarget(combined);
+			if (node.Args.Last.IsCall)
+				result = node.Args.Last.WithTarget(combined);
 			else
 				result = LNode.Id(combined, node);
 			return result.WithAttrs(attrs);
+		}
+
+		private static StringBuilder ConcatCore(LNode node, out LNodeList attrs, IMessageSink sink, bool allowLastToBeCall = false)
+		{
+			attrs = node.Attrs;
+			var args = node.Args;
+			if (args.Count == 0)
+				return null;
+
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < args.Count; i++)
+			{
+				LNode arg = args[i];
+				attrs.AddRange(arg.Attrs);
+
+				if (arg.IsLiteral) {
+					if (!arg.TextValue.IsNull)
+						arg.TextValue.AppendTo(sb);
+					else
+						sb.Append(arg.Value ?? "null");
+				} else if (arg.IsId) {
+					sb.Append(arg.Name);
+				} else { // call
+					if (i + 1 != args.Count || !arg.HasSimpleHead()) {
+						Reject(sink, arg, "Expected simple identifier or literal");
+						return null;
+					}
+					sb.Append(arg.Name);
+				}
+			}
+			return sb;
 		}
 
 		/// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
