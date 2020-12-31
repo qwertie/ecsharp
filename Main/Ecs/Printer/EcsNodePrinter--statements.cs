@@ -13,6 +13,7 @@ using Loyc.Collections;
 using S = Loyc.Ecs.EcsCodeSymbols;
 using EP = Loyc.Ecs.EcsPrecedence;
 using Loyc.Syntax.Lexing;
+using Loyc.Syntax.Impl;
 
 namespace Loyc.Ecs
 {
@@ -109,8 +110,6 @@ namespace Loyc.Ecs
 		void PrintCurrentStmt()
 		{
 			Debug.Assert(_context == StartStmt);
-			if (Flagged(Ambiguity.ElseClause))
-				_out.BeginStatement();
 
 			if (_o.AllowChangeParentheses || !_n.IsParenthesizedExpr())
 			{
@@ -142,7 +141,7 @@ namespace Loyc.Ecs
 						return;
 				}
 			}
-
+			
 			PrintCurrentExpr();
 			PrintTrivia(trailingTrivia: true, needSemicolon: true);
 		}
@@ -189,7 +188,7 @@ namespace Loyc.Ecs
 
 				if (_name != GSymbol.Empty) {
 					if (isSwitch)
-						_out.Write("switch", true);
+						_out.Write("switch");
 					else
 						PrintSimpleIdent(_name, 0);
 				} else
@@ -209,10 +208,10 @@ namespace Loyc.Ecs
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 			PrintSimpleIdent(_name, 0);
 			Space(SpaceOpt.BeforeForwardArrow);
-			_out.Write("==>", true);
+			_out.Write("==>");
 			PrefixSpace(EP.Forward);
 			PrintExpr(_n.Args[0].Args[0], EP.Forward.RightContext(StartExpr));
-			_out.Write(";", true);
+			_out.Write(";");
 			return true;
 		}
 
@@ -341,27 +340,31 @@ namespace Loyc.Ecs
 					if (where.CallsMin(S.Where, 1))
 					{
 						using (Indented)
+						using (With(where, StartExpr))
 						{
 							if (!Newline(first ? NewlineOpt.BeforeWhereClauses : NewlineOpt.BeforeEachWhereClause))
 								_out.Space();
 							first = false;
-							_out.Write("where", true);
+							_out.Write("where").Space();
 							PrintSimpleIdent(param.Name, 0);
 							Space(SpaceOpt.BeforeWhereClauseColon);
 							WriteThenSpace(':', SpaceOpt.AfterColon);
 							bool firstC = true;
 							foreach (var constraint in where.Args)
 							{
-								if (firstC)
-									firstC = false;
-								else
-									WriteThenSpace(',', SpaceOpt.AfterComma);
-								if (constraint.Name == S.New && constraint.ArgCount == 0)
-									_out.Write("new()", true);
-								else if (constraint.IsId && (constraint.Name == S.Class || constraint.Name == S.Struct))
-									WriteOperatorName(constraint.Name);
-								else
-									PrintExpr(constraint, StartExpr);
+								using (With(constraint, StartExpr))
+								{
+									if (firstC)
+										firstC = false;
+									else
+										WriteThenSpace(',', SpaceOpt.AfterComma);
+									if (constraint.Name == S.New && constraint.ArgCount == 0)
+										_out.Write("new()");
+									else if (constraint.IsId && (constraint.Name == S.Class || constraint.Name == S.Struct))
+										WriteOperatorName(constraint.Name);
+									else
+										PrintCurrentExpr();
+								}
 							}
 						}
 					}
@@ -408,7 +411,7 @@ namespace Loyc.Ecs
 				if (!_out.LastCharWritten.IsOneOf('\n', ' ', '\t') && beforeBrace != 0)
 					NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
 			}
-			_out.Write('{', true);
+			_out.Write('{');
 			// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
 			PrintTrivia(body.Target, trailingTrivia: true);
 
@@ -423,7 +426,7 @@ namespace Loyc.Ecs
 					PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
 			}
 
-			_out.Write('}', true);
+			_out.Write('}');
 			if (mode != BraceMode.BlockStmt)
 				PrintTrivia(body, trailingTrivia: true);
 		}
@@ -438,7 +441,7 @@ namespace Loyc.Ecs
 					// @`%trailing`(`%newline`) f();
 					// @`%appendStatement` g();
 					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt) || !Newline(NewlineOpt.Default)) {
-						if (_out.LastCharWritten != '\n')
+						if (!_out.IsAtStartOfLine)
 							Space(SpaceOpt.Default);
 						else
 							anyNewlines = true;
@@ -460,7 +463,7 @@ namespace Loyc.Ecs
 						var stmt = body.Args[i];
 						NewlineOpt nlo = NewlineOpt.AfterOpenBraceInNewExpr;
 						if (i != 0) {
-							_out.Write(',', true);
+							_out.Write(',');
 							nlo = NewlineOpt.AfterEachInitializer;
 						}
 						if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
@@ -473,7 +476,7 @@ namespace Loyc.Ecs
 						var stmt = body.Args[i];
 						NewlineOpt nlo = NewlineOpt.Minimal | NewlineOpt.BeforeEachEnumItem;
 						if (i != 0) {
-							_out.Write(',', true);
+							_out.Write(',');
 							nlo = NewlineOpt.BeforeEachEnumItem;
 						}
 						if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
@@ -530,7 +533,7 @@ namespace Loyc.Ecs
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
 			PrintTrivia(args, trailingTrivia: false);
-			PrintArgList(args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
+			PrintArgTuple(args, ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 			PrintTrivia(args, trailingTrivia: true);
 
 			PrintWhereClauses(name);
@@ -573,39 +576,39 @@ namespace Loyc.Ecs
 			PrintTrivia(target, trailingTrivia: true);
 
 			if (eventKeywordOpt != null)
-				_out.Write(eventKeywordOpt, true);
+				_out.Write(eventKeywordOpt);
 
 			if (_name == S.Delegate)
 			{
-				_out.Write("delegate ", true);
+				_out.Write("delegate ");
 			}
 			if (isCastOperator)
 			{
-				_out.Write("operator ", true);
+				_out.Write("operator ");
 				PrintType(retType, ContinueExpr, Ambiguity.AllowPointer);
 			}
 			else
 			{
 				if (!isConstructor) {
 					PrintType(retType, ContinueExpr, Ambiguity.AllowPointer | Ambiguity.NoParentheses);
-					if (_out.LastCharWritten != '\n')
+					if (!_out.IsAtStartOfLine)
 						_out.Space();
 				}
 				if (isConstructor && name.IsIdNamed(S.This))
-					_out.Write("this", true);
+					_out.Write("this");
 				else if (name.IsLiteral) { // operator true/false
-					_out.Write("operator ", true);
+					_out.Write("operator ");
 					using (With(name, Precedence.MaxValue)) PrintLiteral();
 				} else { // Normal name
 					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName | Ambiguity.NoParentheses);
 				}
 			}
 		}
-		private void PrintArgList(LNode node, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
+		private void PrintArgTuple(LNode tuple, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
-			_out.Push(node);
-			PrintArgList(node.Args, kind, allowUnassignedVarDecl, omitMissingArguments, separator);
-			_out.Pop();
+			_out.BeginNode(tuple);
+			PrintArgList(tuple.Args, kind, allowUnassignedVarDecl, omitMissingArguments, separator);
+			_out.EndNode();
 		}
 		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
@@ -641,7 +644,7 @@ namespace Loyc.Ecs
 				if (body.Name == S.Forward)
 				{
 					Space(SpaceOpt.BeforeForwardArrow);
-					_out.Write("==>", true);
+					_out.Write("==>");
 					PrefixSpace(EP.Forward);
 					PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
 					return SPResult.NeedSemicolon;
@@ -654,7 +657,7 @@ namespace Loyc.Ecs
 				else
 				{
 					PrefixSpace(EP.Lambda);
-					_out.Write("=>", true);
+					_out.Write("=>");
 					PrefixSpace(EP.Lambda);
 					PrintExpr(body, EP.Lambda.RightContext(StartExpr));
 					return SPResult.NeedSemicolon;
@@ -686,11 +689,11 @@ namespace Loyc.Ecs
 			{
 				// Do what PrintArgList does, only with [] instead of ()
 				Space(SpaceOpt.BeforeMethodDeclArgList);
-				_out.Write('[', true);
+				_out.Write('[');
 				WriteInnerSpace(ParenFor.MethodDecl);
 				PrintArgs(_n.Args[2].Args, _flags | Ambiguity.AllowUnassignedVarDecl, false);
 				WriteInnerSpace(ParenFor.MethodDecl);
-				_out.Write(']', true);
+				_out.Write(']');
 			}
 
 			PrintWhereClauses(_n.Args[1]);
@@ -726,7 +729,7 @@ namespace Loyc.Ecs
 				return SPResult.Fail;
 
 			G.Verify(0 == PrintAttrs(AttrStyle.IsDefinition));
-			_out.Write("event ", true);
+			_out.Write("event ");
 			PrintType(type, ContinueExpr, Ambiguity.AllowPointer);
 			_out.Space();
 
@@ -770,12 +773,12 @@ namespace Loyc.Ecs
 
 			G.Verify(0 == PrintAttrs(AttrStyle.NoKeywordAttrs));
 			if (_n.Name == S.CsiReference)
-				_out.Write("#r", true);
+				_out.Write("#r");
 			else
-				_out.Write(_n.Name.Name.Substring(1), true);
+				_out.Write(_n.Name.Name.Substring(1));
 			_out.Space();
-			_out.Write(value, false);
-			_out.Newline(pending: true);
+			_out.Write(value);
+			_out.NewlineIsRequiredHere();
 
 			return SPResult.NeedSuffixTrivia;
 		}
@@ -785,13 +788,13 @@ namespace Loyc.Ecs
 		public void PrintReturnThrowEtc(Symbol name, LNode arg)
 		{
 			if (name == S.GotoCase)
-				_out.Write("goto case", true);
+				_out.Write("goto case");
 			else if (name == _using_static)
-				_out.Write("using static", true);
+				_out.Write("using static");
 			else if (name == S.Import)
-				_out.Write("using", true);
+				_out.Write("using");
 			else if (name == S.Goto && _n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
-				_out.Write("goto default", true);
+				_out.Write("goto default");
 				return;
 			} else
 				WriteOperatorName(name);
@@ -815,7 +818,7 @@ namespace Loyc.Ecs
 
 			if (type == S.DoWhile)
 			{
-				_out.Write("do", true);
+				_out.Write("do");
 				bool braces = PrintBracedBlockOrStmt(_n.Args[0], NewlineOpt.BeforeSimpleStmtBrace);
 
 				// Print newline in front of "while" if appropriate and avoid printing 
@@ -828,7 +831,7 @@ namespace Loyc.Ecs
 				else if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
 					Space(SpaceOpt.Default);
 
-				_out.Write("while", true);
+				_out.Write("while");
 				PrintWithinParens(ParenFor.KeywordCall, condWithoutNewline);
 				return SPResult.NeedSemicolon;
 			}
@@ -858,7 +861,7 @@ namespace Loyc.Ecs
 				bool needCloseBrace = false;
 				if (@else == null && Flagged(Ambiguity.NoIfWithoutElse)) {
 					if (_o.AllowExtraBraceForIfElseAmbig) {
-						_out.Write('{', true);
+						_out.Write('{');
 						needCloseBrace = true;
 					} else
 						return SPResult.Fail;
@@ -868,7 +871,7 @@ namespace Loyc.Ecs
 				//       because they would create ambiguity with property declarations
 				G.Verify(0 == PrintAttrs(AttrStyle.AllowKeywordAttrs));
 
-				_out.Write("if", true);
+				_out.Write("if");
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0]);
 
 				var thenFlags = _flags & ~(Ambiguity.ElseClause);
@@ -882,13 +885,13 @@ namespace Loyc.Ecs
 						@else = @else.WithoutAttrNamed(S.TriviaNewline);
 					else
 						Space(SpaceOpt.Default);
-					_out.Write("else", true);
+					_out.Write("else");
 					using (WithFlags(_flags | Ambiguity.ElseClause))
 						PrintBracedBlockOrStmt(@else);
 				}
 
 				if (needCloseBrace)
-					_out.Write('}', true);
+					_out.Write('}');
 				return SPResult.NeedSuffixTrivia;
 			}
 
@@ -896,7 +899,7 @@ namespace Loyc.Ecs
 
 			if (type == S.For)
 			{
-				_out.Write("for", true);
+				_out.Write("for");
 				WriteOpenParen(ParenFor.KeywordCall);
 
 				PrintArgs(_n.Args[0].Args, Ambiguity.AllowUnassignedVarDecl, false, ',');
@@ -904,23 +907,23 @@ namespace Loyc.Ecs
 					WriteThenSpace(';', SpaceOpt.AfterComma);
 					PrintExpr(_n.Args[1], StartExpr, 0);
 				} else
-					_out.Write(';', true);
+					_out.Write(';');
 				if (_n.Args[2].ArgCount > 0) {
 					WriteThenSpace(';', SpaceOpt.AfterComma);
 					PrintArgs(_n.Args[2].Args, 0, false, ',');
 				} else
-					_out.Write(';', true);
+					_out.Write(';');
 
 				WriteCloseParen(ParenFor.KeywordCall);
 				PrintBracedBlockOrStmt(_n.Args[3]);
 			}
 			else if (type == S.ForEach)
 			{
-				_out.Write("foreach", true);
+				_out.Write("foreach");
 				WriteOpenParen(ParenFor.KeywordCall);
 				PrintExpr(_n.Args[0], EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
 				_out.Space();
-				_out.Write("in", true);
+				_out.Write("in");
 				_out.Space();
 				PrintExpr(_n.Args[1], ContinueExpr);
 				WriteCloseParen(ParenFor.KeywordCall);
@@ -929,7 +932,7 @@ namespace Loyc.Ecs
 			}
 			else if (type == S.Try)
 			{
-				_out.Write("try", true);
+				_out.Write("try");
 				bool braces = PrintBracedBlockOrStmt(_n.Args[0], NewlineOpt.BeforeSimpleStmtBrace);
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
@@ -948,7 +951,7 @@ namespace Loyc.Ecs
 						var when = clause.Args[1];
 						if (!when.IsIdNamed(S.Missing)) {
 							Space(SpaceOpt.Default);
-							_out.Write("when", true);
+							_out.Write("when");
 							PrintWithinParens(ParenFor.KeywordCall, when);
 						}
 						braces = PrintBracedBlockOrStmt(clause.Args[2]);
@@ -970,17 +973,17 @@ namespace Loyc.Ecs
 			if (!EcsValidators.IsLabelStmt(_n, Pedantics))
 				return SPResult.Fail;
 
-			_out.BeginLabel();
+			_out.Indent(PrinterIndentHint.Label);
 
 			G.Verify(0 == PrintAttrs(AttrStyle.AllowWordAttrs));
 
 			if (_name == S.Label) {
 				if (_n.Args[0].Name == S.Default)
-					_out.Write("default", true);
+					_out.Write("default");
 				else
 					PrintExpr(_n.Args[0], StartStmt);
 			} else if (_name == S.Case) {
-				_out.Write("case", true);
+				_out.Write("case");
 				_out.Space();
 				bool first = true;
 				foreach (var arg in _n.Args) 
@@ -990,7 +993,9 @@ namespace Loyc.Ecs
 					PrintExpr(arg, StartExpr, Ambiguity.AllowUnassignedVarDecl);
 				}
 			}
-			_out.Write(':', true);
+			_out.Write(':');
+
+			_out.Dedent(PrinterIndentHint.Label);
 			return SPResult.NeedSuffixTrivia;
 		}
 
@@ -1009,10 +1014,10 @@ namespace Loyc.Ecs
 		{
 			Debug.Assert(_n.Calls(S.Assembly));
 			PrintAttrs(AttrStyle.NoKeywordAttrs);
-			_out.Write("[assembly:", true);
+			_out.Write("[assembly:");
 			Space(SpaceOpt.Default);
 			PrintArgs(_n, false);
-			_out.Write(']', true);
+			_out.Write(']');
 			return SPResult.NeedSuffixTrivia;
 		}
 	}

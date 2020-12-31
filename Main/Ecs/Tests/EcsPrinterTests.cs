@@ -116,8 +116,8 @@ namespace Loyc.Ecs.Tests
 			// produce empty #splice() with trivia attached at the top level (file level), so the 
 			// printer has support for empty-splice statements.
 			Stmt("{\n  /*Hello*/\n}", F.Braces(F.Splice().PlusAttr(F.Trivia(S.TriviaMLComment, "Hello"))));
-			Stmt("/*Hello*/", F.Splice().PlusAttr(F.Trivia(S.TriviaMLComment, "Hello")));
-			Stmt("/*Hello*/", F.Splice().PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "Hello")));
+			Stmt("/*Hello?*/", F.Splice().PlusAttr(F.Trivia(S.TriviaMLComment, "Hello?")));
+			Stmt("/*Hello!*/", F.Splice().PlusTrailingTrivia(F.Trivia(S.TriviaMLComment, "Hello!")));
 		}
 
 		int _testNum;

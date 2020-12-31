@@ -45,7 +45,7 @@ namespace Loyc.Ecs.Tests
 				F.Splice(F.Var(F.Int32, a),
 					OnNewLine(F.Var(F.Int32, b)),
 					OnNewLine(F.Var(F.Int32, c))));
-			Stmt("{\n\n  int a;\n\n  int b;\n\n  int c;\n\n}",
+			Stmt("{\n\n  int a;\n\n  int b;\n\n  int c;\n  \n}",
 				F.Braces(
 					OnNewLine(F.Var(F.Int32, a)),
 					OnNewLine(F.Var(F.Int32, b)),
@@ -131,7 +131,7 @@ namespace Loyc.Ecs.Tests
 				"{\n"+
 				"  // Before\n" +
 				"  a(x);\n" +
-				"  \t// After\n"+
+				"  // After\n"+
 				"}", node);
 
 			node = Attr(F.Public, @static,
@@ -204,13 +204,13 @@ namespace Loyc.Ecs.Tests
 			     "  [Attribute] \n" +
 			     "  public int x;\n" +
 			     "  #endregion\n" +
-			     "\n" +
+			     "  \n" +
 			     "  #region The Constructor\n" +
-			     "\n" +
+			     "  \n" +
 			     "  Foo() {\n" +
 			     "    x = 1;\n" +
 			     "  }\n" +
-			     "\n" +
+			     "  \n" +
 			     "  #endregion!\n" +
 			     "}", node);
 		}

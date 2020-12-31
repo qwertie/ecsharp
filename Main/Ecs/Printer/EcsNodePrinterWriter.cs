@@ -5,45 +5,41 @@ using System.Text;
 using System.IO;
 using Loyc.Syntax;
 using Loyc.Collections;
+using Loyc.Syntax.Impl;
 
 namespace Loyc.Ecs
 {
 	/// <summary>Helper class of <see cref="EcsNodePrinter"/></summary>
-	internal class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
+	internal class EcsNodePrinterWriter : Loyc.Syntax.Impl.LNodePrinterHelper
 	{
 		public EcsNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange, int> saveRange = null)
-			: base(sb, indentString, lineSeparator, labelIndent, saveRange) { }
-		public EcsNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
-			: base(@out, indentString, lineSeparator, labelIndent) { }
+			: base(sb, saveRange, false, indentString, lineSeparator, labelIndent, "  ") { }
 
-		char _lastStartCh; // character at beginning of previous token
+		private int _punctuationIdentifierEndIndex = -1; // index where an identifier starting with @' ended
+		internal void OnPunctuationIdentifierEnding() => _punctuationIdentifierEndIndex = StringBuilder.Length;
 
-		protected override void StartToken(char nextCh)
+		protected override void OnNodeChanged(char nextCh)
 		{
-			if (_newlinePending)
-				Newline();
+			var _lastCh = IsAtStartOfLine ? '\n' : LastCharWritten;
 			if ((EcsValidators.IsIdentContChar(_lastCh) || _lastCh == '#')
 				&& (EcsValidators.IsIdentContChar(nextCh) || nextCh == '@'))
-				_out.Write(' ');
+				Write(' ');
 			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+')
 				  || (_lastCh == '-' && nextCh == '-')
 				  || (_lastCh == '.' && (nextCh == '.' || char.IsDigit(nextCh)))
 				  || (_lastCh == '/' && nextCh == '*'))
-				_out.Write(' ');
-			else if (_lastStartCh == '@' && _lastCh != '`' && nextCh > ' ' && nextCh != '(' && nextCh != '[' && nextCh != ')' && nextCh != ']' && nextCh != ';' && nextCh != ',')
-				_out.Write(' ');
-
-			_lastStartCh = nextCh;
-		}
-
-		public override void BeginStatement()
-		{
+				Write(' ');
+			// EC# allows operator punctuation in identifiers after @' (or @0 to @9), 
+			// e.g. @'Foo= is an identifier. So we must not print an expression like 
+			// @'Foo . Bar as @'Foo.Bar which would be a single identifier.
+			else if (_punctuationIdentifierEndIndex == StringBuilder.Length && _lastCh != '`' && nextCh > ' ' && nextCh != '(' && nextCh != '[' && nextCh != ')' && nextCh != ']' && nextCh != ';' && nextCh != ',')
+				Write(' ');
 		}
 
 		public override void Reset()
 		{
 			base.Reset();
-			_lastStartCh = '\0';
+			_punctuationIdentifierEndIndex = -1;
 		}
 	}
 }

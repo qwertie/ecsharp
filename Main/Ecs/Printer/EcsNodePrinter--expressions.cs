@@ -172,6 +172,7 @@ namespace Loyc.Ecs
 		void PrintExpr(LNode n) => PrintExpr(n, _context);
 		void PrintExpr(LNode n, Precedence context, Ambiguity flags = 0)
 		{
+			_out.FlushIndent();
 			using (With(n, context, flags))
 				PrintCurrentExpr();
 		}
@@ -346,7 +347,7 @@ namespace Loyc.Ecs
 				PrintString(opName, '`', null);
 			else {
 				Debug.Assert(opName.StartsWith("'") || opName.StartsWith("#"));
-				_out.Write(opName.Substring(1), true);
+				_out.Write(opName.Substring(1));
 			}
 		}
 
@@ -468,7 +469,7 @@ namespace Loyc.Ecs
 			if (alternate) {
 				PrintExpr(subject, precedence.LeftContext(_context));
 				WriteOpenParen(ParenFor.NewCast);
-				_out.Write(GetCastText(_name), true);
+				_out.Write(GetCastText(_name));
 				Space(SpaceOpt.AfterCastArrow);
 				PrintType(target, StartExpr, Ambiguity.AllowPointer);
 				WriteCloseParen(ParenFor.NewCast);
@@ -482,7 +483,7 @@ namespace Loyc.Ecs
 				} else {
 					// "x as y" or "x using y"
 					PrintExpr(subject, precedence.LeftContext(_context));
-					_out.Write(GetCastText(_name), true);
+					_out.Space().Write(GetCastText(_name));
 					PrintType(target, precedence.RightContext(_context));
 				}
 			}
@@ -492,8 +493,8 @@ namespace Loyc.Ecs
 		}
 		private string GetCastText(Symbol name)
 		{
-			if (name == S.UsingCast) return "using";
-			if (name == S.As) return "as";
+			if (name == S.UsingCast) return "using ";
+			if (name == S.As) return "as ";
 			return "->";
 		}
 
@@ -510,14 +511,14 @@ namespace Loyc.Ecs
 				_context = StartExpr;
 
 			PrintExpr(subject, precedence.LeftContext(_context));
-			_out.Write("is ", true);
+			_out.Space().Write("is ");
 			PrintType(targetType, EP.NullDot);
 			if (targetVarName != null) {
 				_out.Space();
 				PrintExpr(targetVarName, EP.Primary, Ambiguity.InDefinitionName);
 			}
 			if (tuple != null)
-				PrintArgList(tuple, ParenFor.MethodCall, true, false);
+				PrintArgTuple(tuple, ParenFor.MethodCall, true, false);
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
@@ -567,7 +568,7 @@ namespace Loyc.Ecs
 					PrintExpr(_n.Args[i], StartExpr, _flags);
 				}
 				if (name == S.Tuple && argCount == 1)
-					_out.Write(',', true);
+					_out.Write(',');
 				WriteCloseParen(ParenFor.Grouping);
 			}
 			return true;
@@ -593,7 +594,7 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.ArgCount >= 1);
 			PrintExpr(_n.Args[0], precedence.LeftContext(_context), _flags & (Ambiguity.InDefinitionName | Ambiguity.TypeContext));
 
-			_out.Write(needSpecialOfNotation ? "!(" : "<", true);
+			_out.Write(needSpecialOfNotation ? "!(" : "<");
 			for (int i = 1, argC = _n.ArgCount; i < argC; i++) {
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
@@ -604,7 +605,7 @@ namespace Loyc.Ecs
 					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
 				}
 			}
-			_out.Write(needSpecialOfNotation ? ')' : '>', true);
+			_out.Write(needSpecialOfNotation ? ')' : '>');
 			return true;
 		}
 
@@ -641,16 +642,16 @@ namespace Loyc.Ecs
 			// Okay, we can now be sure that it's printable, but is it an array decl?
 			if (type == null) {
 				// 1b, new {...}
-				_out.Write("new ", true);
+				_out.Write("new");
 				PrintBracedBlockInNewExpr(1);
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
-				_out.Write("new", true);
+				_out.Write("new");
 				Debug.Assert(type.Name.Name.StartsWith("'"));
-				_out.Write(type.Name.Name.Substring(1), true);
+				_out.Write(type.Name.Name.Substring(1));
 				Space(SpaceOpt.Default);
 				PrintBracedBlockInNewExpr(1);
 			} else {
-				_out.Write("new ", true);
+				_out.Write("new");
 				int dims = CountDimensionsIfArrayType(type);
 				if (dims > 0 && constructorCall.Args.Count == dims) {
 					PrintTypeWithArraySizes(constructorCall);
@@ -658,7 +659,7 @@ namespace Loyc.Ecs
 					// Otherwise we can print the type name without caring if it's an array or not.
 					PrintType(type, EP.Primary.LeftContext(_context));
 					if (constructorCall.ArgCount != 0 || (argCount == 1 && dims == 0))
-						PrintArgList(constructorCall, ParenFor.MethodCall, false, _o.OmitMissingArguments);
+						PrintArgTuple(constructorCall, ParenFor.MethodCall, false, _o.OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
 					PrintBracedBlockInNewExpr(1);
@@ -689,9 +690,9 @@ namespace Loyc.Ecs
 						using (With(expr, StartExpr))
 							PrintBracedBlockInNewExpr(0);
 					else if (expr.CallsMin(S.DictionaryInitAssign, 1)) {
-						_out.Write('[', true);
+						_out.Write('[');
 						PrintArgs(expr.Args.WithoutLast(1), 0, false);
-						_out.Write(']', true);
+						_out.Write(']');
 						PrintInfixWithSpace(S.Assign, expr.Target, EcsPrecedence.Assign);
 						PrintExpr(expr.Args.Last, StartExpr);
 					} else 
@@ -700,7 +701,7 @@ namespace Loyc.Ecs
 			}
 			if (!Newline(NewlineOpt.BeforeCloseBraceInNewExpr))
 				Space(SpaceOpt.InsideNewInitializer);
-			_out.Write('}', true);
+			_out.Write('}');
 			Newline(NewlineOpt.AfterCloseBraceInNewExpr);
 		}
 		private void PrintTypeWithArraySizes(LNode cons)
@@ -726,15 +727,15 @@ namespace Loyc.Ecs
 			
 			PrintType(elemType, EP.Primary.LeftContext(ContinueExpr));
 			
-			_out.Write('[', true);
+			_out.Write('[');
 			PrintArgs(cons.Args, 0, false);
-			_out.Write(']', true);
+			_out.Write(']');
 
 			// Write the brackets for the inner array types
 			for (int i = dimStack.Count - 1; i >= 0; i--) {
 				var arrayKW = S.GetArrayKeyword(dimStack[i]).Name;
 				Debug.Assert(arrayKW.StartsWith("'"));
-				_out.Write(arrayKW.Substring(1), true);
+				_out.Write(arrayKW.Substring(1));
 			}
 		}
 
@@ -760,8 +761,8 @@ namespace Loyc.Ecs
 			WriteOpenParen(ParenFor.Grouping, needParens);
 
 			if (oldStyle) {
-				_out.Write("delegate", true);
-				PrintArgList(_n.Args[0], ParenFor.MethodDecl, true, _o.OmitMissingArguments);
+				_out.Write("delegate");
+				PrintArgTuple(_n.Args[0], ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
 			} else { 
 				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl);
@@ -812,7 +813,7 @@ namespace Loyc.Ecs
 			{
 				PrintExpr(first, precedence.LeftContext(_context));
 				Space(SpaceOpt.BeforeMethodCall);
-				_out.Write('[', true);
+				_out.Write('[');
 				Space(SpaceOpt.InsideCallParens);
 				for (int i = 1, c = _n.ArgCount; i < c; i++)
 				{
@@ -820,17 +821,17 @@ namespace Loyc.Ecs
 					PrintExpr(_n.Args[i], StartExpr);
 				}
 				Space(SpaceOpt.InsideCallParens);
-				_out.Write(']', true);
+				_out.Write(']');
 			}
 			else if (name == S.NullIndexBracks)
 			{
 				PrintExpr(first, precedence.LeftContext(_context));
 				Space(SpaceOpt.BeforeMethodCall);
-				_out.Write("?[", true);
+				_out.Write("?[");
 				Space(SpaceOpt.InsideCallParens);
 				PrintArgs(_n.Args[1], false);
 				Space(SpaceOpt.InsideCallParens);
-				_out.Write(']', true);
+				_out.Write(']');
 			}
 			else if (name == S.QuestionMark)
 			{
@@ -844,7 +845,7 @@ namespace Loyc.Ecs
 			{
 				Debug.Assert(name == S.PostInc || name == S.PostDec || name == S.IsLegal);
 				PrintExpr(first, precedence.LeftContext(_context));
-				_out.Write(name == S.PostInc ? "++" : name == S.PostDec ? "--" : "is legal", true);
+				_out.Write(name == S.PostInc ? "++" : name == S.PostDec ? "--" : "is legal");
 			}
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
@@ -902,7 +903,7 @@ namespace Loyc.Ecs
 		{
 			if (!_o.ObeyRawText)
 				return false;
-			_out.Write(GetRawText(_n), true);
+			_out.Write(GetRawText(_n));
 			return true;
 		}
 
@@ -992,7 +993,7 @@ namespace Loyc.Ecs
 
 			Debug.Assert(_context == StartStmt || _context == StartExpr || Flagged(Ambiguity.ForEachInitializer));
 			if (IsSimpleSymbolWPA(a[0], S.Missing))
-				_out.Write("var", true);
+				_out.Write("var");
 			else
 				PrintType(a[0], EP.Primary.LeftContext(_context), flags & Ambiguity.AllowPointer);
 			_out.Space();
@@ -1016,29 +1017,31 @@ namespace Loyc.Ecs
 					if (!first)
 						Space(SpaceOpt.Default);
 					first = false;
-					PrintLinqClause(clause);
+					using (With(clause, StartExpr))
+						PrintLinqClause();
 				}
 				return true;
 			}
 			return false;
 		}
 
-		private void PrintLinqClause(LNode clause)
+		private void PrintLinqClause()
 		{
+			LNode clause = _n;
 			PrintTrivia(clause, false);
 			var name = clause.Name;
 			var arg0 = clause[0];
 			if (name == S.From) {
-				_out.Write("from ", true);
+				_out.Write("from ");
 				Debug.Assert(clause.ArgCount == 1);
 				if (arg0.Calls(S.In, 2)) {
 					PrintExpr(arg0[0], StartExpr, Ambiguity.AllowUnassignedVarDecl);
-					_out.Write(" in ", true);
+					_out.Write(" in ");
 					PrintExpr(arg0[1], ContinueExpr);
 				} else
 					PrintExpr(arg0, StartExpr);
 			} else if (name == S.OrderBy) {
-				_out.Write("orderby ", true);
+				_out.Write("orderby ");
 				var first = true;
 				foreach (var arg in clause.Args) {
 					if (!first)
@@ -1046,46 +1049,47 @@ namespace Loyc.Ecs
 					first = false;
 					if (arg.Calls(S.Ascending, 1)) {
 						PrintExpr(arg[0], StartExpr);
-						_out.Write(" ascending", true);
+						_out.Write(" ascending");
 					} else if (arg.Calls(S.Descending, 1)) {
 						PrintExpr(arg[0], StartExpr);
-						_out.Write(" descending", true);
+						_out.Write(" descending");
 					} else {
 						PrintExpr(arg, StartExpr);
 					}
 				}
 			} else if (name == S.Join) {
-				_out.Write("join ", true);
+				_out.Write("join ");
 				LNode equals = clause.Args[1], into = clause.Args[2, null];
 				Debug.Assert(arg0.Calls(S.In, 2));
 				Debug.Assert(equals.Calls("#equals", 2));
 				Debug.Assert(into == null || into.Calls("#into", 1));
 				PrintExpr(arg0[0], StartExpr, Ambiguity.AllowUnassignedVarDecl);
-				_out.Write(" in ", true);
+				_out.Space().Write("in ");
 				PrintExpr(arg0[1], ContinueExpr);
-				_out.Write(" on ", true);
+				_out.Space().Write("on ");
 				PrintExpr(equals[0], StartExpr);
-				_out.Write(" equals ", true);
+				_out.Space().Write("equals ");
 				PrintExpr(equals[1], StartExpr);
 				if (into != null) {
-					_out.Write(" into ", true);
+					_out.Space().Write("into ");
 					PrintExpr(into[0], StartExpr);
 				}
 			} else if (name == S.GroupBy) {
-				_out.Write("group ", true);
+				_out.Write("group ");
 				Debug.Assert(clause.ArgCount == 2);
 				LNode arg1 = clause.Args[1];
 				PrintExpr(arg0, StartExpr);
-				_out.Write(" by ", true);
+				_out.Space().Write("by ");
 				PrintExpr(arg1, StartExpr);
 			} else if (name == S.Into) {
-				_out.Write("into ", true);
+				_out.Write("into ");
 				PrintExpr(arg0, StartExpr);
 				for (int i = 1; i < clause.ArgCount; i++)
-					PrintLinqClause(clause[i]);
+					using (With(clause[i], StartExpr))
+						PrintLinqClause();
 			} else {
 				Debug.Assert(name == S.Let || name == S.Where || name == S.Select);
-				_out.Write(name.Name.Substring(1), true);
+				_out.Write(name.Name.Substring(1));
 				Space(SpaceOpt.Default);
 				Debug.Assert(clause.ArgCount == 1);
 				PrintExpr(arg0, StartExpr);
@@ -1139,7 +1143,7 @@ namespace Loyc.Ecs
 					for (int i = 0; i < stack.Count; i++)
 					{
 						Debug.Assert(stack[i].Name.StartsWith("'"));
-						_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
+						_out.Write(stack[i].Name.Substring(1)); // e.g. [] or [,]
 					}
 				}
 				else if (stk == S.Tuple)
@@ -1149,7 +1153,7 @@ namespace Loyc.Ecs
 				else
 				{
 					PrintType(_n.Args[1], EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
-					_out.Write(stk == S._Pointer ? '*' : '?', true);
+					_out.Write(stk == S._Pointer ? '*' : '?');
 				}
 
 				PrintTrivia(trailingTrivia: true);
@@ -1157,7 +1161,7 @@ namespace Loyc.Ecs
 			else
 			{
 				// All other types are structurally the same as normal expressions.
-				PrintExpr(_n, _context, _flags);
+				PrintCurrentExpr();
 			}
 		}
 
@@ -1178,7 +1182,7 @@ namespace Loyc.Ecs
 					PrintType(arg, StartExpr, _flags);
 			}
 			if (i == 2)
-				_out.Write(',', true);
+				_out.Write(',');
 			WriteCloseParen(ParenFor.Grouping);
 		}
 

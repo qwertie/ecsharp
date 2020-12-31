@@ -84,11 +84,9 @@ namespace Loyc.Ecs
 		Symbol _name; // caches the value of _n.Name
 		Precedence _context; // current precedence level (or StartStmt at statement level)
 		Ambiguity _flags; // special-situation flags sent down from the parent expression
-		INodePrinterWriter _out; // Low-level printer object. We give it text to print.
+		EcsNodePrinterWriter _out; // Low-level printer object. We give it text to print.
 		Symbol _spaceName; // for detecting constructor ambiguity (= S.Fn inside functions/lambdas/properties/constructors)
 		IMessageSink _errors;
-
-		public INodePrinterWriter Writer { get => _out; set => _out = value; }
 
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
 		/// <remarks>The most common error is an unprintable literal.</remarks>
@@ -133,24 +131,14 @@ namespace Loyc.Ecs
 			p.Print(node, target, sink, mode);
 			// ensure stuff is GC'd
 			p._n = null;
-			p.Writer = null;
+			p._out = null;
 		}
 
 		/// <summary>Attaches a new <see cref="StringBuilder"/>, then prints a node 
 		/// with <see cref="Print(LNode, ParsingMode)"/>.</summary>
 		internal void Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode)
 		{
-			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n", "", _o.SaveRange);
-			ErrorSink = sink;
-			Print(node, mode);
-		}
-
-		/// <summary>Attaches a new <see cref="TextWriter"/>, then prints a node 
-		/// with <see cref="Print(LNode, ParsingMode)"/>. 
-		/// Note: this method doesn't support <see cref="ILNodePrinterOptions.SaveRange"/>.</summary>
-		internal void Print(LNode node, TextWriter target, IMessageSink sink, ParsingMode mode)
-		{
-			Writer = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
+			_out = new EcsNodePrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n", "", _o.SaveRange);
 			ErrorSink = sink;
 			Print(node, mode);
 		}
@@ -196,7 +184,8 @@ namespace Loyc.Ecs
 			{
 				_self = self;
 				_old_n = self._n;
-				self._out.Push(inner);
+				if (inner != _old_n)
+					self._out.BeginNode(inner);
 				_old_name = self._name;
 				_old_context = self._context;
 				_old_flags = self._flags;
@@ -213,8 +202,9 @@ namespace Loyc.Ecs
 			}
 			public void Dispose()
 			{
+				if (_old_n != _self._n)
+					_self._out.EndNode();
 				_self._n = _old_n;
-				_self._out.Pop();
 				_self._name = _old_name;
 				_self._context = _old_context;
 				_self._flags = _old_flags;
@@ -271,13 +261,15 @@ namespace Loyc.Ecs
 
 		private void WriteOperatorNameWithTrivia(Symbol name, LNode target, bool useBacktick = false)
 		{
-			_out.Push(target);
+			_out.BeginNode(target);
+
 			if (target != null)
 				PrintTrivia(target, trailingTrivia: false);
 			WriteOperatorName(name, useBacktick);
 			if (target != null)
 				PrintTrivia(target, trailingTrivia: true);
-			_out.Pop();
+
+			_out.EndNode();
 		}
 
 		void PrefixSpace(Precedence p)
@@ -292,7 +284,7 @@ namespace Loyc.Ecs
 		}
 		void WriteThenSpace(char ch, SpaceOpt option)
 		{
-			_out.Write(ch, true);
+			_out.Write(ch);
 			if ((_o.SpaceOptions & option) != 0)
 				_out.Space();
 		}
@@ -309,7 +301,7 @@ namespace Loyc.Ecs
 			if (confirm) {
 				if (((int)_o.SpaceOptions & (int)type) != 0)
 					_out.Space();
-				_out.Write('(', true);
+				_out.Write('(');
 				WriteInnerSpace(type);
 			}
 			return confirm;
@@ -318,7 +310,7 @@ namespace Loyc.Ecs
 		{
 			if (confirm) {
 				WriteInnerSpace(type);
-				_out.Write(')', true);
+				_out.Write(')');
 				if (((int)_o.SpaceOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
 					_out.Space();
 			}
@@ -337,10 +329,10 @@ namespace Loyc.Ecs
 					if ((_o.SpaceOptions & (type == ParenFor.Grouping ? SpaceOpt.InsideParens : SpaceOpt.InsideCallParens)) != 0)
 						_out.Space();
 		}
-		private bool Newline(NewlineOpt context)
+		private bool Newline(NewlineOpt context, bool deferIndent = true)
 		{
 			if ((_o.NewlineOptions & context) != 0) {
-				_out.Newline();
+				_out.Newline(deferIndent);
 				return true;
 			}
 			return false;
@@ -680,8 +672,8 @@ namespace Loyc.Ecs
 						OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 						WriteThenSpace('[', SpaceOpt.InsideAttribute);
 						if (label != null) {
-							_out.Write(label, true);
-							_out.Write(':', true);
+							_out.Write(label);
+							_out.Write(':');
 							Space(SpaceOpt.AfterColon);
 						}
 					}
@@ -692,12 +684,12 @@ namespace Loyc.Ecs
 
 			if (inBrackets) {
 				Space(SpaceOpt.InsideAttribute);
-				_out.Write(']', true);
+				_out.Write(']');
 				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
 					Space(SpaceOpt.AfterAttribute);
 			} else if (!any && (_flags & Ambiguity.ForceAttributeList) != 0) {
 				OpenParenIf(mayNeedParens, ref parenCount, ref _context);
-				_out.Write("[]", true);
+				_out.Write("[]");
 				Space(SpaceOpt.AfterAttribute);
 			}
 
@@ -712,9 +704,9 @@ namespace Loyc.Ecs
 					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
 					parenCount++;
 					if (_o.AllowChangeParentheses) {
-						_out.Write('(', true);
+						_out.Write('(');
 					} else {
-						_out.Write("([]", true);
+						_out.Write("([]");
 						Space(SpaceOpt.AfterAttribute);
 					}
 				}
@@ -734,13 +726,13 @@ namespace Loyc.Ecs
 					if (dropMostAttrs && name != S.Out && name != S.Ref)
 						continue;
 					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
-					_out.Write(text, true);
+					_out.Write(text);
 				} else if (name == S.This) {
 					Debug.Assert(!mayNeedParens);
-					_out.Write("this", true);
+					_out.Write("this");
 				} else if (name == S.In) {
 					Debug.Assert(!mayNeedParens);
-					_out.Write("in", true);
+					_out.Write("in");
 				} else if (!dropMostAttrs || name == S.Yield) {
 					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 					Debug.Assert(attr.HasSpecialName);
@@ -781,10 +773,10 @@ namespace Loyc.Ecs
 					if (!_context.CanParse(LesPrecedence.Substitute)) {
 						// Inside $: outer parens are expected. Add a second pair of parens 
 						// so that reparsing preserves the in-parens trivia.
-						_out.Write('(', true);
+						_out.Write('(');
 						parenCount++;
 					}
-					_out.Write('(', true);
+					_out.Write('(');
 					parenCount++;
 					Space(SpaceOpt.InsideParens);
 				}
@@ -796,18 +788,18 @@ namespace Loyc.Ecs
 			} else if (name == S.TriviaSLComment) {
 				if (!_o.OmitComments) {
 					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (_o.SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
-						_out.Write('\t', true);
-					_out.Write("//", false);
-					_out.Write(GetRawText(attr), false);
-					_out.Newline(true);
+						_out.Write('\t');
+					_out.Write("//");
+					_out.Write(GetRawText(attr));
+					_out.NewlineIsRequiredHere();
 				}
 			} else if (name == S.TriviaMLComment) {
 				if (!_o.OmitComments) {
-					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
+					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n', '\uFFFF'))
 						Space(SpaceOpt.BeforeCommentOnSameLine);
-					_out.Write("/*", false);
-					_out.Write(GetRawText(attr), false);
-					_out.Write("*/", true);
+					_out.Write("/*");
+					_out.Write(GetRawText(attr));
+					_out.Write("*/");
 				}
 			} else if (name == S.TriviaRegion || name == S.TriviaEndRegion) {
 				string arg = (attr.TriviaValue ?? "").ToString();
@@ -825,7 +817,7 @@ namespace Loyc.Ecs
 		private void PrintTrivia(LNode node, bool trailingTrivia, bool needSemicolon = false)
 		{
 			if (needSemicolon)
-				_out.Write(';', true);
+				_out.Write(';');
 			var attrs = trailingTrivia ? node.GetTrailingTrivia() : node.Attrs;
 			foreach (var attr in attrs) {
 				int _ = 0;
@@ -835,16 +827,16 @@ namespace Loyc.Ecs
 
 		private void WriteRawText(string text, bool isPreprocessorText)
 		{
-			if (isPreprocessorText && _out.LastCharWritten != '\n')
+			if (isPreprocessorText && !_out.IsAtStartOfLine)
 				_out.Newline();
 			if (text.EndsWith("\n")) {
 				// use our own newline logic so indentation works
-				_out.Write(text.Substring(0, text.Length - 1), true);
-				_out.Newline(pending: true);
+				_out.Write(text.Substring(0, text.Length - 1));
+				_out.NewlineIsRequiredHere();
 			} else {
-				_out.Write(text, true);
+				_out.Write(text);
 				if (isPreprocessorText)
-					_out.Newline(pending: true);
+					_out.NewlineIsRequiredHere();
 			}
 		}
 
@@ -853,7 +845,7 @@ namespace Loyc.Ecs
 			for (int i = 0; i < spaces.Length; i++) {
 				char c = spaces[i];
 				if (c == ' ' || c == '\t')
-					_out.Write(c, false);
+					_out.Write(c);
 				else if (c == '\n')
 					_out.Newline();
 				else if (c == '\r') {
@@ -889,7 +881,7 @@ namespace Loyc.Ecs
 			if (_staticPrinter == null) {
 				var sb = _staticStringBuilder = new StringBuilder();
 				var wr = _staticWriter = new EcsNodePrinterWriter(sb);
-				_staticPrinter = new EcsNodePrinter() { Writer = wr };
+				_staticPrinter = new EcsNodePrinter() { _out = wr };
 			} else {
 				_staticWriter.Reset();
 				_staticStringBuilder.Length = 0; // Clear() is new in .NET 4
@@ -927,42 +919,42 @@ namespace Loyc.Ecs
 		{
 			if (mode == IdPrintMode.Operator)
 			{
-				_out.Write("operator", true);
+				_out.Write("operator");
 				Space(SpaceOpt.AfterOperatorKeyword);
 				if (OperatorIdentifiers.Contains(name)) {
 					Debug.Assert(name.Name.StartsWith("'"));
-					_out.Write(name.Name.Substring(1), true);
+					_out.Write(name.Name.Substring(1));
 				} else
-					PrintString(name.Name, '`', null, true);
+					PrintString(name.Name, '`', null);
 				return;
 			}
 
 			// Check if this is a 'normal' identifier and not a keyword:
 			char first = name.Name.TryGet(0, '\0');
-			if (first < 40 && mode == IdPrintMode.Normal)
+			if (LNode.IsSpecialNamePrefix(first) && mode == IdPrintMode.Normal)
 			{	// Check for keywords like #this and #int32 that should be printed without '#'
 				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
-					_out.Write("this", true);
+					_out.Write("this");
 					return;
 				}
 				if (name == S.Base) {
-					_out.Write("base", true);
+					_out.Write("base");
 					return;
 				}
 				if (name == S.Default) {
-					_out.Write("default", true);
+					_out.Write("default");
 					return;
 				}
 				string keyword;
 				if (TypeKeywords.TryGetValue(name, out keyword)) {
-					_out.Write(keyword, true);
+					_out.Write(keyword);
 					return;
 				}
 			}
 
 			if (mode == IdPrintMode.Symbol)
 			{
-				_out.Write("@@", false);
+				_out.Write("@@");
 			}
 			else if (_o.PreferPlainCSharp)
 			{
@@ -972,7 +964,7 @@ namespace Loyc.Ecs
 
 			if (name.Name == "")
 			{
-				_out.Write(mode == IdPrintMode.Symbol ? "``" : "@``", true);
+				_out.Write(mode == IdPrintMode.Symbol ? "``" : "@``");
 				return;
 			}
 
@@ -983,19 +975,25 @@ namespace Loyc.Ecs
 				if (!EcsValidators.IsIdentContChar(c)) {
 					// Backquote required for this identifier.
 					if (mode != IdPrintMode.Symbol)
-						_out.Write("@", false);
-					PrintString(name.Name, '`', null, true);
+						_out.Write("@");
+					PrintString(name.Name, '`', null);
 					return;
 				}
 			}
-			
+
 			// Print @ if needed, then the identifier
+			bool isPunctuationIdentifier = false;
 			if (mode != IdPrintMode.Symbol)
 			{
-				if (mode == IdPrintMode.Verbatim || !EcsValidators.IsIdentStartChar(first) || PreprocessorCollisions.Contains(name) || CsKeywords.Contains(name))
-					_out.Write("@", false);
+				if (isPunctuationIdentifier = !EcsValidators.IsIdentStartChar(first) 
+					|| mode == IdPrintMode.Verbatim 
+					|| PreprocessorCollisions.Contains(name) 
+					|| CsKeywords.Contains(name))
+					_out.Write("@");
 			}
-			_out.Write(name.Name, true);
+			_out.Write(name.Name);
+			if (isPunctuationIdentifier)
+				_out.OnPunctuationIdentifierEnding();
 		}
 
 		static readonly Symbol _Verbatim = GSymbol.Get("%verbatim");
@@ -1003,22 +1001,20 @@ namespace Loyc.Ecs
 		private void PrintString(string text, char quoteType, Symbol verbatim, bool includeAtSign = false)
 		{
 			if (includeAtSign && verbatim != null)
-				_out.Write(verbatim == S.TriviaDoubleVerbatim ? "@@" : "@", false);
+				_out.Write("@");
 
-			_out.Write(quoteType, false);
+			_out.Write(quoteType);
 			if (verbatim != null) {
 				for (int i = 0; i < text.Length; i++) {
 					if (text[i] == quoteType)
-						_out.Write(quoteType, false);
-					if (verbatim == S.TriviaDoubleVerbatim && text[i] == '\n')
-						_out.Newline(); // includes indentation
+						_out.Write(quoteType);
 					else
-						_out.Write(text[i], false);
+						_out.Write(text[i]);
 				}
 			} else {
-				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType), false);
+				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType));
 			}
-			_out.Write(quoteType, true);
+			_out.Write(quoteType);
 		}
 
 		static Pair<RuntimeTypeHandle,Action<EcsNodePrinter>> P<T>(Action<EcsNodePrinter> value) 
@@ -1038,8 +1034,8 @@ namespace Loyc.Ecs
 			}),
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),
-			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false", true)),
-			P<@void>  (np => np._out.Write("default(void)", true)),
+			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false")),
+			P<@void>  (np => np._out.Write("default(void)")),
 			P<char>   (np => np.PrintString(np._n.Value.ToString(), '\'', null)),
 			P<string> (np => {
 				var n = np._n;
@@ -1051,68 +1047,68 @@ namespace Loyc.Ecs
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, IdPrintMode.Symbol);
 			}),
 			P<TokenTree> (np => {
-				np._out.Write("@{", true);
-				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString), true);
-				np._out.Write(" }", true);
+				np._out.Write("@{");
+				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString));
+				np._out.Write(" }");
 			}),
 			P<IEnumerable<byte>> (np => { // Unnatural. Not produced by parser.
 				var data = (IEnumerable<byte>)np._n.Value;
 				if (np._n.BaseStyle == NodeStyle.HexLiteral)
 					np.WriteArrayLiteral("byte", data, (num, _out) => {
-						_out.Write("0x", false);
-						_out.Write(num.ToString("X", null), false);
+						_out.Write("0x");
+						_out.Write(num.ToString("X", null));
 					});
 				else
 					np.WriteArrayLiteral("byte", data, (num, _out) => 
-						_out.Write(num.ToString(), false));
+						_out.Write(num.ToString()));
 			})
 		);
 		
 		void PrintValueToString(string suffix)
 		{
-			_out.Write(_n.Value.ToString(), false);
-			_out.Write(suffix, true);
+			_out.Write(_n.Value.ToString());
+			_out.Write(suffix);
 		}
 		void PrintIntegerToString(string suffix)
 		{
 			string asStr;
 			if (_n.BaseStyle == NodeStyle.HexLiteral) {
 				var value = (IFormattable)_n.Value;
-				_out.Write("0x", false);
+				_out.Write("0x");
 				asStr = value.ToString("x", null);
 			} else
 				asStr = _n.Value.ToString();
 			if (suffix == "")
-				_out.Write(asStr, true);
+				_out.Write(asStr);
 			else {
-				_out.Write(asStr, false);
-				_out.Write(suffix, true);
+				_out.Write(asStr);
+				_out.Write(suffix);
 			}
 		}
 		void PrintValueFormatted(string format)
 		{
-			_out.Write(string.Format(format, _n.Value), true);
+			_out.Write(string.Format(format, _n.Value));
 		}
 
-		void WriteArrayLiteral<T>(string elementType, IEnumerable<T> data, Action<T, INodePrinterWriter> writeElement)
+		void WriteArrayLiteral<T>(string elementType, IEnumerable<T> data, Action<T, EcsNodePrinterWriter> writeElement)
 		{
 			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
-			_out.Write("new ", true);
-			_out.Write(elementType, true);
-			_out.Write("[] {", true);
+			_out.Write("new ");
+			_out.Write(elementType);
+			_out.Write("[] {");
 			NewlineOrSpace(NewlineOpt.AfterOpenBraceInNewExpr);
 			int count = 0;
 			foreach (T datum in data)
 			{
 				if (count++ != 0) {
-					_out.Write(',', true);
+					_out.Write(',');
 					if ((count & 0xF) == 0)
 						NewlineOrSpace(NewlineOpt.Minimal);
 				}
 				writeElement(datum, _out);
 			}
 			NewlineOrSpace(NewlineOpt.BeforeCloseBraceInExpr);
-			_out.Write("}", true);
+			_out.Write("}");
 			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
 		}
 
@@ -1121,7 +1117,7 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.IsLiteral);
 			Action<EcsNodePrinter> p;
 			if (_n.Value == null)
-				_out.Write("null", true);
+				_out.Write("null");
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p)
 				|| (p = LiteralPrinters.FirstOrDefault(pair => Type.GetTypeFromHandle(pair.Key).IsAssignableFrom(_n.Value.GetType())).Value) != null)
 				p(this);
@@ -1138,7 +1134,7 @@ namespace Loyc.Ecs
 				if (quote)
 					PrintString(unprintable, '"', null);
 				else
-					_out.Write(unprintable, true);
+					_out.Write(unprintable);
 			}
 		}
 

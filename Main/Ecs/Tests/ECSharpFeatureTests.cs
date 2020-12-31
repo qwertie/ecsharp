@@ -21,7 +21,8 @@ namespace Loyc.Ecs.Tests
 			Expr(@"@@`\t`",    F.Literal(GSymbol.Get("\t")));    // Symbols take non-verbatim backquoted strings
 			Expr(@"@@`1+1`",   F.Literal(GSymbol.Get("1+1")));
 			Expr(@"@@1",       F.Literal(GSymbol.Get("1")));
-			Expr(@"'''hello'''", F.Literal("hello"), Mode.ParserTest);
+			// Not yet supported in printer (which will use @"...")
+			Expr(@"'''hello'''", F.Literal("hello").SetBaseStyle(NodeStyle.TQStringLiteral), Mode.ParserTest);
 			Expr("default(void)", F.Literal(@void.Value), Mode.PrinterTest);
 			Expr("#public",  @public);
 			Expr("Don't",  _("Don't"));

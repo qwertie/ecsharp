@@ -234,8 +234,8 @@ namespace Loyc.Ecs.Tests
 			LNode stmt;
 			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), FooArray), a, b);
 			Stmt("(Foo? x, Foo[]) a, b;", stmt);
-			Stmt("tuple!(2 + 2);",    F.Of(_("tuple"), F.Call(S.Add, two, two)));
-			Stmt("@tuple!(2 + 2);",   F.Of(_("tuple"), F.Call(S.Add, two, two)), Mode.ParserTest);
+			Stmt("tuple!(2 + 0);",    F.Of(_("tuple"), F.Call(S.Add, two, zero)));
+			Stmt("@tuple!(2 + 1);",   F.Of(_("tuple"), F.Call(S.Add, two, one)), Mode.ParserTest);
 			Stmt("@'tuple !(2 + 2);", F.Of(_("'tuple"), F.Call(S.Add, two, two)));
 			// In a type context, FooBracks shows as @`'suf[]`(Foo) instead of the usual Foo[] 
 			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), FooBracks), a, b);

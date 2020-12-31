@@ -43,7 +43,7 @@ namespace Loyc.Ecs.Tests
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"'\0'",    F.Literal('\0'));
 			Expr("'\uFEFF'", F.Literal('\uFEFF'));
-			Expr(@"""hi""",  F.Literal("hi"));
+			Expr(@"""hi!""", F.Literal("hi!"));
 			Expr(@"@""hi""", F.Literal("hi").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
 			Expr("@\"\n\"",  F.Literal("\n").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
 			Expr("123456789123456789uL", F.Literal(123456789123456789uL));
