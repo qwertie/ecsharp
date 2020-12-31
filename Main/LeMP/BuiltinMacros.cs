@@ -24,6 +24,12 @@ namespace LeMP.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
+		internal static LNode Reject(IMessageSink error, LNode at, string msg, params object[] args)
+		{
+			error.Write(Severity.Error, at, msg, args);
+			return null;
+		}
+
 		[LexicalMacro("noMacro(Code)", "Alias for `#noLexicalMacros`. Passes code through to the output language, without macro processing.",
 			Mode = MacroMode.NoReprocessing)]
 		public static LNode noMacro(LNode node, IMacroContext sink)
@@ -95,6 +101,62 @@ namespace LeMP.Prelude
 			return braces.ArgCount == 1 ? braces[0] : braces.WithName(S.Splice);
 		}
 
+		[LexicalMacro("#preprocessArgsOf(macroCall(...))",
+			"This macro preprocesses all arguments that were passed to its single argument, "+
+			"to work around issues with macro evaluation order.\n\n" +
+			"Caution: if an argument contains a macro that queries its Parent node, the parent " +
+			"will be this macro rather than the original parent (the other macro). " +
+			"Also, they may be preprocessed twice: this macro processes them once, and if the " +
+			"other macro includes its arguments in its output, they will be processed again " +
+			"(unless the other macro happens to block preprocessing).",
+			"#preprocessArgsOf")]
+		public static LNode preprocessArgsOf(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount != 1)
+				return null;
+
+			var newArgs = context.PreProcess(node[0].Args);
+			return node[0].WithArgs(newArgs);
+		}
+
+		[LexicalMacro("#preprocessChild(N, macroCall(...)), #preprocessChild(N, macroCall(...))",
+			"This macro preprocesses one or more specific arguments that was passed to its " +
+			"single argument, to work around issues with macro evaluation order. If you want" +
+			"to process multiple children, N can be a tuple of numbers. After preprocessing N," +
+			"it must be an integer or a tuple of integers. Each integer must be either a zero-" +
+			"based argument index, or -1 for the call target, or a lower number to refer to " +
+			"attributes (e.g. -2 is the final attribute)." +
+			"\n\n" +
+			"Caution: if an argument contains a macro that queries its Parent node, the parent " +
+			"will be this macro rather than the original parent (the other macro). " +
+			"Also, the argument may be preprocessed twice: this macro processes it once, and if " +
+			"the other macro includes its arguments in its output, it can be processed again " +
+			"(unless the other macro happens to block preprocessing).",
+			"#preprocessChild")]
+		public static LNode preprocessChild(LNode node, IMacroContext context)
+		{
+			LNode call, indexes, @in = null;
+			if ((  node.Args.Count == 2 && (indexes = node.Args[0]) != null && (call = node.Args[1]) != null
+				|| node.Args.Count == 1 && (@in = node.Args[0]) != null && @in.Calls(CodeSymbols.In, 2) && (indexes = @in.Args[0]) != null && (call = @in.Args[1]) != null
+				) && call.IsCall)
+			{
+				var result = call;
+				indexes = context.PreProcess(indexes);
+				foreach (var index in indexes.AsList(CodeSymbols.Tuple)) {
+					if (index.Value is int iArg) {
+						LNode arg = call.TryGet(iArg, null);
+						if (arg == null)
+							context.Warning(index, "Index out of range (expected {0} to {1})", call.Min, call.Max);
+						else
+							result = result.WithArgChanged(iArg, context.PreProcess(arg));
+					} else
+						return Reject(context, index, "Expected a (32-bit) integer literal");
+				}
+				return result;
+			}
+			return null;
+		}
+
 		static readonly Symbol _macros = GSymbol.Get("macros");
 		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 
@@ -106,7 +168,7 @@ namespace LeMP.Prelude
 		}
 
 		[LexicalMacro("#printKnownMacros;", "Prints a table of all macros known to LeMP, as (invalid) C# code.",
-			"printKnownMacros", "#printKnownMacros", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifierOrCall)]
+			"printKnownMacros", "#printKnownMacros", "#help", Mode = MacroMode.NoReprocessing | MacroMode.MatchIdentifierOrCall)]
 		public static LNode printKnownMacros(LNode node, IMacroContext context)
 		{
 			// namespace LeMP {

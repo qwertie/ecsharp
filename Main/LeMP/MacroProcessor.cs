@@ -80,7 +80,7 @@ namespace LeMP
 	public partial class MacroProcessor
 	{
 		IMessageSink _sink;
-		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
+		public IMessageSink Sink { get { return _sink ?? MessageSink.Default; } set { _sink = value; } }
 		public int MaxExpansions = 255;
 
 		[ThreadStatic]

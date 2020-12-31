@@ -389,6 +389,33 @@ namespace LeMP.Tests
 		}
 
 		[Test]
+		public void TestPreprocessArgsOf()
+		{
+			// TODO: come up with a more complicated test
+			TestLes(@"x = #preprocessArgsOf(concatId(concatId(abc, 123), 456));", @"x = abc123456");
+
+			TestEcs(@"x = #preprocessChild(0 in concatId(concatId(ABC, 123), 456));", @"x = ABC123456;");
+			TestLes(@"x = #preprocessChild(0, concatId(concatId(xyz, 123), 456));", @"x = xyz123456");
+			// Ignore the error in concatId
+			Test(@"x = #preprocessChild(1 in concatId(concatId(abc, def), ghi));", Les3LanguageService.Value,
+				@"x = concatId(abcdef, ghi);", Les3LanguageService.Value, 0xFFFF, MessageSink.Null);
+			Test(@"x = #preprocessChild((0, 2) in concatId(concatId(zero), 1, concatId(2)));", EcsLanguageService.Value,
+				@"x = zero12;", Les3LanguageService.Value, 0xFFFF, MessageSink.Null);
+			
+			// Error should mention the correct range
+			var errors = new MessageHolder();
+			Test(@"x = #preprocessChild((1, 3) in concatId(concatId(x), y, concatId(z)));", Les3LanguageService.Value,
+				@"x = concatId(x, y, z);", Les3LanguageService.Value, 0xFFFF, errors);
+			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Warning).Formatted.Contains("-1 to 2"));
+
+			// Error should mention the need for an "integer literal"
+			errors.List.Clear();
+			Test(@"x = #preprocessChild(0.5, concatId(concatId(A), B));", Les3LanguageService.Value,
+				@"x = #preprocessChild(0.5, concatId(A, B));", Les3LanguageService.Value, 0xFFFF, errors);
+			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Error).Formatted.Contains("integer literal"));
+		}
+
+		[Test]
 		public void TestTreeEqualsAndStaticIf()
 		{
 			TestEcs(@"bool b = a `code==` 'A';",                        @"bool b = false;");

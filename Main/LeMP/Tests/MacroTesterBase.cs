@@ -40,9 +40,9 @@ namespace LeMP.Tests
 			Test(inputLes, Les2LanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
 			Test(inputEcs, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
 		}
-		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
+		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF, IMessageSink sink = null)
 		{
-			var lemp = NewLemp(maxExpand, inLang);
+			var lemp = NewLemp(maxExpand, inLang).With(l => l.Sink = sink);
 			
 			// The current printer affects the assert macro and contract macros
 			using (LNode.SetPrinter((ILNodePrinter)outLang))

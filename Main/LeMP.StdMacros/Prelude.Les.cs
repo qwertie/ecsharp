@@ -23,12 +23,12 @@ namespace LeMP.Prelude.Les
 
 		internal static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
-			error.Write(Severity.Note, at, msg);
+			error.Write(Severity.Warning, at, msg);
 			return null;
 		}
 		internal static LNode Reject(IMessageSink error, LNode at, string msg, params object[] args)
 		{
-			error.Write(Severity.Note, at, msg, args);
+			error.Write(Severity.Warning, at, msg, args);
 			return null;
 		}
 		/// Some functions here are called by LESv3 macros. In LESv3, a syntax like 
