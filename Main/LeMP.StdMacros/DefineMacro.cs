@@ -16,11 +16,13 @@ namespace LeMP
 		static readonly Symbol _replace = (Symbol)"replace";
 		static readonly Symbol _define = (Symbol)"define";
 
-		[LexicalMacro(@"define (_pattern_) { replacement pattern; }",
+		[LexicalMacro(@"define (_pattern_) { body; }",
 			"Defines a local macro that matches the specified pattern and is replaced with another pattern from within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can use later. " +
 			"Example: `define ($x = $y + $z) { $x = Add($y, $z); }` would replace an assignment, involving adding two things, with an assignment that involves calling a method called `Add()`. " +
-			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority.",
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority." +
+			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked." +
+			"Similarly, variables whose name starts with `temp#` are uniquely numbered.",
 			"define", "#define")]
 		public static LNode define(LNode node, IMacroContext context)
 		{
@@ -33,11 +35,13 @@ namespace LeMP
 			return RegisterSimpleMacro(node.Attrs, pattern, body, context);
 		}
 
-		[LexicalMacro(@"define Name($arg1, $arg2, ...) {...}; define Name($arg1, $arg2, ...) => ...; // EC# syntax",
+		[LexicalMacro(@"define Name($arg1, $arg2, ...) { body; }; define Name($arg1, $arg2, ...) => body; // EC# syntax",
 			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. " +
 			"The macro's arguments can be patterns; for example `define Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`. " +
-			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority.", 
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority." +
+			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked." +
+			"Similarly, variables whose name starts with `temp#` are uniquely numbered.",
 			"#fn", Mode = MacroMode.Passive)]
 		public static LNode methodStyleDefine(LNode node, IMacroContext context)
 		{
@@ -89,6 +93,8 @@ namespace LeMP
 			return modes;
 		}
 
+
+
 		private static LNode RegisterSimpleMacro(LNodeList attrs, LNode pattern, LNode body, IMacroContext context)
 		{
 			if (DecodeSubstitutionExpr(pattern, out _, out _, out _) != null)
@@ -123,7 +129,8 @@ namespace LeMP
 				MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
 				if (candidate.MatchesPattern(pattern, ref captures, out LNodeList unmatchedAttrs))
 				{
-					return ReplaceCaptures(replacement, captures).PlusAttrsBefore(unmatchedAttrs);
+					LNode replacement2 = WithUniqueIdentifiers(replacement, context.IncrementTempCounter, out _);
+					return ReplaceCaptures(replacement2, captures).PlusAttrsBefore(unmatchedAttrs);
 				}
 				return null;
 			}
@@ -171,6 +178,32 @@ namespace LeMP
 				return null;
 			});
 			return nameTable;
+		}
+
+		/// <summary>Finds identifiers containing the string "unique#" and replaces that 
+		/// string with a unique integer from nextTempCounter(). Also finds names that 
+		/// start with "temp#" and replaces # with a unique integer.</summary>
+		/// <param name="mappings">The identifier mappings produced, or null if there were none</param>
+		public static LNode WithUniqueIdentifiers(LNode code, Func<int> nextTempCounter, out Dictionary<Symbol, Symbol> mappings)
+		{
+			Dictionary<Symbol, Symbol> mappings_ = null;
+			var result = code.ReplaceRecursive(node => {
+				var name = node.Name.Name;
+				if (node.IsId) {
+					if (name.StartsWith("temp#"))
+						name = "tempunique#" + name.Substring("temp#".Length);
+					int i = name.IndexOf("unique#");
+					if (i > -1) {
+						mappings_ = mappings_ ?? new Dictionary<Symbol, Symbol>();
+						if (!mappings_.TryGetValue(node.Name, out Symbol newName))
+							mappings_[node.Name] = newName = (Symbol)(name.Left(i) + nextTempCounter() + name.Substring(i + "unique#".Length));
+						return LNode.Id(newName, node);
+					}
+				}
+				return null;
+			});
+			mappings = mappings_;
+			return result;
 		}
 	}
 }

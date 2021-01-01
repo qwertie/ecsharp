@@ -195,5 +195,65 @@ namespace LeMP.Tests
 				var x = 2 * x / 4.0;",
 				@"var x = MulDiv(2, x, 4d);");
 		}
+
+		[Test]
+		public void TestDefineUsingTempVars()
+		{
+			TestEcs(@"
+				define change_temporarily($lhs = $rhs) {
+					var old_unique# = $lhs;
+					$lhs = $rhs;
+					on_finally { $lhs = old_unique#; }
+				}
+				void DoStuff() {
+					change_temporarily(a = 123);
+					change_temporarily(b = 456);
+					Act();
+				}", @"
+				void DoStuff() {
+					var old_A = a;
+					a = 123;
+					try {
+						var old_B = b;
+						b = 456;
+						try {
+							Act();
+						} finally { b = old_B; }
+					} finally { a = old_A; }
+				}"	.Replace("old_A", "old_" + MacroProcessor.NextTempCounter)
+					.Replace("old_B", "old_" + (MacroProcessor.NextTempCounter + 1)));
+			
+			TestEcs(@"
+				define change_temporarily($lhs.$prop = $rhs) {
+					var temp#_ = $lhs;
+					var old_unique# = temp#_.$prop;
+					temp#_.$prop = $rhs;
+					on_finally { temp#_.$prop = old_unique#; }
+				}
+				void DoStuffs() {
+					change_temporarily(List[i].a = 123);
+					change_temporarily(List[i].b = 456);
+					Stuff1();
+					Stuff2();
+				}", @"
+				void DoStuffs() {
+					var tempA_ = List[i];
+					var old_A = tempA_.a;
+					tempA_.a = 123;
+					try {
+						var tempB_ = List[i];
+						var old_B = tempB_.b;
+						tempB_.b = 456;
+						try {
+							Stuff1();
+							Stuff2();
+						} finally { tempB_.b = old_B; }
+					} finally { tempA_.a = old_A; }
+				}".Replace("tempA", "temp" + MacroProcessor.NextTempCounter)
+				  .Replace("old_A", "old_" + (MacroProcessor.NextTempCounter + 1))
+				  .Replace("tempB", "temp" + (MacroProcessor.NextTempCounter + 2))
+				  .Replace("old_B", "old_" + (MacroProcessor.NextTempCounter + 3)));
+		}
+
 	}
 }

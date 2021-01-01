@@ -42,9 +42,9 @@ namespace LeMP
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
 
-		static LNode Reject(IMessageSink sink, LNode at, string msg)
+		static LNode Reject(IMessageSink sink, LNode at, string msg, Severity severity = Severity.Error)
 		{
-			sink.Write(Severity.Error, at, msg);
+			sink.Write(severity, at, msg);
 			return null;
 		}
 
