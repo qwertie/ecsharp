@@ -18,7 +18,7 @@ namespace LeMP.CSharp7.To.OlderVersions
 
 		static LNode Reject(IMessageSink sink, LNode at, string msg)
 		{
-			sink.Write(Severity.Error, at, msg);
+			sink.Write(Severity.Warning, at, msg);
 			return null;
 		}
 

@@ -140,7 +140,9 @@ namespace LeMP.Prelude.Les
 					return Reject(context, name, "Invalid namespace name (expected a complex identifier)");
 			} else {
 				if (!IsDefinitionId(name, false))
-					return Reject(context, name, "Invalid type name (expected a simple name or Name!(T1,T2,...))");
+					return null;
+					// Don't print a warning: no one's using this feature but the warning happens on LLLPG aliases
+					//return Reject(context, name, "Invalid type name (expected a simple name or Name!(T1,T2,...))");
 			}
 
 			if (isAlias) {
@@ -844,8 +846,11 @@ namespace LeMP.Prelude.Les
 					return node.With(S.Var, a[1], a[0]).SetBaseStyle(NodeStyle.Default);
 				} else if (a[0].CallsMin(S.Tuple, 1)) {
 					return node.With(S.Var, LNode.List(a[1]).AddRange(a[0].Args)).SetBaseStyle(NodeStyle.Default);
-				} else
-					return Reject(context, node, "Expected a variable name or tuple to the left of `{0}`", node.Name);
+				} else {
+					// Don't print a warning; this pattern happens all the time in LLLPG
+					//return Reject(context, node, "Expected a variable name or tuple to the left of `{0}`", node.Name);
+					return null;
+				}
 			}
 			return null;
 		}

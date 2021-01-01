@@ -1082,13 +1082,14 @@ namespace LeMP
 			
 			foreach (var result in results)
 			{
-				foreach(var msg in result.Msgs) {
-					// Print all messages from macros that accepted the input. 
-					// For rejecting macros, print warning/error messages, and 
-					// other messages when macroStyleCall.
-					if (_sink.IsEnabled(msg.Severity) && (result.NewNode != null
-						|| msg.Severity >= Severity.WarningDetail
-						|| macroStyleCall))
+				var severityRequired = Severity.Warning;
+				if (result.NewNode != null) // Show all messages
+					severityRequired = default(Severity);
+				if (accepted == 0) // Show info from rejecting macros
+					severityRequired = macroStyleCall ? Severity.InfoDetail : Severity.NoteDetail;
+
+				foreach (var msg in result.Msgs) {
+					if (_sink.IsEnabled(msg.Severity) && msg.Severity >= severityRequired)
 					{
 						var msg2 = new LogMessage(msg.Severity, msg.Context,
 							QualifiedNameOf(result.Macro) + ": " + msg.Format, msg.Args);
