@@ -59,7 +59,7 @@ namespace Loyc.Ecs
 		public static readonly Precedence Backtick   = new Precedence(46, 72, 45, 73); //!< `custom operator` (immiscible with * / + - << >> ..)
 		public static readonly Precedence Compare3Way= new Precedence(42);             //!<  <=>
 		public static readonly Precedence Compare    = new Precedence(40);             //!<  < > <= >=
-		public static readonly Precedence IsAsUsing  = new Precedence(40, 99, 40, 40); // is as using
+		public static readonly Precedence IsAsUsing  = new Precedence(40, 99, 40, 40); //!<  is as using
 		public static readonly new Precedence Equals = new Precedence(38);             //!<  == != in
 		public static readonly Precedence AndBits    = new Precedence(32, 32, 32, 45); //!<  &   (^ and | should not be mixed with Compare/Equals 
 		public static readonly Precedence XorBits    = new Precedence(30, 30, 32, 45); //!<  ^    either, but the low-high system cannot express this

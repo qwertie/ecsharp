@@ -36,7 +36,8 @@ namespace Loyc.Ecs.Parser
 	{
 		@[LL(2), FullLLk(false), Verbosity(1), AddCsLineDirectives(@false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
-		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
+		             allowSwitch(@true), setType(HashSet!int), castLA(@false),
+		             listInitializer(#var(LNodeList, _ = LNode.List())));
 
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
@@ -92,7 +93,7 @@ namespace Loyc.Ecs.Parser
 		// Inside a LINQ expression, certain ContextualKeywords are to be treated
 		// as actual keywords. This flag enables that behavior.
 		_insideLinqExpr::bool;
-
+		
 		// Used to detect a specific ContextualKeyword; `@` renders it not-a-keyword
 		fn Is(li::int, value::Symbol)::bool
 		{
@@ -346,9 +347,9 @@ namespace Loyc.Ecs.Parser
 			{return result;}
 		};
 
-		// ---------------------------------------------------------------------
-		// -- Expressions ------------------------------------------------------
-		// ---------------------------------------------------------------------
+		// =====================================================================
+		// == Expressions ======================================================
+		// =====================================================================
 
 		// Parsing EC# expressions is very tricky. Here are some of the things 
 		// that make it difficult, especially in an LL(k) parser:
@@ -700,7 +701,7 @@ namespace Loyc.Ecs.Parser
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
-		@[private] token SubExpr(context::Precedence)::LNode @{
+		@[private] token SubExpr(context::Precedence, lambdaInFollowSet::bool = false)::LNode @{
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}
 			e:=PrefixExpr
@@ -708,15 +709,20 @@ namespace Loyc.Ecs.Parser
 			(	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|"|>,?|>"|TT.BQString|TT.In )
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"|TT.BQString|TT.In )
+				rhs:=SubExpr(prec)
+				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			|	// Lambda expression
+				&{@[Local] context.CanParse(prec=EP.Lambda) && !lambdaInFollowSet}
+				op:="=>"
 				rhs:=SubExpr(prec)
 				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
 			|	// is-test or a more complex is-expr
 				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=TT.Is
 				e=IsPattern(e, op)
-				// 'as' or 'using' cast (special case: 'using instead of #using)
-			|	&{@[Local] context.CanParse(prec=EP.Compare)}
+			|	// 'as' or 'using' cast (special case: 'using instead of #using)
+				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
 				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
@@ -793,39 +799,15 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// Helper functions for parsing normal expressions and var-decl expressions
-		// TODO: upgrade to use newer LeMP macros that are easier to understand
-		unroll ((TentativeFunction; TentativeCode) `in` (
-			(TentativeExpr; #splice(
-				result.Result = SubExpr(StartExpr).PlusAttrs(attrs);
-				// A var decl like "A B" looks like an expression followed by
-				// an identifier. To cede victory to VarDeclExpr, detect that
-				// the expression didn't end properly and emit an error.
-				if LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma && !(LA0 == TT.LinqKeyword && _insideLinqExpr) {
-					failed = @true;
-				};
-			));
-			(TentativeVarDecl; #splice(
-				_::int;
-				var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr);
-				if (cat != StmtCat.MethodOrPropOrVar) {
-					failed = @true;
-					result.Result = F.Missing;
-				} else {
-					hasInitializer::bool;
-					result.Result = VarDeclExpr(out hasInitializer, attrs);
-					if (!hasInitializer && !allowUnassigned) {
-						Error(-1, "An unassigned variable declaration is not allowed in this context");
-					};
-				};
-			));
-		)) {
+		define DefineTentativeFunction($TentativeFn, $TentativeCode)
+		{
 			// Parses an expression (TentativeExpr) or variable declaration (TentativeVarDecl).
 			// Returns the parsed node on success or null if outer-level parse error(s) 
 			// occurred; the out param result is never null, and in case of success it 
 			// is the same as the return value. Error handling is tricky... we fail if
 			// there are errors at the current level, not if there are errors in 
 			// parenthesized subexpressions.
-			fn TentativeFunction(attrs::LNodeList, out result::TentativeResult, allowUnassigned::bool = false)::LNode
+			fn $TentativeFn(attrs::LNodeList, out result::TentativeResult, allowUnassigned::bool = false)::LNode
 			{
 				result = (new TentativeResult(InputPosition));
 				var oldState = _tentative;
@@ -834,7 +816,8 @@ namespace Loyc.Ecs.Parser
 					on_finally { _tentative = oldState; };
 
 					failed::bool = false;
-					TentativeCode; // sets the result variable
+				
+					$TentativeCode; // sets the result variable
 				
 					result.Errors = _tentative.DeferredErrors;
 					result.InputPosition = InputPosition;
@@ -845,6 +828,32 @@ namespace Loyc.Ecs.Parser
 					};
 				};
 				return Apply(result); // must Apply after finally block
+			}
+		};
+
+		DefineTentativeFunction TentativeExpr
+		{
+			result.Result = SubExpr(StartExpr).PlusAttrs(attrs);
+			// A var decl like "A B" looks like an expression followed by
+			// an identifier. To cede victory to VarDeclExpr, detect that
+			// the expression didn't end properly and emit an error.
+			if LA0 != EOF && LA0 != TT.Semicolon && LA0 != TT.Comma && !(LA0 == TT.LinqKeyword && _insideLinqExpr) {
+				failed = @true;
+			};
+		};
+		
+		DefineTentativeFunction TentativeVarDecl
+		{
+			var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr);
+			if (cat != StmtCat.MethodOrPropOrVar) {
+				failed = @true;
+				result.Result = F.Missing;
+			} else {
+				hasInitializer::bool;
+				result.Result = VarDeclExpr(out hasInitializer, attrs);
+				if (!hasInitializer && !allowUnassigned) {
+					Error(-1, "An unassigned variable declaration is not allowed in this context");
+				};
 			};
 		};
 
@@ -958,8 +967,183 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// ---------------------------------------------------------------------
-		// -- Attributes -------------------------------------------------------
+		// -- "Patterns" and switch expressions --------------------------------
 		// ---------------------------------------------------------------------
+		//
+		// A pattern can appear after `is` or `case`, or inside the braced block
+		// of a switch expression. NOTE: Patterns after `case` are not supported
+		// in Enhanced C# v29 until we figure out how to resolve the major syntax 
+		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
+		//
+		// An ambiguous grammar for patterns is given on the following page:
+		// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
+		// Sadly, not only does this show any C# 9 features, but the C# 9 proposal at
+		// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
+		// refers to "existing" productions like primary_pattern that DON'T EXIST
+		// in the C# 8 version. Anyway, here is my attempt to piece together a 
+		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar:
+		//
+		// // aka disjunctive_pattern
+		// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
+		// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
+		// negated_pattern : 'not' negated_pattern | primary_pattern;
+		// primary_pattern
+		//     : type identifier     // aka declaration_pattern
+		//     | constant_expression // aka constant_pattern
+		//     | type                // aka type_pattern
+		//     | var_pattern
+		//     | positional_pattern
+		//     | property_pattern
+		//     | relational_pattern
+		//     | '(' pattern ')'     // aka parenthesized_pattern
+		//     | '_'                 // aka discard_pattern
+		//     ;
+		// 
+		// subpatterns : subpattern (',' subpattern)*;
+		// subpattern : (identifier ':')? pattern;
+		// 
+		// var_pattern : 'var' designation;
+		//   designation : identifier | tuple_designation;    
+		//   tuple_designation : '(' designation (',' designation)* ')';
+		// 
+		// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
+		//
+		// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
+		// 
+		// property_pattern : type? property_subpattern identifier?;
+		//
+		// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
+		//   relational_expression : <<no definition is provided!>>
+		//
+		// NOTES:
+		// - The var_pattern is simply a special case of positional_pattern in which 
+		//   the type happens to be `var` and the subpatterns are expressions.
+		// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
+		//   just a special case of positional_pattern
+		// - My experimentation suggests that constant_expression, as you might guess,
+		//   has a precedence matching the `is` operator when it appears on the right-
+		//   hand side of an is-expression. In a switch expression it can be almost
+		//   any expression, except that all operators with precedence below || don't
+		//   seem to work (i.e. ?: and ?? and assignment operators).
+		//   - `??` fails in a strange way by always saying "A constant value is 
+		//     expected" (I would think that `(string)null ?? null` is constant, but,
+		//     turns out, it's not, i.e. you can't make a const var with this value.)
+		//     The others fail as syntax errors.
+		//   - A lambda operator can't be used in either context, even if you add
+		//     parentheses around it.
+		// - Postfix `++` and `--` cause syntax errors, so I could not find out
+		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
+		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
+		// - However, the parser sees `when` as an identifier in some cases and as a 
+		//   keyword at other times. Here are a couple of interesting cases:
+		//     const int when = 77;
+		//     const int Int32 = 32;
+		//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
+		//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
+		//   The first `switch` expression is `0`; the second is `7`.
+		// - Having defined `const int _ = 5;`, it is a syntax error to say
+		//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
+		//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
+		// - Although `(int, int)? tupleQ` is a valid variable declaration,
+		//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
+		//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
+		//   like `int?` is a syntax error, but arrays work (e.g. `(T,U)[,]`). 
+		//   `int*` is right out.
+		// - `when` is not allowed in an is-expression; you can write
+		//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
+		//   `(object)2   is     int x when x < 5` is a syntax error.
+		// - Examples of patterns that don't look like normal expressions
+		//   nor variable declarations:
+		//     `Foo(Dictionary<Int32, Int32>dict)` // Foo takes only one argument
+		//     `(> 0, name: {} x) y`
+		//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
+		// - Not related to patterns but I just noticed that 
+		//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
+		//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
+		// - Not related to parsing, but this `is` expression weirdly returns false:
+		//     struct Foo {
+		//        public void Deconstruct(out Dictionary<int, int> d) { d = null; }
+		//     }
+		//     (object)(new Foo()) is Foo(Dictionary<Int32,Int32>dict) { } foo
+		//   And yes, it will return true if the dictionary isn't null.
+		//
+		// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
+		// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
+
+		rule Pattern()::LNode @{
+			result:ConjunctivePattern
+			(	&{Is($LI, @@or)} op:TT.Id rhs:ConjunctivePattern
+				{result = F.Call(@@or, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			)*
+		};
+
+		rule ConjunctivePattern()::LNode @{
+			result:NegatedPattern
+			(	&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern
+				{result = F.Call(@@and, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+			)*
+		};
+		
+		rule NegatedPattern()::LNode @{
+			(	&{Is($LI, @@not)} not:TT.Id NegatedPattern
+				{result = F.Call(@@not, $NegatedPattern, not.StartIndex, $NegatedPattern.Range.EndIndex, not.StartIndex, not.EndIndex, NodeStyle.Operator);}
+			/	result:PrimaryPattern
+			)
+		};
+
+		rule PrimaryPattern()::LNode @{
+		// primary_pattern
+		//     : type identifier     // aka declaration_pattern
+		//     | constant_expression // aka constant_pattern
+		//     | type                // aka type_pattern
+		//     | var_pattern
+		//     | positional_pattern
+		//     | property_pattern
+		//     | relational_pattern
+		//     | '(' pattern ')'     // aka parenthesized_pattern
+		//     | '_'                 // aka discard_pattern
+		//     ;
+			_ { return F.Literal($_.Value); }
+		};
+		
+		@[private] rule SwitchCasePrefixExpr()::LNode @{
+			(	// Binary operators as prefix operators
+				op:("<"|">"|"==,!="|"<=,>="|"<=>")
+				e:SubExpr(EP.Shift)
+			|	// "not" prefix operator
+				&{Is($LI, @@not)} op:TT.Id 
+			|	result:SwitchCaseSubExpr
+			)
+		};
+
+		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, lambdaInFollowSet<: true) };
+
+
+		// ---------------------------------------------------------------------
+
+
+		rule SwitchExpressionArms(ref list::LNodeList)::LNodeList @{
+			(
+				result+:SwitchExpressionArm
+				( "," EOF
+				/ "," result+:SwitchExpressionArm
+				| error {Error("Expected ',' or '}'");} ~","*)*
+			)? EOF
+		};
+
+		@[private] rule SwitchExpressionArm()::LNode @{
+			lhs:Pattern CaseGuard? "=>" rhs:ExprStart(false)
+			{ $result = F.Call(S.Lambda, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex, $"=>".StartIndex, $"=>".EndIndex, NodeStyle.Special); }
+		};
+
+		@[private] rule CaseGuard() @{
+			&{@[Hoist] Is($LI, @@when)} op:TT.ContextualKeyword
+		};
+
+		// =====================================================================
+		// == Attributes =======================================================
+		// =====================================================================
+
 		
 		@[recognizer(fn Scan_NormalAttributes())]
 		token NormalAttributes(ref attrs::LNodeList)::bool @{
