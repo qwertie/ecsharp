@@ -72,7 +72,7 @@ namespace LeMP
 			} else {
 				Debug.Assert((modes & (MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier | MacroMode.MatchEveryLiteral)) != 0);
 			}
-			macroName = F.Id(EcsValidators.SanitizeIdentifier(macroName.Name.Name) + "_Line" + pattern.Range.Start.Line);
+			
 			LNode modesExpr = null;
 			foreach (LNode mode in modeNodes)
 				modesExpr = LNode.MergeBinary(modesExpr, quote(global::LeMP.MacroMode.$mode), S.OrBits);
@@ -95,7 +95,7 @@ namespace LeMP
 				usingDirectives.AddRange(bodyUsings);
 				body = body.WithArgs(body.Args.Slice(bodyUsings.Count));
 			}
-			
+
 			// Create a matchCode statement unless the pattern is MacroName($(.._)), which always matches
 			unless (pattern'.HasSimpleHeadWithoutPAttrs() && pattern'.Target.IsId 
 				&& pattern'.ArgCount == 1 && pattern'[0].Equals(rawQuote($(.._))))

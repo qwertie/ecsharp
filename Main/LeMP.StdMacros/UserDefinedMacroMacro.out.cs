@@ -1,4 +1,4 @@
-// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -6,16 +6,27 @@
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using Loyc;
+
 using Loyc.Collections;
+
 using Loyc.Ecs;
+
 using Loyc.Syntax;
+
 using System;
+
 using System.Collections.Generic;
+
 using System.Diagnostics;
+
 using System.Linq;
+
 using System.Text;
+
 using System.Threading.Tasks;
+
 using S = Loyc.Ecs.EcsCodeSymbols;
+
 
 namespace LeMP
 {
@@ -78,7 +89,7 @@ namespace LeMP
 			} else {
 				Debug.Assert((modes & (MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier | MacroMode.MatchEveryLiteral)) != 0);
 			}
-			macroName = F.Id(EcsValidators.SanitizeIdentifier(macroName.Name.Name) + "_Line" + pattern.Range.Start.Line);
+		
 			LNode modesExpr = null;
 			foreach (LNode mode in modeNodes)
 				modesExpr = LNode.MergeBinary(modesExpr, LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "MacroMode"))).SetStyle(NodeStyle.Operator), mode)).SetStyle(NodeStyle.Operator), S.OrBits);
