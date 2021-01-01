@@ -423,6 +423,8 @@ namespace Loyc.Syntax.Lexing
 			}
 		}
 
+		public static implicit operator IndexRange(Token t) => new IndexRange(t.StartIndex, t.Length);
+
 		#region ToString, Equals, GetHashCode
 
 		/// <summary>Reconstructs a string that represents the token, if possible.

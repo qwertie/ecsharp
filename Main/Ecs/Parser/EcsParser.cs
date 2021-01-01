@@ -406,9 +406,13 @@ namespace Loyc.Ecs.Parser
 		}
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
+			Write(Severity.Error, lookaheadIndex, message, args);
+		}
+		protected void Write(Severity severity, int lookaheadIndex, string message, params object[] args)
+		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourceRange pos = new SourceRange(_sourceFile, iPos);
-			CurrentSink(true).Error(pos, message, args);
+			CurrentSink(true).Write(severity, pos, message, args);
 		}
 		protected LNode Error(string message, params object[] args)
 		{

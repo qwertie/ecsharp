@@ -176,10 +176,10 @@ namespace Loyc.Ecs.Parser
 			[	// There can be only a single "externAlias::" prefix in a complex Id, with no type params.
 				{if (result.Calls(S.Of)) {Error("Type parameters cannot appear before '::' in a declaration or type name");};}
 				op:="::" rhs:=IdWithOptionalTypeParams(declContext)
-				{result = F.Call(S.ColonColon, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{result = F.CallInfixOp(result, op, rhs);}
 			]?
 			[	op:="." rhs:=IdWithOptionalTypeParams(declContext)
-				{result = F.Dot(result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{result = F.Dot(result, op, rhs);}
 			]*
 		};
 		
@@ -192,7 +192,7 @@ namespace Loyc.Ecs.Parser
 		rule IdAtom::LNode @{
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
-				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+				{r = F.CallPrefixOp(t, e, S.Substitute);}
 			|	op:=TT.Operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
 			|	t:=(TT.Id|TT.ContextualKeyword|TT.TypeKeyword)
@@ -419,7 +419,7 @@ namespace Loyc.Ecs.Parser
 		rule Atom::LNode @{
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
-				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex, t.StartIndex, t.EndIndex);}
+				{r = F.CallPrefixOp(t, e);}
 			|	op:=TT.Operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
 			|	t:=(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.This | TT.Base)
@@ -434,17 +434,20 @@ namespace Loyc.Ecs.Parser
 			|	r=TokenLiteral
 			|	t:=(TT.Checked | TT.Unchecked)
 				args:="(" rp:=")"
-				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+				{r = F.CallPrefix(t, ExprListInside(args), rp);}
 			|	t:=(TT.Typeof | TT.Sizeof)
 				args:="(" rp:=")"
-				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+				{r = F.CallPrefix(t, TypeInside(args), rp);}
 			|	t:=TT.Default
 				(   args:="(" rp:=")"
-				    {r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex, t.StartIndex, t.EndIndex);}
+				    {r = F.CallPrefix(t, TypeInside(args), rp);}
 				/   {r = F.Id(t);})
 			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
-				{r = F.Call(S.Lambda, F.List(ExprListInside(args, false, true)), F.Braces(StmtListInside(block), block.StartIndex, rb.EndIndex), 
-				            t.StartIndex, rb.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.OldStyle);}
+				{
+					var argList = LNode.List(F.List(ExprListInside(args, false, true)), 
+					                         F.Braces(block, StmtListInside(block), rb));
+					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
+				}
 			|	t:=TT.Is r=IsPattern(F.Missing, t)
 			|	error 
 				greedy[ (~(","|";")) ]*
@@ -470,26 +473,23 @@ namespace Loyc.Ecs.Parser
 		token NewExpr::LNode @{
 			{
 				majorDimension::opt!Token = null;
-				endIndex::int; 
 				var list = LNodeList.Empty;
 			}
 			op:=TT.New
 			(	// new [] { ... }  <=>  @'new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
-				lb:="[" rb:="]" 
+				lb:"[" rb:"]" 
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
-				lb="{" rb="}"
+				lb:"{" rb:"}"
 				{
 					list.Add(LNode.Call(type, type.Range));
 					AppendInitializersInside(lb, ref list);
-					endIndex = rb.EndIndex;
 				}
 			|	// new { ... }  <=>  @'new(@``, ...)
-				lb:="{" rb:="}"
+				lb:"{" rb:"}"
 				{
 					list.Add(F.Missing);
 					AppendInitializersInside(lb, ref list);
-					endIndex = rb.EndIndex;
 				}
 			|	// new Type(...)             <=> @'new(Type(...))
 				// new Type(...) { ... }     <=> @'new(Type(...), ...)
@@ -499,25 +499,21 @@ namespace Loyc.Ecs.Parser
 				type:=DataType(false, out majorDimension)
 				(	// new Type(...)         <=> @'new(Type(...))
 					// new Type(...) { ... } <=> @'new(Type(...), ...)
-					lp:="(" rp:=")"
+					lb:"(" rb:")"
 					{
 						if (majorDimension != null) {
 							Error("Syntax error: unexpected constructor argument list (...)");
 						};
-						list.Add(F.Call(type, ExprListInside(lp), type.Range.StartIndex, rp.EndIndex));
-						endIndex = rp.EndIndex;
+						list.Add(F.CallPrefix(type, ExprListInside(lb), rb));
 					}
-					(	lb:="{" rb:="}"
-						{
-							AppendInitializersInside(lb, ref list);
-							endIndex = rb.EndIndex;
-						}
+					(	lb:"{" rb:"}"
+						{ AppendInitializersInside(lb, ref list); }
 					)?
 				/	// new Type { ... }      <=> `@'new`(Type(), ...)
 					// new Type[10] { ... }  <=> `@'new`(@`'of`(@`'[]`, Type)(10), ...)
 					// new Type[10][]        <=> `@'new`(@`'of`(@`'[]`, @'of(@`[]`, Type))(10))
-					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
-					( lb="{" rb="}" {haveBraces = true;} )?
+					{ haveBraces := false;}
+					( lb:"{" rb:"}" {haveBraces = true;} )?
 					{
 						if (majorDimension != null) {
 							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value), type.Range))
@@ -526,9 +522,6 @@ namespace Loyc.Ecs.Parser
 						};
 						if (haveBraces) {
 							AppendInitializersInside(lb, ref list);
-							endIndex = rb.EndIndex;
-						} else {
-							endIndex = type.Range.EndIndex;
 						};
 						if (!haveBraces && majorDimension == null) {
 							if IsArrayType(type) {
@@ -540,7 +533,7 @@ namespace Loyc.Ecs.Parser
 					}
 				)
 			)
-			{return F.Call(S.New, list, op.StartIndex, endIndex, op.StartIndex, op.EndIndex);}
+			{return F.CallPrefix(op, list, rb, S.New);}
 		};
 
 		fn TypeInside(args::Token)::LNode
@@ -566,7 +559,7 @@ namespace Loyc.Ecs.Parser
 			e:=AtomOrTypeParamExpr
 			FinishPrimaryExpr(ref e)
 			(
-				op:="?." rhs:=PrimaryExpr {e = F.Call(op, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, NodeStyle.Operator);}
+				op:="?." rhs:=PrimaryExpr {e = F.CallInfixOp(e, op, rhs);}
 			)?
 			{return e;}
 		};
@@ -574,12 +567,12 @@ namespace Loyc.Ecs.Parser
 		@[private] rule FinishPrimaryExpr(ref e::LNode) @{
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
-				rhs:=AtomOrTypeParamExpr {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				rhs:=AtomOrTypeParamExpr {e = F.CallInfixOp(e, op, rhs);}
 			/	// x(-> Foo), x(as Foo), x(using Foo)
 				e=PrimaryExpr_NewStyleCast(e)
-			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
+			/	lp:="(" rp:=")" {e = F.CallPrefix(e, ExprListInside(lp), rp);}
 			|	lb:="[" rb:="]" {var list = (new LNodeList() { e });}
-				{e = F.Call(S.IndexBracks, AppendExprsInside(lb, list), e.Range.StartIndex, rb.EndIndex, lb.StartIndex, lb.EndIndex);}
+				{e = F.CallPrefix(S.IndexBracks, e.Range, AppendExprsInside(lb, list), rb);}
 			|	// Tentative tree structure - there is an undesirable inconsistency between ?. and ?[].
 				// Specifically, `a.b?.c.d` parses as `(a.b)?.(c.d)` so that the 
 				// null-dot macro can manipulate the `.d` on the end; it would be 
@@ -595,14 +588,14 @@ namespace Loyc.Ecs.Parser
 				// This is the easiest way to parse it, anyhow. And I'll leave `?.` 
 				// as-is, even though it works differently than `?[]`.
 				t:="?" lb:="[" rb:="]"
-				{e = F.Call(S.NullIndexBracks, e, F.List(ExprListInside(lb)), e.Range.StartIndex, rb.EndIndex, t.StartIndex, lb.EndIndex);}
+				{e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.List(ExprListInside(lb))), rb);}
 			|	// Post-inc or post-dec
-				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex);}
+				t:="++,--"      {e = F.CallSuffixOp(e, t, t.Value == S.PreInc ? S.PostInc : S.PostDec);}
 			|	bb:=BracedBlockOrTokenLiteral
 				{	if (!e.IsCall || e.BaseStyle == NodeStyle.Operator) {
-						e = F.Call(e, bb, e.Range.StartIndex, bb.Range.EndIndex)
+						e = F.CallPrefixOp(e, bb, NodeStyle.Default);
 					} else {
-						e = e.WithArgs(e.Args.Add(bb)).WithRange(e.Range.StartIndex, bb.Range.EndIndex);
+						e = F.CallPrefixOp(e.Target, e.Args.Add(bb), NodeStyle.Default);
 					};
 				}
 			)*
@@ -623,8 +616,9 @@ namespace Loyc.Ecs.Parser
 				type:=DataType EOF
 				{
 					type = type.PlusAttrs(attrs);
-					return Up(SetAlternateStyle(SetOperatorStyle(
-						F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex, op.StartIndex, op.EndIndex))));
+					return Up(F.Call(kind, e, type, 
+					                 e.Range.StartIndex, rp.EndIndex, op.StartIndex, op.EndIndex,
+					                 NodeStyle.Operator | NodeStyle.Alternate));
 				}
 			)
 		};
@@ -633,7 +627,7 @@ namespace Loyc.Ecs.Parser
 		@[LL(3)] // to distinguish (cast) expr from (parens)
 		@[private] rule PrefixExpr::LNode
 		@{	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
-			{return SetOperatorStyle(F.Call(op, e, op.StartIndex, e.Range.EndIndex));}
+			{return F.CallPrefixOp(op, e);}
 		|	op:="**"
 			e:=PrefixExpr
 			{return F.Call(S._Dereference, F.Call(S._Dereference, e, 
@@ -644,7 +638,7 @@ namespace Loyc.Ecs.Parser
 			lp:="(" ")"
 			&!("+"|"-"|"*"|"&"|"."|TT.BQString | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
 			e:=PrefixExpr
-			{Down(lp); return SetOperatorStyle(F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex));}
+			{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex, NodeStyle.Operator);}
 		/	e:=KeywordOrPrimaryExpr {return e;}
 		};
 
@@ -652,7 +646,7 @@ namespace Loyc.Ecs.Parser
 		rule KeywordOrPrimaryExpr::LNode
 		@{	// C# 5 await
 			&{@[Hoist] Is($LI, @@await)} op:=TT.ContextualKeyword e:=PrefixExpr
-			{return SetOperatorStyle(F.Call(@@await, e, op.StartIndex, e.Range.EndIndex, op.StartIndex, op.EndIndex));}
+			{return F.CallPrefixOp(op, e, @@await);}
 		/	e:=KeywordStmtAsExpr
 			{return e;}
 		/	e:=LinqQueryExpression
@@ -711,12 +705,12 @@ namespace Loyc.Ecs.Parser
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"|TT.BQString|TT.In )
 				rhs:=SubExpr(prec)
-				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, op, rhs);}
 			|	// Lambda expression
 				&{@[Local] context.CanParse(prec=EP.Lambda) && !lambdaInFollowSet}
 				op:="=>"
 				rhs:=SubExpr(prec)
-				{e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, op, rhs);}
 			|	// is-test or a more complex is-expr
 				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=TT.Is
@@ -725,21 +719,20 @@ namespace Loyc.Ecs.Parser
 				&{@[Local] context.CanParse(prec=EP.Compare)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
-				{e = F.Call(op.Type() == TT.Using ? S.UsingCast : S.As, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, op, rhs, op.Type() == TT.Using ? S.UsingCast : S.As);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
 				(	op:="<" "<" rhs:=SubExpr(EP.Shift)
-					{e = F.Call(S.Shl, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
+					{e = F.CallInfixOp(e, S.Shl, new IndexRange(op.StartIndex) { EndIndex = op.EndIndex + 1 }, rhs);}
 				|	op:=">" ">" rhs:=SubExpr(EP.Shift)
-					{e = F.Call(S.Shr, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex + 1, NodeStyle.Operator);}
+					{e = F.CallInfixOp(e, S.Shr, new IndexRange(op.StartIndex) { EndIndex = op.EndIndex + 1 }, rhs);}
 				|	error {e = Error("Syntax error");}
 				)
 			|	// Conditional operator
 				&{@[Local] context.CanParse(EP.IfElse)}
 				op:="?" then:=SubExpr(StartExpr) ":" else:=SubExpr(EP.IfElse)
-				{e = F.Call(S.QuestionMark, LNode.List(e, then, @else), e.Range.StartIndex, else.Range.EndIndex,  
-						op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, op, then, else);}
 			)*
 			{return e;}
 		};
@@ -765,7 +758,7 @@ namespace Loyc.Ecs.Parser
 			{argName::Token = default(Token);}
 			(argName=(TT.Id|TT.ContextualKeyword)|argName=LinqKeywordAsId) colon:=":"
 			result:ExprStartNNP(allowUnassignedVarDecl)
-			{result = F.Call(S.NamedArg, F.Id(argName), result, argName.StartIndex, result.Range.EndIndex, colon.StartIndex, colon.EndIndex, NodeStyle.Operator);}
+			{result = F.CallInfixOp(F.Id(argName), S.NamedArg, colon, result);}
 		/	result:ExprStartNNP(allowUnassignedVarDecl)
 		};
 
@@ -922,7 +915,7 @@ namespace Loyc.Ecs.Parser
 			{
 				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
 				// invocation from LLLPG, to avoid creating a recognizer for Expr.
-				if (!Down(lp)) { return F.Call(S.Tuple, lp.StartIndex, rp.EndIndex, lp.StartIndex, lp.EndIndex); };
+				if (!Down(lp)) { return F.CallBrackets(S.Tuple, lp, LNode.List(), rp); };
 				return Up(InParens_ExprOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
 			}
 		};
@@ -1073,20 +1066,20 @@ namespace Loyc.Ecs.Parser
 		rule Pattern()::LNode @{
 			result:ConjunctivePattern
 			(	&{Is($LI, @@or)} op:TT.Id rhs:ConjunctivePattern
-				{result = F.Call(@@or, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{ result = F.CallInfixOp(result, op, rhs); }
 			)*
 		};
 
 		rule ConjunctivePattern()::LNode @{
 			result:NegatedPattern
 			(	&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern
-				{result = F.Call(@@and, result, rhs, result.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{ result = F.CallInfixOp(result, op, rhs); }
 			)*
 		};
 		
 		rule NegatedPattern()::LNode @{
 			(	&{Is($LI, @@not)} not:TT.Id NegatedPattern
-				{result = F.Call(@@not, $NegatedPattern, not.StartIndex, $NegatedPattern.Range.EndIndex, not.StartIndex, not.EndIndex, NodeStyle.Operator);}
+				{ result = F.CallPrefixOp(not, $NegatedPattern); }
 			/	result:PrimaryPattern
 			)
 		};
@@ -1168,8 +1161,7 @@ namespace Loyc.Ecs.Parser
 					for (i::int = 0; i < newAttrs.Count; i++) {
 						var attr = newAttrs[i];
 						if (!IsNamedArg(attr)) {
-							attr = SetOperatorStyle(F.Call(S.NamedArg, attrTargetId, attr, 
-								i == 0 ? attrTarget.StartIndex : attr.Range.StartIndex, attr.Range.EndIndex));
+							attr = F.CallInfixOp(attrTargetId, S.NamedArg, $":", attr);
 						} else {
 							Error(attrTargetId = attrs[i].Args[0], "Syntax error: only one attribute target is allowed");
 						};
@@ -1214,14 +1206,14 @@ namespace Loyc.Ecs.Parser
 			&{@[Hoist] Is($LI, @@from)} kw:=TT.LinqKeyword 
 			((TT.Id|TT.ContextualKeyword|"$") =>)
 			e:=Var_In_Expr
-			{return F.Call(S.From, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.From, kw, e);}
 		};
 
 		rule Var_In_Expr::LNode
 		@{	&VarIn 
 			VarIn(out inTok::Token)
 			e:=ExprStart(false)
-			{return F.Call(S.In, $VarIn, e, $VarIn.Range.StartIndex, e.Range.EndIndex, inTok.StartIndex, inTok.EndIndex);}
+			{return F.CallInfixOp($VarIn, S.In, inTok, e);}
 		/	result:ExprStart(false)
 		};
 		
@@ -1247,12 +1239,12 @@ namespace Loyc.Ecs.Parser
 		@[private] rule LinqLet::LNode @{
 			&{@[Hoist] Is($LI, @@let)} kw:=TT.LinqKeyword e:=ExprStart(false)
 			{if (!e.Calls(S.Assign, 2)) { Error("Expected an assignment after 'let'"); };}
-			{return F.Call(S.Let, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.Let, kw, e);}
 		};
 		
 		@[private] rule LinqWhere::LNode @{
 			&{@[Hoist] Is($LI, @@where)} kw:=TT.LinqKeyword e:=ExprStart(false)
-			{return F.Call(S.Where, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.Where, kw, e);}
 		};
 		
 		@[LL(1)]
@@ -1262,18 +1254,18 @@ namespace Loyc.Ecs.Parser
 			lhs:=ExprStart(false) 
 			&{@[Hoist] Is($LI, @@equals)} eq:=TT.LinqKeyword
 			rhs:=ExprStart(false)
-			{var equality = F.Call(@@#equals, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex, eq.StartIndex, eq.EndIndex);}
+			{var equality = F.CallInfixOp(lhs, @@#equals, eq, rhs);}
 			(	// "into" marks a "group join". For example, the query
 				//   from c in categories 
 				//   join p in products on c.ID equals p.CategoryID into productGroup
 				//   select new { Name = c.Name, Products = productGroup }
 				// means "create a sequence of product groups, each containing a list of products with the same CategoryID"
 				&{Is($LI, @@into)} intoKw:=TT.LinqKeyword IdAtom
-				{var into = F.Call(S.Into, $IdAtom, intoKw.StartIndex, $IdAtom.Range.EndIndex, intoKw.StartIndex, intoKw.EndIndex);}
+				{var into = F.CallPrefixOp(S.Into, intoKw, $IdAtom);}
 				{var args = LNode.List(from, equality, into);}
-				{return F.Call(S.Join, args, kw.StartIndex, into.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+				{return F.CallPrefixOp(S.Join, kw, args);}
 			/	// No suffix: normal inner join
-				{return F.Call(S.Join, from, equality, kw.StartIndex, equality.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+				{return F.CallPrefixOp(S.Join, kw, LNode.List(from, equality));}
 			)
 		};
 		
@@ -1282,29 +1274,29 @@ namespace Loyc.Ecs.Parser
 			&{@[Hoist] Is($LI, @@orderby)} kw:=TT.LinqKeyword
 			{var parts = LNode.List();}
 			parts+=LinqOrdering ["," parts+=LinqOrdering]*
-			{return F.Call(S.OrderBy, parts, kw.StartIndex, parts.Last.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.OrderBy, kw, parts);}
 		};
 		@[LL(1)]
 		@[private] rule LinqOrdering::LNode @{ 
 			result:ExprStart(false)
 			greedy
 			[	&{Is($LI, @@ascending)} dir:TT.LinqKeyword
-				{$result = F.Call(S.Ascending, result, result.Range.StartIndex, dir.EndIndex, dir.StartIndex, dir.EndIndex);}
+				{$result = F.CallSuffixOp(result, S.Ascending, dir);}
 			|	&{Is($LI, @@descending)} dir:TT.LinqKeyword
-				{$result = F.Call(S.Descending, result, result.Range.StartIndex, dir.EndIndex, dir.StartIndex, dir.EndIndex);}
+				{$result = F.CallSuffixOp(result, S.Descending, dir);}
 			]?
 		};
 
 		@[private] rule LinqSelectClause::LNode @{
 			&{@[Hoist] Is($LI, @@select)} kw:=TT.LinqKeyword e:=ExprStart(false)
-			{return F.Call(S.Select, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.Select, kw, e);}
 		};
 
 		@[private] rule LinqGroupClause::LNode @{ 
 			&{@[Hoist] Is($LI, @@group)} kw:TT.LinqKeyword lhs:ExprStart(false) 
 			( &{@[Hoist] Is($LI, @@by) } by:TT.LinqKeyword rhs:ExprStart(false)
-			| error {Error("Expected 'by'"); rhs = MissingHere();} )
-			{return F.Call(S.GroupBy, lhs, rhs, kw.StartIndex, rhs.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			| error { Error("Expected 'by'"); rhs = MissingHere(); } )
+			{return F.CallPrefixOp(S.GroupBy, kw, LNode.List(lhs, rhs));}
 		};
 
 		@[LL(1)]
@@ -1312,7 +1304,7 @@ namespace Loyc.Ecs.Parser
 			&{@[Hoist] Is($LI, @@into)} kw:TT.LinqKeyword IdAtom
 			{var parts = LNode.List($IdAtom);}
 			QueryBody(ref parts)
-			{return F.Call(S.Into, parts, kw.StartIndex, parts.Last.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+			{return F.CallPrefixOp(S.Into, kw, parts);}
 		};
 
 		// =====================================================================
@@ -1714,13 +1706,13 @@ namespace Loyc.Ecs.Parser
 			constraints+=WhereConstraint
 			("," constraints+=WhereConstraint)*
 			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol, 
-				F.Call(S.Where, constraints, where.StartIndex, constraints.Last.Range.EndIndex, where.StartIndex, where.EndIndex)));}
+				F.CallPrefixOp(S.Where, where, constraints)));}
 		};
 		@[private] rule WhereConstraint::LNode @{
 			(	t:=(TT.Class | TT.Struct) {return F.Id(t);}
 			|	newkw:=TT.New &{LT($LI).Count == 0} lp:="(" rp:=")"  
-				{return F.Call(newkw, newkw.StartIndex, rp.EndIndex);}
-			|	t:=DataType                 {return t;} )
+				                          {return F.CallPrefix(newkw, ExprListInside(lp), rp);}
+			|	t:=DataType               {return t;} )
 		};
 
 		// ---------------------------------------------------------------------
@@ -1784,9 +1776,9 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule VarInitializerOpt(name::LNode, isArray::bool)::LNode @{
-			[	{eqIndex::int = LT0.StartIndex;}
+			[	{eq := LT0;}
 				expr:VarInitializer(isArray)
-				{return F.Call(S.Assign, name, expr, name.Range.StartIndex, expr.Range.EndIndex, eqIndex, eqIndex + 1);}]?
+				{return F.CallInfixOp(name, S.Assign, eq, expr);}]?
 			{return name;}
 		};
 		@[private] rule VarInitializer(isArray::bool)::LNode @{
@@ -1799,8 +1791,7 @@ namespace Loyc.Ecs.Parser
 				lb:="{" rb:="}"
 				{
 					var initializers = InitializerListInside(lb);
-					$result = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex, 
-							lb.StartIndex, lb.EndIndex, NodeStyle.Expression);
+					$result = F.CallBrackets(S.ArrayInit, lb, initializers, rb, NodeStyle.Expression);
 				}
 			/	result:ExprStart(false)
 			)
@@ -1834,7 +1825,7 @@ namespace Loyc.Ecs.Parser
 			{var(r::LNode, _::LNode, baseCall::LNode = null, consCallIndex::int = -1); }
 			(	":" target:=(TT.This | TT.Base) baselp:="(" baserp:=")"
 				{
-					baseCall = F.Call(target.Value -> Symbol, ExprListInside(baselp), target.StartIndex, baserp.EndIndex, target.StartIndex, target.EndIndex);
+					baseCall = F.CallPrefix(target, ExprListInside(baselp), baserp);
 					if (kind != S.Constructor) {
 						Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 					};
@@ -1882,7 +1873,7 @@ namespace Loyc.Ecs.Parser
 		@[private] fn MethodBodyOrForward()::LNode { _::LNode; return MethodBodyOrForward(@false, out _); };
 		@[private] rule MethodBodyOrForward(isProperty::bool, out propInitializer::LNode, isExpression::bool = false, bodyStartIndex::int = -1)::LNode @{
 			{propInitializer = null;}
-			(	op:="==>" e:=ExprStart(true)  SemicolonIf(!isExpression) {return F.Call(op, e, op.StartIndex, e.Range.EndIndex);}
+			(	op:="==>" e:=ExprStart(true)  SemicolonIf(!isExpression) {return F.CallPrefixOp(op, e);}
 			|	op:="=>"  e:=ExprStart(false) SemicolonIf(!isExpression) {return e;} // C# 6 lambda-style function
 			|	e:=TokenLiteral               [&{!isExpression} ";"]?    {return e;}
 			|	body:=BracedBlock(S.Fn, null, bodyStartIndex)
@@ -1914,7 +1905,7 @@ namespace Loyc.Ecs.Parser
 				ArgList(ref list);
 				Up();
 			};
-			return F.Call(S.AltList, list, lp.StartIndex, rp.EndIndex, lp.StartIndex, lp.StartIndex + 1);
+			return F.CallBrackets(S.AltList, lp, list, rp);
 		};
 
 		@[recognizer(fn HasNoSemicolons()::bool), private] 
@@ -1947,7 +1938,7 @@ namespace Loyc.Ecs.Parser
 				if name != _spaceName {
 					Error("Unexpected destructor '{0}'", name);
 				};
-				name2::LNode = F.Call(tilde, F.Id(n), tilde.StartIndex, n.EndIndex);
+				name2::LNode = F.CallPrefixOp(tilde, F.Id(n));
 			}
 			result:MethodArgListAndBody(startIndex, tilde.StartIndex, attrs, S.Fn, F.Missing, name2)
 		};
@@ -2021,12 +2012,12 @@ namespace Loyc.Ecs.Parser
 					}
 				)
 			|	fwd:="==>" e:=ExprStart(true) ";"
-				{block = SetOperatorStyle(F.Call(fwd, e, fwd.StartIndex, e.Range.EndIndex));}
+				{block = F.CallPrefixOp(fwd, e);}
 			|	block=BracedBlock
 			)
 			{
 				args.Add(block);
-				var result = F.Call(id.Value -> Symbol, args, id.StartIndex, block.Range.EndIndex, id.StartIndex, id.EndIndex, NodeStyle.Special);
+				var result = F.Call(id.Value -> Symbol, args, startIndex, block.Range.EndIndex, id.StartIndex, id.EndIndex, NodeStyle.Special);
 				if block.Calls(S.Forward, 1) {
 					result = F.Attr(_triviaForwardedProperty, result);
 				};

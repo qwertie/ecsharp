@@ -264,17 +264,17 @@ partial class Les3Parser
 				&{[Local] CanParse(context, $LI, out prec)}
 				opName:=InfixOperatorName[out Token op, compactMode]
 				rhs:=Expr(prec, compactMode)
-				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, opName, op, rhs);}
 			|	// Suffix operator
 				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(_precMap.Find(OperatorShape.Suffix, LT($LI).Value))}
 				t:=TT.PreOrSufOp
-				{e = F.Call(_precMap.ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
+				{e = F.CallSuffixOp(e, _precMap.ToSuffixOpName((Symbol) t.Value), t);}
 			|	// Suffix unit
 				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.SuffixWord)}
 				unit:=TT.BQId
-				{e = F.Call(S.IS, e, F.Id(unit), e.Range.StartIndex, unit.EndIndex, unit.StartIndex, unit.EndIndex, NodeStyle.Operator);}
+				{e = F.CallInfixOp(e, S.IS, unit, F.Id(unit));}
 			|	// ! operator (generic 'of)
 				&{[Local] !compactMode || IsConjoinedToken($LI)}
 				&{[Local] context.CanParse(P.Of)}
@@ -334,7 +334,7 @@ partial class Les3Parser
 		{ var endMarker = default(TokenType); }
 		"(" args:ExprList["argument list", ref endMarker] ")" 
 		{
-			$result = MarkCall(F.Call(target, args, target.Range.StartIndex, $")".EndIndex).SetBaseStyle(NodeStyle.PrefixNotation));
+			$result = MarkCall(F.CallPrefix(target, args, $")"));
 			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; }
 		};
 
@@ -344,7 +344,7 @@ partial class Les3Parser
 			op:(TT.NormalOp|"!"|":"|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp)
 			NewlinesOpt
 			e:Expr[PrefixPrecedenceOf(op), compactMode]
-			{$result = F.Call(op, e, op.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
+			{$result = F.CallPrefixOp(op, e);}
 		/	result:Particle[compactMode]
 		;
 
@@ -370,7 +370,7 @@ partial class Les3Parser
 			list:=ExprList["parentheses", ref endMarker, presumeCommaSeparated: false]
 			")" {
 				if (endMarker != default(TT) || list.Count != 1) {
-					$result = F.Call(S.Tuple, list, $"(".StartIndex, $")".EndIndex, $"(".StartIndex, $"(".EndIndex);
+					$result = F.CallBrackets(S.Tuple, $"(", list, $")");
 				} else {
 					$result = saveParens ? F.InParens(list[0], $"(".StartIndex, $")".EndIndex) : list[0];
 				};
@@ -391,7 +391,7 @@ partial class Les3Parser
 
 	SquareBracketList returns [LNode result] : 
 		"[" list:=ExprList["square brackets"] "]"
-		{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex, $"[".StartIndex, $"[".EndIndex).SetStyle(NodeStyle.Expression);};
+		{$result = F.CallBrackets(S.Array, $"[", list, $"]", NodeStyle.Expression);};
 
 	// This is for consuming error tokens
 	[LL(1)]
@@ -409,7 +409,7 @@ partial class Les3Parser
 	[LL(1)]
 	TokenListParticle returns [LNode result]
 		:	"(" TokenListEx ")"
-			{ return F.Call(@@`'()`, $TokenListEx, $"(".StartIndex, $")".EndIndex); }
+			{ return F.CallBrackets(@@`'()`, $"(", $TokenListEx, $")"); }
 		/	SquareBracketList { return $SquareBracketList; }
 		/	BracedBlock       { return $BracedBlock; }
 		/	t:=TT.Literal     { return F.Literal(t); }
@@ -421,7 +421,7 @@ partial class Les3Parser
 			{ endMarker := default(TT); }
 			stmts:ExprList["braced block", ref endMarker, isBracedBlock: true, presumeCommaSeparated: false]
 		"}" 
-		{ return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex).SetStyle(NodeStyle.StatementBlock); };
+		{ return F.CallBrackets(S.Braces, $"{", stmts, $"}", NodeStyle.StatementBlock); };
 
 	////////////////////////////////////////////////////////////////////////////
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
@@ -440,7 +440,7 @@ partial class Les3Parser
 		{
 			var keyword = GSymbol.Get("#" + word.Value.ToString());
 			int endIndex = args.IsEmpty ? word.EndIndex : args.Last.Range.EndIndex;
-			$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, endIndex, $".".StartIndex, word.EndIndex));
+			$result = MarkSpecial(F.CallPrefixOp(keyword, new IndexRange($".".StartIndex) { EndIndex = word.EndIndex }, args));
 		}
 		(=>); // Simplify output by not considering what comes afterward
 
@@ -459,11 +459,11 @@ partial class Les3Parser
 		kw:ContinuatorKeyword  {var opName = Continuators[kw.Value];}
 		(=>) // simplify output by preventing an unneeded check in KeywordExpression
 		greedy("\n")?
-		(	bb:BracedBlock     {$result = F.Call(opName, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
+		(	bb:BracedBlock     {$result = F.CallPrefixOp(opName, kw, bb);}
 		/	e:TopExpr[compactMode: false]
 			(	greedy("\n")? bb:BracedBlock 
-			    {$result = F.Call(opName, e, bb, kw.StartIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
-			/	{$result = F.Call(opName, e, kw.StartIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);})
+			    {$result = F.CallPrefixOp(opName, kw, LNode.List(e, bb));}
+			/	{$result = F.CallPrefixOp(opName, kw, e);})
 		);
 
 	ContinuatorKeyword returns [Token result] : &{[Hoist] IsContinuator(LT($LI).Value)} result:TT.Id;

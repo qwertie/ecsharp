@@ -35,7 +35,7 @@ namespace Loyc.Syntax
 
 		public static SourceRange New<IndexRange>(ISourceFile source, IndexRange range) where IndexRange : IIndexRange
 			=> new SourceRange(source, range.StartIndex, range.Length);
-		public static explicit operator IndexRange(SourceRange r) => new IndexRange(r.StartIndex, r.Length);
+		public static implicit operator IndexRange(SourceRange r) => new IndexRange(r.StartIndex, r.Length);
 
 		private ISourceFile _source;
 		private int _startIndex;

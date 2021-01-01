@@ -223,20 +223,20 @@ namespace Loyc.Syntax
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdComplexCallNode(target, new LNodeList(args), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
 		}
-		public LNode Call(LNode target, LNodeList args, int startIndex = -1, int endIndex = -1)
+		public LNode Call(LNode target, LNodeList args, int startIndex = -1, int endIndex = -1, NodeStyle style = NodeStyle.Default)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdComplexCallNode(target, args, new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
+			return new StdComplexCallNode(target, args, new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), style);
 		}
 		public LNode Call(LNode target, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdComplexCallNode(target, LNodeList.Empty, new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
 		}
-		public LNode Call(LNode target, LNode _1, int startIndex = -1, int endIndex = -1)
+		public LNode Call(LNode target, LNode _1, int startIndex = -1, int endIndex = -1, NodeStyle style = NodeStyle.Default)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdComplexCallNode(target, new LNodeList(_1), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
+			return new StdComplexCallNode(target, new LNodeList(_1), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), style);
 		}
 		public LNode Call(LNode target, LNode _1, LNode _2, int startIndex = -1, int endIndex = -1)
 		{
@@ -291,10 +291,10 @@ namespace Loyc.Syntax
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdSimpleCallNode(target, new LNodeList(_1), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
 		}
-		public LNode Call(Symbol target, LNode _1, LNode _2, int startIndex = -1, int endIndex = -1)
+		public LNode Call(Symbol target, LNode _1, LNode _2, int startIndex = -1, int endIndex = -1, NodeStyle style = NodeStyle.Default)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(target, new LNodeList(_1, _2), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)));
+			return new StdSimpleCallNode(target, new LNodeList(_1, _2), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), style);
 		}
 		public LNode Call(Symbol target, LNode _1, LNode _2, LNode _3, int startIndex = -1, int endIndex = -1)
 		{
@@ -404,6 +404,53 @@ namespace Loyc.Syntax
 
 		#endregion
 
+		#region Call with stored target range
+		// Assumptions:
+		// 1. the left-hand side of each expression has a valid range but the right-hand side might be Missing.
+		// 2. If a token represents an operator, Value is its Symbol
+
+		public LNode CallPrefixOp(Token target, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallPrefixOp(opName ?? (Symbol)target.Value, target, rhs, style);
+		public LNode CallPrefixOp(Token target, LNodeList args, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefixOp(opName ?? (Symbol)target.Value, target, args, style);
+		public LNode CallPrefixOp(Symbol target, IndexRange targetRange, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, rhs, targetRange.StartIndex, Max(rhs.Range.EndIndex, targetRange.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
+		public LNode CallPrefixOp(Symbol target, IndexRange targetRange, LNodeList args, NodeStyle style = NodeStyle.Default) =>
+			Call(target, args, targetRange.StartIndex, Max(args[args.Count - 1, Missing].Range.EndIndex, targetRange.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
+		public LNode CallPrefixOp(LNode target, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, rhs, target.Range.StartIndex, Max(rhs.Range.EndIndex, target.Range.EndIndex), style);
+		public LNode CallPrefixOp(LNode target, LNodeList args, NodeStyle style = NodeStyle.Default) =>
+			Call(target, args, target.Range.StartIndex, Max(args[args.Count - 1, Missing].Range.EndIndex, target.Range.EndIndex), style);
+
+		public LNode CallPrefix(Token target, LNode rhs, IndexRange closingBracket, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefix(opName ?? (Symbol)target.Value, target, LNode.List(rhs), closingBracket, style);
+		public LNode CallPrefix(Token target, LNodeList args, IndexRange closingBracket, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefix(opName ?? (Symbol)target.Value, target, args, closingBracket, style);
+		public LNode CallPrefix(LNode target, LNodeList args, IndexRange closingBracket, NodeStyle style = NodeStyle.Default) =>
+			Call(target, args, target.Range.StartIndex, Max(closingBracket.EndIndex, (args.IsEmpty ? target : args.Last).Range.EndIndex), style);
+		public LNode CallPrefix(Symbol target, IndexRange targetRange, LNodeList args, IndexRange closingBracket, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, args, targetRange.StartIndex, Max(closingBracket.EndIndex, args.IsEmpty ? targetRange.EndIndex : args.Last.Range.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
+
+		public LNode CallInfixOp(LNode lhs, Token target, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallInfixOp(lhs, opName ?? (Symbol)target.Value, target, rhs, style);
+		public LNode CallInfixOp(LNode lhs, Symbol target, IndexRange targetRange, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, lhs, rhs, lhs.Range.StartIndex, Max(rhs.Range.EndIndex, targetRange.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
+
+		public LNode CallSuffixOp(LNode lhs, Token target, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallSuffixOp(lhs, opName ?? (Symbol)target.Value, target, style);
+		public LNode CallSuffixOp(LNode lhs, Symbol target, IndexRange targetRange, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, lhs, lhs.Range.StartIndex, targetRange.EndIndex, targetRange.StartIndex, targetRange.EndIndex, style);
+
+		public LNode CallInfixOp(LNode lhs, Token target, LNode middle, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallInfixOp(lhs, opName ?? (Symbol)target.Value, target, middle, rhs, style);
+		public LNode CallInfixOp(LNode lhs, Symbol target, IndexRange targetRange, LNode middle, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
+			Call(target, LNode.List(lhs, middle, rhs), lhs.Range.StartIndex, Max(rhs.Range.EndIndex, middle.Range.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
+		
+		public LNode CallBrackets(Symbol opName, Token lhs, LNodeList args, Token rhs, NodeStyle style = NodeStyle.Default) =>
+			Call(opName, args, lhs.StartIndex, Max(rhs.EndIndex, args.IsEmpty ? lhs.EndIndex : args[0].Range.EndIndex), lhs.StartIndex, lhs.EndIndex, style);
+
+		#endregion
+
 		#region Dot()
 
 		public LNode Dot(Symbol prefix, Symbol symbol)
@@ -443,6 +490,11 @@ namespace Loyc.Syntax
 		public LNode Dot(LNode prefix, LNode symbol, int startIndex, int endIndex, int dotStart, int dotEnd, NodeStyle style = NodeStyle.Default)
 		{
 			return new StdSimpleCallNode(S.Dot, new LNodeList(prefix, symbol), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), dotStart, dotEnd, style);
+		}
+		public LNode Dot(LNode lhs, IndexRange dotRange, LNode rhs, NodeStyle style = NodeStyle.Operator)
+		{
+			int startIndex = lhs.Range.StartIndex, endIndex = Max(rhs.Range.EndIndex, dotRange.EndIndex);
+			return new StdSimpleCallNode(S.Dot, new LNodeList(lhs, rhs), new SourceRange(_file, startIndex, endIndex - startIndex), dotRange.StartIndex, dotRange.EndIndex, style);
 		}
 
 		#endregion
@@ -502,6 +554,11 @@ namespace Loyc.Syntax
 		public LNode Braces(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			return Braces(new LNodeList(contents), startIndex, endIndex);
+		}
+		public LNode Braces(Token openBrace, LNodeList contents, Token closeBrace, NodeStyle style = NodeStyle.StatementBlock)
+		{
+			int endIndex = Max(closeBrace.EndIndex, contents.IsEmpty ? openBrace.EndIndex : contents.Last.Range.EndIndex);
+			return Call(S.Braces, contents, openBrace.StartIndex, endIndex, openBrace.StartIndex, openBrace.EndIndex, style);
 		}
 
 		#endregion
