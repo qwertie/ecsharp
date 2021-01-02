@@ -47,13 +47,11 @@ namespace Loyc.LLParserGenerator
 				_parsingRecognizerVersion = _ruleChangesInRecognizer = false;
 				pair.A.Pred = NodeToPred(pair.B);
 
-				if (pair.A.HasRecognizerVersion) {
-					if (_ruleChangesInRecognizer) {
-						_parsingRecognizerVersion = true;
-						pair.A.Recognizer.Pred = NodeToPred(pair.B);
-					} else {
-						pair.A.Recognizer.Pred = pair.A.Pred;
-					}
+				if (_ruleChangesInRecognizer) {
+					_parsingRecognizerVersion = true;
+					pair.A.GetOrMakeRecognizerVersion().Pred = NodeToPred(pair.B);
+				} else if (pair.A.HasRecognizerVersion) {
+					pair.A.Recognizer.Pred = pair.A.Pred;
 				}
 			}
 
@@ -176,13 +174,16 @@ namespace Loyc.LLParserGenerator
 				else if (expr.Calls(_recognizer, 1) || expr.Calls(_nonrecognizer, 1))
 				{
 					_ruleChangesInRecognizer = true;
+
 					var saved = _insideRecognizerSequence;
 					try {
 						_insideRecognizerSequence = expr.Calls(_recognizer, 1);
+
 						if (_insideRecognizerSequence == _parsingRecognizerVersion)
 							return NodeToPred(expr[0]);
 						else
 							return new Seq(expr.Target); // empty sequence
+
 					} finally {
 						_insideRecognizerSequence = saved;
 					}

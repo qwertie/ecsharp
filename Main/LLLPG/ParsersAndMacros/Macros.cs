@@ -464,9 +464,10 @@ namespace Loyc.LLPG
 							// is transformed into a method signature.
 							sig = context.PreProcess(sig);
 						}
-						if (sig != null && sig.CallsMin(S.Fn, 3))
+						if (sig != null && sig.CallsMin(S.Fn, 3)) {
+							sig = sig.WithoutAttrNamed(S.TriviaAppendStatement); // prevent weird-looking output
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
-						else
+						} else
 							context.Sink.Error(sig, "'recognizer' expects one parameter, a method signature.");
 						break;
 					default:

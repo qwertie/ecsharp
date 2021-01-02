@@ -2221,70 +2221,257 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void TestCustomRecognizer()
+		public void TestCustomRecognizerPred()
 		{
-//			Test(@"
-//			LLLPG parser {
-//				rule Pattern @{
-//					Braces
-//				|	Expr
-//				};
-//				rule Braces @{
-//					""{"" nongreedy(_)* ""}""
-//				};
-//				rule Expr(context::Precedence) @{
-//					PrefixExpr
-//					( &{GetPrecedence($LI)::prec.CanParse(context)} TT.Infix Expr(prec) )*
-//				};
-//				rule PrefixExpr @{
-//					""-"" PrefixExpr | PrimaryExpr
-//				};
-//				rule PrimaryExpr @{
-//					TT.Id (""("" "")"")?
-//				};
-//
-//			};", @"
-//				void Digit(int x)
-//				{
-//					MatchRange('0', '9');
-//				}
-//				bool Try_Scan_Digit(int lookaheadAmt, int x)
-//				{
-//					using (new SavePosition(this, lookaheadAmt))
-//						return Scan_Digit(x);
-//				}
-//				bool Scan_Digit(int x)
-//				{
-//					if (!TryMatchRange('0', '9'))
-//						return false;
-//					return true;
-//				}
-//				static readonly HashSet<int> OddDigit_set0 = NewSet('1', '3', '5', '7', '9');
-//				void OddDigit(int x)
-//				{
-//					Match(OddDigit_set0);
-//				}
-//				protected bool Try_IsOddDigit(int lookaheadAmt, float y)
-//				{
-//					using (new SavePosition(this, lookaheadAmt))
-//						return IsOddDigit(y);
-//				}
-//				protected bool IsOddDigit(float y)
-//				{
-//					if (!TryMatch(OddDigit_set0))
-//						return false;
-//					return true;
-//				}
-//				void NonDigit()
-//				{
-//					Check(!Try_Scan_Digit(0, 7), ""Did not expect Digit"");
-//					MatchExcept();
-//				}
-//				void EvenDigit()
-//				{
-//					Check(!Try_IsOddDigit(0), ""Did not expect OddDigit"");
-//					MatchExcept();
-//				}");
+			string grammarEcs = @"//#ecs;
+				#importMacros(Loyc.LLPG);
+				[AddComments(false)]
+				LLLPG(parser(laType: string)) {
+					rule Pattern @{
+					(	&Expr Expr(P.Is)
+					/	TypeThingie
+					)   ((""=>""|"")"") =>)
+					};
+					rule TypeThingie @{
+						TT.Id (""{"" nongreedy(_)* ""}"")? TT.Id?
+					};
+					rule ExprList() @{
+						Expr(ExprStart) ("","" Expr(ExprStart))*
+					}
+					rule Expr(Precedence context) @{
+						PrefixExpr
+						greedy(
+							nonrecognizer(&{GetPrecedence($LI)::prec.CanParse(context)})
+							TT.NormalOp Expr(prec)
+						)*
+					};
+					rule PrefixExpr @{
+						""-"" PrefixExpr | PrimaryExpr
+					};
+					[LL(1)]
+					rule PrimaryExpr @{
+						TT.Id (""("" 
+							nonrecognizer(ExprList) { ActionOutsideRecognizer(); }
+							recognizer(ApproximateExprList { ActionInRecognizer(); })
+						"")"")?
+					};
+					private rule ApproximateExprList @{
+						nongreedy
+						(	""("" ApproximateExprList "")""
+						/	_
+						)*
+						// I don't have time to implement separate follow sets for
+						// recognizers, so ApproximateExprList is unaware that it
+						// is followed by "")"") without a gate to tell it so
+						("")"" =>)
+					}
+				}", expectedOutput = @"
+				void Pattern()
+				{
+					string la0;
+					do {
+						la0 = (string) LA0;
+						if (la0 == ""-"")
+							goto matchExpr;
+						else {
+							if (Try_Scan_Expr(0)) {
+								switch ((string) LA(1)) {
+								case ""("": case "")"": case ""=>"": case TT.NormalOp:
+									goto matchExpr;
+								default:
+									TypeThingie();
+									break;
+								}
+							} else
+								TypeThingie();
+						}
+						break;
+					matchExpr:
+						{
+							Check(Try_Scan_Expr(0), ""Expected Expr"");
+							Expr(P.Is);
+						}
+					} while (false);
+				}
+
+				void TypeThingie()
+				{
+					string la0;
+					Match(TT.Id);
+					la0 = (string) LA0;
+					if (la0 == ""{"") {
+						Skip();
+						for (;;) {
+							la0 = (string) LA0;
+							if (la0 == ""}"") {
+								switch ((string) LA(1)) {
+								case "")"": case ""=>"": case EOF: case TT.Id:
+									goto stop;
+								default:
+									Skip();
+									break;
+								}
+							} else if (la0 == (string) EOF)
+								goto stop;
+							else
+								Skip();
+						}
+					stop:;
+						Match(""}"");
+					}
+					la0 = (string) LA0;
+					if (la0 == TT.Id)
+						Skip();
+				}
+
+				void ExprList()
+				{
+					string la0;
+					Expr(ExprStart);
+					for (;;) {
+						la0 = (string) LA0;
+						if (la0 == "","") {
+							Skip();
+							Expr(ExprStart);
+						} else
+							break;
+					}
+				}
+
+				void Expr(Precedence context)
+				{
+					string la0, la1;
+					PrefixExpr();
+					for (;;) {
+						la0 = (string) LA0;
+						if (la0 == TT.NormalOp) {
+							if (GetPrecedence(0)::prec.CanParse(context)) {
+								la1 = (string) LA(1);
+								if (la1 == ""-"" || la1 == TT.Id) {
+									Skip();
+									Expr(prec);
+								} else
+									break;
+							} else
+								break;
+						} else
+							break;
+					}
+				}
+
+				bool Try_Scan_Expr(int lookaheadAmt, Precedence context) {
+					using (new SavePosition(this, lookaheadAmt))
+						return Scan_Expr(context);
+				}
+				bool Scan_Expr(Precedence context)
+				{
+					string la0, la1;
+					if (!Scan_PrefixExpr())
+						return false;
+					for (;;) {
+						la0 = (string) LA0;
+						if (la0 == TT.NormalOp) {
+							la1 = (string) LA(1);
+							if (la1 == ""-"" || la1 == TT.Id) {
+								Skip();
+								if (!Scan_Expr(prec))
+									return false;
+							} else
+								break;
+						} else
+							break;
+					}
+					return true;
+				}
+
+				void PrefixExpr()
+				{
+					string la0;
+					la0 = (string) LA0;
+					if (la0 == ""-"") {
+						Skip();
+						PrefixExpr();
+					} else
+						PrimaryExpr();
+				}
+				bool Scan_PrefixExpr()
+				{
+					string la0;
+					la0 = (string) LA0;
+					if (la0 == ""-"") {
+						Skip();
+						if (!Scan_PrefixExpr())
+							return false;
+					} else if (!Scan_PrimaryExpr())
+						return false;
+					return true;
+				}
+
+				void PrimaryExpr()
+				{
+					string la0;
+					Match(TT.Id);
+					la0 = (string) LA0;
+					if (la0 == ""("") {
+						Skip();
+						ExprList();
+						ActionOutsideRecognizer();
+						Match("")"");
+					}
+				}
+
+				bool Scan_PrimaryExpr()
+				{
+					string la0;
+					if (!TryMatch(TT.Id))
+						return false;
+					la0 = (string) LA0;
+					if (la0 == ""("") {
+						Skip();
+						if (!Scan_ApproximateExprList())
+							return false;
+						ActionInRecognizer();
+						if (!TryMatch("")""))
+							return false;
+					}
+					return true;
+				}
+
+				// Ideally there would be a way to exclude this unused method from the output
+				private void ApproximateExprList()
+				{
+					string la0;
+					for (;;) {
+						la0 = (string) LA0;
+						if (la0 == "")"" || la0 == (string) EOF)
+							break;
+						else if (la0 == ""("") {
+							Skip();
+							ApproximateExprList();
+							Match("")"");
+						} else
+							Skip();
+					}
+				}
+				private bool Scan_ApproximateExprList()
+				{
+					string la0;
+					for (;;) {
+						la0 = (string) LA0;
+						if (la0 == "")"" || la0 == (string) EOF)
+							break;
+						else if (la0 == ""("") {
+							Skip();
+							if (!Scan_ApproximateExprList())
+								return false;
+							if (!TryMatch("")""))
+								return false;
+						} else
+							Skip();
+					}
+					return true;
+				}";
+			Test(grammarEcs, expectedOutput, null, EcsLanguageService.Value);
 		}
 	}
 }

@@ -266,10 +266,11 @@ namespace Loyc.LLParserGenerator
 		{
 			LLParserGenerator LLPG;
 			public AddRecognizersRecursively(LLParserGenerator llpg) { LLPG = llpg; }
+
 			public void Scan(Rule rule)
 			{
 				Debug.Assert(rule.HasRecognizerVersion);
-				rule.Pred.Call(this);
+				(rule.Recognizer ?? rule).Pred.Call(this);
 			}
 			public override void Visit(RuleRef rref)
 			{
@@ -771,7 +772,7 @@ namespace Loyc.LLParserGenerator
 			_helper.Begin(_classBody, _sourceFile);
 
 			var generator = new GenerateCodeVisitor(this);
-			foreach (var rule in rules) {
+			foreach (var rule in _rulesInOrder.Where(r => !r.IsExternal)) {
 				generator.Generate(rule);
 				if (!rule.IsRecognizer && rule.HasRecognizerVersion)
 					generator.Generate(rule.GetOrMakeRecognizerVersion());
