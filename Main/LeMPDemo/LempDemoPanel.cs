@@ -227,13 +227,21 @@ namespace TextEditor
 		public void LoadFile(string fn)
 		{
  			Editor.LoadFile(fn); // auto-sets syntax highlighting mode
-			// TextEditorControl clears highlighting if file extension was unknown
-			if (fn.EndsWith(".ecs") || fn.EndsWith(".les"))
-				Editor.SetHighlighting("C#"); // there, FTFY
+			ChooseHighlighter();
 
 			// Modified flag is set during loading because the document 
 			// "changes" (from nothing to something). So, clear it again.
 			SetModifiedFlag(false);
+		}
+
+		public void ChooseHighlighter()
+		{
+			var fn = Editor.FileName.ToLower();
+			if (fn.EndsWith(".ecs") || fn.EndsWith(".les"))
+				Editor.SetHighlighting("C#"); // there, FTFY
+			else
+				Editor.Document.HighlightingStrategy =
+					HighlightingStrategyFactory.CreateHighlightingStrategyForFile(fn);
 		}
 
 		public bool SaveOutput()

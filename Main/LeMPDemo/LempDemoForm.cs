@@ -153,13 +153,9 @@ namespace TextEditor
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
 				try {
 					editor.SaveFile(saveFileDialog.FileName);
-					editor.Parent.Text = Path.GetFileName(editor.FileName);
+					panel.ChooseHighlighter(); // fix syntax highlighting
+					panel.Parent.Text = Path.GetFileName(editor.FileName);
 					panel.SetModifiedFlag(false);
-					
-					// The syntax highlighting strategy doesn't change
-					// automatically, so do it manually.
-					editor.Document.HighlightingStrategy =
-						HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editor.FileName);
 					return true;
 				} catch (Exception ex) {
 					MessageBox.Show(ex.Message, ex.GetType().Name);

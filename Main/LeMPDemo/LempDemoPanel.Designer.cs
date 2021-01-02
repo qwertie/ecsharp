@@ -1,4 +1,4 @@
-﻿namespace TextEditor
+namespace TextEditor
 {
 	partial class LempDemoPanel
 	{
@@ -173,7 +173,7 @@
 			this._txtOptions.Name = "_txtOptions";
 			this._txtOptions.Size = new System.Drawing.Size(282, 20);
 			this._txtOptions.TabIndex = 3;
-			this._txtOptions.Text = "--timeout=10 --outext=out.cs --inlang=ecs --forcelang";
+			this._txtOptions.Text = "--timeout=10 --outext=out.cs --inlang=ecs --forcelang --macros:LLLPG.exe";
 			// 
 			// LempDemoPanel
 			// 
