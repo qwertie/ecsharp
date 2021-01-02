@@ -242,20 +242,19 @@ namespace Loyc.LLParserGenerator
 					if (rref == null) {
 						// Construct a rule from this predicate
 						var synPred2 = synPred.Clone();
-						var rule = new Rule(pred.Basis, null, synPred2, false);
+						var rule = new Rule(pred.Basis, null, synPred2, false, isRecognizer: true);
 						var recogName = Enumerable.Range(0, int.MaxValue)
 							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
 							.First(n => !LLPG._miniRecognizerNames.Contains(n));
 						rule.Name = recogName;
-						rule.IsToken = true; // gives us a follow set of .*
+						rule.IsToken = true; // gives us a follow set of _*
 						rule.IsPrivate = true;
-						rule.IsRecognizer = true;
 						rule.TryWrapperNeeded();
 						LLPG._miniRecognizerNames.Add(recogName);
 						LLPG._miniRecognizerMap[synPred] = rule;
 						LLPG.AddRule(rule);
 					} else {
-						rref.Rule.MakeRecognizerVersion().TryWrapperNeeded();
+						rref.Rule.GetOrMakeRecognizerVersion().TryWrapperNeeded();
 					}
 				}
 			}
@@ -275,7 +274,7 @@ namespace Loyc.LLParserGenerator
 			public override void Visit(RuleRef rref)
 			{
 				if (!rref.Rule.HasRecognizerVersion) {
-					rref.Rule.MakeRecognizerVersion();
+					rref.Rule.GetOrMakeRecognizerVersion();
 					Scan(rref.Rule);
 				}
 			}
@@ -286,7 +285,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var rref = synPred as RuleRef;
 			if (rref != null)
-				return rref.Rule.MakeRecognizerVersion();
+				return rref.Rule.GetOrMakeRecognizerVersion();
 			else
 				return _miniRecognizerMap[synPred];
 		}
@@ -721,8 +720,9 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public LNode Run(ISourceFile sourceFile)
 		{
-			var rules = _rulesInOrder.Where(r => !r.IsExternal);
-			var rulesAndExterns = _rulesInOrder;
+			var customRecognizers = from r in _rulesInOrder where (r.Recognizer?.Pred ?? r.Pred) != r.Pred select r.Recognizer;
+			var rules = _rulesInOrder.Concat(customRecognizers).Where(r => !r.IsExternal);
+			var rulesAndExterns = _rulesInOrder.Concat(customRecognizers);
 			
 			// Generate variables for labeled Preds (e.g x:Foo y+:Bar Baz {$Baz;})
 			foreach (var rule in rulesAndExterns)
@@ -735,12 +735,12 @@ namespace Loyc.LLParserGenerator
 
 			// Add special recognizer rules for &(syntactic predicates)
 			var pmr = new AddMiniRecognizers(this);
-			foreach (var rule in rulesAndExterns.ToList())
+			foreach (var rule in rulesAndExterns.ToList()) // underlying list changes during loop
 				pmr.FindAndPreds(rule);
 
 			// Figure out which rules need recognizer forms, starting from the ones that already do
 			var prr = new AddRecognizersRecursively(this);
-			foreach (var rule in rulesAndExterns.Where(r => r.HasRecognizerVersion))
+			foreach (var rule in rulesAndExterns.Where(r => r.IsRecognizer || r.Recognizer?.Pred == r.Pred))
 				prr.Scan(rule);
 
 			// Record follow sets of rules, and build a flow graph by setting 
@@ -751,7 +751,7 @@ namespace Loyc.LLParserGenerator
 			if (Verbosity > 0)
 				PrintVerboseStats(rules);
 
-			// ***** PREDICTION ANALYSIS *****: everyone's favorite part
+			// ***** PREDICTION ANALYSIS *****: LLLPG's Raison D'être
 			var pav = new PredictionAnalysisVisitor(this);
 			foreach (var rule in rules) {
 				if (Verbosity > 0) Output(Verbose, null, 
@@ -774,7 +774,7 @@ namespace Loyc.LLParserGenerator
 			foreach (var rule in rules) {
 				generator.Generate(rule);
 				if (!rule.IsRecognizer && rule.HasRecognizerVersion)
-					generator.Generate(rule.MakeRecognizerVersion());
+					generator.Generate(rule.GetOrMakeRecognizerVersion());
 			}
 			
 			_helper.Done();

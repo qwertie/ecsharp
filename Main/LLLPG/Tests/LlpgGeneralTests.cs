@@ -2219,5 +2219,72 @@ namespace Loyc.LLParserGenerator
 				}
 				", null, EcsLanguageService.Value);
 		}
+
+		[Test]
+		public void TestCustomRecognizer()
+		{
+//			Test(@"
+//			LLLPG parser {
+//				rule Pattern @{
+//					Braces
+//				|	Expr
+//				};
+//				rule Braces @{
+//					""{"" nongreedy(_)* ""}""
+//				};
+//				rule Expr(context::Precedence) @{
+//					PrefixExpr
+//					( &{GetPrecedence($LI)::prec.CanParse(context)} TT.Infix Expr(prec) )*
+//				};
+//				rule PrefixExpr @{
+//					""-"" PrefixExpr | PrimaryExpr
+//				};
+//				rule PrimaryExpr @{
+//					TT.Id (""("" "")"")?
+//				};
+//
+//			};", @"
+//				void Digit(int x)
+//				{
+//					MatchRange('0', '9');
+//				}
+//				bool Try_Scan_Digit(int lookaheadAmt, int x)
+//				{
+//					using (new SavePosition(this, lookaheadAmt))
+//						return Scan_Digit(x);
+//				}
+//				bool Scan_Digit(int x)
+//				{
+//					if (!TryMatchRange('0', '9'))
+//						return false;
+//					return true;
+//				}
+//				static readonly HashSet<int> OddDigit_set0 = NewSet('1', '3', '5', '7', '9');
+//				void OddDigit(int x)
+//				{
+//					Match(OddDigit_set0);
+//				}
+//				protected bool Try_IsOddDigit(int lookaheadAmt, float y)
+//				{
+//					using (new SavePosition(this, lookaheadAmt))
+//						return IsOddDigit(y);
+//				}
+//				protected bool IsOddDigit(float y)
+//				{
+//					if (!TryMatch(OddDigit_set0))
+//						return false;
+//					return true;
+//				}
+//				void NonDigit()
+//				{
+//					Check(!Try_Scan_Digit(0, 7), ""Did not expect Digit"");
+//					MatchExcept();
+//				}
+//				void EvenDigit()
+//				{
+//					Check(!Try_IsOddDigit(0), ""Did not expect OddDigit"");
+//					MatchExcept();
+//				}");
+		}
 	}
 }

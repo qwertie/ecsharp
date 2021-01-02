@@ -26,31 +26,35 @@ namespace Loyc.LLParserGenerator
 		public LNode ReturnType; // extracted from Basis, used by AutoValueSaverVisitor
 		public readonly EndOfRule EndOfRule;
 		
-		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule = true)
+		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule = true, bool isRecognizer = false)
 		{
 			Basis = basis; Pred = pred; Name = name;
 			IsStartingRule = isStartingRule;
+			IsRecognizer = isRecognizer;
 			EndOfRule = new EndOfRule(this);
 			if (basis != null && basis.Calls(S.Fn) && basis.ArgCount >= 3)
 				ReturnType = basis.Args[0];
 		}
 		public Symbol Name;
 
-		public Pred Pred;
-		public bool IsToken, IsStartingRule;
-		public bool IsExternal, IsInline;
-		public bool? IsPrivate;
-		public bool? FullLLk;
-		public int K; // max lookahead; <= 0 to use default
+		public Pred Pred;           // Contents of the rule
+		public bool IsToken;        // Indicates that the follow set shall be treated as _*
+		public bool IsStartingRule; // Whether the rule may be called directly by users
+		public bool IsExternal;     // Suppresses code generation
+		public bool IsInline;       // Causes naive inlining (e.g. inline rule can use vars in its host)
+		public bool? IsPrivate;     // Enables prematch analysis benefits. Implies !IsStartingRule.
+		public bool? FullLLk;       // Changes from mostly-correct approximate lookahead to exhaustive
+		public int K;               // Max lookahead for disambiguation; <= 0 to use default for grammar
 
 		#region Recognizer-related crap
 
-		public bool IsRecognizer;
+		public bool IsRecognizer { get; private set; }
 		public LNode TryWrapperName; // e.g. Try_Scan_Foo. only used when IsRecognizer==true
-		public Rule _recognizer;
+		private Rule _recognizer;
 		
-		public bool HasRecognizerVersion { get { return _recognizer != null || IsRecognizer; } }
-		public Rule MakeRecognizerVersion()
+		public bool HasRecognizerVersion => _recognizer != null || IsRecognizer;
+		public Rule Recognizer => _recognizer;
+		public Rule GetOrMakeRecognizerVersion()
 		{
 			var scanName = GSymbol.Get("Scan_" + Name.Name);
 			return _recognizer = _recognizer ?? MakeRecognizerVersion(scanName);
@@ -120,26 +124,6 @@ namespace Loyc.LLParserGenerator
 					method = F.Attr(F.Id(S.Public), method);
 				return method;
 			}
-		}
-
-		/// <summary>Creates the default method definition to wrap around the body 
-		/// of the rule, which has already been generated. Returns <see cref="Basis"/> 
-		/// with the specified new method body. If Basis is null, a simple default 
-		/// method signature is used, e.g. <c>public void R() {...}</c> where R is 
-		/// the rule name.</summary>
-		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
-		/// <returns>A method.</returns>
-		public LNode CreateMethod(LNodeList methodBody)
-		{
-			LNode method = GetMethodSignature();
-			var parts = method.Args.ToWList();
-			if (parts[0].IsIdNamed(S.Missing))
-				parts[0] = F.Id(Name);
-			Debug.Assert(parts.Count == 3);
-			if (IsRecognizer)
-				methodBody.Add(F.Call(S.Return, F.True));
-			parts.Add(F.OnNewLine(F.Braces(methodBody)));
-			return method.WithArgs(parts.ToLNodeList());
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

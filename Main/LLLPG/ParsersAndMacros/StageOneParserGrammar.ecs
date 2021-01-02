@@ -43,10 +43,7 @@ namespace Loyc.LLParserGenerator
 			alias("|"   = TT.Alt);
 			alias("/"   = TT.Slash);
 			
-			// Replaces 'a' with the LNode for the infix expression a`op`b (e.g. a | b)
-			void Infix(ref LNode a, Symbol op, LNode b) {
-				a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
-			}
+			void Infix(ref LNode a, Token op, LNode b) => a = F.CallInfixOp(a, op, b);
 
 			public rule LNode Parse @{ e:=GrammarExpr EOF {return e;} };
 			
@@ -55,22 +52,22 @@ namespace Loyc.LLParserGenerator
 			// Top-level rule body expression: a | b | ...
 			protected rule LNode GrammarExpr() @{
 				a:=SlashExpr
-				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*
+				( op:="|" b:=SlashExpr {Infix(ref a, op, b);} )*
 				{return a;}
 			};
 			private rule LNode SlashExpr() @{
 				a:=GateExpr 
-				( op:="/" b:=GateExpr {Infix(ref a, (Symbol) op.Value, b);} )*
+				( op:="/" b:=GateExpr {Infix(ref a, op, b);} )*
 				{return a;}
 			};
 			private rule LNode GateExpr() @{
 				{Token? altType = null;}
 				(altType=(TT.Default|TT.Error))?
 				a:=SeqExpr
-				( op:="=>,<=>" b:=GateExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op:="=>,<=>" b:=GateExpr {Infix(ref a, op, b);} )?
 				{
 					if (altType != null)
-						a = F.Call((Symbol) altType.Value.Value, a, altType.Value.StartIndex, altType.Value.EndIndex);
+						a = F.CallPrefixOp(altType.Value, a);
 					return a;
 				}
 			};
@@ -85,13 +82,13 @@ namespace Loyc.LLParserGenerator
 			};
 			private rule LNode LoopExpr() @{
 				{LNode a;}
-				(	loopMod:=(TT.Greedy|TT.Nongreedy) a=AssignExpr 
-					{a = F.Call((Symbol) loopMod.Value, a, loopMod.StartIndex, a.Range.EndIndex);}
+				(	modifier:=(TT.Greedy|TT.Nongreedy|TT.Recognizer|TT.NonRecognizer) a=AssignExpr 
+					{a = F.CallPrefixOp(modifier, a, null, NodeStyle.Default);}
 				|	a=AssignExpr
 				)
-				(	op:="*" {a = F.Call(_SufStar, a, a.Range.StartIndex, op.EndIndex);}
-				|	op:="+" {a = F.Call(_SufPlus, a, a.Range.StartIndex, op.EndIndex);}
-				|	op:="?" {a = F.Call(_SufOpt,  a, a.Range.StartIndex, op.EndIndex);}
+				(	op:="*" {a = F.CallSuffixOp(a, _SufStar, op);}
+				|	op:="+" {a = F.CallSuffixOp(a, _SufPlus, op);}
+				|	op:="?" {a = F.CallSuffixOp(a, _SufOpt,  op);}
 				)?
 				{return a;}
 			};
@@ -100,14 +97,14 @@ namespace Loyc.LLParserGenerator
 				{Token op;}
 				a:=PrefixExpr
 				( op="!" {a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);} )*
-				( op=(":="|":"|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op=(":="|":"|TT.HostOperator) b:=AssignExpr {Infix(ref a, op, b);} )?
 				{return a;}
 			};
 			
 			private rule LNode PrefixExpr() @
-			{	op:="~"       r:=PrefixExpr         {return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);}
-			|	op:="&"       r:=PrefixExprOrBraces {return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);}
-			|	op:=("&!")    r:=PrefixExprOrBraces {return F.Call(_AndNot,   r, op.StartIndex, r.Range.EndIndex);}
+			{	op:="~"       r:=PrefixExpr         {return F.CallPrefixOp(op, r, S.NotBits);}
+			|	op:="&"       r:=PrefixExprOrBraces {return F.CallPrefixOp(op, r, S.AndBits);}
+			|	op:=("&!")    r:=PrefixExprOrBraces {return F.CallPrefixOp(op, r, _AndNot);}
 			|	r:=RangeExpr  {return r;}
 			};
 			private rule LNode PrefixExprOrBraces() @
@@ -117,28 +114,28 @@ namespace Loyc.LLParserGenerator
 			
 			private rule LNode RangeExpr() @{
 				a:=PrimaryExpr 
-				( op:="..." b:=PrimaryExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op:="..." b:=PrimaryExpr {Infix(ref a, op, b);} )?
 				{return a;}
 			};
 			
 			private rule LNode PrimaryExpr() @
-				{	"-" e:=PrimaryExpr {return F.Call(S._Negate, e);}
+				{	"-" e:=PrimaryExpr {return F.CallPrefixOp($"-", e, S._Negate);}
 				|	{LNode e, id;}
 					TT.Any TT.Id {id = F.Id($(TT.Id));}
 					( TT.In e=GateExpr
 					/ {e = id;})
-					{e = F.Call(_Any, id, e, $(TT.Any).StartIndex, e.Range.EndIndex);}
+					{e = F.CallPrefixOp($(TT.Any), LNode.List(id, e));}
 					{return e;}
 				|	a:=Atom
 					greedy(
 						// dotted expr
-						op:="." b:=Atom {Infix(ref a, (Symbol)op.Value, b);}
+						op:="." b:=Atom {Infix(ref a, op, b);}
 					|	// rule call: no spaces between identifier and '('
 						&{a.Range.EndIndex == LT($LI).StartIndex}
 						(	lp:"(" rp:")"
 						|	lp:"[" rp:"]"
 						)
-						{a = F.Call(a, ParseHostCode(lp, ParsingMode.Expressions), a.Range.StartIndex, rp.EndIndex);}
+						{a = F.CallPrefix(a, ParseHostCode(lp, ParsingMode.Expressions), rp);}
 					)*
 					{return a;}
 				};

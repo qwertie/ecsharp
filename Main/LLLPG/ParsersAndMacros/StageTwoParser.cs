@@ -22,6 +22,9 @@ namespace Loyc.LLParserGenerator
 		IMessageSink _sink;
 		Dictionary<Symbol, Rule> _rules;
 		public Dictionary<Symbol, Rule> Rules { get { return _rules; } }
+		public bool _ruleChangesInRecognizer;
+		public bool _parsingRecognizerVersion;
+		public bool _insideRecognizerSequence = false;
 
 		public StageTwoParser(IPGCodeGenHelper helper, IMessageSink sink)
 		{
@@ -37,12 +40,23 @@ namespace Loyc.LLParserGenerator
 		public void Parse(IEnumerable<Pair<Rule,LNode>> rules)
 		{
 			_rules = LLParserGenerator.AddRulesToDict(rules.Select(p => p.A));
-			foreach (var pair in rules) {
+			foreach (var pair in rules)
+			{
 				Debug.Assert(pair.A.Pred == null);
+
+				_parsingRecognizerVersion = _ruleChangesInRecognizer = false;
 				pair.A.Pred = NodeToPred(pair.B);
-				if (pair.A.HasRecognizerVersion) // oops, need to keep recognizer in sync with main rule
-					pair.A.MakeRecognizerVersion().Pred = pair.A.Pred;
+
+				if (pair.A.HasRecognizerVersion) {
+					if (_ruleChangesInRecognizer) {
+						_parsingRecognizerVersion = true;
+						pair.A.Recognizer.Pred = NodeToPred(pair.B);
+					} else {
+						pair.A.Recognizer.Pred = pair.A.Pred;
+					}
+				}
 			}
+
 			Remove_any_in_Labels();
 		}
 
@@ -55,19 +69,21 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Opt = GSymbol.Get("'suf?");
 		static readonly Symbol _And = S.AndBits;
 		static readonly Symbol _AndNot = GSymbol.Get("'&!");
-		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
-		static readonly Symbol _Greedy = GSymbol.Get("greedy");
-		static readonly Symbol _Default = GSymbol.Get("default");
-		static readonly Symbol _Default2 = GSymbol.Get("'default");
-		static readonly Symbol _Inline = GSymbol.Get("inline");
-		static readonly Symbol _Inline2 = GSymbol.Get("#inline");
-		static readonly Symbol _NoInline = GSymbol.Get("noinline");
-		static readonly Symbol _Error = GSymbol.Get("error");
+		static readonly Symbol _nongreedy = GSymbol.Get("nongreedy");
+		static readonly Symbol _greedy = GSymbol.Get("greedy");
+		static readonly Symbol _default = GSymbol.Get("default");
+		static readonly Symbol _default2 = GSymbol.Get("'default");
+		static readonly Symbol _inline = GSymbol.Get("inline");
+		static readonly Symbol _inline2 = GSymbol.Get("#inline");
+		static readonly Symbol _noinline = GSymbol.Get("noinline");
+		static readonly Symbol _error = GSymbol.Get("error");
 		static readonly Symbol _DefaultError = GSymbol.Get("default_error");
 		static readonly Symbol _Local = GSymbol.Get("Local");
 		static readonly Symbol _Hoist = GSymbol.Get("Hoist");
-		static readonly Symbol _Any = GSymbol.Get("any");
-		
+		static readonly Symbol _any = GSymbol.Get("any");
+		static readonly Symbol _recognizer = GSymbol.Get("recognizer");
+		static readonly Symbol _nonrecognizer = GSymbol.Get("nonrecognizer");
+
 		enum Context { Rule, GateLeft, GateRight, And };
 
 		Pred NodeToPred(LNode expr, Context ctx = Context.Rule)
@@ -100,7 +116,7 @@ namespace Loyc.LLParserGenerator
 							"Cannot use an action block inside an '&' or '&!' predicate; these predicates are for prediction only." :
 							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
 					}
-					return new ActionPred(expr, expr.Args);
+					return new ActionPred(expr, expr.Args) { AllowInRecognizer = _insideRecognizerSequence };
 				}
 				else if (expr.Calls(S.OrBits, 2) || (slash = expr.Calls(S.Div, 2)))
 				{
@@ -153,9 +169,23 @@ namespace Loyc.LLParserGenerator
 				{
 					return TranslateLabeledExpr(expr, ctx);
 				}
-				else if (expr.Calls(_Any, 2) && expr.Args[0].IsId) 
+				else if (expr.Calls(_any, 2) && expr.Args[0].IsId) 
 				{
 					return Translate_any_in_Expr(expr, ctx);
+				}
+				else if (expr.Calls(_recognizer, 1) || expr.Calls(_nonrecognizer, 1))
+				{
+					_ruleChangesInRecognizer = true;
+					var saved = _insideRecognizerSequence;
+					try {
+						_insideRecognizerSequence = expr.Calls(_recognizer, 1);
+						if (_insideRecognizerSequence == _parsingRecognizerVersion)
+							return NodeToPred(expr[0]);
+						else
+							return new Seq(expr.Target); // empty sequence
+					} finally {
+						_insideRecognizerSequence = saved;
+					}
 				}
 			}
 			
@@ -189,7 +219,7 @@ namespace Loyc.LLParserGenerator
 			bool? greedy = null;
 			bool g;
 			expr = expr.Args[0];
-			if ((g = expr.Calls(_Greedy, 1)) || expr.Calls(_Nongreedy, 1)) {
+			if ((g = expr.Calls(_greedy, 1)) || expr.Calls(_nongreedy, 1)) {
 				greedy = g;
 				expr = expr.Args[0];
 			}
@@ -259,9 +289,9 @@ namespace Loyc.LLParserGenerator
 			var labelName = label.Name;
 			if (!label.IsId) {
 				_sink.Error(label, "A label must be an identifier");
-			} else if (labelName == _Inline2 || labelName == _Inline || labelName == _NoInline) {
+			} else if (labelName == _inline2 || labelName == _inline || labelName == _noinline) {
 				if (pred is RuleRef)
-					((RuleRef)pred).IsInline = labelName != _NoInline;
+					((RuleRef)pred).IsInline = labelName != _noinline;
 				else
 					_sink.Error(label, "'{0}:' can only be attached to a rule reference, which '{1}' is not", labelName, pred.ToString());
 			} else {
@@ -332,20 +362,20 @@ namespace Loyc.LLParserGenerator
 		Rule TryGetRule(LNode expr)
 		{
 			Rule rule;
-			if (!expr.IsLiteral && _rules.TryGetValue(expr.Name, out rule))
+			if (!expr.IsLiteral && _rules.TryGetValue(expr.Name, out rule)) 
 				return rule;
 			return null;
 		}
 
 		Pred BranchToPred(LNode expr, out BranchMode mode, Context ctx)
 		{
-			if (expr.Calls(_Default, 1) || expr.Calls(_Default2, 1)) {
+			if (expr.Calls(_default, 1) || expr.Calls(_default2, 1)) {
 				expr = expr.Args[0];
 				mode = BranchMode.Default;
-			} else if (expr.Calls(_Error, 1) || expr.IsIdNamed(_DefaultError)) {
+			} else if (expr.Calls(_error, 1) || expr.IsIdNamed(_DefaultError)) {
 				mode = (expr.AttrNamed(S.Continue) != null || expr.AttrNamed(GSymbol.Get("continue")) != null) 
 				       ? BranchMode.ErrorContinue : BranchMode.ErrorExit;
-				if (expr.Calls(_Error, 1))
+				if (expr.Calls(_error, 1))
 					expr = expr.Args[0];
 				else
 					return DefaultErrorBranch.Value;

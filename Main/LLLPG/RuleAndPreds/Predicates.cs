@@ -942,6 +942,7 @@ namespace Loyc.LLParserGenerator
 		public ActionPred(LNode basis, LNodeList action) : base(basis) { Statements = action; }
 
 		public LNodeList Statements;
+		public bool AllowInRecognizer = false;
 
 		public override string ToString() { return "{..}"; }
 	}

@@ -264,8 +264,10 @@ namespace Loyc.LLPG
 		{
 			TokenTree ruleTokens;
 			// Expecting @{...} or {...}
-			if ((ruleTokens = ruleBody.Value as TokenTree) == null && !ruleBody.Calls(S.Braces))
+			if ((ruleTokens = ruleBody.Value as TokenTree) == null && !ruleBody.Calls(S.Braces)) {
+				sink.Error(ruleBody, "Expected token tree or braced block");
 				return null;
+			}
 
 			if (ruleTokens != null)
 				return StageOneParser.ParseTokenTree(ruleTokens, sink);

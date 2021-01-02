@@ -89,7 +89,7 @@ namespace Loyc.LLParserGenerator
 
 			public override void Visit(ActionPred pred)
 			{
-				if (!_recognizerMode)
+				if (!_recognizerMode || pred.AllowInRecognizer)
 					AddUserAction(pred.Statements);
 			}
 			private void AddUserAction(LNodeList actions)

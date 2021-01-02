@@ -17,12 +17,13 @@ namespace Loyc.LLParserGenerator
 	[TestFixture]
 	class LlpgParserTests : Assert
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
-		static Symbol AndNot = GSymbol.Get("'&!"), AddColon = GSymbol.Get("'+:");
-		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("'suf+"), Star = GSymbol.Get("'suf*"), Opt = GSymbol.Get("'suf?"), Bang = GSymbol.Get("'suf!");
-		static Symbol Greedy = GSymbol.Get("greedy"), Nongreedy = GSymbol.Get("nongreedy");
-		static Symbol Default = GSymbol.Get("default"), Error = GSymbol.Get("error");
-		static LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c");
+		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
+		static readonly Symbol AndNot = GSymbol.Get("'&!"), AddColon = GSymbol.Get("'+:");
+		static readonly Symbol Gate = S.Lambda, Plus = GSymbol.Get("'suf+"), Star = GSymbol.Get("'suf*"), Opt = GSymbol.Get("'suf?"), Bang = GSymbol.Get("'suf!");
+		static readonly Symbol _greedy = GSymbol.Get("greedy"), _nongreedy = GSymbol.Get("nongreedy");
+		static readonly Symbol _recognizer = (Symbol)"recognizer", _nonrecognizer = (Symbol)"nonrecognizer";
+		static readonly Symbol _default = GSymbol.Get("default"), _error = GSymbol.Get("error");
+		static readonly LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c");
 		static LNode Literal(char c) => F.Literal(c, "c");
 		static LNode Literal(int n) => F.Literal(n, "_");
 
@@ -37,6 +38,9 @@ namespace Loyc.LLParserGenerator
 		public void Stage1Les_SimpleTests()
 		{
 			TestStage1("a", a);
+			TestStage1("a b", F.Tuple(a, b));
+			TestStage1("()", F.Tuple());
+			TestStage1("(a) (b)", F.Tuple(a, b));
 			TestStage1("'a'", Literal('a'), tryECSharp: false);
 			TestStage1("123", Literal(123), tryECSharp: false);
 			TestStage1("a...b", F.Call(S.DotDotDot, a, b));
@@ -49,9 +53,6 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a(b | c)", F.Call(a, F.Call(S.OrBits, b, c)));
 			TestStage1("a => b", F.Call(Gate, a, b));
 			TestStage1("=> a", F.Call(Gate, F.Tuple(), a));
-			TestStage1("()", F.Tuple());
-			TestStage1("a b", F.Tuple(a, b));
-			TestStage1("(a) (b)", F.Tuple(a, b));
 			TestStage1("(a b)?", F.Call(Opt, F.Tuple(a, b)));
 			TestStage1("{ a(); b(); }", F.Braces(F.Call(a), F.Call(b)));
 			TestStage1("a = b...c", F.Call(S.Assign, a, F.Call(S.DotDotDot, b, c)));
@@ -59,11 +60,11 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a := b", F.Call(S.QuickBindAssign, a, b));
 			TestStage1("a : b",  F.Call(S.Colon, a, b));
 			TestStage1("a +: b", F.Call(AddColon, a, b));
-			TestStage1("greedy a", F.Call(Greedy, a));
-			TestStage1("nongreedy a", F.Call(Nongreedy, a));
-			TestStage1("nongreedy(a)", F.Call(Nongreedy, a));
-			TestStage1("default a", F.Call(Default, a), false);
-			TestStage1("error a", F.Call(Error, a));
+			TestStage1("greedy a", F.Call(_greedy, a));
+			TestStage1("nongreedy a", F.Call(_nongreedy, a));
+			TestStage1("nongreedy(a)", F.Call(_nongreedy, a));
+			TestStage1("default a", F.Call(_default, a), false);
+			TestStage1("error a", F.Call(_error, a));
 			TestStage1("&{ a = b / c }", F.Call(S.AndBits, F.Braces(F.Call(S.Assign, a, F.Call(S.Div, b, c)))));
 			TestStage1("&!{ a(), b() }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))), false);
 			TestStage1("a!", F.Call(Bang, a));
@@ -86,10 +87,15 @@ namespace Loyc.LLParserGenerator
 			TestStage1("~(a..b) | (-a)..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("~ a..b  |  -a ..b.c", F.Call(S.OrBits, F.Call(S.NotBits, F.Call(S.DotDot, a, b)), F.Call(S.DotDot, F.Call(S.Sub, a), F.Dot(b, c))));
 			TestStage1("a..b+", F.Call(Plus, F.Call(S.DotDot, a, b)));
-			TestStage1("greedy(a | b)+", F.Call(Plus, F.Call(Greedy, F.Call(S.OrBits, a, b))));
-			TestStage1("nongreedy a+",   F.Call(Plus, F.Call(Nongreedy, a)));
-			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(Default, F.Tuple(a, b)), c), false);
-			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Tuple(a, b)), c));
+			TestStage1("greedy(a | b)+", F.Call(Plus, F.Call(_greedy, F.Call(S.OrBits, a, b))));
+			TestStage1("nongreedy a+",   F.Call(Plus, F.Call(_nongreedy, a)));
+			TestStage1("recognizer(a) b", F.Tuple(F.Call(_recognizer, a), b));
+			TestStage1("recognizer a  c", F.Tuple(F.Call(_recognizer, a), c));
+			TestStage1("recognizer({ a; } b)", F.Call(_recognizer, F.Tuple(F.Braces(a), b)));
+			TestStage1("nonrecognizer(a)", F.Call(_nonrecognizer, a));
+			TestStage1("nonrecognizer(a b) c", F.Tuple(F.Call(_nonrecognizer, F.Tuple(a, b)), c));
+			TestStage1("default a b | c", F.Call(S.OrBits, F.Call(_default, F.Tuple(a, b)), c), false);
+			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(_error,   F.Tuple(a, b)), c));
 			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), Literal('c')))), false);
 			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
 				F.Tuple(F.Call(S.QuickBindAssign, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Assign, F.Id("x"), F.Id("t")))),

@@ -56,6 +56,8 @@ namespace Loyc.LLParserGenerator
 		Any         = TokenKind.OtherKeyword + 5,
 		In          = TokenKind.OtherKeyword + 6,
 		Returns     = TokenKind.OtherKeyword + 7,
+		Recognizer  = TokenKind.OtherKeyword + 8,
+		NonRecognizer = TokenKind.OtherKeyword + 9,
 
 		Semicolon   = TokenKind.Separator,
 		Comma       = TokenKind.Separator + 1,
@@ -81,7 +83,7 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
 	/// an <see cref="LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-	/// <c>(a, b) | @`suf*`(c)</c>. This class handles this first stage. The second 
+	/// <c>(a, b) | @`'suf*`(c)</c>. This class handles this first stage. The second 
 	/// stage (<see cref="StageTwoParser"/>) is that the <see cref="LNode"/> is 
 	/// parsed into a tree of <see cref="Pred"/> objects.
 	/// <para/>
@@ -152,13 +154,15 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _SufPlus = GSymbol.Get("'suf+");
 		static readonly Symbol _SufOpt = GSymbol.Get("'suf?");
 		static readonly Symbol _SufBang = GSymbol.Get("'suf!");
-		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
-		static readonly Symbol _Greedy = GSymbol.Get("greedy");
-		static readonly Symbol _Default = GSymbol.Get("default");
-		static readonly Symbol _Error = GSymbol.Get("error");
-		static readonly Symbol _Any = GSymbol.Get("any");
-		static readonly Symbol _In = GSymbol.Get("in");
-		
+		static readonly Symbol _nongreedy = GSymbol.Get("nongreedy");
+		static readonly Symbol _greedy = GSymbol.Get("greedy");
+		static readonly Symbol _default = GSymbol.Get("default");
+		static readonly Symbol _error = GSymbol.Get("error");
+		static readonly Symbol _any = GSymbol.Get("any");
+		static readonly Symbol _in = GSymbol.Get("in");
+		static readonly Symbol _recognizer = GSymbol.Get("recognizer");
+		static readonly Symbol _nonrecognizer = GSymbol.Get("nonrecognizer");
+
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
 			{S.Div,      TT.Slash},
@@ -177,15 +181,17 @@ namespace Loyc.LLParserGenerator
 			{S.AndBits,  TT.And},
 			{S.Not,      TT.Bang},
 			{_AndNot,    TT.AndNot},
-			{_Nongreedy, TT.Nongreedy},
-			{_Greedy,    TT.Greedy},
-			{_Error,     TT.Error},
-			{_Any,       TT.Any},
-			{_In,        TT.In},
+			{_nongreedy, TT.Nongreedy},
+			{_greedy,    TT.Greedy},
+			{_error,     TT.Error},
+			{_any,       TT.Any},
+			{_in,        TT.In},
 			{S.In,       TT.In},
-			{_Default,   TT.Default},
+			{_default,   TT.Default},
 			{S.Default,  TT.Default},
 			{S.Comma,    TT.Comma},
+			{_recognizer,TT.Recognizer},
+			{_nonrecognizer,TT.NonRecognizer},
 
 			// Used by AntlrStyleParser
 			{GSymbol.Get("@"), TT.At},
