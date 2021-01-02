@@ -380,7 +380,7 @@ namespace Loyc.MiniTest
 		//  But was:  5.5d
 		//  Expected: not "01234567890123456789_1234567890123456789_1234567890123456789_1234567890123456789"
 		//  But was:  "01234567890123456789_1234567890123456789_1234567890123456789_1234567890123456789"
-		private static int TruncateStringsLongerThan = 64;
+		private static int TruncateStringsLongerThan = 84;
 		private static string GetStringsNotEqualMessage(string a, string b)
 		{
 			// TODO: test this code
@@ -419,7 +419,8 @@ namespace Loyc.MiniTest
 					s = "..." + s.SafeSubstring(len - (maxw - 3)); // "...ending"
 					dif_i -= len - maxw;
 				} else {
-					s = "..." + s.SafeSubstring(dif_i - maxw / 2 + 3, maxw - 6) + "...";
+					int start = dif_i - maxw / 2 + 3, count = maxw - 6;
+					s = "..." + s.SafeSubstring(start, count) + (start + count < s.Length ? "..." : "");
 					dif_i = maxw / 2; // "...middle..."
 				}
 			}
