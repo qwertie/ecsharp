@@ -62,7 +62,7 @@ namespace Loyc.Ecs
 			P(S.DotDot, EP.Range),     P(S.DotDotDot, EP.Range),
 			P(S.LE, EP.Compare),       P(S.GE, EP.Compare),
 			P(S.LT, EP.Compare),       P(S.GT, EP.Compare),
-			P(S.Is, EP.IsAsUsing),     P(S.As, EP.IsAsUsing),   P(S.UsingCast, EP.IsAsUsing),
+			P(S.Is, EP.Is),            P(S.As, EP.AsUsing),       P(S.UsingCast, EP.AsUsing),
 			P(S.Eq, EP.Equals),        P(S.NotEq, EP.Equals),     P(S.In, EP.Equals),
 			P(S.AndBits, EP.AndBits),  P(S.XorBits, EP.XorBits),  P(S.OrBits, EP.OrBits), 
 			P(S.And, EP.And),          P(S.Or, EP.Or),            P(S.Xor, EP.Or),
@@ -80,8 +80,8 @@ namespace Loyc.Ecs
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
 			P(S.Cast, EP.Prefix),         // (Foo)x      (preferred form)
-			P(S.As, EP.IsAsUsing),        // x as Foo    (preferred form)
-			P(S.UsingCast, EP.IsAsUsing)  // x using Foo (preferred form)
+			P(S.As, EP.AsUsing),        // x as Foo    (preferred form)
+			P(S.UsingCast, EP.AsUsing)  // x using Foo (preferred form)
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
@@ -139,7 +139,7 @@ namespace Loyc.Ecs
 					d[op] = Pair.Create(EcsPrecedence.Lambda, throwEtc);
 			foreach (var p in CastOperators)
 				d[p.Key] = Pair.Create(p.Value, cast);
-			d[S.Is] = Pair.Create(EP.IsAsUsing, isOp);
+			d[S.Is] = Pair.Create(EP.Is, isOp);
 			foreach (Symbol op in ListOperators)
 				d[op] = Pair.Create(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators)

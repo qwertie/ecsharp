@@ -797,24 +797,50 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CSharp8Patterns()
+		public void CSharp8IsPatterns()
 		{
-			Stmt("x is var(a, b, c)", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(a, b, c))));
-			Stmt("x is var(c, (b, a))", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(c, F.Tuple(b, a)))));
-			Stmt("a is Foo(0, 1)", F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(Foo, zero, one))));
-			Stmt("b is x::Foo(1, b: (a: 0, b: 2))", F.Call(S.Is));
-			Stmt("c is x.Foo<a, b>(Item1: (a: 0, b: 1), Item2: 2)", F.Call(S.Is));
-			Stmt("x is Foo<b, a>.T<c>({ 2, 1 }, 0)", F.Call(S.Is));
-			Stmt("a is Foo { }", F.Call(S.Is));
-			Stmt("b is x::Foo<T> { a: Foo(1), b: { 0 } }", F.Call(S.Is));
-			Stmt("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x), }", F.Call(S.Is));
-			Stmt("x is Foo::Foo { a: int x, b: var((0, 2))", F.Call(S.Is));
+			var _ = F.Id("_");
+			Expr("x is var(a, b, c)",   F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(a, b, c))));
+			Expr("x is var(c, (b, a))", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(c, F.Tuple(b, a)))));
+			Expr("x is Foo",            F.Call(S.Is, x, Foo));
+			Expr("a is Foo { }",        F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(Foo))));
+			Expr("b is Foo()",          F.Call(S.Is, b, F.Call(S.Deconstruct, F.Call(Foo))));
+			Expr("c is Foo(x)",         F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(Foo, x))));
+			Expr("x is Foo() { a }",    F.Call(S.Is, x, F.Call(S.Deconstruct, F.Call(Foo), a)));
+			Expr("a is Foo<T> { b: x }", F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(F.Of(Foo, T)), F.Call(S.NamedArg, b, x))));
+			Expr("b is Foo<T>(b: x) { c: x }", F.Call(S.Is, b, F.Call(S.Deconstruct, F.Call(F.Of(Foo, T), F.Call(S.NamedArg, b, x)), F.Call(S.NamedArg, c, x))));
+			LNode subpat1 = F.Call(S.NamedArg, x, F.Var(F.Missing, a)), subpat2 = F.Call(S.NamedArg, x, F.Var(F.Missing, F.Tuple(b, _)));
+			Expr("c is x::Foo(x: var a) { x: var (b, _) }", F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(F.Call(S.ColonColon, x, Foo), subpat1), subpat2)));
+
+			// Still failing: (a, b) should be seen as a paren-pattern but it is seen as a type-pattern
+			subpat1 = F.Call(S.Deconstruct, F.Tuple(), _);
+			subpat2 = F.Call(S.NamedArg, F.Call(S.Deconstruct, F.Tuple(a, b)));
+			Expr("c is Foo({ _ }) { x: (a, b) }", F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(Foo, subpat1), subpat2)));
+			// TODO
+			Expr("a is Foo(0, 1)", F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(Foo, zero, one))));
+			Expr("b is x::Foo(1, b: (a: 0, b: 2))", F.Call(S.Is));
+			Expr("c is x.Foo<a, b>(Item1: (a: 0, b: 1), Item2: 2)", F.Call(S.Is));
+			Expr("x is Foo<b, a>.T<c>({ 2, 1 }, 0)", F.Call(S.Is));
+			Expr("b is x::Foo<T> { a: Foo(1), b: { 0 } }", F.Call(S.Is));
+			Expr("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x), }", F.Call(S.Is));
+			Expr("x is Foo::Foo { a: int x, b: var((0, 2))", F.Call(S.Is));
+		}
+
+		[Test]
+		public void CSharp8SwitchPatterns()
+		{
+			//static string Display(object o) => o switch {
+			//	Point { X: 0, Y: 0 } p => "origin",
+			//	Point { X: var x, Y: var y } p => $"({x}, {y})",
+			//	_ => "unknown"
+			//};
 		}
 
 		[Test]
 		public void CSharp9Patterns()
 		{
-			Stmt("a is Foo", F.Call(S.Is, a, Foo));
+			// TODO include "parenthesized patterns" in tests!
+			Expr("a is Foo", F.Call(S.Is, a, Foo));
 		}
 
 		LNode TupleType(params LNode[] parts) => F.Of(_(S.Tuple), parts);

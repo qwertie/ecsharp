@@ -138,9 +138,8 @@ namespace Loyc.Ecs.Tests
 		{
 			Expr("x / a as Foo / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
 			Expr("x / a as Foo? / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
-			Expr("x / a is Foo? / b", F.Call(S.Div, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			Expr("x / a as Foo? < b", F.Call(S.LT,  F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
-			Expr("x / a is Foo? < b", F.Call(S.LT,  F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			Expr("x / a is Foo? < c", F.Call(S.LT,  F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), c));
 		}
 		
 		[Test(Fails = "Failure caused by a bug in LLLPG")]

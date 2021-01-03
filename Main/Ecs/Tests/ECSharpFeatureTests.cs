@@ -15,25 +15,25 @@ namespace Loyc.Ecs.Tests
 		public void EcsLiteralsAndIdentifiers()
 		{
 			// See also: EcsLexerTests
-			Expr(@"@@hello",   F.Literal(GSymbol.Get("hello")));
-			Expr(@"@@int",     F.Literal(GSymbol.Get("int")));
-			Expr(@"@@#int32",  F.Literal(GSymbol.Get("#int32")));
-			Expr(@"@@`\t`",    F.Literal(GSymbol.Get("\t")));    // Symbols take non-verbatim backquoted strings
-			Expr(@"@@`1+1`",   F.Literal(GSymbol.Get("1+1")));
-			Expr(@"@@1",       F.Literal(GSymbol.Get("1")));
+			Expr(@"@@hello", F.Literal(GSymbol.Get("hello")));
+			Expr(@"@@int", F.Literal(GSymbol.Get("int")));
+			Expr(@"@@#int32", F.Literal(GSymbol.Get("#int32")));
+			Expr(@"@@`\t`", F.Literal(GSymbol.Get("\t")));    // Symbols take non-verbatim backquoted strings
+			Expr(@"@@`1+1`", F.Literal(GSymbol.Get("1+1")));
+			Expr(@"@@1", F.Literal(GSymbol.Get("1")));
 			// Not yet supported in printer (which will use @"...")
 			Expr(@"'''hello'''", F.Literal("hello").SetBaseStyle(NodeStyle.TQStringLiteral), Mode.ParserTest);
 			Expr("default(void)", F.Literal(@void.Value), Mode.PrinterTest);
-			Expr("#public",  @public);
-			Expr("Don't",  _("Don't"));
+			Expr("#public", @public);
+			Expr("Don't", _("Don't"));
 		}
 
 		[Test]
 		public void EcsPrefixOperators()
 		{
-			Expr("$a",     F.Call(S.Substitute, a));
+			Expr("$a", F.Call(S.Substitute, a));
 			Expr("$(-$a)", F.Call(S.Substitute, F.Call(S._Negate, F.Call(S.Substitute, a))));
-			Expr(".(-a)",  F.Call(S.Dot, F.Call(S._Negate, a)));
+			Expr(".(-a)", F.Call(S.Dot, F.Call(S._Negate, a)));
 			Expr("..a", F.Call(S.DotDot, a));
 			Expr("..<a", F.Call(S.DotDot, a), mode: Mode.ParserTest);
 			Expr("...a", F.Call(S.DotDotDot, a));
@@ -42,29 +42,29 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsInfixOperators()
 		{
-			Expr("a**b**c",      F.Call(S.Exp, F.Call(S.Exp, a, b), c));
+			Expr("a**b**c", F.Call(S.Exp, F.Call(S.Exp, a, b), c));
 			Expr("a + b**c - 1", F.Call(S.Sub, F.Call(S.Add, a, F.Call(S.Exp, b, c)), one));
-			Expr("a..b",         F.Call(S.DotDot, a, b));
-			Expr("a += b ~ c",   F.Call(S.AddAssign, a, F.Call(S.NotBits, b, c)));
-			Expr("a ??= b",      F.Call(S.NullCoalesceAssign, a, b));
-			Expr("a..b",         F.Call(S.DotDot, a, b));
-			Expr("a..<b",        F.Call(S.DotDot, a, b), mode: Mode.ParserTest);
-			Expr("a...b",        F.Call(S.DotDotDot, a, b));
+			Expr("a..b", F.Call(S.DotDot, a, b));
+			Expr("a += b ~ c", F.Call(S.AddAssign, a, F.Call(S.NotBits, b, c)));
+			Expr("a ??= b", F.Call(S.NullCoalesceAssign, a, b));
+			Expr("a..b", F.Call(S.DotDot, a, b));
+			Expr("a..<b", F.Call(S.DotDot, a, b), mode: Mode.ParserTest);
+			Expr("a...b", F.Call(S.DotDotDot, a, b));
 		}
 
 		[Test]
 		public void EcsOtherOperatorTests()
 		{
-			Expr("a. 2",         F.Dot(a, two));
-			Expr("a::b.c. 2",    F.Dot(F.Call(S.ColonColon, a, b), c, two));
-			Expr("1 `Foo` 2",    F.Call(Foo, F.Literal(1), F.Literal(2)).SetStyle(NodeStyle.Operator));
+			Expr("a. 2", F.Dot(a, two));
+			Expr("a::b.c. 2", F.Dot(F.Call(S.ColonColon, a, b), c, two));
+			Expr("1 `Foo` 2", F.Call(Foo, F.Literal(1), F.Literal(2)).SetStyle(NodeStyle.Operator));
 			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceAssign, a, F.Call(S.UsingCast, b, Foo)));
-			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
-			Expr("x(->Foo)",     F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
-			Expr("x(->a<b>)",    F.Call(S.Cast, x, F.Of(a, b)).SetStyle(NodeStyle.Operator | NodeStyle.Alternate));
-			Expr("x as Foo",     F.Call(S.As, x, Foo));
-			Expr("x(as Foo)",    F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
-			Expr("x using Foo",  F.Call(S.UsingCast, x, Foo));
+			Expr("(Foo) x", F.Call(S.Cast, x, Foo));
+			Expr("x(->Foo)", F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("x(->a<b>)", F.Call(S.Cast, x, F.Of(a, b)).SetStyle(NodeStyle.Operator | NodeStyle.Alternate));
+			Expr("x as Foo", F.Call(S.As, x, Foo));
+			Expr("x(as Foo)", F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("x using Foo", F.Call(S.UsingCast, x, Foo));
 			Expr("x(using Foo)", F.Call(S.UsingCast, x, Foo).SetStyle(NodeStyle.Alternate));
 			// Printer detects a possible ambiguity between multiplication and a pointer declaration?
 			Stmt("a `'*` b ? x : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), x, zero));
@@ -96,31 +96,31 @@ namespace Loyc.Ecs.Tests
 			// as statements. This test ensures that statement-related logic (such 
 			// as the rule against printing "a * b" as a statement) does not 
 			// interfere with expressions that can be printed as statements.
-			Stmt("a;",        a);
-			Stmt("(a);",      F.InParens(a));
-			Stmt("((a));",    F.InParens(F.InParens(a)));
-			Stmt("a(b);",     F.Call(a, b));
-			Stmt("a.b.c;",    F.Dot(a, b, c));
-			Stmt("a.b(c);",   F.Call(F.Dot(a, b), c));
-			Stmt("a<b>.c;",   F.Dot(F.Of(a, b), c));
-			Stmt("a.b<c>;",   F.Dot(a, F.Of(b, c)));
-			Stmt("a<b, c>;",   F.Of(a, b, c));
-			Stmt("a<b>(c);",  F.Call(F.Of(a, b), c));
-			Stmt("a?.b(c);",   F.Call(S.NullDot, a, F.Call(b, c)));
-			Stmt("a + b + c;",           F.Call(S.Add, F.Call(S.Add, a, b), c));
+			Stmt("a;", a);
+			Stmt("(a);", F.InParens(a));
+			Stmt("((a));", F.InParens(F.InParens(a)));
+			Stmt("a(b);", F.Call(a, b));
+			Stmt("a.b.c;", F.Dot(a, b, c));
+			Stmt("a.b(c);", F.Call(F.Dot(a, b), c));
+			Stmt("a<b>.c;", F.Dot(F.Of(a, b), c));
+			Stmt("a.b<c>;", F.Dot(a, F.Of(b, c)));
+			Stmt("a<b, c>;", F.Of(a, b, c));
+			Stmt("a<b>(c);", F.Call(F.Of(a, b), c));
+			Stmt("a?.b(c);", F.Call(S.NullDot, a, F.Call(b, c)));
+			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c));
 			// To be safe, the printer treats 'a * b' like a pointer decl so it won't print it
 			Stmt("@`'*`(a, b) / c % 2;", F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
-			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParserTest);
-			Stmt("a / b * c % 2;",       F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
-			Expr("@`'+`(a, b, c)",       F.Call(S.Add, a, b, c));
-			Stmt("a << 1 | b >> 1;",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
-			Stmt("a++ + a--;",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
-			Stmt("a ? b : c;",           F.Call(S.QuestionMark, a, b, c));
-			Stmt("a => a + 1;",          F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
+			Stmt("a * b / c % 2;", F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParserTest);
+			Stmt("a / b * c % 2;", F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
+			Expr("@`'+`(a, b, c)", F.Call(S.Add, a, b, c));
+			Stmt("a << 1 | b >> 1;", F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
+			Stmt("a++ + a--;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
+			Stmt("a ? b : c;", F.Call(S.QuestionMark, a, b, c));
+			Stmt("a => a + 1;", F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
 			Stmt("1 + a => 2 + b => c;", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
 			Stmt("a is Foo ? a as Foo : b;", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
 			Stmt("(a + b).b<c>;", F.Dot(F.InParens(F.Call(S.Add, a, b)), F.Of(b, c)));
-			Stmt("x::a.b;",       F.Dot(F.Call(S.ColonColon, x, a), b));
+			Stmt("x::a.b;", F.Dot(F.Call(S.ColonColon, x, a), b));
 		}
 
 		[Test]
@@ -150,31 +150,31 @@ namespace Loyc.Ecs.Tests
 		public void EcsDataTypes()
 		{
 			// Sure, why not
-			Stmt("int<decimal[]> x;",    F.Vars(F.Of(_(S.Int32), F.Of(S.Array, S.Decimal)), x));
+			Stmt("int<decimal[]> x;", F.Vars(F.Of(_(S.Int32), F.Of(S.Array, S.Decimal)), x));
 			// Very weird case. Consider printing as "`[,]`<float>?[] x;" instead
-			Stmt("float[,]?[] x;",       F.Vars(F.Of(_(S.Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
+			Stmt("float[,]?[] x;", F.Vars(F.Of(_(S.Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
 		}
 
 		[Test]
 		public void EcsSimpleCallsAndAttributes()
 		{
-			Stmt("[Foo] a;",             Attr(Foo, a));
-			Stmt("[Foo] a.b.c;",         Attr(Foo, F.Dot(a, b, c)));
-			Stmt("[Foo] a<b, c>;",       Attr(Foo, F.Of(a, b, c)));
-			Stmt("[Foo] a = b;",         Attr(Foo, F.Assign(a, b)));
-			Stmt("@'of([Foo] a, b, c);",  F.Of(Attr(Foo, a), b, c));
-			Stmt("a!(b, [Foo] c);",       F.Of(a, b, Attr(Foo, c)));
-			Stmt("a!(b, Foo + c);",       F.Of(a, b, F.Call(S.Add, Foo, c)));
-			Stmt("@'of(Foo<a>, b);",      F.Of(F.Of(Foo, a), b));
-			Stmt("public a;",             F.Attr(@public, a));
-			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
-			Stmt("public #foo;",          F.Attr(@public, fooKW));
+			Stmt("[Foo] a;", Attr(Foo, a));
+			Stmt("[Foo] a.b.c;", Attr(Foo, F.Dot(a, b, c)));
+			Stmt("[Foo] a<b, c>;", Attr(Foo, F.Of(a, b, c)));
+			Stmt("[Foo] a = b;", Attr(Foo, F.Assign(a, b)));
+			Stmt("@'of([Foo] a, b, c);", F.Of(Attr(Foo, a), b, c));
+			Stmt("a!(b, [Foo] c);", F.Of(a, b, Attr(Foo, c)));
+			Stmt("a!(b, Foo + c);", F.Of(a, b, F.Call(S.Add, Foo, c)));
+			Stmt("@'of(Foo<a>, b);", F.Of(F.Of(Foo, a), b));
+			Stmt("public a;", F.Attr(@public, a));
+			Stmt("[Foo] public a(b);", F.Attr(Foo, @public, F.Call(a, b)));
+			Stmt("public #foo;", F.Attr(@public, fooKW));
 		}
 
 		[Test]
 		public void EcsVariablesWithAttributes()
 		{
-			Stmt("[Foo] static int a;",   F.Attr(Foo, @static, F.Vars(F.Int32, a)));
+			Stmt("[Foo] static int a;", F.Attr(Foo, @static, F.Vars(F.Int32, a)));
 			Stmt("partial public int a;", F.Attr(partialWA, @public, F.Vars(F.Int32, a)));
 			Stmt("public partial int a;", F.Attr(@public, partialWA, F.Vars(F.Int32, a)));
 			Stmt("[#lock] static int a;", F.Attr(@lock, @static, F.Vars(F.Int32, a)));
@@ -186,15 +186,15 @@ namespace Loyc.Ecs.Tests
 		{
 			// The printer must use prefix notation if the arguments passed to an 
 			// operator have attributes.
-			Stmt("[Foo] get;",          Attr(Foo, get));
-			Expr("a[[Foo] b]",          F.Call(S.IndexBracks, a, Attr(Foo, b)));
+			Stmt("[Foo] get;", Attr(Foo, get));
+			Expr("a[[Foo] b]", F.Call(S.IndexBracks, a, Attr(Foo, b)));
 		}
 
 		[Test]
 		public void EcsAttributesInFunnyPlaces()
 		{
 			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), Attr(Foo, x), x)));
-			Stmt("goto case 1;",       F.Call(S.GotoCase, one));
+			Stmt("goto case 1;", F.Call(S.GotoCase, one));
 			Stmt("goto case [Foo] 1;", F.Call(S.GotoCase, Attr(Foo, one)));
 			Expr("new Foo(x) { [a] b = c }",
 										  F.Call(S.New, F.Call(Foo, x), Attr(a, F.Assign(b, c))));
@@ -207,30 +207,30 @@ namespace Loyc.Ecs.Tests
 		{
 			var stmt1 = F.Call(S.QuickBind, F.Dot(Foo, x), a);
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
-			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
+			Expr("b + #(Foo.x=:a, a * a + a)", F.Call(S.Add, b, F.List(stmt1, stmt2)));
 			//Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
-			Expr("x + {\n  Foo.x=:a;\n  @`'*`(a, a) + a;\n}",  F.Call(S.Add, x, F.Braces(stmt1, stmt2)));
-			Expr("2 + @`'{}`(Foo.x=:a, a * a + a)", 
+			Expr("x + {\n  Foo.x=:a;\n  @`'*`(a, a) + a;\n}", F.Call(S.Add, x, F.Braces(stmt1, stmt2)));
+			Expr("2 + @`'{}`(Foo.x=:a, a * a + a)",
 				F.Call(S.Add, two, AsStyle(NodeStyle.PrefixNotation, BracesOnOneLine(stmt1, stmt2))));
 		}
 
 		[Test]
 		public void EcsTuplesAndVarDeclsInExpressions()
 		{
-			Stmt("Foo a, b, c;",          F.Vars(Foo, a, b, c));
-			Stmt("Foo? a, b, c;",         F.Vars(F.Of(_(S.QuestionMark), Foo), a, b, c));
+			Stmt("Foo a, b, c;", F.Vars(Foo, a, b, c));
+			Stmt("Foo? a, b, c;", F.Vars(F.Of(_(S.QuestionMark), Foo), a, b, c));
 			Stmt("(#var(Foo, a, b, c));", F.InParens(F.Vars(Foo, a, b, c)));
-			Stmt("(Foo a) = x;",          F.Assign(F.InParens(F.Vars(Foo, a)), x));
-			Stmt("(Foo a) => a;",         F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
-			Stmt("([] Foo a) + x;",       F.Call(S.Add, F.Vars(Foo, a), x));
+			Stmt("(Foo a) = x;", F.Assign(F.InParens(F.Vars(Foo, a)), x));
+			Stmt("(Foo a) => a;", F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
+			Stmt("([] Foo a) + x;", F.Call(S.Add, F.Vars(Foo, a), x));
 			var x_1 = F.Tuple(x, one);
-			Stmt("(a, b) = (x, 1);",      F.Assign(F.Tuple(a, b), x_1));
-			Stmt("(a,) = (x,);",          F.Assign(F.Tuple(a), F.Tuple(x)));
-			Stmt("(a, Foo b) = (x, 1);",  F.Assign(F.Tuple(a, F.Vars(Foo, b)), x_1));
-			Stmt("(Foo a, b) = (x, 1);",  F.Assign(F.Tuple(F.Vars(Foo, a), b), x_1));
+			Stmt("(a, b) = (x, 1);", F.Assign(F.Tuple(a, b), x_1));
+			Stmt("(a,) = (x,);", F.Assign(F.Tuple(a), F.Tuple(x)));
+			Stmt("(a, Foo b) = (x, 1);", F.Assign(F.Tuple(a, F.Vars(Foo, b)), x_1));
+			Stmt("(Foo a, b) = (x, 1);", F.Assign(F.Tuple(F.Vars(Foo, a), b), x_1));
 			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
-			Stmt("(Foo a,) = (x,);",      F.Assign(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
-			
+			Stmt("(Foo a,) = (x,);", F.Assign(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
+
 			// TODO: drop support for this syntax in the printer.
 			// The parser doesn't get it... and that's okay.
 			//Stmt("(a, (Foo b)) = (x, 1);", F.Call(S.Assign, F.Tuple(a, F.InParens(F.Vars(Foo, b))), x_1));
@@ -284,7 +284,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("int Foo ==> #(a, b);", stmt);
 
 			stmt = F.Property(F.Int32, Foo, F.Braces(
-			          Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
+					  Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
 			Stmt("int Foo {\n  get ==> x;\n}", stmt);
 			stmt = F.Property(F.Int32, Foo, F.Braces(F.Call(get, F.Call(S.Forward, a, b))));
 			Stmt("int Foo {\n  get(@`'==>`(a, b));\n}", stmt);
@@ -372,7 +372,7 @@ namespace Loyc.Ecs.Tests
 		public void EcsExpressionAsMethodBody()
 		{
 			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
-			LNode def = F.Fn(F.Void, Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>) xToken)));
+			LNode def = F.Fn(F.Void, Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
 			LNode prop = F.Property(F.Void, Foo, F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
 			Stmt("void Foo() => @{ x };", def);
 			Stmt("void Foo => @{ x };", prop);
@@ -426,41 +426,41 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsWordAttributes()
 		{
-			Stmt("Foo(out a, ref b);",                            F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
-			Stmt("public new partial static void Main() { }",     AddWords(F.Fn(F.Void, F.Id("Main"), F.List(), F.Braces())));
-			Stmt("public new partial static void Main();",        AddWords(F.Fn(F.Void, F.Id("Main"), F.List())));
-			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
-			Stmt("public new partial static Foo x;",              AddWords(F.Vars(Foo, x)));
-			Stmt("public new partial static Foo operator==;",     AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
-			Stmt("public new partial static int x { get; }",      AddWords(F.Property(F.Int32, x, BracesOnOneLine(get))));
-			Stmt("public new partial static interface Foo { }",   AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
-			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
-			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Assign(a, Foo), F.List())));
-			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
-			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
-			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
-			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x, false)));
-			Stmt("class Foo {\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partial, F.Call(S.Constructor, F.Missing, Foo, F.List())))));
-			Stmt("class Foo {\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partialWA, F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())))));
-			Stmt("public new partial static this();",             AddWords(F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())));
-			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
-			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
-			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
+			Stmt("Foo(out a, ref b);", F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
+			Stmt("public new partial static void Main() { }", AddWords(F.Fn(F.Void, F.Id("Main"), F.List(), F.Braces())));
+			Stmt("public new partial static void Main();", AddWords(F.Fn(F.Void, F.Id("Main"), F.List())));
+			Stmt("public new partial static int x;", AddWords(F.Vars(F.Int32, x)));
+			Stmt("public new partial static Foo x;", AddWords(F.Vars(Foo, x)));
+			Stmt("public new partial static Foo operator==;", AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
+			Stmt("public new partial static int x { get; }", AddWords(F.Property(F.Int32, x, BracesOnOneLine(get))));
+			Stmt("public new partial static interface Foo { }", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
+			Stmt("public new partial static delegate void x();", AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
+			Stmt("public new partial static alias a = Foo;", AddWords(F.Call(S.Alias, F.Assign(a, Foo), F.List())));
+			Stmt("public new partial static event Foo x;", AddWords(F.Call(S.Event, Foo, x)));
+			Stmt("public new partial static Foo a ==> b;", AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
+			Stmt("Foo(public new partial static int x = 0);", F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
+			Stmt("Foo([#public, #new, #partial] static x);", F.Call(Foo, AddWords(x, false)));
+			Stmt("class Foo {\n  [#partial] Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+																	  Attr(partial, F.Call(S.Constructor, F.Missing, Foo, F.List())))));
+			Stmt("class Foo {\n  partial this();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+																	  Attr(partialWA, F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())))));
+			Stmt("public new partial static this();", AddWords(F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())));
+			Stmt("[#public, #new] partial static break;", AddWords(F.Call(S.Break)));
+			Stmt("[#public, #new] partial static return x;", AddWords(F.Call(S.Return, x)));
+			Stmt("[#public, #new] partial static goto case x;", AddWords(F.Call(S.GotoCase, x)));
 			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, ChildStmt(F.Call(Foo))), false));
 			Stmt("[#public, #new] partial static try { } catch { }", AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Missing, F.Missing, F.Braces()))));
-			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, ChildStmt(F.Call(Foo)))));
-			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
-			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo)), false));
-			Stmt("[#public, #new, #partial] static x = 0;",       AddWords(F.Assign(x, zero), false));
-			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
-			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
-			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
-			Stmt("[#public, #new, #partial] static ;",            AddWords(F.Missing, false));
-			Stmt("this int x;",                                   F.Vars(F.Int32, x).PlusAttr(F.@this));
-			Stmt("this Foo x;",                                   F.Vars(Foo, x).PlusAttr(F.@this));
-			Stmt("[this] a(b);",                                  F.Call(a, b).PlusAttr(F.@this));
+			Stmt("[#public, #new] partial static while (x)\n  Foo();", AddWords(F.Call(S.While, x, ChildStmt(F.Call(Foo)))));
+			Stmt("[#public, #new] partial static Foo:", AddWords(F.Call(S.Label, Foo)));
+			Stmt("[#public, #new, #partial] static new Foo();", AddWords(F.Call(S.New, F.Call(Foo)), false));
+			Stmt("[#public, #new, #partial] static x = 0;", AddWords(F.Assign(x, zero), false));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);", AddWords(F.Call(Foo, F.Assign(x, zero)), false));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);", AddWords(F.Call(Foo, F.Assign(x, zero)), false));
+			Stmt("[#public, #new, #partial] static get ==> b;", AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
+			Stmt("[#public, #new, #partial] static ;", AddWords(F.Missing, false));
+			Stmt("this int x;", F.Vars(F.Int32, x).PlusAttr(F.@this));
+			Stmt("this Foo x;", F.Vars(Foo, x).PlusAttr(F.@this));
+			Stmt("[this] a(b);", F.Call(a, b).PlusAttr(F.@this));
 		}
 
 		[Test]
@@ -528,8 +528,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("static implicit operator T(Foo a) { }", stmt);
 
 			stmt = Attr(@static, _(S.Explicit),
-			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
-			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
+						F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
+							  F.List(F.Vars(F.Of(_("Bar"), T), b))));
 			Stmt(@"static explicit Foo<T> operator`'cast`<$T>(Bar<T> b);", stmt);
 			Expr(@"static explicit #fn(Foo<T>, operator`'cast`<$T>, #([] Bar<T> b))", stmt);
 			stmt = F.Fn(F.Bool, Attr(trivia_operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
@@ -542,7 +542,7 @@ namespace Loyc.Ecs.Tests
 		{
 			// An unassigned variable is allowed when an expression has attributes, such as 'out'
 			Stmt("Foo(out List<Foo> x);", F.Call(Foo, F.Attr(_(S.Out), F.Var(F.Of(_("List"), Foo), x))));
-			Stmt("Foo([x] List<Foo> x);", F.Call(Foo, F.Attr(x,        F.Var(F.Of(_("List"), Foo), x))));
+			Stmt("Foo([x] List<Foo> x);", F.Call(Foo, F.Attr(x, F.Var(F.Of(_("List"), Foo), x))));
 			// Allow "var" even in places where unassigned variable declarations 
 			// are normally prohibited. This is allowed just for extra 
 			// flexibility in case a macro needs it.
@@ -573,17 +573,18 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsIsOperatorWithTuple()
 		{
-			Expr("x is Foo(a, b)", F.Call(S.Is, x, Foo, F.List(a, b)));
+			// Enhanced C# patterns are being disabled to support C# 9 patterns (#129)
+			//Expr("x is Foo(a, b)", F.Call(S.Is, x, Foo, F.List(a, b)));
 			Expr("(x is Foo)(a, b)", F.Call(F.InParens(F.Call(S.Is, x, Foo)), a, b));
-			Expr("x is Foo(a, b) in c", F.Call(S.In, F.Call(S.Is, x, Foo, F.List(a, b)), c));
-			Expr("x is Foo<T>(a, b)", F.Call(S.Is, x, F.Of(Foo, T), F.List(a, b)));
-			Expr("x is $(x + 1)(a, b)", F.Call(S.Is, x, F.Call(S.Substitute, F.Call(S.Add, x, one)), F.List(a, b)));
-			Expr("x is Foo $a(b, c)", F.Call(S.Is, x, F.Var(Foo, F.Call(S.Substitute, a)), F.List(b, c)));
+			//Expr("x is Foo(a, b) in c", F.Call(S.In, F.Call(S.Is, x, Foo, F.List(a, b)), c));
+			//Expr("x is Foo<T>(a, b)", F.Call(S.Is, x, F.Of(Foo, T), F.List(a, b)));
+			//Expr("x is $(x + 1)(a, b)", F.Call(S.Is, x, F.Call(S.Substitute, F.Call(S.Add, x, one)), F.List(a, b)));
+			//Expr("x is Foo $a(b, c)", F.Call(S.Is, x, F.Var(Foo, F.Call(S.Substitute, a)), F.List(b, c)));
 
 			// This doesn't parse because `?` is assumed not to be part of the 
 			// type if it is followed by `(`, and that's OK, since disambiguating 
 			// is hard and has virtually no benefit.
-			Expr("x is Foo?(a, b) in c", F.Call(S.QuestionMark, F.Call(S.Is, x, Foo), F.Call(S.In, F.Tuple(a, b), c), F.Missing), 
+			Expr("x is Foo?(a, b) in c", F.Call(S.QuestionMark, F.Call(S.Is, x, Foo), F.Call(S.In, F.Tuple(a, b), c), F.Missing),
 				Mode.ParserTest | Mode.ExpectAndDropParserError);
 		}
 
@@ -623,9 +624,9 @@ namespace Loyc.Ecs.Tests
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));
 			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParserTest);
 
-			Stmt("[Foo] default:",      Attr(Foo, F.Call(S.Label, F.Id(S.Default))));
-			Stmt("[Foo] case x:",       Attr(Foo, F.Call(S.Case, x)));
-			Stmt("partial case x:",     Attr(partialWA, F.Call(S.Case, x)));
+			Stmt("[Foo] default:", Attr(Foo, F.Call(S.Label, F.Id(S.Default))));
+			Stmt("[Foo] case x:", Attr(Foo, F.Call(S.Case, x)));
+			Stmt("partial case x:", Attr(partialWA, F.Call(S.Case, x)));
 			var braces_Foo_x = BracesOnOneLine(F.Var(Foo, Operator(F.Call(S.Substitute, x))));
 			Stmt("if ({ Foo $x; })\n  Foo();", F.Call(S.If, braces_Foo_x, OnNewLine(F.Call(Foo)))); ;
 		}
@@ -679,11 +680,11 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void Ridiculous()
 		{
-			Stmt("crazy throw return goto case break continue;", F.Attr(WordAttr("crazy"), 
+			Stmt("crazy throw return goto case break continue;", F.Attr(WordAttr("crazy"),
 				F.Call(S.Throw, F.Call(S.Return, F.Call(S.GotoCase, F.Call(S.Break, F.Call(S.Continue)))))));
 			Stmt("typeof(List<>) != typeof(2+2);",
-				F.Call(S.NotEq, 
-					F.Call(S.Typeof, F.Of(_("List"), F.Missing)), 
+				F.Call(S.NotEq,
+					F.Call(S.Typeof, F.Of(_("List"), F.Missing)),
 					F.Call(S.Typeof, F.Call(_("#error"), F.Literal("Type expected")))),
 					Mode.ParserTest | Mode.ExpectAndDropParserError);
 		}

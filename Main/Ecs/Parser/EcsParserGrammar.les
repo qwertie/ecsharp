@@ -718,11 +718,12 @@ namespace Loyc.Ecs.Parser
 				rhs:=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
 			|	// is-test or a more complex is-expr
-				&{@[Local] context.CanParse(prec=EP.Compare)}
+				&{@[Local] context.CanParse(prec=EP.Is)}
 				op:=TT.Is
-				e=IsPattern(e, op)
+				rhs:=Pattern(prec) //e=IsPattern(e, op)
+				{e = F.CallInfixOp(e, op, rhs, S.Is);}
 			|	// 'as' or 'using' cast (special case: 'using instead of #using)
-				&{@[Local] context.CanParse(prec=EP.Compare)}
+				&{@[Local] context.CanParse(prec=EP.AsUsing)}
 				op:=(TT.As | TT.Using)
 				rhs:=DataType(true)
 				{e = F.CallInfixOp(e, op, rhs, op.Type() == TT.Using ? S.UsingCast : S.As);}
@@ -1014,11 +1015,19 @@ namespace Loyc.Ecs.Parser
 		// ------
 		// - The var_pattern is simply a special case of positional_pattern in which 
 		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
+		//   But though syntactically it's a subset, its meaning is of course quite 
+		//   different. The C# compiler evidently decided to parse it differently,
+		//   as (contrary to the grammar above) `var(1, p)` is a syntax error even if 
+		//   there is a `class var` in scope. EC# parses it differently, too.
 		// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
 		//   just a special case of positional_pattern; `((var x))` should already have
 		//   been valid in C# 8 given the grammar above, though maybe it has a 
 		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
-		//   deconstruction and in C# 9 there is no deconstruction at all.
+		//   deconstruction while in C# 9 there is no deconstruction at all.
+		// - Less obvious is that `type` conflicts with `positional_pattern` (and also
+		//   `constant_expression`) because `(A, B)` looks like a positional pattern and
+		//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
+		//   that (A, B) is a pattern and not a type name nor a value.
 		// - My experimentation suggests that constant_expression, as you might guess,
 		//   has a precedence matching the `is` operator when it appears on the right-
 		//   hand side of an is-expression. In a switch expression it can be almost
@@ -1060,7 +1069,7 @@ namespace Loyc.Ecs.Parser
 		//   `(object)2   is     int x when x < 5` is a syntax error.
 		// - Examples of patterns that don't look like normal expressions
 		//   nor variable declarations:
-		//     `Foo(Dictionary<Int32, Int32>dict)` // Foo takes only one argument
+		//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
 		//     `(> 0, name: {} x) y`
 		//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
 		// - Not related to patterns but I just noticed that 
@@ -1120,9 +1129,6 @@ namespace Loyc.Ecs.Parser
 		// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
 		// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
 		// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
-		// 
-		// In Roslyn,
-		//   DeclarationPatternSyntax is a type + designation (ident or tuple)
 
 		token Pattern(ctx::Precedence)::LNode @{
 			result:ConjunctivePattern(ctx)
@@ -1169,14 +1175,15 @@ namespace Loyc.Ecs.Parser
 				{ $result = F.Call(S.Var, MissingHere(), $VarDesignation, var.StartIndex, $VarDesignation.Range.EndIndex); }
 			
 			|	// other non-expression, non-relational patterns
-				( type:DataType(afterAsOrIs<: true) )?  { $result = type; }
+				( type:DataType(afterAsOrIs<: true) )?  { $result = type ?? F.Tuple().Target; }
 				(
 					"(" ")"   { $result = F.Call(S.Deconstruct, F.CallPrefix(type, SubpatternsIn($"(", true), $")")); }
 					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange(type.Range.StartIndex, $"}".EndIndex); } )?
-				|	"{" "}"   { $result = F.CallBrackets(S.Deconstruct, $"{", SubpatternsIn($"{").Insert(0, F.Tuple()), $"}"); }
+				|	"{" "}"   { $result = F.CallBrackets(S.Deconstruct, $"{", SubpatternsIn($"{").Insert(0, F.Call(result)), $"}"); }
 				)?
 				( name:=IdAtom { result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex); } )?
 			)
+			{ return result ?? MissingHere(); }
 		};
 
 		@[private]
@@ -1194,16 +1201,19 @@ namespace Loyc.Ecs.Parser
 		};
 
 		fn SubpatternsIn(opener::Token, inParens::bool = false)::LNodeList {
-			return Down(opener) ? Up(SubPatterns(inParens)) : LNode.List();
+			G.Verify(Down(opener));
+			return Up(LA0 != EOF ? SubPatterns(inParens) : LNode.List());
 		};
 		rule SubPatterns(inParens::bool)::LNodeList @{
-			result+:SubPattern 
-			("," result+:SubPattern)*
-			("," {
-				if (inParens) {
-					Error(-1, "Expected subpattern after ','");
-				};
-			})?
+			(
+				result+:SubPattern 
+				("," result+:SubPattern)*
+				("," {
+					if (inParens) {
+						Error(-1, "Expected subpattern after ','");
+					};
+				})?
+			)?
 			(EOF =>) // actually ends with ')' or '}', which in a tree parser is end-of-token-stream
 		};
 		rule SubPattern()::LNode @{
