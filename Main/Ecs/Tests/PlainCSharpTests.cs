@@ -796,6 +796,27 @@ namespace Loyc.Ecs.Tests
 			Expr("x is Foo::x<a, b>.Foo<T> a", e);
 		}
 
+		[Test]
+		public void CSharp8Patterns()
+		{
+			Stmt("x is var(a, b, c)", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(a, b, c))));
+			Stmt("x is var(c, (b, a))", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(c, F.Tuple(b, a)))));
+			Stmt("a is Foo(0, 1)", F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(Foo, zero, one))));
+			Stmt("b is x::Foo(1, b: (a: 0, b: 2))", F.Call(S.Is));
+			Stmt("c is x.Foo<a, b>(Item1: (a: 0, b: 1), Item2: 2)", F.Call(S.Is));
+			Stmt("x is Foo<b, a>.T<c>({ 2, 1 }, 0)", F.Call(S.Is));
+			Stmt("a is Foo { }", F.Call(S.Is));
+			Stmt("b is x::Foo<T> { a: Foo(1), b: { 0 } }", F.Call(S.Is));
+			Stmt("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x), }", F.Call(S.Is));
+			Stmt("x is Foo::Foo { a: int x, b: var((0, 2))", F.Call(S.Is));
+		}
+
+		[Test]
+		public void CSharp9Patterns()
+		{
+			Stmt("a is Foo", F.Call(S.Is, a, Foo));
+		}
+
 		LNode TupleType(params LNode[] parts) => F.Of(_(S.Tuple), parts);
 
 		[Test]

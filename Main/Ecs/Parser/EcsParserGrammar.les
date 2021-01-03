@@ -34,6 +34,13 @@ namespace Loyc.Ecs.Parser
 
 	@[partial] class EcsParser
 	{
+		define change_temporarily($lhs = $rhs)
+		{
+			var old_unique# = $lhs;
+			$lhs = $rhs;
+			on_finally { $lhs = old_unique#; }
+		};
+
 		@[LL(2), FullLLk(false), Verbosity(1), AddCsLineDirectives(@false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false),
@@ -189,7 +196,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// identifier, $identifier, $(expr), operator+ (or another operator name), or a primitive type (int, string)
-		rule IdAtom::LNode @{
+		rule IdAtom()::LNode @{
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.CallPrefixOp(t, e, S.Substitute);}
@@ -416,7 +423,7 @@ namespace Loyc.Ecs.Parser
 
 		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
 		@[LL(3)]
-		rule Atom::LNode @{
+		rule Atom()::LNode @{
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.CallPrefixOp(t, e);}
@@ -448,7 +455,6 @@ namespace Loyc.Ecs.Parser
 					                         F.Braces(block, StmtListInside(block), rb));
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
-			|	t:=TT.Is r=IsPattern(F.Missing, t)
 			|	error 
 				greedy[ (~(","|";")) ]*
 				{r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
@@ -737,7 +743,6 @@ namespace Loyc.Ecs.Parser
 			{return e;}
 		};
 
-		@[recognizer(fn Scan_IsPattern())]
 		@[private] token IsPattern(lhs::LNode, isTok::Token)::LNode // 'token' is used to avoid long analysis in LLLPG
 		@{
 			{argList::LNodeList = (new LNodeList(lhs));}
@@ -775,56 +780,54 @@ namespace Loyc.Ecs.Parser
 				expr::LNode;
 				var(result::TentativeResult, _::TentativeResult);
 				if (allowUnassignedVarDecl) {
-					expr = TentativeVarDecl(attrs, out result, allowUnassignedVarDecl)
-						?? TentativeExpr(attrs, out result);
+					expr = TryParseVarDecl(attrs, out result, allowUnassignedVarDecl)
+						?? TryParseNonVarDeclExpr(attrs, out result);
 				} else {
-					expr = TentativeExpr(attrs, out result);
+					expr = TryParseNonVarDeclExpr(attrs, out result);
 					// If parsing as expression succeeds but it's an assignment with
 					// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
 					if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
 						InputPosition = result.OldPosition;
-						expr = TentativeVarDecl(attrs, out _, allowUnassignedVarDecl);
+						expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
 					};
 				};
-				expr ??= Apply(result);
+				expr ??= Commit(result);
 				return expr;
 			})
 		};
 
 		// Helper functions for parsing normal expressions and var-decl expressions
-		define DefineTentativeFunction($TentativeFn, $TentativeCode)
+		define DefineTentativeFunction($TentativeFn($attrs, $result, $(..rest)), $TentativeCode)
 		{
-			// Parses an expression (TentativeExpr) or variable declaration (TentativeVarDecl).
-			// Returns the parsed node on success or null if outer-level parse error(s) 
-			// occurred; the out param result is never null, and in case of success it 
-			// is the same as the return value. Error handling is tricky... we fail if
-			// there are errors at the current level, not if there are errors in 
-			// parenthesized subexpressions.
-			fn $TentativeFn(attrs::LNodeList, out result::TentativeResult, allowUnassigned::bool = false)::LNode
+			// Attempts to parse, returning the parsed node on success or null if 
+			// outer-level parse error(s) occurred; the out param result is never null, 
+			// and in case of success it is the same as the return value. Error 
+			// handling is tricky... we fail if there are errors at the current level, 
+			// not if there are errors in parenthesized subexpressions.
+			fn $TentativeFn($attrs::LNodeList, out $result::TentativeResult, $rest)::LNode
 			{
-				result = (new TentativeResult(InputPosition));
-				var oldState = _tentative;
-				_tentative = (new TentativeState(@true));
+				$result = (new TentativeResult(InputPosition));
 				{
-					on_finally { _tentative = oldState; };
+					change_temporarily(_tentativeErrors = (new TentativeState(@true)));
 
 					failed::bool = false;
 				
 					$TentativeCode; // sets the result variable
 				
-					result.Errors = _tentative.DeferredErrors;
-					result.InputPosition = InputPosition;
-					if failed || _tentative.LocalErrorCount != 0 {
+					$result.Errors = _tentativeErrors.DeferredErrors;
+					$result.InputPosition = InputPosition;
+					if failed || _tentativeErrors.LocalErrorCount != 0 {
 						// error(s) occurred.
-						InputPosition = result.OldPosition;
+						InputPosition = $result.OldPosition;
 						return @null;
 					};
 				};
-				return Apply(result); // must Apply after finally block
+				// can't Commit until original _tentativeErrors is restored
+				return Commit($result);
 			}
 		};
 
-		DefineTentativeFunction TentativeExpr
+		DefineTentativeFunction TryParseNonVarDeclExpr(attrs, result)
 		{
 			result.Result = SubExpr(StartExpr).PlusAttrs(attrs);
 			// A var decl like "A B" looks like an expression followed by
@@ -835,7 +838,7 @@ namespace Loyc.Ecs.Parser
 			};
 		};
 		
-		DefineTentativeFunction TentativeVarDecl
+		DefineTentativeFunction TryParseVarDecl(attrs, result, allowUnassigned::bool = false)
 		{
 			var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr);
 			if (cat != StmtCat.MethodOrPropOrVar) {
@@ -850,7 +853,7 @@ namespace Loyc.Ecs.Parser
 			};
 		};
 
-		fn Apply(result::TentativeResult)::LNode
+		fn Commit(result::TentativeResult)::LNode
 		{
 			InputPosition = result.InputPosition;
 			if result.Errors != null { 
@@ -913,8 +916,8 @@ namespace Loyc.Ecs.Parser
 		@{
 			lp:="(" rp:=")"
 			{
-				// Note: we invoke ExprInParensOrTuple inside an action, hiding the
-				// invocation from LLLPG, to avoid creating a recognizer for Expr.
+				// Note: this parsing task is hidden from LLLPG so it doesn't try to make a 
+				// recognizer for Expr (it wouldn't work right and would need too many LoCs)
 				if (!Down(lp)) { return F.CallBrackets(S.Tuple, lp, LNode.List(), rp); };
 				return Up(InParens_ExprOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
 			}
@@ -947,13 +950,10 @@ namespace Loyc.Ecs.Parser
 		};
 		@[private] rule BracedBlock(spaceName::Symbol = @null, target::Symbol = @null, startIndex::int = -1)::LNode
 		@{
-			{	var oldSpace = _spaceName;
-				_spaceName = spaceName ?? oldSpace;
-			}
+			{ change_temporarily(_spaceName = spaceName ?? _spaceName); }
 			"{" "}"
 			{	if (startIndex == -1) { startIndex = $"{".StartIndex; };
 				var stmts = StmtListInside($"{");
-				_spaceName = oldSpace;
 				return F.Call(target ?? S.Braces, stmts, 
 					startIndex, $"}".EndIndex, $"{".StartIndex, $"{".EndIndex, NodeStyle.StatementBlock);
 			}
@@ -974,12 +974,14 @@ namespace Loyc.Ecs.Parser
 		// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
 		// refers to "existing" productions like primary_pattern that DON'T EXIST
 		// in the C# 8 version. Anyway, here is my attempt to piece together a 
-		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar:
+		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar
+		// (which still doesn't include `when` clauses from the `switch` expression):
 		//
 		// // aka disjunctive_pattern
 		// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
 		// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
 		// negated_pattern : 'not' negated_pattern | primary_pattern;
+		//
 		// primary_pattern
 		//     : type identifier     // aka declaration_pattern
 		//     | constant_expression // aka constant_pattern
@@ -1009,10 +1011,14 @@ namespace Loyc.Ecs.Parser
 		//   relational_expression : <<no definition is provided!>>
 		//
 		// NOTES:
+		// ------
 		// - The var_pattern is simply a special case of positional_pattern in which 
-		//   the type happens to be `var` and the subpatterns are expressions.
+		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
 		// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
-		//   just a special case of positional_pattern
+		//   just a special case of positional_pattern; `((var x))` should already have
+		//   been valid in C# 8 given the grammar above, though maybe it has a 
+		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
+		//   deconstruction and in C# 9 there is no deconstruction at all.
 		// - My experimentation suggests that constant_expression, as you might guess,
 		//   has a precedence matching the `is` operator when it appears on the right-
 		//   hand side of an is-expression. In a switch expression it can be almost
@@ -1022,8 +1028,15 @@ namespace Loyc.Ecs.Parser
 		//     expected" (I would think that `(string)null ?? null` is constant, but,
 		//     turns out, it's not, i.e. you can't make a const var with this value.)
 		//     The others fail as syntax errors.
-		//   - A lambda operator can't be used in either context, even if you add
+		//   - A lambda function can't be used in either context, even if you add
 		//     parentheses around it.
+		// - But what is the precedence of the relational_expression? Surprisingly,
+		//   low precedence operators are not allowed, even in a switch expression:
+		//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
+		//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
+		//   `(object)x switch { (<= (2 & 3), 3) => 7 }` is a syntax error, although
+		//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
+		//   `(object)x switch { <= 2 << 3 => 7 }`.
 		// - Postfix `++` and `--` cause syntax errors, so I could not find out
 		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
 		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
@@ -1062,54 +1075,166 @@ namespace Loyc.Ecs.Parser
 		//
 		// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
 		// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
+		//
+		// SIMPLIFIED REFORMULATION
+		// ------------------------
+		// Here's a simplified version of the above grammar with reduced ambiguity:
+		// 
+		//   pattern : conjunctive_pattern ('or' conjunctive_pattern)*;      // as before
+		//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
+		//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
+		//
+		//   primary_pattern
+		//     : relational_pattern
+		//     / typed_pattern // includes complex identifiers and even the discard _
+		//     / paren_or_brace_pattern
+		//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
+		//
+		//   paren_or_brace_pattern:
+		//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
+		//   typed_pattern:
+		//     type (identifier | paren_or_brace_pattern)?
+		//   property_subpattern: // as before
+		//   subpatterns:         // as before
+		//   relational_pattern:  // as before
+		// 
+		// Loyc tree mappings, by example:
+		//
+		// | Example Pattern          | Loyc tree (EC#/LES2 syntax) 
+		// |--------------------------|-----------------------------
+		// | `_`                      | ```_```
+		// | `Enum.Value`             | ```Enum.Value```
+		// | `2 + 2`                  | ```2 + 2```
+		// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
+		// | `var x`                  | ```#var(@``, x)```
+		// | `var (x, y, z)`          | ```#var(@``, (x, y, z))``` (shorthand for ```#var(@``, @'tuple(x, y, z))```)
+		// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
+		// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+		// | `List<T> list`           | ```#var(List!T, list)```
+		// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
+		// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
+		// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+		// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
+		// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
+		// | `List<T> { Count: 3 }`   | ```#var(List!T, list)```
+		// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
+		// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
+		// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+		// 
+		// In Roslyn,
+		//   DeclarationPatternSyntax is a type + designation (ident or tuple)
 
-		rule Pattern()::LNode @{
-			result:ConjunctivePattern
-			(	&{Is($LI, @@or)} op:TT.Id rhs:ConjunctivePattern
+		token Pattern(ctx::Precedence)::LNode @{
+			result:ConjunctivePattern(ctx)
+			(	&{Is($LI, @@or)} op:TT.Id rhs:ConjunctivePattern(ctx)
 				{ result = F.CallInfixOp(result, op, rhs); }
 			)*
 		};
 
-		rule ConjunctivePattern()::LNode @{
-			result:NegatedPattern
-			(	&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern
+		rule ConjunctivePattern(ctx::Precedence)::LNode @{
+			result:NegatedPattern(ctx)
+			(	&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern(ctx)
 				{ result = F.CallInfixOp(result, op, rhs); }
 			)*
 		};
 		
-		rule NegatedPattern()::LNode @{
-			(	&{Is($LI, @@not)} not:TT.Id NegatedPattern
+		rule NegatedPattern(ctx::Precedence)::LNode @{
+			(	&{Is($LI, @@not)} not:TT.Id NegatedPattern(ctx)
 				{ result = F.CallPrefixOp(not, $NegatedPattern); }
-			/	result:PrimaryPattern
+			/	result:PrimaryPattern(ctx)
 			)
 		};
 
-		rule PrimaryPattern()::LNode @{
-		// primary_pattern
-		//     : type identifier     // aka declaration_pattern
-		//     | constant_expression // aka constant_pattern
-		//     | type                // aka type_pattern
-		//     | var_pattern
-		//     | positional_pattern
-		//     | property_pattern
-		//     | relational_pattern
-		//     | '(' pattern ')'     // aka parenthesized_pattern
-		//     | '_'                 // aka discard_pattern
-		//     ;
-			_ { return F.Literal($_.Value); }
+		@[recognizer { fn Scan_PrimaryPattern(context::Precedence); }]
+		rule PrimaryPattern(context::Precedence)::LNode @{
+			result:NonExprPattern
+			//(	result:RelationalPattern(context)
+			///	ParenOrBracePattern => result:ParenOrBracePattern
+			///	// As of 2021/01 LLLPG doesn't invoke syntactic predicates inside 
+			//	// recognizers, which can cause occasional failures to parse. 
+			//	// TODO find an example
+			//	&TypedPattern IdAtom => result:TypedPattern
+			///	SubExprInPattern(context)
+			//	//{ result:SubExpr(context, lambdaInFollowSet: true) }
+			///	error { Error("Expected a pattern"); } _
+			//)
+		};
+
+		rule NonExprPattern()::LNode @{
+			( ("("|"{"|DataType) => ) // require one of the first three parts
+			
+			(	// var variableName or var(...)
+				&{Is($LI, @@var)} var:=TT.ContextualKeyword
+				VarDesignation
+				{ $result = F.Call(S.Var, MissingHere(), $VarDesignation, var.StartIndex, $VarDesignation.Range.EndIndex); }
+			
+			|	// other non-expression, non-relational patterns
+				( type:DataType(afterAsOrIs<: true) )?  { $result = type; }
+				(
+					"(" ")"   { $result = F.Call(S.Deconstruct, F.CallPrefix(type, SubpatternsIn($"(", true), $")")); }
+					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange(type.Range.StartIndex, $"}".EndIndex); } )?
+				|	"{" "}"   { $result = F.CallBrackets(S.Deconstruct, $"{", SubpatternsIn($"{").Insert(0, F.Tuple()), $"}"); }
+				)?
+				( name:=IdAtom { result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex); } )?
+			)
+		};
+
+		@[private]
+		rule VarDesignation()::LNode @{	
+			(	result:IdAtom
+			|	"(" ")"
+				{
+					var contents = Down($"(") ? Up(VarTupleContents()) : LNode.List();
+					$result = F.CallBrackets(S.Tuple, $"(", contents, $")");
+				}
+			)
+		};
+		rule VarTupleContents()::LNodeList @{
+			result+:VarDesignation ("," result+:VarDesignation)*
+		};
+
+		fn SubpatternsIn(opener::Token, inParens::bool = false)::LNodeList {
+			return Down(opener) ? Up(SubPatterns(inParens)) : LNode.List();
+		};
+		rule SubPatterns(inParens::bool)::LNodeList @{
+			result+:SubPattern 
+			("," result+:SubPattern)*
+			("," {
+				if (inParens) {
+					Error(-1, "Expected subpattern after ','");
+				};
+			})?
+			(EOF =>) // actually ends with ')' or '}', which in a tree parser is end-of-token-stream
+		};
+		rule SubPattern()::LNode @{
+			(	param:TT.Id ":" Pattern(EP.IfElse) { $result = F.CallInfixOp(F.Id(param), $":", $Pattern, S.NamedArg); }
+			|	result:Pattern(EP.IfElse)
+			)
+		};
+
+		/*@[private]
+		rule RelationalPattern(ctx::Precedence)::LNode @{
+			op:("<"|">"|"==,!="|"<=,>="|"<=>")
+			e:SubExprInPattern(EP.Shift)
+			{return F.CallPrefixOp(op, e);}
+		};
+
+		rule SubExprInPattern(context::Precedence)::LNode @{
+			// SubExpr is too complex to include in the recognizer for Pattern
+			// (and the generated code wouldn't work right anyway)
+			nonrecognizer(result:SubExpr(context, lambdaInFollowSet<: true))
+			recognizer(_)
+		};
+
+		rule TypedPattern()::LNode @{
+			id:TT.Id { $result=F.Id(id); }
+		};
+
+		rule ParenOrBracePattern()::LNode @{
+			"(" ")" {$result=F.Tuple(ExprListInside($"("));}
 		};
 		
-		@[private] rule SwitchCasePrefixExpr()::LNode @{
-			(	// Binary operators as prefix operators
-				op:("<"|">"|"==,!="|"<=,>="|"<=>")
-				e:SubExpr(EP.Shift)
-			|	// "not" prefix operator
-				&{Is($LI, @@not)} op:TT.Id 
-			|	result:SwitchCaseSubExpr
-			)
-		};
-
-		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, lambdaInFollowSet<: true) };
+		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, lambdaInFollowSet<: true) };*/
 
 
 		// ---------------------------------------------------------------------
@@ -1125,7 +1250,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule SwitchExpressionArm()::LNode @{
-			lhs:Pattern CaseGuard? "=>" rhs:ExprStart(false)
+			lhs:Pattern(EcsPrecedence.IfElse) CaseGuard? "=>" rhs:ExprStart(false)
 			{ $result = F.Call(S.Lambda, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex, $"=>".StartIndex, $"=>".EndIndex, NodeStyle.Special); }
 		};
 
@@ -1193,8 +1318,7 @@ namespace Loyc.Ecs.Parser
 		@[public] rule LinqQueryExpression::LNode @{
 			{
 				startIndex::int = LT0.StartIndex;
-				_insideLinqExpr = true;
-				on_finally { _insideLinqExpr = false; };
+				change_temporarily(_insideLinqExpr = true);
 				var parts = LNode.List();
 			}
 			parts+=LinqFromClause

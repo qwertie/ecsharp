@@ -30,17 +30,17 @@ namespace Loyc.Ecs.Parser
 
 	partial class EcsParser
 	{
-		static readonly Symbol sy_await = (Symbol) "await", sy_from = (Symbol) "from", sy_or = (Symbol) "or", sy_and = (Symbol) "and", sy_not = (Symbol) "not", sy_when = (Symbol) "when", sy_let = (Symbol) "let", sy_where = (Symbol) "where", sy_join = (Symbol) "join", sy_orderby = (Symbol) "orderby", sy_group = (Symbol) "group", sy_into = (Symbol) "into", sy_on = (Symbol) "on", sy_equals = (Symbol) "equals", sy__numequals = (Symbol) "#equals", sy_ascending = (Symbol) "ascending", sy_descending = (Symbol) "descending", sy_select = (Symbol) "select", sy_by = (Symbol) "by", sy_trait = (Symbol) "trait", sy_alias = (Symbol) "alias", sy_assembly = (Symbol) "assembly", sy_module = (Symbol) "module";
-	
+		static readonly Symbol sy_await = (Symbol) "await", sy_from = (Symbol) "from", sy_or = (Symbol) "or", sy_and = (Symbol) "and", sy_not = (Symbol) "not", sy_var = (Symbol) "var", sy_when = (Symbol) "when", sy_let = (Symbol) "let", sy_where = (Symbol) "where", sy_join = (Symbol) "join", sy_orderby = (Symbol) "orderby", sy_group = (Symbol) "group", sy_into = (Symbol) "into", sy_on = (Symbol) "on", sy_equals = (Symbol) "equals", sy__numequals = (Symbol) "#equals", sy_ascending = (Symbol) "ascending", sy_descending = (Symbol) "descending", sy_select = (Symbol) "select", sy_by = (Symbol) "by", sy_trait = (Symbol) "trait", sy_alias = (Symbol) "alias", sy_assembly = (Symbol) "assembly", sy_module = (Symbol) "module";
+
 		// Used to resolve the constructor ambiguity, in which "Foo()" could be a
 		// constructor declaration or a method call. _spaceName is the name of the
 		// current space, or #fn (S.Fn) when inside a method or constructor.
 		Symbol _spaceName;
-	
+
 		// Inside a LINQ expression, certain ContextualKeywords are to be treated
 		// as actual keywords. This flag enables that behavior.
 		bool _insideLinqExpr;
-	
+
 		// Used to detect a specific ContextualKeyword; `@` renders it not-a-keyword
 		bool Is(int li, Symbol value)
 		{
@@ -72,7 +72,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return type;
 		}
-	
+
 		static LNode AutoRemoveParens(LNode node)
 		{
 			int i = node.Attrs.IndexWithName(S.TriviaInParens);
@@ -81,14 +81,14 @@ namespace Loyc.Ecs.Parser
 			}
 			return node;
 		}
-	
+
 		// This is the same as ComplexId except that it is used in declaration 
 		// locations such as the name of a class. The difference is that the 
 		// type parameters can have [normal attributes] and in/out variance 
 		// attrbutes. This matcher also helps match properties and therefore 
 		// optionally allows names ending in 'this', such as 'IList<T>.this'
 		LNode ComplexNameDecl() { return ComplexNameDecl(false, out bool _); }
-	
+
 		int count;	// hack allows Scan_TypeSuffixOpt() to compile
 		// Parsing EC# expressions is very tricky. Here are some of the things 
 		// that make it difficult, especially in an LL(k) parser:
@@ -131,8 +131,8 @@ namespace Loyc.Ecs.Parser
 		//    Foo<B> ? x = null : y; // conditional operator
 		/// Below lowest precedence
 		public static readonly Precedence StartExpr = new Precedence(-100);
-	
-			// Types of expressions:
+		
+		// Types of expressions:
 			// - identifier
 			// - (parenthesized expr)
 			// - (tuple,)
@@ -151,7 +151,7 @@ namespace Loyc.Ecs.Parser
 			// - #{ code in braces; old scope }
 			// - delegate(...) {...}
 			// - from x in expr... (LINQ)
-	
+
 		LNode TypeInside(Token args)
 		{
 			if ((!Down(args)))
@@ -160,7 +160,7 @@ namespace Loyc.Ecs.Parser
 			Match((int) EOF);
 			return Up(type);
 		}
-	
+
 		LNode SetOperatorStyle(LNode node)
 		{
 			return node.SetBaseStyle(NodeStyle.Operator);
@@ -170,23 +170,22 @@ namespace Loyc.Ecs.Parser
 			node.Style |= NodeStyle.Alternate;
 			return node;
 		}
-	
-		// Parses an expression (TentativeExpr) or variable declaration (TentativeVarDecl).
-		// Returns the parsed node on success or null if outer-level parse error(s) 
-		// occurred; the out param result is never null, and in case of success it 
-		// is the same as the return value. Error handling is tricky... we fail if
-		// there are errors at the current level, not if there are errors in 
-		// parenthesized subexpressions.
-		LNode TentativeExpr(LNodeList attrs, out TentativeResult result, bool allowUnassigned = false)
+
+		// Attempts to parse, returning the parsed node on success or null if 
+		// outer-level parse error(s) occurred; the out param result is never null, 
+		// and in case of success it is the same as the return value. Error 
+		// handling is tricky... we fail if there are errors at the current level, 
+		// not if there are errors in parenthesized subexpressions.
+		LNode TryParseNonVarDeclExpr(LNodeList attrs, out TentativeResult result)
 		{
 			result = new TentativeResult(InputPosition);
-			var oldState = _tentative;
-			_tentative = new TentativeState(true);
 			{
+				var old_10 = _tentativeErrors;
+				_tentativeErrors = new TentativeState(true);
 				try {
-				
+
 					bool failed = false;
-				
+
 					{
 						result.Result = SubExpr(StartExpr).PlusAttrs(attrs);
 						// A var decl like "A B" looks like an expression followed by
@@ -196,34 +195,34 @@ namespace Loyc.Ecs.Parser
 							failed = true;
 						}
 					}
-					result.Errors = _tentative.DeferredErrors;
+					result.Errors = _tentativeErrors.DeferredErrors;
 					result.InputPosition = InputPosition;
-					if (failed || _tentative.LocalErrorCount != 0) {
+					if (failed || _tentativeErrors.LocalErrorCount != 0) {
 						// error(s) occurred.
 						InputPosition = result.OldPosition;
 						return null;
 					}
-				} finally { _tentative = oldState; }
+				} finally { _tentativeErrors = old_10; }
 			}
-			return Apply(result);	// must Apply after finally block
+			// can't Commit until original _tentativeErrors is restored
+			return Commit(result);
 		}
-	
-		// Parses an expression (TentativeExpr) or variable declaration (TentativeVarDecl).
-		// Returns the parsed node on success or null if outer-level parse error(s) 
-		// occurred; the out param result is never null, and in case of success it 
-		// is the same as the return value. Error handling is tricky... we fail if
-		// there are errors at the current level, not if there are errors in 
-		// parenthesized subexpressions.
-		LNode TentativeVarDecl(LNodeList attrs, out TentativeResult result, bool allowUnassigned = false)
+
+		// Attempts to parse, returning the parsed node on success or null if 
+		// outer-level parse error(s) occurred; the out param result is never null, 
+		// and in case of success it is the same as the return value. Error 
+		// handling is tricky... we fail if there are errors at the current level, 
+		// not if there are errors in parenthesized subexpressions.
+		LNode TryParseVarDecl(LNodeList attrs, out TentativeResult result, bool allowUnassigned = false)
 		{
 			result = new TentativeResult(InputPosition);
-			var oldState = _tentative;
-			_tentative = new TentativeState(true);
 			{
+				var old_11 = _tentativeErrors;
+				_tentativeErrors = new TentativeState(true);
 				try {
-				
+
 					bool failed = false;
-				
+
 					{
 						var cat = DetectStatementCategoryAndAddWordAttributes(out _, ref attrs, DetectionMode.Expr);
 						if ((cat != StmtCat.MethodOrPropOrVar)) {
@@ -237,19 +236,20 @@ namespace Loyc.Ecs.Parser
 							}
 						}
 					}
-					result.Errors = _tentative.DeferredErrors;
+					result.Errors = _tentativeErrors.DeferredErrors;
 					result.InputPosition = InputPosition;
-					if (failed || _tentative.LocalErrorCount != 0) {
+					if (failed || _tentativeErrors.LocalErrorCount != 0) {
 						// error(s) occurred.
 						InputPosition = result.OldPosition;
 						return null;
 					}
-				} finally { _tentative = oldState; }
+				} finally { _tentativeErrors = old_11; }
 			}
-			return Apply(result);	// must Apply after finally block
+			// can't Commit until original _tentativeErrors is restored
+			return Commit(result);
 		}
-	
-		LNode Apply(TentativeResult result)
+
+		LNode Commit(TentativeResult result)
 		{
 			InputPosition = result.InputPosition;
 			if (result.Errors != null) {
@@ -257,9 +257,9 @@ namespace Loyc.Ecs.Parser
 			}
 			return result.Result;
 		}
-	
+
 		static readonly Symbol _var = GSymbol.Get("var");
-	
+
 		private void MaybeRecognizeVarAsKeyword(ref LNode type)
 		{
 			// Recognize "var" (but not @var) as a contextual keyword.
@@ -270,10 +270,14 @@ namespace Loyc.Ecs.Parser
 				type = type.WithName(S.Missing);
 			}
 		}
-	
+
+		LNodeList SubpatternsIn(Token opener, bool inParens = false) {
+			return Down(opener) ? Up(SubPatterns(inParens)) : LNode.List();
+		}
+
 		bool IsNamedArg(LNode node) { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; }
 		WList<LNode> _stmtAttrs = new WList<LNode>();
-	
+
 		// Statement categories distinguished by DetectStatementCategory
 		enum StmtCat {
 			MethodOrPropOrVar = 0	// method, property, or variable declaration 
@@ -292,7 +296,7 @@ namespace Loyc.Ecs.Parser
 			Expr = 0,
 			Stmt = 1
 		}
-	
+
 		static readonly HashSet<TT> ExpectedAfterTypeAndName_InStmt = new HashSet<TT> { 
 			TT.Set, TT.LBrace, TT.LParen, TT.LBrack, TT.LambdaArrow, TT.Forward, TT.Semicolon, TT.Comma, TT.At	// @{...} token literal (property)
 		};
@@ -307,16 +311,16 @@ namespace Loyc.Ecs.Parser
 			TT.Namespace, TT.Class, TT.Struct, TT.Interface, TT.Enum, TT.Event, TT.Switch, TT.Case, TT.Using, TT.While, TT.Fixed, TT.For, TT.Foreach, TT.Goto, TT.Lock, TT.Return, TT.Try, TT.Do, TT.Continue, TT.Break, TT.Throw, TT.If, // C# interactive directives and other non-trivia directives
 			TT.PPnullable, TT.CSIreference, TT.CSIload, TT.CSIhelp, TT.CSIclear, TT.CSIreset
 		};
-	
+
 		StmtCat DetectStatementCategoryAndAddWordAttributes(out int wordAttrCount, ref LNodeList attrs, DetectionMode mode)
 		{
-			// (This is also called if a variable declaration is suspected in an 
-			// expression. In this case, detecting the statement category isnt
+		// (This is also called if a variable declaration is suspected in an 
+		// expression. In this case, detecting the statement category isnt
 			// the main goal; rather, the main goal is figuring out where the
 			// word attributes end.)
 			var oldPosition = InputPosition;
 			var cat = DetectStatementCategory(out wordAttrCount, mode);
-		
+
 			// Add word attributes, if any
 			for (; oldPosition < InputPosition; oldPosition++) {
 				Token word = _tokens[oldPosition];
@@ -332,7 +336,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return cat;
 		}
-	
+
 		void NonKeywordAttrError(IList<LNode> attrs, string stmtType)
 		{
 			var attr = attrs.FirstOrDefault(a => a.AttrNamed(S.TriviaWordAttribute) != null);
@@ -349,15 +353,15 @@ namespace Loyc.Ecs.Parser
 			else
 				return S.Missing;
 		}
-	
+
 		private LNode MethodBodyOrForward() { LNode _; return MethodBodyOrForward(false, out _); }
-	
+
 		bool IsArrayType(LNode type)
 		{
 			// Detect an array type, which has the form @'of(@`'[,]`, Type)
 			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
 		}
-	
+
 		LNode ArgList(Token lp, Token rp)
 		{
 			var list = new LNodeList();
@@ -371,14 +375,14 @@ namespace Loyc.Ecs.Parser
 		{
 			return _sourceFile.IndexToLine(index).Column;
 		}
-	
-			// break, continue, return, throw --------------------------------------
+		
+		// break, continue, return, throw --------------------------------------
 		LNode MissingHere()
 		{
 			var i = GetTextPosition(InputPosition);
 			return F.Id(S.Missing, i, i);
 		}
-	
+
 		// A potential LINQ keyword that, it turns out, can be treated as an identifier
 		// because we are not in the context of a LINQ expression.
 		private Token LinqKeywordAsId()
@@ -388,11 +392,11 @@ namespace Loyc.Ecs.Parser
 			result = Match((int) TT.LinqKeyword);
 			return result;
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// -- Type names and complex identifiers -------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		// A potential LINQ keyword that, it turns out, can be treated as an identifier
 		// because we are not in the context of a LINQ expression.
 		private bool Scan_LinqKeywordAsId()
@@ -403,16 +407,16 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// -- Type names and complex identifiers -------------------------------
 			// ---------------------------------------------------------------------
-	
-	
+
+		
 		LNode DataType(bool afterAsOrIs, out Token? majorDimension)
 		{
 			LNode result = default(LNode);
-			// Line 143: (ComplexId | TupleType)
+			// Line 150: (ComplexId | TupleType)
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
@@ -423,7 +427,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			default:
 				{
-					// line 143
+					// line 150
 					result = Error("Type expected");
 				}
 				break;
@@ -431,14 +435,14 @@ namespace Loyc.Ecs.Parser
 			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result);
 			return result;
 		}
-	
+
 		bool Try_Scan_DataType(int lookaheadAmt, bool afterAsOrIs = false) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_DataType(afterAsOrIs);
 		}
 		bool Scan_DataType(bool afterAsOrIs = false)
 		{
-			// Line 143: (ComplexId | TupleType)
+			// Line 150: (ComplexId | TupleType)
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
@@ -456,7 +460,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private 
 		LNode TupleType()
 		{
@@ -465,7 +469,7 @@ namespace Loyc.Ecs.Parser
 			Check(Down(0) && Up(Scan_TupleTypeList() && LA0 == EOF), "Expected Down($LI) && Up(Scan_TupleTypeList() && LA0 == EOF)");
 			lit_lpar = MatchAny();
 			lit_rpar = Match((int) TT.RParen);
-			// line 155
+			// line 162
 			Down(lit_lpar);
 			var typeList = Up(TupleTypeList());
 			return F.Of(S.Tuple, typeList, lit_lpar.StartIndex, lit_rpar.EndIndex);
@@ -480,21 +484,21 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		LNodeList TupleTypeList()
 		{
 			TokenType la0;
-			// line 162
+			// line 169
 			var items = LNode.List();
 			items.Add(TupleTypeItem());
 			Match((int) TT.Comma);
-			// Line 164: (TupleTypeItem (TT.Comma TupleTypeItem)*)?
+			// Line 171: (TupleTypeItem (TT.Comma TupleTypeItem)*)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
 			case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
 				{
 					items.Add(TupleTypeItem());
-					// Line 164: (TT.Comma TupleTypeItem)*
+					// Line 171: (TT.Comma TupleTypeItem)*
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -506,10 +510,10 @@ namespace Loyc.Ecs.Parser
 				}
 				break;
 			}
-			// line 165
+			// line 172
 			return items;
 		}
-	
+
 		bool Try_Scan_TupleTypeList(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_TupleTypeList();
@@ -521,14 +525,14 @@ namespace Loyc.Ecs.Parser
 				return false;
 			if (!TryMatch((int) TT.Comma))
 				return false;
-			// Line 164: (TupleTypeItem (TT.Comma TupleTypeItem)*)?
+			// Line 171: (TupleTypeItem (TT.Comma TupleTypeItem)*)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
 			case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
 				{
 					if (!Scan_TupleTypeItem())
 						return false;
-					// Line 164: (TT.Comma TupleTypeItem)*
+					// Line 171: (TT.Comma TupleTypeItem)*
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -543,18 +547,18 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		LNode TupleTypeItem()
 		{
 			LNode result = default(LNode);
 			result = DataType();
-			// Line 169: (IdAtom)?
+			// Line 176: (IdAtom)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
 				{
 					var id = IdAtom();
-					// line 169
+					// line 176
 					result = F.Var(result, id, null, result.Range.StartIndex, id.Range.EndIndex);
 				}
 				break;
@@ -565,7 +569,7 @@ namespace Loyc.Ecs.Parser
 		{
 			if (!Scan_DataType())
 				return false;
-			// Line 169: (IdAtom)?
+			// Line 176: (IdAtom)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
@@ -575,7 +579,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		// Complex identifier, e.g. Foo.Bar or Foo<x, y>
 		// http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 		LNode ComplexId(bool declContext = false)
@@ -583,26 +587,26 @@ namespace Loyc.Ecs.Parser
 			TokenType la0;
 			LNode result = default(LNode);
 			result = IdWithOptionalTypeParams(declContext);
-			// Line 177: (TT.ColonColon IdWithOptionalTypeParams)?
+			// Line 184: (TT.ColonColon IdWithOptionalTypeParams)?
 			la0 = LA0;
 			if (la0 == TT.ColonColon) {
 				switch (LA(1)) {
 				case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 				case TT.Substitute: case TT.TypeKeyword:
 					{
-						// line 177
+						// line 184
 						if ((result.Calls(S.Of))) {
 							Error("Type parameters cannot appear before '::' in a declaration or type name");
 						}
 						var op = MatchAny();
 						var rhs = IdWithOptionalTypeParams(declContext);
-						// line 179
+						// line 186
 						result = F.CallInfixOp(result, op, rhs);
 					}
 					break;
 				}
 			}
-			// Line 181: (TT.Dot IdWithOptionalTypeParams)*
+			// Line 188: (TT.Dot IdWithOptionalTypeParams)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Dot) {
@@ -612,7 +616,7 @@ namespace Loyc.Ecs.Parser
 						{
 							var op = MatchAny();
 							var rhs = IdWithOptionalTypeParams(declContext);
-							// line 182
+							// line 189
 							result = F.Dot(result, op, rhs);
 						}
 						break;
@@ -625,7 +629,7 @@ namespace Loyc.Ecs.Parser
 		stop:;
 			return result;
 		}
-	
+
 		// Complex identifier, e.g. Foo.Bar or Foo<x, y>
 		// http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 		bool Scan_ComplexId(bool declContext = false)
@@ -633,7 +637,7 @@ namespace Loyc.Ecs.Parser
 			TokenType la0;
 			if (!Scan_IdWithOptionalTypeParams(declContext))
 				return false;
-			// Line 177: (TT.ColonColon IdWithOptionalTypeParams)?
+			// Line 184: (TT.ColonColon IdWithOptionalTypeParams)?
 			la0 = LA0;
 			if (la0 == TT.ColonColon) {
 				switch (LA(1)) {
@@ -647,7 +651,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				}
 			}
-			// Line 181: (TT.Dot IdWithOptionalTypeParams)*
+			// Line 188: (TT.Dot IdWithOptionalTypeParams)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Dot) {
@@ -669,14 +673,14 @@ namespace Loyc.Ecs.Parser
 		stop:;
 			return true;
 		}
-	
-	
+
+		
 		LNode IdWithOptionalTypeParams(bool declarationContext)
 		{
 			TokenType la0, la1;
 			LNode result = default(LNode);
 			result = IdAtom();
-			// Line 188: (TParams)?
+			// Line 195: (TParams)?
 			la0 = LA0;
 			if (la0 == TT.LT) {
 				switch (LA(1)) {
@@ -709,14 +713,14 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
-	
+
+		
 		bool Scan_IdWithOptionalTypeParams(bool declarationContext)
 		{
 			TokenType la0, la1;
 			if (!Scan_IdAtom())
 				return false;
-			// Line 188: (TParams)?
+			// Line 195: (TParams)?
 			do {
 				la0 = LA0;
 				if (la0 == TT.LT) {
@@ -754,21 +758,21 @@ namespace Loyc.Ecs.Parser
 			} while (false);
 			return true;
 		}
-	
+
 		// identifier, $identifier, $(expr), operator+ (or another operator name), or a primitive type (int, string)
 		LNode IdAtom()
 		{
-			// line 193
+			// line 200
 			LNode r;
-			// Line 194: ( TT.Substitute Atom | TT.Operator AnyOperator | (TT.ContextualKeyword|TT.Id|TT.TypeKeyword) | LinqKeywordAsId )
+			// Line 201: ( TT.Substitute Atom | TT.Operator AnyOperator | (TT.ContextualKeyword|TT.Id|TT.TypeKeyword) | LinqKeywordAsId )
 			switch (LA0) {
 			case TT.Substitute:
 				{
 					var t = MatchAny();
 					var e = Atom();
-					// line 194
+					// line 201
 					e = AutoRemoveParens(e);
-					// line 195
+					// line 202
 					r = F.CallPrefixOp(t, e, S.Substitute);
 				}
 				break;
@@ -776,33 +780,33 @@ namespace Loyc.Ecs.Parser
 				{
 					var op = MatchAny();
 					var t = AnyOperator();
-					// line 197
+					// line 204
 					r = F.Attr(_triviaUseOperatorKeyword, F.Id((Symbol) t.Value, op.StartIndex, t.EndIndex));
 				}
 				break;
 			case TT.ContextualKeyword: case TT.Id: case TT.TypeKeyword:
 				{
 					var t = MatchAny();
-					// line 199
+					// line 206
 					r = F.Id(t);
 				}
 				break;
 			default:
 				{
 					var t = LinqKeywordAsId();
-					// line 201
+					// line 208
 					r = F.Id(t);
 				}
 				break;
 			}
-			// line 203
+			// line 210
 			return r;
 		}
-	
+
 		// identifier, $identifier, $(expr), operator+ (or another operator name), or a primitive type (int, string)
 		bool Scan_IdAtom()
 		{
-			// Line 194: ( TT.Substitute Atom | TT.Operator AnyOperator | (TT.ContextualKeyword|TT.Id|TT.TypeKeyword) | LinqKeywordAsId )
+			// Line 201: ( TT.Substitute Atom | TT.Operator AnyOperator | (TT.ContextualKeyword|TT.Id|TT.TypeKeyword) | LinqKeywordAsId )
 			switch (LA0) {
 			case TT.Substitute:
 				{
@@ -828,23 +832,23 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		// List of type parameters. `declContext` specifies that type parameters can 
 		// have [normal attributes] and in/out variance attrbutes.
 		void TParams(bool declContext, ref LNode r)
 		{
 			TokenType la0, la1;
 			Token op = default(Token);
-			// line 220
+			// line 227
 			LNodeList list = new LNodeList(r);
-			// line 221
+			// line 228
 			int endIndex;
-			// Line 222: ( TT.LT TParamDeclOrDataType (TT.Comma TParamDeclOrDataType)* TT.GT | TT.Dot TT.LBrack TT.RBrack | TT.Not TT.LParen TT.RParen | TT.Not IdWithOptionalTypeParams )
+			// Line 229: ( TT.LT TParamDeclOrDataType (TT.Comma TParamDeclOrDataType)* TT.GT | TT.Dot TT.LBrack TT.RBrack | TT.Not TT.LParen TT.RParen | TT.Not IdWithOptionalTypeParams )
 			la0 = LA0;
 			if (la0 == TT.LT) {
 				op = MatchAny();
 				list.Add(TParamDeclOrDataType(declContext));
-				// Line 223: (TT.Comma TParamDeclOrDataType)*
+				// Line 230: (TT.Comma TParamDeclOrDataType)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -854,13 +858,13 @@ namespace Loyc.Ecs.Parser
 						break;
 				}
 				var end = Match((int) TT.GT);
-				// line 223
+				// line 230
 				endIndex = end.EndIndex;
 			} else if (la0 == TT.Dot) {
 				op = MatchAny();
 				var t = Match((int) TT.LBrack);
 				var end = Match((int) TT.RBrack);
-				// line 224
+				// line 231
 				list = AppendExprsInside(t, list);
 				endIndex = end.EndIndex;
 			} else {
@@ -869,21 +873,21 @@ namespace Loyc.Ecs.Parser
 					op = Match((int) TT.Not);
 					var t = MatchAny();
 					var end = Match((int) TT.RParen);
-					// line 225
+					// line 232
 					list = AppendExprsInside(t, list);
 					endIndex = end.EndIndex;
 				} else {
 					op = Match((int) TT.Not);
 					list.Add(IdWithOptionalTypeParams(declContext));
-					// line 226
+					// line 233
 					endIndex = list.Last.Range.EndIndex;
 				}
 			}
-			// line 229
+			// line 236
 			int start = r.Range.StartIndex;
 			r = F.Call(S.Of, list, start, endIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);
 		}
-	
+
 		bool Try_Scan_TParams(int lookaheadAmt, bool declContext) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_TParams(declContext);
@@ -891,13 +895,13 @@ namespace Loyc.Ecs.Parser
 		bool Scan_TParams(bool declContext)
 		{
 			TokenType la0, la1;
-			// Line 222: ( TT.LT TParamDeclOrDataType (TT.Comma TParamDeclOrDataType)* TT.GT | TT.Dot TT.LBrack TT.RBrack | TT.Not TT.LParen TT.RParen | TT.Not IdWithOptionalTypeParams )
+			// Line 229: ( TT.LT TParamDeclOrDataType (TT.Comma TParamDeclOrDataType)* TT.GT | TT.Dot TT.LBrack TT.RBrack | TT.Not TT.LParen TT.RParen | TT.Not IdWithOptionalTypeParams )
 			la0 = LA0;
 			if (la0 == TT.LT) {
 				Skip();
 				if (!Scan_TParamDeclOrDataType(declContext))
 					return false;
-				// Line 223: (TT.Comma TParamDeclOrDataType)*
+				// Line 230: (TT.Comma TParamDeclOrDataType)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -932,12 +936,12 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
-	
+
+		
 		LNode TParamDeclOrDataType(bool declarationContext)
 		{
 			LNode result = default(LNode);
-			// Line 236: ( DataType / &{declarationContext} NormalAttributes TParamAttributeKeywords IdAtom / {..} )
+			// Line 243: ( DataType / &{declarationContext} NormalAttributes TParamAttributeKeywords IdAtom / {..} )
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
 			case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
@@ -946,31 +950,31 @@ namespace Loyc.Ecs.Parser
 			case TT.AttrKeyword: case TT.In: case TT.LBrack:
 				{
 					Check(declarationContext, "Expected declarationContext");
-					// line 238
+					// line 245
 					LNodeList attrs = default(LNodeList);
 					int startIndex = GetTextPosition(InputPosition);
 					NormalAttributes(ref attrs);
 					TParamAttributeKeywords(ref attrs);
 					result = IdAtom();
-					// line 242
+					// line 249
 					result = result.WithAttrs(attrs);
 				}
 				break;
 			default:
-				// line 243
+				// line 250
 				result = MissingHere();
 				break;
 			}
 			return result;
 		}
-	
+
 		bool Try_Scan_TParamDeclOrDataType(int lookaheadAmt, bool declarationContext) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_TParamDeclOrDataType(declarationContext);
 		}
 		bool Scan_TParamDeclOrDataType(bool declarationContext)
 		{
-			// Line 236: ( DataType / &{declarationContext} NormalAttributes TParamAttributeKeywords IdAtom / {..} )
+			// Line 243: ( DataType / &{declarationContext} NormalAttributes TParamAttributeKeywords IdAtom / {..} )
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
 			case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
@@ -995,32 +999,32 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
-	
+
+		
 		LNode ComplexNameDecl(bool thisAllowed, out bool hasThis)
 		{
 			TokenType la0, la1;
 			LNode got_ComplexThisDecl = default(LNode);
 			LNode result = default(LNode);
 			result = ComplexId(declContext: true);
-			// line 255
+			// line 262
 			hasThis = false;
-			// Line 256: (TT.Dot ComplexThisDecl)?
+			// Line 263: (TT.Dot ComplexThisDecl)?
 			la0 = LA0;
 			if (la0 == TT.Dot) {
 				la1 = LA(1);
 				if (la1 == TT.This) {
 					var op = MatchAny();
 					got_ComplexThisDecl = ComplexThisDecl(thisAllowed);
-					// line 256
+					// line 263
 					hasThis = true;
-					// line 257
+					// line 264
 					result = F.Dot(result, got_ComplexThisDecl, result.Range.StartIndex, got_ComplexThisDecl.Range.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator);
 				}
 			}
 			return result;
 		}
-	
+
 		bool Try_Scan_ComplexNameDecl(int lookaheadAmt, bool thisAllowed = false) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_ComplexNameDecl(thisAllowed);
@@ -1030,7 +1034,7 @@ namespace Loyc.Ecs.Parser
 			TokenType la0, la1;
 			if (!Scan_ComplexId(declContext: true))
 				return false;
-			// Line 256: (TT.Dot ComplexThisDecl)?
+			// Line 263: (TT.Dot ComplexThisDecl)?
 			la0 = LA0;
 			if (la0 == TT.Dot) {
 				la1 = LA(1);
@@ -1043,7 +1047,7 @@ namespace Loyc.Ecs.Parser
 			return true;
 		}
 		static readonly HashSet<int> MethodOrPropertyName_set0 = NewSet((int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.Set, (int) TT.Sub, (int) TT.Substitute, (int) TT.XorBits);
-	
+
 		// The matcher for method and property names is similar to ComplexNameDecl but
 		// can allow 'this' if it's a property, and 'operator true' if it's a method.
 		LNode MethodOrPropertyName(bool thisAllowed, out bool hasThis)
@@ -1051,7 +1055,7 @@ namespace Loyc.Ecs.Parser
 			TokenType la1;
 			LNode result = default(LNode);
 			Token tf = default(Token);
-			// Line 265: ( ComplexNameDecl | ComplexThisDecl | TT.Operator &{LT($LI).Value `is` @bool} TT.Literal )
+			// Line 272: ( ComplexNameDecl | ComplexThisDecl | TT.Operator &{LT($LI).Value `is` @bool} TT.Literal )
 			switch (LA0) {
 			case TT.Operator:
 				{
@@ -1062,7 +1066,7 @@ namespace Loyc.Ecs.Parser
 						Skip();
 						Check(LT(0).Value is bool, "Expected 'true' or 'false'");
 						tf = Match((int) TT.Literal);
-						// line 268
+						// line 275
 						result = F.Attr(_triviaUseOperatorKeyword, F.Literal(tf));
 						hasThis = false;
 					}
@@ -1075,14 +1079,14 @@ namespace Loyc.Ecs.Parser
 			default:
 				{
 					result = ComplexThisDecl(thisAllowed);
-					// line 266
+					// line 273
 					hasThis = true;
 				}
 				break;
 			}
 			return result;
 		}
-	
+
 		bool Try_Scan_MethodOrPropertyName(int lookaheadAmt, bool thisAllowed) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_MethodOrPropertyName(thisAllowed);
@@ -1090,7 +1094,7 @@ namespace Loyc.Ecs.Parser
 		bool Scan_MethodOrPropertyName(bool thisAllowed)
 		{
 			TokenType la1;
-			// Line 265: ( ComplexNameDecl | ComplexThisDecl | TT.Operator &{LT($LI).Value `is` @bool} TT.Literal )
+			// Line 272: ( ComplexNameDecl | ComplexThisDecl | TT.Operator &{LT($LI).Value `is` @bool} TT.Literal )
 			do {
 				switch (LA0) {
 				case TT.Operator:
@@ -1124,20 +1128,20 @@ namespace Loyc.Ecs.Parser
 			} while (false);
 			return true;
 		}
-	
+
 		// `this` with optional <type arguments>
 		LNode ComplexThisDecl(bool allowed)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
-			// line 273
+			// line 280
 			if ((!allowed)) {
 				Error("'this' is not allowed at this location.");
 			}
 			var t = Match((int) TT.This);
-			// line 274
+			// line 281
 			result = F.Id(t);
-			// Line 275: (TParams)?
+			// Line 282: (TParams)?
 			la0 = LA0;
 			if (la0 == TT.Dot || la0 == TT.LT || la0 == TT.Not) {
 				switch (LA(1)) {
@@ -1150,14 +1154,14 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		// `this` with optional <type arguments>
 		bool Scan_ComplexThisDecl(bool allowed)
 		{
 			TokenType la0;
 			if (!TryMatch((int) TT.This))
 				return false;
-			// Line 275: (TParams)?
+			// Line 282: (TParams)?
 			la0 = LA0;
 			if (la0 == TT.Dot || la0 == TT.LT || la0 == TT.Not) {
 				switch (LA(1)) {
@@ -1171,16 +1175,16 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		bool TypeSuffixOpt(bool afterAsOrIs, out Token? dimensionBrack, ref LNode e)
 		{
 			TokenType la0, la1;
-			// line 283
+			// line 290
 			int count;
 			bool result = false;
-			// line 284
+			// line 291
 			dimensionBrack = null;
-			// Line 319: greedy( TT.QuestionMark (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId))) | TT.Mul | TT.Power | &{(count = CountDims(LT($LI), @true)) > 0} TT.LBrack TT.RBrack greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)* )*
+			// Line 326: greedy( TT.QuestionMark (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId))) | TT.Mul | TT.Power | &{(count = CountDims(LT($LI), @true)) > 0} TT.LBrack TT.RBrack greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)* )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.QuestionMark) {
@@ -1197,12 +1201,12 @@ namespace Loyc.Ecs.Parser
 						break;
 				} else if (la0 == TT.Mul) {
 					var t = MatchAny();
-					// line 325
+					// line 332
 					e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex);
 					result = true;
 				} else if (la0 == TT.Power) {
 					var t = MatchAny();
-					// line 327
+					// line 334
 					var ptr = F.Id(S._Pointer, t.StartIndex, t.EndIndex);
 					e = F.Of(ptr, F.Of(ptr, e, e.Range.StartIndex, t.EndIndex - 1), e.Range.StartIndex, t.EndIndex);
 					result = true;
@@ -1210,15 +1214,15 @@ namespace Loyc.Ecs.Parser
 					if ((count = CountDims(LT(0), true)) > 0) {
 						la1 = LA(1);
 						if (la1 == TT.RBrack) {
-							// line 333
+							// line 340
 							var dims = InternalList<Pair<int, int>>.Empty;
-							// line 334
+							// line 341
 							Token rb;
 							var lb = MatchAny();
 							rb = MatchAny();
-							// line 335
+							// line 342
 							dims.Add(Pair.Create(count, rb.EndIndex));
-							// Line 336: greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)*
+							// Line 343: greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)*
 							for (;;) {
 								la0 = LA0;
 								if (la0 == TT.LBrack) {
@@ -1227,7 +1231,7 @@ namespace Loyc.Ecs.Parser
 										if (la1 == TT.RBrack) {
 											Skip();
 											rb = MatchAny();
-											// line 336
+											// line 343
 											dims.Add(Pair.Create(count, rb.EndIndex));
 										} else
 											break;
@@ -1236,7 +1240,7 @@ namespace Loyc.Ecs.Parser
 								} else
 									break;
 							}
-							// line 338
+							// line 345
 							if (CountDims(lb, false) <= 0) {
 								dimensionBrack = lb;
 							}
@@ -1254,22 +1258,22 @@ namespace Loyc.Ecs.Parser
 			match1:
 				{
 					var t = MatchAny();
-					// Line 319: (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)))
+					// Line 326: (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)))
 					if (!afterAsOrIs) { } else
 						Check(!Try_TypeSuffixOpt_Test0(0), "Did not expect ((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)");
-					// line 322
+					// line 329
 					e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex);
 					result = true;
 				}
 			}
-			// line 347
+			// line 354
 			return result;
 		}
-	
-			// =====================================================================
+		
+		// =====================================================================
 			// == Expressions ======================================================
 			// =====================================================================
-	
+
 		bool Try_Scan_TypeSuffixOpt(int lookaheadAmt, bool afterAsOrIs) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_TypeSuffixOpt(afterAsOrIs);
@@ -1277,7 +1281,7 @@ namespace Loyc.Ecs.Parser
 		bool Scan_TypeSuffixOpt(bool afterAsOrIs)
 		{
 			TokenType la0, la1;
-			// Line 319: greedy( TT.QuestionMark (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId))) | TT.Mul | TT.Power | &{(count = CountDims(LT($LI), @true)) > 0} TT.LBrack TT.RBrack greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)* )*
+			// Line 326: greedy( TT.QuestionMark (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId))) | TT.Mul | TT.Power | &{(count = CountDims(LT($LI), @true)) > 0} TT.LBrack TT.RBrack greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)* )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.QuestionMark) {
@@ -1302,7 +1306,7 @@ namespace Loyc.Ecs.Parser
 						if (la1 == TT.RBrack) {
 							Skip();
 							Skip();
-							// Line 336: greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)*
+							// Line 343: greedy(&{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack)*
 							for (;;) {
 								la0 = LA0;
 								if (la0 == TT.LBrack) {
@@ -1328,29 +1332,29 @@ namespace Loyc.Ecs.Parser
 			match1:
 				{
 					Skip();
-					// Line 319: (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)))
+					// Line 326: (&!{afterAsOrIs} | &!(((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)))
 					if (!afterAsOrIs) { } else if (Try_TypeSuffixOpt_Test0(0))
 						return false;
 				}
 			}
 			return true;
 		}
-	
+
 		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
 		LNode Atom()
 		{
 			TokenType la0, la1;
-			// line 420
+			// line 427
 			LNode r;
-			// Line 421: ( (TT.Dot|TT.Substitute) Atom | TT.Operator AnyOperator | (TT.Base|TT.ContextualKeyword|TT.Id|TT.This|TT.TypeKeyword) | LinqKeywordAsId | TT.Literal | ExprInParensAuto | NewExpr | BracedBlock | TokenLiteral | (TT.Checked|TT.Unchecked) TT.LParen TT.RParen | (TT.Sizeof|TT.Typeof) TT.LParen TT.RParen | TT.Default (TT.LParen TT.RParen / {..}) | TT.Delegate TT.LParen TT.RParen TT.LBrace TT.RBrace | TT.Is IsPattern )
+			// Line 428: ( (TT.Dot|TT.Substitute) Atom | TT.Operator AnyOperator | (TT.Base|TT.ContextualKeyword|TT.Id|TT.This|TT.TypeKeyword) | LinqKeywordAsId | TT.Literal | ExprInParensAuto | NewExpr | BracedBlock | TokenLiteral | (TT.Checked|TT.Unchecked) TT.LParen TT.RParen | (TT.Sizeof|TT.Typeof) TT.LParen TT.RParen | TT.Default (TT.LParen TT.RParen / {..}) | TT.Delegate TT.LParen TT.RParen TT.LBrace TT.RBrace )
 			switch (LA0) {
 			case TT.Dot: case TT.Substitute:
 				{
 					var t = MatchAny();
 					var e = Atom();
-					// line 421
+					// line 428
 					e = AutoRemoveParens(e);
-					// line 422
+					// line 429
 					r = F.CallPrefixOp(t, e);
 				}
 				break;
@@ -1358,7 +1362,7 @@ namespace Loyc.Ecs.Parser
 				{
 					var op = MatchAny();
 					var t = AnyOperator();
-					// line 424
+					// line 431
 					r = F.Attr(_triviaUseOperatorKeyword, F.Id((Symbol) t.Value, op.StartIndex, t.EndIndex));
 				}
 				break;
@@ -1366,21 +1370,21 @@ namespace Loyc.Ecs.Parser
 			case TT.TypeKeyword:
 				{
 					var t = MatchAny();
-					// line 426
+					// line 433
 					r = F.Id(t);
 				}
 				break;
 			case TT.LinqKeyword:
 				{
 					var t = LinqKeywordAsId();
-					// line 428
+					// line 435
 					r = F.Id(t);
 				}
 				break;
 			case TT.Literal:
 				{
 					var t = MatchAny();
-					// line 430
+					// line 437
 					r = F.Literal(t);
 				}
 				break;
@@ -1401,7 +1405,7 @@ namespace Loyc.Ecs.Parser
 					var t = MatchAny();
 					var args = Match((int) TT.LParen);
 					var rp = Match((int) TT.RParen);
-					// line 437
+					// line 444
 					r = F.CallPrefix(t, ExprListInside(args), rp);
 				}
 				break;
@@ -1410,27 +1414,27 @@ namespace Loyc.Ecs.Parser
 					var t = MatchAny();
 					var args = Match((int) TT.LParen);
 					var rp = Match((int) TT.RParen);
-					// line 440
+					// line 447
 					r = F.CallPrefix(t, TypeInside(args), rp);
 				}
 				break;
 			case TT.Default:
 				{
 					var t = MatchAny();
-					// Line 442: (TT.LParen TT.RParen / {..})
+					// Line 449: (TT.LParen TT.RParen / {..})
 					la0 = LA0;
 					if (la0 == TT.LParen) {
 						la1 = LA(1);
 						if (la1 == TT.RParen) {
 							var args = MatchAny();
 							var rp = MatchAny();
-							// line 443
+							// line 450
 							r = F.CallPrefix(t, TypeInside(args), rp);
 						} else
-							// line 444
+							// line 451
 							r = F.Id(t);
 					} else
-						// line 444
+						// line 451
 						r = F.Id(t);
 				}
 				break;
@@ -1441,20 +1445,14 @@ namespace Loyc.Ecs.Parser
 					Match((int) TT.RParen);
 					var block = Match((int) TT.LBrace);
 					var rb = Match((int) TT.RBrace);
-					// line 447
+					// line 454
 					var argList = LNode.List(F.List(ExprListInside(args, false, true)), F.Braces(block, StmtListInside(block), rb));
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
 				break;
-			case TT.Is:
-				{
-					var t = MatchAny();
-					r = IsPattern(F.Missing, t);
-				}
-				break;
 			default:
 				{
-					// Line 453: greedy(~(EOF|TT.Comma|TT.Semicolon))*
+					// Line 459: greedy(~(EOF|TT.Comma|TT.Semicolon))*
 					for (;;) {
 						la0 = LA0;
 						if (!(la0 == (TokenType) EOF || la0 == TT.Comma || la0 == TT.Semicolon)) {
@@ -1466,19 +1464,19 @@ namespace Loyc.Ecs.Parser
 						} else
 							break;
 					}
-					// line 454
+					// line 460
 					r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());
 				}
 				break;
 			}
-			// line 456
+			// line 462
 			return r;
 		}
 		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
 		bool Scan_Atom()
 		{
 			TokenType la0, la1;
-			// Line 421: ( (TT.Dot|TT.Substitute) Atom | TT.Operator AnyOperator | (TT.Base|TT.ContextualKeyword|TT.Id|TT.This|TT.TypeKeyword) | LinqKeywordAsId | TT.Literal | ExprInParensAuto | NewExpr | BracedBlock | TokenLiteral | (TT.Checked|TT.Unchecked) TT.LParen TT.RParen | (TT.Sizeof|TT.Typeof) TT.LParen TT.RParen | TT.Default (TT.LParen TT.RParen / {..}) | TT.Delegate TT.LParen TT.RParen TT.LBrace TT.RBrace | TT.Is IsPattern )
+			// Line 428: ( (TT.Dot|TT.Substitute) Atom | TT.Operator AnyOperator | (TT.Base|TT.ContextualKeyword|TT.Id|TT.This|TT.TypeKeyword) | LinqKeywordAsId | TT.Literal | ExprInParensAuto | NewExpr | BracedBlock | TokenLiteral | (TT.Checked|TT.Unchecked) TT.LParen TT.RParen | (TT.Sizeof|TT.Typeof) TT.LParen TT.RParen | TT.Default (TT.LParen TT.RParen / {..}) | TT.Delegate TT.LParen TT.RParen TT.LBrace TT.RBrace )
 			switch (LA0) {
 			case TT.Dot: case TT.Substitute:
 				{
@@ -1542,7 +1540,7 @@ namespace Loyc.Ecs.Parser
 			case TT.Default:
 				{
 					Skip();
-					// Line 442: (TT.LParen TT.RParen / {..})
+					// Line 449: (TT.LParen TT.RParen / {..})
 					do {
 						la0 = LA0;
 						if (la0 == TT.LParen) {
@@ -1573,40 +1571,33 @@ namespace Loyc.Ecs.Parser
 						return false;
 				}
 				break;
-			case TT.Is:
-				{
-					Skip();
-					if (!Scan_IsPattern())
-						return false;
-				}
-				break;
 			default:
 				return false;
 			}
 			return true;
 		}
-	
+
 		Token AnyOperator()
 		{
 			TokenType la0, la1;
 			Token result = default(Token);
-			// Line 462: (&{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT | TT.GT TT.GT) / (TT.Add|TT.And|TT.AndBits|TT.At|TT.Backslash|TT.BQString|TT.Colon|TT.ColonColon|TT.Compare|TT.CompoundSet|TT.DivMod|TT.Dot|TT.DotDot|TT.EqNeq|TT.Forward|TT.GT|TT.IncDec|TT.LambdaArrow|TT.LEGE|TT.LT|TT.Mul|TT.Not|TT.NotBits|TT.NullCoalesce|TT.NullDot|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.PtrArrow|TT.QuestionMark|TT.QuickBind|TT.QuickBindSet|TT.Set|TT.Sub|TT.Substitute|TT.XorBits))
+			// Line 468: (&{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT | TT.GT TT.GT) / (TT.Add|TT.And|TT.AndBits|TT.At|TT.Backslash|TT.BQString|TT.Colon|TT.ColonColon|TT.Compare|TT.CompoundSet|TT.DivMod|TT.Dot|TT.DotDot|TT.EqNeq|TT.Forward|TT.GT|TT.IncDec|TT.LambdaArrow|TT.LEGE|TT.LT|TT.Mul|TT.Not|TT.NotBits|TT.NullCoalesce|TT.NullDot|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.PtrArrow|TT.QuestionMark|TT.QuickBind|TT.QuickBindSet|TT.Set|TT.Sub|TT.Substitute|TT.XorBits))
 			la0 = LA0;
 			if (la0 == TT.GT || la0 == TT.LT) {
 				if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 					la1 = LA(1);
 					if (la1 == TT.GT || la1 == TT.LT) {
-						// Line 463: (TT.LT TT.LT | TT.GT TT.GT)
+						// Line 469: (TT.LT TT.LT | TT.GT TT.GT)
 						la0 = LA0;
 						if (la0 == TT.LT) {
 							var op = MatchAny();
 							Match((int) TT.LT);
-							// line 463
+							// line 469
 							result = new Token((int) TT.Operator, op.StartIndex, op.Length + 1, S.Shl);
 						} else {
 							var op = Match((int) TT.GT);
 							Match((int) TT.GT);
-							// line 464
+							// line 470
 							result = new Token((int) TT.Operator, op.StartIndex, op.Length + 1, S.Shr);
 						}
 					} else
@@ -1617,18 +1608,18 @@ namespace Loyc.Ecs.Parser
 				result = Match(MethodOrPropertyName_set0);
 			return result;
 		}
-	
+
 		bool Scan_AnyOperator()
 		{
 			TokenType la0, la1;
-			// Line 462: (&{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT | TT.GT TT.GT) / (TT.Add|TT.And|TT.AndBits|TT.At|TT.Backslash|TT.BQString|TT.Colon|TT.ColonColon|TT.Compare|TT.CompoundSet|TT.DivMod|TT.Dot|TT.DotDot|TT.EqNeq|TT.Forward|TT.GT|TT.IncDec|TT.LambdaArrow|TT.LEGE|TT.LT|TT.Mul|TT.Not|TT.NotBits|TT.NullCoalesce|TT.NullDot|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.PtrArrow|TT.QuestionMark|TT.QuickBind|TT.QuickBindSet|TT.Set|TT.Sub|TT.Substitute|TT.XorBits))
+			// Line 468: (&{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT | TT.GT TT.GT) / (TT.Add|TT.And|TT.AndBits|TT.At|TT.Backslash|TT.BQString|TT.Colon|TT.ColonColon|TT.Compare|TT.CompoundSet|TT.DivMod|TT.Dot|TT.DotDot|TT.EqNeq|TT.Forward|TT.GT|TT.IncDec|TT.LambdaArrow|TT.LEGE|TT.LT|TT.Mul|TT.Not|TT.NotBits|TT.NullCoalesce|TT.NullDot|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.PtrArrow|TT.QuestionMark|TT.QuickBind|TT.QuickBindSet|TT.Set|TT.Sub|TT.Substitute|TT.XorBits))
 			do {
 				la0 = LA0;
 				if (la0 == TT.GT || la0 == TT.LT) {
 					if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 						la1 = LA(1);
 						if (la1 == TT.GT || la1 == TT.LT) {
-							// Line 463: (TT.LT TT.LT | TT.GT TT.GT)
+							// Line 469: (TT.LT TT.LT | TT.GT TT.GT)
 							la0 = LA0;
 							if (la0 == TT.LT) {
 								Skip();
@@ -1655,38 +1646,38 @@ namespace Loyc.Ecs.Parser
 			} while (false);
 			return true;
 		}
-	
+
 		LNode NewExpr()
 		{
 			TokenType la0, la1;
 			Token lb = default(Token);
 			Token rb = default(Token);
-			// line 475
+			// line 481
 			Token? majorDimension = null;
 			var list = LNodeList.Empty;
 			var op = Match((int) TT.New);
-			// Line 480: ( &{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack TT.LBrace TT.RBrace | TT.LBrace TT.RBrace | DataType (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?) )
+			// Line 486: ( &{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack TT.LBrace TT.RBrace | TT.LBrace TT.RBrace | DataType (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?) )
 			la0 = LA0;
 			if (la0 == TT.LBrack) {
 				Check((count = CountDims(LT(0), false)) > 0, "Expected (count = CountDims(LT($LI), @false)) > 0");
 				lb = MatchAny();
 				rb = Match((int) TT.RBrack);
-				// line 482
+				// line 488
 				var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);
 				lb = Match((int) TT.LBrace);
 				rb = Match((int) TT.RBrace);
-				// line 485
+				// line 491
 				list.Add(LNode.Call(type, type.Range));
 				AppendInitializersInside(lb, ref list);
 			} else if (la0 == TT.LBrace) {
 				lb = MatchAny();
 				rb = Match((int) TT.RBrace);
-				// line 491
+				// line 497
 				list.Add(F.Missing);
 				AppendInitializersInside(lb, ref list);
 			} else {
 				var type = DataType(false, out majorDimension);
-				// Line 502: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?)
+				// Line 508: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?)
 				do {
 					la0 = LA0;
 					if (la0 == TT.LParen) {
@@ -1694,19 +1685,19 @@ namespace Loyc.Ecs.Parser
 						if (la1 == TT.RParen) {
 							lb = MatchAny();
 							rb = MatchAny();
-							// line 504
+							// line 510
 							if ((majorDimension != null)) {
 								Error("Syntax error: unexpected constructor argument list (...)");
 							}
 							list.Add(F.CallPrefix(type, ExprListInside(lb), rb));
-							// Line 509: (TT.LBrace TT.RBrace)?
+							// Line 515: (TT.LBrace TT.RBrace)?
 							la0 = LA0;
 							if (la0 == TT.LBrace) {
 								la1 = LA(1);
 								if (la1 == TT.RBrace) {
 									lb = MatchAny();
 									rb = MatchAny();
-									// line 510
+									// line 516
 									AppendInitializersInside(lb, ref list);
 								}
 							}
@@ -1718,18 +1709,18 @@ namespace Loyc.Ecs.Parser
 				match2:
 					{
 						var haveBraces = false;
-						// Line 516: (TT.LBrace TT.RBrace)?
+						// Line 522: (TT.LBrace TT.RBrace)?
 						la0 = LA0;
 						if (la0 == TT.LBrace) {
 							la1 = LA(1);
 							if (la1 == TT.RBrace) {
 								lb = MatchAny();
 								rb = MatchAny();
-								// line 516
+								// line 522
 								haveBraces = true;
 							}
 						}
-						// line 518
+						// line 524
 						if ((majorDimension != null)) {
 							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value), type.Range));
 						} else {
@@ -1748,16 +1739,16 @@ namespace Loyc.Ecs.Parser
 					}
 				} while (false);
 			}
-			// line 536
+			// line 542
 			return F.CallPrefix(op, list, rb, S.New);
 		}
-	
+
 		bool Scan_NewExpr()
 		{
 			TokenType la0, la1;
 			if (!TryMatch((int) TT.New))
 				return false;
-			// Line 480: ( &{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack TT.LBrace TT.RBrace | TT.LBrace TT.RBrace | DataType (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?) )
+			// Line 486: ( &{(count = CountDims(LT($LI), @false)) > 0} TT.LBrack TT.RBrack TT.LBrace TT.RBrace | TT.LBrace TT.RBrace | DataType (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?) )
 			la0 = LA0;
 			if (la0 == TT.LBrack) {
 				if (!((count = CountDims(LT(0), false)) > 0))
@@ -1776,7 +1767,7 @@ namespace Loyc.Ecs.Parser
 			} else {
 				if (!Scan_DataType(false))
 					return false;
-				// Line 502: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?)
+				// Line 508: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? / (TT.LBrace TT.RBrace)?)
 				do {
 					la0 = LA0;
 					if (la0 == TT.LParen) {
@@ -1784,7 +1775,7 @@ namespace Loyc.Ecs.Parser
 						if (la1 == TT.RParen) {
 							Skip();
 							Skip();
-							// Line 509: (TT.LBrace TT.RBrace)?
+							// Line 515: (TT.LBrace TT.RBrace)?
 							la0 = LA0;
 							if (la0 == TT.LBrace) {
 								la1 = LA(1);
@@ -1800,7 +1791,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				match2:
 					{
-						// Line 516: (TT.LBrace TT.RBrace)?
+						// Line 522: (TT.LBrace TT.RBrace)?
 						la0 = LA0;
 						if (la0 == TT.LBrace) {
 							la1 = LA(1);
@@ -1814,7 +1805,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		private LNode TokenLiteral()
 		{
 			TokenType la0;
@@ -1822,7 +1813,7 @@ namespace Loyc.Ecs.Parser
 			Token L = default(Token);
 			Token R = default(Token);
 			at = Match((int) TT.At);
-			// Line 548: (TT.LBrack TT.RBrack | TT.LBrace TT.RBrace)
+			// Line 554: (TT.LBrack TT.RBrack | TT.LBrace TT.RBrace)
 			la0 = LA0;
 			if (la0 == TT.LBrack) {
 				L = MatchAny();
@@ -1831,16 +1822,16 @@ namespace Loyc.Ecs.Parser
 				L = Match((int) TT.LBrace);
 				R = Match((int) TT.RBrace);
 			}
-			// line 549
+			// line 555
 			return F.Literal(L.Children, at.StartIndex, R.EndIndex);
 		}
-	
+
 		private bool Scan_TokenLiteral()
 		{
 			TokenType la0;
 			if (!TryMatch((int) TT.At))
 				return false;
-			// Line 548: (TT.LBrack TT.RBrack | TT.LBrace TT.RBrace)
+			// Line 554: (TT.LBrack TT.RBrack | TT.LBrace TT.RBrace)
 			la0 = LA0;
 			if (la0 == TT.LBrack) {
 				Skip();
@@ -1854,12 +1845,12 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		private 
 		LNode AtomOrTypeParamExpr()
 		{
 			LNode result = default(LNode);
-			// Line 554: (&(IdWithOptionalTypeParams ~(TT.ContextualKeyword|TT.Id|TT.LinqKeyword)) IdWithOptionalTypeParams / Atom)
+			// Line 560: (&(IdWithOptionalTypeParams ~(TT.ContextualKeyword|TT.Id|TT.LinqKeyword)) IdWithOptionalTypeParams / Atom)
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
@@ -1876,39 +1867,38 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		private LNode PrimaryExpr()
 		{
 			TokenType la0;
 			var e = AtomOrTypeParamExpr();
 			FinishPrimaryExpr(ref e);
-			// Line 562: (TT.NullDot PrimaryExpr)?
+			// Line 568: (TT.NullDot PrimaryExpr)?
 			la0 = LA0;
 			if (la0 == TT.NullDot) {
 				switch (LA(1)) {
 				case TT.At: case TT.Base: case TT.Checked: case TT.ContextualKeyword:
 				case TT.Default: case TT.Delegate: case TT.Dot: case TT.Id:
-				case TT.Is: case TT.LBrace: case TT.LinqKeyword: case TT.Literal:
-				case TT.LParen: case TT.New: case TT.Operator: case TT.Sizeof:
-				case TT.Substitute: case TT.This: case TT.TypeKeyword: case TT.Typeof:
-				case TT.Unchecked:
+				case TT.LBrace: case TT.LinqKeyword: case TT.Literal: case TT.LParen:
+				case TT.New: case TT.Operator: case TT.Sizeof: case TT.Substitute:
+				case TT.This: case TT.TypeKeyword: case TT.Typeof: case TT.Unchecked:
 					{
 						var op = MatchAny();
 						var rhs = PrimaryExpr();
-						// line 562
+						// line 568
 						e = F.CallInfixOp(e, op, rhs);
 					}
 					break;
 				}
 			}
-			// line 564
+			// line 570
 			return e;
 		}
-	
+
 		private void FinishPrimaryExpr(ref LNode e)
 		{
 			TokenType la1;
-			// Line 569: greedy( (TT.ColonColon|TT.Dot|TT.PtrArrow|TT.QuickBind) AtomOrTypeParamExpr / PrimaryExpr_NewStyleCast / TT.LParen TT.RParen | TT.LBrack TT.RBrack | TT.QuestionMark TT.LBrack TT.RBrack | TT.IncDec | BracedBlockOrTokenLiteral )*
+			// Line 575: greedy( (TT.ColonColon|TT.Dot|TT.PtrArrow|TT.QuickBind) AtomOrTypeParamExpr / PrimaryExpr_NewStyleCast / TT.LParen TT.RParen | TT.LBrack TT.RBrack | TT.QuestionMark TT.LBrack TT.RBrack | TT.IncDec | BracedBlockOrTokenLiteral )*
 			for (;;) {
 				switch (LA0) {
 				case TT.ColonColon: case TT.Dot: case TT.PtrArrow: case TT.QuickBind:
@@ -1916,14 +1906,13 @@ namespace Loyc.Ecs.Parser
 						switch (LA(1)) {
 						case TT.At: case TT.Base: case TT.Checked: case TT.ContextualKeyword:
 						case TT.Default: case TT.Delegate: case TT.Dot: case TT.Id:
-						case TT.Is: case TT.LBrace: case TT.LinqKeyword: case TT.Literal:
-						case TT.LParen: case TT.New: case TT.Operator: case TT.Sizeof:
-						case TT.Substitute: case TT.This: case TT.TypeKeyword: case TT.Typeof:
-						case TT.Unchecked:
+						case TT.LBrace: case TT.LinqKeyword: case TT.Literal: case TT.LParen:
+						case TT.New: case TT.Operator: case TT.Sizeof: case TT.Substitute:
+						case TT.This: case TT.TypeKeyword: case TT.Typeof: case TT.Unchecked:
 							{
 								var op = MatchAny();
 								var rhs = AtomOrTypeParamExpr();
-								// line 570
+								// line 576
 								e = F.CallInfixOp(e, op, rhs);
 							}
 							break;
@@ -1945,7 +1934,7 @@ namespace Loyc.Ecs.Parser
 							if (la1 == TT.RParen) {
 								var lp = MatchAny();
 								var rp = MatchAny();
-								// line 573
+								// line 579
 								e = F.CallPrefix(e, ExprListInside(lp), rp);
 							} else
 								goto stop;
@@ -1958,11 +1947,11 @@ namespace Loyc.Ecs.Parser
 						if (la1 == TT.RBrack) {
 							var lb = MatchAny();
 							var rb = MatchAny();
-							// line 574
+							// line 580
 							var list = new LNodeList { 
 								e
 							};
-							// line 575
+							// line 581
 							e = F.CallPrefix(S.IndexBracks, e.Range, AppendExprsInside(lb, list), rb);
 						} else
 							goto stop;
@@ -1975,7 +1964,7 @@ namespace Loyc.Ecs.Parser
 							var t = MatchAny();
 							var lb = MatchAny();
 							var rb = Match((int) TT.RBrack);
-							// line 591
+							// line 597
 							e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.List(ExprListInside(lb))), rb);
 						} else
 							goto stop;
@@ -1984,7 +1973,7 @@ namespace Loyc.Ecs.Parser
 				case TT.IncDec:
 					{
 						var t = MatchAny();
-						// line 593
+						// line 599
 						e = F.CallSuffixOp(e, t, t.Value == S.PreInc ? S.PostInc : S.PostDec);
 					}
 					break;
@@ -1993,7 +1982,7 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == TT.LBrace || la1 == TT.LBrack || la1 == TT.RBrace) {
 							var bb = BracedBlockOrTokenLiteral();
-							// line 595
+							// line 601
 							if ((!e.IsCall || e.BaseStyle == NodeStyle.Operator)) {
 								e = F.CallPrefixOp(e, bb, NodeStyle.Default);
 							} else {
@@ -2009,50 +1998,50 @@ namespace Loyc.Ecs.Parser
 			}
 		stop:;
 		}
-	
+
 		private LNode PrimaryExpr_NewStyleCast(LNode e)
 		{
 			TokenType la0;
 			Token op = default(Token);
 			var lp = MatchAny();
 			var rp = MatchAny();
-			// line 608
+			// line 614
 			Down(lp);
-			// line 609
+			// line 615
 			Symbol kind;
-			// line 610
+			// line 616
 			var attrs = LNodeList.Empty;
-			// Line 611: ( TT.PtrArrow | TT.As | TT.Using )
+			// Line 617: ( TT.PtrArrow | TT.As | TT.Using )
 			la0 = LA0;
 			if (la0 == TT.PtrArrow) {
 				op = MatchAny();
-				// line 611
+				// line 617
 				kind = S.Cast;
 			} else if (la0 == TT.As) {
 				op = MatchAny();
-				// line 612
+				// line 618
 				kind = S.As;
 			} else {
 				op = Match((int) TT.Using);
-				// line 613
+				// line 619
 				kind = S.UsingCast;
 			}
 			NormalAttributes(ref attrs);
 			AttributeKeywords(ref attrs);
 			var type = DataType();
 			Match((int) EOF);
-			// line 618
+			// line 624
 			type = type.PlusAttrs(attrs);
 			return Up(F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex, op.StartIndex, op.EndIndex, NodeStyle.Operator | NodeStyle.Alternate));
 		}
-		static readonly HashSet<int> PrefixExpr_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-	
+		static readonly HashSet<int> PrefixExpr_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+
 		// Prefix expressions, atoms, and high-precedence expressions like f(x) and List<T>
 		// to distinguish (cast) expr from (parens)
 		private LNode PrefixExpr()
 		{
 			TokenType la2;
-			// Line 629: ( ((TT.Add|TT.AndBits|TT.DotDot|TT.Forward|TT.IncDec|TT.Mul|TT.Not|TT.NotBits|TT.Sub) PrefixExpr | TT.Power PrefixExpr) | (&{Down($LI) && Up(Scan_DataType() && LA0 == EOF)} TT.LParen TT.RParen &!(( (TT.Add|TT.AndBits|TT.BQString|TT.Dot|TT.Mul|TT.Sub) | TT.IncDec TT.LParen | &{_insideLinqExpr} TT.LinqKeyword )) PrefixExpr / KeywordOrPrimaryExpr) )
+			// Line 635: ( ((TT.Add|TT.AndBits|TT.DotDot|TT.Forward|TT.IncDec|TT.Mul|TT.Not|TT.NotBits|TT.Sub) PrefixExpr | TT.Power PrefixExpr) | (&{Down($LI) && Up(Scan_DataType() && LA0 == EOF)} TT.LParen TT.RParen &!(( (TT.Add|TT.AndBits|TT.BQString|TT.Dot|TT.Mul|TT.Sub) | TT.IncDec TT.LParen | &{_insideLinqExpr} TT.LinqKeyword )) PrefixExpr / KeywordOrPrimaryExpr) )
 			do {
 				switch (LA0) {
 				case TT.Add: case TT.AndBits: case TT.DotDot: case TT.Forward:
@@ -2061,7 +2050,7 @@ namespace Loyc.Ecs.Parser
 					{
 						var op = MatchAny();
 						var e = PrefixExpr();
-						// line 630
+						// line 636
 						return F.CallPrefixOp(op, e);
 					}
 					break;
@@ -2069,7 +2058,7 @@ namespace Loyc.Ecs.Parser
 					{
 						var op = MatchAny();
 						var e = PrefixExpr();
-						// line 633
+						// line 639
 						return F.Call(S._Dereference, F.Call(S._Dereference, e, op.StartIndex + 1, e.Range.EndIndex, op.StartIndex + 1, op.EndIndex, NodeStyle.Operator), op.StartIndex, e.Range.EndIndex, op.StartIndex, op.StartIndex + 1, NodeStyle.Operator);
 					}
 					break;
@@ -2082,7 +2071,7 @@ namespace Loyc.Ecs.Parser
 									var lp = MatchAny();
 									Match((int) TT.RParen);
 									var e = PrefixExpr();
-									// line 641
+									// line 647
 									Down(lp);
 									return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex, NodeStyle.Operator);
 								} else
@@ -2100,17 +2089,17 @@ namespace Loyc.Ecs.Parser
 			matchKeywordOrPrimaryExpr:
 				{
 					var e = KeywordOrPrimaryExpr();
-					// line 642
+					// line 648
 					return e;
 				}
 			} while (false);
 		}
-	
+
 		private 
 		LNode KeywordOrPrimaryExpr()
 		{
 			TokenType la1;
-			// Line 648: ( &{Is($LI, @@await)} TT.ContextualKeyword PrefixExpr / KeywordStmtAsExpr / LinqQueryExpression / PrimaryExpr )
+			// Line 654: ( &{Is($LI, @@await)} TT.ContextualKeyword PrefixExpr / KeywordStmtAsExpr / LinqQueryExpression / PrimaryExpr )
 			do {
 				switch (LA0) {
 				case TT.ContextualKeyword:
@@ -2120,7 +2109,7 @@ namespace Loyc.Ecs.Parser
 							if (PrefixExpr_set0.Contains((int) la1)) {
 								var op = MatchAny();
 								var e = PrefixExpr();
-								// line 649
+								// line 655
 								return F.CallPrefixOp(op, e, sy_await);
 							} else
 								goto matchPrimaryExpr;
@@ -2132,7 +2121,7 @@ namespace Loyc.Ecs.Parser
 				case TT.Switch: case TT.Throw:
 					{
 						var e = KeywordStmtAsExpr();
-						// line 651
+						// line 657
 						return e;
 					}
 					break;
@@ -2142,7 +2131,7 @@ namespace Loyc.Ecs.Parser
 							la1 = LA(1);
 							if (la1 == TT.ContextualKeyword || la1 == TT.Id || la1 == TT.Substitute) {
 								var e = LinqQueryExpression();
-								// line 653
+								// line 659
 								return e;
 							} else
 								goto matchPrimaryExpr;
@@ -2157,19 +2146,19 @@ namespace Loyc.Ecs.Parser
 			matchPrimaryExpr:
 				{
 					var e = PrimaryExpr();
-					// line 655
+					// line 661
 					return e;
 				}
 			} while (false);
 		}
-	
+
 		LNode KeywordStmtAsExpr()
 		{
 			TokenType la1;
 			LNode result = default(LNode);
-			// line 659
+			// line 665
 			var startIndex = LT0.StartIndex;
-			// Line 660: ( ReturnBreakContinueThrow | (GotoCaseStmt / GotoStmt) | SwitchStmt )
+			// Line 666: ( ReturnBreakContinueThrow | (GotoCaseStmt / GotoStmt) | SwitchStmt )
 			switch (LA0) {
 			case TT.Break: case TT.Continue: case TT.Return: case TT.Throw:
 				result = ReturnBreakContinueThrow(startIndex);
@@ -2189,7 +2178,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		// This rule handles all lower precedence levels, from ** down to assignment
 		// (=). This rule uses the "precedence floor" concept, documented in 
 		// Loyc.Syntax.Precedence, to handle different precedence levels. The 
@@ -2214,20 +2203,20 @@ namespace Loyc.Ecs.Parser
 		private LNode SubExpr(Precedence context, bool lambdaInFollowSet = false)
 		{
 			TokenType la0, la1;
-			// line 699
+			// line 705
 			Debug.Assert(context.CanParse(EP.Prefix));
-			// line 700
+			// line 706
 			Precedence prec;
 			var e = PrefixExpr();
-			// Line 704: greedy( &{context.CanParse(prec = InfixPrecedenceOf($LA))} (TT.Add|TT.And|TT.AndBits|TT.BQString|TT.Compare|TT.CompoundSet|TT.DivMod|TT.DotDot|TT.EqNeq|TT.GT|TT.In|TT.LEGE|TT.LT|TT.Mul|TT.NotBits|TT.NullCoalesce|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.Set|TT.Sub|TT.XorBits) SubExpr | &{context.CanParse(prec = EP.Lambda) && !lambdaInFollowSet} TT.LambdaArrow SubExpr | &{context.CanParse(prec = EP.Compare)} TT.Is IsPattern | &{context.CanParse(prec = EP.Compare)} (TT.As|TT.Using) DataType | &{context.CanParse(EP.Shift)} &{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT SubExpr | TT.GT TT.GT SubExpr) | &{context.CanParse(EP.IfElse)} TT.QuestionMark SubExpr TT.Colon SubExpr )*
+			// Line 710: greedy( &{context.CanParse(prec = InfixPrecedenceOf($LA))} (TT.Add|TT.And|TT.AndBits|TT.BQString|TT.Compare|TT.CompoundSet|TT.DivMod|TT.DotDot|TT.EqNeq|TT.GT|TT.In|TT.LEGE|TT.LT|TT.Mul|TT.NotBits|TT.NullCoalesce|TT.OrBits|TT.OrXor|TT.PipeArrow|TT.Power|TT.Set|TT.Sub|TT.XorBits) SubExpr | &{context.CanParse(prec = EP.Lambda) && !lambdaInFollowSet} TT.LambdaArrow SubExpr | &{context.CanParse(prec = EP.Compare)} TT.Is IsPattern | &{context.CanParse(prec = EP.Compare)} (TT.As|TT.Using) DataType | &{context.CanParse(EP.Shift)} &{LT($LI).EndIndex == LT($LI + 1).StartIndex} (TT.LT TT.LT SubExpr | TT.GT TT.GT SubExpr) | &{context.CanParse(EP.IfElse)} TT.QuestionMark SubExpr TT.Colon SubExpr )*
 			for (;;) {
 				switch (LA0) {
 				case TT.GT: case TT.LT:
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -2249,8 +2238,8 @@ namespace Loyc.Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match5;
@@ -2285,7 +2274,7 @@ namespace Loyc.Ecs.Parser
 							if (PrefixExpr_set0.Contains((int) la1)) {
 								var op = MatchAny();
 								var rhs = SubExpr(prec);
-								// line 713
+								// line 719
 								e = F.CallInfixOp(e, op, rhs);
 							} else
 								goto stop;
@@ -2320,7 +2309,7 @@ namespace Loyc.Ecs.Parser
 								{
 									var op = MatchAny();
 									var rhs = DataType(true);
-									// line 722
+									// line 728
 									e = F.CallInfixOp(e, op, rhs, op.Type() == TT.Using ? S.UsingCast : S.As);
 								}
 								break;
@@ -2340,7 +2329,7 @@ namespace Loyc.Ecs.Parser
 								var then = SubExpr(StartExpr);
 								Match((int) TT.Colon);
 								var @else = SubExpr(EP.IfElse);
-								// line 735
+								// line 741
 								e = F.CallInfixOp(e, op, then, @else);
 							} else
 								goto stop;
@@ -2356,19 +2345,19 @@ namespace Loyc.Ecs.Parser
 				{
 					var op = MatchAny();
 					var rhs = SubExpr(prec);
-					// line 708
+					// line 714
 					e = F.CallInfixOp(e, op, rhs);
 				}
 				continue;
 			match5:
 				{
-					// Line 726: (TT.LT TT.LT SubExpr | TT.GT TT.GT SubExpr)
+					// Line 732: (TT.LT TT.LT SubExpr | TT.GT TT.GT SubExpr)
 					la0 = LA0;
 					if (la0 == TT.LT) {
 						var op = MatchAny();
 						Match((int) TT.LT);
 						var rhs = SubExpr(EP.Shift);
-						// line 727
+						// line 733
 						e = F.CallInfixOp(e, S.Shl, new IndexRange(op.StartIndex) { 
 							EndIndex = op.EndIndex + 1
 						}, rhs);
@@ -2376,87 +2365,57 @@ namespace Loyc.Ecs.Parser
 						var op = MatchAny();
 						Match((int) TT.GT);
 						var rhs = SubExpr(EP.Shift);
-						// line 729
+						// line 735
 						e = F.CallInfixOp(e, S.Shr, new IndexRange(op.StartIndex) { 
 							EndIndex = op.EndIndex + 1
 						}, rhs);
 					} else {
-						// line 730
+						// line 736
 						e = Error("Syntax error");
 					}
 				}
 			}
 		stop:;
-			// line 737
+			// line 743
 			return e;
 		}
-	
-	
+
 		private LNode IsPattern(LNode lhs, Token isTok)
 		{
 			TokenType la0, la1;
 			Token lit_lpar = default(Token);
 			Token lit_rpar = default(Token);
-			// line 743
+			// line 748
 			LNodeList argList = new LNodeList(lhs);
 			var target = DataType(true);
-			// Line 746: (IdAtom)?
+			// Line 751: (IdAtom)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
 			case TT.Substitute: case TT.TypeKeyword:
 				{
 					var targetName = IdAtom();
-					// line 746
+					// line 751
 					target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);
 				}
 				break;
 			}
-			// line 747
+			// line 752
 			argList.Add(target);
-			// Line 749: (TT.LParen TT.RParen)?
+			// Line 754: (TT.LParen TT.RParen)?
 			la0 = LA0;
 			if (la0 == TT.LParen) {
 				la1 = LA(1);
 				if (la1 == TT.RParen) {
 					lit_lpar = MatchAny();
 					lit_rpar = MatchAny();
-					// line 749
+					// line 754
 					argList.Add(F.List(ExprListInside(lit_lpar, allowUnassignedVarDecl: true), lit_lpar.StartIndex, lit_rpar.EndIndex));
 				}
 			}
-			// line 750
+			// line 755
 			return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex, NodeStyle.Operator);
 		}
-	
-		bool Try_Scan_IsPattern(int lookaheadAmt) {
-			using (new SavePosition(this, lookaheadAmt))
-				return Scan_IsPattern();
-		}
-		bool Scan_IsPattern()
-		{
-			TokenType la0, la1;
-			if (!Scan_DataType(true))
-				return false;
-			// Line 746: (IdAtom)?
-			switch (LA0) {
-			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
-			case TT.Substitute: case TT.TypeKeyword:
-				if (!Scan_IdAtom())
-					return false;
-				break;
-			}
-			// Line 749: (TT.LParen TT.RParen)?
-			la0 = LA0;
-			if (la0 == TT.LParen) {
-				la1 = LA(1);
-				if (la1 == TT.RParen) {
-					Skip();
-					Skip();
-				}
-			}
-			return true;
-		}
-	
+
 		// An expression that can start with attributes [...], attribute keywords 
 		// (out, ref, public, etc.), a named argument (a: expr) and/or a variable 
 		// declaration (Foo? x = null).
@@ -2464,14 +2423,14 @@ namespace Loyc.Ecs.Parser
 		{
 			TokenType la0, la1;
 			LNode result = default(LNode);
-			// Line 758: (((TT.ContextualKeyword|TT.Id) | LinqKeywordAsId) TT.Colon ExprStartNNP / ExprStartNNP)
+			// Line 763: (((TT.ContextualKeyword|TT.Id) | LinqKeywordAsId) TT.Colon ExprStartNNP / ExprStartNNP)
 			la0 = LA0;
 			if (la0 == TT.ContextualKeyword || la0 == TT.Id || la0 == TT.LinqKeyword) {
 				la1 = LA(1);
 				if (la1 == TT.Colon) {
-					// line 758
+					// line 763
 					Token argName = default(Token);
-					// Line 759: ((TT.ContextualKeyword|TT.Id) | LinqKeywordAsId)
+					// Line 764: ((TT.ContextualKeyword|TT.Id) | LinqKeywordAsId)
 					la0 = LA0;
 					if (la0 == TT.ContextualKeyword || la0 == TT.Id)
 						argName = MatchAny();
@@ -2479,7 +2438,7 @@ namespace Loyc.Ecs.Parser
 						argName = LinqKeywordAsId();
 					var colon = MatchAny();
 					result = ExprStartNNP(allowUnassignedVarDecl);
-					// line 761
+					// line 766
 					result = F.CallInfixOp(F.Id(argName), S.NamedArg, colon, result);
 				} else
 					result = ExprStartNNP(allowUnassignedVarDecl);
@@ -2487,61 +2446,61 @@ namespace Loyc.Ecs.Parser
 				result = ExprStartNNP(allowUnassignedVarDecl);
 			return result;
 		}
-	
+
 		// ExprStart with No Named Parameter allowed
 		public LNode ExprStartNNP(bool allowUnassignedVarDecl)
 		{
-			// line 767
+			// line 772
 			var attrs = LNodeList.Empty;
 			var hasList = NormalAttributes(ref attrs);
 			AttributeKeywords(ref attrs);
-			// line 772
+			// line 777
 			if ((!attrs.IsEmpty || hasList)) {
 				allowUnassignedVarDecl = true;
 			}
 			LNode expr;
 			TentativeResult result, _;
 			if ((allowUnassignedVarDecl)) {
-				expr = TentativeVarDecl(attrs, out result, allowUnassignedVarDecl) ?? TentativeExpr(attrs, out result);
+				expr = TryParseVarDecl(attrs, out result, allowUnassignedVarDecl) ?? TryParseNonVarDeclExpr(attrs, out result);
 			} else {
-				expr = TentativeExpr(attrs, out result);
+				expr = TryParseNonVarDeclExpr(attrs, out result);
 				if (expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2))) {
 					InputPosition = result.OldPosition;
-					expr = TentativeVarDecl(attrs, out _, allowUnassignedVarDecl);
+					expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
 				}
 			}
-			expr = expr ?? Apply(result);
+			expr = expr ?? Commit(result);
 			return expr;
 		}
-	
+
 		private LNode VarDeclExpr(out bool hasInitializer, LNodeList attrs)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
-			// Line 863: (TT.This)?
+			// Line 866: (TT.This)?
 			la0 = LA0;
 			if (la0 == TT.This) {
 				var t = MatchAny();
-				// line 863
+				// line 866
 				attrs.Add(F.Id(t));
 			}
 			var pair = VarDeclStart();
-			// line 865
+			// line 868
 			LNode type = pair.Item1, name = pair.Item2;
-			// Line 868: (RestOfPropertyDefinition / VarInitializerOpt)
+			// Line 871: (RestOfPropertyDefinition / VarInitializerOpt)
 			switch (LA0) {
 			case TT.At: case TT.Forward: case TT.LambdaArrow: case TT.LBrace:
 			case TT.LBrack: case TT.LinqKeyword:
 				{
 					result = RestOfPropertyDefinition(type.Range.StartIndex, type, name, true);
-					// line 869
+					// line 872
 					hasInitializer = true;
 				}
 				break;
 			default:
 				{
 					var nameAndInit = VarInitializerOpt(name, IsArrayType(type));
-					// line 872
+					// line 875
 					hasInitializer = (nameAndInit != name);
 					var typeStart = type.Range.StartIndex;
 					var start = attrs.IsEmpty ? typeStart : attrs[0].Range.StartIndex;
@@ -2550,21 +2509,21 @@ namespace Loyc.Ecs.Parser
 				}
 				break;
 			}
-			// line 880
+			// line 883
 			result = result.PlusAttrs(attrs);
 			return result;
 		}
-	
+
 		private Pair<LNode, LNode> VarDeclStart()
 		{
 			var e = DataType();
 			var id = IdAtom();
-			// line 886
+			// line 889
 			MaybeRecognizeVarAsKeyword(ref e);
-			// line 887
+			// line 890
 			return Pair.Create(e, id);
 		}
-	
+
 		private bool Scan_VarDeclStart()
 		{
 			if (!Scan_DataType())
@@ -2573,24 +2532,24 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private LNode ExprInParensAuto()
 		{
-			// Line 906: (&(ExprInParens (TT.LambdaArrow|TT.Set)) ExprInParens / ExprInParens)
+			// Line 909: (&(ExprInParens (TT.LambdaArrow|TT.Set)) ExprInParens / ExprInParens)
 			if (Try_ExprInParensAuto_Test0(0)) {
 				var r = ExprInParens(true);
-				// line 907
+				// line 910
 				return r;
 			} else {
 				var r = ExprInParens(false);
-				// line 908
+				// line 911
 				return r;
 			}
 		}
-	
+
 		private bool Scan_ExprInParensAuto()
 		{
-			// Line 906: (&(ExprInParens (TT.LambdaArrow|TT.Set)) ExprInParens / ExprInParens)
+			// Line 909: (&(ExprInParens (TT.LambdaArrow|TT.Set)) ExprInParens / ExprInParens)
 			if (Try_ExprInParensAuto_Test0(0)){
 				if (!Scan_ExprInParens(true))
 					return false;}
@@ -2598,18 +2557,18 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private LNode ExprInParens(bool allowUnassignedVarDecl)
 		{
 			var lp = Match((int) TT.LParen);
 			var rp = Match((int) TT.RParen);
-			// line 918
+			// line 921
 			if ((!Down(lp))) {
 				return F.CallBrackets(S.Tuple, lp, LNode.List(), rp);
 			}
 			return Up(InParens_ExprOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
 		}
-	
+
 		private bool Scan_ExprInParens(bool allowUnassignedVarDecl)
 		{
 			if (!TryMatch((int) TT.LParen))
@@ -2618,25 +2577,25 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		// Called inside parens by ExprInParens
 		LNode InParens_ExprOrTuple(bool allowUnassignedVarDecl, int startIndex, int endIndex)
 		{
 			TokenType la0, la1;
-			// Line 925: (EOF => {..} / ExprStart nongreedy(TT.Comma ExprStart)* (TT.Comma)? EOF)
+			// Line 928: (EOF => {..} / ExprStart nongreedy(TT.Comma ExprStart)* (TT.Comma)? EOF)
 			la0 = LA0;
 			if (la0 == EOF)
-				// line 927
+				// line 930
 				return F.Tuple(LNodeList.Empty, startIndex, endIndex);
 			else {
-				// line 928
+				// line 931
 				var hasAttrList = LA0 == TT.LBrack;
 				var e = ExprStart(allowUnassignedVarDecl);
-				// line 930
+				// line 933
 				var list = new LNodeList { 
 					e
 				};
-				// Line 932: nongreedy(TT.Comma ExprStart)*
+				// Line 935: nongreedy(TT.Comma ExprStart)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -2650,17 +2609,17 @@ namespace Loyc.Ecs.Parser
 					} else
 						break;
 				}
-				// line 934
+				// line 937
 				bool isTuple = list.Count > 1;
-				// Line 935: (TT.Comma)?
+				// Line 938: (TT.Comma)?
 				la0 = LA0;
 				if (la0 == TT.Comma) {
 					Skip();
-					// line 935
+					// line 938
 					isTuple = true;
 				}
 				Match((int) EOF);
-				// line 937
+				// line 940
 				if (isTuple) {
 					return F.Tuple(list, startIndex, endIndex);
 				} else {
@@ -2668,12 +2627,12 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		private LNode BracedBlockOrTokenLiteral(Symbol spaceName = null, Symbol target = null, int startIndex = -1)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
-			// Line 945: (BracedBlock | TokenLiteral)
+			// Line 948: (BracedBlock | TokenLiteral)
 			la0 = LA0;
 			if (la0 == TT.LBrace)
 				result = BracedBlock(spaceName, target, startIndex);
@@ -2681,33 +2640,34 @@ namespace Loyc.Ecs.Parser
 				result = TokenLiteral();
 			return result;
 		}
-	
+
 		private LNode BracedBlock(Symbol spaceName = null, Symbol target = null, int startIndex = -1)
 		{
 			Token lit_lcub = default(Token);
 			Token lit_rcub = default(Token);
-			// line 950
-			var oldSpace = _spaceName;
-			_spaceName = spaceName ?? oldSpace;
-			lit_lcub = Match((int) TT.LBrace);
-			lit_rcub = Match((int) TT.RBrace);
-			// line 954
-			if ((startIndex == -1)) {
-				startIndex = lit_lcub.StartIndex;
-			}
-			var stmts = StmtListInside(lit_lcub);
-			_spaceName = oldSpace;
-			return F.Call(target ?? S.Braces, stmts, startIndex, lit_rcub.EndIndex, lit_lcub.StartIndex, lit_lcub.EndIndex, NodeStyle.StatementBlock);
+			// line 953
+			var old_12 = _spaceName;
+			_spaceName = spaceName ?? _spaceName;
+			try {
+				lit_lcub = Match((int) TT.LBrace);
+				lit_rcub = Match((int) TT.RBrace);
+				// line 955
+				if ((startIndex == -1)) {
+					startIndex = lit_lcub.StartIndex;
+				}
+				var stmts = StmtListInside(lit_lcub);
+				return F.Call(target ?? S.Braces, stmts, startIndex, lit_rcub.EndIndex, lit_lcub.StartIndex, lit_lcub.EndIndex, NodeStyle.StatementBlock);
+			} finally { _spaceName = old_12; }
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// -- "Patterns" and switch expressions --------------------------------
 			// ---------------------------------------------------------------------
 			//
 			// A pattern can appear after `is` or `case`, or inside the braced block
 			// of a switch expression. NOTE: Patterns after `case` are not supported
 			// in Enhanced C# v29 until we figure out how to resolve the major syntax 
-			// conflict between Enhanced C# and plain C# that was introduced in C# 9.
+		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
 			//
 			// An ambiguous grammar for patterns is given on the following page:
 			// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
@@ -2715,12 +2675,14 @@ namespace Loyc.Ecs.Parser
 			// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
 			// refers to "existing" productions like primary_pattern that DON'T EXIST
 			// in the C# 8 version. Anyway, here is my attempt to piece together a 
-			// simplified, combined version of the C# 8 grammar and C# 9 partial grammar:
+		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar
+			// (which still doesn't include `when` clauses from the `switch` expression):
 			//
 			// // aka disjunctive_pattern
 			// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
 			// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
 			// negated_pattern : 'not' negated_pattern | primary_pattern;
+			//
 			// primary_pattern
 			//     : type identifier     // aka declaration_pattern
 			//     | constant_expression // aka constant_pattern
@@ -2733,43 +2695,54 @@ namespace Loyc.Ecs.Parser
 			//     | '_'                 // aka discard_pattern
 			//     ;
 			// 
-			// subpatterns : subpattern (',' subpattern)*;
+		// subpatterns : subpattern (',' subpattern)*;
 			// subpattern : (identifier ':')? pattern;
 			// 
-			// var_pattern : 'var' designation;
+		// var_pattern : 'var' designation;
 			//   designation : identifier | tuple_designation;    
-			//   tuple_designation : '(' designation (',' designation)* ')';
+		//   tuple_designation : '(' designation (',' designation)* ')';
 			// 
-			// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
+		// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
 			//
 			// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
 			// 
-			// property_pattern : type? property_subpattern identifier?;
+		// property_pattern : type? property_subpattern identifier?;
 			//
 			// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
 			//   relational_expression : <<no definition is provided!>>
 			//
 			// NOTES:
+			// ------
 			// - The var_pattern is simply a special case of positional_pattern in which 
-			//   the type happens to be `var` and the subpatterns are expressions.
+		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
 			// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
-			//   just a special case of positional_pattern
+		//   just a special case of positional_pattern; `((var x))` should already have
+			//   been valid in C# 8 given the grammar above, though maybe it has a 
+		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
+		//   deconstruction and in C# 9 there is no deconstruction at all.
 			// - My experimentation suggests that constant_expression, as you might guess,
 			//   has a precedence matching the `is` operator when it appears on the right-
 			//   hand side of an is-expression. In a switch expression it can be almost
 			//   any expression, except that all operators with precedence below || don't
 			//   seem to work (i.e. ?: and ?? and assignment operators).
 			//   - `??` fails in a strange way by always saying "A constant value is 
-			//     expected" (I would think that `(string)null ?? null` is constant, but,
+		//     expected" (I would think that `(string)null ?? null` is constant, but,
 			//     turns out, it's not, i.e. you can't make a const var with this value.)
 			//     The others fail as syntax errors.
-			//   - A lambda operator can't be used in either context, even if you add
+			//   - A lambda function can't be used in either context, even if you add
 			//     parentheses around it.
+			// - But what is the precedence of the relational_expression? Surprisingly,
+			//   low precedence operators are not allowed, even in a switch expression:
+			//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
+			//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
+			//   `(object)x switch { (<= (2 & 3), 3) => 7 }` is a syntax error, although
+			//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
+			//   `(object)x switch { <= 2 << 3 => 7 }`.
 			// - Postfix `++` and `--` cause syntax errors, so I could not find out
 			//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
-			//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
+		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
 			// - However, the parser sees `when` as an identifier in some cases and as a 
-			//   keyword at other times. Here are a couple of interesting cases:
+		//   keyword at other times. Here are a couple of interesting cases:
 			//     const int when = 77;
 			//     const int Int32 = 32;
 			//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
@@ -2782,7 +2755,7 @@ namespace Loyc.Ecs.Parser
 			//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
 			//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
 			//   like `int?` is a syntax error, but arrays work (e.g. `(T,U)[,]`). 
-			//   `int*` is right out.
+		//   `int*` is right out.
 			// - `when` is not allowed in an is-expression; you can write
 			//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
 			//   `(object)2   is     int x when x < 5` is a syntax error.
@@ -2792,7 +2765,7 @@ namespace Loyc.Ecs.Parser
 			//     `(> 0, name: {} x) y`
 			//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
 			// - Not related to patterns but I just noticed that 
-			//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
+		//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
 			//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
 			// - Not related to parsing, but this `is` expression weirdly returns false:
 			//     struct Foo {
@@ -2803,6 +2776,54 @@ namespace Loyc.Ecs.Parser
 			//
 			// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
 			// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
+			//
+			// SIMPLIFIED REFORMULATION
+			// ------------------------
+			// Here's a simplified version of the above grammar with reduced ambiguity:
+			// 
+		//   pattern : conjunctive_pattern ('or' conjunctive_pattern)*;      // as before
+			//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
+			//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
+			//
+			//   primary_pattern
+			//     : relational_pattern
+			//     / typed_pattern // includes complex identifiers and even the discard _
+			//     / paren_or_brace_pattern
+			//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
+			//
+			//   paren_or_brace_pattern:
+			//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
+			//   typed_pattern:
+			//     type (identifier | paren_or_brace_pattern)?
+			//   property_subpattern: // as before
+			//   subpatterns:         // as before
+			//   relational_pattern:  // as before
+			// 
+		// Loyc tree mappings, by example:
+			//
+			// | Example Pattern          | Loyc tree (EC#/LES2 syntax) 
+		// |--------------------------|-----------------------------
+			// | `_`                      | ```_```
+			// | `Enum.Value`             | ```Enum.Value```
+			// | `2 + 2`                  | ```2 + 2```
+			// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
+			// | `var x`                  | ```#var(@``, x)```
+			// | `var (x, y, z)`          | ```#var(@``, (x, y, z))``` (shorthand for ```#var(@``, @'tuple(x, y, z))```)
+			// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
+			// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+			// | `List<T> list`           | ```#var(List!T, list)```
+			// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
+			// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
+			// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+			// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
+			// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
+			// | `List<T> { Count: 3 }`   | ```#var(List!T, list)```
+			// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
+			// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
+			// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+			// 
+		// In Roslyn,
+			//   DeclarationPatternSyntax is a type + designation (ident or tuple)
 		private bool Scan_BracedBlock(Symbol spaceName = null, Symbol target = null, int startIndex = -1)
 		{
 			if (!TryMatch((int) TT.LBrace))
@@ -2811,15 +2832,15 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// -- "Patterns" and switch expressions --------------------------------
 			// ---------------------------------------------------------------------
 			//
 			// A pattern can appear after `is` or `case`, or inside the braced block
 			// of a switch expression. NOTE: Patterns after `case` are not supported
 			// in Enhanced C# v29 until we figure out how to resolve the major syntax 
-			// conflict between Enhanced C# and plain C# that was introduced in C# 9.
+		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
 			//
 			// An ambiguous grammar for patterns is given on the following page:
 			// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
@@ -2827,12 +2848,14 @@ namespace Loyc.Ecs.Parser
 			// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
 			// refers to "existing" productions like primary_pattern that DON'T EXIST
 			// in the C# 8 version. Anyway, here is my attempt to piece together a 
-			// simplified, combined version of the C# 8 grammar and C# 9 partial grammar:
+		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar
+			// (which still doesn't include `when` clauses from the `switch` expression):
 			//
 			// // aka disjunctive_pattern
 			// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
 			// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
 			// negated_pattern : 'not' negated_pattern | primary_pattern;
+			//
 			// primary_pattern
 			//     : type identifier     // aka declaration_pattern
 			//     | constant_expression // aka constant_pattern
@@ -2845,43 +2868,54 @@ namespace Loyc.Ecs.Parser
 			//     | '_'                 // aka discard_pattern
 			//     ;
 			// 
-			// subpatterns : subpattern (',' subpattern)*;
+		// subpatterns : subpattern (',' subpattern)*;
 			// subpattern : (identifier ':')? pattern;
 			// 
-			// var_pattern : 'var' designation;
+		// var_pattern : 'var' designation;
 			//   designation : identifier | tuple_designation;    
-			//   tuple_designation : '(' designation (',' designation)* ')';
+		//   tuple_designation : '(' designation (',' designation)* ')';
 			// 
-			// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
+		// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
 			//
 			// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
 			// 
-			// property_pattern : type? property_subpattern identifier?;
+		// property_pattern : type? property_subpattern identifier?;
 			//
 			// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
 			//   relational_expression : <<no definition is provided!>>
 			//
 			// NOTES:
+			// ------
 			// - The var_pattern is simply a special case of positional_pattern in which 
-			//   the type happens to be `var` and the subpatterns are expressions.
+		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
 			// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
-			//   just a special case of positional_pattern
+		//   just a special case of positional_pattern; `((var x))` should already have
+			//   been valid in C# 8 given the grammar above, though maybe it has a 
+		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
+		//   deconstruction and in C# 9 there is no deconstruction at all.
 			// - My experimentation suggests that constant_expression, as you might guess,
 			//   has a precedence matching the `is` operator when it appears on the right-
 			//   hand side of an is-expression. In a switch expression it can be almost
 			//   any expression, except that all operators with precedence below || don't
 			//   seem to work (i.e. ?: and ?? and assignment operators).
 			//   - `??` fails in a strange way by always saying "A constant value is 
-			//     expected" (I would think that `(string)null ?? null` is constant, but,
+		//     expected" (I would think that `(string)null ?? null` is constant, but,
 			//     turns out, it's not, i.e. you can't make a const var with this value.)
 			//     The others fail as syntax errors.
-			//   - A lambda operator can't be used in either context, even if you add
+			//   - A lambda function can't be used in either context, even if you add
 			//     parentheses around it.
+			// - But what is the precedence of the relational_expression? Surprisingly,
+			//   low precedence operators are not allowed, even in a switch expression:
+			//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
+			//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
+			//   `(object)x switch { (<= (2 & 3), 3) => 7 }` is a syntax error, although
+			//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
+			//   `(object)x switch { <= 2 << 3 => 7 }`.
 			// - Postfix `++` and `--` cause syntax errors, so I could not find out
 			//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
-			//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
+		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
 			// - However, the parser sees `when` as an identifier in some cases and as a 
-			//   keyword at other times. Here are a couple of interesting cases:
+		//   keyword at other times. Here are a couple of interesting cases:
 			//     const int when = 77;
 			//     const int Int32 = 32;
 			//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
@@ -2894,7 +2928,7 @@ namespace Loyc.Ecs.Parser
 			//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
 			//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
 			//   like `int?` is a syntax error, but arrays work (e.g. `(T,U)[,]`). 
-			//   `int*` is right out.
+		//   `int*` is right out.
 			// - `when` is not allowed in an is-expression; you can write
 			//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
 			//   `(object)2   is     int x when x < 5` is a syntax error.
@@ -2904,7 +2938,7 @@ namespace Loyc.Ecs.Parser
 			//     `(> 0, name: {} x) y`
 			//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
 			// - Not related to patterns but I just noticed that 
-			//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
+		//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
 			//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
 			// - Not related to parsing, but this `is` expression weirdly returns false:
 			//     struct Foo {
@@ -2915,179 +2949,544 @@ namespace Loyc.Ecs.Parser
 			//
 			// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
 			// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
-	
-		LNode Pattern()
+			//
+			// SIMPLIFIED REFORMULATION
+			// ------------------------
+			// Here's a simplified version of the above grammar with reduced ambiguity:
+			// 
+		//   pattern : conjunctive_pattern ('or' conjunctive_pattern)*;      // as before
+			//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
+			//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
+			//
+			//   primary_pattern
+			//     : relational_pattern
+			//     / typed_pattern // includes complex identifiers and even the discard _
+			//     / paren_or_brace_pattern
+			//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
+			//
+			//   paren_or_brace_pattern:
+			//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
+			//   typed_pattern:
+			//     type (identifier | paren_or_brace_pattern)?
+			//   property_subpattern: // as before
+			//   subpatterns:         // as before
+			//   relational_pattern:  // as before
+			// 
+		// Loyc tree mappings, by example:
+			//
+			// | Example Pattern          | Loyc tree (EC#/LES2 syntax) 
+		// |--------------------------|-----------------------------
+			// | `_`                      | ```_```
+			// | `Enum.Value`             | ```Enum.Value```
+			// | `2 + 2`                  | ```2 + 2```
+			// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
+			// | `var x`                  | ```#var(@``, x)```
+			// | `var (x, y, z)`          | ```#var(@``, (x, y, z))``` (shorthand for ```#var(@``, @'tuple(x, y, z))```)
+			// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
+			// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+			// | `List<T> list`           | ```#var(List!T, list)```
+			// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
+			// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
+			// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+			// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
+			// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
+			// | `List<T> { Count: 3 }`   | ```#var(List!T, list)```
+			// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
+			// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
+			// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+			// 
+		// In Roslyn,
+			//   DeclarationPatternSyntax is a type + designation (ident or tuple)
+
+		LNode Pattern(Precedence ctx)
 		{
 			TokenType la0;
 			Token op = default(Token);
 			LNode result = default(LNode);
 			LNode rhs = default(LNode);
-			result = ConjunctivePattern();
-			// Line 1068: (&{Is($LI, @@or)} TT.Id ConjunctivePattern)*
+			result = ConjunctivePattern(ctx);
+			// Line 1129: (&{Is($LI, @@or)} TT.Id ConjunctivePattern)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Id) {
-					Check(Is(0, sy_or), "Expected Is($LI, @@or)");
-					op = MatchAny();
-					rhs = ConjunctivePattern();
-					// line 1069
-					result = F.CallInfixOp(result, op, rhs);
+					if (Is(0, sy_or)) {
+						switch (LA(1)) {
+						case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+						case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+							{
+								op = MatchAny();
+								rhs = ConjunctivePattern(ctx);
+								// line 1130
+								result = F.CallInfixOp(result, op, rhs);
+							}
+							break;
+						default:
+							goto stop;
+						}
+					} else
+						goto stop;
 				} else
-					break;
+					goto stop;
 			}
+		stop:;
 			return result;
 		}
-	
-		LNode ConjunctivePattern()
+
+		LNode ConjunctivePattern(Precedence ctx)
 		{
 			TokenType la0;
 			Token op = default(Token);
 			LNode result = default(LNode);
 			LNode rhs = default(LNode);
-			result = NegatedPattern();
-			// Line 1075: (&{Is($LI, @@and)} TT.Id NegatedPattern)*
+			result = NegatedPattern(ctx);
+			// Line 1136: (&{Is($LI, @@and)} TT.Id NegatedPattern)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Id) {
 					if (Is(0, sy_and)) {
-						op = MatchAny();
-						rhs = NegatedPattern();
-						// line 1076
-						result = F.CallInfixOp(result, op, rhs);
+						switch (LA(1)) {
+						case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+						case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+							{
+								op = MatchAny();
+								rhs = NegatedPattern(ctx);
+								// line 1137
+								result = F.CallInfixOp(result, op, rhs);
+							}
+							break;
+						default:
+							goto stop;
+						}
 					} else
+						goto stop;
+				} else
+					goto stop;
+			}
+		stop:;
+			return result;
+		}
+
+		LNode NegatedPattern(Precedence ctx)
+		{
+			TokenType la0;
+			LNode got_NegatedPattern = default(LNode);
+			Token not = default(Token);
+			LNode result = default(LNode);
+			// Line 1142: (&{Is($LI, @@not)} TT.Id NegatedPattern / PrimaryPattern)
+			la0 = LA0;
+			if (la0 == TT.Id) {
+				if (Is(0, sy_not)) {
+					switch (LA(1)) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+					case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+						{
+							not = MatchAny();
+							got_NegatedPattern = NegatedPattern(ctx);
+							// line 1143
+							result = F.CallPrefixOp(not, got_NegatedPattern);
+						}
 						break;
+					default:
+						result = PrimaryPattern(ctx);
+						break;
+					}
+				} else
+					result = PrimaryPattern(ctx);
+			} else
+				result = PrimaryPattern(ctx);
+			return result;
+		}
+
+		
+		LNode PrimaryPattern(Precedence context)
+		{
+			LNode result = default(LNode);
+			result = NonExprPattern();
+			return result;
+		}
+
+		bool Try_Scan_PrimaryPattern(int lookaheadAmt, Precedence context) {
+			using (new SavePosition(this, lookaheadAmt))
+				return Scan_PrimaryPattern(context);
+		}
+		bool Scan_PrimaryPattern(Precedence context)
+		{
+			if (!Scan_NonExprPattern())
+				return false;
+			return true;
+		}
+
+		LNode NonExprPattern()
+		{
+			TokenType la0, la1;
+			LNode got_VarDesignation = default(LNode);
+			Token lit_lcub = default(Token);
+			Token lit_lpar = default(Token);
+			Token lit_rcub = default(Token);
+			Token lit_rpar = default(Token);
+			LNode result = default(LNode);
+			LNode type = default(LNode);
+			// Line 1167: (&{Is($LI, @@var)} TT.ContextualKeyword VarDesignation | (DataType)? (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? | TT.LBrace TT.RBrace)? (IdAtom)?)
+			do {
+				la0 = LA0;
+				if (la0 == TT.ContextualKeyword) {
+					if (Is(0, sy_var)) {
+						switch (LA(1)) {
+						case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
+						case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+							{
+								var var = MatchAny();
+								got_VarDesignation = VarDesignation();
+								// line 1169
+								result = F.Call(S.Var, MissingHere(), got_VarDesignation, var.StartIndex, got_VarDesignation.Range.EndIndex);
+							}
+							break;
+						default:
+							goto match2;
+						}
+					} else
+						goto match2;
+				} else
+					goto match2;
+				break;
+			match2:
+				{
+					// Line 1172: (DataType)?
+					switch (LA0) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
+					case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+						type = DataType(afterAsOrIs: true);
+						break;
+					}
+					// line 1172
+					result = type;
+					// Line 1174: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? | TT.LBrace TT.RBrace)?
+					la0 = LA0;
+					if (la0 == TT.LParen) {
+						la1 = LA(1);
+						if (la1 == TT.RParen) {
+							lit_lpar = MatchAny();
+							lit_rpar = MatchAny();
+							// line 1174
+							result = F.Call(S.Deconstruct, F.CallPrefix(type, SubpatternsIn(lit_lpar, true), lit_rpar));
+							// Line 1175: (TT.LBrace TT.RBrace)?
+							la0 = LA0;
+							if (la0 == TT.LBrace) {
+								la1 = LA(1);
+								if (la1 == TT.RBrace) {
+									lit_lcub = MatchAny();
+									lit_rcub = MatchAny();
+									// line 1175
+									result = result.PlusArgs(SubpatternsIn(lit_lcub)).WithRange(type.Range.StartIndex, lit_rcub.EndIndex);
+								}
+							}
+						}
+					} else if (la0 == TT.LBrace) {
+						la1 = LA(1);
+						if (la1 == TT.RBrace) {
+							lit_lcub = MatchAny();
+							lit_rcub = MatchAny();
+							// line 1176
+							result = F.CallBrackets(S.Deconstruct, lit_lcub, SubpatternsIn(lit_lcub).Insert(0, F.Tuple()), lit_rcub);
+						}
+					}
+					// Line 1178: (IdAtom)?
+					switch (LA0) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
+					case TT.Substitute: case TT.TypeKeyword:
+						{
+							var name = IdAtom();
+							// line 1178
+							result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex);
+						}
+						break;
+					}
+				}
+			} while (false);
+			return result;
+		}
+
+		bool Scan_NonExprPattern()
+		{
+			TokenType la0, la1;
+			// Line 1167: (&{Is($LI, @@var)} TT.ContextualKeyword VarDesignation | (DataType)? (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? | TT.LBrace TT.RBrace)? (IdAtom)?)
+			do {
+				la0 = LA0;
+				if (la0 == TT.ContextualKeyword) {
+					if (Is(0, sy_var)) {
+						switch (LA(1)) {
+						case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
+						case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+							{
+								Skip();
+								if (!Scan_VarDesignation())
+									return false;
+							}
+							break;
+						default:
+							goto match2;
+						}
+					} else
+						goto match2;
+				} else
+					goto match2;
+				break;
+			match2:
+				{
+					// Line 1172: (DataType)?
+					switch (LA0) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
+					case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+						if (!Scan_DataType(afterAsOrIs: true))
+							return false;
+						break;
+					}
+					// Line 1174: (TT.LParen TT.RParen (TT.LBrace TT.RBrace)? | TT.LBrace TT.RBrace)?
+					la0 = LA0;
+					if (la0 == TT.LParen) {
+						la1 = LA(1);
+						if (la1 == TT.RParen) {
+							Skip();
+							Skip();
+							// Line 1175: (TT.LBrace TT.RBrace)?
+							la0 = LA0;
+							if (la0 == TT.LBrace) {
+								la1 = LA(1);
+								if (la1 == TT.RBrace) {
+									Skip();
+									Skip();
+								}
+							}
+						}
+					} else if (la0 == TT.LBrace) {
+						la1 = LA(1);
+						if (la1 == TT.RBrace) {
+							Skip();
+							Skip();
+						}
+					}
+					// Line 1178: (IdAtom)?
+					switch (LA0) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
+					case TT.Substitute: case TT.TypeKeyword:
+						if (!Scan_IdAtom())
+							return false;
+						break;
+					}
+				}
+			} while (false);
+			return true;
+		}
+
+		private 
+		LNode VarDesignation()
+		{
+			Token lit_lpar = default(Token);
+			Token lit_rpar = default(Token);
+			LNode result = default(LNode);
+			// Line 1184: (IdAtom | TT.LParen TT.RParen)
+			switch (LA0) {
+			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
+			case TT.Substitute: case TT.TypeKeyword:
+				result = IdAtom();
+				break;
+			default:
+				{
+					lit_lpar = Match((int) TT.LParen);
+					lit_rpar = Match((int) TT.RParen);
+					// line 1187
+					var contents = Down(lit_lpar) ? Up(VarTupleContents()) : LNode.List();
+					result = F.CallBrackets(S.Tuple, lit_lpar, contents, lit_rpar);
+				}
+				break;
+			}
+			return result;
+		}
+
+		private 
+		bool Scan_VarDesignation()
+		{
+			// Line 1184: (IdAtom | TT.LParen TT.RParen)
+			switch (LA0) {
+			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Operator:
+			case TT.Substitute: case TT.TypeKeyword:
+				if (!Scan_IdAtom())
+					return false;
+				break;
+			default:
+				{
+					if (!TryMatch((int) TT.LParen))
+						return false;
+					if (!TryMatch((int) TT.RParen))
+						return false;
+				}
+				break;
+			}
+			return true;
+		}
+
+		LNodeList VarTupleContents()
+		{
+			TokenType la0;
+			LNodeList result = default(LNodeList);
+			result.Add(VarDesignation());
+			// Line 1193: (TT.Comma VarDesignation)*
+			for (;;) {
+				la0 = LA0;
+				if (la0 == TT.Comma) {
+					Skip();
+					result.Add(VarDesignation());
 				} else
 					break;
 			}
 			return result;
 		}
-	
-		LNode NegatedPattern()
+
+		LNodeList SubPatterns(bool inParens)
+		{
+			TokenType la0;
+			LNodeList result = default(LNodeList);
+			result.Add(SubPattern());
+			// Line 1201: (TT.Comma SubPattern)*
+			for (;;) {
+				la0 = LA0;
+				if (la0 == TT.Comma) {
+					switch (LA(1)) {
+					case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+					case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+						{
+							Skip();
+							result.Add(SubPattern());
+						}
+						break;
+					default:
+						goto stop;
+					}
+				} else
+					goto stop;
+			}
+		stop:;
+			// Line 1202: (TT.Comma)?
+			la0 = LA0;
+			if (la0 == TT.Comma) {
+				Skip();
+				// line 1203
+				if ((inParens)) {
+					Error(-1, "Expected subpattern after ','");
+				}
+			}
+			return result;
+		}
+
+		LNode SubPattern()
 		{
 			TokenType la0, la1;
-			LNode got_NegatedPattern = default(LNode);
-			Token not = default(Token);
+			LNode got_Pattern = default(LNode);
+			Token lit_colon = default(Token);
+			Token param = default(Token);
 			LNode result = default(LNode);
-			// Line 1081: (&{Is($LI, @@not)} TT.Id NegatedPattern / PrimaryPattern)
+			// Line 1210: (TT.Id TT.Colon Pattern | Pattern)
 			la0 = LA0;
 			if (la0 == TT.Id) {
-				if (Is(0, sy_not)) {
-					la1 = LA(1);
-					if (la1 != (TokenType) EOF) {
-						not = MatchAny();
-						got_NegatedPattern = NegatedPattern();
-						// line 1082
-						result = F.CallPrefixOp(not, got_NegatedPattern);
-					} else
-						result = PrimaryPattern();
+				la1 = LA(1);
+				if (la1 == TT.Colon) {
+					param = MatchAny();
+					lit_colon = MatchAny();
+					got_Pattern = Pattern(EP.IfElse);
+					// line 1210
+					result = F.CallInfixOp(F.Id(param), lit_colon, got_Pattern, S.NamedArg);
 				} else
-					result = PrimaryPattern();
+					result = Pattern(EP.IfElse);
 			} else
-				result = PrimaryPattern();
+				result = Pattern(EP.IfElse);
 			return result;
 		}
-	
-		LNode PrimaryPattern()
-		{
-			Token tok__ = default(Token);
-			tok__ = MatchExcept();
-			// line 1099
-			return F.Literal(tok__.Value);
-		}
-	
-		private LNode SwitchCasePrefixExpr()
-		{
-			TokenType la1;
-			LNode e = default(LNode);
-			Token op = default(Token);
-			LNode result = default(LNode);
-			// Line 1104: ( (TT.Compare|TT.EqNeq|TT.GT|TT.LEGE|TT.LT) SubExpr | &{Is($LI, @@not)} TT.Id | SwitchCaseSubExpr )
-			switch (LA0) {
-			case TT.Compare: case TT.EqNeq: case TT.GT: case TT.LEGE:
-			case TT.LT:
-				{
-					op = MatchAny();
-					e = SubExpr(EP.Shift);
-				}
-				break;
-			case TT.Id:
-				{
-					if (Is(0, sy_not)) {
-						if (Try_AtomOrTypeParamExpr_Test0(0)) {
-							la1 = LA(1);
-							if (la1 == (TokenType) EOF)
-								op = MatchAny();
-							else
-								result = SwitchCaseSubExpr();
-						} else {
-							la1 = LA(1);
-							if (la1 == (TokenType) EOF)
-								op = MatchAny();
-							else
-								result = SwitchCaseSubExpr();
-						}
-					} else
-						result = SwitchCaseSubExpr();
-				}
-				break;
-			default:
-				result = SwitchCaseSubExpr();
-				break;
-			}
-			return result;
-		}
-	
-		private LNode SwitchCaseSubExpr()
-		{
-			LNode result = default(LNode);
-			result = SubExpr(StartExpr, lambdaInFollowSet: true);
-			return result;
-		}
-	
-	
-	
+		
+		/*@[private]
+		rule RelationalPattern(ctx::Precedence)::LNode @{
+			op:("<"|">"|"==,!="|"<=,>="|"<=>")
+			e:SubExprInPattern(EP.Shift)
+			{return F.CallPrefixOp(op, e);}
+		};
+
+		rule SubExprInPattern(context::Precedence)::LNode @{
+			// SubExpr is too complex to include in the recognizer for Pattern
+			// (and the generated code wouldn't work right anyway)
+			nonrecognizer(result:SubExpr(context, lambdaInFollowSet<: true))
+			recognizer(_)
+		};
+
+		rule TypedPattern()::LNode @{
+			id:TT.Id { $result=F.Id(id); }
+		};
+
+		rule ParenOrBracePattern()::LNode @{
+			"(" ")" {$result=F.Tuple(ExprListInside($"("));}
+		};
+		
+		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, lambdaInFollowSet<: true) };*/
+		
+
 		// ---------------------------------------------------------------------
-	
+		
 		LNodeList SwitchExpressionArms(ref LNodeList list)
 		{
-			TokenType la0, la1;
+			TokenType la0;
 			LNodeList result = default(LNodeList);
-			// Line 1120: (SwitchExpressionArm (TT.Comma EOF / TT.Comma SwitchExpressionArm)*)?
-			la0 = LA0;
-			if (la0 != (TokenType) EOF) {
-				result.Add(SwitchExpressionArm());
-				// Line 1121: (TT.Comma EOF / TT.Comma SwitchExpressionArm)*
-				for (;;) {
-					la0 = LA0;
-					if (la0 == TT.Comma) {
-						la1 = LA(1);
-						if (la1 == EOF) {
-							Skip();
-							Skip();
-						} else {
-							Skip();
-							result.Add(SwitchExpressionArm());
-						}
-					} else if (la0 == EOF)
-						break;
-					else {
-						// line 1123
-						Error("Expected ',' or '}'");
-						// Line 1123: (~(EOF|TT.Comma))*
-						for (;;) {
-							la0 = LA0;
-							if (!(la0 == (TokenType) EOF || la0 == TT.Comma))
-								Skip();
-							else
+			// Line 1245: (SwitchExpressionArm (TT.Comma EOF / TT.Comma SwitchExpressionArm)*)?
+			switch (LA0) {
+			case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+			case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+				{
+					result.Add(SwitchExpressionArm());
+					// Line 1246: (TT.Comma EOF / TT.Comma SwitchExpressionArm)*
+					for (;;) {
+						la0 = LA0;
+						if (la0 == TT.Comma) {
+							switch (LA(1)) {
+							case EOF:
+								{
+									Skip();
+									Skip();
+								}
 								break;
+							case TT.ContextualKeyword: case TT.Id: case TT.LBrace: case TT.LinqKeyword:
+							case TT.LParen: case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
+								{
+									Skip();
+									result.Add(SwitchExpressionArm());
+								}
+								break;
+							default:
+								goto error;
+							}
+						} else if (la0 == EOF)
+							goto stop;
+						else
+							goto error;
+						continue;
+					error:
+						{
+							// line 1248
+							Error("Expected ',' or '}'");
+							// Line 1248: (~(EOF|TT.Comma))*
+							for (;;) {
+								la0 = LA0;
+								if (!(la0 == (TokenType) EOF || la0 == TT.Comma))
+									Skip();
+								else
+									break;
+							}
 						}
 					}
+				stop:;
 				}
+				break;
 			}
-			Skip();
+			Match((int) EOF);
 			return result;
 		}
-	
+
 		private LNode SwitchExpressionArm()
 		{
 			TokenType la0;
@@ -3095,35 +3494,35 @@ namespace Loyc.Ecs.Parser
 			Token lit_equals_gt = default(Token);
 			LNode result = default(LNode);
 			LNode rhs = default(LNode);
-			lhs = Pattern();
-			// Line 1128: (CaseGuard)?
+			lhs = Pattern(EcsPrecedence.IfElse);
+			// Line 1253: (CaseGuard)?
 			la0 = LA0;
 			if (la0 == TT.ContextualKeyword)
 				CaseGuard();
 			lit_equals_gt = Match((int) TT.LambdaArrow);
 			rhs = ExprStart(false);
-			// line 1129
+			// line 1254
 			result = F.Call(S.Lambda, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex, lit_equals_gt.StartIndex, lit_equals_gt.EndIndex, NodeStyle.Special);
 			return result;
 		}
-	
+
 		private void CaseGuard()
 		{
 			Token op = default(Token);
 			Check(Is(0, sy_when), "Expected Is($LI, @@when)");
 			op = MatchAny();
 		}
-	
-			// =====================================================================
+		
+		// =====================================================================
 			// == Attributes =======================================================
 			// =====================================================================
-	
-	
+
+		
 		bool NormalAttributes(ref LNodeList attrs)
 		{
 			TokenType la0, la1;
 			bool result = default(bool);
-			// Line 1143: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
+			// Line 1268: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LBrack) {
@@ -3132,7 +3531,7 @@ namespace Loyc.Ecs.Parser
 						if (la1 == TT.RBrack) {
 							var t = MatchAny();
 							Skip();
-							// line 1146
+							// line 1271
 							result = true;
 							if ((Down(t))) {
 								AttributeContents(ref attrs);
@@ -3147,7 +3546,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		bool Try_Scan_NormalAttributes(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_NormalAttributes();
@@ -3155,7 +3554,7 @@ namespace Loyc.Ecs.Parser
 		bool Scan_NormalAttributes()
 		{
 			TokenType la0, la1;
-			// Line 1143: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
+			// Line 1268: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LBrack) {
@@ -3173,14 +3572,14 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		void AttributeContents(ref LNodeList attrs)
 		{
 			TokenType la1;
 			Token lit_colon = default(Token);
-			// line 1155
+			// line 1280
 			Token attrTarget = default(Token);
-			// Line 1156: ((TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.Return) TT.Colon ExprList / ExprList)
+			// Line 1281: ((TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.Return) TT.Colon ExprList / ExprList)
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.Return:
 				{
@@ -3188,10 +3587,10 @@ namespace Loyc.Ecs.Parser
 					if (la1 == TT.Colon) {
 						attrTarget = MatchAny();
 						lit_colon = MatchAny();
-						// line 1157
+						// line 1282
 						LNodeList newAttrs = new LNodeList();
 						ExprList(ref newAttrs, allowTrailingComma: true, allowUnassignedVarDecl: true);
-						// line 1160
+						// line 1285
 						var attrTargetId = F.Id(attrTarget);
 						for (int i = 0; i < newAttrs.Count; i++) {
 							var attr = newAttrs[i];
@@ -3211,41 +3610,41 @@ namespace Loyc.Ecs.Parser
 				break;
 			}
 		}
-	
+
 		void AttributeKeywords(ref LNodeList attrs)
 		{
 			TokenType la0;
-			// Line 1178: (TT.AttrKeyword)*
+			// Line 1303: (TT.AttrKeyword)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.AttrKeyword) {
 					var t = MatchAny();
-					// line 1179
+					// line 1304
 					attrs.Add(F.Id(t));
 				} else
 					break;
 			}
 		}
-	
+
 		void TParamAttributeKeywords(ref LNodeList attrs)
 		{
 			TokenType la0;
-			// Line 1184: ((TT.AttrKeyword|TT.In))*
+			// Line 1309: ((TT.AttrKeyword|TT.In))*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.AttrKeyword || la0 == TT.In) {
 					var t = MatchAny();
-					// line 1185
+					// line 1310
 					attrs.Add(F.Id(t));
 				} else
 					break;
 			}
 		}
-	
-			// =====================================================================
+		
+		// =====================================================================
 			// == LINQ =============================================================
 			// =====================================================================
-	
+
 		bool Try_Scan_TParamAttributeKeywords(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_TParamAttributeKeywords();
@@ -3253,7 +3652,7 @@ namespace Loyc.Ecs.Parser
 		bool Scan_TParamAttributeKeywords()
 		{
 			TokenType la0;
-			// Line 1184: ((TT.AttrKeyword|TT.In))*
+			// Line 1309: ((TT.AttrKeyword|TT.In))*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.AttrKeyword || la0 == TT.In)
@@ -3263,40 +3662,39 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		public LNode LinqQueryExpression()
 		{
-			// line 1195
+			// line 1320
 			int startIndex = LT0.StartIndex;
+			var old_13 = _insideLinqExpr;
 			_insideLinqExpr = true;
 			try {
 				var parts = LNode.List();
 				parts.Add(LinqFromClause());
 				QueryBody(ref parts);
-				// line 1202
+				// line 1326
 				return F.Call(S.Linq, parts, startIndex, parts.Last.Range.EndIndex, startIndex, startIndex);
-			} finally {
-				_insideLinqExpr = false;
-			}
+			} finally { _insideLinqExpr = old_13; }
 		}
-	
+
 		private LNode LinqFromClause()
 		{
 			Check(Is(0, sy_from), "Expected Is($LI, @@from)");
 			var kw = Match((int) TT.LinqKeyword);
 			var e = Var_In_Expr();
-			// line 1209
+			// line 1333
 			return F.CallPrefixOp(S.From, kw, e);
 		}
-		static readonly HashSet<int> Var_In_Expr_set0 = NewSet((int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.Base, (int) TT.BQString, (int) TT.Checked, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.Default, (int) TT.Delegate, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Operator, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.RParen, (int) TT.Set, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.This, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked, (int) TT.XorBits);
-		static readonly HashSet<int> Var_In_Expr_set1 = NewSet((int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.Base, (int) TT.BQString, (int) TT.Checked, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.Default, (int) TT.Delegate, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Operator, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.Set, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.This, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked, (int) TT.XorBits);
-	
+		static readonly HashSet<int> Var_In_Expr_set0 = NewSet((int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.Base, (int) TT.BQString, (int) TT.Checked, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.Default, (int) TT.Delegate, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Operator, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.RParen, (int) TT.Set, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.This, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked, (int) TT.XorBits);
+		static readonly HashSet<int> Var_In_Expr_set1 = NewSet((int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.Base, (int) TT.BQString, (int) TT.Checked, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.Default, (int) TT.Delegate, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Operator, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.Set, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.This, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked, (int) TT.XorBits);
+
 		LNode Var_In_Expr()
 		{
 			TokenType la1;
 			LNode got_VarIn = default(LNode);
 			LNode result = default(LNode);
-			// Line 1213: (&(VarIn) VarIn ExprStart / ExprStart)
+			// Line 1337: (&(VarIn) VarIn ExprStart / ExprStart)
 			do {
 				switch (LA0) {
 				case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
@@ -3329,18 +3727,18 @@ namespace Loyc.Ecs.Parser
 				{
 					got_VarIn = VarIn(out Token inTok);
 					var e = ExprStart(false);
-					// line 1216
+					// line 1340
 					return F.CallInfixOp(got_VarIn, S.In, inTok, e);
 				}
 			} while (false);
 			return result;
 		}
-	
-	
+
+		
 		private void QueryBody(ref LNodeList parts)
 		{
 			TokenType la0;
-			// Line 1222: greedy(QueryBodyClause)*
+			// Line 1346: greedy(QueryBodyClause)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LinqKeyword) {
@@ -3351,7 +3749,7 @@ namespace Loyc.Ecs.Parser
 				} else
 					break;
 			}
-			// Line 1223: (LinqGroupClause | LinqSelectClause)
+			// Line 1347: (LinqGroupClause | LinqSelectClause)
 			la0 = LA0;
 			if (la0 == TT.LinqKeyword) {
 				if (Is(0, sy_group))
@@ -3359,22 +3757,22 @@ namespace Loyc.Ecs.Parser
 				else
 					parts.Add(LinqSelectClause());
 			} else {
-				// line 1225
+				// line 1349
 				Error("Expected 'select' or 'group' clause to end LINQ query");
 			}
-			// Line 1227: greedy(QueryContinuation)?
+			// Line 1351: greedy(QueryContinuation)?
 			la0 = LA0;
 			if (la0 == TT.LinqKeyword) {
 				if (Is(0, sy_into))
 					parts.Add(QueryContinuation());
 			}
 		}
-	
-	
+
+		
 		private LNode QueryBodyClause()
 		{
 			LNode result = default(LNode);
-			// Line 1232: ( LinqFromClause | LinqLet | LinqWhere | LinqJoin | LinqOrderBy )
+			// Line 1356: ( LinqFromClause | LinqLet | LinqWhere | LinqJoin | LinqOrderBy )
 			if (Is(0, sy_from))
 				result = LinqFromClause();
 			else if (Is(0, sy_let))
@@ -3387,28 +3785,28 @@ namespace Loyc.Ecs.Parser
 				result = LinqOrderBy();
 			return result;
 		}
-	
+
 		private LNode LinqLet()
 		{
 			var kw = Match((int) TT.LinqKeyword);
 			var e = ExprStart(false);
-			// line 1241
+			// line 1365
 			if ((!e.Calls(S.Assign, 2))) {
 				Error("Expected an assignment after 'let'");
 			}
-			// line 1242
+			// line 1366
 			return F.CallPrefixOp(S.Let, kw, e);
 		}
-	
+
 		private LNode LinqWhere()
 		{
 			var kw = Match((int) TT.LinqKeyword);
 			var e = ExprStart(false);
-			// line 1247
+			// line 1371
 			return F.CallPrefixOp(S.Where, kw, e);
 		}
-	
-	
+
+		
 		private LNode LinqJoin()
 		{
 			TokenType la0;
@@ -3422,38 +3820,38 @@ namespace Loyc.Ecs.Parser
 			Check(Is(0, sy_equals), "Expected Is($LI, @@equals)");
 			var eq = Match((int) TT.LinqKeyword);
 			var rhs = ExprStart(false);
-			// line 1257
+			// line 1381
 			var equality = F.CallInfixOp(lhs, sy__numequals, eq, rhs);
-			// Line 1263: (&{Is($LI, @@into)} TT.LinqKeyword IdAtom / {..})
+			// Line 1387: (&{Is($LI, @@into)} TT.LinqKeyword IdAtom / {..})
 			la0 = LA0;
 			if (la0 == TT.LinqKeyword) {
 				if (Is(0, sy_into)) {
 					var intoKw = MatchAny();
 					got_IdAtom = IdAtom();
-					// line 1264
+					// line 1388
 					var into = F.CallPrefixOp(S.Into, intoKw, got_IdAtom);
-					// line 1265
+					// line 1389
 					var args = LNode.List(from, equality, into);
-					// line 1266
+					// line 1390
 					return F.CallPrefixOp(S.Join, kw, args);
 				} else
-					// line 1268
+					// line 1392
 					return F.CallPrefixOp(S.Join, kw, LNode.List(from, equality));
 			} else
-				// line 1268
+				// line 1392
 				return F.CallPrefixOp(S.Join, kw, LNode.List(from, equality));
 		}
-	
-	
+
+		
 		private LNode LinqOrderBy()
 		{
 			TokenType la0;
 			Check(Is(0, sy_orderby), "Expected Is($LI, @@orderby)");
 			var kw = Match((int) TT.LinqKeyword);
-			// line 1275
+			// line 1399
 			var parts = LNode.List();
 			parts.Add(LinqOrdering());
-			// Line 1276: (TT.Comma LinqOrdering)*
+			// Line 1400: (TT.Comma LinqOrdering)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Comma) {
@@ -3462,41 +3860,41 @@ namespace Loyc.Ecs.Parser
 				} else
 					break;
 			}
-			// line 1277
+			// line 1401
 			return F.CallPrefixOp(S.OrderBy, kw, parts);
 		}
-	
+
 		private LNode LinqOrdering()
 		{
 			TokenType la0;
 			Token dir = default(Token);
 			LNode result = default(LNode);
 			result = ExprStart(false);
-			// Line 1283: greedy(&{Is($LI, @@ascending)} TT.LinqKeyword | &{Is($LI, @@descending)} TT.LinqKeyword)?
+			// Line 1407: greedy(&{Is($LI, @@ascending)} TT.LinqKeyword | &{Is($LI, @@descending)} TT.LinqKeyword)?
 			la0 = LA0;
 			if (la0 == TT.LinqKeyword) {
 				if (Is(0, sy_ascending)) {
 					dir = MatchAny();
-					// line 1284
+					// line 1408
 					result = F.CallSuffixOp(result, S.Ascending, dir);
 				} else if (Is(0, sy_descending)) {
 					dir = MatchAny();
-					// line 1286
+					// line 1410
 					result = F.CallSuffixOp(result, S.Descending, dir);
 				}
 			}
 			return result;
 		}
-	
+
 		private LNode LinqSelectClause()
 		{
 			Check(Is(0, sy_select), "Expected Is($LI, @@select)");
 			var kw = MatchAny();
 			var e = ExprStart(false);
-			// line 1292
+			// line 1416
 			return F.CallPrefixOp(S.Select, kw, e);
 		}
-	
+
 		private LNode LinqGroupClause()
 		{
 			TokenType la0;
@@ -3506,50 +3904,50 @@ namespace Loyc.Ecs.Parser
 			LNode rhs = default(LNode);
 			kw = MatchAny();
 			lhs = ExprStart(false);
-			// Line 1297: (&{Is($LI, @@by)} TT.LinqKeyword ExprStart)
+			// Line 1421: (&{Is($LI, @@by)} TT.LinqKeyword ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LinqKeyword) {
 				Check(Is(0, sy_by), "Expected Is($LI, @@by)");
 				by = MatchAny();
 				rhs = ExprStart(false);
 			} else {
-				// line 1298
+				// line 1422
 				Error("Expected 'by'");
 				rhs = MissingHere();
 			}
-			// line 1299
+			// line 1423
 			return F.CallPrefixOp(S.GroupBy, kw, LNode.List(lhs, rhs));
 		}
-	
-	
+
+		
 		private LNode QueryContinuation()
 		{
 			LNode got_IdAtom = default(LNode);
 			Token kw = default(Token);
 			kw = MatchAny();
 			got_IdAtom = IdAtom();
-			// line 1305
+			// line 1429
 			var parts = LNode.List(got_IdAtom);
 			QueryBody(ref parts);
-			// line 1307
+			// line 1431
 			return F.CallPrefixOp(S.Into, kw, parts);
 		}
-	
-			// =====================================================================
+		
+		// =====================================================================
 			// == Statements =======================================================
 			// =====================================================================
-	
-	
+
+		
 		public LNode Stmt()
 		{
 			LNode result = default(LNode);
-			// line 1318
+			// line 1442
 			var attrs = LNodeList.Empty;
-			// line 1319
+			// line 1443
 			int startIndex = LT0.StartIndex;
 			NormalAttributes(ref attrs);
 			AttributeKeywords(ref attrs);
-			// line 1330
+			// line 1454
 			int wordAttrCount;
 			var cat = DetectStatementCategoryAndAddWordAttributes(out wordAttrCount, ref attrs, DetectionMode.Stmt);
 			switch ((cat)) {
@@ -3573,13 +3971,13 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		// Methods, properties, variables, and things that look like them (trait & alias)
 		LNode MethodOrPropertyOrVarStmt(int startIndex, LNodeList attrs)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
-			// Line 1427: ( TraitDecl / AliasDecl / MethodOrPropertyOrVar )
+			// Line 1551: ( TraitDecl / AliasDecl / MethodOrPropertyOrVar )
 			la0 = LA0;
 			if (la0 == TT.ContextualKeyword) {
 				if (Is(0, sy_trait)) {
@@ -3588,7 +3986,7 @@ namespace Loyc.Ecs.Parser
 					case TT.Substitute: case TT.TypeKeyword:
 						{
 							result = TraitDecl(startIndex);
-							// line 1427
+							// line 1551
 							result = result.PlusAttrs(attrs);
 						}
 						break;
@@ -3602,7 +4000,7 @@ namespace Loyc.Ecs.Parser
 					case TT.Substitute: case TT.TypeKeyword:
 						{
 							result = AliasDecl(startIndex);
-							// line 1428
+							// line 1552
 							result = result.PlusAttrs(attrs);
 						}
 						break;
@@ -3616,24 +4014,24 @@ namespace Loyc.Ecs.Parser
 				result = MethodOrPropertyOrVar(startIndex, attrs);
 			return result;
 		}
-		static readonly HashSet<int> KeywordStmt_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Semicolon, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-		static readonly HashSet<int> KeywordStmt_set1 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-	
+		static readonly HashSet<int> KeywordStmt_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Semicolon, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+		static readonly HashSet<int> KeywordStmt_set1 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+
 		// Statements that begin with a keyword
 		LNode KeywordStmt(int startIndex, LNodeList attrs, bool hasWordAttrs)
 		{
 			TokenType la1;
-			// line 1436
+			// line 1560
 			LNode r;
 			bool addAttrs = true;
 			string showWordAttrErrorFor = null;
-			// Line 1440: ( ((IfStmt | EventDecl | DelegateDecl | SpaceDecl | EnumDecl | CheckedOrUncheckedStmt | DoStmt | CaseStmt | ReturnBreakContinueThrow TT.Semicolon) | (GotoCaseStmt TT.Semicolon / GotoStmt TT.Semicolon) | SwitchStmt | WhileStmt | ForStmt | ForEachStmt) | (UsingStmt / UsingDirective) | LockStmt | FixedStmt | TryStmt | PPNullaryDirective | PPStringDirective )
+			// Line 1564: ( ((IfStmt | EventDecl | DelegateDecl | SpaceDecl | EnumDecl | CheckedOrUncheckedStmt | DoStmt | CaseStmt | ReturnBreakContinueThrow TT.Semicolon) | (GotoCaseStmt TT.Semicolon / GotoStmt TT.Semicolon) | SwitchStmt | WhileStmt | ForStmt | ForEachStmt) | (UsingStmt / UsingDirective) | LockStmt | FixedStmt | TryStmt | PPNullaryDirective | PPStringDirective )
 			do {
 				switch (LA0) {
 				case TT.If:
 					{
 						r = IfStmt(startIndex);
-						// line 1441
+						// line 1565
 						showWordAttrErrorFor = "if statement";
 						addAttrs = true;
 					}
@@ -3644,7 +4042,7 @@ namespace Loyc.Ecs.Parser
 				case TT.Delegate:
 					{
 						r = DelegateDecl(startIndex, attrs);
-						// line 1443
+						// line 1567
 						addAttrs = false;
 					}
 					break;
@@ -3699,13 +4097,13 @@ namespace Loyc.Ecs.Parser
 						la1 = LA(1);
 						if (la1 == TT.LParen) {
 							r = UsingStmt(startIndex);
-							// line 1464
+							// line 1588
 							showWordAttrErrorFor = "using statement";
 						} else if (KeywordStmt_set1.Contains((int) la1)) {
 							r = UsingDirective(startIndex, attrs);
-							// line 1465
+							// line 1589
 							addAttrs = false;
-							// line 1466
+							// line 1590
 							showWordAttrErrorFor = "using directive";
 						} else
 							goto error;
@@ -3732,12 +4130,12 @@ namespace Loyc.Ecs.Parser
 				break;
 			error:
 				{
-					// line 1472
+					// line 1596
 					r = Error("Bug: Keyword statement expected, but got '{0}'", CurrentTokenText());
 					ScanToEndOfStmt();
 				}
 			} while (false);
-			// line 1476
+			// line 1600
 			if (addAttrs) {
 				r = r.PlusAttrs(attrs);
 			}
@@ -3746,17 +4144,17 @@ namespace Loyc.Ecs.Parser
 			}
 			return r;
 		}
-	
+
 		// Statements that start with an Id and don't allow keyword attributes
 		// This may also be called for expression-statements that start with "$" or a type keyword
 		LNode IdStmt(int startIndex, LNodeList attrs, bool hasWordAttrs)
 		{
 			TokenType la1;
 			LNode result = default(LNode);
-			// line 1490
+			// line 1614
 			bool addAttrs = false;
 			string showWordAttrErrorFor = null;
-			// Line 1493: ( Constructor / BlockCallStmt / LabelStmt / &(DataType TT.This) DataType => MethodOrPropertyOrVar / ExprStatement )
+			// Line 1617: ( Constructor / BlockCallStmt / LabelStmt / &(DataType TT.This) DataType => MethodOrPropertyOrVar / ExprStatement )
 			do {
 				switch (LA0) {
 				case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword:
@@ -4093,14 +4491,14 @@ namespace Loyc.Ecs.Parser
 			matchConstructor:
 				{
 					result = Constructor(startIndex, attrs);
-					// line 1494
+					// line 1618
 					showWordAttrErrorFor = "old-style constructor";
 				}
 				break;
 			matchBlockCallStmt:
 				{
 					result = BlockCallStmt(startIndex);
-					// line 1496
+					// line 1620
 					showWordAttrErrorFor = "block-call statement";
 					addAttrs = true;
 				}
@@ -4108,19 +4506,19 @@ namespace Loyc.Ecs.Parser
 			matchLabelStmt:
 				{
 					result = LabelStmt(startIndex);
-					// line 1498
+					// line 1622
 					addAttrs = true;
 				}
 				break;
 			matchExprStatement:
 				{
 					result = ExprStatement();
-					// line 1502
+					// line 1626
 					showWordAttrErrorFor = "expression";
 					addAttrs = true;
 				}
 			} while (false);
-			// line 1505
+			// line 1629
 			if (addAttrs) {
 				result = result.PlusAttrs(attrs);
 			}
@@ -4134,23 +4532,23 @@ namespace Loyc.Ecs.Parser
 		static readonly HashSet<int> OtherStmt_set2 = NewSet((int) EOF, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.As, (int) TT.At, (int) TT.BQString, (int) TT.Catch, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.Else, (int) TT.EqNeq, (int) TT.Finally, (int) TT.GT, (int) TT.In, (int) TT.IncDec, (int) TT.Is, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.Using, (int) TT.While, (int) TT.XorBits);
 		static readonly HashSet<int> OtherStmt_set3 = NewSet((int) EOF, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.As, (int) TT.At, (int) TT.BQString, (int) TT.Catch, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.Else, (int) TT.EqNeq, (int) TT.Finally, (int) TT.GT, (int) TT.Id, (int) TT.In, (int) TT.IncDec, (int) TT.Is, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.Substitute, (int) TT.Using, (int) TT.While, (int) TT.XorBits);
 		static readonly HashSet<int> OtherStmt_set4 = NewSet((int) EOF, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.As, (int) TT.At, (int) TT.BQString, (int) TT.Catch, (int) TT.ColonColon, (int) TT.Compare, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.Else, (int) TT.EqNeq, (int) TT.Finally, (int) TT.GT, (int) TT.Id, (int) TT.In, (int) TT.IncDec, (int) TT.Is, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.PipeArrow, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.Substitute, (int) TT.Using, (int) TT.While, (int) TT.XorBits);
-	
+
 		// Statements that don't start with an Id and don't allow keyword attributes.
 		LNode OtherStmt(int startIndex, LNodeList attrs, bool hasWordAttrs)
 		{
 			TokenType la1;
 			Token lit_semi = default(Token);
 			LNode result = default(LNode);
-			// line 1526
+			// line 1650
 			bool addAttrs = false;
 			string showWordAttrErrorFor = null;
-			// Line 1529: ( BracedBlock / &(TT.NotBits (TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.This) TT.LParen TT.RParen TT.LBrace TT.RBrace) Destructor / TT.Semicolon / LabelStmt / default ExprStatement / AssemblyOrModuleAttribute / OperatorCastMethod )
+			// Line 1653: ( BracedBlock / &(TT.NotBits (TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.This) TT.LParen TT.RParen TT.LBrace TT.RBrace) Destructor / TT.Semicolon / LabelStmt / default ExprStatement / AssemblyOrModuleAttribute / OperatorCastMethod )
 			do {
 				switch (LA0) {
 				case TT.LBrace:
 					{
 						result = BracedBlock(null, null, startIndex);
-						// line 1530
+						// line 1654
 						showWordAttrErrorFor = "braced-block statement";
 						addAttrs = true;
 					}
@@ -4162,19 +4560,18 @@ namespace Loyc.Ecs.Parser
 							case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.This:
 								{
 									result = Destructor(startIndex, attrs);
-									// line 1533
+									// line 1657
 									showWordAttrErrorFor = "destructor";
 								}
 								break;
 							case TT.Add: case TT.AndBits: case TT.At: case TT.Base:
 							case TT.Break: case TT.Checked: case TT.Continue: case TT.Default:
 							case TT.Delegate: case TT.Dot: case TT.DotDot: case TT.Forward:
-							case TT.Goto: case TT.IncDec: case TT.Is: case TT.LBrace:
-							case TT.Literal: case TT.LParen: case TT.Mul: case TT.New:
-							case TT.Not: case TT.NotBits: case TT.Operator: case TT.Power:
-							case TT.Return: case TT.Sizeof: case TT.Sub: case TT.Substitute:
-							case TT.Switch: case TT.Throw: case TT.TypeKeyword: case TT.Typeof:
-							case TT.Unchecked:
+							case TT.Goto: case TT.IncDec: case TT.LBrace: case TT.Literal:
+							case TT.LParen: case TT.Mul: case TT.New: case TT.Not:
+							case TT.NotBits: case TT.Operator: case TT.Power: case TT.Return:
+							case TT.Sizeof: case TT.Sub: case TT.Substitute: case TT.Switch:
+							case TT.Throw: case TT.TypeKeyword: case TT.Typeof: case TT.Unchecked:
 								goto matchExprStatement;
 							default:
 								goto error;
@@ -4186,9 +4583,9 @@ namespace Loyc.Ecs.Parser
 				case TT.Semicolon:
 					{
 						lit_semi = MatchAny();
-						// line 1534
+						// line 1658
 						result = F.Id(S.Missing, startIndex, lit_semi.EndIndex);
-						// line 1535
+						// line 1659
 						showWordAttrErrorFor = "empty statement";
 						addAttrs = true;
 					}
@@ -4313,7 +4710,7 @@ namespace Loyc.Ecs.Parser
 						case TT.Operator: case TT.TypeKeyword:
 							{
 								result = OperatorCastMethod(startIndex, attrs);
-								// line 1542
+								// line 1666
 								attrs.Clear();
 							}
 							break;
@@ -4323,14 +4720,13 @@ namespace Loyc.Ecs.Parser
 					}
 					break;
 				case TT.At: case TT.Base: case TT.Checked: case TT.Delegate:
-				case TT.Dot: case TT.Is: case TT.Literal: case TT.New:
-				case TT.Sizeof: case TT.This: case TT.TypeKeyword: case TT.Typeof:
-				case TT.Unchecked:
+				case TT.Dot: case TT.Literal: case TT.New: case TT.Sizeof:
+				case TT.This: case TT.TypeKeyword: case TT.Typeof: case TT.Unchecked:
 					goto matchExprStatement;
 				case TT.LBrack:
 					{
 						result = AssemblyOrModuleAttribute(startIndex, attrs);
-						// line 1541
+						// line 1665
 						showWordAttrErrorFor = "assembly or module attribute";
 					}
 					break;
@@ -4341,26 +4737,26 @@ namespace Loyc.Ecs.Parser
 			matchLabelStmt:
 				{
 					result = LabelStmt(startIndex);
-					// line 1537
+					// line 1661
 					addAttrs = true;
 				}
 				break;
 			matchExprStatement:
 				{
 					result = ExprStatement();
-					// line 1539
+					// line 1663
 					showWordAttrErrorFor = "expression";
 					addAttrs = true;
 				}
 				break;
 			error:
 				{
-					// line 1548
+					// line 1672
 					result = Error("Statement expected, but got '{0}'", CurrentTokenText());
 					ScanToEndOfStmt();
 				}
 			} while (false);
-			// line 1552
+			// line 1676
 			if (addAttrs) {
 				result = result.PlusAttrs(attrs);
 			}
@@ -4369,33 +4765,33 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		LNode ExprStatement()
 		{
 			Token lit_semi = default(Token);
 			LNode result = default(LNode);
 			result = SubExpr(StartExpr);
-			// Line 1563: ((EOF|TT.Catch|TT.Else|TT.Finally|TT.While) =>  | TT.Semicolon)
+			// Line 1687: ((EOF|TT.Catch|TT.Else|TT.Finally|TT.While) =>  | TT.Semicolon)
 			switch (LA0) {
 			case EOF: case TT.Catch: case TT.Else: case TT.Finally:
 			case TT.While:
 				{
-					// line 1564
+					// line 1688
 					var rr = result.Range;
-					// line 1565
+					// line 1689
 					result = F.Call(S.Result, result, rr.StartIndex, rr.EndIndex, rr.StartIndex, rr.StartIndex);
 				}
 				break;
 			case TT.Semicolon:
 				{
 					lit_semi = MatchAny();
-					// line 1566
+					// line 1690
 					result = result.WithRange(result.Range.StartIndex, lit_semi.EndIndex);
 				}
 				break;
 			default:
 				{
-					// line 1567
+					// line 1691
 					result = Error("Syntax error in expression at '{0}'; possibly missing semicolon", CurrentTokenText());
 					ScanToEndOfStmt();
 				}
@@ -4403,11 +4799,11 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-	
+
 		private void ScanToEndOfStmt()
 		{
 			TokenType la0;
-			// Line 1574: greedy(~(EOF|TT.LBrace|TT.Semicolon))*
+			// Line 1698: greedy(~(EOF|TT.LBrace|TT.Semicolon))*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == (TokenType) EOF || la0 == TT.LBrace || la0 == TT.Semicolon))
@@ -4415,61 +4811,61 @@ namespace Loyc.Ecs.Parser
 				else
 					break;
 			}
-			// Line 1575: greedy(TT.Semicolon | TT.LBrace (TT.RBrace)?)?
+			// Line 1699: greedy(TT.Semicolon | TT.LBrace (TT.RBrace)?)?
 			la0 = LA0;
 			if (la0 == TT.Semicolon)
 				Skip();
 			else if (la0 == TT.LBrace) {
 				Skip();
-				// Line 1575: (TT.RBrace)?
+				// Line 1699: (TT.RBrace)?
 				la0 = LA0;
 				if (la0 == TT.RBrace)
 					Skip();
 			}
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// namespace, class, struct, interface, trait, alias, using, enum ------
 			// ---------------------------------------------------------------------
-	
+
 		private LNode SpaceDecl(int startIndex)
 		{
 			var t = MatchAny();
 			var r = RestOfSpaceDecl(startIndex, t);
-			// line 1585
+			// line 1709
 			return r;
 		}
-	
+
 		LNode TraitDecl(int startIndex)
 		{
 			Check(Is(0, sy_trait), "Expected Is($LI, @@trait)");
 			var t = Match((int) TT.ContextualKeyword);
 			var r = RestOfSpaceDecl(startIndex, t);
-			// line 1591
+			// line 1715
 			return r;
 		}
-	
+
 		private LNode RestOfSpaceDecl(int startIndex, Token kindTok)
 		{
 			TokenType la0;
-			// line 1595
+			// line 1719
 			var kind = (Symbol) kindTok.Value;
 			var name = ComplexNameDecl();
 			var bases = BaseListOpt();
 			WhereClausesOpt(ref name);
-			// Line 1599: (TT.Semicolon | BracedBlock)
+			// Line 1723: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				// line 1600
+				// line 1724
 				return F.Call(kind, name, bases, startIndex, end.EndIndex, kindTok.StartIndex, kindTok.EndIndex);
 			} else {
 				var body = BracedBlock(EcsValidators.KeyNameComponentOf(name));
-				// line 1602
+				// line 1726
 				return F.Call(kind, LNode.List(name, bases, body), startIndex, body.Range.EndIndex, kindTok.StartIndex, kindTok.EndIndex);
 			}
 		}
-	
+
 		LNode AliasDecl(int startIndex)
 		{
 			LNode result = default(LNode);
@@ -4481,7 +4877,7 @@ namespace Loyc.Ecs.Parser
 			result = RestOfAlias(startIndex, t, oldName, newName);
 			return result;
 		}
-	
+
 		LNode UsingDirective(int startIndex, LNodeList attrs)
 		{
 			TokenType la0;
@@ -4490,7 +4886,7 @@ namespace Loyc.Ecs.Parser
 			Token static_ = default(Token);
 			Token t = default(Token);
 			t = Match((int) TT.Using);
-			// Line 1618: (&{Is($LI, S.Static)} TT.AttrKeyword ExprStart TT.Semicolon / ExprStart (&{nsName.Calls(S.Assign, 2)} RestOfAlias / TT.Semicolon))
+			// Line 1742: (&{Is($LI, S.Static)} TT.AttrKeyword ExprStart TT.Semicolon / ExprStart (&{nsName.Calls(S.Assign, 2)} RestOfAlias / TT.Semicolon))
 			do {
 				la0 = LA0;
 				if (la0 == TT.AttrKeyword) {
@@ -4498,7 +4894,7 @@ namespace Loyc.Ecs.Parser
 						static_ = MatchAny();
 						nsName = ExprStart(true);
 						end = Match((int) TT.Semicolon);
-						// line 1620
+						// line 1744
 						attrs.Add(F.Id(static_));
 					} else
 						goto matchExprStart;
@@ -4508,7 +4904,7 @@ namespace Loyc.Ecs.Parser
 			matchExprStart:
 				{
 					nsName = ExprStart(true);
-					// Line 1623: (&{nsName.Calls(S.Assign, 2)} RestOfAlias / TT.Semicolon)
+					// Line 1747: (&{nsName.Calls(S.Assign, 2)} RestOfAlias / TT.Semicolon)
 					do {
 						switch (LA0) {
 						case TT.Semicolon:
@@ -4523,7 +4919,7 @@ namespace Loyc.Ecs.Parser
 							goto matchRestOfAlias;
 						default:
 							{
-								// line 1629
+								// line 1753
 								Error("Expected ';'");
 							}
 							break;
@@ -4532,74 +4928,74 @@ namespace Loyc.Ecs.Parser
 					matchRestOfAlias:
 						{
 							Check(nsName.Calls(S.Assign, 2), "Expected nsName.Calls(S.Assign, 2)");
-							// line 1624
+							// line 1748
 							LNode aliasedType = nsName.Args[1, F.Missing];
-							// line 1625
+							// line 1749
 							nsName = nsName.Args[0, F.Missing];
 							var r = RestOfAlias(startIndex, t, aliasedType, nsName);
-							// line 1627
+							// line 1751
 							return r.WithAttrs(attrs).PlusAttr(_filePrivate);
 						}
 					} while (false);
 				}
 			} while (false);
-			// line 1632
+			// line 1756
 			return F.Call(S.Import, nsName, t.StartIndex, end.EndIndex, t.StartIndex, t.EndIndex).WithAttrs(attrs);
 		}
-	
+
 		LNode RestOfAlias(int startIndex, Token aliasTok, LNode oldName, LNode newName)
 		{
 			TokenType la0;
 			var bases = BaseListOpt();
 			WhereClausesOpt(ref newName);
-			// line 1638
+			// line 1762
 			var name = F.Call(S.Assign, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);
-			// Line 1639: (TT.Semicolon | BracedBlock)
+			// Line 1763: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				// line 1640
+				// line 1764
 				return F.Call(S.Alias, name, bases, startIndex, end.EndIndex, aliasTok.StartIndex, aliasTok.EndIndex);
 			} else {
 				var body = BracedBlock(EcsValidators.KeyNameComponentOf(newName));
-				// line 1642
+				// line 1766
 				return F.Call(S.Alias, LNode.List(name, bases, body), startIndex, body.Range.EndIndex, aliasTok.StartIndex, aliasTok.EndIndex);
 			}
 		}
-	
+
 		private LNode EnumDecl(int startIndex)
 		{
 			TokenType la0;
 			var kw = MatchAny();
 			var name = ComplexNameDecl();
 			var bases = BaseListOpt();
-			// Line 1651: (TT.Semicolon | TT.LBrace TT.RBrace)
+			// Line 1775: (TT.Semicolon | TT.LBrace TT.RBrace)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				// line 1652
+				// line 1776
 				return F.Call(kw, name, bases, startIndex, end.EndIndex);
 			} else {
 				var lb = Match((int) TT.LBrace);
 				var rb = Match((int) TT.RBrace);
-				// line 1655
+				// line 1779
 				var list = ExprListInside(lb, true);
 				var body = F.Braces(list, lb.StartIndex, rb.EndIndex);
 				return F.Call(kw, LNode.List(name, bases, body), startIndex, body.Range.EndIndex);
 			}
 		}
-	
+
 		private LNode BaseListOpt()
 		{
 			TokenType la0;
-			// Line 1663: (TT.Colon DataType (TT.Comma DataType)* | {..})
+			// Line 1787: (TT.Colon DataType (TT.Comma DataType)* | {..})
 			la0 = LA0;
 			if (la0 == TT.Colon) {
-				// line 1663
+				// line 1787
 				var bases = new LNodeList();
 				Skip();
 				bases.Add(DataType());
-				// Line 1665: (TT.Comma DataType)*
+				// Line 1789: (TT.Comma DataType)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -4608,19 +5004,19 @@ namespace Loyc.Ecs.Parser
 					} else
 						break;
 				}
-				// line 1666
+				// line 1790
 				return F.List(bases);
 			} else
-				// line 1667
+				// line 1791
 				return F.List();
 		}
-	
+
 		private void WhereClausesOpt(ref LNode name)
 		{
 			TokenType la0;
-			// line 1673
+			// line 1797
 			var list = new BMultiMap<Symbol, LNode>();
-			// Line 1674: (WhereClause)*
+			// Line 1798: (WhereClause)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LinqKeyword)
@@ -4628,7 +5024,7 @@ namespace Loyc.Ecs.Parser
 				else
 					break;
 			}
-			// line 1675
+			// line 1799
 			if ((list.Count != 0)) {
 				if ((!name.CallsMin(S.Of, 2))) {
 					Error("'{0}' is not generic and cannot use 'where' clauses.", name.ToString());
@@ -4646,7 +5042,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		private KeyValuePair<Symbol, LNode> WhereClause()
 		{
 			TokenType la0;
@@ -4654,10 +5050,10 @@ namespace Loyc.Ecs.Parser
 			var where = MatchAny();
 			var T = Match((int) TT.ContextualKeyword, (int) TT.Id, (int) TT.LinqKeyword);
 			Match((int) TT.Colon);
-			// line 1705
+			// line 1829
 			var constraints = LNodeList.Empty;
 			constraints.Add(WhereConstraint());
-			// Line 1707: (TT.Comma WhereConstraint)*
+			// Line 1831: (TT.Comma WhereConstraint)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Comma) {
@@ -4666,47 +5062,47 @@ namespace Loyc.Ecs.Parser
 				} else
 					break;
 			}
-			// line 1708
+			// line 1832
 			return new KeyValuePair<Symbol, LNode>((Symbol) T.Value, F.CallPrefixOp(S.Where, where, constraints));
 		}
-	
+
 		private LNode WhereConstraint()
 		{
 			TokenType la0;
-			// Line 1712: ( (TT.Class|TT.Struct) | TT.New &{LT($LI).Count == 0} TT.LParen TT.RParen | DataType )
+			// Line 1836: ( (TT.Class|TT.Struct) | TT.New &{LT($LI).Count == 0} TT.LParen TT.RParen | DataType )
 			la0 = LA0;
 			if (la0 == TT.Class || la0 == TT.Struct) {
 				var t = MatchAny();
-				// line 1712
+				// line 1836
 				return F.Id(t);
 			} else if (la0 == TT.New) {
 				var newkw = MatchAny();
 				Check(LT(0).Count == 0, "Expected LT($LI).Count == 0");
 				var lp = Match((int) TT.LParen);
 				var rp = Match((int) TT.RParen);
-				// line 1714
+				// line 1838
 				return F.CallPrefix(newkw, ExprListInside(lp), rp);
 			} else {
 				var t = DataType();
-				// line 1715
+				// line 1839
 				return t;
 			}
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// -- assembly or module attribute -------------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		private // recognizer used by AssemblyOrModuleAttribute
 		Token AsmOrModLabel()
 		{
 			Check(LT(0).Value == sy_assembly || LT(0).Value == sy_module, "Expected LT($LI).Value == @@assembly || LT($LI).Value == @@module");
 			var t = Match((int) TT.ContextualKeyword);
 			Match((int) TT.Colon);
-			// line 1725
+			// line 1849
 			return t;
 		}
-	
+
 		bool Try_Scan_AsmOrModLabel(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_AsmOrModLabel();
@@ -4721,53 +5117,53 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private LNode AssemblyOrModuleAttribute(int startIndex, LNodeList attrs)
 		{
 			Check(Down(0) && Up(Try_Scan_AsmOrModLabel(0)), "Expected Down($LI) && Up(Try_Scan_AsmOrModLabel(0))");
 			var lb = MatchAny();
 			var rb = Match((int) TT.RBrack);
-			// line 1731
+			// line 1855
 			Down(lb);
 			var kind = AsmOrModLabel();
-			// line 1733
+			// line 1857
 			var list = new LNodeList();
 			ExprList(ref list);
-			// line 1736
+			// line 1860
 			Up();
 			var r = F.Call(kind.Value == sy_module ? S.Module : S.Assembly, list, startIndex, rb.EndIndex, kind.StartIndex, kind.EndIndex);
 			return r.WithAttrs(attrs);
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// methods, properties, variable/field declarations, operators ---------
 			// ---------------------------------------------------------------------
-	
+
 		private LNode MethodOrPropertyOrVar(int startIndex, LNodeList attrs)
 		{
 			TokenType la0;
 			LNode name = default(LNode);
 			LNode result = default(LNode);
-			// line 1748
+			// line 1872
 			bool isExtensionMethod = false;
 			bool isNamedThis;
-			// Line 1749: (TT.This)?
+			// Line 1873: (TT.This)?
 			la0 = LA0;
 			if (la0 == TT.This) {
 				var t = MatchAny();
-				// line 1749
+				// line 1873
 				attrs.Add(F.Id(t));
 				isExtensionMethod = true;
 			}
 			var type = DataType();
 			name = MethodOrPropertyName(!isExtensionMethod, out isNamedThis);
-			// Line 1753: ( &{!isNamedThis} MethodArgListAndBody | &!{name.IsLiteral} RestOfPropertyDefinition | &{!isNamedThis} &!{name.IsLiteral} VarInitializerOpt (TT.Comma ComplexNameDecl VarInitializerOpt)* TT.Semicolon )
+			// Line 1877: ( &{!isNamedThis} MethodArgListAndBody | &!{name.IsLiteral} RestOfPropertyDefinition | &{!isNamedThis} &!{name.IsLiteral} VarInitializerOpt (TT.Comma ComplexNameDecl VarInitializerOpt)* TT.Semicolon )
 			switch (LA0) {
 			case TT.LParen:
 				{
 					Check(!isNamedThis, "Expected !isNamedThis");
 					result = MethodArgListAndBody(startIndex, type.Range.StartIndex, attrs, S.Fn, type, name);
-					// line 1755
+					// line 1879
 					return result;
 				}
 				break;
@@ -4782,14 +5178,14 @@ namespace Loyc.Ecs.Parser
 				{
 					Check(!isNamedThis, "Expected !isNamedThis");
 					Check(!name.IsLiteral, "Invalid variable name");
-					// line 1762
+					// line 1886
 					MaybeRecognizeVarAsKeyword(ref type);
-					// line 1763
+					// line 1887
 					var parts = LNode.List(type);
-					// line 1764
+					// line 1888
 					var isArray = IsArrayType(type);
 					parts.Add(VarInitializerOpt(name, isArray));
-					// Line 1766: (TT.Comma ComplexNameDecl VarInitializerOpt)*
+					// Line 1890: (TT.Comma ComplexNameDecl VarInitializerOpt)*
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -4800,56 +5196,56 @@ namespace Loyc.Ecs.Parser
 							break;
 					}
 					var end = Match((int) TT.Semicolon);
-					// line 1769
+					// line 1893
 					var typeStart = type.Range.StartIndex;
-					// line 1770
+					// line 1894
 					result = F.Call(S.Var, parts, startIndex, end.EndIndex, typeStart, typeStart);
 				}
 				break;
 			default:
 				{
-					// line 1771
+					// line 1895
 					Error("Syntax error in what appears to be a method, property, or variable declaration");
 					ScanToEndOfStmt();
-					// line 1773
+					// line 1897
 					result = F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);
 				}
 				break;
 			}
-			// line 1775
+			// line 1899
 			result = result.PlusAttrs(attrs);
 			return result;
 		}
-	
+
 		private LNode VarInitializerOpt(LNode name, bool isArray)
 		{
 			TokenType la0;
 			LNode expr = default(LNode);
-			// Line 1779: (VarInitializer)?
+			// Line 1903: (VarInitializer)?
 			la0 = LA0;
 			if (la0 == TT.QuickBindSet || la0 == TT.Set) {
 				var eq = LT0;
 				expr = VarInitializer(isArray);
-				// line 1781
+				// line 1905
 				return F.CallInfixOp(name, S.Assign, eq, expr);
 			}
-			// line 1782
+			// line 1906
 			return name;
 		}
-	
+
 		private LNode VarInitializer(bool isArray)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
 			Skip();
-			// Line 1789: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
+			// Line 1913: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
 				if (isArray) {
 					if (Down(0) && Up(HasNoSemicolons())) {
 						var lb = MatchAny();
 						var rb = Match((int) TT.RBrace);
-						// line 1793
+						// line 1917
 						var initializers = InitializerListInside(lb);
 						result = F.CallBrackets(S.ArrayInit, lb, initializers, rb, NodeStyle.Expression);
 					} else
@@ -4860,28 +5256,28 @@ namespace Loyc.Ecs.Parser
 				result = ExprStart(false);
 			return result;
 		}
-	
+
 		private LNode RestOfPropertyDefinition(int startIndex, LNode type, LNode name, bool isExpression)
 		{
 			TokenType la0;
 			Token lb = default(Token);
 			Token rb = default(Token);
 			LNode result = default(LNode);
-			// line 1801
+			// line 1925
 			LNode args = F.Missing;
-			// Line 1802: (TT.LBrack TT.RBrack)?
+			// Line 1926: (TT.LBrack TT.RBrack)?
 			la0 = LA0;
 			if (la0 == TT.LBrack) {
 				lb = MatchAny();
 				rb = Match((int) TT.RBrack);
-				// line 1802
+				// line 1926
 				args = ArgList(lb, rb);
 			}
 			WhereClausesOpt(ref name);
-			// line 1804
+			// line 1928
 			LNode initializer;
 			var body = MethodBodyOrForward(true, out initializer, isExpression);
-			// line 1807
+			// line 1931
 			var parts = new LNodeList { 
 				type, name, args, body
 			};
@@ -4892,20 +5288,20 @@ namespace Loyc.Ecs.Parser
 			result = F.Call(S.Property, parts, startIndex, body.Range.EndIndex, targetIndex, targetIndex);
 			return result;
 		}
-	
+
 		private LNode OperatorCastMethod(int startIndex, LNodeList attrs)
 		{
-			// line 1815
+			// line 1939
 			LNode r;
 			var op = MatchAny();
 			var type = DataType();
-			// line 1817
+			// line 1941
 			var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));
 			r = MethodArgListAndBody(startIndex, op.StartIndex, attrs, S.Fn, type, name);
-			// line 1819
+			// line 1943
 			return r;
 		}
-	
+
 		private LNode MethodArgListAndBody(int startIndex, int targetIndex, LNodeList attrs, Symbol kind, LNode type, LNode name)
 		{
 			TokenType la0;
@@ -4913,25 +5309,25 @@ namespace Loyc.Ecs.Parser
 			var lp = Match((int) TT.LParen);
 			var rp = Match((int) TT.RParen);
 			WhereClausesOpt(ref name);
-			// line 1825
+			// line 1949
 			LNode r, _, baseCall = null;
-			// line 1825
+			// line 1949
 			int consCallIndex = -1;
-			// Line 1826: (TT.Colon (TT.Base|TT.This) TT.LParen TT.RParen)?
+			// Line 1950: (TT.Colon (TT.Base|TT.This) TT.LParen TT.RParen)?
 			la0 = LA0;
 			if (la0 == TT.Colon) {
 				lit_colon = MatchAny();
 				var target = Match((int) TT.Base, (int) TT.This);
 				var baselp = Match((int) TT.LParen);
 				var baserp = Match((int) TT.RParen);
-				// line 1828
+				// line 1952
 				baseCall = F.CallPrefix(target, ExprListInside(baselp), baserp);
 				if ((kind != S.Constructor)) {
 					Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 				}
 				consCallIndex = lit_colon.StartIndex;
 			}
-			// line 1836
+			// line 1960
 			for (int i = 0; i < attrs.Count; i++) {
 				var attr = attrs[i];
 				if (IsNamedArg(attr) && attr.Args[0].IsIdNamed(S.Return)) {
@@ -4940,7 +5336,7 @@ namespace Loyc.Ecs.Parser
 					i--;
 				}
 			}
-			// Line 1845: (default TT.Semicolon | MethodBodyOrForward)
+			// Line 1969: (default TT.Semicolon | MethodBodyOrForward)
 			do {
 				switch (LA0) {
 				case TT.Semicolon:
@@ -4948,7 +5344,7 @@ namespace Loyc.Ecs.Parser
 				case TT.At: case TT.Forward: case TT.LambdaArrow: case TT.LBrace:
 					{
 						var body = MethodBodyOrForward(false, out _, false, consCallIndex);
-						// line 1859
+						// line 1983
 						if (kind == S.Delegate) {
 							Error("A 'delegate' is not expected to have a method body.");
 						}
@@ -4971,7 +5367,7 @@ namespace Loyc.Ecs.Parser
 			match1:
 				{
 					var end = Match((int) TT.Semicolon);
-					// line 1847
+					// line 1971
 					if (kind == S.Constructor && baseCall != null) {
 						Error(baseCall, "A method body is required.");
 						var parts = LNode.List(type, name, ArgList(lp, rp), LNode.Call(S.Braces, new LNodeList(baseCall), baseCall.Range));
@@ -4982,42 +5378,42 @@ namespace Loyc.Ecs.Parser
 					}
 				}
 			} while (false);
-			// line 1870
+			// line 1994
 			return r.PlusAttrs(attrs);
 		}
-	
+
 		private LNode MethodBodyOrForward(bool isProperty, out LNode propInitializer, bool isExpression = false, int bodyStartIndex = -1)
 		{
 			TokenType la0;
-			// line 1875
+			// line 1999
 			propInitializer = null;
-			// Line 1876: ( TT.Forward ExprStart SemicolonIf | TT.LambdaArrow ExprStart SemicolonIf | TokenLiteral (&{!isExpression} TT.Semicolon)? | BracedBlock greedy(&{isProperty} TT.Set ExprStart SemicolonIf)? )
+			// Line 2000: ( TT.Forward ExprStart SemicolonIf | TT.LambdaArrow ExprStart SemicolonIf | TokenLiteral (&{!isExpression} TT.Semicolon)? | BracedBlock greedy(&{isProperty} TT.Set ExprStart SemicolonIf)? )
 			la0 = LA0;
 			if (la0 == TT.Forward) {
 				var op = MatchAny();
 				var e = ExprStart(true);
 				SemicolonIf(!isExpression);
-				// line 1876
+				// line 2000
 				return F.CallPrefixOp(op, e);
 			} else if (la0 == TT.LambdaArrow) {
 				var op = MatchAny();
 				var e = ExprStart(false);
 				SemicolonIf(!isExpression);
-				// line 1877
+				// line 2001
 				return e;
 			} else if (la0 == TT.At) {
 				var e = TokenLiteral();
-				// Line 1878: (&{!isExpression} TT.Semicolon)?
+				// Line 2002: (&{!isExpression} TT.Semicolon)?
 				la0 = LA0;
 				if (la0 == TT.Semicolon) {
 					Check(!isExpression, "Expected !isExpression");
 					Skip();
 				}
-				// line 1878
+				// line 2002
 				return e;
 			} else {
 				var body = BracedBlock(S.Fn, null, bodyStartIndex);
-				// Line 1882: greedy(&{isProperty} TT.Set ExprStart SemicolonIf)?
+				// Line 2006: greedy(&{isProperty} TT.Set ExprStart SemicolonIf)?
 				la0 = LA0;
 				if (la0 == TT.Set) {
 					Check(isProperty, "Expected isProperty");
@@ -5025,34 +5421,34 @@ namespace Loyc.Ecs.Parser
 					propInitializer = ExprStart(false);
 					SemicolonIf(!isExpression);
 				}
-				// line 1885
+				// line 2009
 				return body;
 			}
 		}
-	
+
 		private void SemicolonIf(bool isStatement)
 		{
 			TokenType la0;
-			// Line 1890: (&{isStatement} TT.Semicolon / {..})
+			// Line 2014: (&{isStatement} TT.Semicolon / {..})
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				if (isStatement)
 					Skip();
-				else// line 1891
+				else// line 2015
 				if (isStatement) {
 					Error(0, "Expected ';' to end statement");
 				}
-			} else// line 1891
+			} else// line 2015
 			if (isStatement) {
 				Error(0, "Expected ';' to end statement");
 			}
 		}
-	
+
 		private 
 		void NoSemicolons()
 		{
 			TokenType la0;
-			// Line 1912: (~(EOF|TT.Semicolon))*
+			// Line 2036: (~(EOF|TT.Semicolon))*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == (TokenType) EOF || la0 == TT.Semicolon))
@@ -5062,11 +5458,11 @@ namespace Loyc.Ecs.Parser
 			}
 			Match((int) EOF);
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// Constructor/destructor ----------------------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		bool Try_HasNoSemicolons(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return HasNoSemicolons();
@@ -5074,7 +5470,7 @@ namespace Loyc.Ecs.Parser
 		bool HasNoSemicolons()
 		{
 			TokenType la0;
-			// Line 1912: (~(EOF|TT.Semicolon))*
+			// Line 2036: (~(EOF|TT.Semicolon))*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == (TokenType) EOF || la0 == TT.Semicolon))
@@ -5086,14 +5482,14 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private LNode Constructor(int startIndex, LNodeList attrs)
 		{
 			TokenType la0;
-			// line 1919
+			// line 2043
 			LNode r;
 			Token n;
-			// Line 1920: ( &{_spaceName == LT($LI).Value} (TT.ContextualKeyword|TT.Id|TT.LinqKeyword) &(TT.LParen TT.RParen (TT.LBrace|TT.Semicolon)) / &{_spaceName != S.Fn || LA($LI + 3) == TT.LBrace} TT.This &(TT.LParen TT.RParen (TT.LBrace|TT.Semicolon)) / (TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.This) &(TT.LParen TT.RParen TT.Colon) )
+			// Line 2044: ( &{_spaceName == LT($LI).Value} (TT.ContextualKeyword|TT.Id|TT.LinqKeyword) &(TT.LParen TT.RParen (TT.LBrace|TT.Semicolon)) / &{_spaceName != S.Fn || LA($LI + 3) == TT.LBrace} TT.This &(TT.LParen TT.RParen (TT.LBrace|TT.Semicolon)) / (TT.ContextualKeyword|TT.Id|TT.LinqKeyword|TT.This) &(TT.LParen TT.RParen TT.Colon) )
 			do {
 				la0 = LA0;
 				if (la0 == TT.ContextualKeyword || la0 == TT.Id || la0 == TT.LinqKeyword) {
@@ -5120,19 +5516,19 @@ namespace Loyc.Ecs.Parser
 					Check(Try_Constructor_Test2(0), "Expected TT.LParen TT.RParen TT.Colon");
 				}
 			} while (false);
-			// line 1929
+			// line 2053
 			LNode name = F.Id((Symbol) n.Value, n.StartIndex, n.EndIndex);
 			r = MethodArgListAndBody(startIndex, n.StartIndex, attrs, S.Constructor, F.Missing, name);
-			// line 1931
+			// line 2055
 			return r;
 		}
-	
+
 		private LNode Destructor(int startIndex, LNodeList attrs)
 		{
 			LNode result = default(LNode);
 			var tilde = MatchAny();
 			var n = MatchAny();
-			// line 1937
+			// line 2061
 			var name = (Symbol) n.Value;
 			if (name != _spaceName) {
 				Error("Unexpected destructor '{0}'", name);
@@ -5141,21 +5537,21 @@ namespace Loyc.Ecs.Parser
 			result = MethodArgListAndBody(startIndex, tilde.StartIndex, attrs, S.Fn, F.Missing, name2);
 			return result;
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// Delegate & event declarations ---------------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		private LNode DelegateDecl(int startIndex, LNodeList attrs)
 		{
 			var d = MatchAny();
 			var type = DataType();
 			var name = ComplexNameDecl();
 			var r = MethodArgListAndBody(startIndex, d.StartIndex, attrs, S.Delegate, type, name);
-			// line 1953
+			// line 2077
 			return r.WithAttrs(attrs);
 		}
-	
+
 		private LNode EventDecl(int startIndex)
 		{
 			TokenType la0;
@@ -5165,14 +5561,14 @@ namespace Loyc.Ecs.Parser
 			eventkw = MatchAny();
 			var type = DataType();
 			var name = ComplexNameDecl();
-			// Line 1959: (TT.Comma ComplexNameDecl (TT.Comma ComplexNameDecl)*)?
+			// Line 2083: (TT.Comma ComplexNameDecl (TT.Comma ComplexNameDecl)*)?
 			la0 = LA0;
 			if (la0 == TT.Comma) {
-				// line 1959
+				// line 2083
 				var parts = new LNodeList(name);
 				Skip();
 				parts.Add(ComplexNameDecl());
-				// Line 1960: (TT.Comma ComplexNameDecl)*
+				// Line 2084: (TT.Comma ComplexNameDecl)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -5181,48 +5577,48 @@ namespace Loyc.Ecs.Parser
 					} else
 						break;
 				}
-				// line 1961
+				// line 2085
 				name = F.List(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);
 			}
-			// Line 1963: (TT.Semicolon | BracedBlock)
+			// Line 2087: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				lit_semi = MatchAny();
-				// line 1964
+				// line 2088
 				result = F.Call(eventkw, type, name, startIndex, lit_semi.EndIndex);
 			} else {
 				var body = BracedBlock(S.Fn);
-				// line 1966
+				// line 2090
 				if (name.Calls(S.AltList)) {
 					Error("A body is not allowed when defining multiple events.");
 				}
-				// line 1967
+				// line 2091
 				result = F.Call(eventkw, LNode.List(type, name, body), startIndex, body.Range.EndIndex);
 			}
 			return result;
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// Statements for executable contexts ----------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		// Labels, default:, case expr: ----------------------------------------
 		LNode LabelStmt(int startIndex)
 		{
 			var id = Match((int) TT.ContextualKeyword, (int) TT.Default, (int) TT.Id, (int) TT.LinqKeyword);
 			var end = Match((int) TT.Colon);
-			// line 1979
+			// line 2103
 			return F.Call(S.Label, F.Id(id), startIndex, end.EndIndex, id.StartIndex, id.StartIndex);
 		}
-	
+
 		LNode CaseStmt(int startIndex)
 		{
 			TokenType la0;
-			// line 1983
+			// line 2107
 			var cases = LNodeList.Empty;
 			var kw = Match((int) TT.Case);
 			cases.Add(ExprStartNNP(true));
-			// Line 1985: (TT.Comma ExprStartNNP)*
+			// Line 2109: (TT.Comma ExprStartNNP)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Comma) {
@@ -5232,12 +5628,12 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 			var end = Match((int) TT.Colon);
-			// line 1986
+			// line 2110
 			return F.Call(kw, cases, startIndex, end.EndIndex);
 		}
-	
-			// Block-call statement (e.g. get {...}, unroll(...) {...}) ----------------
-	
+		
+		// Block-call statement (e.g. get {...}, unroll(...) {...}) ----------------
+
 		// Block-call statements help support properties (get/set), events (add/
 		// remove) and macros. No semicolon is required at the end, and the 
 		// statement cannot continue afterward (at statement level, foo {y} = z; 
@@ -5251,35 +5647,35 @@ namespace Loyc.Ecs.Parser
 			TokenType la0;
 			var id = MatchAny();
 			Check(Try_BlockCallStmt_Test0(0), "Expected ( TT.LParen TT.RParen (TT.LBrace TT.RBrace | TT.Id) | TT.LBrace TT.RBrace | TT.Forward )");
-			// line 2002
+			// line 2126
 			var args = new LNodeList();
-			// line 2003
+			// line 2127
 			LNode block;
-			// Line 2004: ( TT.LParen TT.RParen (BracedBlock | TT.Id => Stmt) | TT.Forward ExprStart TT.Semicolon | BracedBlock )
+			// Line 2128: ( TT.LParen TT.RParen (BracedBlock | TT.Id => Stmt) | TT.Forward ExprStart TT.Semicolon | BracedBlock )
 			la0 = LA0;
 			if (la0 == TT.LParen) {
 				var lp = MatchAny();
 				var rp = Match((int) TT.RParen);
-				// line 2004
+				// line 2128
 				args = AppendExprsInside(lp, args, false, true);
-				// Line 2005: (BracedBlock | TT.Id => Stmt)
+				// Line 2129: (BracedBlock | TT.Id => Stmt)
 				la0 = LA0;
 				if (la0 == TT.LBrace)
 					block = BracedBlock();
 				else {
 					block = Stmt();
-					// line 2008
+					// line 2132
 					ErrorSink.Write(Severity.Error, block, ColumnOf(block.Range.StartIndex) <= ColumnOf(id.StartIndex) ? "Probable missing semicolon before this statement." : "Probable missing braces around body of '{0}' statement.", id.Value);
 				}
 			} else if (la0 == TT.Forward) {
 				var fwd = MatchAny();
 				var e = ExprStart(true);
 				Match((int) TT.Semicolon);
-				// line 2015
+				// line 2139
 				block = F.CallPrefixOp(fwd, e);
 			} else
 				block = BracedBlock();
-			// line 2019
+			// line 2143
 			args.Add(block);
 			var result = F.Call((Symbol) id.Value, args, startIndex, block.Range.EndIndex, id.StartIndex, id.EndIndex, NodeStyle.Special);
 			if (block.Calls(S.Forward, 1)) {
@@ -5287,79 +5683,79 @@ namespace Loyc.Ecs.Parser
 			}
 			return result;
 		}
-		static readonly HashSet<int> ReturnBreakContinueThrow_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-	
+		static readonly HashSet<int> ReturnBreakContinueThrow_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+
 		private LNode ReturnBreakContinueThrow(int startIndex)
 		{
 			TokenType la0;
 			LNode e = default(LNode);
 			var kw = MatchAny();
-			// Line 2037: greedy(ExprStartNNP)?
+			// Line 2161: greedy(ExprStartNNP)?
 			la0 = LA0;
 			if (ReturnBreakContinueThrow_set0.Contains((int) la0))
 				e = ExprStartNNP(false);
-			// line 2039
+			// line 2163
 			if (e != null)
 				return F.Call((Symbol) kw.Value, e, startIndex, e.Range.EndIndex, kw.StartIndex, kw.EndIndex);
 			else
 				return F.Call((Symbol) kw.Value, startIndex, kw.EndIndex, kw.StartIndex, kw.EndIndex);
 		}
-	
-			// goto, goto case -----------------------------------------------------
-	
+		
+		// goto, goto case -----------------------------------------------------
+
 		private LNode GotoStmt(int startIndex)
 		{
 			TokenType la0;
 			var kw = MatchAny();
-			// Line 2048: (TT.Default / ExprOrNull)
+			// Line 2172: (TT.Default / ExprOrNull)
 			la0 = LA0;
 			if (la0 == TT.Default) {
 				var def = MatchAny();
-				// line 2049
+				// line 2173
 				return F.Call(kw, F.Id(def), startIndex, kw.EndIndex);
 			} else {
 				var e = ExprOrNull(false);
-				// line 2053
+				// line 2177
 				if (e != null)
 					return F.Call(kw, e, startIndex, e.Range.EndIndex);
 				else
 					return F.Call(kw, startIndex, kw.EndIndex);
 			}
 		}
-	
+
 		private LNode GotoCaseStmt(int startIndex)
 		{
 			TokenType la0;
-			// line 2060
+			// line 2184
 			LNode e = null;
 			var kw = MatchAny();
 			var kw2 = MatchAny();
-			// Line 2062: (TT.Default / ExprStartNNP)
+			// Line 2186: (TT.Default / ExprStartNNP)
 			la0 = LA0;
 			if (la0 == TT.Default) {
 				var def = MatchAny();
-				// line 2063
+				// line 2187
 				e = F.Id(S.Default, def.StartIndex, def.EndIndex);
 			} else
 				e = ExprStartNNP(false);
-			// line 2065
+			// line 2189
 			var endIndex = e != null ? e.Range.EndIndex : kw2.EndIndex;
-			// line 2066
+			// line 2190
 			return F.Call(S.GotoCase, e, startIndex, endIndex, kw.StartIndex, kw2.EndIndex);
 		}
-	
-			// checked & unchecked -------------------------------------------------
-	
+		
+		// checked & unchecked -------------------------------------------------
+
 		private LNode CheckedOrUncheckedStmt(int startIndex)
 		{
 			var kw = MatchAny();
 			var bb = BracedBlock();
-			// line 2074
+			// line 2198
 			return F.Call((Symbol) kw.Value, bb, startIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);
 		}
-	
-			// do-while & while ----------------------------------------------------
-	
+		
+		// do-while & while ----------------------------------------------------
+
 		private LNode DoStmt(int startIndex)
 		{
 			Token lit_lpar = default(Token);
@@ -5369,12 +5765,12 @@ namespace Loyc.Ecs.Parser
 			lit_lpar = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var end = Match((int) TT.Semicolon);
-			// line 2082
+			// line 2206
 			var parts = new LNodeList(block);
 			SingleExprInside(lit_lpar, "while (...)", false, ref parts);
 			return F.Call(S.DoWhile, parts, startIndex, end.EndIndex, kw.StartIndex, kw.EndIndex);
 		}
-	
+
 		private LNode WhileStmt(int startIndex)
 		{
 			Token lit_lpar = default(Token);
@@ -5382,13 +5778,13 @@ namespace Loyc.Ecs.Parser
 			lit_lpar = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2091
+			// line 2215
 			var cond = SingleExprInside(lit_lpar, "while (...)");
 			return F.Call(kw, cond, block, startIndex, block.Range.EndIndex);
 		}
-	
-			// for & foreach -------------------------------------------------------
-	
+		
+		// for & foreach -------------------------------------------------------
+
 		private LNode ForStmt(int startIndex)
 		{
 			Token lit_lpar = default(Token);
@@ -5396,9 +5792,9 @@ namespace Loyc.Ecs.Parser
 			lit_lpar = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2100
+			// line 2224
 			Down(lit_lpar);
-			// line 2101
+			// line 2225
 			var init = LNodeList.Empty;
 			var inc = init;
 			ExprList(ref init, false, true);
@@ -5406,9 +5802,9 @@ namespace Loyc.Ecs.Parser
 			var cond = ExprOpt(false);
 			Match((int) TT.Semicolon);
 			ExprList(ref inc, false, false);
-			// line 2103
+			// line 2227
 			Up();
-			// line 2105
+			// line 2229
 			var initL = F.Call(S.AltList, init);
 			var incL = F.Call(S.AltList, inc);
 			var parts = new LNodeList { 
@@ -5416,7 +5812,7 @@ namespace Loyc.Ecs.Parser
 			};
 			return F.Call(kw, parts, startIndex, block.Range.EndIndex);
 		}
-	
+
 		private LNode ForEachStmt(int startIndex)
 		{
 			TokenType la1;
@@ -5425,9 +5821,9 @@ namespace Loyc.Ecs.Parser
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2115
+			// line 2239
 			Down(p);
-			// Line 2116: (&(VarIn) VarIn)?
+			// Line 2240: (&(VarIn) VarIn)?
 			switch (LA0) {
 			case TT.ContextualKeyword: case TT.Id: case TT.LinqKeyword: case TT.LParen:
 			case TT.Operator: case TT.Substitute: case TT.TypeKeyword:
@@ -5448,26 +5844,26 @@ namespace Loyc.Ecs.Parser
 			}
 			var expr = ExprStart(false);
 			Match((int) EOF, (int) TT.RParen);
-			// line 2120
+			// line 2244
 			var parts = LNode.List(var ?? F.Missing, expr, block);
 			return Up(F.Call(kw, parts, startIndex, block.Range.EndIndex));
 		}
-	
+
 		// The "T id in" part of "foreach (T id in e)" or "from int x in ..." (type is optional)
 		private LNode VarIn(out Token inTok)
 		{
 			LNode result = default(LNode);
 			var pair = VarDeclStart();
-			// line 2130
+			// line 2254
 			var start = pair.A.Range.StartIndex;
-			// line 2131
+			// line 2255
 			result = F.Call(S.Var, pair.A, pair.B, start, pair.B.Range.EndIndex, start, start);
 			inTok = Match((int) TT.In);
 			return result;
 		}
-	
-			// if-else -------------------------------------------------------------
-	
+		
+		// if-else -------------------------------------------------------------
+
 		bool Try_Scan_VarIn(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Scan_VarIn();
@@ -5480,110 +5876,110 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private LNode IfStmt(int startIndex)
 		{
 			TokenType la0;
-			// line 2138
+			// line 2262
 			LNode @else = null;
 			var kw = MatchAny();
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var then = Stmt();
-			// Line 2140: greedy(TT.Else Stmt)?
+			// Line 2264: greedy(TT.Else Stmt)?
 			la0 = LA0;
 			if (la0 == TT.Else) {
 				Skip();
 				@else = Stmt();
 			}
-			// line 2142
+			// line 2266
 			var cond = SingleExprInside(p, "if (...)");
 			var parts = (@else == null ? LNode.List(cond, then) : LNode.List(cond, then, @else));
 			return F.Call(kw, parts, startIndex, then.Range.EndIndex);
 		}
-	
+
 		private LNode SwitchStmt(int startIndex)
 		{
 			var kw = Match((int) TT.Switch);
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = BracedBlock();
-			// line 2151
+			// line 2275
 			var expr = SingleExprInside(p, "switch (...)");
 			return F.Call(kw, expr, block, startIndex, block.Range.EndIndex);
 		}
-	
-			// using, lock, fixed --------------------------------------------------
-	
+		
+		// using, lock, fixed --------------------------------------------------
+
 		private LNode UsingStmt(int startIndex)
 		{
 			var kw = MatchAny();
 			var p = MatchAny();
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2161
+			// line 2285
 			var expr = SingleExprInside(p, "using (...)");
 			return F.Call(S.UsingStmt, expr, block, startIndex, block.Range.EndIndex, kw.StartIndex, kw.EndIndex);
 		}
-	
+
 		private LNode LockStmt(int startIndex)
 		{
 			var kw = MatchAny();
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2169
+			// line 2293
 			var expr = SingleExprInside(p, "lock (...)");
 			return F.Call(kw, expr, block, startIndex, block.Range.EndIndex);
 		}
-	
+
 		private LNode FixedStmt(int startIndex)
 		{
 			var kw = MatchAny();
 			var p = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			var block = Stmt();
-			// line 2177
+			// line 2301
 			var expr = SingleExprInside(p, "fixed (...)", true);
 			return F.Call(kw, expr, block, startIndex, block.Range.EndIndex);
 		}
-	
-			// try -----------------------------------------------------------------
-	
+		
+		// try -----------------------------------------------------------------
+
 		private LNode TryStmt(int startIndex)
 		{
 			TokenType la0, la1;
 			LNode handler = default(LNode);
 			var trykw = MatchAny();
 			var header = Stmt();
-			// line 2186
+			// line 2310
 			var parts = new LNodeList { 
 				header
 			};
-			// line 2187
+			// line 2311
 			LNode varExpr;
 			LNode whenExpr;
-			// Line 2189: greedy(TT.Catch (TT.LParen TT.RParen / {..}) (&{Is($LI, @@when)} TT.ContextualKeyword TT.LParen TT.RParen / {..}) Stmt)*
+			// Line 2313: greedy(TT.Catch (TT.LParen TT.RParen / {..}) (&{Is($LI, @@when)} TT.ContextualKeyword TT.LParen TT.RParen / {..}) Stmt)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Catch) {
 					var kw = MatchAny();
-					// Line 2190: (TT.LParen TT.RParen / {..})
+					// Line 2314: (TT.LParen TT.RParen / {..})
 					la0 = LA0;
 					if (la0 == TT.LParen) {
 						la1 = LA(1);
 						if (la1 == TT.RParen) {
 							var p = MatchAny();
 							Skip();
-							// line 2190
+							// line 2314
 							varExpr = SingleExprInside(p, "catch (...)", true);
 						} else
-							// line 2191
+							// line 2315
 							varExpr = MissingHere();
 					} else
-						// line 2191
+						// line 2315
 						varExpr = MissingHere();
-					// Line 2192: (&{Is($LI, @@when)} TT.ContextualKeyword TT.LParen TT.RParen / {..})
+					// Line 2316: (&{Is($LI, @@when)} TT.ContextualKeyword TT.LParen TT.RParen / {..})
 					la0 = LA0;
 					if (la0 == TT.ContextualKeyword) {
 						if (Is(0, sy_when)) {
@@ -5592,55 +5988,55 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								var c = MatchAny();
 								Match((int) TT.RParen);
-								// line 2193
+								// line 2317
 								whenExpr = SingleExprInside(c, "when (...)");
 							} else
-								// line 2194
+								// line 2318
 								whenExpr = MissingHere();
 						} else
-							// line 2194
+							// line 2318
 							whenExpr = MissingHere();
 					} else
-						// line 2194
+						// line 2318
 						whenExpr = MissingHere();
 					handler = Stmt();
-					// line 2196
+					// line 2320
 					parts.Add(F.Call(kw, LNode.List(varExpr, whenExpr, handler), kw.StartIndex, handler.Range.EndIndex));
 				} else
 					break;
 			}
-			// Line 2199: greedy(TT.Finally Stmt)*
+			// Line 2323: greedy(TT.Finally Stmt)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Finally) {
 					var kw = MatchAny();
 					handler = Stmt();
-					// line 2200
+					// line 2324
 					parts.Add(F.Call(kw, handler, kw.StartIndex, handler.Range.EndIndex));
 				} else
 					break;
 			}
-			// line 2203
+			// line 2327
 			var result = F.Call(trykw, parts, startIndex, parts.Last.Range.EndIndex);
 			if (parts.Count == 1) {
 				Error(result, "'try': At least one 'catch' or 'finally' clause is required");
 			}
 			return result;
 		}
-	
-			// C# interactive directives -------------------------------------------
-	
+		
+		// C# interactive directives -------------------------------------------
+
 		private LNode PPNullaryDirective(int startIndex)
 		{
 			var t = MatchAny();
-			// line 2215
+			// line 2339
 			return F.Call(t, startIndex, t.EndIndex);
 		}
-	
+
 		private LNode PPStringDirective(int startIndex)
 		{
 			var t = MatchAny();
-			// line 2221
+			// line 2345
 			var target = S.PPNullable;
 			if ((t.Type() == TT.CSIload)) {
 				target = S.CsiLoad;
@@ -5650,22 +6046,22 @@ namespace Loyc.Ecs.Parser
 			var value = t.Value.ToString().WithoutPrefix(" ");
 			return F.Trivia(target, value, startIndex, t.EndIndex);
 		}
-	
-			// ---------------------------------------------------------------------
+		
+		// ---------------------------------------------------------------------
 			// ExprList and StmtList -----------------------------------------------
 			// ---------------------------------------------------------------------
-	
+
 		LNode ExprOrNull(bool allowUnassignedVarDecl = false)
 		{
 			TokenType la0;
 			LNode result = default(LNode);
-			// Line 2238: greedy(ExprStart)?
+			// Line 2362: greedy(ExprStart)?
 			la0 = LA0;
 			if (ReturnBreakContinueThrow_set0.Contains((int) la0))
 				result = ExprStart(allowUnassignedVarDecl);
 			return result;
 		}
-	
+
 		LNode ExprOpt(bool allowUnassignedVarDecl = false)
 		{
 			LNode result = default(LNode);
@@ -5673,18 +6069,18 @@ namespace Loyc.Ecs.Parser
 			result = result ?? MissingHere();
 			return result;
 		}
-		static readonly HashSet<int> ExprList_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.Comma, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Semicolon, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-	
+		static readonly HashSet<int> ExprList_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.Comma, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Semicolon, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+
 		void ExprList(ref LNodeList list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			TokenType la0, la1;
-			// Line 2251: nongreedy(ExprOpt (TT.Comma &{allowTrailingComma} EOF / TT.Comma ExprOpt)*)?
+			// Line 2375: nongreedy(ExprOpt (TT.Comma &{allowTrailingComma} EOF / TT.Comma ExprOpt)*)?
 			la0 = LA0;
 			if (la0 == EOF || la0 == TT.Semicolon)
 				;
 			else {
 				list.Add(ExprOpt(allowUnassignedVarDecl));
-				// Line 2252: (TT.Comma &{allowTrailingComma} EOF / TT.Comma ExprOpt)*
+				// Line 2376: (TT.Comma &{allowTrailingComma} EOF / TT.Comma ExprOpt)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -5712,10 +6108,10 @@ namespace Loyc.Ecs.Parser
 					continue;
 				error:
 					{
-						// line 2254
+						// line 2378
 						Error("'{0}': Syntax error in expression list", CurrentTokenText());
 						MatchExcept((int) TT.Comma);
-						// Line 2255: (~(EOF|TT.Comma))*
+						// Line 2379: (~(EOF|TT.Comma))*
 						for (;;) {
 							la0 = LA0;
 							if (!(la0 == (TokenType) EOF || la0 == TT.Comma))
@@ -5727,17 +6123,17 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		void ArgList(ref LNodeList list)
 		{
 			TokenType la0;
-			// Line 2263: nongreedy(ExprOpt (TT.Comma ExprOpt)*)?
+			// Line 2387: nongreedy(ExprOpt (TT.Comma ExprOpt)*)?
 			la0 = LA0;
 			if (la0 == EOF)
 				;
 			else {
 				list.Add(ExprOpt(true));
-				// Line 2264: (TT.Comma ExprOpt)*
+				// Line 2388: (TT.Comma ExprOpt)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -5746,9 +6142,9 @@ namespace Loyc.Ecs.Parser
 					} else if (la0 == EOF)
 						break;
 					else {
-						// line 2265
+						// line 2389
 						Error("Syntax error in argument list");
-						// Line 2265: (~(EOF|TT.Comma))*
+						// Line 2389: (~(EOF|TT.Comma))*
 						for (;;) {
 							la0 = LA0;
 							if (!(la0 == (TokenType) EOF || la0 == TT.Comma))
@@ -5761,20 +6157,20 @@ namespace Loyc.Ecs.Parser
 			}
 			Skip();
 		}
-	
+
 		LNode InitializerExpr()
 		{
 			TokenType la0, la2;
 			Token eq = default(Token);
 			LNode result = default(LNode);
-			// Line 2272: ( TT.LBrace TT.RBrace / TT.LBrack TT.RBrack TT.Set ExprStart / ExprOpt )
+			// Line 2396: ( TT.LBrace TT.RBrace / TT.LBrack TT.RBrack TT.Set ExprStart / ExprOpt )
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
 				la2 = LA(2);
 				if (la2 == (TokenType) EOF || la2 == TT.Comma) {
 					var lb = MatchAny();
 					var rb = Match((int) TT.RBrace);
-					// line 2274
+					// line 2398
 					var exprs = InitializerListInside(lb);
 					result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex, lb.StartIndex, lb.EndIndex, NodeStyle.Expression);
 				} else
@@ -5786,7 +6182,7 @@ namespace Loyc.Ecs.Parser
 					Match((int) TT.RBrack);
 					eq = MatchAny();
 					var e = ExprStart(false);
-					// line 2278
+					// line 2402
 					result = F.Call(S.DictionaryInitAssign, ExprListInside(lb).Add(e), lb.StartIndex, e.Range.EndIndex, eq.StartIndex, eq.EndIndex);
 				} else
 					result = ExprOpt(false);
@@ -5794,19 +6190,19 @@ namespace Loyc.Ecs.Parser
 				result = ExprOpt(false);
 			return result;
 		}
-		static readonly HashSet<int> InitializerList_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.Comma, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.Is, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
-	
+		static readonly HashSet<int> InitializerList_set0 = NewSet((int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.Base, (int) TT.Break, (int) TT.Checked, (int) TT.Comma, (int) TT.ContextualKeyword, (int) TT.Continue, (int) TT.Default, (int) TT.Delegate, (int) TT.Dot, (int) TT.DotDot, (int) TT.Forward, (int) TT.Goto, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LinqKeyword, (int) TT.Literal, (int) TT.LParen, (int) TT.Mul, (int) TT.New, (int) TT.Not, (int) TT.NotBits, (int) TT.Operator, (int) TT.Power, (int) TT.Return, (int) TT.Sizeof, (int) TT.Sub, (int) TT.Substitute, (int) TT.Switch, (int) TT.This, (int) TT.Throw, (int) TT.TypeKeyword, (int) TT.Typeof, (int) TT.Unchecked);
+
 		// Used for new int[][] { ... } or int[][] x = { ... }
 		void InitializerList(ref LNodeList list)
 		{
 			TokenType la0, la1;
-			// Line 2285: nongreedy(InitializerExpr (TT.Comma EOF / TT.Comma InitializerExpr)*)?
+			// Line 2409: nongreedy(InitializerExpr (TT.Comma EOF / TT.Comma InitializerExpr)*)?
 			la0 = LA0;
 			if (la0 == EOF)
 				;
 			else {
 				list.Add(InitializerExpr());
-				// Line 2286: (TT.Comma EOF / TT.Comma InitializerExpr)*
+				// Line 2410: (TT.Comma EOF / TT.Comma InitializerExpr)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -5826,9 +6222,9 @@ namespace Loyc.Ecs.Parser
 					continue;
 				error:
 					{
-						// line 2288
+						// line 2412
 						Error("Syntax error in initializer list");
-						// Line 2288: (~(EOF|TT.Comma))*
+						// Line 2412: (~(EOF|TT.Comma))*
 						for (;;) {
 							la0 = LA0;
 							if (!(la0 == (TokenType) EOF || la0 == TT.Comma))
@@ -5841,11 +6237,11 @@ namespace Loyc.Ecs.Parser
 			}
 			Skip();
 		}
-	
+
 		void StmtList(ref LNodeList list)
 		{
 			TokenType la0;
-			// Line 2293: (~(EOF) => Stmt)*
+			// Line 2417: (~(EOF) => Stmt)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 != (TokenType) EOF)
@@ -5855,14 +6251,14 @@ namespace Loyc.Ecs.Parser
 			}
 			Skip();
 		}
-	
+
 		private bool Try_TypeSuffixOpt_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return TypeSuffixOpt_Test0();
 		}
 		private bool TypeSuffixOpt_Test0()
 		{
-			// Line 319: ((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)
+			// Line 326: ((TT.Add|TT.AndBits|TT.At|TT.ContextualKeyword|TT.Forward|TT.Id|TT.IncDec|TT.LBrace|TT.Literal|TT.LParen|TT.Mul|TT.New|TT.Not|TT.NotBits|TT.Sub|TT.Substitute|TT.TypeKeyword) | LinqKeywordAsId)
 			switch (LA0) {
 			case TT.Add: case TT.AndBits: case TT.At: case TT.ContextualKeyword:
 			case TT.Forward: case TT.Id: case TT.IncDec: case TT.LBrace:
@@ -5879,7 +6275,7 @@ namespace Loyc.Ecs.Parser
 			return true;
 		}
 		static readonly HashSet<int> AtomOrTypeParamExpr_Test0_set0 = NewSet((int) TT.ContextualKeyword, (int) TT.Id, (int) TT.LinqKeyword);
-	
+
 		private bool Try_AtomOrTypeParamExpr_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return AtomOrTypeParamExpr_Test0();
@@ -5892,14 +6288,14 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_PrefixExpr_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return PrefixExpr_Test0();
 		}
 		private bool PrefixExpr_Test0()
 		{
-			// Line 639: ( (TT.Add|TT.AndBits|TT.BQString|TT.Dot|TT.Mul|TT.Sub) | TT.IncDec TT.LParen | &{_insideLinqExpr} TT.LinqKeyword )
+			// Line 645: ( (TT.Add|TT.AndBits|TT.BQString|TT.Dot|TT.Mul|TT.Sub) | TT.IncDec TT.LParen | &{_insideLinqExpr} TT.LinqKeyword )
 			switch (LA0) {
 			case TT.Add: case TT.AndBits: case TT.BQString: case TT.Dot:
 			case TT.Mul: case TT.Sub:
@@ -5923,7 +6319,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		private bool Try_ExprInParensAuto_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return ExprInParensAuto_Test0();
@@ -5936,7 +6332,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_IdStmt_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return IdStmt_Test0();
@@ -5949,7 +6345,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_OtherStmt_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return OtherStmt_Test0();
@@ -5970,7 +6366,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_Constructor_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Constructor_Test0();
@@ -5985,7 +6381,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_Constructor_Test1(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Constructor_Test1();
@@ -6000,7 +6396,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_Constructor_Test2(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Constructor_Test2();
@@ -6015,7 +6411,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private bool Try_BlockCallStmt_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return BlockCallStmt_Test0();
@@ -6023,13 +6419,13 @@ namespace Loyc.Ecs.Parser
 		private bool BlockCallStmt_Test0()
 		{
 			TokenType la0;
-			// Line 2001: ( TT.LParen TT.RParen (TT.LBrace TT.RBrace | TT.Id) | TT.LBrace TT.RBrace | TT.Forward )
+			// Line 2125: ( TT.LParen TT.RParen (TT.LBrace TT.RBrace | TT.Id) | TT.LBrace TT.RBrace | TT.Forward )
 			la0 = LA0;
 			if (la0 == TT.LParen) {
 				Skip();
 				if (!TryMatch((int) TT.RParen))
 					return false;
-				// Line 2001: (TT.LBrace TT.RBrace | TT.Id)
+				// Line 2125: (TT.LBrace TT.RBrace | TT.Id)
 				la0 = LA0;
 				if (la0 == TT.LBrace) {
 					Skip();

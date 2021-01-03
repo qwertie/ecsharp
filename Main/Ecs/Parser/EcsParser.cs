@@ -60,7 +60,7 @@ namespace Loyc.Ecs.Parser
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
-			_tentative = new TentativeState(false);
+			_tentativeErrors = new TentativeState(false);
 		}
 
 		// Normally we use prediction analysis to distinguish expressions from
@@ -71,7 +71,7 @@ namespace Loyc.Ecs.Parser
 		// And since parsing contexts can be nested, we need a way to save and
 		// restore state. TentativeState is used to save and restore error state,
 		// and TentativeResult encapsulates the result of a tentative parse.
-		protected TentativeState _tentative;
+		protected TentativeState _tentativeErrors;
 		public struct TentativeState
 		{
 			public readonly bool DeferErrors;
@@ -417,7 +417,7 @@ namespace Loyc.Ecs.Parser
 		protected LNode Error(string message, params object[] args)
 		{
 			Error(0, message, args);
-			if (_tentative.DeferErrors)
+			if (_tentativeErrors.DeferErrors)
 				return F.Missing;
 			else {
 				if (args.Length > 0)
@@ -447,9 +447,9 @@ namespace Loyc.Ecs.Parser
 		public IMessageSink CurrentSink(bool incErrorCount)
 		{
 			if (incErrorCount)
-				_tentative.LocalErrorCount++;
-			if (_tentative.DeferErrors)
-				return _tentative.DeferredErrors = _tentative.DeferredErrors ?? new MessageHolder();
+				_tentativeErrors.LocalErrorCount++;
+			if (_tentativeErrors.DeferErrors)
+				return _tentativeErrors.DeferredErrors = _tentativeErrors.DeferredErrors ?? new MessageHolder();
 			return base.ErrorSink;
 		}
 		
