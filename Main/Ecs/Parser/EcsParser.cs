@@ -293,7 +293,7 @@ namespace Loyc.Ecs.Parser
 			}
 			else if (LT0.Kind == TokenKind.OtherKeyword)
 			{
-				if (EasilyDetectedKeywordStatements.Contains(LA0) || LA0 == TT.Delegate && LA(1) != TT.LParen || (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
+				if (EasilyDetectedKeywordStatements.Contains(LA0) || LA0 == TT.Delegate && LA(1) != TT.LParen || (LA0 == TT.CheckedOrUnchecked) && LA(1) == TT.LBrace)
 				{
 					// `if` and `using` do not support word attributes:
 					// - `if`, because in the original plan EC# was to support a 
@@ -350,7 +350,7 @@ namespace Loyc.Ecs.Parser
 										// Use MethodOrPropertyName to detect all possible method, property, 
 										// and variable declarations (this incidentally matches some invalid 
 										// things like `bool operator true { get {} }`.)
-				if (Scan_DataType(false) && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
+				if (Scan_DataType() && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
 					return StmtCat.MethodOrPropOrVar;
 			}
 			if (haveNew)
@@ -612,6 +612,7 @@ namespace Loyc.Ecs.Parser
 			{ (int)TT.Set, EP.Assign },
 			{ (int)TT.CompoundSet, EP.Assign },
 			{ (int)TT.LambdaArrow, EP.Lambda },
+			{ (int)TT.Switch, EP.Switch },
 		};
 		static Precedence InfixPrecedenceOf(TokenType la)
 		{

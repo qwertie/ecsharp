@@ -100,7 +100,7 @@ namespace Loyc.Ecs.Parser
 		// Inside a LINQ expression, certain ContextualKeywords are to be treated
 		// as actual keywords. This flag enables that behavior.
 		_insideLinqExpr::bool;
-		
+
 		// Used to detect a specific ContextualKeyword; `@` renders it not-a-keyword
 		fn Is(li::int, value::Symbol)::bool
 		{
@@ -136,19 +136,22 @@ namespace Loyc.Ecs.Parser
 
 		// LLLPG is unaware of this overload, but when I write DataType(),
 		// it unwittingly invokes it.
-		@[public] fn DataType(afterAsOrIs: bool = false): LNode {
-			brack::opt!Token;
-			var type = DataType(afterAsOrIs, out brack);
-			if (brack != null) {
+		@[public] fn DataType(afterAs: bool = false): LNode {
+			majorDimension::opt!Token;
+			var type = DataType(afterAs, out majorDimension);
+			if (majorDimension != null) {
 				Error("A type name cannot include [array dimensions]. The square brackets should be empty.");
 			};
 			return type;
 		};
 
-		@[recognizer(fn Scan_DataType(afterAsOrIs::bool = false))]
-		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @{
-			(result:ComplexId() | result:TupleType() | error {$result = Error("Type expected");})
-			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
+		@[recognizer(fn Scan_DataType(afterAs::bool = false))]
+		rule DataType(afterAs::bool, out majorDimensionBrack::opt!Token)::LNode @{
+			(	result:ComplexId()
+			|	result:TupleType()
+			|	error {$result = Error("Type expected");}
+			)
+			TypeSuffixOpt(afterAs ? TypeParseMode.AfterAs : TypeParseMode.Normal, out majorDimensionBrack, ref result)
 		};
 		@[private]
 		rule TupleType()::LNode @{
@@ -240,7 +243,7 @@ namespace Loyc.Ecs.Parser
 
 		@[recognizer(fn Scan_TParamDeclOrDataType(declarationContext::bool))]
 		rule TParamDeclOrDataType(declarationContext::bool)::LNode @{
-			(	result:DataType(false)
+			(	result:DataType
 			/	&{declarationContext}
 				{attrs::LNodeList = default(LNodeList); startIndex::int = GetTextPosition(InputPosition);}
 				NormalAttributes(ref attrs)
@@ -284,8 +287,10 @@ namespace Loyc.Ecs.Parser
 
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
-		@[recognizer(fn Scan_TypeSuffixOpt(afterAsOrIs::bool))]
-		token TypeSuffixOpt(afterAsOrIs::bool, out dimensionBrack::opt!Token, ref e::LNode)::bool
+		public enum TypeParseMode { Normal = 0; AfterAs = 1; Pattern = 2 };
+
+		@[recognizer(fn Scan_TypeSuffixOpt(mode::TypeParseMode))]
+		token TypeSuffixOpt(mode::TypeParseMode, out dimensionBrack::opt!Token, ref e::LNode)::bool
 		@{
 			{count::int; result::bool = false;}
 			{dimensionBrack = null;}
@@ -320,17 +325,23 @@ namespace Loyc.Ecs.Parser
 				//       x as Foo? ! y       // Syntax error, ':' expected
 				//       (x as Foo?++)       // Invalid expression term ')'
 				//       x as Foo?.Value     // Parsed OK
-				//       x as Foo?[y]        // Parsed OK (whoa - looks like C# 6 introduced an ambiguity here with the `?[]` operator!)
+				//       x as Foo?[y]        // Parsed OK in C# 6 (whoa - ambiguous with the `?[]` operator!)
+				//                           // In C# 9 it's treated as type Foo?[] with an error that [] isn't empty
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.Literal 
-				                                    | TT.New | "(" | "{" | "+" | "-" | "*" | "&" | "!" | "~"
-				                                    | "==>" | "++,--" | "$" | "@" | LinqKeywordAsId))
-				       {e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
-			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
+				&{mode != TypeParseMode.Pattern}
+				t:="?" ( &{@[Local] mode == TypeParseMode.Normal} 
+				       | &!(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.Literal 
+				         | TT.New | "(" | "{" | "+" | "-" | "*" | "&" | "!" | "~"
+				         | "==>" | "++,--" | "$" | "@" | LinqKeywordAsId)
+				       )
+				{e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
+			|	&{mode != TypeParseMode.Pattern}
+				// Standard C# fails to parse "x as Foo * y", which suggests I can 
 				// unconditionally accept "*" as a pointer marker.
 				t:="*" {e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
-			|	t:="**" {
+			|	&{mode != TypeParseMode.Pattern}
+				t:="**" {
 					var ptr = F.Id(S._Pointer, t.StartIndex, t.EndIndex); 
 					e = F.Of(ptr, F.Of(ptr, e, e.Range.StartIndex, t.EndIndex - 1), e.Range.StartIndex, t.EndIndex);
 					result=true;
@@ -397,6 +408,8 @@ namespace Loyc.Ecs.Parser
 		// 5. Does "?" make a nullable type or a conditional operator?
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
+		// 6. Contextual word operators (`with` in C# 9)
+		//    Surprisingly, `(obj) with { A = 5 }` is a syntax error; `(obj) with` is detected as a cast.
 		
 		/// Below lowest precedence
 		@[#public, #static, #readonly] StartExpr::Precedence = (new Precedence(-100));
@@ -439,7 +452,7 @@ namespace Loyc.Ecs.Parser
 			|	r=NewExpr           // new ...
 			|	r=BracedBlock       // {...}
 			|	r=TokenLiteral
-			|	t:=(TT.Checked | TT.Unchecked)
+			|	t:=TT.CheckedOrUnchecked
 				args:="(" rp:=")"
 				{r = F.CallPrefix(t, ExprListInside(args), rp);}
 			|	t:=(TT.Typeof | TT.Sizeof)
@@ -456,8 +469,8 @@ namespace Loyc.Ecs.Parser
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
 			|	error 
-				greedy[ (~(","|";")) ]*
 				{r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
+				greedy[ (~(","|";")) ]*
 				/*hack: avoid long analysis-time bug*/ (_ =>{})
 			) {return r;}
 		};
@@ -701,7 +714,7 @@ namespace Loyc.Ecs.Parser
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
-		@[private] token SubExpr(context::Precedence, lambdaInFollowSet::bool = false)::LNode @{
+		@[private] token SubExpr(context::Precedence, inPattern::bool = false)::LNode @{
 			{Debug.Assert(context.CanParse(EP.Prefix));}
 			{prec::Precedence;}
 			e:=PrefixExpr
@@ -709,11 +722,12 @@ namespace Loyc.Ecs.Parser
 			(	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"|TT.BQString|TT.In )
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"
+				    | TT.Switch|TT.BQString|TT.In )
 				rhs:=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
 			|	// Lambda expression
-				&{@[Local] context.CanParse(prec=EP.Lambda) && !lambdaInFollowSet}
+				&{@[Local] context.CanParse(prec=EP.Lambda) && !inPattern}
 				op:="=>"
 				rhs:=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
@@ -725,7 +739,7 @@ namespace Loyc.Ecs.Parser
 			|	// 'as' or 'using' cast (special case: 'using instead of #using)
 				&{@[Local] context.CanParse(prec=EP.AsUsing)}
 				op:=(TT.As | TT.Using)
-				rhs:=DataType(true)
+				rhs:=DataType(afterAs<: true)
 				{e = F.CallInfixOp(e, op, rhs, op.Type() == TT.Using ? S.UsingCast : S.As);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
@@ -747,7 +761,7 @@ namespace Loyc.Ecs.Parser
 		@[private] token IsPattern(lhs::LNode, isTok::Token)::LNode // 'token' is used to avoid long analysis in LLLPG
 		@{
 			{argList::LNodeList = (new LNodeList(lhs));}
-			target:=DataType(true)
+			target:=DataType(afterAs<: true)
 			// C# 7 allows you to declare a variable as part of "is" expression
 			[targetName:=IdAtom {target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);}]?
 			{argList.Add(target);}
@@ -768,33 +782,61 @@ namespace Loyc.Ecs.Parser
 		/	result:ExprStartNNP(allowUnassignedVarDecl)
 		};
 
-		// ExprStart with No Named Parameter allowed
+		// ExprStart with No Named Parameter allowed: an expression that can start 
+		// with attributes [...], attribute keywords (out, ref, public, etc.), 
+		// and/or a variable declaration (Foo? x = null).
 		@[public] rule ExprStartNNP(allowUnassignedVarDecl::bool)::LNode @{
 			{var attrs = LNodeList.Empty;}
 			hasList:=NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
-			(SubExpr => {
-				// Unassigned var decl is allowed when attributes are present (e.g. out)
-				if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
+			(SubExpr => (
 
-				// PEG-style parse: try one thing, then the other.
-				expr::LNode;
-				var(result::TentativeResult, _::TentativeResult);
-				if (allowUnassignedVarDecl) {
-					expr = TryParseVarDecl(attrs, out result, allowUnassignedVarDecl)
-						?? TryParseNonVarDeclExpr(attrs, out result);
-				} else {
-					expr = TryParseNonVarDeclExpr(attrs, out result);
-					// If parsing as expression succeeds but it's an assignment with
-					// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
-					if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
-						InputPosition = result.OldPosition;
-						expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
+			// I had an idea to parse patterns as part of normal expr parsing. 
+			// On second thought we probably won't take this route.
+				// <s>Inside a pattern (C# 8/9 feature) we do not try to detect variable 
+				// declarations initially, instead the strategy is to detect them later, 
+				// after parsing the main part of the pattern; basically a pattern like 
+				// `Foo[,] x` is parsed as a suffix operator called `x` applied to the 
+				// expression `Foo[,]`. I never attempted a similar strategy for normal 
+				// expressions, perhaps because 
+				// 1. Word attributes create difficulties (e.g. `word word Foo x = default`,
+				//    and worst of all `new` e.g. `new Foo x = default`). 
+				//    These are not allowed in patterns (and arguably shouldn't be 
+				//    allowed in expressions either, but that's an argument for another day)
+				// 2. In a normal expression, `Foo.Bar ? x = 0` looks like the beginning of 
+				//    a ternary operator without special lookahead code to detect it as a 
+				//    variable declaration.
+				// 3. If `Foo[,]` is interpreted as a type, it is structurally different 
+				//    from `Foo[,]` interpreted as an expression. Must handle this somehow.</s>
+			//	&{_insidePattern}
+			//	// Must use (_* =>) because LLLPG is completely paralyzed while trying to 
+			//	// decide between (SubExpr | SubExpr). Surprisingly, even (SubExpr | _*)
+			//	// makes it lock up for over 30 seconds. This grammar is hard to debug tho.
+			//	(_* => result:SubExpr(StartExpr))
+			///	(_* => 
+				{
+					// Unassigned var decl is allowed when attributes are present (e.g. out)
+					if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
+
+					// PEG-style parse: try one thing, then the other.
+					expr::LNode;
+					var(tresult::TentativeResult, _::TentativeResult);
+					if (allowUnassignedVarDecl) {
+						expr = TryParseVarDecl(attrs, out tresult, allowUnassignedVarDecl)
+							?? TryParseNonVarDeclExpr(attrs, out tresult);
+					} else {
+						expr = TryParseNonVarDeclExpr(attrs, out tresult);
+						// If parsing as expression succeeds but it's an assignment with
+						// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
+						if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
+							InputPosition = tresult.OldPosition;
+							expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
+						};
 					};
-				};
-				expr ??= Commit(result);
-				return expr;
-			})
+					$result = expr ?? Commit(tresult);
+				}
+			//	)
+			))
 		};
 
 		// Helper functions for parsing normal expressions and var-decl expressions
@@ -1043,9 +1085,13 @@ namespace Loyc.Ecs.Parser
 		//   low precedence operators are not allowed, even in a switch expression:
 		//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
 		//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
-		//   `(object)x switch { (<= (2 & 3), 3) => 7 }` is a syntax error, although
+		//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
 		//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
 		//   `(object)x switch { <= 2 << 3 => 7 }`.
+		// - An expression of the form `(Int32) x` is tricky, since it matches 
+		//   positional_pattern and constant_expression equally well. C# treats this 
+		//   as constant_pattern, but superficially similar patterns like 
+		//   `(Int32 + 1) x` are positional_patterns.
 		// - Postfix `++` and `--` cause syntax errors, so I could not find out
 		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
 		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
@@ -1123,67 +1169,122 @@ namespace Loyc.Ecs.Parser
 		// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
 		// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
 		// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+		// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))```
+		// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
 		// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
 		// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
-		// | `List<T> { Count: 3 }`   | ```#var(List!T, list)```
 		// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
 		// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
 		// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+		// | `not null`               | ```@'not(null)```
+		// | `not not null`           | ```@'not(@'not(null))```
+		// | `>= 'a' and <= 'z'`      | ```@'and(@`'>=`('a'), @`'<=`('z'))```
+		// | `0 or 1`                 | ```@'or(0, 1)```
+		// | `string or List<char>()` | ```@'or(#string, @'deconstruct(List!#char()))```
 
 		token Pattern(ctx::Precedence)::LNode @{
 			result:ConjunctivePattern(ctx)
 			(	&{Is($LI, @@or)} op:TT.Id rhs:ConjunctivePattern(ctx)
-				{ result = F.CallInfixOp(result, op, rhs); }
+				{ result = F.CallInfixOp(result, op, rhs, S.PatternOr); }
 			)*
 		};
 
 		rule ConjunctivePattern(ctx::Precedence)::LNode @{
 			result:NegatedPattern(ctx)
-			(	&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern(ctx)
-				{ result = F.CallInfixOp(result, op, rhs); }
+			greedy(
+				&{Is($LI, @@and)} op:TT.Id rhs:NegatedPattern(ctx)
+				{ result = F.CallInfixOp(result, op, rhs, S.PatternAnd); }
 			)*
 		};
 		
 		rule NegatedPattern(ctx::Precedence)::LNode @{
 			(	&{Is($LI, @@not)} not:TT.Id NegatedPattern(ctx)
-				{ result = F.CallPrefixOp(not, $NegatedPattern); }
+				{ result = F.CallPrefixOp(not, $NegatedPattern, S.PatternNot); }
 			/	result:PrimaryPattern(ctx)
 			)
 		};
 
-		@[recognizer { fn Scan_PrimaryPattern(context::Precedence); }]
+		@[LL(1)]
 		rule PrimaryPattern(context::Precedence)::LNode @{
-			result:NonExprPattern
-			//(	result:RelationalPattern(context)
-			///	ParenOrBracePattern => result:ParenOrBracePattern
-			///	// As of 2021/01 LLLPG doesn't invoke syntactic predicates inside 
-			//	// recognizers, which can cause occasional failures to parse. 
-			//	// TODO find an example
-			//	&TypedPattern IdAtom => result:TypedPattern
-			///	SubExprInPattern(context)
-			//	//{ result:SubExpr(context, lambdaInFollowSet: true) }
-			///	error { Error("Expected a pattern"); } _
-			//)
+			(	result:RelationalPattern(context)
+			/	// As of 2021/01 LLLPG doesn't invoke syntactic predicates inside 
+				// recognizers, which must be kept in mind during grammar design.
+				&RecursivePattern result:RecursivePattern
+			/	default result:SubExprInPattern(context)
+			)
 		};
 
-		rule NonExprPattern()::LNode @{
-			( ("("|"{"|DataType) => ) // require one of the first three parts
-			
+		token RecursivePattern()::LNode @{
+			// Rule appears to be nullable; don't let LLLPG believe it
+			(("("|"{"|IdAtom) => recognizer({ startPosition := InputPosition }))
+
 			(	// var variableName or var(...)
 				&{Is($LI, @@var)} var:=TT.ContextualKeyword
 				VarDesignation
 				{ $result = F.Call(S.Var, MissingHere(), $VarDesignation, var.StartIndex, $VarDesignation.Range.EndIndex); }
 			
-			|	// other non-expression, non-relational patterns
-				( type:DataType(afterAsOrIs<: true) )?  { $result = type ?? F.Tuple().Target; }
-				(
-					"(" ")"   { $result = F.Call(S.Deconstruct, F.CallPrefix(type, SubpatternsIn($"(", true), $")")); }
-					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange(type.Range.StartIndex, $"}".EndIndex); } )?
+			/	// other non-expression, non-relational patterns
+				greedy( type:DataTypeInPattern )?  { $result = type ?? F.Tuple().Target; }
+				greedy(
+					"(" ")" { var subpats = SubpatternsIn($"(", true); }
+					nonrecognizer
+					(	// Detect parenthesized_pattern (no-op)
+						&{type == null && subpats.Count == 1}
+						&!IdAtomButNotPatternKeyword
+						(~("{")|EOF)
+						=>
+						{ $result = F.InParens($"(", subpats[0], $")"); }
+					/	_? => { $result = F.Call(S.Deconstruct, F.CallPrefix($result, subpats, $")")); }
+					)
+					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange($result.Range.StartIndex, $"}".EndIndex); } )?
 				|	"{" "}"   { $result = F.CallBrackets(S.Deconstruct, $"{", SubpatternsIn($"{").Insert(0, F.Call(result)), $"}"); }
 				)?
-				( name:=IdAtom { result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex); } )?
+				(
+					name:=IdAtomButNotPatternKeyword
+					{ result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex); } 
+				)?
+				{
+					// If the complete pattern looks like a cast, transform it INTO a cast.
+					if $"{".TypeInt == 0 { // no braces
+						matchCode ($result) {
+							// The input will look like (Complex.Identifier) name, but produces
+							// the tree #var(@'deconstruct(@'tuple(Complex.Identifier), name)
+							#var(@'deconstruct(@'tuple($patternInParens)), $name') => {
+								if EcsValidators.IsComplexIdentifier(patternInParens) {
+									$result = F.Call(S.Cast, name', patternInParens);
+								};
+							};
+						};
+					};
+				}
+			)
+
+			// PrimaryPattern only invokes this rule if its recognizer (&RecursivePattern) 
+			// approves. Various expressions like `(Foo) + 1` initially look like patterns, 
+			// but aren't, so revoke approval if the ending is wrong. This check is designed 
+			// with a naive assumption that the current precedence is EP.Is, which is true 
+			// after "is" but not in a switch case. C# 9 rejects an expression that contains 
+			// a low-precedence operator, such as `x switch { <= 2 & 3 => 4 }`, with a 
+			// syntax error, so apparently it is doing something similar to this internally.
+			recognizer(
+				{	// Reject if all parts are missing
+					if startPosition == InputPosition { return false; };
+				}
+				// Reject if followed by high-precedence binary/suffix operator, or a literal,
+				// because these are not legal after a recursive pattern but might be legal as
+				// part of a constant_pattern that initially resembles a recursive pattern.
+				(	("<=>"|"``"|"+"|"-"|"~"|"*"|"/,%"|TT.Switch|".."|"**"|"("|"["|"!"|"++,--"
+					|"."|"::"|"=:"|"->"|TT.Typeof|TT.CheckedOrUnchecked|TT.New|TT.Literal
+					)                                      { return false; }
+				/	("<" "<" | ">" ">")                    { return false; }
+				/	default                                { return true; }
+				)
 			)
 			{ return result ?? MissingHere(); }
+		};
+
+		rule IdAtomButNotPatternKeyword::LNode @{
+			&!{@[Hoist] Is($LI, @@and) || Is($LI, @@or) || Is($LI, @@when)} result:IdAtom
 		};
 
 		@[private]
@@ -1218,33 +1319,31 @@ namespace Loyc.Ecs.Parser
 		};
 		rule SubPattern()::LNode @{
 			(	param:TT.Id ":" Pattern(EP.IfElse) { $result = F.CallInfixOp(F.Id(param), $":", $Pattern, S.NamedArg); }
-			|	result:Pattern(EP.IfElse)
+			/	result:Pattern(EP.IfElse)
 			)
 		};
 
-		/*@[private]
-		rule RelationalPattern(ctx::Precedence)::LNode @{
+		@[private]
+		rule RelationalPattern(context::Precedence)::LNode @{
 			op:("<"|">"|"==,!="|"<=,>="|"<=>")
-			e:SubExprInPattern(EP.Shift)
+			e:SubExprInPattern(context)
 			{return F.CallPrefixOp(op, e);}
 		};
 
 		rule SubExprInPattern(context::Precedence)::LNode @{
-			// SubExpr is too complex to include in the recognizer for Pattern
-			// (and the generated code wouldn't work right anyway)
-			nonrecognizer(result:SubExpr(context, lambdaInFollowSet<: true))
-			recognizer(_)
+			result:SubExpr(context, inPattern<: true)
 		};
 
-		rule TypedPattern()::LNode @{
-			id:TT.Id { $result=F.Id(id); }
+
+		@[recognizer(fn Scan_DataTypeInPattern())]
+		rule DataTypeInPattern()::LNode @{
+			// Tuple types are not allowed in this context
+			// (so that things which look like tuples are parsed as patterns)
+			result:ComplexId()
+			TypeSuffixOpt(TypeParseMode.Pattern, out _, ref result)
 		};
 
-		rule ParenOrBracePattern()::LNode @{
-			"(" ")" {$result=F.Tuple(ExprListInside($"("));}
-		};
-		
-		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, lambdaInFollowSet<: true) };*/
+		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, inPattern<: true) };
 
 
 		// ---------------------------------------------------------------------
@@ -1377,7 +1476,7 @@ namespace Loyc.Ecs.Parser
 		};
 		
 		@[private] rule LinqWhere::LNode @{
-			&{@[Hoist] Is($LI, @@where)} kw:=TT.LinqKeyword e:=ExprStart(false)
+			&{@[Hoist] Is($LI, @@where)} kw:=TT.ContextualKeyword e:=ExprStart(false)
 			{return F.CallPrefixOp(S.Where, kw, e);}
 		};
 		
@@ -1835,7 +1934,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule WhereClause::KeyValuePair!(Symbol, LNode) @{
-			&{@[Hoist] Is($LI, @@where)} where:=TT.LinqKeyword T:=(TT.Id|TT.ContextualKeyword|TT.LinqKeyword) ":" 
+			&{@[Hoist] Is($LI, @@where)} where:=TT.ContextualKeyword T:=(TT.Id|TT.ContextualKeyword|TT.LinqKeyword) ":" 
 			{var constraints = LNodeList.Empty;}
 			constraints+=WhereConstraint
 			("," constraints+=WhereConstraint)*
@@ -2164,6 +2263,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// break, continue, return, throw --------------------------------------
+		// (these can be expressions as well as statements)
 
 		@[LL(1)]
 		@[private] rule ReturnBreakContinueThrow(startIndex::int)::LNode @{
@@ -2176,6 +2276,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// goto, goto case -----------------------------------------------------
+		// (these can be expressions as well as statements)
 
 		@[private] rule GotoStmt(startIndex::int)::LNode @{
 			kw:=TT.Goto 
@@ -2203,7 +2304,7 @@ namespace Loyc.Ecs.Parser
 		// checked & unchecked -------------------------------------------------
 
 		@[private] rule CheckedOrUncheckedStmt(startIndex::int)::LNode @{
-			kw:=(TT.Checked | TT.Unchecked)
+			kw:=TT.CheckedOrUnchecked
 			bb:=BracedBlock
 			{return F.Call(kw.Value -> Symbol, bb, startIndex, bb.Range.EndIndex, kw.StartIndex, kw.EndIndex);}
 		};

@@ -270,7 +270,7 @@ namespace Loyc.Ecs.Parser
 			/ "case"       (EndId=>{_type=TT.Case;        _value = S.Case;})
 			/ "catch"      (EndId=>{_type=TT.Catch;       _value = S.Catch;})
 			/ "char"       (EndId=>{_type=TT.TypeKeyword; _value = S.Char;})
-			/ "checked"    (EndId=>{_type=TT.Checked;     _value = S.Checked;})
+			/ "checked"    (EndId=>{_type=TT.CheckedOrUnchecked; _value = S.Checked;})
 			/ "class"      (EndId=>{_type=TT.Class;       _value = S.Class;})
 			/ "const"      (EndId=>{_type=TT.AttrKeyword; _value = S.Const;})
 			/ "continue"   (EndId=>{_type=TT.Continue;    _value = S.Continue;})
@@ -330,7 +330,7 @@ namespace Loyc.Ecs.Parser
 			/ "typeof"     (EndId=>{_type=TT.Typeof;      _value = S.Typeof;})
 			/ "uint"       (EndId=>{_type=TT.TypeKeyword; _value = S.UInt32;})
 			/ "ulong"      (EndId=>{_type=TT.TypeKeyword; _value = S.UInt64;})
-			/ "unchecked"  (EndId=>{_type=TT.Unchecked;   _value = S.Unchecked;})
+			/ "unchecked"  (EndId=>{_type=TT.CheckedOrUnchecked; _value = S.Unchecked;})
 			/ "unsafe"     (EndId=>{_type=TT.AttrKeyword; _value = S.Unsafe;})
 			/ "ushort"     (EndId=>{_type=TT.TypeKeyword; _value = S.UInt16;})
 			/ "using"      (EndId=>{_type=TT.Using;       _value = S.UsingStmt;})
@@ -365,8 +365,9 @@ namespace Loyc.Ecs.Parser
 			/ "assembly"              (EndId=>{_type=TT.ContextualKeyword; _value = _assembly;})
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
 			/ "from"                  (EndId=>{_type=TT.LinqKeyword;       _value = _from;})
-			/ "where"                 (EndId=>{_type=TT.LinqKeyword;       _value = _where;})
+			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
 			/ "when"                  (EndId=>{_type=TT.ContextualKeyword; _value = _when;})
+			/ "with"                  (EndId=>{_type=TT.ContextualKeyword; _value = _with;})
 			/ "select"                (EndId=>{_type=TT.LinqKeyword;       _value = _select;})
 			/ "join"                  (EndId=>{_type=TT.LinqKeyword;       _value = _join;})
 			/ "on"                    (EndId=>{_type=TT.LinqKeyword;       _value = _on;})
@@ -392,6 +393,7 @@ namespace Loyc.Ecs.Parser
 		
 		@[static, readonly] _where::Symbol = GSymbol.Get("where");
 		@[static, readonly] _when::Symbol = GSymbol.Get("when");
+		@[static, readonly] _with::Symbol = GSymbol.Get("with");
 		@[static, readonly] _select::Symbol = GSymbol.Get("select");
 		@[static, readonly] _from::Symbol = GSymbol.Get("from");
 		@[static, readonly] _join::Symbol = GSymbol.Get("join");

@@ -24,7 +24,11 @@ namespace Loyc.Ecs
 		// Proposed: https://github.com/dotnet/csharplang/issues/74
 		public static readonly Symbol ForwardPipeArrow = GSymbol.Get("'|>"); //!< @`'|>`(a, b) <=> a |> b
 		public static readonly Symbol NullForwardPipeArrow = GSymbol.Get("'?|>"); //!< @`'?|>`(a, b) <=> a ?|> b
-		public static readonly Symbol Deconstruct = GSymbol.Get("#deconstruct"); //!< @'is(x, #deconstruct(Foo(@`'>`(7)), P ::= 0)) <=> x is Foo(> 7) { P: 0 }
+		public static readonly Symbol Deconstruct = GSymbol.Get("'deconstruct"); //!< @'is(x, #deconstruct(Foo(@`'>`(7)), P ::= 0)) <=> x is Foo(> 7) { P: 0 }
+		public static readonly Symbol PatternNot = GSymbol.Get("'not"); //!< @'not(null) <=> not null
+		public static readonly Symbol PatternAnd = GSymbol.Get("'and"); //!< @'and(@`'>=`('a'), @`'<=`('z')) <=> >= 'a' and <= 'z'
+		public static readonly Symbol PatternOr = GSymbol.Get("'or"); //!< @'or(@'or(1, 3), @`'<`(0)) <=> 1 or 3 or < 0
+
 
 		public static new readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
 		public static new readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer

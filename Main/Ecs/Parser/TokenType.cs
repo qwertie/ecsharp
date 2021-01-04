@@ -41,10 +41,10 @@ namespace Loyc.Ecs.Parser
 		RBrace    = TokenKind.RBrace,
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
-		
-		Break    = TokenKind.OtherKeyword + 1,
-		Case     = TokenKind.OtherKeyword + 2,
-		Checked  = TokenKind.OtherKeyword + 3,
+
+		CheckedOrUnchecked = TokenKind.OtherKeyword + 1,
+		Break    = TokenKind.OtherKeyword + 2,
+		Case     = TokenKind.OtherKeyword + 3,
 		Class    = TokenKind.OtherKeyword + 4,
 		Continue = TokenKind.OtherKeyword + 5,
 		Default  = TokenKind.OtherKeyword + 6,
@@ -65,9 +65,8 @@ namespace Loyc.Ecs.Parser
 		Switch   = TokenKind.OtherKeyword + 21,
 		Throw    = TokenKind.OtherKeyword + 22,
 		Try      = TokenKind.OtherKeyword + 23,
-		Unchecked= TokenKind.OtherKeyword + 24,
-		Using    = TokenKind.OtherKeyword + 25,
-		While    = TokenKind.OtherKeyword + 26,
+		Using    = TokenKind.OtherKeyword + 24,
+		While    = TokenKind.OtherKeyword + 25,
 
 		Operator = TokenKind.OtherKeyword + 32,
 		Sizeof   = TokenKind.OtherKeyword + 33,
@@ -225,45 +224,46 @@ namespace Loyc.Ecs.Parser
 						Debug.Fail("Unexpected value for " + t.Type());
 						return (t.Value ?? "(null)").ToString();
 					}
-				case TT.Break:     return "break";    
-				case TT.Case:    	return "case";     
-				case TT.Checked:	return "checked";  
-				case TT.Class:		return "class";    
-				case TT.Continue:	return "continue"; 
-				case TT.Default:	return "default";  
-				case TT.Delegate:	return "delegate"; 
-				case TT.Do:		return "do";       
-				case TT.Enum:		return "enum";     
-				case TT.Event:		return "event";    
-				case TT.Fixed:		return "fixed";    
-				case TT.For:		return "for";      
-				case TT.Foreach:	return "foreach";  
-				case TT.Goto:		return "goto";     
-				case TT.If:		return "if";       
-				case TT.Interface:	return "interface";
-				case TT.Lock:		return "lock";     
-				case TT.Namespace:	return "namespace";
-				case TT.Return:	return "return";   
-				case TT.Struct:	return "struct";   
-				case TT.Switch:	return "switch";   
-				case TT.Throw:		return "throw";    
-				case TT.Try:		return "try";      
-				case TT.Unchecked:	return "unchecked";
-				case TT.Using:		return "using";    
-				case TT.While:		return "while";    
-										   
-				case TT.Operator:  return "operator"; 
-				case TT.Sizeof:    return "sizeof";   
-				case TT.Typeof:    return "typeof";   
-				case TT.Else:	    return "else";     
-				case TT.Catch:     return "catch";       
-				case TT.Finally:  	return "finally";  
-				case TT.In:       	return "in";       
-				case TT.As:       	return "as";       
-				case TT.Is:       	return "is";       
-				case TT.New:      	return "new";      
-				case TT.Out:      	return "out";
-				case TT.Stackalloc:return "stackalloc";
+				case TT.CheckedOrUnchecked:
+					Debug.Assert(LNode.IsSpecialName((Symbol)t.Value));
+					return ((Symbol)t.Value).Name.Substring(1);
+				case TT.Break:       return "break";    
+				case TT.Case:        return "case";     
+				case TT.Class:       return "class";    
+				case TT.Continue:    return "continue"; 
+				case TT.Default:     return "default";  
+				case TT.Delegate:    return "delegate"; 
+				case TT.Do:          return "do";       
+				case TT.Enum:        return "enum";     
+				case TT.Event:       return "event";    
+				case TT.Fixed:       return "fixed";    
+				case TT.For:         return "for";      
+				case TT.Foreach:     return "foreach";  
+				case TT.Goto:        return "goto";     
+				case TT.If:          return "if";       
+				case TT.Interface:   return "interface";
+				case TT.Lock:        return "lock";     
+				case TT.Namespace:   return "namespace";
+				case TT.Return:      return "return";   
+				case TT.Struct:      return "struct";   
+				case TT.Switch:      return "switch";   
+				case TT.Throw:       return "throw";    
+				case TT.Try:         return "try";      
+				case TT.Using:       return "using";    
+				case TT.While:       return "while";    
+                                 
+				case TT.Operator:    return "operator"; 
+				case TT.Sizeof:      return "sizeof";   
+				case TT.Typeof:      return "typeof";   
+				case TT.Else:        return "else";     
+				case TT.Catch:       return "catch";       
+				case TT.Finally:     return "finally";  
+				case TT.In:          return "in";       
+				case TT.As:          return "as";       
+				case TT.Is:          return "is";       
+				case TT.New:         return "new";      
+				case TT.Out:         return "out";
+				case TT.Stackalloc:  return "stackalloc";
 
 				case TT.PPif       : return "#if";
 				case TT.PPelse     : return "#else";

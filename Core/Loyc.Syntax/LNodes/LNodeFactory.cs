@@ -530,6 +530,17 @@ namespace Loyc.Syntax
 
 		#endregion
 
+		#region NamedArg() (for named arguments)
+
+		public LNode NamedArg(string name, LNode arg, int startIndex = -1, int endIndex = -1)
+			=> Call(S.NamedArg, LNode.Id(name), arg, startIndex, endIndex);
+		public LNode NamedArg(Symbol name, LNode arg, int startIndex = -1, int endIndex = -1)
+			=> Call(S.NamedArg, LNode.Id(name), arg, startIndex, endIndex);
+		public LNode NamedArg(LNode name, LNode arg)
+			=> Call(S.NamedArg, name, arg, name.Range.StartIndex, Max(arg.Range.EndIndex, name.Range.EndIndex));
+
+		#endregion
+
 		#region Braces()
 
 		public LNode Braces(params LNode[] contents)
@@ -718,7 +729,11 @@ namespace Loyc.Syntax
 		}
 		public LNode InParens(LNode inner, int startIndex, int endIndex)
 		{
-			return LNodeExt.InParens(inner, File, startIndex, endIndex);
+			return LNodeExt.InParens(inner, File, startIndex, Max(endIndex, startIndex));
+		}
+		public LNode InParens(IndexRange leftParen, LNode inner, IndexRange rightParen)
+		{
+			return LNodeExt.InParens(inner, File, leftParen.StartIndex, Max(rightParen.EndIndex, inner.Range.EndIndex));
 		}
 
 		public LNode Result(LNode expr)

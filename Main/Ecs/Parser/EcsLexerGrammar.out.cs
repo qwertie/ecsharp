@@ -25,7 +25,7 @@ namespace Loyc.Ecs.Parser
 			_allowPPAt = InputPosition;
 		}
 		bool AllowPP { get { return _startPosition == _allowPPAt; } }
-	
+
 		static readonly Symbol _var = GSymbol.Get("var");
 		static readonly Symbol _dynamic = GSymbol.Get("dynamic");
 		static readonly Symbol _trait = GSymbol.Get("trait");
@@ -33,9 +33,10 @@ namespace Loyc.Ecs.Parser
 		static readonly Symbol _assembly = GSymbol.Get("assembly");
 		static readonly Symbol _module = GSymbol.Get("module");
 		static readonly Symbol _await = GSymbol.Get("await");
-	
+
 		static readonly Symbol _where = GSymbol.Get("where");
 		static readonly Symbol _when = GSymbol.Get("when");
+		static readonly Symbol _with = GSymbol.Get("with");
 		static readonly Symbol _select = GSymbol.Get("select");
 		static readonly Symbol _from = GSymbol.Get("from");
 		static readonly Symbol _join = GSymbol.Get("join");
@@ -48,7 +49,7 @@ namespace Loyc.Ecs.Parser
 		static readonly Symbol _descending = GSymbol.Get("descending");
 		static readonly Symbol _group = GSymbol.Get("group");
 		static readonly Symbol _by = GSymbol.Get("by");
-	
+
 		private void DotIndent()
 		{
 			int la0, la1;
@@ -91,7 +92,7 @@ namespace Loyc.Ecs.Parser
 			_indentLevel = MeasureIndent(_indent = CharSource.Slice(startPosition, InputPosition - startPosition));
 			#line default
 		}
-	
+
 		new private void Spaces()
 		{
 			int la0;
@@ -117,7 +118,7 @@ namespace Loyc.Ecs.Parser
 			}
 			#line default
 		}
-	
+
 		private void UTF_BOM()
 		{
 			Skip();
@@ -129,7 +130,7 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
-	
+
 		private void SLComment()
 		{
 			int la0;
@@ -147,7 +148,7 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
-	
+
 		private 
 		void MLComment()
 		{
@@ -195,9 +196,9 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
-	
-			// Numbers ---------------------------------------------------------------
-	
+		
+		// Numbers ---------------------------------------------------------------
+
 		private void DecDigits()
 		{
 			int la0, la1;
@@ -233,7 +234,7 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 		static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
-	
+
 		private void HexDigit()
 		{
 			Match(HexDigit_set0);
@@ -244,7 +245,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
-	
+
 		private void HexDigits()
 		{
 			int la0, la1;
@@ -318,7 +319,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
-	
+
 		private void BinDigits()
 		{
 			int la0;
@@ -349,7 +350,7 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 		}
-	
+
 		private void DecNumber()
 		{
 			int la0, la1;
@@ -396,7 +397,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		private void HexNumber()
 		{
 			int la0, la1;
@@ -440,7 +441,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		private void BinNumber()
 		{
 			int la0, la1;
@@ -489,7 +490,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
-	
+
 		private void Number()
 		{
 			int la0;
@@ -583,9 +584,9 @@ namespace Loyc.Ecs.Parser
 			ParseNumberValue();
 			#line default
 		}
-	
-			// Strings ---------------------------------------------------------------
-	
+		
+		// Strings ---------------------------------------------------------------
+
 		private void SQString()
 		{
 			int la0;
@@ -615,7 +616,7 @@ namespace Loyc.Ecs.Parser
 			ParseSQStringValue();
 			#line default
 		}
-	
+
 		private void DQString()
 		{
 			int la0, la1;
@@ -676,7 +677,7 @@ namespace Loyc.Ecs.Parser
 			ParseStringValue();
 			#line default
 		}
-	
+
 		private 
 		void TQString()
 		{
@@ -765,7 +766,7 @@ namespace Loyc.Ecs.Parser
 			ParseStringValue();
 			#line default
 		}
-	
+
 		//@[private] rule BQStringV @{ {_verbatim=true;}
 		//	'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
 		//};
@@ -792,7 +793,7 @@ namespace Loyc.Ecs.Parser
 			}
 			Match('`');
 		}
-	
+
 		private void BQString()
 		{
 			#line 140 "EcsLexerGrammar.les"
@@ -803,14 +804,14 @@ namespace Loyc.Ecs.Parser
 			ParseBQStringValue();
 			#line default
 		}
-	
-			// Identifiers and Symbols -----------------------------------------------
-	
+		
+		// Identifiers and Symbols -----------------------------------------------
+
 		private void IdStartChar()
 		{
 			Skip();
 		}
-	
+
 		private 
 		void IdUniLetter()
 		{
@@ -850,7 +851,7 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 		static readonly HashSet<int> IdContChars_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z');
-	
+
 		private 
 		void IdContChars()
 		{
@@ -920,7 +921,7 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 		}
-	
+
 		private void NormalId()
 		{
 			int la0;
@@ -932,14 +933,14 @@ namespace Loyc.Ecs.Parser
 				IdUniLetter();
 			IdContChars();
 		}
-	
+
 		private void CommentStart()
 		{
 			Match('/');
 			Match('*', '/');
 		}
 		static readonly HashSet<int> FancyId_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
-	
+
 		private 
 		bool FancyId()
 		{
@@ -1078,7 +1079,7 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z', '', '﻾');
-	
+
 		private void Symbol()
 		{
 			int la0, la1;
@@ -1106,7 +1107,7 @@ namespace Loyc.Ecs.Parser
 			ParseSymbolValue(isBQ);
 			#line default
 		}
-	
+
 		private // detect completeness of \uABCD
 		void Id()
 		{
@@ -1186,14 +1187,14 @@ namespace Loyc.Ecs.Parser
 			#line default
 		}
 		static readonly HashSet<int> LettersOrPunc_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', '_', 'a', 'z', '|', '|', '~', '~');
-	
+
 		private void LettersOrPunc()
 		{
 			Match(LettersOrPunc_set0);
 		}
-	
-			// Punctuation & operators -----------------------------------------------
-	
+		
+		// Punctuation & operators -----------------------------------------------
+
 		private void Comma()
 		{
 			Skip();
@@ -1203,7 +1204,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.Comma;
 			#line default
 		}
-	
+
 		private void Semicolon()
 		{
 			Skip();
@@ -1213,7 +1214,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.Semicolon;
 			#line default
 		}
-	
+
 		private void At()
 		{
 			Skip();
@@ -1223,7 +1224,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.AtSign;
 			#line default
 		}
-	
+
 		private void Operator()
 		{
 			int la1, la2;
@@ -1864,9 +1865,9 @@ namespace Loyc.Ecs.Parser
 				}
 			} while (false);
 		}
-	
-			// Shebang ---------------------------------------------------------------
-	
+		
+		// Shebang ---------------------------------------------------------------
+
 		private void Shebang()
 		{
 			int la0;
@@ -1888,15 +1889,15 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
-	
-			// Keywords --------------------------------------------------------------
+		
+		// Keywords --------------------------------------------------------------
 		static readonly HashSet<int> IdOrKeyword_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
-	
+
 		private 
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
-			// Line 264: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId => {..} / [a] [s] EndId => {..} / [b] [a] [s] [e] EndId => {..} / [b] [o] [o] [l] EndId => {..} / [b] [r] [e] [a] [k] EndId => {..} / [b] [y] [t] [e] EndId => {..} / [c] [a] [s] [e] EndId => {..} / [c] [a] [t] [c] [h] EndId => {..} / [c] [h] [a] [r] EndId => {..} / [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [c] [l] [a] [s] [s] EndId => {..} / [c] [o] [n] [s] [t] EndId => {..} / [c] [o] [n] [t] [i] [n] [u] [e] EndId => {..} / [d] [e] [c] [i] [m] [a] [l] EndId => {..} / [d] [e] [f] [a] [u] [l] [t] EndId => {..} / [d] [e] [l] [e] [g] [a] [t] [e] EndId => {..} / [d] [o] [u] [b] [l] [e] EndId => {..} / [d] [o] EndId => {..} / [e] [l] [s] [e] EndId => {..} / [e] [n] [u] [m] EndId => {..} / [e] [v] [e] [n] [t] EndId => {..} / [e] [x] [p] [l] [i] [c] [i] [t] EndId => {..} / [e] [x] [t] [e] [r] [n] EndId => {..} / [f] [a] [l] [s] [e] EndId => {..} / [f] [i] [n] [a] [l] [l] [y] EndId => {..} / [f] [i] [x] [e] [d] EndId => {..} / [f] [l] [o] [a] [t] EndId => {..} / [f] [o] [r] [e] [a] [c] [h] EndId => {..} / [f] [o] [r] EndId => {..} / [g] [o] [t] [o] EndId => {..} / [i] [f] EndId => {..} / [i] [m] [p] [l] [i] [c] [i] [t] EndId => {..} / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId => {..} / [i] [n] [t] [e] [r] [n] [a] [l] EndId => {..} / [i] [n] [t] EndId => {..} / [i] [n] EndId => {..} / [i] [s] EndId => {..} / [l] [o] [c] [k] EndId => {..} / [l] [o] [n] [g] EndId => {..} / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId => {..} / [n] [e] [w] EndId => {..} / [n] [u] [l] [l] EndId => {..} / [o] [b] [j] [e] [c] [t] EndId => {..} / [o] [p] [e] [r] [a] [t] [o] [r] EndId => {..} / [o] [u] [t] EndId => {..} / [o] [v] [e] [r] [r] [i] [d] [e] EndId => {..} / [p] [a] [r] [a] [m] [s] EndId => {..} / [p] [r] [i] [v] [a] [t] [e] EndId => {..} / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId => {..} / [p] [u] [b] [l] [i] [c] EndId => {..} / [r] [e] [a] [d] [o] [n] [l] [y] EndId => {..} / [r] [e] [f] EndId => {..} / [r] [e] [t] [u] [r] [n] EndId => {..} / [s] [b] [y] [t] [e] EndId => {..} / [s] [e] [a] [l] [e] [d] EndId => {..} / [s] [h] [o] [r] [t] EndId => {..} / [s] [i] [z] [e] [o] [f] EndId => {..} / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId => {..} / [s] [t] [a] [t] [i] [c] EndId => {..} / [s] [t] [r] [i] [n] [g] EndId => {..} / [s] [t] [r] [u] [c] [t] EndId => {..} / [s] [w] [i] [t] [c] [h] EndId => {..} / [t] [h] [i] [s] EndId => {..} / [t] [h] [r] [o] [w] EndId => {..} / [t] [r] [u] [e] EndId => {..} / [t] [r] [y] EndId => {..} / [t] [y] [p] [e] [o] [f] EndId => {..} / [u] [i] [n] [t] EndId => {..} / [u] [l] [o] [n] [g] EndId => {..} / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [u] [n] [s] [a] [f] [e] EndId => {..} / [u] [s] [h] [o] [r] [t] EndId => {..} / [u] [s] [i] [n] [g] EndId => {..} / [v] [i] [r] [t] [u] [a] [l] EndId => {..} / [v] [o] [l] [a] [t] [i] [l] [e] EndId => {..} / [v] [o] [i] [d] EndId => {..} / [w] [h] [i] [l] [e] EndId => {..} / &{AllowPP} [#] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [l] [s] [e] EndId => {..} / &{AllowPP} [#] [e] [l] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId => {..} / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId => {..} / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId => {..} / &{AllowPP} [#] [l] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [n] [u] [l] [l] [a] [b] [l] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] EndId => RestOfPPLine / &{AllowPP} [#] [l] [o] [a] [d] EndId => RestOfPPLine / &{AllowPP} [#] [c] [l] [s] EndId => {..} / &{AllowPP} [#] [c] [l] [e] [a] [r] EndId => {..} / &{AllowPP} [#] [h] [e] [l] [p] EndId => {..} / &{AllowPP} [#] [r] [e] [s] [e] [t] EndId => {..} / [v] [a] [r] EndId => {..} / [d] [y] [n] [a] [m] [i] [c] EndId => {..} / [t] [r] [a] [i] [t] EndId => {..} / [a] [l] [i] [a] [s] EndId => {..} / [a] [s] [s] [e] [m] [b] [l] [y] EndId => {..} / [m] [o] [d] [u] [l] [e] EndId => {..} / [f] [r] [o] [m] EndId => {..} / [w] [h] [e] [r] [e] EndId => {..} / [w] [h] [e] [n] EndId => {..} / [s] [e] [l] [e] [c] [t] EndId => {..} / [j] [o] [i] [n] EndId => {..} / [o] [n] EndId => {..} / [e] [q] [u] [a] [l] [s] EndId => {..} / [i] [n] [t] [o] EndId => {..} / [l] [e] [t] EndId => {..} / [o] [r] [d] [e] [r] [b] [y] EndId => {..} / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [g] [r] [o] [u] [p] EndId => {..} / [b] [y] EndId => {..} / [a] [w] [a] [i] [t] EndId => {..} / Id )
+			// Line 264: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId => {..} / [a] [s] EndId => {..} / [b] [a] [s] [e] EndId => {..} / [b] [o] [o] [l] EndId => {..} / [b] [r] [e] [a] [k] EndId => {..} / [b] [y] [t] [e] EndId => {..} / [c] [a] [s] [e] EndId => {..} / [c] [a] [t] [c] [h] EndId => {..} / [c] [h] [a] [r] EndId => {..} / [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [c] [l] [a] [s] [s] EndId => {..} / [c] [o] [n] [s] [t] EndId => {..} / [c] [o] [n] [t] [i] [n] [u] [e] EndId => {..} / [d] [e] [c] [i] [m] [a] [l] EndId => {..} / [d] [e] [f] [a] [u] [l] [t] EndId => {..} / [d] [e] [l] [e] [g] [a] [t] [e] EndId => {..} / [d] [o] [u] [b] [l] [e] EndId => {..} / [d] [o] EndId => {..} / [e] [l] [s] [e] EndId => {..} / [e] [n] [u] [m] EndId => {..} / [e] [v] [e] [n] [t] EndId => {..} / [e] [x] [p] [l] [i] [c] [i] [t] EndId => {..} / [e] [x] [t] [e] [r] [n] EndId => {..} / [f] [a] [l] [s] [e] EndId => {..} / [f] [i] [n] [a] [l] [l] [y] EndId => {..} / [f] [i] [x] [e] [d] EndId => {..} / [f] [l] [o] [a] [t] EndId => {..} / [f] [o] [r] [e] [a] [c] [h] EndId => {..} / [f] [o] [r] EndId => {..} / [g] [o] [t] [o] EndId => {..} / [i] [f] EndId => {..} / [i] [m] [p] [l] [i] [c] [i] [t] EndId => {..} / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId => {..} / [i] [n] [t] [e] [r] [n] [a] [l] EndId => {..} / [i] [n] [t] EndId => {..} / [i] [n] EndId => {..} / [i] [s] EndId => {..} / [l] [o] [c] [k] EndId => {..} / [l] [o] [n] [g] EndId => {..} / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId => {..} / [n] [e] [w] EndId => {..} / [n] [u] [l] [l] EndId => {..} / [o] [b] [j] [e] [c] [t] EndId => {..} / [o] [p] [e] [r] [a] [t] [o] [r] EndId => {..} / [o] [u] [t] EndId => {..} / [o] [v] [e] [r] [r] [i] [d] [e] EndId => {..} / [p] [a] [r] [a] [m] [s] EndId => {..} / [p] [r] [i] [v] [a] [t] [e] EndId => {..} / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId => {..} / [p] [u] [b] [l] [i] [c] EndId => {..} / [r] [e] [a] [d] [o] [n] [l] [y] EndId => {..} / [r] [e] [f] EndId => {..} / [r] [e] [t] [u] [r] [n] EndId => {..} / [s] [b] [y] [t] [e] EndId => {..} / [s] [e] [a] [l] [e] [d] EndId => {..} / [s] [h] [o] [r] [t] EndId => {..} / [s] [i] [z] [e] [o] [f] EndId => {..} / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId => {..} / [s] [t] [a] [t] [i] [c] EndId => {..} / [s] [t] [r] [i] [n] [g] EndId => {..} / [s] [t] [r] [u] [c] [t] EndId => {..} / [s] [w] [i] [t] [c] [h] EndId => {..} / [t] [h] [i] [s] EndId => {..} / [t] [h] [r] [o] [w] EndId => {..} / [t] [r] [u] [e] EndId => {..} / [t] [r] [y] EndId => {..} / [t] [y] [p] [e] [o] [f] EndId => {..} / [u] [i] [n] [t] EndId => {..} / [u] [l] [o] [n] [g] EndId => {..} / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId => {..} / [u] [n] [s] [a] [f] [e] EndId => {..} / [u] [s] [h] [o] [r] [t] EndId => {..} / [u] [s] [i] [n] [g] EndId => {..} / [v] [i] [r] [t] [u] [a] [l] EndId => {..} / [v] [o] [l] [a] [t] [i] [l] [e] EndId => {..} / [v] [o] [i] [d] EndId => {..} / [w] [h] [i] [l] [e] EndId => {..} / &{AllowPP} [#] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [l] [s] [e] EndId => {..} / &{AllowPP} [#] [e] [l] [i] [f] EndId => {..} / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId => {..} / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId => {..} / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId => {..} / &{AllowPP} [#] [l] [i] [n] [e] EndId => {..} / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [n] [u] [l] [l] [a] [b] [l] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] EndId => RestOfPPLine / &{AllowPP} [#] [l] [o] [a] [d] EndId => RestOfPPLine / &{AllowPP} [#] [c] [l] [s] EndId => {..} / &{AllowPP} [#] [c] [l] [e] [a] [r] EndId => {..} / &{AllowPP} [#] [h] [e] [l] [p] EndId => {..} / &{AllowPP} [#] [r] [e] [s] [e] [t] EndId => {..} / [v] [a] [r] EndId => {..} / [d] [y] [n] [a] [m] [i] [c] EndId => {..} / [t] [r] [a] [i] [t] EndId => {..} / [a] [l] [i] [a] [s] EndId => {..} / [a] [s] [s] [e] [m] [b] [l] [y] EndId => {..} / [m] [o] [d] [u] [l] [e] EndId => {..} / [f] [r] [o] [m] EndId => {..} / [w] [h] [e] [r] [e] EndId => {..} / [w] [h] [e] [n] EndId => {..} / [w] [i] [t] [h] EndId => {..} / [s] [e] [l] [e] [c] [t] EndId => {..} / [j] [o] [i] [n] EndId => {..} / [o] [n] EndId => {..} / [e] [q] [u] [a] [l] [s] EndId => {..} / [i] [n] [t] [o] EndId => {..} / [l] [e] [t] EndId => {..} / [o] [r] [d] [e] [r] [b] [y] EndId => {..} / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId => {..} / [g] [r] [o] [u] [p] EndId => {..} / [b] [y] EndId => {..} / [a] [w] [a] [i] [t] EndId => {..} / Id )
 			switch (LA0) {
 			case 'a':
 				{
@@ -2015,9 +2016,9 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 377 "EcsLexerGrammar.les"
+														#line 378 "EcsLexerGrammar.les"
 														_type = TT.LinqKeyword;
-														#line 377 "EcsLexerGrammar.les"
+														#line 378 "EcsLexerGrammar.les"
 														_value = _ascending;
 														#line default
 													} else
@@ -2077,9 +2078,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 381 "EcsLexerGrammar.les"
+										#line 382 "EcsLexerGrammar.les"
 										_type = TT.ContextualKeyword;
-										#line 381 "EcsLexerGrammar.les"
+										#line 382 "EcsLexerGrammar.les"
 										_value = _await;
 										#line default
 									} else
@@ -2191,9 +2192,9 @@ namespace Loyc.Ecs.Parser
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 380 "EcsLexerGrammar.les"
+							#line 381 "EcsLexerGrammar.les"
 							_type = TT.LinqKeyword;
-							#line 380 "EcsLexerGrammar.les"
+							#line 381 "EcsLexerGrammar.les"
 							_value = _by;
 							#line default
 						} else
@@ -2289,7 +2290,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 273 "EcsLexerGrammar.les"
-												_type = TT.Checked;
+												_type = TT.CheckedOrUnchecked;
 												#line 273 "EcsLexerGrammar.les"
 												_value = S.Checked;
 												#line default
@@ -2533,9 +2534,9 @@ namespace Loyc.Ecs.Parser
 															Skip();
 															Skip();
 															Skip();
-															#line 378 "EcsLexerGrammar.les"
+															#line 379 "EcsLexerGrammar.les"
 															_type = TT.LinqKeyword;
-															#line 378 "EcsLexerGrammar.les"
+															#line 379 "EcsLexerGrammar.les"
 															_value = _descending;
 															#line default
 														} else
@@ -2811,9 +2812,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 373 "EcsLexerGrammar.les"
+												#line 374 "EcsLexerGrammar.les"
 												_type = TT.LinqKeyword;
-												#line 373 "EcsLexerGrammar.les"
+												#line 374 "EcsLexerGrammar.les"
 												_value = _equals;
 												#line default
 											} else
@@ -3079,9 +3080,9 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 379 "EcsLexerGrammar.les"
+										#line 380 "EcsLexerGrammar.les"
 										_type = TT.LinqKeyword;
-										#line 379 "EcsLexerGrammar.les"
+										#line 380 "EcsLexerGrammar.les"
 										_value = _group;
 										#line default
 									} else
@@ -3238,9 +3239,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 374 "EcsLexerGrammar.les"
+									#line 375 "EcsLexerGrammar.les"
 									_type = TT.LinqKeyword;
-									#line 374 "EcsLexerGrammar.les"
+									#line 375 "EcsLexerGrammar.les"
 									_value = _into;
 									#line default
 								} else
@@ -3324,9 +3325,9 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 375 "EcsLexerGrammar.les"
+								#line 376 "EcsLexerGrammar.les"
 								_type = TT.LinqKeyword;
-								#line 375 "EcsLexerGrammar.les"
+								#line 376 "EcsLexerGrammar.les"
 								_value = _let;
 								#line default
 							} else
@@ -3584,9 +3585,9 @@ namespace Loyc.Ecs.Parser
 							if (!IdOrKeyword_set0.Contains(la2)) {
 								Skip();
 								Skip();
-								#line 372 "EcsLexerGrammar.les"
+								#line 373 "EcsLexerGrammar.les"
 								_type = TT.LinqKeyword;
-								#line 372 "EcsLexerGrammar.les"
+								#line 373 "EcsLexerGrammar.les"
 								_value = _on;
 								#line default
 							} else
@@ -3614,9 +3615,9 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 376 "EcsLexerGrammar.les"
+													#line 377 "EcsLexerGrammar.les"
 													_type = TT.LinqKeyword;
-													#line 376 "EcsLexerGrammar.les"
+													#line 377 "EcsLexerGrammar.les"
 													_value = _orderby;
 													#line default
 												} else
@@ -3959,9 +3960,9 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 370 "EcsLexerGrammar.les"
+												#line 371 "EcsLexerGrammar.les"
 												_type = TT.LinqKeyword;
-												#line 370 "EcsLexerGrammar.les"
+												#line 371 "EcsLexerGrammar.les"
 												_value = _select;
 												#line default
 											} else
@@ -4434,7 +4435,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														#line 333 "EcsLexerGrammar.les"
-														_type = TT.Unchecked;
+														_type = TT.CheckedOrUnchecked;
 														#line 333 "EcsLexerGrammar.les"
 														_value = S.Unchecked;
 														#line default
@@ -4703,7 +4704,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 368 "EcsLexerGrammar.les"
-										_type = TT.LinqKeyword;
+										_type = TT.ContextualKeyword;
 										#line 368 "EcsLexerGrammar.les"
 										_value = _where;
 										#line default
@@ -4722,6 +4723,28 @@ namespace Loyc.Ecs.Parser
 									_type = TT.ContextualKeyword;
 									#line 369 "EcsLexerGrammar.les"
 									_value = _when;
+									#line default
+								} else
+									Id();
+							} else
+								Id();
+						} else
+							Id();
+					} else if (la1 == 'i') {
+						la2 = LA(2);
+						if (la2 == 't') {
+							la3 = LA(3);
+							if (la3 == 'h') {
+								la4 = LA(4);
+								if (!IdOrKeyword_set0.Contains(la4)) {
+									Skip();
+									Skip();
+									Skip();
+									Skip();
+									#line 370 "EcsLexerGrammar.les"
+									_type = TT.ContextualKeyword;
+									#line 370 "EcsLexerGrammar.les"
+									_value = _with;
 									#line default
 								} else
 									Id();
@@ -5392,9 +5415,9 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 371 "EcsLexerGrammar.les"
+									#line 372 "EcsLexerGrammar.les"
 									_type = TT.LinqKeyword;
-									#line 371 "EcsLexerGrammar.les"
+									#line 372 "EcsLexerGrammar.les"
 									_value = _join;
 									#line default
 								} else
@@ -5412,14 +5435,14 @@ namespace Loyc.Ecs.Parser
 				break;
 			}
 		}
-	
+
 		string RestOfPPLine()
 		{
 			int la0;
-			#line 409 "EcsLexerGrammar.les"
+			#line 411 "EcsLexerGrammar.les"
 			int start = InputPosition;
 			#line default
-			// Line 410: ([^\$\n\r])*
+			// Line 412: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -5427,29 +5450,29 @@ namespace Loyc.Ecs.Parser
 				else
 					break;
 			}
-			#line 411 "EcsLexerGrammar.les"
+			#line 413 "EcsLexerGrammar.les"
 			return CharSource.Slice(start, InputPosition - start).ToString();
 			#line default
 		}
 		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~', '', '﻾');
 		static readonly HashSet<int> Token_set1 = NewSetOfRanges('#', '#', 'A', 'Z', '\\', '\\', '_', '_', 'a', 'z', '', '﻾');
 		static readonly HashSet<int> Token_set2 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', '', '﻾');
-	
+
 		private 
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 423: ( Newline / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
+			// Line 425: ( Newline / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
 			do {
 				la0 = LA0;
 				switch (la0) {
 				case '\n': case '\r':
 					{
-						#line 423 "EcsLexerGrammar.les"
+						#line 425 "EcsLexerGrammar.les"
 						_type = TT.Newline;
 						#line default
 						Newline();
-						#line 423 "EcsLexerGrammar.les"
+						#line 425 "EcsLexerGrammar.les"
 						_value = WhitespaceTag.Value;
 						#line default
 					}
@@ -5473,14 +5496,14 @@ namespace Loyc.Ecs.Parser
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
-							#line 425 "EcsLexerGrammar.les"
+							#line 427 "EcsLexerGrammar.les"
 							_type = TT.SLComment;
 							#line default
 							SLComment();
 						} else if (la1 == '*') {
 							la2 = LA(2);
 							if (la2 != -1) {
-								#line 426 "EcsLexerGrammar.les"
+								#line 428 "EcsLexerGrammar.les"
 								_type = TT.MLComment;
 								#line default
 								MLComment();
@@ -5495,7 +5518,7 @@ namespace Loyc.Ecs.Parser
 						if (InputPosition == 0) {
 							la1 = LA(1);
 							if (la1 == '!') {
-								#line 428 "EcsLexerGrammar.les"
+								#line 430 "EcsLexerGrammar.les"
 								_type = TT.Shebang;
 								#line default
 								Shebang();
@@ -5537,7 +5560,7 @@ namespace Loyc.Ecs.Parser
 							{
 								la2 = LA(2);
 								if (Token_set0.Contains(la2)) {
-									#line 434 "EcsLexerGrammar.les"
+									#line 436 "EcsLexerGrammar.les"
 									_type = TT.Literal;
 									#line default
 									Symbol();
@@ -5596,7 +5619,7 @@ namespace Loyc.Ecs.Parser
 					}
 				case '`':
 					{
-						#line 433 "EcsLexerGrammar.les"
+						#line 435 "EcsLexerGrammar.les"
 						_type = TT.BQString;
 						#line default
 						BQString();
@@ -5610,7 +5633,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '﻿':
 					{
-						#line 437 "EcsLexerGrammar.les"
+						#line 439 "EcsLexerGrammar.les"
 						_type = TT.Spaces;
 						#line default
 						UTF_BOM();
@@ -5618,7 +5641,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ',':
 					{
-						#line 438 "EcsLexerGrammar.les"
+						#line 440 "EcsLexerGrammar.les"
 						_type = TT.Comma;
 						#line default
 						Comma();
@@ -5626,7 +5649,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ';':
 					{
-						#line 439 "EcsLexerGrammar.les"
+						#line 441 "EcsLexerGrammar.les"
 						_type = TT.Semicolon;
 						#line default
 						Semicolon();
@@ -5634,7 +5657,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '(':
 					{
-						#line 440 "EcsLexerGrammar.les"
+						#line 442 "EcsLexerGrammar.les"
 						_type = TT.LParen;
 						#line default
 						Skip();
@@ -5642,7 +5665,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ')':
 					{
-						#line 441 "EcsLexerGrammar.les"
+						#line 443 "EcsLexerGrammar.les"
 						_type = TT.RParen;
 						#line default
 						Skip();
@@ -5650,7 +5673,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '[':
 					{
-						#line 442 "EcsLexerGrammar.les"
+						#line 444 "EcsLexerGrammar.les"
 						_type = TT.LBrack;
 						#line default
 						Skip();
@@ -5658,7 +5681,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case ']':
 					{
-						#line 443 "EcsLexerGrammar.les"
+						#line 445 "EcsLexerGrammar.les"
 						_type = TT.RBrack;
 						#line default
 						Skip();
@@ -5666,7 +5689,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '{':
 					{
-						#line 444 "EcsLexerGrammar.les"
+						#line 446 "EcsLexerGrammar.les"
 						_type = TT.LBrace;
 						#line default
 						Skip();
@@ -5674,7 +5697,7 @@ namespace Loyc.Ecs.Parser
 					break;
 				case '}':
 					{
-						#line 445 "EcsLexerGrammar.les"
+						#line 447 "EcsLexerGrammar.les"
 						_type = TT.RBrace;
 						#line default
 						Skip();
@@ -5689,7 +5712,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchNumber:
 				{
-					#line 424 "EcsLexerGrammar.les"
+					#line 426 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					Number();
@@ -5697,7 +5720,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			match6:
 				{
-					#line 429 "EcsLexerGrammar.les"
+					#line 431 "EcsLexerGrammar.les"
 					_type = TT.Id;
 					#line default
 					IdOrKeyword();
@@ -5705,7 +5728,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchTQString:
 				{
-					#line 430 "EcsLexerGrammar.les"
+					#line 432 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					TQString();
@@ -5713,7 +5736,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchSQString:
 				{
-					#line 431 "EcsLexerGrammar.les"
+					#line 433 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					SQString();
@@ -5721,7 +5744,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchDQString:
 				{
-					#line 432 "EcsLexerGrammar.les"
+					#line 434 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					DQString();
@@ -5729,7 +5752,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			matchAt:
 				{
-					#line 435 "EcsLexerGrammar.les"
+					#line 437 "EcsLexerGrammar.les"
 					_type = TT.At;
 					#line default
 					At();
@@ -5737,9 +5760,9 @@ namespace Loyc.Ecs.Parser
 				break;
 			error:
 				{
-					#line 446 "EcsLexerGrammar.les"
+					#line 448 "EcsLexerGrammar.les"
 					_type = TT.Unknown;
-					#line 446 "EcsLexerGrammar.les"
+					#line 448 "EcsLexerGrammar.les"
 					Error(0, "Unrecognized token");
 					#line default
 					MatchExcept();
@@ -5747,7 +5770,7 @@ namespace Loyc.Ecs.Parser
 			} while (false);
 		}
 		static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
-	
+
 		private bool Try_HexNumber_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return HexNumber_Test0();
