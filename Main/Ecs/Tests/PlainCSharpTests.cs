@@ -455,9 +455,9 @@ namespace Loyc.Ecs.Tests
 			Stmt("struct Foo {\n" +
 				"  public int x;\n}",  F.Call(S.Struct, Foo, F.List(), F.Braces(public_x)));
 			Stmt("class Foo : IFoo { }", F.Call(S.Class, Foo, F.List(IFoo), F.Braces()));
-			var a_where = Attr(F.Call(S.Where, @class), a);
-			var b_where = Attr(F.Call(S.Where, a), b);
-			var c_where = Attr(F.Call(S.Where, F.Call(S.New)), c);
+			var a_where = Attr(F.Call(S.WhereClause, @class), a);
+			var b_where = Attr(F.Call(S.WhereClause, a), b);
+			var c_where = Attr(F.Call(S.WhereClause, F.Call(S.New)), c);
 			var stmt = F.Call(S.Class, F.Of(Foo, a_where, b_where), F.List(IFoo), F.Braces());
 			Stmt("class Foo<a, b> : IFoo where a: class where b: a { }", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), a_where)), F.List(), F.Braces());
@@ -508,7 +508,7 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.List(F.Vars(T, a), F.Vars(T, b)));
 			Stmt("delegate void Foo<T>(T a, T b);", stmt);
 			Expr("#delegate(void, Foo<T>, #([] T a, [] T b))", stmt);
-			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Vars(T, x)));
+			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.WhereClause, _(S.Class), x), T)), F.List(F.Vars(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
 			Expr("#delegate(void, Foo!([#where(#class, x)] T), #([] T x))", stmt);
 			stmt = Attr(@public, @new, partialWA, F.Fn(F.String, Foo, list_int_x));
@@ -1111,7 +1111,19 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CSharp9WithExpression()
 		{
-			
+			// It's not a keyword
+			var with = F.Id("with");
+			Expr("var with = 0",            F.Var(null, with, zero));
+			Stmt("with with = with;",       F.Var(with, with, with));
+			Expr("(with) with + with",      F.Call(S.Add, F.Call(S.Cast, with, with), with));
+
+			Expr("x with {\n  Foo = 1\n}",  F.Call(S.With, x, F.Braces(F.Assign(Foo, one))));
+			Expr("x with { Foo = 1 }",      F.Call(S.With, x, F.Braces(AppendStmt(F.Assign(Foo, one)))));
+			Expr("x with { a = 2, b = 1 }", F.Call(S.With, x, F.Braces(AppendStmt(F.Assign(a, two)), AppendStmt(F.Assign(b, one)))));
+
+			// Luckily this is not supported in C# 9, so we don't have to either.
+			// In both languages it's a cast, but only in C# is there a syntax error.
+			Expr("(Foo) with {\n  a = 1\n}", F.Call(S.Cast, F.Call("with", F.Braces(F.Call(S.Result, F.Assign(a, one)))).SetStyle(NodeStyle.Special), Foo));
 		}
 
 		[Test]

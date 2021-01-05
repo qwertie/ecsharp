@@ -337,7 +337,7 @@ namespace Loyc.Ecs
 				for (int a = 0, ac = param.AttrCount; a < ac; a++)
 				{
 					var where = param.Attrs[a];
-					if (where.CallsMin(S.Where, 1))
+					if (where.CallsMin(S.WhereClause, 1))
 					{
 						using (Indented)
 						using (With(where, StartExpr))

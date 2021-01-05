@@ -166,7 +166,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Alias = GSymbol.Get("#alias");    //!< e.g. #alias(Int = int, #(IMath), { });  <=> alias Int = int : IMath { }
 		                                                                //!< also, [#filePrivate] #alias(I = System.Int32) <=> using I = System.Int32;
 		public static readonly Symbol Interface = GSymbol.Get("#interface"); //!< e.g. #interface(IB, #(IA), { });  <=> interface IB : IA { }
-		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); //!< e.g. #namespace(NS, @``, { });  <=> namespace NS { }
+	public static readonly Symbol Namespace = GSymbol.Get("#namespace"); //!< e.g. #namespace(NS, @``, { });  <=> namespace NS { }
 
 		// Other definitions
 		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
@@ -175,7 +175,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, @``, { get; }) <=> int Foo { get; }
 
 		// Misc
+		public static readonly Symbol WhereClause = GSymbol.Get("#where"); //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(@'of(Foo, [#where(#class, Foo)] T), #(), {});
+		[Obsolete("Renamed to WhereClause (the infix operator version is called WhereOp)")]
 		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(@'of(Foo, [#where(#class, Foo)] T), #(), {});
+		public static readonly Symbol WhereOp = GSymbol.Get("'where");     //!< "'where" e.g. FindNodeAt($errorLoc) where $errorLoc = e.Errors.First.SourceRange <=> @'where(FindNodeAt($errorLoc), $errorLoc = e.Errors.First.SourceRange)
+		public static readonly Symbol With = GSymbol.Get("'with");         //!< "'with" e.g. @'with(foo, { X = 1 }) <=> foo with { X = 1 }
+		public static readonly Symbol When = GSymbol.Get("'when");         //!< "'when" e.g. X is Person p when !p.Name.Any() <=> @'when(@'is(X, #var(Person, p)), !p.Name.Any())
 		public static readonly Symbol This = GSymbol.Get("#this");         //!< "#this" e.g. this.X <=> #this.X; this(arg) <=> #this(arg).
 		public static readonly Symbol Base = GSymbol.Get("#base");         //!< "#base" e.g. base.X <=> #base.X; base(arg) <=> #base(arg).
 		public static readonly Symbol Operator = GSymbol.Get("#operator"); //!< e.g. #fn(#bool, [#operator] @`'==`, #(Foo a, Foo b))

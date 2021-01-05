@@ -54,7 +54,7 @@ namespace Loyc.Ecs
 			// Comma is not an operator at all and generally should not occur. 
 			// '=>' is not included because it has a special 'delegate() {}' form
 			// and is not handled by the normal infix operator printer. Likewise, C# 9's
-			// `and` and `or` pattern operators have their own special handler.
+			// `and`/`or` pattern operators, and `with`, have their own special handlers.
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
@@ -79,7 +79,8 @@ namespace Loyc.Ecs
 			P(S.Compare, EP.Compare3Way),   P(S.ForwardPipeArrow, EP.PipeArrow),
 			P(S.ForwardAssign, EP.PipeArrow),
 			P(S.NullForwardPipeArrow, EP.PipeArrow),
-			P(S.ForwardNullCoalesceAssign, EP.PipeArrow)
+			P(S.ForwardNullCoalesceAssign, EP.PipeArrow),
+			P(S.When, EP.WhenWhere), P(S.WhereOp, EP.WhenWhere)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
@@ -163,6 +164,7 @@ namespace Loyc.Ecs
 			d[S.PatternNot] = Pair.Create(EP.PatternNot, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternUnaryOperator)));
 			d[S.PatternAnd] = Pair.Create(EP.PatternAnd, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
 			d[S.PatternOr]  = Pair.Create(EP.PatternOr,  OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
+			d[S.With]       = Pair.Create(EP.Switch,     OpenDelegate<OperatorPrinter>(nameof(AutoPrintWithOperator)));
 
 			return d;
 		}
@@ -396,6 +398,23 @@ namespace Loyc.Ecs
 				return true;
 			}
 			return false;
+		}
+
+		public bool AutoPrintWithOperator(Precedence prec)
+		{
+			var a = _n.Args;
+			if (a.Count != 2 || !CallsWPAIH(a[1], S.Braces))
+				return false;
+			
+			// Avoid printing something that looks like `(TypeName) with {...}`
+			LNode lhs = a[0], rhs = a[1];
+			bool castAmbiguity = lhs.IsParenthesizedExpr() && EcsValidators.IsComplexIdentifier(a[0], ICI.AllowParensAround);
+			
+			PrintExpr(lhs, prec.LeftContext(_context), castAmbiguity ? Ambiguity.ForceAttributeList : 0);
+			WriteOperatorName(_name);
+			PrintBracedBlock(rhs, NewlineOpt.BeforeOpenBraceInNewExpr, false, _spaceName, BraceMode.Enum);
+			
+			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1180,7 +1199,7 @@ namespace Loyc.Ecs
 					using (With(clause[i], StartExpr))
 						PrintLinqClause();
 			} else {
-				Debug.Assert(name == S.Let || name == S.Where || name == S.Select);
+				Debug.Assert(name == S.Let || name == S.WhereClause || name == S.Select);
 				_out.Write(name.Name.Substring(1));
 				Space(SpaceOpt.Default);
 				Debug.Assert(clause.ArgCount == 1);

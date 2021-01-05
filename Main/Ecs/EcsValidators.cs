@@ -505,7 +505,7 @@ namespace Loyc.Ecs
 			{
 				var name = attr.Name;
 				if (attr.IsCall) {
-					if (name == S.Where) {
+					if (name == S.WhereClause) {
 						if (HasPAttrs(attr, p))
 							return false;
 						foreach (var arg in attr.Args)
@@ -683,7 +683,7 @@ namespace Loyc.Ecs
 			} else if (name == S.Let) {
 				if (args.Count != 1)
 					return null;
-			} else if (n.Calls(S.Where)) {
+			} else if (n.Calls(S.WhereClause)) {
 				if (args.Count != 1)
 					return null;
 			} else if (n.Calls(S.Join)) {

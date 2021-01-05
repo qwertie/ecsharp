@@ -631,7 +631,7 @@ namespace Loyc.Ecs
 			bool isTypeParamDefinition = (_flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
 			                                    == (Ambiguity.InDefinitionName | Ambiguity.InOf);
 			if (isTypeParamDefinition)
-				attrs = attrs.SmartWhere(n => !n.Calls(S.Where));
+				attrs = attrs.SmartWhere(n => !n.Calls(S.WhereClause));
 			int attrCount = attrs.Count;
 			int div = attrCount; // index of first word attribute
 			int i = attrCount;

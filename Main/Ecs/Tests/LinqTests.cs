@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -19,11 +19,12 @@ namespace Loyc.Ecs.Tests
 			Expr("from x in Foo \nselect x", expr);
 		}
 
+		public LNode LinqFrom(LNode x, LNode source, params LNode[] clauses) => F.Call(S.Linq, LNode.List(F.Call(S.From, F.Call(S.In, x, source))).AddRange(clauses));
+
 		[Test]
 		public void CommonLinqClauses()
 		{
-			var expr = F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, F.Var(Foo, x), Foo)),
+			var expr = LinqFrom(F.Var(Foo, x), Foo,
 				F.Call(S.Let, F.Call(S.Assign, a, F.Call(Foo, x))),
 				F.Call(S.OrderBy, F.Call(S.Descending, a)),
 				F.Call(S.Select, F.Call(S.IndexBracks, x, a)));
@@ -36,18 +37,18 @@ namespace Loyc.Ecs.Tests
 			                     F.Call(S.Cast, F.Id("descending"), Foo));
 			Stmt("(Foo) orderby + (Foo) descending;", expr);
 
-			expr = F.Call(Foo, F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, x, F.InParens(Foo))),
+			expr = F.Call(Foo, LinqFrom(
+				x, F.InParens(Foo),
 				F.Call(S.OrderBy, F.Call(S.Descending, F.InParens(F.Dot(x, a))), 
 				                  F.Call(S.Ascending, F.InParens(F.Dot(x, b)))),
 				F.Call(S.Select, F.InParens(x))));
 			Stmt("Foo(from x in (Foo) orderby (x.a) descending, (x.b) ascending select (x));", 
 				expr);
 
-			expr = F.Var(F.Missing, c, F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, F.Var(F.Missing, x), Foo)),
+			expr = F.Var(F.Missing, c, LinqFrom(
+				F.Var(F.Missing, x), Foo,
 				F.Call(S.OrderBy, F.Call(S.Mul, x, x)),
-				F.Call(S.Where, F.Call(S.GT, F.Dot(x, Foo), zero)),
+				F.Call(S.WhereClause, F.Call(S.GT, F.Dot(x, Foo), zero)),
 				F.Call(S.Let, F.Call(S.Assign, a, x)),
 				F.Call(S.GroupBy, F.Call(S.Assign, x, x), F.Call(S.NullCoalesce, x, x))));
 			Stmt("var c = from var x in Foo orderby x * x where x.Foo > 0 let a = x group x = x by x ?? x;", 
@@ -57,14 +58,12 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void LinqJoins()
 		{
-			var expr = F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, x, Foo)),
+			var expr = LinqFrom(x, Foo,
 				F.Call(S.Join, F.Call(S.In, F.Var(F.Missing, a), F.Call(Foo, x)), F.Call("#equals", x, F.Call(S.NullCoalesce, a, b))),
 				F.Call(S.Select, F.Call(Foo, x, a)));
 			Expr("from x in Foo join var a in Foo(x) on x equals a ?? b select Foo(x, a)", expr);
 
-			expr = F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, x, Foo)),
+			expr = LinqFrom(x, Foo,
 				F.Call(S.Join, F.Call(S.In, a, F.InParens(F.Call(Foo, x))), F.Call("#equals", 
 				               F.InParens(x), F.Call(S.NullCoalesce, a, b)), F.Call(S.Into, F.Id("g"))),
 				F.Call(S.GroupBy, F.Id("g"), F.Dot(x, Foo)));
@@ -74,23 +73,35 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void LinqContinuations()
 		{
-			var expr = F.Call(S.Linq, 
-				F.Call(S.From, F.Call(S.In, x, Foo)),
+			var expr = LinqFrom(x, Foo,
 				F.Call(S.Select, F.Call(Foo, x)),
 				F.Call(S.Into, a, 
-					F.Call(S.Where, F.Call(S.Eq, a, x)),
+					F.Call(S.WhereClause, F.Call(S.Eq, a, x)),
 					F.Call(S.Select, a)));
 			Expr("from x in Foo select Foo(x) into a where a == x select a", expr);
 
-			expr = F.Call(S.Linq,
-				F.Call(S.From, F.Call(S.In, x, Foo)),
+			expr = LinqFrom(x, Foo,
 				F.Call(S.Select, F.Call(Foo, x)),
 				F.Call(S.Into, a,
-					F.Call(S.Where, F.Call(S.Eq, a, x)),
+					F.Call(S.WhereClause, F.Call(S.Eq, a, x)),
 					F.Call(S.Select, a),
 					F.Call(S.Into, b,
 						F.Call(S.GroupBy, b, F.Call(Foo, b)))));
 			Expr("from x in Foo select Foo(x) into a where a == x select a into b group b by Foo(b)", expr);
+		}
+
+		[Test]
+		public void LinqNestedQuery()
+		{
+			var expr = LinqFrom(x, Foo,
+				F.Call(S.WhereClause, F.Call(F.Dot(
+					LinqFrom(b, F.Id("Bar"),
+						F.Call(S.WhereClause, F.Call(S.Eq, F.Dot(b, F.Id("Prop")), x)),
+						F.Call(S.Select, b)
+					).InParens(), F.Id("Any")))
+				),
+				F.Call(S.Select, x));
+			Expr("from x in Foo where (from b in Bar where b.Prop == x select b).Any() select x", expr);
 		}
 	}
 }

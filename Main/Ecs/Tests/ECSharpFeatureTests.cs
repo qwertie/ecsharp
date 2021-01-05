@@ -255,7 +255,7 @@ namespace Loyc.Ecs.Tests
 			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), BracesOnOneLine(get, set)));
 			Stmt("private Foo<T> this<T>[T x] { get; set; }", stmt);
 
-			var T_where = Attr(F.Call(S.Where, @class), T);
+			var T_where = Attr(F.Call(S.WhereClause, @class), T);
 			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T_where), F.List(F.Var(T, x)), BracesOnOneLine(get, set)));
 			Stmt("private Foo<T> this<T>[T x] where T: class { get; set; }", stmt);
 
@@ -675,6 +675,25 @@ namespace Loyc.Ecs.Tests
 			Stmt("x = (x ?? goto fail).Foo();", tree);
 			tree = F.Call(S.QuestionMark, F.Call(S.GT, Foo, zero), F.Call(S.GotoCase, a), F.Call(S.GotoCase, b));
 			Stmt("Foo > 0 ? goto case a : goto case b;", tree);
+		}
+
+		[Test]
+		public void WhereAndWhen()
+		{
+			// `where` and `when` are operators but not keywords
+			LNode where = F.Id("where"), when = F.Id("when"), with = F.Id("with");
+			Expr("var when = 0", F.Var(null, when, zero));
+			Stmt("when where = with;", F.Var(when, where, with));
+			Expr("(where) where + when", F.Call(S.Add, F.Call(S.Cast, where, where), when));
+
+			Expr("x when c", F.Call(S.When, x, c));
+			Expr("x where c", F.Call(S.WhereOp, x, c));
+			var expr = F.Call(S.When, F.Call(S.Is, where, F.Var(_("Person"), x)), F.Call(F.Dot(x, _("Name"), _("Any"))));
+			Expr("where is Person x when x.Name.Any()", expr);
+			expr = F.Call(S.WhereOp, 
+				F.Call("FindNodeAt", F.Call(S.Substitute, _("errorLoc"))), 
+				F.Assign(F.Call(S.Substitute, _("errorLoc")), F.Dot("e", "Errors", "First", "SourceRange")));
+			Expr("FindNodeAt($errorLoc) where $errorLoc = e.Errors.First.SourceRange", expr);
 		}
 
 		[Test]

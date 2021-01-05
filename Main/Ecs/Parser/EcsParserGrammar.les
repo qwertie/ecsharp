@@ -408,7 +408,9 @@ namespace Loyc.Ecs.Parser
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
 		// 6. Contextual word operators (`with` in C# 9)
-		//    Surprisingly, `(obj) with { A = 5 }` is a syntax error; `(obj) with` is detected as a cast.
+		//    Surprisingly, `(obj) with { A = 5 }` is a syntax error; `(obj) with` 
+		//    is detected as a cast. This makes it relatively easy, actually; it 
+		//    can be treated as a normal infix operator.
 		
 		/// Below lowest precedence
 		@[#public, #static, #readonly] StartExpr::Precedence = (new Precedence(-100));
@@ -708,53 +710,74 @@ namespace Loyc.Ecs.Parser
 		//     "Hello" the traditional way requires 20 rules and therefore 20 stack 
 		//     frames if there are 20 precedence levels. On the other hand, the 
 		//     "precedence floor" approach requires an extra precedence check, so 
-		//     it may be slower when there are few levels. Note: EC# has 22 
-		//     precedence levels, and this method handles the lower 18 of them.
+		//     it may be slower when there are few levels. Note: EC# has 29 
+		//     precedence levels, and this method handles the lower 24 of them.
 		//
 		// The higher levels of the EC# expression parser do not use this trick
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
 		@[private] token SubExpr(context::Precedence, inPattern::bool = false)::LNode @{
-			{Debug.Assert(context.CanParse(EP.Prefix));}
-			{prec::Precedence;}
+			{
+				Debug.Assert(context.CanParse(EP.Prefix));
+				prec::Precedence;
+				op::Token;
+				rhs::LNode;
+				lt0::Token;
+			}
 			e:=PrefixExpr
 			greedy
 			(	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
-				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
+				op=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"
 				    | TT.Switch|TT.BQString|TT.In )
-				rhs:=SubExpr(prec)
+				rhs=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
 			|	// Lambda expression
 				&{@[Local] context.CanParse(prec=EP.Lambda) && !inPattern}
-				op:="=>"
-				rhs:=SubExpr(prec)
+				op="=>"
+				rhs=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
 			|	// is-test or a more complex is-expr
 				&{@[Local] context.CanParse(prec=EP.Is)}
-				op:=TT.Is
-				rhs:=Pattern(prec)
+				op=TT.Is
+				rhs=Pattern(prec)
 				{e = F.CallInfixOp(e, op, rhs, S.Is);}
 			|	// 'as' or 'using' cast (special case: 'using instead of #using)
 				&{@[Local] context.CanParse(prec=EP.AsUsing)}
-				op:=(TT.As | TT.Using)
-				rhs:=DataType(afterAs<: true)
+				op=(TT.As | TT.Using)
+				rhs=DataType(afterAs<: true)
 				{e = F.CallInfixOp(e, op, rhs, op.Type() == TT.Using ? S.UsingCast : S.As);}
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
-				(	op:="<" "<" rhs:=SubExpr(EP.Shift)
+				(	op="<" "<" rhs=SubExpr(EP.Shift)
 					{e = F.CallInfixOp(e, S.Shl, new IndexRange(op.StartIndex) { EndIndex = op.EndIndex + 1 }, rhs);}
-				|	op:=">" ">" rhs:=SubExpr(EP.Shift)
+				|	op=">" ">" rhs=SubExpr(EP.Shift)
 					{e = F.CallInfixOp(e, S.Shr, new IndexRange(op.StartIndex) { EndIndex = op.EndIndex + 1 }, rhs);}
 				|	error {e = Error("Syntax error");}
 				)
 			|	// Conditional operator
 				&{@[Local] context.CanParse(EP.IfElse)}
-				op:="?" then:=SubExpr(StartExpr) ":" else:=SubExpr(EP.IfElse)
+				op="?" then:=SubExpr(StartExpr) ":" else:=SubExpr(EP.IfElse)
 				{e = F.CallInfixOp(e, op, then, else);}
+			|	// with operator
+				&{Is($LI, @@with)}
+				&{@[Local] context.CanParse(prec=EP.Switch)}
+				op=TT.ContextualKeyword "{" "}"
+				{
+					var list = ExprListInside($"{", true);
+					var body = F.CallBrackets(S.Braces, $"{", list, $"}");
+					e = F.CallInfixOp(e, op, body, S.With);
+				}
+			|	// when/where operator
+				// equivalent to (but faster than) &{Is($LI, @@when) || Is($LI, @@where) && !_insideLinqExpr}
+				&{((lt0 = LT($LI)).Value == @@when || lt0.Value == @@where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@'}
+				&{@[Local] context.CanParse(prec=EP.When)}
+				op=TT.ContextualKeyword
+				rhs=SubExpr(EP.When)
+				{ e = F.CallInfixOp(e, op, rhs, op.Value == @@when ? S.When : S.WhereOp); }
 			)*
 			{return e;}
 		};
@@ -923,8 +946,9 @@ namespace Loyc.Ecs.Parser
 			}; 
 		};
 
-		@[private] rule ExprInParensAuto::LNode @{
-			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar
+		@[private] rule ExprInParensAuto()::LNode @{
+			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar;
+			// LLLPG seems to hate it when both branches are identical.
 			"(" ")" =>
 			(	&(ExprInParens(true) ("="|"=>"))
 				r:=ExprInParens(true)  {return r;}
@@ -934,12 +958,13 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
 		@{
-			lp:="(" rp:=")"
+			{ change_temporarily(_insideLinqExpr = false); }
+			"(" ")"
 			{
 				// Note: this parsing task is hidden from LLLPG so it doesn't try to make a 
 				// recognizer for Expr (it wouldn't work right and would need too many LoCs)
-				if (!Down(lp)) { return F.CallBrackets(S.Tuple, lp, LNode.List(), rp); };
-				return Up(InParens_ExprOrTuple(allowUnassignedVarDecl, lp.StartIndex, rp.EndIndex));
+				if (!Down($"(")) { return F.CallBrackets(S.Tuple, $"(", LNode.List(), $")"); };
+				return Up(InParens_ExprOrTuple(allowUnassignedVarDecl, $"(".StartIndex, $")".EndIndex));
 			}
 		};
 		// Called inside parens by ExprInParens
@@ -1525,7 +1550,7 @@ namespace Loyc.Ecs.Parser
 		
 		@[private] rule LinqWhere::LNode @{
 			&{@[Hoist] Is($LI, @@where)} kw:=TT.ContextualKeyword e:=ExprStart(false)
-			{return F.CallPrefixOp(S.Where, kw, e);}
+			{return F.CallPrefixOp(S.WhereClause, kw, e);}
 		};
 		
 		@[LL(1)]
@@ -1931,11 +1956,11 @@ namespace Loyc.Ecs.Parser
 			bases:=BaseListOpt
 			(	end:=";"
 				{return F.Call(kw, name, bases, startIndex, end.EndIndex);}
-			|	lb:="{" rb:="}"
+			|	"{" "}"
 				{
-					var list = ExprListInside(lb, true);
-					var body = F.Braces(list, lb.StartIndex, rb.EndIndex);
-					return F.Call(kw, LNode.List(name, bases, body), startIndex, body.Range.EndIndex);
+					var list = ExprListInside($"{", true);
+					var body = F.CallBrackets(S.Braces, $"{", list, $"}");
+					return F.CallPrefix(kw, LNode.List(name, bases, body), $"}");
 				}
 			)
 		};
@@ -1987,7 +2012,7 @@ namespace Loyc.Ecs.Parser
 			constraints+=WhereConstraint
 			("," constraints+=WhereConstraint)*
 			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol, 
-				F.CallPrefixOp(S.Where, where, constraints)));}
+				F.CallPrefixOp(S.WhereClause, where, constraints)));}
 		};
 		@[private] rule WhereConstraint::LNode @{
 			(	t:=(TT.Class | TT.Struct) {return F.Id(t);}
