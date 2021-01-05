@@ -181,13 +181,20 @@ namespace Loyc.Ecs.Tests
 			Expr("Foo[]",            F.Call(S.IndexBracks, Foo)); // "Foo[]" means @'of(#`[]`, Foo) only in a type context
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x as Foo",         F.Call(S.As, x, Foo));
-			Expr("x is Foo",         F.Call(S.Is, x, Foo));
+			Expr("x as Foo[]",       F.Call(S.As, x, F.Of(S.Array, Foo)));
+			Expr("x as Foo[,]",      F.Call(S.As, x, F.Of(S.TwoDimensionalArray, Foo)));
+			Expr("a is Foo",         F.Call(S.Is, a, Foo));
+			Expr("b is int",         F.Call(S.Is, b, F.Int32));
+			Expr("x is int? == c",   F.Call(S.Eq, F.Call(S.Is, x, F.Of(S.QuestionMark, F.Int32)), c));
 			var e = F.Call(S.Is, x, F.Of(Foo, a, b));
 			Expr("x is Foo<a, b>", e);
+			e = F.Of(S.QuestionMark, F.Of(Foo, a, b));
+			Expr("c is Foo<a, b>?", F.Call(S.Is, c, e));
+			Expr("x is Foo<a, b>? && c", F.Call(S.And, F.Call(S.Is, x, e), c));
 			e = F.Call(S.Is, x, F.Dot(F.Call(S.ColonColon, Foo, F.Of(x, a, b)), F.Of(Foo, T)));
 			Expr("x is Foo::x<a, b>.Foo<T>", e);
 		}
-
+		
 		[Test]
 		public void CsCallStyleOperators()
 		{
@@ -788,6 +795,8 @@ namespace Loyc.Ecs.Tests
 		public void CSharp7Patterns()
 		{
 			Expr("x is Foo", F.Call(S.Is, x, Foo));
+			Expr("a is double", F.Call(S.Is, a, F.Double));
+			Expr("a is double in 1.. 2", F.Call(S.In, F.Call(S.Is, a, F.Double), F.Call(S.DotDot, one, two)));
 			Expr("x is Foo a", F.Call(S.Is, x, F.Var(Foo, a)));
 			Expr("x is Foo<T> a", F.Call(S.Is, x, F.Var(F.Of(Foo, T), a)));
 			var e = F.Call(S.Is, x, F.Var(F.Call(S.ColonColon, Foo, F.Of(Foo, T)), a));
@@ -796,95 +805,7 @@ namespace Loyc.Ecs.Tests
 			Expr("x is Foo::x<a, b>.Foo<T> a", e);
 		}
 
-		static LNode TypedPattern(LNode type, params LNode[] positional_subpatterns)
-			=> F.Call(S.Deconstruct, F.Call(type, positional_subpatterns));
-		static LNode TuplePattern(params LNode[] positional_subpatterns)
-			=> F.Call(S.Deconstruct, F.Tuple(positional_subpatterns));
-		static LNode TypedBracePattern(LNode type, params LNode[] braced_subpatterns)
-			=> F.Call(S.Deconstruct, LNode.List(F.Call(type)).AddRange(braced_subpatterns));
-		static LNode UntypedBracePattern(params LNode[] braced_subpatterns)
-			=> F.Call(S.Deconstruct, LNode.List(F.Tuple()).AddRange(braced_subpatterns));
-
-		[Test]
-		public void CSharp8IsPatterns()
-		{
-			var _ = F.Id("_");
-			Expr("x is var(a, b, c)",   F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(a, b, c))));
-			Expr("x is var(c, (b, a))", F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(c, F.Tuple(b, a)))));
-			Expr("a is Foo",            F.Call(S.Is, a, Foo));
-			Expr("b is (Foo)",          F.Call(S.Is, b, F.InParens(Foo)));
-			Expr("c is (a, b)",         F.Call(S.Is, c, TuplePattern(a, b)));
-			Expr("x is ((c, b), a)",    F.Call(S.Is, x, TuplePattern(TuplePattern(c, b), a)));
-			Expr("a is Foo { }",        F.Call(S.Is, a, TypedPattern(Foo)));
-			Expr("b is Foo()",          F.Call(S.Is, b, TypedPattern(Foo)));
-			Expr("c is Foo(x) && true", F.Call(S.And, F.Call(S.Is, c, TypedPattern(Foo, x)), F.True));
-			Expr("x is Foo() { a } == b", F.Call(S.Eq, F.Call(S.Is, x, TypedBracePattern(Foo, a)), b));
-			Expr("a is Foo<T> { b: x }", F.Call(S.Is, a, TypedBracePattern(F.Of(Foo, T), F.Call(S.NamedArg, b, x))));
-			Expr("b is Foo<T>(b: x) { c: x }", F.Call(S.Is, b, F.Call(S.Deconstruct, F.Call(F.Of(Foo, T), F.Call(S.NamedArg, b, x)), F.Call(S.NamedArg, c, x))));
-			LNode subpat1 = F.Call(S.NamedArg, x, F.Var(F.Missing, a)), subpat2 = F.Call(S.NamedArg, x, F.Var(F.Missing, F.Tuple(b, _)));
-			Expr("c is x::Foo(x: var a) { x: var (b, _) }", F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(F.Call(S.ColonColon, x, Foo), subpat1), subpat2)));
-			subpat1 = UntypedBracePattern(_);
-			subpat2 = F.NamedArg(x, TuplePattern(a, b));
-			Expr("c is Foo({ _ }) { x: (a, b) }", F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(Foo, subpat1), subpat2)));
-			Expr("a is Foo(0, 1)", F.Call(S.Is, a, TypedPattern(Foo, zero, one)));
-			subpat2 = TuplePattern(F.NamedArg(a, zero), F.NamedArg(b, two));
-			subpat1 = TypedPattern(F.Call(S.ColonColon, x, Foo), one, F.NamedArg(b, subpat2));
-			Expr("b is x::Foo(1, b: (a: 0, b: 2))", F.Call(S.Is, b, subpat1));
-			subpat1 = F.NamedArg("Item1", TuplePattern(F.NamedArg(a, zero), F.NamedArg(b, one)));
-			var pat = TypedPattern(F.Dot(x, F.Of(Foo, a, b)), subpat1, F.NamedArg("Item2", two));
-			Expr("c is x.Foo<a, b>(Item1: (a: 0, b: 1), Item2: 2)", F.Call(S.Is, c, pat));
-			pat = TypedPattern(F.Dot(F.Of(Foo, b, a), F.Of(T, c)), UntypedBracePattern(two, one), zero);
-			Expr("x is Foo<b, a>.T<c>({ 2, 1 }, 0)", F.Call(S.Is, x, pat));
-			pat = TypedBracePattern(F.Call(S.ColonColon, x, F.Of(Foo, T)), F.NamedArg(a, TypedPattern(Foo, one)), F.NamedArg(b, UntypedBracePattern(zero)));
-			Expr("b is x::Foo<T> { a: Foo(1), b: { 0 } }", F.Call(S.Is, b, pat));
-			pat = TypedBracePattern(F.Of(Foo, a, b), F.NamedArg(Foo, TypedPattern(F.Of(Foo, T), one)), F.NamedArg(x, TuplePattern(zero, F.Var(F.Int32, x))));
-			Expr("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x), }", F.Call(S.Is, c, pat));
-			pat = TypedBracePattern(F.Call(S.ColonColon, Foo, Foo), F.NamedArg(a, F.Var(F.Int32, x)), F.NamedArg(b, F.Var(null, F.Tuple(F.Id("b1"), F.Id("b2"), _))));
-			Expr("x is Foo::Foo { a: int x, b: var(b1, b2, _) }", F.Call(S.Is, x, pat));
-		}
-
-		[Test]
-		public void CSharp8SwitchPatterns()
-		{
-			//static string Display(object o) => o switch {
-			//	Point { X: 0, Y: 0 } p => "origin",
-			//	Point { X: var x, Y: var y } p => $"({x}, {y})",
-			//	_ => "unknown"
-			//};
-		}
-
-		[Test]
-		public void CSharp9Patterns()
-		{
-			Expr("a is Foo == true",   F.Call(S.Eq, F.Call(S.Is, a, Foo), F.True));
-			Expr("b is (Foo) != true", F.Call(S.NotEq, F.Call(S.Is, b, F.InParens(Foo)), F.True));
-			Expr("c is Foo + 1",       F.Call(S.Is, c, F.Call(S.Add, Foo, one)));
-			Expr("c is (Foo + 1)",     F.Call(S.Is, c, F.InParens(F.Call(S.Add, Foo, one))));
-			Expr("c is (float) 2",     F.Call(S.Is, c, F.Call(S.Cast, two, F.Single).SetStyle(NodeStyle.OldStyle)));
-			Expr("x is null",          F.Call(S.Is, x, F.Null));
-			Expr("x is not null",      F.Call(S.Is, x, F.Call(S.PatternNot, F.Null)));
-			Expr("x is not not 2",     F.Call(S.Is, x, F.Call(S.PatternNot, F.Call(S.PatternNot, two))));
-			Expr("x is 1 or 3 or < 0", F.Call(S.Is, x, F.Call(S.PatternOr, F.Call(S.PatternOr, one, F.Literal(3)), F.Call(S.LT, zero))));
-			var pat = F.Call(S.Unchecked, F.Call(S.Cast, F.InParens(F.Call(S.Sub, one)), F.UInt32).SetStyle(NodeStyle.OldStyle));
-			Expr("uint.MaxValue is unchecked((uint)(-1))", F.Call(S.Is, F.Dot(F.UInt32, F.Id("MaxValue")), pat));
-			var az = F.Call(S.PatternAnd, F.Call(S.GE, F.Literal('a')), F.Call(S.LE, F.Literal('z')));
-			var AZ = F.Call(S.PatternAnd, F.Call(S.GE, F.Literal('A')), F.Call(S.LE, F.Literal('Z')));
-			pat = F.Call(S.PatternOr, F.InParens(az), AZ);
-			Stmt("bool IsLetter(char c) => c is (>= 'a' and <= 'z') or >= 'A' and <= 'Z';",
-				F.Fn(F.Bool, F.Id("IsLetter"), F.List(F.Var(F.Char, c)), F.Call(S.Is, c, pat)));
-
-			// Tricky cases
-			Expr("x is (Foo) a", F.Call(S.Is, x, F.Call(S.Cast, a, Foo).SetStyle(NodeStyle.OldStyle)));
-			Expr("x is (Foo + 1) b", F.Call(S.Is, x, F.Var(TuplePattern(F.Call(S.Add, Foo, one)), b)));
-		}
-
-		[Test]
-		public void CSharp9WithExpression()
-		{
-			
-		}
-
-		LNode TupleType(params LNode[] parts) => F.Of(_(S.Tuple), parts);
+		static LNode TupleType(params LNode[] parts) => F.Of(F.Id(S.Tuple), parts);
 
 		[Test]
 		public void CSharp7TupleTypes()
@@ -911,6 +832,27 @@ namespace Loyc.Ecs.Tests
 
 			// Not directly supported; this parses as method call
 			Stmt("var(a, b) = (x, T);", F.Call(S.Assign, F.Call("var", a, b), F.Tuple(x, T)));
+		}
+
+		[Test]
+		public void CSharp7PatternsWithTupleTypes()
+		{
+			// Note: the syntactic structure of `x is (A, B)` changed retroactively in C# 8.
+			// Previously it was a tuple type, but in C# 8 it became a deconstruction, although
+			// the effect of the expression should not have changed in 99.9% of cases. However,
+			// if I define `const int Int32` then the expression `(1, 2) is (Int32, Int32)` 
+			// is false in my copy of C# 9, but it would have been true in C# 7, I think (the 
+			// existence of `const int Int32` should not have mattered in C# 7, as a type 
+			// lookup was being performed.)
+			Expr("a is (Foo, Foo)", F.Call(S.Is, a, TuplePattern(Foo, Foo)));
+			Expr("a is (Foo, Foo)", F.Call(S.Is, a, TupleType(Foo, Foo)), Mode.PrinterTest);
+			Expr("b is (Foo, Foo)?", F.Call(S.Is, b, F.Of(S.QuestionMark, TupleType(Foo, Foo))));
+			Expr("c is (Foo, int) && b", F.Call(S.And, F.Call(S.Is, c, TuplePattern(Foo, F.Int32)), b));
+			Expr("x is (int, Foo)? || b", F.Call(S.Or, F.Call(S.Is, x, F.Of(S.QuestionMark, TupleType(F.Int32, Foo))), b));
+			Expr("a is (int, Foo)[,]", F.Call(S.Is, a, F.Of(S.TwoDimensionalArray, TupleType(F.Int32, Foo))));
+			Expr("b as (Foo, int)[,] == null", F.Call(S.Eq, F.Call(S.As, b, F.Of(S.TwoDimensionalArray, TupleType(Foo, F.Int32))), F.Null));
+			Expr("c as (int, Foo) == b", F.Call(S.Eq, F.Call(S.As, c, TupleType(F.Int32, Foo)), b));
+			Expr("x = a is (Foo, int)[]", F.Call(S.Assign, x, F.Call(S.Is, a, F.Of(S.Array, TupleType(Foo, F.Int32)))));
 		}
 
 		[Test]
@@ -991,18 +933,6 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CSharp8RangeOps()
-		{
-			Expr("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
-			Expr("a..b * ..c", F.Call(S.Mul, F.Call(S.DotDot, a, b), F.Call(S.DotDot, c)));
-			Expr("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
-			Expr("a..*b", F.Call(S.DotDot, a, F.Call(S._Dereference, b)));
-			// TODO: .. suffix operator
-			//Expr("a..", F.Call(S.DotDot, a));
-			//Expr("Foo[x..]", F.Call(S.IndexBracks, Foo, F.Call(S.DotDot, x)));
-		}
-
-		[Test]
 		public void CSharp7OtherFeatures()
 		{
 			// None of this syntax is new in EC#. Notes:
@@ -1046,7 +976,19 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CSharpNullable()
+		public void CSharp8RangeOps()
+		{
+			Expr("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
+			Expr("a..b * ..c", F.Call(S.Mul, F.Call(S.DotDot, a, b), F.Call(S.DotDot, c)));
+			Expr("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
+			Expr("a..*b", F.Call(S.DotDot, a, F.Call(S._Dereference, b)));
+			// TODO: .. suffix operator
+			//Expr("a..", F.Call(S.DotDot, a));
+			//Expr("Foo[x..]", F.Call(S.IndexBracks, Foo, F.Call(S.DotDot, x)));
+		}
+
+		[Test]
+		public void CSharp8Nullable()
 		{
 			Stmt("#nullable enable", F.Call(S.PPNullable, F.Literal("enable")));
 			Stmt("int x;\n" +
@@ -1064,6 +1006,112 @@ namespace Loyc.Ecs.Tests
 			// Try to trick the parser into failing
 			// (#nullable is a contextual keyword - it must appear at beginning of a line)
 			Stmt("int #nullable;", F.Var(F.Int32, _("#nullable")), mode: Mode.ParserTest);
+		}
+
+		static LNode TypedPattern(LNode type, params LNode[] positional_subpatterns)
+			=> F.Call(S.Deconstruct, F.Call(type, positional_subpatterns));
+		static LNode TuplePattern(params LNode[] positional_subpatterns)
+			=> F.Call(S.Deconstruct, F.Tuple(positional_subpatterns));
+		static LNode TypedBracePattern(LNode type, params LNode[] braced_subpatterns)
+			=> F.Call(S.Deconstruct, LNode.List(F.Call(type)).AddRange(braced_subpatterns));
+		static LNode UntypedBracePattern(params LNode[] braced_subpatterns)
+			=> F.Call(S.Deconstruct, LNode.List(F.Tuple()).AddRange(braced_subpatterns));
+
+		[Test]
+		public void CSharp8IsPatterns()
+		{
+			var _ = F.Id("_");
+			Expr("x is var (a, b, c)",        F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(a, b, c))));
+			Expr("x is var (c, (b, a))",      F.Call(S.Is, x, F.Call(S.Var, F.Missing, F.Tuple(c, F.Tuple(b, a)))));
+			Expr("a is Foo",                  F.Call(S.Is, a, Foo));
+			Expr("b is (Foo)",                F.Call(S.Is, b, F.InParens(Foo)));
+			Expr("c is (Foo<a, b>)",          F.Call(S.Is, c, F.InParens(F.Of(Foo, a, b))));
+			Expr("a is (a, b)",               F.Call(S.Is, a, TuplePattern(a, b)));
+			Expr("b is (a, (b))",             F.Call(S.Is, b, TuplePattern(a, F.InParens(b))));
+			Expr("c is ((c, b), a)",          F.Call(S.Is, c, TuplePattern(TuplePattern(c, b), a)));
+			Expr("a is Foo { }",              F.Call(S.Is, a, TypedPattern(Foo)));
+			Expr("b is Foo()",                F.Call(S.Is, b, TypedPattern(Foo)), Mode.ParserTest);
+			Expr("c is Foo(x) && true",       F.Call(S.And, F.Call(S.Is, c, TypedPattern(Foo, x)), F.True));
+			Expr("x is Foo() { a } == b",     F.Call(S.Eq, F.Call(S.Is, x, TypedBracePattern(Foo, a)), b), Mode.ParserTest);
+			Expr("x is Foo { a } == b",       F.Call(S.Eq, F.Call(S.Is, x, TypedBracePattern(Foo, a)), b));
+			Expr("a is Foo<T> { b: x }",      F.Call(S.Is, a, TypedBracePattern(F.Of(Foo, T), F.Call(S.NamedArg, b, x))));
+			Expr("b is Foo<T>(b: x) { c: x }", F.Call(S.Is, b, F.Call(S.Deconstruct, F.Call(F.Of(Foo, T), F.Call(S.NamedArg, b, x)), F.Call(S.NamedArg, c, x))));
+			LNode subpat1 = F.Call(S.NamedArg, x, F.Var(F.Missing, a)), subpat2 = F.Call(S.NamedArg, x, F.Var(F.Missing, F.Tuple(b, _)));
+			Expr("c is x::Foo(x: var a) { x: var (b, _) }", F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(F.Call(S.ColonColon, x, Foo), subpat1), subpat2)));
+			Expr("x is Foo[](a)",             F.Call(S.Is, x, F.Call(S.Deconstruct, F.Call(F.Of(S.Array, Foo), a))));
+			Expr("a is Foo[] { a, b }",       F.Call(S.Is, a, F.Call(S.Deconstruct, F.Call(F.Of(S.Array, Foo)), a, b)));
+			Expr("b is Foo<T, x>[](a) { c }", F.Call(S.Is, b, F.Call(S.Deconstruct, F.Call(F.Of(S.Array, F.Of(Foo, T, x)), a), c)));
+			Expr("c is (Foo, T)[](a) { b }",  F.Call(S.Is, c, F.Call(S.Deconstruct, F.Call(F.Of(S.Array, TupleType(Foo, T)), a), b)));
+			subpat1 = UntypedBracePattern(_);
+			subpat2 = F.NamedArg(c, TuplePattern(a, b));
+			Expr("x is Foo({ _ }) { c: (a, b) }", F.Call(S.Is, x, F.Call(S.Deconstruct, F.Call(Foo, subpat1), subpat2)));
+			Expr("a is Foo(0, 1)",            F.Call(S.Is, a, TypedPattern(Foo, zero, one)));
+			subpat2 = TuplePattern(F.NamedArg(a, zero), F.NamedArg(b, two));
+			subpat1 = TypedPattern(F.Call(S.ColonColon, x, Foo), one, F.NamedArg(b, subpat2));
+			Expr("b is x::Foo(1, b: (a: 0, b: 2))", F.Call(S.Is, b, subpat1));
+			subpat1 = F.NamedArg("Item1", TuplePattern(F.NamedArg(a, zero), F.NamedArg(b, one)));
+			var pat = TypedPattern(F.Dot(x, F.Of(Foo, a, b)), subpat1, F.NamedArg("Item2", two));
+			Expr("c is x.Foo<a, b>(Item1: (a: 0, b: 1), Item2: 2)", F.Call(S.Is, c, pat));
+			pat = TypedPattern(F.Dot(F.Of(Foo, b, a), F.Of(T, c)), UntypedBracePattern(two, one), zero);
+			Expr("x is Foo<b, a>.T<c>({ 2, 1 }, 0)", F.Call(S.Is, x, pat));
+			pat = TypedBracePattern(F.Call(S.ColonColon, x, F.Of(Foo, T)), F.NamedArg(a, TypedPattern(Foo, one)), F.NamedArg(b, UntypedBracePattern(zero)));
+			Expr("b is x::Foo<T> { a: Foo(1), b: { 0 } }", F.Call(S.Is, b, pat));
+			pat = TypedBracePattern(F.Of(Foo, a, b), F.NamedArg(Foo, TypedPattern(F.Of(Foo, T), one)), F.NamedArg(x, TuplePattern(zero, F.Var(F.Int32, x))));
+			Expr("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x), }", F.Call(S.Is, c, pat), Mode.ParserTest);
+			Expr("c is Foo<a, b> { Foo: Foo<T>(1), x: (0, int x) }", F.Call(S.Is, c, pat));
+			pat = TypedBracePattern(F.Call(S.ColonColon, Foo, Foo), F.NamedArg(a, F.Var(F.Int32, x)), F.NamedArg(b, F.Var(null, F.Tuple(F.Id("b1"), F.Id("b2"), _))));
+			Expr("x is Foo::Foo { a: int x, b: var (b1, b2, _) }", F.Call(S.Is, x, pat));
+		}
+
+		[Test]
+		public void CSharp8SwitchPatterns()
+		{
+			//static string Display(object o) => o switch {
+			//	Point { X: 0, Y: 0 } p => "origin",
+			//	Point { X: var x, Y: var y } p => $"({x}, {y})",
+			//	_ => "unknown"
+			//};
+		}
+
+		[Test]
+		public void CSharp9Patterns()
+		{
+			Expr("a is Foo == true",   F.Call(S.Eq, F.Call(S.Is, a, Foo), F.True));
+			Expr("b is (Foo) != true", F.Call(S.NotEq, F.Call(S.Is, b, F.InParens(Foo)), F.True));
+			Expr("c is Foo + 1",       F.Call(S.Is, c, F.Call(S.Add, Foo, one)));
+			Expr("c is (Foo + 1)",     F.Call(S.Is, c, F.InParens(F.Call(S.Add, Foo, one))));
+			Expr("c is (float) 2",     F.Call(S.Is, c, F.Call(S.Cast, two, F.Single).SetStyle(NodeStyle.OldStyle)));
+			Expr("x is null",          F.Call(S.Is, x, F.Null));
+			Expr("x is not null",      F.Call(S.Is, x, F.Call(S.PatternNot, F.Null)));
+			Expr("x is not not 2",     F.Call(S.Is, x, F.Call(S.PatternNot, F.Call(S.PatternNot, two))));
+			Expr("x is not (not Foo)", F.Call(S.Is, x, F.Call(S.PatternNot, F.InParens(F.Call(S.PatternNot, Foo)))));
+			Expr("x is 1 or 3 or < 0", F.Call(S.Is, x, F.Call(S.PatternOr, F.Call(S.PatternOr, one, F.Literal(3)), F.Call(S.LT, zero))));
+			Expr("x is 1 or (2 or < 0)", F.Call(S.Is, x, F.Call(S.PatternOr, one, F.InParens(F.Call(S.PatternOr, two, F.Call(S.LT, zero))))));
+			var pat = F.Call(S.Unchecked, F.Call(S.Cast, F.InParens(F.Call(S.Sub, one)), F.UInt32).SetStyle(NodeStyle.OldStyle));
+			Expr("uint.MaxValue is unchecked((uint) (-1))", F.Call(S.Is, F.Dot(F.UInt32, F.Id("MaxValue")), pat));
+			var az = F.Call(S.PatternAnd, F.Call(S.GE, F.Literal('a')), F.Call(S.LE, F.Literal('z')));
+			var AZ = F.Call(S.PatternAnd, F.Call(S.GE, F.Literal('A')), F.Call(S.LE, F.Literal('Z')));
+			pat = F.Call(S.PatternOr, F.InParens(az), AZ);
+			Stmt("bool IsLetter(char c) => c is (>= 'a' and <= 'z') or >= 'A' and <= 'Z';",
+				F.Fn(F.Bool, F.Id("IsLetter"), F.List(F.Var(F.Char, c)), F.Call(S.Is, c, pat)));
+
+			// Tricky cases
+			Expr("x is (Foo) { } a", F.Call(S.Is, x, F.Var(TuplePattern(Foo), a)));
+			Expr("x is (Foo) b", F.Call(S.Is, x, F.Call(S.Cast, b, Foo).SetStyle(NodeStyle.OldStyle)));
+			pat = F.Call(S.Is, x, F.Var(TuplePattern(F.Call(S.Add, Foo, zero)), c));
+			Expr("x is (Foo + 0) c", pat, Mode.ParserTest);
+			Expr("x is (Foo + 0) { } c", pat, Mode.PrinterTest);
+		}
+
+		[Test]
+		public void CSharp9SwitchPatterns()
+		{
+		}
+
+		[Test]
+		public void CSharp9WithExpression()
+		{
+			
 		}
 
 		[Test]

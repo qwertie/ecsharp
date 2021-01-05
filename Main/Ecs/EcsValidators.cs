@@ -627,30 +627,25 @@ namespace Loyc.Ecs
 		}
 
 		/// <summary>Checks whether an expression is a valid "is" test (pattern-
-		/// matching expression) such as "x is Foo", "x is Foo y" or "x is Foo y(z)".</summary>
-		/// <remarks>The format of a valid "is" test is <c>@'is(subject, type_or_vardecl, extraArgsList)</c>.
-		/// For example <c>a is Foo</c> would be <c>@'is(a, Foo)</c> and
-		/// <c>a is Foo b(c, d)</c> would be <c>@'is(a, #var(Foo, b), #(c, d))</c>.
-		/// Unary "is" expressions like <c>is Foo</c> are stored as binary expressions 
-		/// with an empty identifier as the left-hand side: <c>@'is(@``, Foo)</c>.
+		/// matching expression) such as "x is Foo", "x is Foo y" or "x is (> 1, int)".
+		/// As of C# 8 the syntax of this operator is extremely complex and in the
+		/// interest in limiting my workload, a full validation is not performed.</summary>
+		/// <remarks>
+		/// Before v2.9 the format of a valid "is" test was 
+		/// <c>@'is(subject, type_or_vardecl, extraArgsList)</c>.
+		/// The new version drops support for extraArgsList and for the unary form
+		/// of the `is` operator (which was stored as <c>@'is(@``, Foo)</c>),
+		/// in favor of simply copying the changes introduced in C# 8 and 9.
 		/// </remarks>
-		public static bool IsIsTest(LNode n, out LNode subject, out LNode targetType, out LNode targetVarName, out LNode extraArgs, Pedantics p = Pedantics.Lax)
+		public static bool IsIsTest(LNode n, out LNode subject, out LNode pattern)
 		{
-			// `x is Foo<T> y (e1, e2)` parses to @'is(x, #var(Foo<T>, y), e1, e2)
-			subject = targetType = targetVarName = extraArgs = null;
-			if (!n.CallsMin(S.Is, 2))
-				return false;
-
-			int c = n.ArgCount;
-			if (c > 3 || c == 3 && !(extraArgs = n.Args[2]).Calls(S.AltList))
-				return false;
-
-			subject = n.Args[0];
-			LNode target = n.Args[1], initialValue;
-			if (IsVariableDeclExpr(target, out targetType, out targetVarName, out initialValue, p))
-				return initialValue == null;
-			else
-				return IsComplexIdentifier(targetType = target, ICI.AllowAnyExprInOf, p);
+			if (n.Calls(S.Is, 2)) {
+				subject = n[0];
+				pattern = n[1];
+				return true;
+			}
+			subject = pattern = null;
+			return false;
 		}
 
 		#region Linq expression validation

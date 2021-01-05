@@ -413,6 +413,13 @@ namespace Loyc.Ecs
 			/// <summary>A signal that IF there is no trivia indicating whether or not 
 			/// to print a newline before the current statement, one should be printed.</summary>
 			NewlineBeforeChildStmt = 0x80000,
+			/// <summary>Indicates that a pattern is being printed (either the right-hand 
+			/// side of the `is` operator, or a pattern within a `switch` expression block), 
+			/// so the `'deconstruct`, `'not`, `'and` and `'or` operators can be used.</summary>
+			IsPattern = 0x100000,
+			/// <summary>Indicates that a "constant expression" within a pattern is being 
+			/// printed, so the `=>` operator is unavailable.</summary>
+			InPattern = 0x200000,
 		}
 
 		bool Flagged(Ambiguity flag)
@@ -572,7 +579,10 @@ namespace Loyc.Ecs
 
 		bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
 		{
-			return EcsValidators.IsVariableDecl(_n, allowMultiple, allowNoAssignment, Pedantics);
+			if ((_flags & Ambiguity.IsPattern) == 0)
+				return EcsValidators.IsVariableDecl(_n, allowMultiple, allowNoAssignment, Pedantics);
+			else
+				return _n.Calls(S.Var, 2); // pattern-printing code is very lax & lazy right now
 		}
 
 		bool IsComplexIdentifier(LNode n, ICI f = ICI.Default)

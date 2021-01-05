@@ -612,11 +612,12 @@ namespace Loyc.Ecs
 		}
 		private void PrintArgList(LNodeList args, ParenFor kind, bool allowUnassignedVarDecl, bool omitMissingArguments, char separator = ',')
 		{
-			using (WithFlags(allowUnassignedVarDecl ? Ambiguity.AllowUnassignedVarDecl : 0)) {
+			var keepFlags = _flags & (Ambiguity.InPattern | Ambiguity.IsPattern);
+			using (WithFlags(keepFlags | (allowUnassignedVarDecl ? Ambiguity.AllowUnassignedVarDecl : 0))) {
 				WriteOpenParen(kind);
-				_out.Indent();
+				_out.Indent(PrinterIndentHint.Brackets);
 				PrintArgs(args, _flags, omitMissingArguments, separator);
-				_out.Dedent();
+				_out.Dedent(PrinterIndentHint.Brackets);
 				WriteCloseParen(kind);
 			}
 		}

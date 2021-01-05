@@ -22,6 +22,8 @@ namespace LeMP
 	partial class StandardMacros
 	{
 		[LexicalMacro("match (var) { case ...: ... }; // In LES, use a => b instead of case a: b", 
+		"DEPRECATED - use C# 9 pattern matching instead. The syntax `x is T(...)` and `x is T t(...)` has been disabled in the parser.\n" +
+		"\n" +
 		"Attempts to match and deconstruct an object against \"patterns\", such as tuples, ranges or an algebraic data type. Example:\n" + 
 		"match (obj) {  \n" + 
 		"   case is Shape(ShapeType.Circle, $size, Location is Point<int> $p($x, $y)): \n" + 

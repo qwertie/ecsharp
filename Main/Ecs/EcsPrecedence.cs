@@ -67,8 +67,11 @@ namespace Loyc.Ecs
 		public static readonly Precedence OrBits     = new Precedence(28, 28, 32, 45); //!<  |    while allowing & ^ | to be mixed with each other.)
 		public static readonly Precedence And        = new Precedence(22);             //!<  &&
 		public static readonly Precedence Or         = new Precedence(20);             //!<  || ^^
-		public static readonly Precedence OrIfNull   = new Precedence(16);             //!<  ??
-		public static readonly Precedence PipeArrow  = new Precedence(13);             //!<  |>  ?|>  |=>  ?|=>
+		public static readonly Precedence OrIfNull   = new Precedence(17);             //!<  ??
+		public static readonly Precedence PipeArrow  = new Precedence(15);             //!<  |>  ?|>  |=>  ?|=>
+		public static readonly Precedence PatternNot = new Precedence(13);             //!<  not (right-hand side of is/switch only)
+		public static readonly Precedence PatternAnd = new Precedence(12);             //!<  and (right-hand side of is/switch only)
+		public static readonly Precedence PatternOr  = new Precedence(11);             //!<  or  (right-hand side of is/switch only)
 		public static readonly Precedence IfElse     = new Precedence(11, 10, 10, 11); //!<  x ? y : z
 		public static readonly Precedence WhenWhere  = new Precedence(5);              //!<  when, where
 		public static readonly Precedence Assign     = new Precedence(26,  0,  0, 1);  //!<  =  *=  /=  %=  +=  -=  <<=  >>=  &=  ^=  |= ??= ~=

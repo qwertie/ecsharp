@@ -58,7 +58,8 @@ namespace LeMP.Tests
 					.Replace("tmp_1", "tmp_" + n));
 
 			// Use core features together, with nesting
-			n = MacroProcessor.NextTempCounter;
+			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
+			/*n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 					match (obj) {
 						case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
@@ -89,7 +90,7 @@ namespace LeMP.Tests
 					}
 				} while(false);"
 				.Replace("tmp_A", "tmp_" + n)
-				.Replace("tmp_B", "tmp_" + (n + 1)));
+				.Replace("tmp_B", "tmp_" + (n + 1)));*/
 
 			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
@@ -117,7 +118,8 @@ namespace LeMP.Tests
 		{
 			// Test `ref` inside and outside `$`
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
+			/*TestEcs(@"
 				int x, y;
 				SizeF size;
 				Point<int> p;
@@ -147,8 +149,8 @@ namespace LeMP.Tests
 					}
 				while(false);"
 				.Replace("tmp_A", "tmp_" + n)
-				.Replace("tmp_B", "tmp_" + (n + 1)));
-			
+				.Replace("tmp_B", "tmp_" + (n + 1)));*/
+
 			// Test two patterns on one case
 			TestEcs(@"
 				match (obj) {
@@ -176,7 +178,8 @@ namespace LeMP.Tests
 		{
 			// Test ranges
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
+			/*TestEcs(@"
 				match (obj) {
 					case $t is Thing(ref $r is double in x..y, c...d) in x..<y:
 						DoSomethingWith(t, r);
@@ -194,7 +197,7 @@ namespace LeMP.Tests
 						}
 					}
 				while(false);"
-				.Replace("tmp_1", "tmp_" + n));
+				.Replace("tmp_1", "tmp_" + n));*/
 
 			// Bug fix: This combination didn't work
 			n = MacroProcessor.NextTempCounter;

@@ -329,7 +329,6 @@ namespace Loyc.Ecs.Parser
 				//                           // In C# 9 it's treated as type Foo?[] with an error that [] isn't empty
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				&{mode != TypeParseMode.Pattern}
 				t:="?" ( &{@[Local] mode == TypeParseMode.Normal} 
 				       | &!(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.Literal 
 				         | TT.New | "(" | "{" | "+" | "-" | "*" | "&" | "!" | "~"
@@ -468,6 +467,8 @@ namespace Loyc.Ecs.Parser
 					                         F.Braces(block, StmtListInside(block), rb));
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
+			|	// DEPRECATED: unary `is` operator (supports the old EC# pattern syntax in switch statements)
+				t:=TT.Is r=IsPattern(F.Missing, t)
 			|	error 
 				{r = Error("'{0}': Expected an expression: (parentheses), {{braces}}, identifier, literal, or $substitution.", CurrentTokenText());} 
 				greedy[ (~(","|";")) ]*
@@ -734,7 +735,7 @@ namespace Loyc.Ecs.Parser
 			|	// is-test or a more complex is-expr
 				&{@[Local] context.CanParse(prec=EP.Is)}
 				op:=TT.Is
-				rhs:=Pattern(prec) //e=IsPattern(e, op)
+				rhs:=Pattern(prec)
 				{e = F.CallInfixOp(e, op, rhs, S.Is);}
 			|	// 'as' or 'using' cast (special case: 'using instead of #using)
 				&{@[Local] context.CanParse(prec=EP.AsUsing)}
@@ -758,6 +759,9 @@ namespace Loyc.Ecs.Parser
 			{return e;}
 		};
 
+		// DEPRECATED - original EC# "is" pattern matching. Short & simple...
+		// TODO: delete this
+		@[recognizer(fn Scan_IsPattern())]
 		@[private] token IsPattern(lhs::LNode, isTok::Token)::LNode // 'token' is used to avoid long analysis in LLLPG
 		@{
 			{argList::LNodeList = (new LNodeList(lhs));}
@@ -789,54 +793,27 @@ namespace Loyc.Ecs.Parser
 			{var attrs = LNodeList.Empty;}
 			hasList:=NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
-			(SubExpr => (
+			(SubExpr => ({
+				// Unassigned var decl is allowed when attributes are present (e.g. out)
+				if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
 
-			// I had an idea to parse patterns as part of normal expr parsing. 
-			// On second thought we probably won't take this route.
-				// <s>Inside a pattern (C# 8/9 feature) we do not try to detect variable 
-				// declarations initially, instead the strategy is to detect them later, 
-				// after parsing the main part of the pattern; basically a pattern like 
-				// `Foo[,] x` is parsed as a suffix operator called `x` applied to the 
-				// expression `Foo[,]`. I never attempted a similar strategy for normal 
-				// expressions, perhaps because 
-				// 1. Word attributes create difficulties (e.g. `word word Foo x = default`,
-				//    and worst of all `new` e.g. `new Foo x = default`). 
-				//    These are not allowed in patterns (and arguably shouldn't be 
-				//    allowed in expressions either, but that's an argument for another day)
-				// 2. In a normal expression, `Foo.Bar ? x = 0` looks like the beginning of 
-				//    a ternary operator without special lookahead code to detect it as a 
-				//    variable declaration.
-				// 3. If `Foo[,]` is interpreted as a type, it is structurally different 
-				//    from `Foo[,]` interpreted as an expression. Must handle this somehow.</s>
-			//	&{_insidePattern}
-			//	// Must use (_* =>) because LLLPG is completely paralyzed while trying to 
-			//	// decide between (SubExpr | SubExpr). Surprisingly, even (SubExpr | _*)
-			//	// makes it lock up for over 30 seconds. This grammar is hard to debug tho.
-			//	(_* => result:SubExpr(StartExpr))
-			///	(_* => 
-				{
-					// Unassigned var decl is allowed when attributes are present (e.g. out)
-					if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
-
-					// PEG-style parse: try one thing, then the other.
-					expr::LNode;
-					var(tresult::TentativeResult, _::TentativeResult);
-					if (allowUnassignedVarDecl) {
-						expr = TryParseVarDecl(attrs, out tresult, allowUnassignedVarDecl)
-							?? TryParseNonVarDeclExpr(attrs, out tresult);
-					} else {
-						expr = TryParseNonVarDeclExpr(attrs, out tresult);
-						// If parsing as expression succeeds but it's an assignment with
-						// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
-						if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
-							InputPosition = tresult.OldPosition;
-							expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
-						};
+				// PEG-style parse: try one thing, then the other.
+				expr::LNode;
+				var(tresult::TentativeResult, _::TentativeResult);
+				if (allowUnassignedVarDecl) {
+					expr = TryParseVarDecl(attrs, out tresult, allowUnassignedVarDecl)
+						?? TryParseNonVarDeclExpr(attrs, out tresult);
+				} else {
+					expr = TryParseNonVarDeclExpr(attrs, out tresult);
+					// If parsing as expression succeeds but it's an assignment with
+					// > on the RHS, try parsing as a var decl too (consider `List<Foo>x=0`)
+					if expr == null || (expr.Calls(S.Assign, 2) && expr.Args[0].Calls(S.GT, 2)) {
+						InputPosition = tresult.OldPosition;
+						expr = TryParseVarDecl(attrs, out _, allowUnassignedVarDecl);
 					};
-					$result = expr ?? Commit(tresult);
-				}
-			//	)
-			))
+				};
+				$result = expr ?? Commit(tresult);
+			}))
 		};
 
 		// Helper functions for parsing normal expressions and var-decl expressions
@@ -1003,7 +980,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// ---------------------------------------------------------------------
-		// -- "Patterns" and switch expressions --------------------------------
+		// -- "Patterns" (used in `is` and `switch` expressions) ---------------
 		// ---------------------------------------------------------------------
 		//
 		// A pattern can appear after `is` or `case`, or inside the braced block
@@ -1011,9 +988,9 @@ namespace Loyc.Ecs.Parser
 		// in Enhanced C# v29 until we figure out how to resolve the major syntax 
 		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
 		//
-		// An ambiguous grammar for patterns is given on the following page:
+		// A ridiculously ambiguous grammar for patterns is given on this page:
 		// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
-		// Sadly, not only does this show any C# 9 features, but the C# 9 proposal at
+		// Sadly, not only does it not show any C# 9 features, but the C# 9 proposal at
 		// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
 		// refers to "existing" productions like primary_pattern that DON'T EXIST
 		// in the C# 8 version. Anyway, here is my attempt to piece together a 
@@ -1053,8 +1030,8 @@ namespace Loyc.Ecs.Parser
 		// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
 		//   relational_expression : <<no definition is provided!>>
 		//
-		// NOTES:
-		// ------
+		// NOTES ON AMBIGUITIES:
+		// ---------------------
 		// - The var_pattern is simply a special case of positional_pattern in which 
 		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
 		//   But though syntactically it's a subset, its meaning is of course quite 
@@ -1070,6 +1047,38 @@ namespace Loyc.Ecs.Parser
 		//   `constant_expression`) because `(A, B)` looks like a positional pattern and
 		//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
 		//   that (A, B) is a pattern and not a type name nor a value.
+		// - An expression of the form `(Int32) x` is tricky, since it matches 
+		//   positional_pattern and constant_expression equally well. C# treats this 
+		//   as constant_pattern, but superficially similar patterns like 
+		//   `(Int32 + 1) x` are positional_patterns.
+		// - One of the most surprising cases is e.g. `(1, 2) is (Int32, Int32)`. 
+		//   Normally this is true, implying `(Int32, Int32)` is a type, but if you
+		//   define a `const int Int32`, this becomes false. So, is it a type_pattern
+		//   or is it a positional_pattern? A couple more: `(1, 2) is (Int32, int)` 
+		//   and `(1, 2) is (Int32, 2)` are both true iff Int32==1. I think the 
+		//   answer is positional_pattern; I think after parsing, the compiler tries 
+		//   to interpret each subpattern first as a value, and if that fails, next 
+		//   as a type. But this contradicts an earlier decision: `~Int32 is Int32` 
+		//   returns true! In _this_ case the order is reversed - the pattern is
+		//   interpreted first as a type, and next as a value. It's bizarre.
+		//   It even looks like a breaking change, as `(1, 2) is (Int32, Int32)` 
+		//   would have been true in C# 7, I think (the existence of `const int Int32` 
+		//   should not have mattered in C# 7, as a type lookup was being performed.)
+		// - Having defined `const int _ = 5;`, it is a syntax error to say
+		//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
+		//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
+		// - Postfix `++` and `--` cause syntax errors, so I could not find out
+		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
+		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
+		//
+		// NOTES ON PRECEDENCE AND LIMITATIONS
+		// -----------------------------------
+		// - There are undocumented restrictions on the usage of types and their
+		//   suffixes. Although `(int, int)? tupleQ` is a valid variable declaration,
+		//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
+		//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
+		//   like `int?` is a syntax error in this context, but all arrays somehow 
+		//   work, e.g. `(T,U)[,]`. `Foo*` is right out.
 		// - My experimentation suggests that constant_expression, as you might guess,
 		//   has a precedence matching the `is` operator when it appears on the right-
 		//   hand side of an is-expression. In a switch expression it can be almost
@@ -1088,13 +1097,6 @@ namespace Loyc.Ecs.Parser
 		//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
 		//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
 		//   `(object)x switch { <= 2 << 3 => 7 }`.
-		// - An expression of the form `(Int32) x` is tricky, since it matches 
-		//   positional_pattern and constant_expression equally well. C# treats this 
-		//   as constant_pattern, but superficially similar patterns like 
-		//   `(Int32 + 1) x` are positional_patterns.
-		// - Postfix `++` and `--` cause syntax errors, so I could not find out
-		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
-		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
 		// - However, the parser sees `when` as an identifier in some cases and as a 
 		//   keyword at other times. Here are a couple of interesting cases:
 		//     const int when = 77;
@@ -1102,17 +1104,12 @@ namespace Loyc.Ecs.Parser
 		//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
 		//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
 		//   The first `switch` expression is `0`; the second is `7`.
-		// - Having defined `const int _ = 5;`, it is a syntax error to say
-		//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
-		//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
-		// - Although `(int, int)? tupleQ` is a valid variable declaration,
-		//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
-		//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
-		//   like `int?` is a syntax error, but arrays work (e.g. `(T,U)[,]`). 
-		//   `int*` is right out.
 		// - `when` is not allowed in an is-expression; you can write
 		//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
 		//   `(object)2   is     int x when x < 5` is a syntax error.
+		//
+		// ADDITIONAL NOTES
+		// ----------------
 		// - Examples of patterns that don't look like normal expressions
 		//   nor variable declarations:
 		//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
@@ -1153,23 +1150,30 @@ namespace Loyc.Ecs.Parser
 		//   subpatterns:         // as before
 		//   relational_pattern:  // as before
 		// 
-		// Loyc tree mappings, by example:
+		// LOYC TREE MAPPINGS, by example
+		// ------------------------------
 		//
-		// | Example Pattern          | Loyc tree (EC#/LES2 syntax) 
+		// | Example Pattern          | Loyc tree (EC#/LES2 notation) 
 		// |--------------------------|-----------------------------
 		// | `_`                      | ```_```
 		// | `Enum.Value`             | ```Enum.Value```
 		// | `2 + 2`                  | ```2 + 2```
 		// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
 		// | `var x`                  | ```#var(@``, x)```
-		// | `var (x, y, z)`          | ```#var(@``, (x, y, z))``` (shorthand for ```#var(@``, @'tuple(x, y, z))```)
+		// | `var (x, y)`             | ```#var(@``, (x, y))``` (shorthand for ```#var(@``, @'tuple(x, y))```)
 		// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
 		// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+		// | `List<T>`                | ```List!T``` (shorthand for `@'of(List, T)` a.k.a. ``List `'of` T``)
 		// | `List<T> list`           | ```#var(List!T, list)```
 		// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
 		// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
 		// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
-		// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))```
+		// | `int?`                   | ```@'of(@`'?`, #int32)``` (note: only simple type patterns can use `?`)
+		// | `Foo<a, b>?`             | ```@'of(@`'?`, @'of(Foo, a, b))```
+		// | `(Foo) { } x`            | ```#var(@'deconstruct(@'tuple(Foo)), x)```
+		// | `(Foo) x`                | ```@'cast(x, Foo)```
+		// | `(Foo + 0) x`            | ```#var(@'deconstruct(@'tuple(Foo + 0)), x)```
+		// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))``` (NOT a tuple type!)
 		// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
 		// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
 		// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
@@ -1207,15 +1211,17 @@ namespace Loyc.Ecs.Parser
 		@[LL(1)]
 		rule PrimaryPattern(context::Precedence)::LNode @{
 			(	result:RelationalPattern(context)
-			/	// As of 2021/01 LLLPG doesn't invoke syntactic predicates inside 
+			/	// 2021/01: Sadly LLLPG doesn't invoke syntactic predicates inside 
 				// recognizers, which must be kept in mind during grammar design.
 				&RecursivePattern result:RecursivePattern
 			/	default result:SubExprInPattern(context)
 			)
 		};
 
+		@[LL(3)] // to correctly decide whether to call DataTypeInPattern
 		token RecursivePattern()::LNode @{
-			// Rule appears to be nullable; don't let LLLPG believe it
+			// All parts are optional so the rule appears nullable; inform LLLPG that it isn't
+			// nullable for prediction purposes. Must we also detect failure in the recognizer?
 			(("("|"{"|IdAtom) => recognizer({ startPosition := InputPosition }))
 
 			(	// var variableName or var(...)
@@ -1224,9 +1230,10 @@ namespace Loyc.Ecs.Parser
 				{ $result = F.Call(S.Var, MissingHere(), $VarDesignation, var.StartIndex, $VarDesignation.Range.EndIndex); }
 			
 			/	// other non-expression, non-relational patterns
-				greedy( type:DataTypeInPattern )?  { $result = type ?? F.Tuple().Target; }
+				type:DataTypeInPatternOpt { $result = type ?? F.Tuple().Target; }
+				
 				greedy(
-					"(" ")" { var subpats = SubpatternsIn($"(", true); }
+					&!{@[Hoist] LA(2) == TT.LBrack} "(" ")" { var subpats = SubpatternsIn($"(", true); }
 					nonrecognizer
 					(	// Detect parenthesized_pattern (no-op)
 						&{type == null && subpats.Count == 1}
@@ -1335,19 +1342,61 @@ namespace Loyc.Ecs.Parser
 		};
 
 
+		@[LL(3)]
 		@[recognizer(fn Scan_DataTypeInPattern())]
-		rule DataTypeInPattern()::LNode @{
-			// Tuple types are not allowed in this context
-			// (so that things which look like tuples are parsed as patterns)
-			result:ComplexId()
-			TypeSuffixOpt(TypeParseMode.Pattern, out _, ref result)
+		rule DataTypeInPatternOpt()::LNode @{
+			// Tuple types are not allowed in this context, except arrays, because
+			// things which look like tuples are normally parsed as patterns.
+			//
+			// Note: originally the optionalness of this rule was written in the
+			// parent rule (RecursivePattern), but that caused incorrect code generation 
+			// in the parent rule, probably due to a limitation of approximate lookahead
+			// as explained at https://ecsharp.net/lllpg/full-llk-vs-approximate.html -
+			// I might someday switch to FullLLk to avoid such problems, but it tends
+			// to make the output code longer.
+			(	"(" ")" ("[" | "?")
+				=>
+				result:DataType(afterAs<: true)
+			/	result:ComplexId()
+				TypeSuffixOpt(TypeParseMode.Pattern, out _, ref result)
+			)?
 		};
 
 		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, inPattern<: true) };
 
 
 		// ---------------------------------------------------------------------
-
+		// -- Switch expression body -------------------------------------------
+		// ---------------------------------------------------------------------
+		// I dislike C# 8/9's incredibly ambiguous pattern matching design, and 
+		// the weird repurposing of the lambda arrow => as a low-precedence "case" 
+		// operator. The simpler EC# design allowed `break` to have an argument 
+		// (the value to return from the `switch`) and then, if you wrote an 
+		// expression without a semicolon at the end, it meant "use this value as 
+		// the result". This way the switch expression and switch statement have 
+		// identical syntax, and of course the non-semicolon rule can be 
+		// generalized to `if/else` and other statements:
+		//
+		// return switch(obj) { 
+		//   case int i: i.ToString() + " (number)"
+		//   case null: "(null)"
+		//   case string s:
+		//     if (s == "") 
+		//       break "(empty)";
+		//     s = s.Trim();
+		//     if (s == "") "(whitespace)" else s
+		//   default: y.ToString()
+		// }
+		//
+		// It's nice that Microsoft chose a compact syntax, but why not pick 
+		// something like this that (1) fits better into C#'s historical syntax 
+		// choices and (2) generalizes to the rest of the language? It doesn't
+		// hurt that my design is simpler and easier to implement either.
+		//
+		// And if they were really hung up on achieving a compact syntax, it 
+		// would have made more sense to use `:` instead of `=>`. Not only does
+		// `expr:` make sense as an abbreviation for `case expr:`, it also 
+		// makes parsing easier.
 
 		rule SwitchExpressionArms(ref list::LNodeList)::LNodeList @{
 			(
@@ -1370,7 +1419,6 @@ namespace Loyc.Ecs.Parser
 		// =====================================================================
 		// == Attributes =======================================================
 		// =====================================================================
-
 		
 		@[recognizer(fn Scan_NormalAttributes())]
 		token NormalAttributes(ref attrs::LNodeList)::bool @{

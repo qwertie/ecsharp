@@ -43,14 +43,18 @@ namespace Loyc.Ecs
 			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
 			P(S.DotDot,     EP.Prefix), P(S.DotDotDot,    EP.Prefix), 
-			P(S.Dot,    EP.Substitute), P(S.Substitute, EP.Substitute)
+			P(S.Dot,    EP.Substitute), P(S.Substitute, EP.Substitute),
+			P(S.LT, EP.Compare), P(S.GT, EP.Compare),
+			P(S.LE, EP.Compare), P(S.GE, EP.Compare), P(S.PatternNot, EP.PatternNot)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
 			// This is a list of infix binary opertors only. Does not include the
 			// conditional operator `?` or non-infix binary operators such as a[i].
 			// Comma is not an operator at all and generally should not occur. 
-			// '=>' is not included because it has a special 'delegate() {}' form.
+			// '=>' is not included because it has a special 'delegate() {}' form
+			// and is not handled by the normal infix operator printer. Likewise, C# 9's
+			// `and` and `or` pattern operators have their own special handler.
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
@@ -155,6 +159,10 @@ namespace Loyc.Ecs
 			d[S.CsRawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
 			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNamedArg)));
 			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPropDeclExpr)));
+			d[S.Deconstruct] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintDeconstructOperator)));
+			d[S.PatternNot] = Pair.Create(EP.PatternNot, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternUnaryOperator)));
+			d[S.PatternAnd] = Pair.Create(EP.PatternAnd, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
+			d[S.PatternOr]  = Pair.Create(EP.PatternOr,  OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
 
 			return d;
 		}
@@ -209,15 +217,16 @@ namespace Loyc.Ecs
 				if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 					PrintInPrefixNotation(skipAttrs: false);
 				else {
-					int inParens;
-					if (IsVariableDecl(false, true)) {
+					int inParens = 0;
+					if (_name == S.Var && IsVariableDecl(false, true)) {
 						if (!_o.DropNonDeclarationAttributes) {
 							if (!Flagged(Ambiguity.AllowUnassignedVarDecl | Ambiguity.TypeContext) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
 								_flags |= Ambiguity.ForceAttributeList;
 							else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
 								_flags |= Ambiguity.ForceAttributeList;
 						}
-						inParens = PrintAttrs(AttrStyle.IsDefinition);
+						if ((_flags & Ambiguity.IsPattern) == 0)
+							inParens = PrintAttrs(AttrStyle.IsDefinition);
 						PrintVariableDecl(false);
 					} else {
 						inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
@@ -394,7 +403,11 @@ namespace Loyc.Ecs
 		{
 			if (_n.ArgCount == 2)
 				return AutoPrintInfixBinaryOperator(infixPrec);
-			else
+			else if (infixPrec.Lo == EP.Compare.Lo) {
+				// One of the pattern relational operators
+				Debug.Assert(_name.IsOneOf(S.LT, S.GT, S.LE, S.GE));
+				return AutoPrintPatternUnaryOperator(EP.Compare);
+			} else
 				return AutoPrintPrefixUnaryOperator(PrefixOperators[_name]);
 		}
 
@@ -500,9 +513,9 @@ namespace Loyc.Ecs
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintIsOperator(Precedence precedence)
-		{	// C# 7 syntax: `x is Y y`  EC# syntax: `x is Y y (optional_subexprs)`
-			LNode subject, targetType, targetVarName, tuple;
-			if (!EcsValidators.IsIsTest(_n, out subject, out targetType, out targetVarName, out tuple, Pedantics))
+		{	
+			LNode subject, pattern;
+			if (!EcsValidators.IsIsTest(_n, out subject, out pattern))
 				return false;
 			bool needParens;
 			if (!CanAppearHere(precedence, out needParens))
@@ -512,15 +525,86 @@ namespace Loyc.Ecs
 
 			PrintExpr(subject, precedence.LeftContext(_context));
 			_out.Space().Write("is ");
-			PrintType(targetType, EP.NullDot);
-			if (targetVarName != null) {
-				_out.Space();
-				PrintExpr(targetVarName, EP.Primary, Ambiguity.InDefinitionName);
-			}
-			if (tuple != null)
-				PrintArgTuple(tuple, ParenFor.MethodCall, true, false);
+
+			if (IsComplexIdentifier(pattern))
+				PrintType(pattern, EP.Is);
+			else
+				PrintExpr(pattern, EP.Is, Ambiguity.IsPattern);
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
+			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintDeconstructOperator(Precedence _)
+		{
+			// Prints `@'deconstruct(Xyz(positional), braced)` as `Xyz(positional) { braced }`
+			Debug.Assert(_name == S.Deconstruct);
+			int argCount = _n.ArgCount;
+			if ((_flags & Ambiguity.IsPattern) == 0 || argCount == 0)
+				return false;
+
+			LNode deconstructCall = _n.Args[0];
+			LNode type = deconstructCall.Target;
+			var positionals = deconstructCall.Args;
+
+			// By example:
+			// var(X, Y)       <=> @'deconstruct operator is not used (it's #var(@``, (X, Y)))
+			// Foo(X, Y)       <=> @'deconstruct(Foo(X, Y))
+			// (X, Y)          <=> @'deconstruct(@'tuple(X, Y))
+			// (X, Y) { }      <=> @'deconstruct(@'tuple(X, Y))
+			// (X, Y) { X: x } <=> @'deconstruct(@'tuple(X, Y), X ::= x)
+			// { X: x, Y: y }  <=> @'deconstruct(@'tuple(), X ::= x, Y ::= y)
+			// { }             <=> @'deconstruct(@'tuple())
+			// { } x           <=> #var(@'deconstruct(@'tuple()), x)
+			// ((X, Y), { Z }) <=> @'deconstruct(@'tuple(@'deconstruct(@'tuple(X, Y)), @'deconstruct(@'tuple(), Z)))
+			// (X, Y)[]        <=> @'deconstruct operator is not used (it's @'of(@`'[]`, (X, Y)))
+			// (Foo<X, Y>)     <=> @'deconstruct operator is not used (it's (Foo!(X, Y)))
+			// 7 + 7           <=> @'deconstruct operator is not used (it's 7 + 7)
+			// <= 7 * 7        <=> @'deconstruct operator is not used (it's @`'<=`(7 * 7))
+
+			bool hasType = !type.IsIdNamed(S.Tuple);
+			if (hasType) {
+				PrintType(type, _context);
+			}
+			if (positionals.Count != 0) {
+				PrintArgTuple(deconstructCall, ParenFor.MethodCall, true, _o.OmitMissingArguments);
+			}
+			// Output like `(Foo)` is not a deconstruction pattern, so if there is no type,
+			// and only a single argument in the parens, and otherwise no reason to print 
+			// braces, we must print empty braces (`(Foo) { }`). Empty braces are required 
+			// even if our parent node is #var, because `(Foo) x` looks like a cast, not a 
+			// deconstruction pattern, so we need the output to look like `(Foo) { } x`.
+			if (argCount > 1 || positionals.Count == 0 || (!hasType && positionals.Count == 1)) {
+				if (hasType || positionals.Count != 0)
+					Space(SpaceOpt.BeforeNewInitBrace);
+				PrintBracedBlockInNewOrDeconstructExpr(1, Ambiguity.IsPattern | Ambiguity.InPattern | Ambiguity.AllowUnassignedVarDecl);
+			}
+			return true;
+		}
+		
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintPatternUnaryOperator(Precedence precedence)
+		{
+			if ((_flags & Ambiguity.IsPattern) == 0 || _n.ArgCount != 1)
+				return false;
+		
+			_out.Write(_name.Name.Slice(1)).Space();
+			PrintExpr(_n.Args[0], precedence.RightContext(_context), Ambiguity.InPattern | Ambiguity.IsPattern);
+			
+			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintPatternAndOrOperator(Precedence precedence)
+		{
+			if ((_flags & Ambiguity.IsPattern) == 0 || _n.ArgCount != 2)
+				return false;
+
+			PrintExpr(_n.Args[0], precedence.LeftContext(_context), Ambiguity.InPattern | Ambiguity.IsPattern);
+			_out.Space().Write(_name.Name.Slice(1)).Space();
+			PrintExpr(_n.Args[1], precedence.RightContext(_context), Ambiguity.InPattern | Ambiguity.IsPattern);
+			
 			return true;
 		}
 
@@ -643,13 +727,13 @@ namespace Loyc.Ecs
 			if (type == null) {
 				// 1b, new {...}
 				_out.Write("new");
-				PrintBracedBlockInNewExpr(1);
+				PrintBracedBlockInNewOrDeconstructExpr(1);
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
 				_out.Write("new");
 				Debug.Assert(type.Name.Name.StartsWith("'"));
 				_out.Write(type.Name.Name.Substring(1));
 				Space(SpaceOpt.Default);
-				PrintBracedBlockInNewExpr(1);
+				PrintBracedBlockInNewOrDeconstructExpr(1);
 			} else {
 				_out.Write("new");
 				int dims = CountDimensionsIfArrayType(type);
@@ -662,7 +746,7 @@ namespace Loyc.Ecs
 						PrintArgTuple(constructorCall, ParenFor.MethodCall, false, _o.OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
-					PrintBracedBlockInNewExpr(1);
+					PrintBracedBlockInNewOrDeconstructExpr(1);
 			}
 			return true;
 		}
@@ -673,10 +757,12 @@ namespace Loyc.Ecs
 				return S.CountArrayDimensions(dimsNode.Name);
 			return 0;
 		}
-		private void PrintBracedBlockInNewExpr(int start_i)
+		private void PrintBracedBlockInNewOrDeconstructExpr(int start_i, Ambiguity flags = 0)
 		{
-			if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
-				Space(SpaceOpt.BeforeNewInitBrace);
+			if ((flags & Ambiguity.IsPattern) == 0) {
+				if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
+					Space(SpaceOpt.BeforeNewInitBrace);
+			}
 			WriteThenSpace('{', SpaceOpt.InsideNewInitializer);
 			using (Indented) {
 				Newline(NewlineOpt.AfterOpenBraceInNewExpr);
@@ -688,7 +774,7 @@ namespace Loyc.Ecs
 					var expr = _n.Args[i];
 					if (expr.Calls(S.Braces))
 						using (With(expr, StartExpr))
-							PrintBracedBlockInNewExpr(0);
+							PrintBracedBlockInNewOrDeconstructExpr(0);
 					else if (expr.CallsMin(S.DictionaryInitAssign, 1)) {
 						_out.Write('[');
 						PrintArgs(expr.Args.WithoutLast(1), 0, false);
@@ -696,7 +782,7 @@ namespace Loyc.Ecs
 						PrintInfixWithSpace(S.Assign, expr.Target, EcsPrecedence.Assign);
 						PrintExpr(expr.Args.Last, StartExpr);
 					} else 
-						PrintExpr(expr, StartExpr);
+						PrintExpr(expr, StartExpr, flags);
 				}
 			}
 			if (!Newline(NewlineOpt.BeforeCloseBraceInNewExpr))
@@ -887,7 +973,7 @@ namespace Loyc.Ecs
 
 			PrintExpr(_n.Args[0], EP.Primary.LeftContext(_context));
 			WriteThenSpace(':', SpaceOpt.AfterColon);
-			PrintExpr(_n.Args[1], StartExpr);
+			PrintExpr(_n.Args[1], StartExpr, _flags & (Ambiguity.AllowUnassignedVarDecl | Ambiguity.InPattern | Ambiguity.IsPattern));
 			return true;
 		}
 
@@ -991,11 +1077,17 @@ namespace Loyc.Ecs
 			PrintTrivia(target, trailingTrivia: false);
 			PrintTrivia(target, trailingTrivia: true);
 
-			Debug.Assert(_context == StartStmt || _context == StartExpr || Flagged(Ambiguity.ForEachInitializer));
+			Debug.Assert(_context == StartStmt || _context == StartExpr || Flagged(Ambiguity.ForEachInitializer | Ambiguity.IsPattern));
 			if (IsSimpleSymbolWPA(a[0], S.Missing))
 				_out.Write("var");
+			else if ((_flags & Ambiguity.IsPattern) != 0 && a[0].CallsMin(S.Deconstruct, 1))
+				using (With(a[0], StartExpr, _flags)) {
+					if (!G.Verify(AutoPrintDeconstructOperator(StartExpr)))
+						PrintCurrentExpr(); // should never happen
+				}
 			else
 				PrintType(a[0], EP.Primary.LeftContext(_context), flags & Ambiguity.AllowPointer);
+
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				if (i > 1)

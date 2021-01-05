@@ -12,7 +12,7 @@ namespace Loyc.Ecs.Tests
 	[TestFixture]
 	public class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{
-		protected override void Stmt(string result, LNode input, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
+		protected override void Stmt(string expected, LNode input, Action<EcsPrinterOptions> configure = null, Mode mode = Mode.Both)
 		{
 			bool exprMode = (mode & Mode.Expression) != 0;
 			if ((mode & Mode.PrinterTest) == 0)
@@ -32,7 +32,7 @@ namespace Loyc.Ecs.Tests
 				EcsLanguageService.Value.Print(input.Args, sb, MessageSink.Default, mode2, options);
 			else
 				EcsLanguageService.Value.Print(input, sb, MessageSink.Default, mode2, options);
-			AreEqual(result, sb.ToString());
+			AreEqual(expected, sb.ToString());
 		}
 
 		[Test]
