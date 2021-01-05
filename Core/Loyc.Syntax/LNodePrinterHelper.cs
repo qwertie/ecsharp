@@ -318,13 +318,13 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Indent(Symbol modeHint = null)
+		public virtual LNodePrinterHelper Indent(PrinterIndentHint modeHint = null)
 		{
 			_indentStack.Add(modeHint);
 			return this;
 		}
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Dedent(Symbol modeHint = null)
+		public virtual LNodePrinterHelper Dedent(PrinterIndentHint modeHint = null)
 		{
 			if (modeHint != null && modeHint != _indentStack.Last)
 				CheckParam.ThrowBadArgument(nameof(modeHint), "Dedent mismatch: arg {0} != {1} on stack", modeHint, _indentStack.Last);
@@ -362,7 +362,7 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public LNodePrinterHelper BeginNode(ILNode node, Symbol indentHint)
+		public LNodePrinterHelper BeginNode(ILNode node, PrinterIndentHint indentHint)
 		{
 			BeginNode(node);
 			Indent(indentHint);
@@ -370,7 +370,7 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public LNodePrinterHelper EndNode(Symbol indentHint)
+		public LNodePrinterHelper EndNode(PrinterIndentHint indentHint)
 		{
 			EndNode();
 			Dedent(indentHint);
@@ -545,12 +545,12 @@ namespace Loyc.Syntax.Impl
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Newline(bool deferIndent) => Newline(deferIndent);
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.NewlineIsRequiredHere() => NewlineIsRequiredHere();
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.FlushIndent() => FlushIndent();
-		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Indent(Symbol modeHint) => Indent(modeHint);
-		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Dedent(Symbol modeHint) => Dedent(modeHint);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Indent(PrinterIndentHint modeHint) => Indent(modeHint);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Dedent(PrinterIndentHint modeHint) => Dedent(modeHint);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node) => BeginNode(node);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode() => EndNode();
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, Symbol indentHint) => BeginNode(node, indentHint);
-		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode(Symbol indentHint) => EndNode(indentHint);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, PrinterIndentHint indentHint) => BeginNode(node, indentHint);
+		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode(PrinterIndentHint indentHint) => EndNode(indentHint);
 
 		// Represents something (a newline) that can be revoked
 		private struct Revokable

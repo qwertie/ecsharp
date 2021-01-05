@@ -104,13 +104,13 @@ namespace Loyc.Syntax.Impl
 		/// there are also bracket indents on the stack, then the Subexpression indents 
 		/// have no effect.
 		/// </remarks>
-		Self Indent(Symbol hint = null);
+		Self Indent(PrinterIndentHint hint = null);
 		/// <summary>Decreases the current indent level.</summary>
 		/// <param name="mode">If the hint is not null, the writer may be able to check 
 		/// that it was the same hint that was passed to <see cref="Indent"/> and
 		/// throw an exception if not.</param>
 		/// <exception cref="ArgumentException">Hint provided doesn't match Indent hint</exception>
-		Self Dedent(Symbol hint = null);
+		Self Dedent(PrinterIndentHint hint = null);
 
 		/// <summary>Returns true iff nothing has been written since the last call to 
 		/// <see cref="Newline"/> or <see cref="NewlineIsRequiredHere"/>.</summary>
@@ -134,31 +134,35 @@ namespace Loyc.Syntax.Impl
 		/// <summary>Combines the <see cref="BeginNode"/> and <see cref="Indent"/> operations.</summary>
 		/// <param name="indentHint">Typically a member of <see cref="PrinterIndentHint"/> 
 		/// that influences how indentation is performed</param>
-		Self BeginNode(ILNode node, Symbol indentHint);
+		Self BeginNode(ILNode node, PrinterIndentHint indentHint);
 		/// <summary>Combines the <see cref="EndNode"/> and <see cref="Dedent"/> operations.</summary>
-		Self EndNode(Symbol indentHint);
+		Self EndNode(PrinterIndentHint indentHint);
 	}
 
 	/// <summary>A version of <see cref="ILNodePrinterHelper{Self}"/> without a type parameter.</summary>
 	public interface ILNodePrinterHelper : ILNodePrinterHelper<ILNodePrinterHelper> { }
 
 	/// <summary>Values used with <see cref="ILNodePrinterHelper{Self}.Newline(Symbol)"/>.</summary>
-	public static class PrinterIndentHint
+	public class PrinterIndentHint : Symbol
 	{
+		private PrinterIndentHint(Symbol prototype) : base(prototype) { }
+		public static new readonly SymbolPool<PrinterIndentHint> Pool 
+		                     = new SymbolPool<PrinterIndentHint>(p => new PrinterIndentHint(p));
+
 		/// <summary>Requests normal (statement) indentation (this is the default)</summary>
-		public static Symbol Normal = (Symbol)GSymbol.Empty;
+		public static PrinterIndentHint Normal = Pool.Get("");
 		/// <summary>Specifies that a subexpression has started.</summary>
-		public static Symbol Subexpression = (Symbol)nameof(Subexpression);
+		public static PrinterIndentHint Subexpression = Pool.Get(nameof(Subexpression));
 		/// <summary>Requests no indentation. This is sometimes useful to help 
 		/// achieve a simple printer structure that uses either Indent(Subexpression) 
 		/// or Indent(NoIndent) at the beginning with an unconditional Dedent() at
 		/// the end, so that you don't need to keep track of whether or not you 
 		/// called Indent.</summary>
-		public static Symbol NoIndent = (Symbol)nameof(NoIndent);
+		public static PrinterIndentHint NoIndent = Pool.Get(nameof(NoIndent));
 		/// <summary>Specifies that brackets (parentheses or square brackets) have started.</summary>
-		public static Symbol Brackets = (Symbol)nameof(Brackets);
+		public static PrinterIndentHint Brackets = Pool.Get(nameof(Brackets));
 		/// <summary>Requests label-tyle indentation</summary>
-		public static Symbol Label = (Symbol)nameof(Label);
+		public static PrinterIndentHint Label = Pool.Get(nameof(Label));
 
 		// I thought I'd use this while printing triple-quoted strings, but it does 
 		// the wrong thing. What we actually need is to duplicate whatever indentation

@@ -109,7 +109,7 @@ namespace Loyc.Syntax.Tests
 					F.Call(F.Dot(F.Id("File"), F.Id("OpenRead")), F.Id("filename")))))))));
 		private static void WriteLongStatementExampleTo(PrinterHelper helper)
 		{
-			Symbol SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
+			PrinterIndentHint SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
 			var braces = LongStatementExampleTree;
 			var stmt = braces[0];
 			helper.BeginNode(braces).Write('{').Indent();
@@ -250,7 +250,7 @@ namespace Loyc.Syntax.Tests
 			);
 		static void WriteNewlineRevocationExampleTo(PrinterHelper helper)
 		{
-			Symbol SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
+			PrinterIndentHint SE = PrinterIndentHint.Subexpression, B = PrinterIndentHint.Brackets;
 			LNode braces = NewlineRevocationExampleTree, first = braces[0], second = braces[1], third = braces[2], fourth = braces[3];
 			helper.BeginNode(braces).Write('{').Indent();
 
