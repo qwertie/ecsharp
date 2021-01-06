@@ -53,8 +53,9 @@ namespace Loyc.Ecs
 			// conditional operator `?` or non-infix binary operators such as a[i].
 			// Comma is not an operator at all and generally should not occur. 
 			// '=>' is not included because it has a special 'delegate() {}' form
-			// and is not handled by the normal infix operator printer. Likewise, C# 9's
-			// `and`/`or` pattern operators, and `with`, have their own special handlers.
+			// and is not handled by the normal infix operator printer. Likewise, C# 9
+			// `and`/`or` pattern operators, `with`, and `switch` operators have their 
+			// own special handlers.
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
@@ -124,9 +125,8 @@ namespace Loyc.Ecs
 			var throwEtc = OpenDelegate<OperatorPrinter>(nameof(AutoPrintPrefixReturnThrowEtc));
 			var cast = OpenDelegate<OperatorPrinter>(nameof(AutoPrintCastOperator));
 			var isOp = OpenDelegate<OperatorPrinter>(nameof(AutoPrintIsOperator));
+			var wordOp = OpenDelegate<OperatorPrinter>(nameof(AutoPrintBinaryWordOperator));
 			var list = OpenDelegate<OperatorPrinter>(nameof(AutoPrintListOperator));
-			var @new = OpenDelegate<OperatorPrinter>(nameof(AutoPrintNewOperator));
-			var anonfn = OpenDelegate<OperatorPrinter>(nameof(AutoPrintAnonymousFunction));
 			var other = OpenDelegate<OperatorPrinter>(nameof(AutoPrintOtherSpecialOperator));
 			var call = OpenDelegate<OperatorPrinter>(nameof(AutoPrintCallOperator));
 			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>(nameof(AutoPrintOfOperator))));
@@ -151,20 +151,22 @@ namespace Loyc.Ecs
 				d.Add(p.Key, Pair.Create(p.Value, other));
 
 			// Other special cases
-			d.Add(S.New, Pair.Create(EP.Primary, @new));
-			d.Add(S.Lambda, Pair.Create(EP.Lambda, anonfn));
 			foreach (var op in CallOperators)
 				d.Add(op, Pair.Create(Precedence.MaxValue, call));
-
-			d[S.RawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
-			d[S.CsRawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
-			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNamedArg)));
-			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPropDeclExpr)));
+			d[S.SwitchOp]   = Pair.Create(EP.Switch, wordOp);
+			d[S.With]       = Pair.Create(EP.Switch, wordOp);
+			d[S.When]       = Pair.Create(EP.WhenWhere, wordOp);
+			d[S.WhereOp]    = Pair.Create(EP.WhenWhere, wordOp);
+			d[S.New]        = Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNewOperator)));
+			d[S.Lambda]     = Pair.Create(EP.Lambda, OpenDelegate<OperatorPrinter>(nameof(AutoPrintLambdaFunction)));
+			d[S.RawText]    = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
+			d[S.CsRawText]  = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
+			d[S.NamedArg]   = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNamedArg)));
+			d[S.Property]   = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPropDeclExpr)));
 			d[S.Deconstruct] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>(nameof(AutoPrintDeconstructOperator)));
 			d[S.PatternNot] = Pair.Create(EP.PatternNot, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternUnaryOperator)));
 			d[S.PatternAnd] = Pair.Create(EP.PatternAnd, OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
 			d[S.PatternOr]  = Pair.Create(EP.PatternOr,  OpenDelegate<OperatorPrinter>(nameof(AutoPrintPatternAndOrOperator)));
-			d[S.With]       = Pair.Create(EP.Switch,     OpenDelegate<OperatorPrinter>(nameof(AutoPrintWithOperator)));
 
 			return d;
 		}
@@ -400,20 +402,44 @@ namespace Loyc.Ecs
 			return false;
 		}
 
-		public bool AutoPrintWithOperator(Precedence prec)
+		public bool AutoPrintBinaryWordOperator(Precedence prec)
 		{
+			// Handles `with switch when where` but not `is as using`
+			Debug.Assert(_name == S.With || _name == S.SwitchOp || _name == S.When || _name == S.WhereOp);
 			var a = _n.Args;
-			if (a.Count != 2 || !CallsWPAIH(a[1], S.Braces))
+			// NOTE: properly validating that the contents of the switch expr body are
+			//       printable is difficult, and due to lack of popular demand I haven't
+			//       done it. Given a malformed switch body it may print something that
+			//       either has syntax errors or won't round-trip.
+			if (a.Count != 2 || !HasSimpleHeadWPA(_n))
 				return false;
-			
-			// Avoid printing something that looks like `(TypeName) with {...}`
+
 			LNode lhs = a[0], rhs = a[1];
-			bool castAmbiguity = lhs.IsParenthesizedExpr() && EcsValidators.IsComplexIdentifier(a[0], ICI.AllowParensAround);
-			
-			PrintExpr(lhs, prec.LeftContext(_context), castAmbiguity ? Ambiguity.ForceAttributeList : 0);
-			WriteOperatorName(_name);
-			PrintBracedBlock(rhs, NewlineOpt.BeforeOpenBraceInNewExpr, false, _spaceName, BraceMode.Enum);
-			
+			bool needParens = false;
+			if (_name == S.When && (_flags & Ambiguity.IsPattern) != 0) {
+				PrintExpr(lhs, EP.IfElse, Ambiguity.IsPattern);
+			} else {
+				G.Verify(CanAppearHere(prec, out needParens));
+				WriteOpenParen(ParenFor.Grouping, needParens);
+
+				// Avoid printing something that looks like `(TypeName) with {...}`, 
+				// which the parser would perceive as a cast.
+				if (_name == S.With && lhs.IsParenthesizedExpr()
+					&& EcsValidators.IsComplexIdentifier(a[0], ICI.AllowParensAround))
+					PrintExpr(lhs, prec.LeftContext(_context), Ambiguity.ForceAttributeList);
+				else
+					PrintExpr(lhs, prec.LeftContext(_context));
+			}
+
+			PrintInfixWithSpace(_name, _n.Target, prec);
+
+			if (_name == S.SwitchOp || _name == S.With)
+				PrintBracedBlock(rhs, NewlineOpt.BeforeOpenBraceInNewExpr, false, _spaceName, _name == S.With ? BraceMode.Enum : BraceMode.SwitchExpression);
+			else
+				PrintExpr(rhs, prec.RightContext(_context), 
+					_name == S.When && (_flags & Ambiguity.IsPattern) != 0 ? Ambiguity.InPattern : 0);
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
 			return true;
 		}
 
@@ -845,7 +871,7 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintAnonymousFunction(Precedence precedence)
+		public bool AutoPrintLambdaFunction(Precedence precedence)
 		{
 			Symbol name = _name;
 			Debug.Assert(name == S.Lambda);
@@ -856,7 +882,7 @@ namespace Loyc.Ecs
 			bool needParens = false;
 			bool canUseOldStyle = body.Calls(S.Braces) && args.Calls(S.AltList);
 			bool oldStyle = _n.BaseStyle == NodeStyle.OldStyle && canUseOldStyle;
-			if (!oldStyle && !CanAppearHere(EP.Lambda, out needParens)) {
+			if ((_flags & Ambiguity.InSwitchExpr) == 0 && !oldStyle && !CanAppearHere(EP.Lambda, out needParens)) {
 				if (canUseOldStyle)
 					oldStyle = true;
 				else
@@ -869,10 +895,15 @@ namespace Loyc.Ecs
 				_out.Write("delegate");
 				PrintArgTuple(_n.Args[0], ParenFor.MethodDecl, true, _o.OmitMissingArguments);
 				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
-			} else { 
-				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl);
+			} else {
+				var lhsFlags = Ambiguity.AllowUnassignedVarDecl;
+				if ((_flags & Ambiguity.InSwitchExpr) != 0) {
+					precedence = new Precedence(EP.IfElse.Left, StartExpr.Right, EP.Lambda.Lo, EP.Lambda.Hi);
+					lhsFlags = Ambiguity.IsPattern;
+				}
+				PrintExpr(_n.Args[0], precedence.LeftContext(_context), lhsFlags);
 				PrintInfixWithSpace(S.Lambda, _n.Target, EP.IfElse);
-				PrintExpr(_n.Args[1], EP.Lambda.RightContext(_context));
+				PrintExpr(_n.Args[1], precedence.RightContext(_context));
 			}
 
 			WriteCloseParen(ParenFor.Grouping, needParens);

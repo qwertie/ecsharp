@@ -398,7 +398,7 @@ namespace Loyc.Ecs
 
 		static readonly Symbol _openBrace = GSymbol.Get("'{");
 
-		enum BraceMode { Normal, BlockExpr, BlockStmt, Enum, AutoProp, Initializer };
+		enum BraceMode { Normal, BlockExpr, BlockStmt, Enum, SwitchExpression, AutoProp, Initializer };
 
 		private void PrintBracedBlock(LNode body, NewlineOpt beforeBrace, bool skipFirstStmt = false, Symbol spaceName = null, BraceMode mode = BraceMode.Normal)
 		{
@@ -417,10 +417,11 @@ namespace Loyc.Ecs
 
 			using (WithSpace(spaceName))
 			{
-				if (mode == BraceMode.Initializer || mode == BraceMode.Enum)
+				if (mode == BraceMode.Initializer || mode == BraceMode.Enum || mode == BraceMode.SwitchExpression)
 				{
 					Debug.Assert(!skipFirstStmt);
-					PrintExpressionsInBraces(body, mode == BraceMode.Initializer);
+					PrintExpressionsInBraces(body, mode == BraceMode.Initializer,
+						mode == BraceMode.SwitchExpression ? Ambiguity.InSwitchExpr : 0);
 				}
 				else
 					PrintStatementsInBraces(body, skipFirstStmt, newlinesByDefault: mode != BraceMode.AutoProp);
@@ -452,37 +453,24 @@ namespace Loyc.Ecs
 			NewlineOrSpace(NewlineOpt.Minimal, forceSpace: !anyNewlines);
 		}
 
-		private void PrintExpressionsInBraces(LNode body, bool isInitializer)
+		private void PrintExpressionsInBraces(LNode body, bool isInitializer, Ambiguity flags)
 		{
 			bool anyNewlines = false;
 			using (Indented)
 			{
-				int i = 0, c = body.ArgCount;
-				if (isInitializer) {
-					for (; i < c; i++) {
-						var stmt = body.Args[i];
-						NewlineOpt nlo = NewlineOpt.AfterOpenBraceInNewExpr;
-						if (i != 0) {
-							_out.Write(',');
-							nlo = NewlineOpt.AfterEachInitializer;
-						}
-						if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
-							anyNewlines = true;
-						PrintExpr(stmt, StartExpr);
+				NewlineOpt nlo = isInitializer ? NewlineOpt.AfterOpenBraceInNewExpr : NewlineOpt.Minimal | NewlineOpt.BeforeEachEnumItem;
+				NewlineOpt next_nlo = isInitializer ? NewlineOpt.AfterEachInitializer : NewlineOpt.BeforeEachEnumItem;
+
+				for (int i = 0, c = body.ArgCount; i < c; i++)
+				{
+					var stmt = body.Args[i];
+					if (i != 0) {
+						_out.Write(',');
+						nlo = next_nlo;
 					}
-				} else { // enum body
-					for (; i < c; i++)
-					{
-						var stmt = body.Args[i];
-						NewlineOpt nlo = NewlineOpt.Minimal | NewlineOpt.BeforeEachEnumItem;
-						if (i != 0) {
-							_out.Write(',');
-							nlo = NewlineOpt.BeforeEachEnumItem;
-						}
-						if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
-							anyNewlines = true;
-						PrintExpr(stmt, StartExpr);
-					}
+					if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
+						anyNewlines = true;
+					PrintExpr(stmt, StartExpr, flags);
 				}
 			}
 			NewlineOrSpace(isInitializer ? NewlineOpt.BeforeCloseBraceInExpr : NewlineOpt.Default, !anyNewlines);

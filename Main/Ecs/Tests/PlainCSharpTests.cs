@@ -1063,14 +1063,69 @@ namespace Loyc.Ecs.Tests
 			Expr("x is Foo::Foo { a: int x, b: var (b1, b2, _) }", F.Call(S.Is, x, pat));
 		}
 
+		static LNode Lambda(LNode lhs, LNode rhs) => F.Call(S.Lambda, lhs, rhs).SetStyle(NodeStyle.Operator);
+		static LNode When(LNode lhs, LNode rhs) => F.Call(S.When, lhs, rhs).SetStyle(NodeStyle.Operator);
+
 		[Test]
 		public void CSharp8SwitchPatterns()
 		{
-			//static string Display(object o) => o switch {
-			//	Point { X: 0, Y: 0 } p => "origin",
-			//	Point { X: var x, Y: var y } p => $"({x}, {y})",
-			//	_ => "unknown"
-			//};
+			Expr("x switch { }", F.Call(S.SwitchOp, x, F.Braces()));
+			Stmt("x switch {\n  int => \"num\"\n};", F.Call(S.SwitchOp, x, F.Braces(Lambda(F.Int32, F.Literal("num")))));
+			var body = F.Braces(
+				Lambda(F.Var(F.String, _("s")), a),
+				Lambda(F.Var(Foo, x), b),
+				Lambda(_("_"), c));
+			Expr("x switch {\n  string s => a,\n  Foo x => b,\n  _ => c\n}", F.Call(S.SwitchOp, x, body));
+			// Resembling a cast shouldn't cause any trouble
+			var stmt = F.Call(S.SwitchOp, F.InParens(Foo), body);
+			Expr("(Foo) switch {\n  string s => a,\n  Foo x => b,\n  _ => c\n}", stmt);
+			Stmt("(Foo) switch {\n  string s => a,\n  Foo x => b,\n  _ => c\n};", stmt);
+
+			// `when` clause is supported
+			body = F.Braces(
+				Lambda(When(F.Var(F.String, a), F.Call(F.Dot(a, _("Contains")), F.Literal('?'))), zero),
+				Lambda(When(F.Var(F.Object, b), F.Call(S.Eq, b, c)), c),
+				Lambda(_("_"), F.Call("Throw")));
+			Expr("x switch {\n" +
+			     "  string a when a.Contains('?') => 0,\n" +
+			     "  object b when b == c => c,\n" +
+			     "  _ => Throw()\n" +
+			     "}",
+				F.Call(S.SwitchOp, x, body));
+
+			// Larger example
+			string text = 
+				"static string Display(object x) => x switch {\n" +
+				"  Point { X: 0, Y: 0 } p => \"origin\",\n" +
+				"  Point { X: var a, Y: var b } => $\"({a}, {b})\",\n" +
+				"  _ => \"unknown\"\n" +
+				"};";
+			body = F.Braces(
+				Lambda(F.Var(F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), zero), F.NamedArg(_("Y"), zero)), _("p")), F.Literal("origin")),
+				Lambda(      F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), F.Var(null, a)), F.NamedArg(_("Y"), F.Var(null, b))), F.Call(S.Substitute, F.Literal("({a}, {b})"))),
+				Lambda(_("_"), F.Literal("unknown")));
+			Stmt(text, F.Attr(_(S.Static), F.Fn(F.String, _("Display"), F.List(F.Var(F.Object, x)), F.Call(S.SwitchOp, x, body))));
+
+			var Mood = _("Mood");
+			text = "Foo switch {\n" +
+				"  Mood(Unhappy) when extreme => () => Scream(),\n" +
+				"  Mood { Stoic: true } => () => PokerFace(),\n" +
+				"  Mood(Happy) => () => Laugh(),\n" +
+				"  Mood(Nervous) => () => Giggle()\n" +
+				"}";
+			string textTweak = "(Action) Foo switch {\n" +
+				"  Mood(Unhappy) when extreme    => () => Scream(),\n" +
+				"  Mood()        { Stoic: true } => () => PokerFace(),\n" +
+				"  Mood(Happy)   { }             => () => Laugh(),\n" +
+				"  Mood(Nervous) { }             => () => Giggle(),\n" +
+				"}";
+			body = F.Braces(
+				Lambda(When(TypedPattern(Mood, _("Unhappy")), _("extreme")), Lambda(F.Tuple(), F.Call("Scream"))),
+				Lambda(TypedBracePattern(Mood, F.NamedArg("Stoic", F.True)), Lambda(F.Tuple(), F.Call("PokerFace"))),
+				Lambda(TypedPattern(Mood, _("Happy")), Lambda(F.Tuple(), F.Call("Laugh"))),
+				Lambda(TypedPattern(Mood, _("Nervous")), Lambda(F.Tuple(), F.Call("Giggle"))));
+			Expr(text, F.Call(S.SwitchOp, Foo, body));
+			Expr(textTweak, F.Call(S.SwitchOp, F.Call(S.Cast, Foo, _("Action")), body), Mode.ParserTest);
 		}
 
 		[Test]
@@ -1106,6 +1161,22 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CSharp9SwitchPatterns()
 		{
+			var body = F.Braces(
+				Lambda(When(F.Call(S.Add, two, two), _("BlueMoon")), F.Literal(5)),
+				Lambda(_("_"), a));
+			Expr("a switch {\n  2 + 2 when BlueMoon => 5,\n  _ => a\n}", F.Call(S.SwitchOp, a, body));
+
+			body = F.Braces(
+				Lambda(F.Call(S.LT, zero), F.Call(S._Negate, one)),
+				Lambda(F.Call(S.GT, zero), one),
+				Lambda(zero, zero));
+			Expr("(int) x switch {\n  < 0 => -1,\n  > 0 => 1,\n  0 => 0\n}", F.Call(S.SwitchOp, F.Call(S.Cast, x, F.Int32), body));
+
+			var bigPattern = F.Call(S.PatternAnd, F.Call(S.PatternNot, F.Call(S.Sub, two)), F.InParens(F.Call(S.PatternOr, two, F.Call(S.LT, zero))));
+			body = F.Braces(
+				Lambda(When(bigPattern, F.Call(S.Not, _("IsWeekday"))), F.Call("EasterEgg")),
+				Lambda(_("_"), F.Call("NormalLogic")));
+			Expr("x switch {\n  not -2 and (2 or < 0) when !IsWeekday => EasterEgg(),\n  _ => NormalLogic()\n}", F.Call(S.SwitchOp, x, body));
 		}
 
 		[Test]
@@ -1121,8 +1192,9 @@ namespace Loyc.Ecs.Tests
 			Expr("x with { Foo = 1 }",      F.Call(S.With, x, F.Braces(AppendStmt(F.Assign(Foo, one)))));
 			Expr("x with { a = 2, b = 1 }", F.Call(S.With, x, F.Braces(AppendStmt(F.Assign(a, two)), AppendStmt(F.Assign(b, one)))));
 
-			// Luckily this is not supported in C# 9, so we don't have to either.
-			// In both languages it's a cast, but only in C# is there a syntax error.
+			// Luckily this is not supported in C# 9, so we don't have to support it.
+			// In both languages the parser thinks it's a cast, but only in C# is 
+			// there a syntax error.
 			Expr("(Foo) with {\n  a = 1\n}", F.Call(S.Cast, F.Call("with", F.Braces(F.Call(S.Result, F.Assign(a, one)))).SetStyle(NodeStyle.Special), Foo));
 		}
 

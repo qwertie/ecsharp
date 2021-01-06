@@ -101,6 +101,10 @@ namespace Loyc.Ecs.Parser
 		// as actual keywords. This flag enables that behavior.
 		_insideLinqExpr::bool;
 
+		// Inside a constant pattern, or between `when` and `=>` in a `switch` expr.
+		// Indicates that the `=>` operator cannot be used.
+		_insidePattern::bool = false;
+
 		// Used to detect a specific ContextualKeyword; `@` renders it not-a-keyword
 		fn Is(li::int, value::Symbol)::bool
 		{
@@ -658,7 +662,7 @@ namespace Loyc.Ecs.Parser
 		|	// C-style cast
 			&{@[Hoist] Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 			lp:="(" ")"
-			&!("+"|"-"|"*"|"&"|"."|TT.BQString | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
+			&!("+"|"-"|"*"|"&"|"."|TT.BQString|TT.Switch | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
 			e:=PrefixExpr
 			{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex, NodeStyle.Operator);}
 		/	e:=KeywordOrPrimaryExpr {return e;}
@@ -717,7 +721,7 @@ namespace Loyc.Ecs.Parser
 		// because the higher precedence levels have some complications, such as 
 		// C-style casts and <type arguments>, that I prefer to deal with 
 		// separately.
-		@[private] token SubExpr(context::Precedence, inPattern::bool = false)::LNode @{
+		@[private] token SubExpr(context::Precedence)::LNode @{
 			{
 				Debug.Assert(context.CanParse(EP.Prefix));
 				prec::Precedence;
@@ -727,7 +731,10 @@ namespace Loyc.Ecs.Parser
 			}
 			e:=PrefixExpr
 			greedy
-			(	// Infix operator
+			(	// Standard switch operator (higher priority than the nonstandard form `Foo switch Bar`)
+				op=TT.Switch rhs=SwitchBody
+				{e = F.CallInfixOp(e, op, rhs, S.SwitchOp);}
+			/	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
 				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"
@@ -735,7 +742,7 @@ namespace Loyc.Ecs.Parser
 				rhs=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
 			|	// Lambda expression
-				&{@[Local] context.CanParse(prec=EP.Lambda) && !inPattern}
+				&{@[Local] context.CanParse(prec=EP.Lambda) && !_insidePattern}
 				op="=>"
 				rhs=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
@@ -774,9 +781,9 @@ namespace Loyc.Ecs.Parser
 			|	// when/where operator
 				// equivalent to (but faster than) &{Is($LI, @@when) || Is($LI, @@where) && !_insideLinqExpr}
 				&{((lt0 = LT($LI)).Value == @@when || lt0.Value == @@where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@'}
-				&{@[Local] context.CanParse(prec=EP.When)}
+				&{@[Local] context.CanParse(prec=EP.WhenWhere)}
 				op=TT.ContextualKeyword
-				rhs=SubExpr(EP.When)
+				rhs=SubExpr(EP.WhenWhere)
 				{ e = F.CallInfixOp(e, op, rhs, op.Value == @@when ? S.When : S.WhereOp); }
 			)*
 			{return e;}
@@ -1255,7 +1262,8 @@ namespace Loyc.Ecs.Parser
 				{ $result = F.Call(S.Var, MissingHere(), $VarDesignation, var.StartIndex, $VarDesignation.Range.EndIndex); }
 			
 			/	// other non-expression, non-relational patterns
-				type:DataTypeInPatternOpt { $result = type ?? F.Tuple().Target; }
+				{ start::int = LT0.StartIndex; }
+				type:DataTypeInPatternOpt { $result = type ?? F.Id(S.Tuple, LT0.StartIndex, LT0.EndIndex); }
 				
 				greedy(
 					&!{@[Hoist] LA(2) == TT.LBrack} "(" ")" { var subpats = SubpatternsIn($"(", true); }
@@ -1266,14 +1274,16 @@ namespace Loyc.Ecs.Parser
 						(~("{")|EOF)
 						=>
 						{ $result = F.InParens($"(", subpats[0], $")"); }
-					/	_? => { $result = F.Call(S.Deconstruct, F.CallPrefix($result, subpats, $")")); }
+					/	_? =>
+						{ $result = F.Call(S.Deconstruct, F.CallPrefix($result, subpats, $")"), start, $")".EndIndex); }
 					)
-					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange($result.Range.StartIndex, $"}".EndIndex); } )?
-				|	"{" "}"   { $result = F.CallBrackets(S.Deconstruct, $"{", SubpatternsIn($"{").Insert(0, F.Call(result)), $"}"); }
+					( "{" "}" { $result = $result.PlusArgs(SubpatternsIn($"{")).WithRange(start, $"}".EndIndex); } )?
+				|	"{" "}"   { var args = LNode.List(LNode.Call(result, result)).AddRange(SubpatternsIn($"{")); }
+					          { $result = F.Call(S.Deconstruct, args, start, $"}".EndIndex, start, start); }
 				)?
 				(
 					name:=IdAtomButNotPatternKeyword
-					{ result = F.Var(result, name, null, result.Range.StartIndex, name.Range.EndIndex); } 
+					{ result = F.Var(result, name, null, start, name.Range.EndIndex); } 
 				)?
 				{
 					// If the complete pattern looks like a cast, transform it INTO a cast.
@@ -1283,7 +1293,8 @@ namespace Loyc.Ecs.Parser
 							// the tree #var(@'deconstruct(@'tuple(Complex.Identifier), name)
 							#var(@'deconstruct(@'tuple($patternInParens)), $name') => {
 								if EcsValidators.IsComplexIdentifier(patternInParens) {
-									$result = F.Call(S.Cast, name', patternInParens);
+									$result = F.Call(S.Cast, name', patternInParens, 
+										patternInParens.Range.StartIndex, name'.Range.EndIndex);
 								};
 							};
 						};
@@ -1363,7 +1374,8 @@ namespace Loyc.Ecs.Parser
 		};
 
 		rule SubExprInPattern(context::Precedence)::LNode @{
-			result:SubExpr(context, inPattern<: true)
+			{ change_temporarily(_insidePattern = true); }
+			result:SubExpr(context)
 		};
 
 
@@ -1387,8 +1399,6 @@ namespace Loyc.Ecs.Parser
 			)?
 		};
 
-		@[private] rule SwitchCaseSubExpr()::LNode @{ result:SubExpr(StartExpr, inPattern<: true) };
-
 
 		// ---------------------------------------------------------------------
 		// -- Switch expression body -------------------------------------------
@@ -1399,8 +1409,9 @@ namespace Loyc.Ecs.Parser
 		// (the value to return from the `switch`) and then, if you wrote an 
 		// expression without a semicolon at the end, it meant "use this value as 
 		// the result". This way the switch expression and switch statement have 
-		// identical syntax, and of course the non-semicolon rule can be 
-		// generalized to `if/else` and other statements:
+		// identical syntax, each case could have multiple patterns (so users 
+		// need not duplicate identical handlers), and of course the missing-
+		// semicolon rule can be generalized to `if/else` and other statements:
 		//
 		// return switch(obj) { 
 		//   case int i: i.ToString() + " (number)"
@@ -1416,14 +1427,22 @@ namespace Loyc.Ecs.Parser
 		// It's nice that Microsoft chose a compact syntax, but why not pick 
 		// something like this that (1) fits better into C#'s historical syntax 
 		// choices and (2) generalizes to the rest of the language? It doesn't
-		// hurt that my design is simpler and easier to implement either.
+		// hurt that my design is simpler and easier to implement either (like, 
+		// not to brag, but is anyone reading this? I think not.)
 		//
 		// And if they were really hung up on achieving a compact syntax, it 
 		// would have made more sense to use `:` instead of `=>`. Not only does
 		// `expr:` make sense as an abbreviation for `case expr:`, it also 
 		// makes parsing easier.
 
-		rule SwitchExpressionArms(ref list::LNodeList)::LNodeList @{
+		rule SwitchBody()::LNode @{
+			"{" "}" {
+				var arms = Down($"{") ? SwitchExpressionArms() : LNode.List();
+				return Up(F.CallBrackets(S.Braces, $"{", arms, $"}"));
+			}
+		};
+
+		rule SwitchExpressionArms()::LNodeList @{
 			(
 				result+:SwitchExpressionArm
 				( "," EOF
@@ -1433,12 +1452,15 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule SwitchExpressionArm()::LNode @{
-			lhs:Pattern(EcsPrecedence.IfElse) CaseGuard? "=>" rhs:ExprStart(false)
-			{ $result = F.Call(S.Lambda, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex, $"=>".StartIndex, $"=>".EndIndex, NodeStyle.Special); }
+			lhs:Pattern(EcsPrecedence.IfElse) CaseGuard(ref lhs)? "=>" rhs:ExprStart(false)
+			{ $result = F.CallInfixOp(lhs, $"=>", rhs); }
 		};
 
-		@[private] rule CaseGuard() @{
+		@[private] rule CaseGuard(ref lhs::LNode) @{
 			&{@[Hoist] Is($LI, @@when)} op:TT.ContextualKeyword
+			{ change_temporarily(_insidePattern = true); }
+			SubExpr(EP.Assign)
+			{ lhs = F.CallInfixOp(lhs, op, $SubExpr, S.When); }
 		};
 
 		// =====================================================================
@@ -1620,7 +1642,7 @@ namespace Loyc.Ecs.Parser
 		_stmtAttrs::WList!LNode = (new WList!LNode());
 
 		@[LL(3)]
-		@[public] rule Stmt::LNode @{
+		@[public] rule Stmt()::LNode @{
 			{var attrs = LNodeList.Empty;}
 			{startIndex::int = LT0.StartIndex;}
 			NormalAttributes(ref attrs)
@@ -1687,19 +1709,6 @@ namespace Loyc.Ecs.Parser
 		@[static, readonly] ExpectedAfterTypeAndName::array!(HashSet!TT) = (new array!(HashSet!TT) {
 			ExpectedAfterTypeAndName_InExpr;
 			ExpectedAfterTypeAndName_InStmt;
-		});
-		@[static, readonly] EasilyDetectedKeywordStatements::HashSet!TT = (new HashSet!TT { 
-			TT.Namespace; TT.Class; TT.Struct; 
-			TT.Interface; TT.Enum ; TT.Event;
-			TT.Switch   ; TT.Case ; TT.Using;
-			TT.While    ; TT.Fixed; TT.For;
-			TT.Foreach  ; TT.Goto ; TT.Lock;
-			TT.Return   ; TT.Try  ; TT.Do; 
-			TT.Continue ; TT.Break; TT.Throw;
-			TT.If       ; 
-			// C# interactive directives and other non-trivia directives
-			TT.PPnullable; TT.CSIreference; TT.CSIload;
-			TT.CSIhelp; TT.CSIclear; TT.CSIreset
 		});
 
 		fn DetectStatementCategoryAndAddWordAttributes(out wordAttrCount::int, ref attrs::LNodeList, mode::DetectionMode)::StmtCat
@@ -2040,7 +2049,8 @@ namespace Loyc.Ecs.Parser
 				ExprList(ref list) 
 				{
 					Up();
-					var r = F.Call(kind.Value == @@module ? S.Module : S.Assembly, list, startIndex, rb.EndIndex, kind.StartIndex, kind.EndIndex);
+					var r = F.Call(kind.Value == @@module ? S.Module : S.Assembly, list, 
+							startIndex, rb.EndIndex, kind.StartIndex, kind.EndIndex);
 					return r.WithAttrs(attrs);
 				}
 			)
@@ -2323,7 +2333,8 @@ namespace Loyc.Ecs.Parser
 			)
 			{
 				args.Add(block);
-				var result = F.Call(id.Value -> Symbol, args, startIndex, block.Range.EndIndex, id.StartIndex, id.EndIndex, NodeStyle.Special);
+				var result = F.Call(id.Value -> Symbol, args, startIndex, block.Range.EndIndex, 
+				                    id.StartIndex, id.EndIndex, NodeStyle.Special);
 				if block.Calls(S.Forward, 1) {
 					result = F.Attr(_triviaForwardedProperty, result);
 				};
@@ -2583,7 +2594,8 @@ namespace Loyc.Ecs.Parser
 				$result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex, lb.StartIndex, lb.EndIndex, NodeStyle.Expression);
 			  }
 			/ lb:="[" "]" eq:"=" e:=ExprStart(false)
-			  { $result = F.Call(S.DictionaryInitAssign, ExprListInside(lb).Add(e), lb.StartIndex, e.Range.EndIndex, eq.StartIndex, eq.EndIndex); }
+			  { $result = F.Call(S.DictionaryInitAssign, ExprListInside(lb).Add(e), 
+			              lb.StartIndex, e.Range.EndIndex, eq.StartIndex, eq.EndIndex); }
 			/ result:ExprOpt(false)
 			)
 		};

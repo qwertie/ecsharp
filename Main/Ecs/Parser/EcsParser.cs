@@ -142,6 +142,21 @@ namespace Loyc.Ecs.Parser
 
 		#region DetectStatementCategory
 
+		static readonly HashSet<TT> EasilyDetectedKeywordStatements = new HashSet<TT> {
+			TT.Namespace, TT.Class, TT.Struct,
+			TT.Interface, TT.Enum , TT.Event,
+			TT.Switch   , TT.Case , TT.Using,
+			TT.While    , TT.Fixed, TT.For,
+			TT.Foreach  , TT.Goto , TT.Lock,
+			TT.Return   , TT.Try  , TT.Do,
+			TT.Continue , TT.Break, TT.Throw,
+			TT.If       ,
+			TT.Delegate , TT.CheckedOrUnchecked,
+			// C# interactive directives and other non-trivia directives
+			TT.PPnullable, TT.CSIreference, TT.CSIload,
+			TT.CSIhelp,    TT.CSIclear,     TT.CSIreset
+		};
+
 		// Originally I let LLLPG distinguish the statement types, but when the 
 		// parser was mature, LLLPG's analysis took from 10 to 40 seconds and it 
 		// generated 5000 lines of code to distinguish the various cases.
@@ -293,17 +308,19 @@ namespace Loyc.Ecs.Parser
 			}
 			else if (LT0.Kind == TokenKind.OtherKeyword)
 			{
-				if (EasilyDetectedKeywordStatements.Contains(LA0) || LA0 == TT.Delegate && LA(1) != TT.LParen || (LA0 == TT.CheckedOrUnchecked) && LA(1) == TT.LBrace)
+				if (EasilyDetectedKeywordStatements.Contains(LA0))
 				{
 					// `if` and `using` do not support word attributes:
 					// - `if`, because in the original plan EC# was to support a 
 					//   D-style 'if' clause at the end of property definitions, 
 					//   making "T P if ..." ambiguous if word attributes were allowed.
 					// - `using` because `x using T` was planned as a new cast operator.
-					if (!(consecutiveWords > 0 && (LA0 == TT.If || LA0 == TT.Using)))
-					{
+					// With `switch` we must be careful: `x switch {...}` is an expression.
+					if (!((LA0 == TT.If || LA0 == TT.Using) && consecutiveWords > 0
+						|| LA0 == TT.Delegate && LA(1) == TT.LParen
+						|| LA0 == TT.CheckedOrUnchecked && LA(1) == TT.LParen
+						|| LA0 == TT.Switch && LA(1) == TT.LBrace))
 						return StmtCat.KeywordStmt;
-					}
 				}
 			}
 			else if (consecutiveWords == 0 && !haveNew && LA0 != TT.LParen)

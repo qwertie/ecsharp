@@ -420,6 +420,9 @@ namespace Loyc.Ecs
 			/// <summary>Indicates that a "constant expression" within a pattern is being 
 			/// printed, so the `=>` operator is unavailable.</summary>
 			InPattern = 0x200000,
+			/// <summary>Indicates that a switch expression item is being printed, so a lambda 
+			/// operator with a pattern on the left side is expected here.</summary>
+			InSwitchExpr = 0x400000,
 		}
 
 		bool Flagged(Ambiguity flag)
@@ -1197,7 +1200,7 @@ namespace Loyc.Ecs
 		BeforePossibleMacroArgs = 0x00001000, // Space before argument list of possible macro: foo (x)
 		BeforeMethodCall        = 0x00002000, // Space before argument list of all method calls
 		BeforeNewCastCall       = 0x00004000, // Space before target of new-style cast: x (->Foo)
-		BeforeNewInitBrace      = 0x00008000, // Space before opening brace in new-expr: new int[] {...}
+		BeforeNewInitBrace      = 0x00008000, // Space before opening brace in new-expr and switch-expr: new int[] {...}
 		AfterColon              = 0x00010000, // Space after colon (named arg)
 		InsideNewInitializer    = 0x00020000, // Spaces within braces of new Xyz {...}
 		BeforeBaseListColon     = 0x00040000, // Space before colon of list of base classes
@@ -1209,7 +1212,7 @@ namespace Loyc.Ecs
 		MissingAfterComma       = 0x01000000, // Space after missing node in arg list, e.g. for(; ; ) or foo(, , )
 		BeforeCommentOnSameLine = 0x04000000, // Space between a node and a comment printed afterward
 		BetweenCommentAndNode   = 0x08000000, // Space between a multiline comment and the node it's attached to
-		SuppressAroundDotDot    = 0x10000000, // Override SpaceAroundInfixStopPrecedence and suppress spaces around ..
+		SuppressAroundDotDot    = 0x20000000, // Override SpaceAroundInfixStopPrecedence and suppress spaces around ..
 	}
 	/// <summary>Flags to control situations in which newlines should be added automatically by the EC# printer.</summary>
 	[Flags]

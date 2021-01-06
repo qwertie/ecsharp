@@ -8,7 +8,7 @@ namespace Loyc.Ecs
 {
 	/// <summary>
 	/// A list of symbols that are very specific to C# or Enhanced C#.
-	/// Note: many symbols <see cref="Loyc.Syntax.CodeSymbols"/> should be in 
+	/// Note: many symbols in <see cref="Loyc.Syntax.CodeSymbols"/> should be in 
 	/// this class instead, but this class was created very belatedly.
 	/// </summary>
 	public class EcsCodeSymbols : Loyc.Syntax.CodeSymbols
