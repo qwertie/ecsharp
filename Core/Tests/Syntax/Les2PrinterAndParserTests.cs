@@ -196,6 +196,9 @@ namespace Loyc.Syntax.Les
 			// Ideally it would print "i `before` e `except after` (@[] c `when` x)" but this will do
 			Exact("i `before` e `except after` when(c, x);", 
 				Op(F.Call(_("except after"), Op(F.Call(_("before"), _("i"), _("e"))), Op(F.Call(_("when"), c, x)))));
+			// Bug: printer was using LES3 precedence for operators that start with an apostrophe
+			Exact("x `'is` @'or(1 `'or` 3, <0);",
+				Op(F.Call(S.Is, x, Op(F.Call("'or", Op(F.Call("'or", one, Number(3))), Op(F.Call(S.LT, zero)))))));
 		}
 
 		[Test]

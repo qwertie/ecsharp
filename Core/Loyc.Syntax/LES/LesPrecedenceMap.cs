@@ -14,22 +14,43 @@ namespace Loyc.Syntax.Les
 	/// <see cref="Precedence"/> values for LES operators. When you ask about a
 	/// new operator, its precedence is chosen by this class and cached for 
 	/// future reference.</summary>
-	public class Les2PrecedenceMap
+	public class Les3PrecedenceMap
 	{
 		[ThreadStatic]
-		protected static Les2PrecedenceMap _default;
-		public static Les2PrecedenceMap Default { get { 
-			return _default = _default ?? new Les2PrecedenceMap();
+		protected static Les3PrecedenceMap _default;
+		public static Les3PrecedenceMap Default { get { 
+			return _default = _default ?? new Les3PrecedenceMap();
 		} }
 
-		public Les2PrecedenceMap() { Reset(); }
+		protected readonly bool _les2mode;
+
+		public Les3PrecedenceMap() : this(false) { }
+		protected Les3PrecedenceMap(bool les2mode) {
+			_les2mode = les2mode;
+			Reset();
+		}
 
 		/// <summary>Forgets previously encountered operators to save memory.</summary>
-		public virtual void Reset() {
+		public virtual void Reset()
+		{
 			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.SuffixWord);
 			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Prefix);
-			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.LowerKeyword);
+			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), _les2mode ? P.Other : P.LowerKeyword);
 			_suffixOpNames = null;
+
+			if (!_les2mode) {
+				var infixTable = this[OperatorShape.Infix].Item1;
+				infixTable[S.ColonColon] = LesPrecedence.Primary;
+				infixTable[S.AndBits] = LesPrecedence.AndBits;
+				infixTable[S.OrBits] = LesPrecedence.OrBits;
+				infixTable[S.XorBits] = LesPrecedence.OrBits;
+				var prefixTable = this[OperatorShape.Prefix].Item1;
+				prefixTable[S.Dot] = P.Illegal;
+				prefixTable[S.LT] = P.Illegal;
+				prefixTable[S.Assign] = P.Illegal;
+				prefixTable[S.OrBits] = P.Illegal;
+				prefixTable[S.QuestionMark] = P.Illegal;
+			}
 		}
 
 		/// <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
@@ -299,26 +320,14 @@ namespace Loyc.Syntax.Les
 		}
 	}
 
-	public class Les3PrecedenceMap : Les2PrecedenceMap
+	public class Les2PrecedenceMap : Les3PrecedenceMap
 	{
+		protected Les2PrecedenceMap() : base(les2mode: true) { }
+
 		[ThreadStatic]
-		protected new static Les3PrecedenceMap _default;
-		public new static Les3PrecedenceMap Default { get { 
-			return _default = _default ?? new Les3PrecedenceMap();
+		protected new static Les2PrecedenceMap _default;
+		public new static Les2PrecedenceMap Default { get { 
+			return _default = _default ?? new Les2PrecedenceMap();
 		} }
-		public override void Reset() {
-			base.Reset();
-			var infixTable = this[OperatorShape.Infix].Item1;
-			infixTable[S.ColonColon] = LesPrecedence.Primary;
-			infixTable[S.AndBits] = LesPrecedence.AndBits;
-			infixTable[S.OrBits] = LesPrecedence.OrBits;
-			infixTable[S.XorBits] = LesPrecedence.OrBits;
-			var prefixTable = this[OperatorShape.Prefix].Item1;
-			prefixTable[S.Dot] = P.Illegal;
-			prefixTable[S.LT] = P.Illegal;
-			prefixTable[S.Assign] = P.Illegal;
-			prefixTable[S.OrBits] = P.Illegal;
-			prefixTable[S.QuestionMark] = P.Illegal;
-		}
 	}
 }
