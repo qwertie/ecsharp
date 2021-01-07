@@ -127,7 +127,8 @@ namespace Loyc.Syntax.Les
 			Exact("a >>= 1;",      F.Call(S.ShrAssign, a, one));
 			Exact("a.b?.c(x);",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			Exact("a.b::x.c;",     F.Call(S.ColonColon, F.Dot(a, b), F.Dot(x, c)));
-			
+			Exact(@"a + b + @'+(c, 1);", F.Call(S.Add, F.Call(S.Add, a, b), F.Call(S.Add, c, one)));
+
 			// Custom ops
 			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
 			Exact("a +/ b *+ c;",   F.Call("'*+", F.Call("'+/", a, b), c));
@@ -192,8 +193,9 @@ namespace Loyc.Syntax.Les
 			Stmt(@"(a `is` b) `is` bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
 			Stmt(@"a `=` b && c", F.Call(S.And, F.Call(_("="), a, b), c));
 			Stmt(@"`Foo` a == `Foo` b", F.Call(S.Eq, Op(F.Call(Foo, a)), Op(F.Call(Foo, b))));
-			// Currently \* is equivalent to plain * (the backslash just indicates that the operator may contain letters)
-			//Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
+			// Ideally it would print "i `before` e `except after` (@[] c `when` x)" but this will do
+			Exact("i `before` e `except after` when(c, x);", 
+				Op(F.Call(_("except after"), Op(F.Call(_("before"), _("i"), _("e"))), Op(F.Call(_("when"), c, x)))));
 		}
 
 		[Test]
@@ -350,6 +352,16 @@ namespace Loyc.Syntax.Les
 				F.Call(Foo, OnNewLine(OnNewLine(a)),
 					OnNewLine(OnNewLine(b)),
 					OnNewLine(OnNewLine(c))));
+		}
+
+		[Test]
+		public void JsonCompatibility()
+		{
+			// TODO: more thorough testing
+			var braces = F.Braces(F.Call(S.Colon, String("ex"), zero), F.Call(S.Colon, String("why"), F.Id("null")));
+			Stmt("{\n  \"ex\" : 0,\n  \"why\" : null\n}", braces);
+			braces = F.Braces(AppendStmt(F.Call(S.Assign, F.Id("Normal"), zero)), AppendStmt(F.Call(S.Assign, F.Id("Silly"), one))).WithStyle(NodeStyle.Expression);
+			Stmt("public enum Mode { Normal = 0, Silly = 1 };", F.Call("public", F.Id("enum"), F.Id("Mode"), braces), errorsExpected: 1);
 		}
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)

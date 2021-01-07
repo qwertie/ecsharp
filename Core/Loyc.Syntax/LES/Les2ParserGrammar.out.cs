@@ -1,4 +1,4 @@
-// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from Les2ParserGrammar.les by LeMP custom tool. LeMP version: 2.9.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -28,7 +28,6 @@ namespace Loyc.Syntax.Les {
 			var endMarker = default(TT);
 			return (ExprList(ref endMarker, list));
 		}
-	
 		void CheckEndMarker(ref TokenType endMarker, ref Token end)
 		{
 			if ((endMarker != end.Type())) {
@@ -40,16 +39,15 @@ namespace Loyc.Syntax.Les {
 				}
 			}
 		}
-	
-	
+
 		public LNodeList StmtList()
 		{
 			LNodeList result = default(LNodeList);
-			var endMarker = TT.Semicolon;
+			var endMarker = LT0.Type() == TT.Literal && LT0.TypeMarker == null ? TT.EOF : TT.Semicolon;
 			result = ExprList(ref endMarker);
 			return result;
 		}
-	
+
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
 		public virtual LNodeList ExprList(ref TokenType endMarker, LNodeList list = default(LNodeList))
@@ -57,10 +55,6 @@ namespace Loyc.Syntax.Les {
 			TT la0;
 			LNode e = default(LNode);
 			Token end = default(Token);
-			// line 57
-			if ((LT0.Value is string)) {
-				endMarker = TT.EOF;
-			}
 			// Line 1: ( / TopExpr)
 			switch ((TT) LA0) {
 			case EOF: case TT.Comma: case TT.RBrace: case TT.RBrack:
@@ -71,21 +65,21 @@ namespace Loyc.Syntax.Les {
 				e = TopExpr();
 				break;
 			}
-			// Line 59: ((TT.Comma|TT.Semicolon) ({..} / TopExpr))*
+			// Line 60: ((TT.Comma|TT.Semicolon) ({..} / TopExpr))*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
 					e = e ?? MissingExpr(end);
-					// line 61
-					list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));
 					// line 62
+					list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));
+					// line 63
 					CheckEndMarker(ref endMarker, ref end);
-					// Line 63: ({..} / TopExpr)
+					// Line 64: ({..} / TopExpr)
 					switch ((TT) LA0) {
 					case EOF: case TT.Comma: case TT.RBrace: case TT.RBrack:
 					case TT.RParen: case TT.Semicolon:
-						// line 63
+						// line 64
 						e = null;
 						break;
 					default:
@@ -95,23 +89,19 @@ namespace Loyc.Syntax.Les {
 				} else
 					break;
 			}
-			// line 65
+			// line 66
 			if ((e != null || end.Type() == TT.Comma)) {
 				list.Add(e ?? MissingExpr(end));
 			}
-			// line 66
+			// line 67
 			return list;
 		}
-	
+
 		public virtual IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
 		{
 			TT la0;
 			LNode e = default(LNode);
 			Token end = default(Token);
-			// line 69
-			if ((LT0.Value is string)) {
-				endMarker = TT.EOF;
-			}
 			// Line 1: ( / TopExpr)
 			la0 = (TT) LA0;
 			if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon) { } else
@@ -142,7 +132,7 @@ namespace Loyc.Syntax.Les {
 				yield return e ?? MissingExpr(end);
 			}
 		}
-	
+
 		protected LNode TopExpr()
 		{
 			TT la0, la1;
@@ -231,8 +221,7 @@ namespace Loyc.Syntax.Les {
 			// line 115
 			return e.PlusAttrsBefore(attrs);
 		}
-	
-	
+
 		// Types of (normal) expressions:
 		// - particles: ids, literals, (parenthesized), {braced}
 		// - ++prefix_operators
@@ -322,8 +311,7 @@ namespace Loyc.Syntax.Les {
 			// line 154
 			return e;
 		}
-	
-	
+
 		// Helper rule that parses one of the syntactically special primary expressions
 		LNode FinishPrimaryExpr(LNode e)
 		{
@@ -357,8 +345,7 @@ namespace Loyc.Syntax.Les {
 			// line 171
 			return e;
 		}
-	
-	
+
 		LNode PrefixExpr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -381,8 +368,7 @@ namespace Loyc.Syntax.Les {
 			}
 			return result;
 		}
-	
-	
+
 		// An Particle is:
 		// - an (expression) in parenthesis or a tuple
 		// - a literal or simple identifier
@@ -484,8 +470,7 @@ namespace Loyc.Syntax.Les {
 			}
 			return result;
 		}
-	
-	
+
 		TokenTree TokenTree()
 		{
 			TT la1;

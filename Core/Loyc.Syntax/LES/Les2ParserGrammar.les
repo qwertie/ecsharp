@@ -41,7 +41,9 @@ namespace Loyc.Syntax.Les {
 		alias("}" = TT.RBrace);
 
 		@[public] rule StmtList()::LNodeList @{
-			{endMarker := TT.Semicolon;}
+			// Detect possible JSON (starting with a string) and allow comma as 
+			// separator only if so. The lexer only uses null TypeMarker for strings.
+			{ endMarker := LT0.Type() == TT.Literal && LT0.TypeMarker == null ? TT.EOF : TT.Semicolon; }
 			result:ExprList(ref endMarker)
 		};
 		@[public] fn ExprList(list::LNodeList = default(LNodeList))::LNodeList {
@@ -54,7 +56,6 @@ namespace Loyc.Syntax.Les {
 		@[public, virtual] rule ExprList(ref endMarker::TokenType, list::LNodeList = default(LNodeList))::LNodeList @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
-			{if (LT0.Value `'is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{e ??= MissingExpr(end);}
@@ -66,7 +67,6 @@ namespace Loyc.Syntax.Les {
 			{return list;}
 		};
 		@[public, virtual] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
-			{if (LT0.Value `'is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{e ??= MissingExpr(end);}
