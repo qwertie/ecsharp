@@ -818,7 +818,8 @@ namespace Loyc.Ecs
 					PrintSpaces(GetRawText(attr));
 			} else if (name == S.TriviaSLComment) {
 				if (!_o.OmitComments) {
-					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (_o.SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
+					if (trailingMode && !_out.IsAtStartOfLine && !_out.LastCharWritten.IsOneOf(' ', '\t') 
+						&& (_o.SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
 						_out.Write('\t');
 					_out.Write("//");
 					_out.Write(GetRawText(attr));
@@ -826,7 +827,7 @@ namespace Loyc.Ecs
 				}
 			} else if (name == S.TriviaMLComment) {
 				if (!_o.OmitComments) {
-					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n', '\uFFFF'))
+					if (trailingMode && !_out.IsAtStartOfLine && !_out.LastCharWritten.IsOneOf(' ', '\t'))
 						Space(SpaceOpt.BeforeCommentOnSameLine);
 					_out.Write("/*");
 					_out.Write(GetRawText(attr));
