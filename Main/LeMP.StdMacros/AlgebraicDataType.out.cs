@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.9.0.0
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -51,9 +51,9 @@ namespace LeMP
 		class AltType
 		{
 		// The Member variables come from...
-			// EITHER [$(.._classAttrs)] alt class $TypeName : $(..BaseTypes) { ScanClassBody produces _children }
-			// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
-			// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
+		// EITHER [$(.._classAttrs)] alt class $TypeName : $(..BaseTypes) { ScanClassBody produces _children }
+		// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
+		// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
 			private LNodeList _classAttrs;
 			public LNode TypeName;
 			public LNodeList BaseTypes;

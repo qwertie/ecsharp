@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 2.9.0.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -6,25 +6,15 @@
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
-
 using System.Collections.Generic;
-
 using System.Diagnostics;
-
 using System.Linq;
-
 using System.Text;
-
 using Loyc.Syntax;
-
 using Loyc.Utilities;
-
 using Loyc.Collections;
-
 using Loyc.Collections.Impl;
-
 using Loyc.Syntax.Lexing;
-
 
 namespace Loyc.LLParserGenerator
 {
@@ -33,9 +23,9 @@ namespace Loyc.LLParserGenerator
 
 	internal partial class StageOneParser
 	{
-	
+
 		void Infix(ref LNode a, Token op, LNode b) => a = F.CallInfixOp(a, op, b);
-	
+
 		public LNode Parse()
 		{
 			var e = GrammarExpr();
@@ -43,9 +33,9 @@ namespace Loyc.LLParserGenerator
 			// line 48
 			return e;
 		}
-	
-			////////////////////////////////////////////////////////////////////
-	
+		
+		////////////////////////////////////////////////////////////////////
+
 		// Top-level rule body expression: a | b | ...
 		protected LNode GrammarExpr()
 		{
@@ -65,7 +55,7 @@ namespace Loyc.LLParserGenerator
 			// line 56
 			return a;
 		}
-	
+
 		private LNode SlashExpr()
 		{
 			TT la0;
@@ -84,7 +74,7 @@ namespace Loyc.LLParserGenerator
 			// line 61
 			return a;
 		}
-	
+
 		private LNode GateExpr()
 		{
 			TT la0;
@@ -108,7 +98,7 @@ namespace Loyc.LLParserGenerator
 				a = F.CallPrefixOp(altType.Value, a);
 			return a;
 		}
-	
+
 		private LNode SeqExpr()
 		{
 			TT la0;
@@ -141,7 +131,7 @@ namespace Loyc.LLParserGenerator
 				return F.Tuple();
 			return F.Tuple(seq, seq[0].Range.StartIndex, seq.Last.Range.EndIndex);
 		}
-	
+
 		private LNode LoopExpr()
 		{
 			TT la0;
@@ -179,7 +169,7 @@ namespace Loyc.LLParserGenerator
 			// line 93
 			return a;
 		}
-	
+
 		private LNode AssignExpr()
 		{
 			TT la0;
@@ -207,7 +197,7 @@ namespace Loyc.LLParserGenerator
 			// line 101
 			return a;
 		}
-	
+
 		private LNode PrefixExpr()
 		{
 			TT la0;
@@ -234,7 +224,7 @@ namespace Loyc.LLParserGenerator
 				return r;
 			}
 		}
-	
+
 		private LNode PrefixExprOrBraces()
 		{
 			TT la0;
@@ -251,7 +241,7 @@ namespace Loyc.LLParserGenerator
 				return e;
 			}
 		}
-	
+
 		private LNode RangeExpr()
 		{
 			TT la0;
@@ -268,7 +258,7 @@ namespace Loyc.LLParserGenerator
 			return a;
 		}
 		static readonly HashSet<int> PrimaryExpr_set0 = NewSet((int) EOF, (int) TT.Alt, (int) TT.And, (int) TT.AndNot, (int) TT.Any, (int) TT.Arrow, (int) TT.Assignment, (int) TT.Bang, (int) TT.Colon, (int) TT.Comma, (int) TT.Default, (int) TT.DotDotDot, (int) TT.Error, (int) TT.Greedy, (int) TT.HostOperator, (int) TT.Id, (int) TT.In, (int) TT.InvertSet, (int) TT.LBrace, (int) TT.LBrack, (int) TT.Literal, (int) TT.LParen, (int) TT.Minus, (int) TT.Nongreedy, (int) TT.NonRecognizer, (int) TT.Plus, (int) TT.QMark, (int) TT.Recognizer, (int) TT.Slash, (int) TT.Star);
-	
+
 		private LNode PrimaryExpr()
 		{
 			TT la0, la1;
@@ -340,7 +330,7 @@ namespace Loyc.LLParserGenerator
 				return a;
 			}
 		}
-	
+
 		private LNode Atom()
 		{
 			// line 144
@@ -397,7 +387,7 @@ namespace Loyc.LLParserGenerator
 			// line 158
 			return e;
 		}
-	
+
 		private bool Try_Atom_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return Atom_Test0();

@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.9.0.0
+// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -142,24 +142,24 @@ namespace Loyc.Ecs.Parser
 		public static readonly Precedence StartExpr = new Precedence(-100);
 		
 		// Types of expressions:
-			// - identifier
-			// - (parenthesized expr)
-			// - (tuple,)
-			// - ++prefix_operators
-			// - suffix_operators++
-			// - infix + operators, including x => y
-			// - the ? conditional : operator
-			// - generic<arguments>, generic!arguments, generic.[arguments]
-			// - (old_style) casts
-			// - call_style(->casts)
-			// - method_calls(with, arguments)
-			// - typeof(and other pseudofunctions)
-			// - indexers[with, indexes]
-			// - new Object()
-			// - { code in braces; new scope }
-			// - #{ code in braces; old scope }
-			// - delegate(...) {...}
-			// - from x in expr... (LINQ)
+		// - identifier
+		// - (parenthesized expr)
+		// - (tuple,)
+		// - ++prefix_operators
+		// - suffix_operators++
+		// - infix + operators, including x => y
+		// - the ? conditional : operator
+		// - generic<arguments>, generic!arguments, generic.[arguments]
+		// - (old_style) casts
+		// - call_style(->casts)
+		// - method_calls(with, arguments)
+		// - typeof(and other pseudofunctions)
+		// - indexers[with, indexes]
+		// - new Object()
+		// - { code in braces; new scope }
+		// - #{ code in braces; old scope }
+		// - delegate(...) {...}
+		// - from x in expr... (LINQ)
 
 		LNode TypeInside(Token args)
 		{
@@ -328,8 +328,8 @@ namespace Loyc.Ecs.Parser
 		{
 		// (This is also called if a variable declaration is suspected in an 
 		// expression. In this case, detecting the statement category isnt
-			// the main goal; rather, the main goal is figuring out where the
-			// word attributes end.)
+		// the main goal; rather, the main goal is figuring out where the
+		// word attributes end.)
 			var oldPosition = InputPosition;
 			var cat = DetectStatementCategory(out wordAttrCount, mode);
 
@@ -389,7 +389,7 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// break, continue, return, throw --------------------------------------
-			// (these can be expressions as well as statements)
+		// (these can be expressions as well as statements)
 		LNode MissingHere()
 		{
 			var i = GetTextPosition(InputPosition);
@@ -407,8 +407,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// -- Type names and complex identifiers -------------------------------
-			// ---------------------------------------------------------------------
+		// -- Type names and complex identifiers -------------------------------
+		// ---------------------------------------------------------------------
 
 		// A potential LINQ keyword that, it turns out, can be treated as an identifier
 		// because we are not in the context of a LINQ expression.
@@ -422,8 +422,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// -- Type names and complex identifiers -------------------------------
-			// ---------------------------------------------------------------------
+		// -- Type names and complex identifiers -------------------------------
+		// ---------------------------------------------------------------------
 
 		
 		LNode DataType(bool afterAs, out Token? majorDimensionBrack)
@@ -1291,8 +1291,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// =====================================================================
-			// == Expressions ======================================================
-			// =====================================================================
+		// == Expressions ======================================================
+		// =====================================================================
 
 		bool Try_Scan_TypeSuffixOpt(int lookaheadAmt, TypeParseMode mode) {
 			using (new SavePosition(this, lookaheadAmt))
@@ -2422,8 +2422,8 @@ namespace Loyc.Ecs.Parser
 					{
 						if (context.CanParse(prec = EP.Switch)) {
 							if (Is(0, sy_with)) {
-								if (context.CanParse(prec = EP.WhenWhere)) {
-									if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+								if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+									if (context.CanParse(prec = EP.WhenWhere)) {
 										la1 = LA(1);
 										if (la1 == TT.LBrace)
 											goto match9;
@@ -2445,8 +2445,8 @@ namespace Loyc.Ecs.Parser
 									else
 										goto stop;
 								}
-							} else if (context.CanParse(prec = EP.WhenWhere)) {
-								if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+							} else if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+								if (context.CanParse(prec = EP.WhenWhere)) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match10;
@@ -2457,8 +2457,8 @@ namespace Loyc.Ecs.Parser
 							} else
 								goto stop;
 						} else if (Is(0, sy_with)) {
-							if (context.CanParse(prec = EP.WhenWhere)) {
-								if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+							if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+								if (context.CanParse(prec = EP.WhenWhere)) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match10;
@@ -2468,8 +2468,8 @@ namespace Loyc.Ecs.Parser
 									goto stop;
 							} else
 								goto stop;
-						} else if (context.CanParse(prec = EP.WhenWhere)) {
-							if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+						} else if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
+							if (context.CanParse(prec = EP.WhenWhere)) {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
 									goto match10;
@@ -2872,211 +2872,211 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// -- "Patterns" (used in `is` and `switch` expressions) ---------------
-			// ---------------------------------------------------------------------
-			//
-			// A pattern can appear after `is` or `case`, or inside the braced block
-			// of a switch expression. NOTE: Patterns after `case` are not supported
-			// in Enhanced C# v29 until we figure out how to resolve the major syntax 
+		// -- "Patterns" (used in `is` and `switch` expressions) ---------------
+		// ---------------------------------------------------------------------
+		//
+		// A pattern can appear after `is` or `case`, or inside the braced block
+		// of a switch expression. NOTE: Patterns after `case` are not supported
+		// in Enhanced C# v29 until we figure out how to resolve the major syntax 
 		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
-			//
-			// A ridiculously ambiguous grammar for patterns is given on this page:
-			// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
-			// Sadly, not only does it not show any C# 9 features, but the C# 9 proposal at
-			// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
-			// refers to "existing" productions like primary_pattern that DON'T EXIST
-			// in the C# 8 version. Anyway, here is my attempt to piece together a 
+		//
+		// A ridiculously ambiguous grammar for patterns is given on this page:
+		// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
+		// Sadly, not only does it not show any C# 9 features, but the C# 9 proposal at
+		// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
+		// refers to "existing" productions like primary_pattern that DON'T EXIST
+		// in the C# 8 version. Anyway, here is my attempt to piece together a 
 		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar
-			// (which still doesn't include `when` clauses from the `switch` expression):
-			//
-			// // aka disjunctive_pattern
-			// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
-			// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
-			// negated_pattern : 'not' negated_pattern | primary_pattern;
-			//
-			// primary_pattern
-			//     : type identifier     // aka declaration_pattern
-			//     | constant_expression // aka constant_pattern
-			//     | type                // aka type_pattern
-			//     | var_pattern
-			//     | positional_pattern
-			//     | property_pattern
-			//     | relational_pattern
-			//     | '(' pattern ')'     // aka parenthesized_pattern
-			//     | '_'                 // aka discard_pattern
-			//     ;
-			// 
+		// (which still doesn't include `when` clauses from the `switch` expression):
+		//
+		// // aka disjunctive_pattern
+		// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
+		// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
+		// negated_pattern : 'not' negated_pattern | primary_pattern;
+		//
+		// primary_pattern
+		//     : type identifier     // aka declaration_pattern
+		//     | constant_expression // aka constant_pattern
+		//     | type                // aka type_pattern
+		//     | var_pattern
+		//     | positional_pattern
+		//     | property_pattern
+		//     | relational_pattern
+		//     | '(' pattern ')'     // aka parenthesized_pattern
+		//     | '_'                 // aka discard_pattern
+		//     ;
+		// 
 		// subpatterns : subpattern (',' subpattern)*;
-			// subpattern : (identifier ':')? pattern;
-			// 
+		// subpattern : (identifier ':')? pattern;
+		// 
 		// var_pattern : 'var' designation;
-			//   designation : identifier | tuple_designation;    
+		//   designation : identifier | tuple_designation;    
 		//   tuple_designation : '(' designation (',' designation)* ')';
-			// 
+		// 
 		// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
-			//
-			// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
-			// 
+		//
+		// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
+		// 
 		// property_pattern : type? property_subpattern identifier?;
-			//
-			// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
-			//   relational_expression : <<no definition is provided!>>
-			//
-			// NOTES ON AMBIGUITIES:
-			// ---------------------
-			// - The var_pattern is simply a special case of positional_pattern in which 
+		//
+		// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
+		//   relational_expression : <<no definition is provided!>>
+		//
+		// NOTES ON AMBIGUITIES:
+		// ---------------------
+		// - The var_pattern is simply a special case of positional_pattern in which 
 		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
-			//   But though syntactically it's a subset, its meaning is of course quite 
+		//   But though syntactically it's a subset, its meaning is of course quite 
 		//   different. The C# compiler evidently decided to parse it differently,
-			//   as (contrary to the grammar above) `var(1, p)` is a syntax error even if 
+		//   as (contrary to the grammar above) `var(1, p)` is a syntax error even if 
 		//   there is a `class var` in scope. EC# parses it differently, too.
-			// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
+		// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
 		//   just a special case of positional_pattern; `((var x))` should already have
-			//   been valid in C# 8 given the grammar above, though maybe it has a 
+		//   been valid in C# 8 given the grammar above, though maybe it has a 
 		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
 		//   deconstruction while in C# 9 there is no deconstruction at all.
-			// - Less obvious is that `type` conflicts with `positional_pattern` (and also
-			//   `constant_expression`) because `(A, B)` looks like a positional pattern and
-			//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
+		// - Less obvious is that `type` conflicts with `positional_pattern` (and also
+		//   `constant_expression`) because `(A, B)` looks like a positional pattern and
+		//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
 		//   that (A, B) is a pattern and not a type name nor a value.
-			// - An expression of the form `(Int32) x` is tricky, since it matches 
+		// - An expression of the form `(Int32) x` is tricky, since it matches 
 		//   positional_pattern and constant_expression equally well. C# treats this 
 		//   as constant_pattern, but superficially similar patterns like 
 		//   `(Int32 + 1) x` are positional_patterns.
-			// - One of the most surprising cases is e.g. `(1, 2) is (Int32, Int32)`. 
+		// - One of the most surprising cases is e.g. `(1, 2) is (Int32, Int32)`. 
 		//   Normally this is true, implying `(Int32, Int32)` is a type, but if you
-			//   define a `const int Int32`, this becomes false. So, is it a type_pattern
-			//   or is it a positional_pattern? A couple more: `(1, 2) is (Int32, int)` 
+		//   define a `const int Int32`, this becomes false. So, is it a type_pattern
+		//   or is it a positional_pattern? A couple more: `(1, 2) is (Int32, int)` 
 		//   and `(1, 2) is (Int32, 2)` are both true iff Int32==1. I think the 
 		//   answer is positional_pattern; I think after parsing, the compiler tries 
 		//   to interpret each subpattern first as a value, and if that fails, next 
 		//   as a type. But this contradicts an earlier decision: `~Int32 is Int32` 
 		//   returns true! In _this_ case the order is reversed - the pattern is
-			//   interpreted first as a type, and next as a value. It's bizarre.
-			//   It even looks like a breaking change, as `(1, 2) is (Int32, Int32)` 
+		//   interpreted first as a type, and next as a value. It's bizarre.
+		//   It even looks like a breaking change, as `(1, 2) is (Int32, Int32)` 
 		//   would have been true in C# 7, I think (the existence of `const int Int32` 
 		//   should not have mattered in C# 7, as a type lookup was being performed.)
-			// - Having defined `const int _ = 5;`, it is a syntax error to say
-			//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
-			//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
-			// - Postfix `++` and `--` cause syntax errors, so I could not find out
-			//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
+		// - Having defined `const int _ = 5;`, it is a syntax error to say
+		//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
+		//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
+		// - Postfix `++` and `--` cause syntax errors, so I could not find out
+		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
 		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
-			//
-			// NOTES ON PRECEDENCE AND LIMITATIONS
-			// -----------------------------------
-			// - There are undocumented restrictions on the usage of types and their
-			//   suffixes. Although `(int, int)? tupleQ` is a valid variable declaration,
-			//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
-			//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
-			//   like `int?` is a syntax error in this context, but all arrays somehow 
+		//
+		// NOTES ON PRECEDENCE AND LIMITATIONS
+		// -----------------------------------
+		// - There are undocumented restrictions on the usage of types and their
+		//   suffixes. Although `(int, int)? tupleQ` is a valid variable declaration,
+		//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
+		//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
+		//   like `int?` is a syntax error in this context, but all arrays somehow 
 		//   work, e.g. `(T,U)[,]`. `Foo*` is right out.
-			// - My experimentation suggests that constant_expression, as you might guess,
-			//   has a precedence matching the `is` operator when it appears on the right-
-			//   hand side of an is-expression. In a switch expression it can be almost
-			//   any expression, except that all operators with precedence below || don't
-			//   seem to work (i.e. ?: and ?? and assignment operators).
-			//   - `??` fails in a strange way by always saying "A constant value is 
+		// - My experimentation suggests that constant_expression, as you might guess,
+		//   has a precedence matching the `is` operator when it appears on the right-
+		//   hand side of an is-expression. In a switch expression it can be almost
+		//   any expression, except that all operators with precedence below || don't
+		//   seem to work (i.e. ?: and ?? and assignment operators).
+		//   - `??` fails in a strange way by always saying "A constant value is 
 		//     expected" (I would think that `(string)null ?? null` is constant, but,
-			//     turns out, it's not, i.e. you can't make a const var with this value.)
-			//     The others fail as syntax errors.
-			//   - A lambda function can't be used in either context, even if you add
-			//     parentheses around it.
-			// - But what is the precedence of the relational_expression? Surprisingly,
-			//   low precedence operators are not allowed, even in a switch expression:
-			//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
-			//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
-			//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
-			//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
-			//   `(object)x switch { <= 2 << 3 => 7 }`.
-			// - However, the parser sees `when` as an identifier in some cases and as a 
+		//     turns out, it's not, i.e. you can't make a const var with this value.)
+		//     The others fail as syntax errors.
+		//   - A lambda function can't be used in either context, even if you add
+		//     parentheses around it.
+		// - But what is the precedence of the relational_expression? Surprisingly,
+		//   low precedence operators are not allowed, even in a switch expression:
+		//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
+		//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
+		//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
+		//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
+		//   `(object)x switch { <= 2 << 3 => 7 }`.
+		// - However, the parser sees `when` as an identifier in some cases and as a 
 		//   keyword at other times. Here are a couple of interesting cases:
-			//     const int when = 77;
-			//     const int Int32 = 32;
-			//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
-			//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
-			//   The first `switch` expression is `0`; the second is `7`.
-			// - `when` is not allowed in an is-expression; you can write
-			//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
-			//   `(object)2   is     int x when x < 5` is a syntax error.
-			//
-			// ADDITIONAL NOTES
-			// ----------------
-			// - Examples of patterns that don't look like normal expressions
-			//   nor variable declarations:
-			//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
-			//     `(> 0, name: {} x) y`
-			//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
-			// - Not related to patterns but I just noticed that 
+		//     const int when = 77;
+		//     const int Int32 = 32;
+		//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
+		//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
+		//   The first `switch` expression is `0`; the second is `7`.
+		// - `when` is not allowed in an is-expression; you can write
+		//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
+		//   `(object)2   is     int x when x < 5` is a syntax error.
+		//
+		// ADDITIONAL NOTES
+		// ----------------
+		// - Examples of patterns that don't look like normal expressions
+		//   nor variable declarations:
+		//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
+		//     `(> 0, name: {} x) y`
+		//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
+		// - Not related to patterns but I just noticed that 
 		//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
-			//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
-			// - Not related to parsing, but this `is` expression weirdly returns false:
-			//     struct Foo {
-			//        public void Deconstruct(out Dictionary<int, int> d) { d = null; }
-			//     }
-			//     (object)(new Foo()) is Foo(Dictionary<Int32,Int32>dict) { } foo
-			//   And yes, it will return true if the dictionary isn't null.
-			//
-			// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
-			// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
-			//
-			// SIMPLIFIED REFORMULATION
-			// ------------------------
-			// Here's a simplified version of the above grammar with reduced ambiguity:
-			// 
+		//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
+		// - Not related to parsing, but this `is` expression weirdly returns false:
+		//     struct Foo {
+		//        public void Deconstruct(out Dictionary<int, int> d) { d = null; }
+		//     }
+		//     (object)(new Foo()) is Foo(Dictionary<Int32,Int32>dict) { } foo
+		//   And yes, it will return true if the dictionary isn't null.
+		//
+		// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
+		// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
+		//
+		// SIMPLIFIED REFORMULATION
+		// ------------------------
+		// Here's a simplified version of the above grammar with reduced ambiguity:
+		// 
 		//   pattern : conjunctive_pattern ('or' conjunctive_pattern)*;      // as before
-			//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
-			//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
-			//
-			//   primary_pattern
-			//     : relational_pattern
-			//     / typed_pattern // includes complex identifiers and even the discard _
-			//     / paren_or_brace_pattern
-			//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
-			//
-			//   paren_or_brace_pattern:
-			//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
-			//   typed_pattern:
-			//     type (identifier | paren_or_brace_pattern)?
-			//   property_subpattern: // as before
-			//   subpatterns:         // as before
-			//   relational_pattern:  // as before
-			// 
+		//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
+		//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
+		//
+		//   primary_pattern
+		//     : relational_pattern
+		//     / typed_pattern // includes complex identifiers and even the discard _
+		//     / paren_or_brace_pattern
+		//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
+		//
+		//   paren_or_brace_pattern:
+		//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
+		//   typed_pattern:
+		//     type (identifier | paren_or_brace_pattern)?
+		//   property_subpattern: // as before
+		//   subpatterns:         // as before
+		//   relational_pattern:  // as before
+		// 
 		// LOYC TREE MAPPINGS, by example
-			// ------------------------------
-			//
-			// | Example Pattern          | Loyc tree (EC#/LES2 notation) 
+		// ------------------------------
+		//
+		// | Example Pattern          | Loyc tree (EC#/LES2 notation) 
 		// |--------------------------|-----------------------------
-			// | `_`                      | ```_```
-			// | `Enum.Value`             | ```Enum.Value```
-			// | `2 + 2`                  | ```2 + 2```
-			// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
-			// | `var x`                  | ```#var(@``, x)```
-			// | `var (x, y)`             | ```#var(@``, (x, y))``` (shorthand for ```#var(@``, @'tuple(x, y))```)
-			// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
-			// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
-			// | `List<T>`                | ```List!T``` (shorthand for `@'of(List, T)` a.k.a. ``List `'of` T``)
-			// | `List<T> list`           | ```#var(List!T, list)```
-			// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
-			// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
-			// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
-			// | `int?`                   | ```@'of(@`'?`, #int32)``` (note: only simple type patterns can use `?`)
-			// | `Foo<a, b>?`             | ```@'of(@`'?`, @'of(Foo, a, b))```
-			// | `(Foo) { } x`            | ```#var(@'deconstruct(@'tuple(Foo)), x)```
-			// | `(Foo) x`                | ```@'cast(x, Foo)```
-			// | `(Foo + 0) x`            | ```#var(@'deconstruct(@'tuple(Foo + 0)), x)```
-			// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))``` (NOT a tuple type!)
-			// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
-			// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
-			// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
-			// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
-			// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
-			// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
-			// | `not null`               | ```@'not(null)```
-			// | `not not null`           | ```@'not(@'not(null))```
-			// | `>= 'a' and <= 'z'`      | ```@'and(@`'>=`('a'), @`'<=`('z'))```
-			// | `0 or 1`                 | ```@'or(0, 1)```
-			// | `string or List<char>()` | ```@'or(#string, @'deconstruct(List!#char()))```
+		// | `_`                      | ```_```
+		// | `Enum.Value`             | ```Enum.Value```
+		// | `2 + 2`                  | ```2 + 2```
+		// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
+		// | `var x`                  | ```#var(@``, x)```
+		// | `var (x, y)`             | ```#var(@``, (x, y))``` (shorthand for ```#var(@``, @'tuple(x, y))```)
+		// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
+		// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+		// | `List<T>`                | ```List!T``` (shorthand for `@'of(List, T)` a.k.a. ``List `'of` T``)
+		// | `List<T> list`           | ```#var(List!T, list)```
+		// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
+		// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
+		// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+		// | `int?`                   | ```@'of(@`'?`, #int32)``` (note: only simple type patterns can use `?`)
+		// | `Foo<a, b>?`             | ```@'of(@`'?`, @'of(Foo, a, b))```
+		// | `(Foo) { } x`            | ```#var(@'deconstruct(@'tuple(Foo)), x)```
+		// | `(Foo) x`                | ```@'cast(x, Foo)```
+		// | `(Foo + 0) x`            | ```#var(@'deconstruct(@'tuple(Foo + 0)), x)```
+		// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))``` (NOT a tuple type!)
+		// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
+		// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
+		// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
+		// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
+		// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
+		// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+		// | `not null`               | ```@'not(null)```
+		// | `not not null`           | ```@'not(@'not(null))```
+		// | `>= 'a' and <= 'z'`      | ```@'and(@`'>=`('a'), @`'<=`('z'))```
+		// | `0 or 1`                 | ```@'or(0, 1)```
+		// | `string or List<char>()` | ```@'or(#string, @'deconstruct(List!#char()))```
 		private bool Scan_BracedBlock(Symbol spaceName = null, Symbol target = null, int startIndex = -1)
 		{
 			if (!TryMatch((int) TT.LBrace))
@@ -3087,211 +3087,211 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// -- "Patterns" (used in `is` and `switch` expressions) ---------------
-			// ---------------------------------------------------------------------
-			//
-			// A pattern can appear after `is` or `case`, or inside the braced block
-			// of a switch expression. NOTE: Patterns after `case` are not supported
-			// in Enhanced C# v29 until we figure out how to resolve the major syntax 
+		// -- "Patterns" (used in `is` and `switch` expressions) ---------------
+		// ---------------------------------------------------------------------
+		//
+		// A pattern can appear after `is` or `case`, or inside the braced block
+		// of a switch expression. NOTE: Patterns after `case` are not supported
+		// in Enhanced C# v29 until we figure out how to resolve the major syntax 
 		// conflict between Enhanced C# and plain C# that was introduced in C# 9.
-			//
-			// A ridiculously ambiguous grammar for patterns is given on this page:
-			// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
-			// Sadly, not only does it not show any C# 9 features, but the C# 9 proposal at
-			// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
-			// refers to "existing" productions like primary_pattern that DON'T EXIST
-			// in the C# 8 version. Anyway, here is my attempt to piece together a 
+		//
+		// A ridiculously ambiguous grammar for patterns is given on this page:
+		// https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/patterns
+		// Sadly, not only does it not show any C# 9 features, but the C# 9 proposal at
+		// https://github.com/dotnet/csharplang/blob/master/proposals/csharp-9.0/patterns3.md
+		// refers to "existing" productions like primary_pattern that DON'T EXIST
+		// in the C# 8 version. Anyway, here is my attempt to piece together a 
 		// simplified, combined version of the C# 8 grammar and C# 9 partial grammar
-			// (which still doesn't include `when` clauses from the `switch` expression):
-			//
-			// // aka disjunctive_pattern
-			// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
-			// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
-			// negated_pattern : 'not' negated_pattern | primary_pattern;
-			//
-			// primary_pattern
-			//     : type identifier     // aka declaration_pattern
-			//     | constant_expression // aka constant_pattern
-			//     | type                // aka type_pattern
-			//     | var_pattern
-			//     | positional_pattern
-			//     | property_pattern
-			//     | relational_pattern
-			//     | '(' pattern ')'     // aka parenthesized_pattern
-			//     | '_'                 // aka discard_pattern
-			//     ;
-			// 
+		// (which still doesn't include `when` clauses from the `switch` expression):
+		//
+		// // aka disjunctive_pattern
+		// pattern : conjunctive_pattern ('or' conjunctive_pattern)*;
+		// conjunctive_pattern : negated_pattern ('and' negated_pattern)*;
+		// negated_pattern : 'not' negated_pattern | primary_pattern;
+		//
+		// primary_pattern
+		//     : type identifier     // aka declaration_pattern
+		//     | constant_expression // aka constant_pattern
+		//     | type                // aka type_pattern
+		//     | var_pattern
+		//     | positional_pattern
+		//     | property_pattern
+		//     | relational_pattern
+		//     | '(' pattern ')'     // aka parenthesized_pattern
+		//     | '_'                 // aka discard_pattern
+		//     ;
+		// 
 		// subpatterns : subpattern (',' subpattern)*;
-			// subpattern : (identifier ':')? pattern;
-			// 
+		// subpattern : (identifier ':')? pattern;
+		// 
 		// var_pattern : 'var' designation;
-			//   designation : identifier | tuple_designation;    
+		//   designation : identifier | tuple_designation;    
 		//   tuple_designation : '(' designation (',' designation)* ')';
-			// 
+		// 
 		// positional_pattern : type? '(' subpatterns? ')' property_subpattern? identifier?;
-			//
-			// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
-			// 
+		//
+		// property_subpattern : '{' '}' | '{' subpatterns ','? '}';
+		// 
 		// property_pattern : type? property_subpattern identifier?;
-			//
-			// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
-			//   relational_expression : <<no definition is provided!>>
-			//
-			// NOTES ON AMBIGUITIES:
-			// ---------------------
-			// - The var_pattern is simply a special case of positional_pattern in which 
+		//
+		// relational_pattern : ('<'|'>'|'<='|'>=') relational_expression;
+		//   relational_expression : <<no definition is provided!>>
+		//
+		// NOTES ON AMBIGUITIES:
+		// ---------------------
+		// - The var_pattern is simply a special case of positional_pattern in which 
 		//   the type happens to be `var` and the subpatterns are identifiers/tuples.
-			//   But though syntactically it's a subset, its meaning is of course quite 
+		//   But though syntactically it's a subset, its meaning is of course quite 
 		//   different. The C# compiler evidently decided to parse it differently,
-			//   as (contrary to the grammar above) `var(1, p)` is a syntax error even if 
+		//   as (contrary to the grammar above) `var(1, p)` is a syntax error even if 
 		//   there is a `class var` in scope. EC# parses it differently, too.
-			// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
+		// - Supposedly, parenthesized_pattern was added in C# 9, but it's actually 
 		//   just a special case of positional_pattern; `((var x))` should already have
-			//   been valid in C# 8 given the grammar above, though maybe it has a 
+		//   been valid in C# 8 given the grammar above, though maybe it has a 
 		//   different meaning in C# 9? i.e. perhaps in C# 8 it's a double 
 		//   deconstruction while in C# 9 there is no deconstruction at all.
-			// - Less obvious is that `type` conflicts with `positional_pattern` (and also
-			//   `constant_expression`) because `(A, B)` looks like a positional pattern and
-			//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
+		// - Less obvious is that `type` conflicts with `positional_pattern` (and also
+		//   `constant_expression`) because `(A, B)` looks like a positional pattern and
+		//   also looks like a tuple type (and a tuple value). C#, of course, assumes 
 		//   that (A, B) is a pattern and not a type name nor a value.
-			// - An expression of the form `(Int32) x` is tricky, since it matches 
+		// - An expression of the form `(Int32) x` is tricky, since it matches 
 		//   positional_pattern and constant_expression equally well. C# treats this 
 		//   as constant_pattern, but superficially similar patterns like 
 		//   `(Int32 + 1) x` are positional_patterns.
-			// - One of the most surprising cases is e.g. `(1, 2) is (Int32, Int32)`. 
+		// - One of the most surprising cases is e.g. `(1, 2) is (Int32, Int32)`. 
 		//   Normally this is true, implying `(Int32, Int32)` is a type, but if you
-			//   define a `const int Int32`, this becomes false. So, is it a type_pattern
-			//   or is it a positional_pattern? A couple more: `(1, 2) is (Int32, int)` 
+		//   define a `const int Int32`, this becomes false. So, is it a type_pattern
+		//   or is it a positional_pattern? A couple more: `(1, 2) is (Int32, int)` 
 		//   and `(1, 2) is (Int32, 2)` are both true iff Int32==1. I think the 
 		//   answer is positional_pattern; I think after parsing, the compiler tries 
 		//   to interpret each subpattern first as a value, and if that fails, next 
 		//   as a type. But this contradicts an earlier decision: `~Int32 is Int32` 
 		//   returns true! In _this_ case the order is reversed - the pattern is
-			//   interpreted first as a type, and next as a value. It's bizarre.
-			//   It even looks like a breaking change, as `(1, 2) is (Int32, Int32)` 
+		//   interpreted first as a type, and next as a value. It's bizarre.
+		//   It even looks like a breaking change, as `(1, 2) is (Int32, Int32)` 
 		//   would have been true in C# 7, I think (the existence of `const int Int32` 
 		//   should not have mattered in C# 7, as a type lookup was being performed.)
-			// - Having defined `const int _ = 5;`, it is a syntax error to say
-			//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
-			//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
-			// - Postfix `++` and `--` cause syntax errors, so I could not find out
-			//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
+		// - Having defined `const int _ = 5;`, it is a syntax error to say
+		//   `(object)4 switch { _ - 1 => 1, _ => 0 }` but the expression
+		//   `(object)4 switch { +_ - 1 => 1, _ => 0 }` equals 1.
+		// - Postfix `++` and `--` cause syntax errors, so I could not find out
+		//   whether the expression in `x switch { (P) ++ when - 1 > 0 => 0, _ => 1 }` 
 		//   is parsed as `((P)++) when (-1 > 0)` or `(((P) ++when) - 1) > 0`.
-			//
-			// NOTES ON PRECEDENCE AND LIMITATIONS
-			// -----------------------------------
-			// - There are undocumented restrictions on the usage of types and their
-			//   suffixes. Although `(int, int)? tupleQ` is a valid variable declaration,
-			//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
-			//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
-			//   like `int?` is a syntax error in this context, but all arrays somehow 
+		//
+		// NOTES ON PRECEDENCE AND LIMITATIONS
+		// -----------------------------------
+		// - There are undocumented restrictions on the usage of types and their
+		//   suffixes. Although `(int, int)? tupleQ` is a valid variable declaration,
+		//   `(object)(1,2) switch { (int,int)? => 7, _ => 0 }` is a syntax error, as is
+		//   `(object)(1,2) switch { (int,int)? x => 7, _ => 0 }`. Even a simple pattern
+		//   like `int?` is a syntax error in this context, but all arrays somehow 
 		//   work, e.g. `(T,U)[,]`. `Foo*` is right out.
-			// - My experimentation suggests that constant_expression, as you might guess,
-			//   has a precedence matching the `is` operator when it appears on the right-
-			//   hand side of an is-expression. In a switch expression it can be almost
-			//   any expression, except that all operators with precedence below || don't
-			//   seem to work (i.e. ?: and ?? and assignment operators).
-			//   - `??` fails in a strange way by always saying "A constant value is 
+		// - My experimentation suggests that constant_expression, as you might guess,
+		//   has a precedence matching the `is` operator when it appears on the right-
+		//   hand side of an is-expression. In a switch expression it can be almost
+		//   any expression, except that all operators with precedence below || don't
+		//   seem to work (i.e. ?: and ?? and assignment operators).
+		//   - `??` fails in a strange way by always saying "A constant value is 
 		//     expected" (I would think that `(string)null ?? null` is constant, but,
-			//     turns out, it's not, i.e. you can't make a const var with this value.)
-			//     The others fail as syntax errors.
-			//   - A lambda function can't be used in either context, even if you add
-			//     parentheses around it.
-			// - But what is the precedence of the relational_expression? Surprisingly,
-			//   low precedence operators are not allowed, even in a switch expression:
-			//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
-			//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
-			//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
-			//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
-			//   `(object)x switch { <= 2 << 3 => 7 }`.
-			// - However, the parser sees `when` as an identifier in some cases and as a 
+		//     turns out, it's not, i.e. you can't make a const var with this value.)
+		//     The others fail as syntax errors.
+		//   - A lambda function can't be used in either context, even if you add
+		//     parentheses around it.
+		// - But what is the precedence of the relational_expression? Surprisingly,
+		//   low precedence operators are not allowed, even in a switch expression:
+		//   `(object)x switch { 2 & 3 => 7 }` is allowed, yet the ampersand in
+		//   `(object)x switch { <= 2 & 3 => 7 }` produces a syntax error. Even
+		//   `(object)x switch { (<= 2 & 3, 4) => 7 }` is a syntax error, although
+		//   `(object)x switch { <= (2 & 3) => 7 }` is legal. Shifts are allowed, e.g.
+		//   `(object)x switch { <= 2 << 3 => 7 }`.
+		// - However, the parser sees `when` as an identifier in some cases and as a 
 		//   keyword at other times. Here are a couple of interesting cases:
-			//     const int when = 77;
-			//     const int Int32 = 32;
-			//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
-			//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
-			//   The first `switch` expression is `0`; the second is `7`.
-			// - `when` is not allowed in an is-expression; you can write
-			//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
-			//   `(object)2   is     int x when x < 5` is a syntax error.
-			//
-			// ADDITIONAL NOTES
-			// ----------------
-			// - Examples of patterns that don't look like normal expressions
-			//   nor variable declarations:
-			//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
-			//     `(> 0, name: {} x) y`
-			//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
-			// - Not related to patterns but I just noticed that 
+		//     const int when = 77;
+		//     const int Int32 = 32;
+		//     (object)true switch { ((Int32)) when -4 > 30 => 7, _ => 0 }
+		//     (object)true switch { (Int32) when -4 > 30 => 7, _ => 0 }
+		//   The first `switch` expression is `0`; the second is `7`.
+		// - `when` is not allowed in an is-expression; you can write
+		//   `(object)2 switch { int x when x < 5 => true, _ => false }` but
+		//   `(object)2   is     int x when x < 5` is a syntax error.
+		//
+		// ADDITIONAL NOTES
+		// ----------------
+		// - Examples of patterns that don't look like normal expressions
+		//   nor variable declarations:
+		//     `Foo(Bar<Baz, Baz>variable)` // Foo takes only one argument
+		//     `(> 0, name: {} x) y`
+		//     `(> 0, name: {} x) { name2: Foo(x, y) { > 0 } } y`
+		// - Not related to patterns but I just noticed that 
 		//   `Foo(out Dictionary<Int32, Int32> d);` is parsed differently than
-			//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
-			// - Not related to parsing, but this `is` expression weirdly returns false:
-			//     struct Foo {
-			//        public void Deconstruct(out Dictionary<int, int> d) { d = null; }
-			//     }
-			//     (object)(new Foo()) is Foo(Dictionary<Int32,Int32>dict) { } foo
-			//   And yes, it will return true if the dictionary isn't null.
-			//
-			// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
-			// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
-			//
-			// SIMPLIFIED REFORMULATION
-			// ------------------------
-			// Here's a simplified version of the above grammar with reduced ambiguity:
-			// 
+		//   `Foo(    Dictionary<Int32, Int32>d);`. Better test this in our parser.
+		// - Not related to parsing, but this `is` expression weirdly returns false:
+		//     struct Foo {
+		//        public void Deconstruct(out Dictionary<int, int> d) { d = null; }
+		//     }
+		//     (object)(new Foo()) is Foo(Dictionary<Int32,Int32>dict) { } foo
+		//   And yes, it will return true if the dictionary isn't null.
+		//
+		// P.S. non-tuple positional patterns behave weirdly, not that a parser cares:
+		// https://endjin.com/blog/2019/10/dotnet-csharp-8-positional-patterns-deconstructor-pitfall
+		//
+		// SIMPLIFIED REFORMULATION
+		// ------------------------
+		// Here's a simplified version of the above grammar with reduced ambiguity:
+		// 
 		//   pattern : conjunctive_pattern ('or' conjunctive_pattern)*;      // as before
-			//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
-			//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
-			//
-			//   primary_pattern
-			//     : relational_pattern
-			//     / typed_pattern // includes complex identifiers and even the discard _
-			//     / paren_or_brace_pattern
-			//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
-			//
-			//   paren_or_brace_pattern:
-			//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
-			//   typed_pattern:
-			//     type (identifier | paren_or_brace_pattern)?
-			//   property_subpattern: // as before
-			//   subpatterns:         // as before
-			//   relational_pattern:  // as before
-			// 
+		//   conjunctive_pattern : negated_pattern ('and' negated_pattern)*; // as before
+		//   negated_pattern : 'not' negated_pattern | primary_pattern;      // as before
+		//
+		//   primary_pattern
+		//     : relational_pattern
+		//     / typed_pattern // includes complex identifiers and even the discard _
+		//     / paren_or_brace_pattern
+		//     / expression // using appropriate precedence & excluding `=>`, `?`, `++`, `--`
+		//
+		//   paren_or_brace_pattern:
+		//     ('(' subpatterns? ')' property_subpattern? | property_subpattern) identifier?
+		//   typed_pattern:
+		//     type (identifier | paren_or_brace_pattern)?
+		//   property_subpattern: // as before
+		//   subpatterns:         // as before
+		//   relational_pattern:  // as before
+		// 
 		// LOYC TREE MAPPINGS, by example
-			// ------------------------------
-			//
-			// | Example Pattern          | Loyc tree (EC#/LES2 notation) 
+		// ------------------------------
+		//
+		// | Example Pattern          | Loyc tree (EC#/LES2 notation) 
 		// |--------------------------|-----------------------------
-			// | `_`                      | ```_```
-			// | `Enum.Value`             | ```Enum.Value```
-			// | `2 + 2`                  | ```2 + 2```
-			// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
-			// | `var x`                  | ```#var(@``, x)```
-			// | `var (x, y)`             | ```#var(@``, (x, y))``` (shorthand for ```#var(@``, @'tuple(x, y))```)
-			// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
-			// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
-			// | `List<T>`                | ```List!T``` (shorthand for `@'of(List, T)` a.k.a. ``List `'of` T``)
-			// | `List<T> list`           | ```#var(List!T, list)```
-			// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
-			// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
-			// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
-			// | `int?`                   | ```@'of(@`'?`, #int32)``` (note: only simple type patterns can use `?`)
-			// | `Foo<a, b>?`             | ```@'of(@`'?`, @'of(Foo, a, b))```
-			// | `(Foo) { } x`            | ```#var(@'deconstruct(@'tuple(Foo)), x)```
-			// | `(Foo) x`                | ```@'cast(x, Foo)```
-			// | `(Foo + 0) x`            | ```#var(@'deconstruct(@'tuple(Foo + 0)), x)```
-			// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))``` (NOT a tuple type!)
-			// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
-			// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
-			// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
-			// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
-			// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
-			// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
-			// | `not null`               | ```@'not(null)```
-			// | `not not null`           | ```@'not(@'not(null))```
-			// | `>= 'a' and <= 'z'`      | ```@'and(@`'>=`('a'), @`'<=`('z'))```
-			// | `0 or 1`                 | ```@'or(0, 1)```
-			// | `string or List<char>()` | ```@'or(#string, @'deconstruct(List!#char()))```
+		// | `_`                      | ```_```
+		// | `Enum.Value`             | ```Enum.Value```
+		// | `2 + 2`                  | ```2 + 2```
+		// | `>= 2 + 2`               | ```@`'>=`(2 + 2)```
+		// | `var x`                  | ```#var(@``, x)```
+		// | `var (x, y)`             | ```#var(@``, (x, y))``` (shorthand for ```#var(@``, @'tuple(x, y))```)
+		// | `var (x, (y, z))`        | ```#var(@``, (x, (y, z)))```
+		// | `{ } obj`                | ```#var(@'deconstruct(@'tuple()), obj)```
+		// | `List<T>`                | ```List!T``` (shorthand for `@'of(List, T)` a.k.a. ``List `'of` T``)
+		// | `List<T> list`           | ```#var(List!T, list)```
+		// | `List<T>() list`         | ```#var(@'deconstruct(List!T()), list)```
+		// | `List<T> { Count: >0 } x`| ```#var(@'deconstruct(List!T(), Count ::= @`'>`(0)), x)```
+		// | `List<T>() { Count:7 } x`| ```#var(@'deconstruct(List!T(), Count ::= 7), x)```
+		// | `int?`                   | ```@'of(@`'?`, #int32)``` (note: only simple type patterns can use `?`)
+		// | `Foo<a, b>?`             | ```@'of(@`'?`, @'of(Foo, a, b))```
+		// | `(Foo) { } x`            | ```#var(@'deconstruct(@'tuple(Foo)), x)```
+		// | `(Foo) x`                | ```@'cast(x, Foo)```
+		// | `(Foo + 0) x`            | ```#var(@'deconstruct(@'tuple(Foo + 0)), x)```
+		// | `(a, b)`                 | ```@'deconstruct(@'tuple(a, b))``` (NOT a tuple type!)
+		// | `(a, b) { Foo: x }`      | ```@'deconstruct(@'tuple(a, b), Foo ::= x)```
+		// | `(> 5, (_, _))`          | ```@'deconstruct(@'tuple(@`'>`(5), @'deconstruct(@'tuple(_, _))))```
+		// | `Point(X: > 5, Y: 0)`    | ```@'deconstruct(Point(X ::= @`'>`(5), Y ::= 0))```
+		// | `Foo({ Length: 2 })`     | ```@'deconstruct(Foo(@'deconstruct(@'tuple(), Length ::= 2))```
+		// | `{ X: 1, Y: >0 }`        | ```@'deconstruct(@'tuple(), X ::= 1, Y ::= @`'>`(0))```
+		// | `Foo(X: int x) {Y: >4} f`| ```#var(@'deconstruct(Foo(X ::= #var(#int32, x)), Y ::= @`'>`(4)), f)```
+		// | `not null`               | ```@'not(null)```
+		// | `not not null`           | ```@'not(@'not(null))```
+		// | `>= 'a' and <= 'z'`      | ```@'and(@`'>=`('a'), @`'<=`('z'))```
+		// | `0 or 1`                 | ```@'or(0, 1)```
+		// | `string or List<char>()` | ```@'or(#string, @'deconstruct(List!#char()))```
 
 		LNode Pattern(Precedence ctx)
 		{
@@ -4022,8 +4022,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// =====================================================================
-			// == Attributes =======================================================
-			// =====================================================================
+		// == Attributes =======================================================
+		// =====================================================================
 
 		bool NormalAttributesOpt(ref LNodeList attrs)
 		{
@@ -4149,8 +4149,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// =====================================================================
-			// == LINQ =============================================================
-			// =====================================================================
+		// == LINQ =============================================================
+		// =====================================================================
 
 		bool Try_Scan_TParamAttributeKeywordsOpt(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
@@ -4447,8 +4447,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// =====================================================================
-			// == Statements =======================================================
-			// =====================================================================
+		// == Statements =======================================================
+		// =====================================================================
 
 		
 		public LNode Stmt()
@@ -5338,8 +5338,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// namespace, class, struct, interface, trait, alias, using, enum ------
-			// ---------------------------------------------------------------------
+		// namespace, class, struct, interface, trait, alias, using, enum ------
+		// ---------------------------------------------------------------------
 
 		private LNode SpaceDecl(int startIndex)
 		{
@@ -5605,8 +5605,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// -- assembly or module attribute -------------------------------------
-			// ---------------------------------------------------------------------
+		// -- assembly or module attribute -------------------------------------
+		// ---------------------------------------------------------------------
 
 		private // recognizer used by AssemblyOrModuleAttribute
 		Token AsmOrModLabel()
@@ -5651,8 +5651,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// methods, properties, variable/field declarations, operators ---------
-			// ---------------------------------------------------------------------
+		// methods, properties, variable/field declarations, operators ---------
+		// ---------------------------------------------------------------------
 
 		private LNode MethodOrPropertyOrVar(int startIndex, LNodeList attrs)
 		{
@@ -5980,8 +5980,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// Constructor/destructor ----------------------------------------------
-			// ---------------------------------------------------------------------
+		// Constructor/destructor ----------------------------------------------
+		// ---------------------------------------------------------------------
 
 		bool Try_HasNoSemicolons(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
@@ -6059,8 +6059,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// Delegate & event declarations ---------------------------------------
-			// ---------------------------------------------------------------------
+		// Delegate & event declarations ---------------------------------------
+		// ---------------------------------------------------------------------
 
 		private LNode DelegateDecl(int startIndex, LNodeList attrs)
 		{
@@ -6119,8 +6119,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// Statements for executable contexts ----------------------------------
-			// ---------------------------------------------------------------------
+		// Statements for executable contexts ----------------------------------
+		// ---------------------------------------------------------------------
 
 		// Labels, default:, case expr: ----------------------------------------
 		LNode LabelStmt(int startIndex)
@@ -6222,7 +6222,7 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// goto, goto case -----------------------------------------------------
-			// (these can be expressions as well as statements)
+		// (these can be expressions as well as statements)
 
 		private LNode GotoStmt(int startIndex)
 		{
@@ -6569,8 +6569,8 @@ namespace Loyc.Ecs.Parser
 		}
 		
 		// ---------------------------------------------------------------------
-			// ExprList and StmtList -----------------------------------------------
-			// ---------------------------------------------------------------------
+		// ExprList and StmtList -----------------------------------------------
+		// ---------------------------------------------------------------------
 
 		LNode ExprOrNull(bool allowUnassignedVarDecl = false)
 		{

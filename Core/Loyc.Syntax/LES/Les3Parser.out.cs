@@ -1,46 +1,35 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.9.0.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
 // --timeout=X           Abort processing thread after X seconds (default: 10)
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
-
 using System;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-
 using Loyc;	// for IMessageSink, Symbol, etc.
-
 using Loyc.Collections;	// many handy interfaces & classes
-
 using Loyc.Collections.Impl;	// For InternalList
-
 using Loyc.Syntax.Lexing;	// For BaseLexer
-
 using Loyc.Syntax;	// For BaseParser<Token> and LNode
-
 namespace Loyc.Syntax.Les
 {
-
 	using TT = TokenType;	// Abbreviate TokenType as TT
-
 	using P = LesPrecedence;
-
 	using S = CodeSymbols;
-
 
 	partial class Les3Parser
 	{
 		static readonly Symbol sy__aposx0A = (Symbol) "'\n", sy__apos_lpar_rpar = (Symbol) "'()";
 		#pragma warning disable 162, 642
-	
+
 		protected new const TT EOF = TT.EOF;
-	
-			// Note: verbose messages are only printed when custom tool is given --verbose flag
+		
+		// Note: verbose messages are only printed when custom tool is given --verbose flag
 		Dictionary<UString, LNode> _sharedTrees;
 		bool _isCommaSeparatedListContext;
 		string _listContextName;
@@ -60,7 +49,7 @@ namespace Loyc.Syntax.Les
 		}
 		bool IsContinuator(object ltv) => ltv != null && Continuators.ContainsKey(ltv);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)] bool IsConjoinedToken(int li) => LT(li - 1).EndIndex == LT(li).StartIndex;
-	
+
 		void NewlinesOpt()
 		{
 			TT la0;
@@ -73,7 +62,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-	
+
 		protected LNode CompactExpression(ref TokenType separatorType)
 		{
 			TT la0;
@@ -123,7 +112,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		protected LNode NextExpression(ref TokenType separatorType, out Token trailingSeparator, bool isBracedBlock)
 		{
 			TT la0;
@@ -180,7 +169,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		public LNodeList ExprList(string listContextName, ref TokenType separatorType, LNode firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false)
 		{
 			TT la0;
@@ -198,8 +187,8 @@ namespace Loyc.Syntax.Les
 			do {
 				la0 = (TT) LA0;
 				if (la0 == TT.Dot) {
-					if (!IsConjoinedToken(0 + 1)) {
-						if (!isBracedBlock) {
+					if (!isBracedBlock) {
+						if (!IsConjoinedToken(0 + 1)) {
 							Skip();
 							// Line 141: greedy(CompactExpression)*
 							for (;;) {
@@ -276,7 +265,7 @@ namespace Loyc.Syntax.Les
 				return __result__;
 			}
 		}
-	
+
 		void ErrorTokensOpt()
 		{
 			LNodeList got_ErrorTokenList = default(LNodeList);
@@ -287,7 +276,7 @@ namespace Loyc.Syntax.Les
 			if (!got_ErrorTokenList.IsEmpty)
 				Error(_errorPosition - InputPosition, "Expected end of expression (',', ';', etc.)");
 		}
-	
+
 		public IEnumerable<LNode> ExprListLazy(Holder<TokenType> separatorType)
 		{
 			TT la0;
@@ -352,7 +341,7 @@ namespace Loyc.Syntax.Les
 				yield return F.Id(S.Missing, trailingSeparator);
 		}
 		static readonly HashSet<int> TopExpr_set0 = NewSet((int) EOF, (int) TT.Assignment, (int) TT.At, (int) TT.BackRef, (int) TT.BQId, (int) TT.Colon, (int) TT.Comma, (int) TT.Dot, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.Literal, (int) TT.LParen, (int) TT.Newline, (int) TT.NormalOp, (int) TT.Not, (int) TT.PrefixOp, (int) TT.PreOrSufOp, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.TreeDef);
-	
+
 		protected LNode TopExpr(bool compactMode)
 		{
 			TT la0;
@@ -411,7 +400,7 @@ namespace Loyc.Syntax.Les
 			}
 			return e;
 		}
-	
+
 		LNode Expr(Precedence context, bool compactMode)
 		{
 			TT la0;
@@ -472,8 +461,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Assignment: case TT.Dot: case TT.NormalOp:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (CanParse(context, 0, out prec))
+								if (CanParse(context, 0, out prec)) {
+									if (!compactMode || IsConjoinedToken(0))
 										goto match2;
 									else
 										goto stop;
@@ -482,8 +471,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Colon:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (CanParse(context, 0, out prec)) {
+								if (CanParse(context, 0, out prec)) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										if ((TT) LA(0 + 1) != TT.Newline)
 											goto match2;
 										else
@@ -495,9 +484,9 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Id:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (!IsContinuator(LT(0).Value) && !compactMode) {
-										if (CanParse(context, 0, out prec))
+								if (CanParse(context, 0, out prec)) {
+									if (!compactMode || IsConjoinedToken(0)) {
+										if (!IsContinuator(LT(0).Value) && !compactMode)
 											goto match2;
 										else
 											goto stop;
@@ -508,8 +497,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.PreOrSufOp:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+								if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var t = MatchAny();
 										// line 272
 										e = F.CallSuffixOp(e, _precMap.ToSuffixOpName((Symbol) t.Value), t);
@@ -595,7 +584,7 @@ namespace Loyc.Syntax.Les
 			// line 298
 			return attrs.IsEmpty ? e : e.PlusAttrsBefore(attrs).WithRange(startIndex, e.Range.EndIndex);
 		}
-	
+
 		Symbol InfixOperatorName(out Token op, bool compactMode)
 		{
 			TT la0;
@@ -689,7 +678,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
@@ -708,7 +697,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNode CallArgs(LNode target)
 		{
 			LNodeList args = default(LNodeList);
@@ -726,7 +715,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNode PrefixExpr(Precedence context, bool compactMode)
 		{
 			LNode e = default(LNode);
@@ -751,7 +740,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNode Particle(bool compactMode = false)
 		{
 			Token lit_lpar = default(Token);
@@ -820,7 +809,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNode SquareBracketList()
 		{
 			Token lit_lsqb = default(Token);
@@ -834,7 +823,7 @@ namespace Loyc.Syntax.Les
 			return result;
 		}
 		static readonly HashSet<int> ErrorTokenList_set0 = NewSet((int) EOF, (int) TT.Comma, (int) TT.Newline, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.SingleQuote);
-	
+
 		LNodeList ErrorTokenList()
 		{
 			TT la0;
@@ -853,7 +842,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		LNodeList TokenListEx()
 		{
 			TT la0;
@@ -880,7 +869,7 @@ namespace Loyc.Syntax.Les
 				Skip();
 			return result;
 		}
-	
+
 		LNode TokenListParticle()
 		{
 			TT la0;
@@ -915,7 +904,7 @@ namespace Loyc.Syntax.Les
 				return F.Id(t);
 			}
 		}
-	
+
 		LNode BracedBlock()
 		{
 			Token lit_lcub = default(Token);
@@ -928,7 +917,7 @@ namespace Loyc.Syntax.Les
 			// line 424
 			return F.CallBrackets(S.Braces, lit_lcub, stmts, lit_rcub, NodeStyle.StatementBlock);
 		}
-	
+
 		LNode KeywordExpression()
 		{
 			TT la0, la1;
@@ -1018,7 +1007,7 @@ namespace Loyc.Syntax.Les
 			}, args));
 			return result;
 		}
-	
+
 		LNode CommaContinuator(Symbol word)
 		{
 			TT la0;
@@ -1034,7 +1023,7 @@ namespace Loyc.Syntax.Les
 			result = TopExpr(compactMode: false);
 			return result;
 		}
-	
+
 		LNode Continuator(Symbol word)
 		{
 			TT la0, la1;
@@ -1091,7 +1080,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
-	
+
 		Token ContinuatorKeyword()
 		{
 			Token result = default(Token);
