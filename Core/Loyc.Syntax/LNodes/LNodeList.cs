@@ -69,6 +69,7 @@ namespace Loyc.Syntax
 		public bool IsEmpty => _list.IsEmpty;
 
 		void ICollection<LNode>.Add(LNode item) => Add(item);
+		public LNodeList AddIfNotNull(LNode item) => item == null ? this : Add(item);
 		public LNodeList Add(LNode item) => new LNodeList(_list.Add(item ?? throw new ArgumentNullException(nameof(item))));
 		public void Clear() => _list.Clear();
 		public bool Contains(LNode item) => _list.Contains(item);
