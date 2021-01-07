@@ -52,8 +52,8 @@ namespace Loyc.Ecs.Tests
 			var stmt = Attr(x, @public, F.Call(S.Lambda, F.Call(Foo, F.Var(F.Int32, x, zero)), F.Assign(a, x)));
 			ExpectAttrsDroppedOnlyInMethod("[x] public Foo(int x = 0) => a = x;", @"Foo(int x = 0) => a = x;", stmt);
 
-			ExpectAttrsAreNeverDropped(@"[Foo] public void Foo() { }", Attr(Foo, @public, F.Fn(F.Void, Foo, F.List(), F.Braces())));
-			ExpectAttrsAreNeverDropped(@"[Foo] public class Foo { }", Attr(Foo, @public, F.Call(S.Class, Foo, F.List(), F.Braces())));
+			ExpectAttrsAreNeverDropped(@"[Foo] public void Foo() { }", Attr(Foo, @public, F.Fn(F.Void, Foo, F.AltList(), F.Braces())));
+			ExpectAttrsAreNeverDropped(@"[Foo] public class Foo { }", Attr(Foo, @public, F.Call(S.Class, Foo, F.AltList(), F.Braces())));
 			ExpectAttrsAreNeverDropped(@"[Foo] public Foo x;", Attr(Foo, @public, F.Var(Foo, x)));
 
 			ExpectAttrsDroppedWhenAsked(@"@`'suf[]`(static x, a);", @"x[a];", F.Call(S.IndexBracks, Attr(@static, x), a));
@@ -82,7 +82,7 @@ namespace Loyc.Ecs.Tests
 		void ExpectAttrsDroppedOnlyInMethod(string withAttrs, string withoutAttrs, LNode stmt)
 		{
 			Stmt(withAttrs, stmt, _dropAttrsOption);
-			LNode stmtInFooMethod = F.Fn(F.Void, Foo, F.List(), F.Braces(stmt));
+			LNode stmtInFooMethod = F.Fn(F.Void, Foo, F.AltList(), F.Braces(stmt));
 			string expectedTextInMethod = "void Foo() {\n  " + withoutAttrs + "\n}";
 			Stmt(expectedTextInMethod, stmtInFooMethod, _dropAttrsOption, Mode.PrinterTest);
 		}
@@ -116,22 +116,22 @@ namespace Loyc.Ecs.Tests
 			Expr("#event(EventHandler, a + b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, F.Call(S.Add, a, b), F.Braces());
 			Expr("#event(EventHandler, a + b, { })", stmt);
-			stmt = F.Call(S.Event, EventHandler, F.List(a, b), F.Braces());
+			stmt = F.Call(S.Event, EventHandler, F.AltList(a, b), F.Braces());
 			Stmt("event EventHandler a, b { }", stmt, Mode.ExpectAndDropParserError);
 		}
 
 		public void PrinterNewlineTests()
 		{
 			LNode code;
-			Stmt("struct Foo { }", F.Call(S.Struct, Foo, F.List(), F.Braces()), 
+			Stmt("struct Foo { }", F.Call(S.Struct, Foo, F.AltList(), F.Braces()), 
 				p => p.NewlineOptions |= NewlineOpt.BeforeSpaceDefBrace, Mode.PrinterTest);
-			Stmt("void Foo()\n{ }", F.Fn(F.Void, Foo, F.List(), F.Braces()), 
+			Stmt("void Foo()\n{ }", F.Fn(F.Void, Foo, F.AltList(), F.Braces()), 
 				p => p.NewlineOptions |= NewlineOpt.BeforeMethodBrace, Mode.PrinterTest);
-			Stmt("int Foo\n{\n  get;\n}", F.Fn(F.Void, Foo, F.List(), F.Braces(get)), 
+			Stmt("int Foo\n{\n  get;\n}", F.Fn(F.Void, Foo, F.AltList(), F.Braces(get)), 
 				p => p.NewlineOptions |= NewlineOpt.BeforePropBrace, Mode.PrinterTest);
-			code = F.Fn(F.Void, Foo, F.List(), F.Braces(F.Call(set, F.Braces())));
+			code = F.Fn(F.Void, Foo, F.AltList(), F.Braces(F.Call(set, F.Braces())));
 			Stmt("int Foo {\n  set\n  { }\n}", code, p => p.NewlineOptions |= NewlineOpt.BeforeGetSetBrace, Mode.PrinterTest);
-			code = F.Call(S.Event, F.Id("EventHandler"), F.List(a, b), F.Braces());
+			code = F.Call(S.Event, F.Id("EventHandler"), F.AltList(a, b), F.Braces());
 			Stmt("event EventHandler a, b\n{\n}", code, p => p.NewlineOptions |= NewlineOpt.BeforePropBrace, Mode.PrinterTest);
 		}
 

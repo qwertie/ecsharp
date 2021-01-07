@@ -203,7 +203,7 @@ namespace Loyc.LLPG
 				LNode newBody = ParseRuleBody(node.Args[1], context);
 				if (newBody != null)
 					return node.With(isToken ? _hash_token : _hash_rule, 
-						returnType, name, F.List(args), newBody);
+						returnType, name, F.AltList(args), newBody);
 			}
 			return null;
 		}
@@ -249,7 +249,7 @@ namespace Loyc.LLPG
 			LNode name = node.Args[1];
 			LNode args = node.Args[2];
 			if (args.IsIdNamed(S.Missing)) // @``
-				args = F.List(); // output will be a #fn, which does not allow @`` as its arg list
+				args = F.AltList(); // output will be a #fn, which does not allow @`` as its arg list
 			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
 				// #rule($returnType, $name, $args, $newBody)

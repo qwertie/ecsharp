@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.7.2.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.9.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -142,6 +142,7 @@ namespace ADT
 				return Value;
 			}
 		}
+
 		public virtual bool Contains(T item)
 		{
 			return Compare(Value, item) == 0;
@@ -202,16 +203,14 @@ namespace ADT
 				return true;
 		}
 	}
-
 	static partial class Node {
 		public static Node<T> New<T>(T Value, BinaryTree<T> Left, BinaryTree<T> Right) where T: IComparable<T> {
 			return new Node<T>(Value, Left, Right);
 		}
 	}
-
 	public static class Leaf {
-		public static BinaryTree<T> New<T>(T item)
-		 where T: IComparable<T>
+		public static BinaryTree<T> New<T>(T item) where T: IComparable<T>
+		
 		{ return new BinaryTree<T>(item); }
 	}
 
@@ -409,11 +408,9 @@ struct EmailAddress
 		Domain = domain;
 	}
 	public override string ToString() { return (UserName + "@" + Domain).ToString(); }
-
 	// LexerSource provides the APIs expected by LLLPG. This is
 	// static to avoid reallocating the helper object for each email.
 	[ThreadStatic] static LexerSource<UString> src;
-
 	static readonly HashSet<int> UsernameChars_set0 = LexerSource.NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', '-', '/', '9', '=', '=', '?', '?', 'A', 'Z', '^', '~');
 
 	static void UsernameChars(LexerSource<UString> src)
@@ -450,7 +447,6 @@ struct EmailAddress
 		}
 	}
 
-
 	/// <summary>Parses email addresses according to RFC 5322, not including 
 	/// quoted usernames or non-ASCII addresses (TODO: support Unicode).</summary>
 	/// <exception cref="FormatException">The input is not a legal email address.</exception>
@@ -476,7 +472,6 @@ struct EmailAddress
 		int at = src.InputPosition;
 		// line 160
 		UString userName = email.Substring(0, at);
-	
 		src.Match('@');
 		DomainCharSeq(src);
 		// Line 162: ([.] DomainCharSeq)*
@@ -494,8 +489,8 @@ struct EmailAddress
 		// line 164
 		return new EmailAddress(userName, domain);
 	}
-
-
+	
+	
 }
 
 // Parser for S-expressions => Loyc trees
@@ -525,7 +520,6 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	{
 		return ((TT) tokenType).ToString();
 	}
-
 
 	LNode Atom()
 	{
@@ -568,7 +562,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
 			// line 211
-			return F.List(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
+			return F.AltList(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
 		} else {
 			// line 212
 			var parts = LNode.List();

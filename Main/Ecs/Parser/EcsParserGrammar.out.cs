@@ -1472,7 +1472,7 @@ namespace Loyc.Ecs.Parser
 					var block = Match((int) TT.LBrace);
 					var rb = Match((int) TT.RBrace);
 					// line 472
-					var argList = LNode.List(F.List(ExprListInside(args, false, true)), F.Braces(block, StmtListInside(block), rb));
+					var argList = LNode.List(F.AltList(ExprListInside(args, false, true)), F.Braces(block, StmtListInside(block), rb));
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
 				break;
@@ -2004,7 +2004,7 @@ namespace Loyc.Ecs.Parser
 							var lb = MatchAny();
 							var rb = Match((int) TT.RBrack);
 							// line 617
-							e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.List(ExprListInside(lb))), rb);
+							e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.AltList(ExprListInside(lb))), rb);
 						} else
 							goto stop;
 					}
@@ -2280,8 +2280,8 @@ namespace Loyc.Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match2;
@@ -2303,8 +2303,8 @@ namespace Loyc.Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match7;
@@ -2581,7 +2581,7 @@ namespace Loyc.Ecs.Parser
 					lit_lpar = MatchAny();
 					lit_rpar = MatchAny();
 					// line 809
-					argList.Add(F.List(ExprListInside(lit_lpar, allowUnassignedVarDecl: true), lit_lpar.StartIndex, lit_rpar.EndIndex));
+					argList.Add(F.AltList(ExprListInside(lit_lpar, allowUnassignedVarDecl: true), lit_lpar.StartIndex, lit_rpar.EndIndex));
 				}
 			}
 			// line 810
@@ -5520,10 +5520,10 @@ namespace Loyc.Ecs.Parser
 						break;
 				}
 				// line 1994
-				return F.List(bases);
+				return F.AltList(bases);
 			} else
 				// line 1995
-				return F.List();
+				return F.AltList();
 		}
 
 		private void WhereClausesOpt(ref LNode name)
@@ -6098,7 +6098,7 @@ namespace Loyc.Ecs.Parser
 						break;
 				}
 				// line 2296
-				name = F.List(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);
+				name = F.AltList(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);
 			}
 			// Line 2298: (TT.Semicolon | BracedBlock)
 			la0 = LA0;

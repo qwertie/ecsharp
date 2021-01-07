@@ -469,7 +469,7 @@ namespace Loyc.Ecs.Parser
 				/   {r = F.Id(t);})
 			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
 				{
-					var argList = LNode.List(F.List(ExprListInside(args, false, true)), 
+					var argList = LNode.List(F.AltList(ExprListInside(args, false, true)), 
 					                         F.Braces(block, StmtListInside(block), rb));
 					r = F.CallBrackets(S.Lambda, t, argList, rb, NodeStyle.OldStyle);
 				}
@@ -614,7 +614,7 @@ namespace Loyc.Ecs.Parser
 				// This is the easiest way to parse it, anyhow. And I'll leave `?.` 
 				// as-is, even though it works differently than `?[]`.
 				t:="?" lb:="[" rb:="]"
-				{e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.List(ExprListInside(lb))), rb);}
+				{e = F.CallPrefix(S.NullIndexBracks, e.Range, LNode.List(e, F.AltList(ExprListInside(lb))), rb);}
 			|	// Post-inc or post-dec
 				t:="++,--"      {e = F.CallSuffixOp(e, t, t.Value == S.PreInc ? S.PostInc : S.PostDec);}
 			|	bb:=BracedBlockOrTokenLiteral
@@ -806,7 +806,7 @@ namespace Loyc.Ecs.Parser
 			[targetName:=IdAtom {target = F.Call(S.Var, target, targetName, target.Range.StartIndex, targetName.Range.EndIndex);}]?
 			{argList.Add(target);}
 			// EC# allows an argument list for recursive deconstruction
-			[ "(" ")" {argList.Add(F.List(ExprListInside($"(", allowUnassignedVarDecl<: true), $"(".StartIndex, $")".EndIndex));} ]?
+			[ "(" ")" {argList.Add(F.AltList(ExprListInside($"(", allowUnassignedVarDecl<: true), $"(".StartIndex, $")".EndIndex));} ]?
 			{return F.Call(isTok, argList, lhs.Range.StartIndex, argList.Last.Range.EndIndex, NodeStyle.Operator);}
 		};
 
@@ -1991,8 +1991,8 @@ namespace Loyc.Ecs.Parser
 			(	{var bases = (new LNodeList());}
 				":" bases+=DataType
 				("," bases+=DataType)*
-				{return F.List(bases);}
-			|	{return F.List();}
+				{return F.AltList(bases);}
+			|	{return F.AltList();}
 			)
 		};
 
@@ -2293,7 +2293,7 @@ namespace Loyc.Ecs.Parser
 			eventkw:TT.Event type:=DataType name:=ComplexNameDecl
 			[	{var parts = (new LNodeList(name));}
 				( "," parts+=ComplexNameDecl )+
-				{name = F.List(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);}
+				{name = F.AltList(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);}
 			]?
 			(	";"
 				{$result = F.Call(eventkw, type, name, startIndex, $";".EndIndex);}

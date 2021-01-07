@@ -85,12 +85,12 @@ namespace Loyc.Ecs.Tests
 		public void TriviaTest_Attributes()
 		{
 			var node = Attr(_("Test"), _("Benchmark"), F.TriviaNewline, _("Test2"),
-				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+				F.Call(S.Fn, F.Void, Foo, F.AltList(), F.Braces()));
 			Stmt("[Test, Benchmark] \n" +
 				 "[Test2] void Foo() { }", node);
 
 			node = Attr(_("Test"), F.TriviaNewline,
-				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+				F.Call(S.Fn, F.Void, Foo, F.AltList(), F.Braces()));
 			Stmt("[Test] \n" +
 				 "void Foo() { }", node);
 
@@ -112,7 +112,7 @@ namespace Loyc.Ecs.Tests
 			node = Attr(_("Test"), SLComment(" NUnit"),
 					 F.Call(_("EditorBrowsable"), F.Dot(_("EditorBrowsableState"), _("Never"))), 
 					 F.TriviaNewline, F.Public,
-				F.Call(S.Fn, F.Void, Foo, F.List(), F.Braces()));
+				F.Call(S.Fn, F.Void, Foo, F.AltList(), F.Braces()));
 			Stmt("[Test] // NUnit\n" +
 			     "[EditorBrowsable(EditorBrowsableState.Never)] \n" +
 			     "public void Foo() { }", node);
@@ -123,7 +123,7 @@ namespace Loyc.Ecs.Tests
 		{
 			var node = Attr(F.Public, @static,
 				F.Fn(F.Void, Foo,
-					F.List(F.Var(F.Of(S.Array, F.String), x)).PlusTrailingTrivia(SLComment(" OK")),
+					F.AltList(F.Var(F.Of(S.Array, F.String), x)).PlusTrailingTrivia(SLComment(" OK")),
 					OnNewLine(F.Braces(
 						F.Call(a, x).PlusAttr(SLComment(" Before"))
 									.PlusTrailingTrivia(LNode.List(F.TriviaNewline, SLComment(" After")))))));
@@ -137,7 +137,7 @@ namespace Loyc.Ecs.Tests
 			node = Attr(F.Public, @static,
 				F.Fn(F.Void, Foo,
 					Attr(MLComment(" Params: "),
-						F.List(Attr(F.TriviaNewline, MLComment("arg"),
+						F.AltList(Attr(F.TriviaNewline, MLComment("arg"),
 							F.Var(F.Of(S.Array, F.String), Attr(MLComment("name->"), x)))
 							.PlusTrailingTrivia(MLComment("<-name")))),
 					F.Braces(F.Call(a, x))));
@@ -151,7 +151,7 @@ namespace Loyc.Ecs.Tests
 				F.Call(S.Fn,
 					F.Void.PlusTrailingTrivia(SLComment(" return type")),
 					Foo.PlusAttrs(F.TriviaNewline, MLComment("Method")),
-					F.List(F.Var(F.Of(S.Array, F.String), a)),
+					F.AltList(F.Var(F.Of(S.Array, F.String), a)),
 					F.Braces(F.Call(x, a))));
 			Stmt("public // can be used from the outside\n" +
 				 "static // can be called without an instance\n" +
@@ -164,13 +164,13 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void TriviaTest_Enums()
 		{
-			var stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(F.Braces(
+			var stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), OnNewLine(F.Braces(
 				F.Assign(a, one), AppendStmt(b), AppendStmt(c), AppendStmt(F.Assign(x, F.Literal(24))))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
-			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), OnNewLine(BracesOnOneLine(
+			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), OnNewLine(BracesOnOneLine(
 				F.Assign(a, two), b, c, F.Assign(x, F.Literal(24)))));
 			Stmt("enum Foo : byte\n{ a = 2, b, c, x = 24 }", stmt);
-			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), BracesOnOneLine(
+			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), BracesOnOneLine(
 				F.Assign(a, zero), F.Assign(b, one), c, F.Assign(x, F.Literal(24))));
 			Stmt("enum Foo : byte { a = 0, b = 1, c, x = 24 }", stmt);
 		}
@@ -183,7 +183,7 @@ namespace Loyc.Ecs.Tests
 			// statement in a braced block, and the implicit newline before 
 			// the closing brace. However, the newline before and after each 
 			// preprocessor directive is not stripped out.
-			LNode node = F.Call(S.Class, Foo, F.List(), F.Braces(
+			LNode node = F.Call(S.Class, Foo, F.AltList(), F.Braces(
 				 Attr(F.Trivia(S.TriviaRegion, " The Variable"), F.TriviaNewline,
 					 _("Attribute"), F.TriviaNewline,
 					 F.Public,
@@ -195,7 +195,7 @@ namespace Loyc.Ecs.Tests
 					 F.Call(S.TriviaTrailing,
 					   F.TriviaNewline, F.TriviaNewline,
 					   F.Trivia(S.TriviaEndRegion, "!")),
-					 F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(
+					 F.Call(S.Constructor, F.Missing, Foo, F.AltList(), F.Braces(
 						 F.Call(S.Assign, x, one)
 					 )))
 				));

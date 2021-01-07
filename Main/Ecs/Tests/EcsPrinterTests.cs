@@ -201,7 +201,7 @@ namespace Loyc.Ecs.Tests
 
 			ranges.Clear();
 			LNode body;
-			node = F.Fn(F.Void, _("MyMethod"), F.List(), body = F.Call(Foo, F.Call(S.Add, x, one)));
+			node = F.Fn(F.Void, _("MyMethod"), F.AltList(), body = F.Call(Foo, F.Call(S.Add, x, one)));
 			Stmt("void MyMethod() => Foo(x + 1);", node);
 			output = EcsLanguageService.Value.Print(node, null, ParsingMode.Statements, options);
 			ExpectSavedRange(ranges, output, node, "void MyMethod() => Foo(x + 1);");

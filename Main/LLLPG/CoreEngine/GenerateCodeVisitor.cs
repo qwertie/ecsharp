@@ -277,7 +277,7 @@ namespace Loyc.LLParserGenerator
 
 				if (loopType == S.For) {
 					// (...)* => for (;;) {}
-					code = F.Call(S.For, F.List(), F.Missing, F.List(), code);
+					code = F.Call(S.For, F.AltList(), F.Missing, F.AltList(), code);
 				} else if (loopType == S.DoWhile) {
 					// (...)? becomes "do {...} while(false);" IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.

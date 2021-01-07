@@ -20,8 +20,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("new Foo().x();", F.Call(F.Dot(F.Call(S.New, F.Call(Foo)), x)));  // but this used to Assert
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes
 			Stmt("class Foo {\n  public Foo() { }\n}",
-				F.Call(S.Class, Foo, F.List(), F.Braces(
-					Attr(@public, F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))), 
+				F.Call(S.Class, Foo, F.AltList(), F.Braces(
+					Attr(@public, F.Call(S.Constructor, F.Missing, Foo, F.AltList(), F.Braces())))), 
 				p => p.DropNonDeclarationAttributes = true);
 			// bug: 'ref' and 'out' attributes were suppressed by DropNonDeclarationAttributes
 			Option(Mode.PrintBothParseFirst, 
@@ -40,20 +40,20 @@ namespace Loyc.Ecs.Tests
 			// once printed as "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("partial Foo a;", Attr(@partialWA, F.Vars(Foo, a)));
 			Stmt("public partial alt class BinaryTree<T> { }", F.Attr(F.Public, partialWA, WordAttr("#alt"),
-				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
+				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.AltList(), F.Braces())));
 			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, BracesOnOneLine(get))));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone() {\n  return Clone();\n}",
-				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
+				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.AltList(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
 			Stmt("Foo<a> IDictionary<a, b>.Keys { }",
 				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
 			Stmt("T IDictionary<Symbol, T>.this[Symbol x] { get; set; }",
-				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), BracesOnOneLine(get, set)));
+				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.AltList(F.Var(_("Symbol"), x)), BracesOnOneLine(get, set)));
 			Stmt("Func<T, T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
-				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
+				F.Call(S.Lambda, F.AltList(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
 			Stmt("public static rule EmailAddress Parse(T x) { }",
-				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.List(F.Var(T, x)), F.Braces())));
+				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.AltList(F.Var(T, x)), F.Braces())));
 			// Currently we're not trying to treat this as a keyword
-			Stmt("dynamic Foo();", F.Fn(_("dynamic"), Foo, F.List()));
+			Stmt("dynamic Foo();", F.Fn(_("dynamic"), Foo, F.AltList()));
 			Stmt("dynamic x;", F.Var(_("dynamic"), x));
 
 			Token[] token = new[] { new Token((int)TokenType.Literal, 0, 0, 0, 'a') };
@@ -73,10 +73,10 @@ namespace Loyc.Ecs.Tests
 
 			// 2017-01 bug: operator>> and operator<< wouldn't parse 
 			// (because there is no dedicated token for >> or <<)
-			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shl)), F.List(F.Var(Foo, x), F.Var(F.Int32, a)), 
+			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shl)), F.AltList(F.Var(Foo, x), F.Var(F.Int32, a)), 
 			                            F.Braces(F.Call(S.Return, F.Call(S.Shl, x, a)))));
 			Stmt("static int operator<<(Foo x, int a) {\n  return x << a;\n}", stmt);
-			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shr)), F.List(F.Var(Foo, x), F.Var(F.Int32, a)), 
+			stmt = Attr(F.Id(S.Static), F.Fn(F.Int32, Attr(trivia_operator, _(S.Shr)), F.AltList(F.Var(Foo, x), F.Var(F.Int32, a)), 
 			                            F.Braces(F.Call(S.Return, F.Call(S.Shr, x, a)))));
 			Stmt("static int operator>>(Foo x, int a) {\n  return x >> a;\n}", stmt);
 
@@ -214,8 +214,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("(Foo[,]) a;",       F.Call(S.Cast, a, Foo2DArray));
 			Stmt("a(->Foo?);",        Alternate(F.Call(S.Cast, a, FooNullable)));
 			Stmt("a(as Foo*);",       Alternate(F.Call(S.As, a, FooPointer)));
-			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.List(FooBracks)));
-			Stmt("Foo!(#(@`'*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
+			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.AltList(FooBracks)));
+			Stmt("Foo!(#(@`'*`<Foo>));", F.Of(Foo, F.AltList(FooPointer)));
 			Expr("checked(Foo[])",    F.Call(S.Checked, FooBracks));
 			Stmt("Foo<a*> x;",        F.Vars(F.Of(Foo, F.Of(_(S._Pointer), a)), x));
 			Stmt("(Foo, Foo x) a, b;", F.Vars(F.Of(_(S.Tuple), Foo, F.Var(Foo, x)), a, b));

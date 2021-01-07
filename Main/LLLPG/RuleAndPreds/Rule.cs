@@ -117,7 +117,7 @@ namespace Loyc.LLParserGenerator
 				parts[1] = F.Id(Name);
 				return Basis.WithArgs(parts);
 			} else {
-				var method = F.Fn(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
+				var method = F.Fn(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.AltList());
 				if (IsPrivate == true)
 					method = F.Attr(F.Id(S.Private), method);
 				else if (IsStartingRule | IsToken)

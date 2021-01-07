@@ -79,11 +79,11 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void ConstructorAmbiguities()
 		{
-			var emptyConstructor = F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces());
-			var thisColonBase    = F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
-			var thisConsNoBody   = F.Call(S.Constructor, F.Missing, _(S.This), F.List());
-			var fooConstructor   = F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
-			var fooConsNoBody    = F.Call(S.Constructor, F.Missing, Foo, F.List());
+			var emptyConstructor = F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces());
+			var thisColonBase    = F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(F.Call(S.Base)));
+			var thisConsNoBody   = F.Call(S.Constructor, F.Missing, _(S.This), F.AltList());
+			var fooConstructor   = F.Call(S.Constructor, F.Missing, Foo, F.AltList(), F.Braces(F.Call(x)));
+			var fooConsNoBody    = F.Call(S.Constructor, F.Missing, Foo, F.AltList());
 			Action<EcsPrinterOptions> allowAmbig = p => p.AllowConstructorAmbiguity = true;
 			Stmt("this() { }",                          emptyConstructor);
 			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
@@ -91,54 +91,54 @@ namespace Loyc.Ecs.Tests
 			Stmt("#this(x);",                           F.Call(S.This, x));
 			Stmt("base(x);",                            F.Call(S.Base, x));
 			Stmt("this()\n   : this(x) {\n  x;\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
 			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), { });", "Foo() { }",
-				F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
+				F.Call(S.Constructor, F.Missing, Foo, F.AltList(), F.Braces()), allowAmbig);
 			Stmt("this()\n   : base() { }",       thisColonBase, allowAmbig);
 			Stmt("this() {\n  x;\n  this(x);\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
 			Stmt("this() {\n  this()\n     : base() { }\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(thisColonBase)));
 			Stmt("this() {\n  this();\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, Mode.PrinterTest);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(thisConsNoBody)), allowAmbig, Mode.PrinterTest);
 			Stmt("this() {\n  x;\n  this();\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(x, F.Call(S.This))), allowAmbig);
 			Stmt("this() {\n  #cons(@``, this, #());\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(thisConsNoBody)));
 			//Stmt("this() {\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
 			Stmt("this() {\n  this()\n     : base() { }\n}", 
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(thisColonBase)), allowAmbig);
 			Stmt("this() {\n  #cons(@``, this, #(), { });\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
-			Stmt("class Foo {\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(emptyConstructor)));
+			Stmt("class Foo {\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.AltList(), F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
-			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
-			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
-			Stmt("class Foo {\n  Foo();\n}",     F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
-			Stmt("class Foo {\n  Foo() {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
-			Stmt("class Foo {\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                     F.Call(S.Constructor, F.Missing, IFoo, F.List()))));
-			Stmt("class Foo {\n  IFoo()\n     : base() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                     F.Call(S.Constructor, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
+			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.AltList(), F.Braces(F.InParens(F.Call(Foo)))));
+			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.AltList(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
+			Stmt("class Foo {\n  Foo();\n}",     F.Call(S.Class, Foo, F.AltList(), F.Braces(fooConsNoBody)));
+			Stmt("class Foo {\n  Foo() {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(fooConstructor)));
+			Stmt("class Foo {\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(
+			                                     F.Call(S.Constructor, F.Missing, IFoo, F.AltList()))));
+			Stmt("class Foo {\n  IFoo()\n     : base() { }\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(
+			                                     F.Call(S.Constructor, F.Missing, IFoo, F.AltList(), F.Braces(F.Call(S.Base))))));
 
-			Stmt("class Foo {\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
+			Stmt("class Foo {\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.AltList(), F.Braces(F.Call(x, F.Call(Foo)))));
 
 			// Printer test only
-			Stmt("class Foo {\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig, Mode.PrinterTest);
-			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false, Mode.PrinterTest);
-			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
+			Stmt("class Foo {\n  Foo();\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(F.Call(Foo))), allowAmbig, Mode.PrinterTest);
+			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false, Mode.PrinterTest);
+			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
 
 			// Non-keyword attributes allowed on this() but not Foo() constructor
-			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
-			Stmt("class Foo {\n  partial this() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                   Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())))));
-			Stmt("class Foo {\n  [#partial] Foo() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                   Attr(@partial,  F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))));
-			Stmt("this()\n   : this(x) { }",    F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
-			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces())));
+			Stmt("class Foo {\n  partial this() { }\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(
+			                                   Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces())))));
+			Stmt("class Foo {\n  [#partial] Foo() { }\n}", F.Call(S.Class, Foo, F.AltList(), F.Braces(
+			                                   Attr(@partial,  F.Call(S.Constructor, F.Missing, Foo, F.AltList(), F.Braces())))));
+			Stmt("this()\n   : this(x) { }",    F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces())));
 			Stmt("this() {\n  x;\n  partial this(x) { }\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x,
-					Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(), F.Braces(x,
+					Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.AltList(x), F.Braces())))), allowAmbig);
 		}
 
 		[Test]

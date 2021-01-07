@@ -129,7 +129,7 @@ namespace LeMP.Prelude.Les
 			LNode name, bases;
 			if (IsComplexId(nameEtc, true)) {
 				name = nameEtc;
-				bases = F.List();
+				bases = F.AltList();
 			} else {
 				name = nameEtc.Target ?? nameEtc;
 				bases = nameEtc.WithTarget(S.AltList);

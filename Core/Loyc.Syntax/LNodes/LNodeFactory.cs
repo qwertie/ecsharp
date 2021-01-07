@@ -574,27 +574,32 @@ namespace Loyc.Syntax
 
 		#endregion
 
-		#region List() (which creates an S.AltList node), Splice() and Tuple()
+		#region AltList(), Splice() and Tuple()
 
-		public LNode List()
+		[Obsolete("This method has been renamed to AltList")]
+		public LNode List() => AltList();
+		[Obsolete("This method has been renamed to AltList")]
+		public LNode List(params LNode[] contents) => AltList(contents);
+		[Obsolete("This method has been renamed to AltList")]
+		public LNode List(LNodeList contents, int startIndex = -1, int endIndex = -1) => AltList(contents, startIndex, endIndex);
+		[Obsolete("This method has been renamed to AltList")]
+		public LNode List(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1) => AltList(contents, startIndex, endIndex);
+
+		public LNode AltList()
 		{
 			if (_emptyList == null) 
 				_emptyList = Call(S.AltList);
 			return _emptyList;
 		}
-		public LNode List(params LNode[] contents)
+		public LNode AltList(params LNode[] contents)
 		{
 			return Call(S.AltList, contents, -1, -1);
 		}
-		public LNode List(LNode[] contents, int startIndex = -1, int endIndex = -1)
+		public LNode AltList(LNodeList contents, int startIndex = -1, int endIndex = -1)
 		{
 			return Call(S.AltList, contents, startIndex, endIndex);
 		}
-		public LNode List(LNodeList contents, int startIndex = -1, int endIndex = -1)
-		{
-			return Call(S.AltList, contents, startIndex, endIndex);
-		}
-		public LNode List(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
+		public LNode AltList(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(S.AltList, contents, startIndex, endIndex);
