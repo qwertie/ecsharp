@@ -129,7 +129,7 @@ namespace LeMP
 				return null;
 			}
 
-			if (namespaceBlock != null)
+			if (namespaceBlock != null && wantPreprocess)
 				context.Warning(namespaceBlock, "The C# scripting engine does not support namespaces. They will be ignored when running at compile time.");
 
 			RunCSharpCodeWithRoslyn(node, codeSansNamespaces, context);

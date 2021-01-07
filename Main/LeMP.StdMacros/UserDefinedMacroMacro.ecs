@@ -87,7 +87,7 @@ namespace LeMP
 			body = context.PreProcess(body);
 
 			// Look for "using" statements above the macro() call
-			LNodeList usingDirectives = LNode.List(context.PreviousSiblings.TakeNowWhile(n => n.Calls(S.Import)));
+			LNodeList usingDirectives = LNode.List(context.PreviousSiblings.Where(n => n.Calls(S.Import)));
 			
 			// Look for "using" and "#r" statements at the beginning of the body
 			if (body.Calls(S.Braces)) {
