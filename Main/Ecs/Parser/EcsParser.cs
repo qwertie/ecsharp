@@ -626,8 +626,8 @@ namespace Loyc.Ecs.Parser
 			{ (int)TT.NullCoalesce, EP.OrIfNull },
 			{ (int)TT.PipeArrow, EP.PipeArrow },
 			{ (int)TT.QuestionMark, EP.IfElse }, // yeah, not really infix
-			{ (int)TT.Set, EP.Assign },
-			{ (int)TT.CompoundSet, EP.Assign },
+			{ (int)TT.Assign, EP.Assign },
+			{ (int)TT.CompoundAssign, EP.Assign },
 			{ (int)TT.LambdaArrow, EP.Lambda },
 			{ (int)TT.Switch, EP.Switch },
 		};

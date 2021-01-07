@@ -28,6 +28,7 @@ namespace Loyc.Ecs
 			S.ShlAssign, S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
 			S.ExpAssign, S.ConcatAssign
 		};
+		static readonly Dictionary<Symbol, string> AttributeKeywords = EcsNodePrinter.AttributeKeywords;
 
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {
@@ -42,6 +43,16 @@ namespace Loyc.Ecs
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
+		internal static bool HasPAttrsExceptAttrKeywords(LNode node, Pedantics p) // for use in expression context
+		{
+			if ((p & Pedantics.IgnoreAttributesInOddPlaces) == 0) {
+				var a = node.Attrs;
+				for (int i = a.Count-1; i >= 0; i--)
+					if (!a[i].IsTrivia && (!a[i].IsId || !AttributeKeywords.ContainsKey(a[i].Name)))
+						return true;
+			}
+			return false;
+		}
 		internal static bool HasPAttrs(LNode node, Pedantics p) // for use in expression context
 		{
 			return (p & Pedantics.IgnoreAttributesInOddPlaces) == 0 && node.HasPAttrs();
@@ -50,58 +61,6 @@ namespace Loyc.Ecs
 		{
 			return (p & Pedantics.IgnoreAttributesInOddPlaces) != 0 ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
-
-#if false // Ended up not being used, but might be useful someday
-		/// <summary>Returns true if the specified child of the specified node 
-		/// can be an implicit child statement, i.e. a child statement that is
-		/// not necessarily a braced block, e.g. the second child of a while 
-		/// loop.</summary>
-		/// <remarks>
-		/// This method helps the printer decide when a newline should be added 
-		/// before an unbraced child statement when there are no attributes 
-		/// dictating whether to add a newline or not.
-		/// <para/>
-		/// This method only cares about executable parent nodes. It returns 
-		/// false for class/space and function/property bodies, which are always 
-		/// braced blocks and therefore get a newline before every child statement 
-		/// automatically.
-		/// </remarks>
-		public static bool MayBeImplicitChildStatement(LNode node, int childIndex)
-		{
-			CheckParam.IsNotNull("node", node);
-			if (childIndex < 0) // target or attributes
-				return false;
-			var n = node.Name;
-			if (!LNode.IsSpecialName(n.Name))
-				return false;
-			if (n == S.Braces)
-				return true;
-			if (n == S.Try)
-				return childIndex == 0;
-			switch (node.ArgCount) {
-				case 1:
-					if (n == S.Finally)
-						return true;
-					break;
-				case 2:
-					if (childIndex == 0 ? n == S.DoWhile :
-						n == S.If || n == S.While || n == S.UsingStmt || n == S.Lock || n == S.SwitchStmt || n == S.Fixed)
-						return true;
-					break;
-				case 3:
-					if (childIndex != 0 && n == S.If)
-						return true;
-					if (childIndex == 2 && n == S.ForEach)
-						return true;
-					break;
-				case 4:
-					if (childIndex == 3 && (n == S.For || n == S.Catch))
-						return true;
-					break;
-			}
-			return false;
-		}
-#endif
 
 		internal static bool CallsWPAIH(LNode self, Symbol name, Pedantics p)
 		{
@@ -346,7 +305,8 @@ namespace Loyc.Ecs
 			// e.g. #var(#int32, x = 0) <=> int x = 0
 			// For printing purposes in EC#,
 			// - The expression is not in parenthesis
-			// - Head and args do not have attributes
+			// - Head and args do not have attributes except trivia
+			//   - AND except that the right side of `=` can have attribute keywords, notably #ref (C# 7)
 			// - First argument must have the syntax of a type name
 			// - Other args must have the form foo or foo = expr, where expr does not have attributes
 			// - Must define a single variable unless allowMultiple
@@ -372,7 +332,7 @@ namespace Loyc.Ecs
 						if (!CallsWPAIH(var, S.Assign, 2, p))
 							return false;
 						LNode name = var.Args[0], init = var.Args[1];
-						if (!IsSimpleIdentifier(name, p) || HasPAttrs(init, p))
+						if (!IsSimpleIdentifier(name, p) || HasPAttrsExceptAttrKeywords(init, p))
 							return false;
 					}
 				}

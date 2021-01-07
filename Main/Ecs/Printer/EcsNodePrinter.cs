@@ -354,9 +354,9 @@ namespace Loyc.Ecs
 		{
 			/// <summary>The expression can contain uninitialized variable 
 			/// declarations, e.g. because it is the subject of an assignment.
-			/// In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
-			/// "(x + y, int z)" and then down to "int y" and "x + y", but it 
-			/// doesn't propagate down to "x", "y" and "int".</summary>
+			/// In the tree `(x + y, int z) = (a, b)`, this flag is passed down to 
+			/// `(Foo(x), int z)` and then down to `Foo(x)` and `int z`, but it 
+			/// doesn't propagate down to `Foo`, `x`, and `int`.</summary>
 			AllowUnassignedVarDecl = 0x0001,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
@@ -423,6 +423,10 @@ namespace Loyc.Ecs
 			/// <summary>Indicates that a switch expression item is being printed, so a lambda 
 			/// operator with a pattern on the left side is expected here.</summary>
 			InSwitchExpr = 0x400000,
+			/// <summary>Indicates that the right-hand side of an assignment is being
+			/// printed, and so keyword attributes such as `ref` are not only allowed, 
+			/// but required by C# 7 not to be enclosed in parentheses.</summary>
+			AssignmentRhs = 0x800000,
 		}
 
 		bool Flagged(Ambiguity flag)
@@ -480,8 +484,8 @@ namespace Loyc.Ecs
 			"else",      "long",      "static",
 			"enum",      "namespace", "string");
 
-		static readonly Dictionary<Symbol, string> AttributeKeywords = KeywordDict(
-			"abstract", "const", "explicit", "extern", "implicit", "internal", "new",
+		internal static readonly Dictionary<Symbol, string> AttributeKeywords = KeywordDict(
+			"abstract", "const", "explicit", "extern", "implicit", "internal", 
 			"override", "params", "private", "protected", "public", "readonly", "ref",
 			"sealed", "static", "unsafe", "virtual", "volatile", "out");
 
@@ -543,6 +547,10 @@ namespace Loyc.Ecs
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
+		bool HasPAttrsExceptAttrKeywords(LNode node) // for use in expression context
+		{
+			return !_o.DropNonDeclarationAttributes && EcsValidators.HasPAttrsExceptAttrKeywords(node, EcsValidators.Pedantics.Strict);
+		}
 		bool HasPAttrs(LNode node) // for use in expression context
 		{
 			return !_o.DropNonDeclarationAttributes && node.HasPAttrs();
@@ -635,13 +643,14 @@ namespace Loyc.Ecs
 			                                    == (Ambiguity.InDefinitionName | Ambiguity.InOf);
 			if (isTypeParamDefinition)
 				attrs = attrs.SmartWhere(n => !n.Calls(S.WhereClause));
+			bool hasDifficultWordAttribute = false;
 			int attrCount = attrs.Count;
 			int div = attrCount; // index of first word attribute
 			int i = attrCount;
 			foreach (LNode attr in attrs.ToFVList()) {
 				i--;
 				if (!S.IsTriviaSymbol(attr.Name)) {
-					if (!IsWordAttribute(attr, style) && !(isTypeParamDefinition && attr.IsIdNamed(S.In)))
+					if (!IsWordAttribute(attr, style, ref hasDifficultWordAttribute) && !(isTypeParamDefinition && attr.IsIdNamed(S.In)))
 						break;
 					else
 						div = i;
@@ -663,8 +672,6 @@ namespace Loyc.Ecs
 				dropMostAttrs = true; // e.g. this happens for a method's return type
 
 			int parenCount = 0;
-			//if (mayNeedParens && (flags & Ambiguity.ForceAttributeList) != 0)
-			//	OpenParenIf(true, ref parenCount, ref context);
 
 			// Scanning forward, print normal attributes and trivia
 			bool any = false, inBrackets = false;
@@ -725,7 +732,7 @@ namespace Loyc.Ecs
 				}
 			}
 			
-			// Now print word attributes and trivia
+			// Now print word attributes and trivia.
 			for (i = div; i < attrCount; i++) {
 				var attr = attrs[i];
 				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref parenCount) || attr.IsTrivia)
@@ -738,8 +745,19 @@ namespace Loyc.Ecs
 				if (AttributeKeywords.TryGetValue(name, out text)) {
 					if (dropMostAttrs && name != S.Out && name != S.Ref)
 						continue;
-					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
+
+					// ref locals cause the printer to do a special dance. C# 7 mandates that 
+					// `X = ref Y` and `ref var X = ref Y` have NO PARENTHESES around `ref Y`,
+					// but the Loyc tree for this will be `X = ([#ref] Y)` or so. So, we have
+					// a special rule to omit parens here for keyword attributes if they are 
+					// on the right side of an assignment operator.
+					if ((_flags & Ambiguity.AssignmentRhs) == 0 || hasDifficultWordAttribute)
+						OpenParenIf(mayNeedParens, ref parenCount, ref _context);
+					
 					_out.Write(text);
+				} else if (name == S.NewAttribute && !dropMostAttrs) {
+					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
+					_out.Write("new");
 				} else if (name == S.This) {
 					Debug.Assert(!mayNeedParens);
 					_out.Write("this");
@@ -869,17 +887,22 @@ namespace Loyc.Ecs
 			}
 		}
 
-		static bool IsWordAttribute(LNode node, AttrStyle style)
+		static bool IsWordAttribute(LNode node, AttrStyle style, ref bool hasDifficultWordAttribute)
 		{
 			if (node.IsCall || node.HasPAttrs() || !node.HasSpecialName)
 				return false;
 			else {
-				if (AttributeKeywords.ContainsKey(node.Name))
-					return style >= AttrStyle.AllowKeywordAttrs &&
+				bool result, difficult = false;
+				if (AttributeKeywords.ContainsKey(node.Name) || (difficult = node.Name == S.NewAttribute))
+					result = style >= AttrStyle.AllowKeywordAttrs &&
 						(node.Name != S.NewAttribute || style >= AttrStyle.IsDefinition);
 				else
-					return style >= AttrStyle.AllowWordAttrs && (node.Name == S.This || 
+					result = style >= AttrStyle.AllowWordAttrs && (node.Name == S.This ||
 						!CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));
+
+				if (result && difficult)
+					hasDifficultWordAttribute = true;
+				return result;
 			}
 		}
 

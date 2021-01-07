@@ -370,11 +370,20 @@ namespace Loyc.Ecs
 			Debug.Assert(!CastOperators.ContainsKey(_name)); // not called for cast operators
 			if (_n.ArgCount != 2)
 				return false;
+
+			Ambiguity rFlags = 0;
 			LNode left = _n.Args[0], right = _n.Args[1];
 			if (!_o.AllowChangeParentheses) {
-				// Attributes on the children normally disqualify operator notation
-				if (HasPAttrs(left) || HasPAttrs(right))
+				// Attributes on the children normally disqualify operator notation.
+				if (HasPAttrs(left))
 					return false;
+				if (HasPAttrs(right)) {
+					// An exception is `ref ...` which can be on the right-hand side of an assignment.
+					if (EcsValidators.IsAssignmentOperator(_name) && !HasPAttrsExceptAttrKeywords(right))
+						rFlags = Ambiguity.AssignmentRhs;
+					else
+						return false;
+				}
 			}
 
 			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0 || (_flags & Ambiguity.UseBacktick) != 0;
@@ -390,12 +399,15 @@ namespace Loyc.Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					_context = StartExpr;
+
 				Ambiguity lFlags = _flags & Ambiguity.TypeContext;
 				if (_name == S.Assign || _name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
 				if (_name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
+
 				PrintExpr(left, prec.LeftContext(_context), lFlags);
 				PrintInfixWithSpace(_name, _n.Target, prec, backtick);
-				PrintExpr(right, prec.RightContext(_context));
+				PrintExpr(right, prec.RightContext(_context), rFlags);
+
 				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}

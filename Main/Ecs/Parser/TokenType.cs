@@ -107,14 +107,14 @@ namespace Loyc.Ecs.Parser
 		PPpragma   = TokenKind.Other + 76,
 		PPignored  = TokenKind.Other + 77, // covers one or more lines ignored by #if/#elif/#else.
 
-		Dot = TokenKind.Dot,     // .
+		Dot          = TokenKind.Dot,     // .
 		PtrArrow     = TokenKind.Dot + 1, // ->
 		ColonColon   = TokenKind.Dot + 2, // ::
 		NullDot      = TokenKind.Dot + 3, // ?.
 
-		Set         = TokenKind.Assignment, // =
-		CompoundSet = TokenKind.Assignment + 1, // +=, *=, >>=, etc.
-		QuickBindSet = TokenKind.Assignment + 2, // :=
+		Assign       = TokenKind.Assignment, // =
+		CompoundAssign = TokenKind.Assignment + 1, // +=, *=, >>=, etc.
+		QuickBindAssign = TokenKind.Assignment + 2, // :=
 
 		// Operators: Different operators that are used in the same way and have
 		// the same precence may be grouped into a single TokenType. There is

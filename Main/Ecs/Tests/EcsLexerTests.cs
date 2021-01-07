@@ -30,7 +30,7 @@ namespace Loyc.Ecs.Tests
 				A(TT.This, TT.Is, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
 				S.This, S.Is, "just", 1, _("lexer"), _("test"), '!');
 			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, S.Colon, 30);
-			Case(@"c+='0'", A(TT.Id, TT.CompoundSet, TT.Literal), _("c"), S.AddAssign, '0');
+			Case(@"c+='0'", A(TT.Id, TT.CompoundAssign, TT.Literal), _("c"), S.AddAssign, '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
@@ -75,7 +75,7 @@ namespace Loyc.Ecs.Tests
 			Case("a`blah`b",  A(TT.Id, TT.BQString, TT.Id),   _("a"), _("blah"), _("b"));
 			Case(@"a`_\`_`b", A(TT.Id, TT.BQString, TT.Id),   _("a"), _("_`_"), _("b"));
 			Case(@">><<",     A(TT.GT, TT.GT, TT.LT, TT.LT),  _("'>"), _("'>"), _("'<"), _("'<"));
-			Case(@">>===>",   A(TT.CompoundSet, TT.Forward),  _("'>>="), _("'==>"));
+			Case(@">>===>",   A(TT.CompoundAssign, TT.Forward),  _("'>>="), _("'==>"));
 			Case("3**2 % 10", A(TT.Literal, TT.Power, TT.Literal, TT.DivMod, TT.Literal), 3, _("'**"), 2, _("'%"), 10);
 		}
 
@@ -144,7 +144,7 @@ namespace Loyc.Ecs.Tests
 			Case("9_111_222_333_444_555", A(TT.Literal), 9111222333444555);
 			Case("9_111_222_333_444_555L", A(TT.Literal), 9111222333444555L);
 			Case("9_111_222_333_444_555UL", A(TT.Literal), 9111222333444555UL);
-			Case("0x9+0x0A=0x0000_0000_13", A(TT.Literal, TT.Add, TT.Literal, TT.Set, TT.Literal), 0x9, _("'+"), 0x0A, _("'="), 0x13);
+			Case("0x9+0x0A=0x0000_0000_13", A(TT.Literal, TT.Add, TT.Literal, TT.Assign, TT.Literal), 0x9, _("'+"), 0x0A, _("'="), 0x13);
 			Case("0x5.Equals()", A(TT.Literal, TT.Dot, TT.Id, TT.LParen, TT.RParen), 0x5, _("'."), _("Equals"), null, null);
 			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.EqNeq, TT.Literal), 0x8081FF, _("'=="), 0x8081FF);
 			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
@@ -246,7 +246,7 @@ namespace Loyc.Ecs.Tests
 		{
 			//Case("\0",              A(TT.Error), ERROR);
 			//Case("\x07",            A(TT.Error), ERROR);
-			Case("x=\"Hello\n",     A(TT.Id, TT.Set, TT.Literal, TT.Newline), _("x"), _("'="), ERROR, WS);
+			Case("x=\"Hello\n",     A(TT.Id, TT.Assign, TT.Literal, TT.Newline), _("x"), _("'="), ERROR, WS);
 			Case("'\n'o''pq\n?''",  A(TT.Unknown, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.QuestionMark, TT.Literal),
 			                        ERROR, WS, 'o', ERROR, WS, _("'?"), ERROR);
 			Case("'abc'",           A(TT.Literal), ERROR);
@@ -261,7 +261,7 @@ namespace Loyc.Ecs.Tests
 		public void TestKeywords()
 		{
 			Case("public static int @default=default(stackalloc)as this",
-				A(TT.AttrKeyword, TT.AttrKeyword, TT.TypeKeyword, TT.Id, TT.Set, TT.Default, TT.LParen, TT.Stackalloc, TT.RParen, TT.As, TT.This),
+				A(TT.AttrKeyword, TT.AttrKeyword, TT.TypeKeyword, TT.Id, TT.Assign, TT.Default, TT.LParen, TT.Stackalloc, TT.RParen, TT.As, TT.This),
 				S.Public, S.Static, S.Int32, _("default"), _("'="), S.Default, null, S.StackAlloc, null, S.As, S.This);
 			Case("case'\0':return'x';",
 				A(TT.Case, TT.Literal, TT.Colon, TT.Return, TT.Literal, TT.Semicolon),

@@ -36,7 +36,7 @@ namespace Loyc.Ecs.Parser
 	{
 		define change_temporarily($lhs = $rhs)
 		{
-			var old_unique# = $lhs;
+			var old_unique# = $lhs; // save old value in uniquely-named variable
 			$lhs = $rhs;
 			on_finally { $lhs = old_unique#; }
 		};
@@ -56,8 +56,8 @@ namespace Loyc.Ecs.Parser
 		alias("->" = TT.PtrArrow);
 		alias("::" = TT.ColonColon);
 		alias("?." = TT.NullDot);
-		alias("=" = TT.Set);
-		alias("??=" = TT.CompoundSet);
+		alias("=" = TT.Assign);
+		alias("??=" = TT.CompoundAssign);
 		alias(":" = TT.Colon);
 		alias("@" = TT.At);
 		alias("``" = TT.BQString);
@@ -84,7 +84,7 @@ namespace Loyc.Ecs.Parser
 		alias("?" = TT.QuestionMark);
 		alias("??" = TT.NullCoalesce);
 		alias("=:" = TT.QuickBind);
-		alias(":=" = TT.QuickBindSet);
+		alias(":=" = TT.QuickBindAssign);
 		alias("==>" = TT.Forward);
 		alias("$" = TT.Substitute);
 		alias("=>" = TT.LambdaArrow);
@@ -250,8 +250,8 @@ namespace Loyc.Ecs.Parser
 			(	result:DataType
 			/	&{declarationContext}
 				{attrs::LNodeList = default(LNodeList); startIndex::int = GetTextPosition(InputPosition);}
-				NormalAttributes(ref attrs)
-				TParamAttributeKeywords(ref attrs)
+				NormalAttributesOpt(ref attrs)
+				TParamAttributeKeywordsOpt(ref attrs)
 				result:IdAtom
 				{$result = $result.WithAttrs(attrs);}
 			/	{$result = MissingHere();})
@@ -637,8 +637,8 @@ namespace Loyc.Ecs.Parser
 				( op:"->"     {kind = S.Cast;} 
 				| op:TT.As    {kind = S.As;}
 				| op:TT.Using {kind = S.UsingCast;})
-				NormalAttributes(ref attrs)
-				AttributeKeywords(ref attrs)
+				NormalAttributesOpt(ref attrs)
+				AttributeKeywordsOpt(ref attrs)
 				type:=DataType EOF
 				{
 					type = type.PlusAttrs(attrs);
@@ -737,10 +737,16 @@ namespace Loyc.Ecs.Parser
 			/	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"<=>"|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"|>,?|>"
-				    | TT.Switch|TT.BQString|TT.In )
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"|>,?|>"|TT.Switch|TT.BQString|TT.In )
 				rhs=SubExpr(prec)
 				{e = F.CallInfixOp(e, op, rhs);}
+			|	// Assignment operator
+				&{@[Local] context.CanParse(prec=EP.Assign)}
+				op=( "="|"??="|":=" )
+				attrs:=AttributeKeywordsOpt()
+				rhs=SubExpr(prec)
+				{ if (!attrs.IsEmpty) { rhs = rhs.PlusAttrs(attrs).WithRange(attrs[0].Range.StartIndex, rhs.Range.EndIndex); } }
+				{ e = F.CallInfixOp(e, op, rhs); }
 			|	// Lambda expression
 				&{@[Local] context.CanParse(prec=EP.Lambda) && !_insidePattern}
 				op="=>"
@@ -821,8 +827,8 @@ namespace Loyc.Ecs.Parser
 		// and/or a variable declaration (Foo? x = null).
 		@[public] rule ExprStartNNP(allowUnassignedVarDecl::bool)::LNode @{
 			{var attrs = LNodeList.Empty;}
-			hasList:=NormalAttributes(ref attrs)
-			AttributeKeywords(ref attrs)
+			hasList:=NormalAttributesOpt(ref attrs)
+			AttributeKeywordsOpt(ref attrs)
 			(SubExpr => ({
 				// Unassigned var decl is allowed when attributes are present (e.g. out)
 				if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
@@ -957,7 +963,7 @@ namespace Loyc.Ecs.Parser
 			// This gate is used to avoid a slug that quadruples analysis time elsewhere in the grammar;
 			// LLLPG seems to hate it when both branches are identical.
 			"(" ")" =>
-			(	&(ExprInParens(true) ("="|"=>"))
+			(	&(ExprInParens(true) ("="|"=>"|":="))
 				r:=ExprInParens(true)  {return r;}
 			/	r:=ExprInParens(false) {return r;}
 			)
@@ -1433,7 +1439,9 @@ namespace Loyc.Ecs.Parser
 		// And if they were really hung up on achieving a compact syntax, it 
 		// would have made more sense to use `:` instead of `=>`. Not only does
 		// `expr:` make sense as an abbreviation for `case expr:`, it also 
-		// makes parsing easier.
+		// makes parsing easier. Speaking of things that make parsing easier, 
+		// a recursive pattern syntax of `Type? Id? Tuple? Braces?` would have
+		// been easier than their choice of `Type? Tuple? Braces? Id?`.
 
 		rule SwitchBody()::LNode @{
 			"{" "}" {
@@ -1467,8 +1475,8 @@ namespace Loyc.Ecs.Parser
 		// == Attributes =======================================================
 		// =====================================================================
 		
-		@[recognizer(fn Scan_NormalAttributes())]
-		token NormalAttributes(ref attrs::LNodeList)::bool @{
+		@[recognizer(fn Scan_NormalAttributesOpt())]
+		token NormalAttributesOpt(ref attrs::LNodeList)::bool @{
 			(	&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))}
 				t:="[" "]" 
 				{
@@ -1503,13 +1511,18 @@ namespace Loyc.Ecs.Parser
 
 		fn IsNamedArg(node::LNode)::bool { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; };
 
-		token AttributeKeywords(ref attrs::LNodeList) @{
+		fn AttributeKeywordsOpt()::LNodeList {
+			var attrs = LNode.List();
+			AttributeKeywordsOpt(ref attrs);
+			return attrs;
+		};
+		token AttributeKeywordsOpt(ref attrs::LNodeList) @{
 			[	t:=TT.AttrKeyword 
 				{attrs.Add(F.Id(t));}
 			]*
 		};
-		@[recognizer(fn Scan_TParamAttributeKeywords())]
-		token TParamAttributeKeywords(ref attrs::LNodeList) @{
+		@[recognizer(fn Scan_TParamAttributeKeywordsOpt())]
+		token TParamAttributeKeywordsOpt(ref attrs::LNodeList) @{
 			[	t:=(TT.AttrKeyword|TT.In)
 				{attrs.Add(F.Id(t));}
 			]*
@@ -1645,8 +1658,8 @@ namespace Loyc.Ecs.Parser
 		@[public] rule Stmt()::LNode @{
 			{var attrs = LNodeList.Empty;}
 			{startIndex::int = LT0.StartIndex;}
-			NormalAttributes(ref attrs)
-			AttributeKeywords(ref attrs)
+			NormalAttributesOpt(ref attrs)
+			AttributeKeywordsOpt(ref attrs)
 			(=>
 			{	// Analysis is tough for LLLPG here, especially the question "is
 				// this a var/prop/method or something else?", but also questions
@@ -1696,12 +1709,12 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[static, readonly] ExpectedAfterTypeAndName_InStmt::HashSet!TT = (new HashSet!TT { 
-			TT.Set; TT.LBrace; TT.LParen; TT.LBrack; 
+			TT.Assign; TT.LBrace; TT.LParen; TT.LBrack; 
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma;
 			TT.At; // @{...} token literal (property)
 		});
 		@[static, readonly] ExpectedAfterTypeAndName_InExpr::HashSet!TT = (new HashSet!TT { 
-			TT.Set; TT.LBrace;
+			TT.Assign; TT.LBrace;
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma; TT.EOF;
 			TT.At; // @{...} token literal (property)
 			TT.Colon; // case Type Name:
@@ -2099,6 +2112,7 @@ namespace Loyc.Ecs.Parser
 		};
 		@[private] rule VarInitializer(isArray::bool)::LNode @{
 			("="|":=")
+			attrs:=AttributeKeywordsOpt // Required for C# 7 ref locals
 			// The initializer for an array in C# can be a braced list of expressions.
 			// EC# also allows braced blocks as expressions, so I'll distinguish the
 			// cases by checking for semicolons. If there's a ";", it's an EC# block.
@@ -2111,6 +2125,11 @@ namespace Loyc.Ecs.Parser
 				}
 			/	result:ExprStart(false)
 			)
+			{
+				if (!attrs.IsEmpty) { 
+					$result = $result.PlusAttrs(attrs).WithRange(attrs[0].Range.StartIndex, $result.Range.EndIndex);
+				};
+			}
 		};
 
 		@[private] rule RestOfPropertyDefinition(startIndex::int, type::LNode, name::LNode, isExpression::bool)::LNode @{

@@ -1283,7 +1283,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 194 "EcsLexerGrammar.les"
-								_type = TT.CompoundSet;
+								_type = TT.CompoundAssign;
 								#line 194 "EcsLexerGrammar.les"
 								_value = S.ShrAssign;
 								#line default
@@ -1331,7 +1331,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 198 "EcsLexerGrammar.les"
-								_type = TT.CompoundSet;
+								_type = TT.CompoundAssign;
 								#line 198 "EcsLexerGrammar.les"
 								_value = S.ShlAssign;
 								#line default
@@ -1356,7 +1356,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 202 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 202 "EcsLexerGrammar.les"
 							_value = S.AndBitsAssign;
 							#line default
@@ -1396,7 +1396,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 207 "EcsLexerGrammar.les"
-								_type = TT.CompoundSet;
+								_type = TT.CompoundAssign;
 								#line 207 "EcsLexerGrammar.les"
 								_value = S.OrBitsAssign;
 								#line default
@@ -1434,7 +1434,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 210 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 210 "EcsLexerGrammar.les"
 							_value = S.XorBitsAssign;
 							#line default
@@ -1455,7 +1455,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 212 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 212 "EcsLexerGrammar.les"
 							_value = S.QuickBindAssign;
 							#line default
@@ -1519,7 +1519,7 @@ namespace Loyc.Ecs.Parser
 						} else {
 							Skip();
 							#line 219 "EcsLexerGrammar.les"
-							_type = TT.Set;
+							_type = TT.Assign;
 							#line 219 "EcsLexerGrammar.les"
 							_value = S.Assign;
 							#line default
@@ -1554,7 +1554,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 222 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 222 "EcsLexerGrammar.les"
 							_value = S.ConcatAssign;
 							#line default
@@ -1578,7 +1578,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 224 "EcsLexerGrammar.les"
-								_type = TT.CompoundSet;
+								_type = TT.CompoundAssign;
 								#line 224 "EcsLexerGrammar.les"
 								_value = S.ExpAssign;
 								#line default
@@ -1595,7 +1595,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 226 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 226 "EcsLexerGrammar.les"
 							_value = S.MulAssign;
 							#line default
@@ -1616,7 +1616,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 228 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 228 "EcsLexerGrammar.les"
 							_value = S.DivAssign;
 							#line default
@@ -1637,7 +1637,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 230 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 230 "EcsLexerGrammar.les"
 							_value = S.ModAssign;
 							#line default
@@ -1658,7 +1658,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 232 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 232 "EcsLexerGrammar.les"
 							_value = S.AddAssign;
 							#line default
@@ -1695,7 +1695,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 236 "EcsLexerGrammar.les"
-							_type = TT.CompoundSet;
+							_type = TT.CompoundAssign;
 							#line 236 "EcsLexerGrammar.les"
 							_value = S.SubAssign;
 							#line default
@@ -1728,7 +1728,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 239 "EcsLexerGrammar.les"
-									_type = TT.CompoundSet;
+									_type = TT.CompoundAssign;
 									#line 239 "EcsLexerGrammar.les"
 									_value = S.NullCoalesceAssign;
 									#line default

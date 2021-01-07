@@ -960,6 +960,13 @@ namespace Loyc.Ecs.Tests
 						F.Call(S.IndexBracks, _("_list"), F.Call(_("IndexOf"), x)))))));
 			Stmt("public ref int Find(int x) {\n  return ref _list[IndexOf(x)];\n}", stmt);
 
+			// Ref locals
+			Stmt("ref Foo a = ref Foo.b(c);", F.Attr(_(S.Ref), F.Var(Foo, a, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, b), c)))));
+			Stmt("x = ref Foo.x();", F.Assign(x, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, x)))));
+			// These aren't proper C# but should still parse/print okay
+			Expr("ref a = ref x + 1", F.Attr(_(S.Ref), F.Assign(a, F.Attr(_(S.Ref), F.Call(S.Add, x, one)))));
+			Expr("out b += out 2 << c", F.Attr(_(S.Out), F.Call(S.AddAssign, b, F.Attr(_(S.Out), F.Call(S.Shl, two, c)))));
+
 			// Local functions
 			stmt = Attr(@public, F.Fn(F.Void, Foo, F.List(), F.Braces(F.Fn(F.Void, _("Bar"), F.List(), two))));
 			Stmt("public void Foo() {\n  void Bar() => 2;\n}", stmt);
