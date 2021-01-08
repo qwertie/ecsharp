@@ -961,8 +961,12 @@ namespace Loyc.Ecs.Tests
 			Stmt("public ref int Find(int x) {\n  return ref _list[IndexOf(x)];\n}", stmt);
 
 			// Ref locals
-			Stmt("ref Foo a = ref Foo.b(c);", F.Attr(_(S.Ref), F.Var(Foo, a, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, b), c)))));
-			Stmt("x = ref Foo.x();", F.Assign(x, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, x)))));
+			stmt = F.Attr(_(S.Ref), F.Var(Foo, a, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, b), c))));
+			Stmt("ref Foo a = ref Foo.b(c);", stmt);
+			Stmt("ref Foo a = ref Foo.b(c);", stmt, o => o.SetPlainCSharpMode());
+			stmt = F.Assign(x, F.Attr(_(S.Ref), F.Call(F.Dot(Foo, x))));
+			Stmt("x = ref Foo.x();", stmt);
+			Stmt("x = ref Foo.x();", stmt, o => o.SetPlainCSharpMode());
 			// These aren't proper C# but should still parse/print okay
 			Expr("ref a = ref x + 1", F.Attr(_(S.Ref), F.Assign(a, F.Attr(_(S.Ref), F.Call(S.Add, x, one)))));
 			Expr("out b += out 2 << c", F.Attr(_(S.Out), F.Call(S.AddAssign, b, F.Attr(_(S.Out), F.Call(S.Shl, two, c)))));

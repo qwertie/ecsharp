@@ -371,17 +371,15 @@ namespace Loyc.Ecs
 			if (_n.ArgCount != 2)
 				return false;
 
-			Ambiguity rFlags = 0;
 			LNode left = _n.Args[0], right = _n.Args[1];
+			bool isAssignment = EcsValidators.IsAssignmentOperator(_name);
 			if (!_o.AllowChangeParentheses) {
 				// Attributes on the children normally disqualify operator notation.
 				if (HasPAttrs(left))
 					return false;
 				if (HasPAttrs(right)) {
 					// An exception is `ref ...` which can be on the right-hand side of an assignment.
-					if (EcsValidators.IsAssignmentOperator(_name) && !HasPAttrsExceptAttrKeywords(right))
-						rFlags = Ambiguity.AssignmentRhs;
-					else
+					if (!(isAssignment && !HasPAttrsExceptAttrKeywords(right)))
 						return false;
 				}
 			}
@@ -401,6 +399,7 @@ namespace Loyc.Ecs
 					_context = StartExpr;
 
 				Ambiguity lFlags = _flags & Ambiguity.TypeContext;
+				Ambiguity rFlags = isAssignment ? Ambiguity.AssignmentRhs : 0;
 				if (_name == S.Assign || _name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
 				if (_name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
 
