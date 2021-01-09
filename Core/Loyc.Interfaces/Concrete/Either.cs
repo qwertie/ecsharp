@@ -9,7 +9,8 @@ namespace Loyc
 	/// <summary>Holds a single value of one of two types (L or R).</summary>
 	/// <remarks>For efficiency, this is a struct, but this makes it possible
 	/// to default-construct it. In that case its value will be <c>default(R)</c>.</remarks>
-	public struct Either<L, R> : IEither<L, R>, IHasValue<object>
+	[System.Diagnostics.DebuggerDisplay("{ToString()}")]
+	public struct Either<L, R> : IEither<L, R>, IHasValue<object>, IEquatable<Either<L, R>>, IEquatable<IEither<L, R>>
 	{
 		/// <summary>Simply calls the constructor. This method exists to make
 		/// it possible to construct an Either when both types are the same.</summary>
@@ -87,6 +88,41 @@ namespace Loyc
 			if (!_hasLeft)
 				actionR(_right);
 			return this;
+		}
+
+		public override string ToString()
+		{
+			return _hasLeft ? "Left: {0}".Localized(_left) : "Right: {0}".Localized(_right);
+		}
+		public override int GetHashCode()
+		{
+			return _hasLeft ? _left?.GetHashCode() ?? 0 : ~(_right?.GetHashCode() ?? 0);
+		}
+
+		public override bool Equals(object obj) => Equals(obj as IEither<L, R>);
+
+		public bool Equals(IEither<L, R> other)
+		{
+			if (other != null) {
+				IMaybe<L> otherLeft = other.Left;
+				if (otherLeft.HasValue == _hasLeft) {
+					if (_hasLeft)
+						return _left == null ? otherLeft.Value == null : _left.Equals(otherLeft.Value);
+					else
+						return _right == null ? other.Right.Value == null : _right.Equals(other.Right.Value);
+				}
+			}
+			return false;
+		}
+		public bool Equals(Either<L, R> other)
+		{
+			if (other._hasLeft == _hasLeft) {
+				if (_hasLeft)
+					return _left == null ? other._left == null : _left.Equals(other._left);
+				else
+					return _right == null ? other._right == null : _right.Equals(other._right);
+			}
+			return false;
 		}
 	}
 }

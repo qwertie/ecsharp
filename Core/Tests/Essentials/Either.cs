@@ -97,5 +97,49 @@ namespace Loyc.Essentials.Tests
 			right.IfRight(R => s += R + "!");
 			Assert.AreEqual("5!Hi!", s);
 		}
+
+		[Test]
+		public void EqualsTest()
+		{
+			Either<int, string> left = 5;
+			Either<int[], string> left2 = new int[1] { 3 };
+			Either<int[], string> left3 = (int[])null;
+			Either<int, string> right0 = "HELLO";
+			Either<int, string> right = "hello".ToUpper();
+			Either<int, string> right2 = (string)null;
+
+			Assert.IsTrue(left.Equals(left));
+			Assert.IsTrue(right.Equals(right));
+			Assert.IsFalse(left.Equals(right));
+			Assert.IsFalse(right.Equals(left));
+
+			Assert.IsTrue(left3.Equals(left3));
+			Assert.IsTrue(right2.Equals(right2));
+			Assert.IsTrue(right0.Equals(right));
+			
+			Assert.IsFalse(left.Equals(left2));
+			Assert.IsFalse(left.Equals(left3));
+			Assert.IsFalse(left2.Equals(left3));
+			Assert.IsFalse(left3.Equals(left2));
+			
+			Assert.IsFalse(right.Equals(right2));
+			Assert.IsFalse(right2.Equals(right));
+
+			Assert.IsFalse(right2.Equals((object)null));
+			Assert.IsFalse(right2.Equals(left3));
+
+			Assert.IsTrue(left.Equals((IEither<int, string>)left));
+			Assert.IsTrue(right.Equals((IEither<int, string>)right0));
+			Assert.IsFalse(left.Equals((IEither<int, string>)right));
+		}
+
+		[Test]
+		public void ToStringTest()
+		{
+			Either<int, string> left = 5;
+			Either<int, string> right = "hello";
+			Assert.AreEqual("Left: 5", left.ToString());
+			Assert.AreEqual("Right: hello", right.ToString());
+		}
 	}
 }
