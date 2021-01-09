@@ -203,10 +203,12 @@ namespace Benchmark
 					w.WriteLine("</head>");
 					w.WriteLine("<body>");
 					foreach (ChartPage page in _tabs.TabPages) {
-						string imgName = Path.Combine(folder, G.MakeValidFileName(page.GraphId.ToString().Replace(' ','-') + ".png"));
+
+						string imgName = G.MakeValidFileName(page.GraphId.ToString().Replace(' ', '-') + ".png");
+						string imgPath = Path.Combine(folder, imgName);
 						w.WriteLine("<p>{0}</p>", page.GraphId);
 						w.WriteLine("<img src=\"{0}\"/><br/>", imgName);
-						PngExporter.Export(page.Model, imgName, page.Plot.Width, page.Plot.Height, Brushes.White);
+						PngExporter.Export(page.Model, imgPath, page.Plot.Width, page.Plot.Height, Brushes.White);
 					}
 					w.WriteLine("</body>");
 					w.WriteLine("</html>");
