@@ -182,7 +182,7 @@ namespace LeMP
 					if (result.Count == 0) {
 						Context.Sink.Error(runSeq, "#runSequence() has no arguments, which is not supported.");
 					} else if (result.Count == 1) {
-						runSeq = runSeq[0].PlusAttrs(runSeq.Attrs);
+						runSeq = result[0].PlusAttrs(runSeq.Attrs);
 						return LNode.List();
 					}
 				}

@@ -842,6 +842,12 @@ namespace LeMP.Tests
 			", @"
 				Foo(x, y - #runSequence(), #runSequence());
 			");
+			Test(@"#useSequenceExpressions;
+				Foo(var x = #runSequence { new Crapola(this); });
+			", EcsLanguageService.Value, @"
+				var x = new Crapola(this);
+				Foo(x);
+			", EcsLanguageService.WithPlainCSharpPrinter);
 		}
 	}
 }
