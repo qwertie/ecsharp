@@ -153,6 +153,7 @@
     <Compile Include="Collections\MapTests.cs" />
     <Compile Include="Collections\SetTests.cs" />
     <Compile Include="Collections\ALists\SparseAListTests.cs" />
+    <Compile Include="Syntax\StandardLiteralHandlersTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
     <Compile Include="Syntax\IndexPositionMapperTests.cs" />
     <Compile Include="Syntax\Les3LexerTests.cs" />

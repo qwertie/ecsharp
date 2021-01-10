@@ -9,7 +9,7 @@ using System.Text;
 namespace Loyc.Syntax.Tests
 {
 	[TestFixture]
-	class LiteralHandlerTableTests
+	public class LiteralHandlerTableTests
 	{
 		[Test]
 		public void TestCustomParsers()
@@ -32,6 +32,9 @@ namespace Loyc.Syntax.Tests
 
 			Assert.AreEqual("Hi", lht.TryParse(" Hi ", (Symbol)"trimmed").Left.Value);
 			Assert.AreEqual("Always fails", lht.TryParse(" Hi ", (Symbol)"fail").Right.Value.Format);
+
+			Assert.IsTrue(lht.TryParse("...", (Symbol)"undefined").Right.HasValue);
+			Assert.IsTrue(lht.TryParse("...", (Symbol)"undefined").Right.Value.Format.Contains("No parser is registered"));
 		}
 
 		// Custom printers
@@ -56,7 +59,8 @@ namespace Loyc.Syntax.Tests
 			return null;
 		}
 
-		LiteralNode CL(object value, string symbol) => LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, (Symbol)symbol));
+		static LiteralNode CL(object value, string symbol) => 
+			LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, (Symbol)symbol));
 
 		[Test]
 		public void TestCustomPrinters()

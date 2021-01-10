@@ -168,6 +168,7 @@ namespace Loyc.Tests
 				new IndentTokenGeneratorTests(),
 				new StandardTriviaInjectorTests(),
 				new LiteralHandlerTableTests(),
+				new StandardLiteralHandlersTests(),
 				new Les2LexerTests(),
 				new Les2ParserTests(),
 				new Les2PrinterTests(),

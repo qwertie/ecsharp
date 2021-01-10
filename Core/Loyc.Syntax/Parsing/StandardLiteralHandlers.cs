@@ -39,7 +39,7 @@ namespace Loyc.Syntax
 	/// <li>UString (no specific type marker) </li>
 	/// </ul>
 	/// There are also two general type markers, _ for a number of unspecified type,
-	/// and _U for an unsigned number of unspecified size. In LES, any type marker 
+	/// and _u for an unsigned number of unspecified size. In LES, any type marker 
 	/// that is not on this list is legal, but will be left uninterpreted by default;
 	/// <see cref="LNode.Value"/> will return a string of type <see cref="UString"/>.
 	/// <para/>
@@ -262,16 +262,16 @@ namespace Loyc.Syntax
 			AddPrinter(true, typeof(int), (lit, sb) =>
 				{ PrintInteger((int)lit.Value, lit.Style, sb); return _number; });
 			AddPrinter(true, typeof(uint), (lit, sb) =>
-				{ PrintInteger((uint)lit.Value, lit.Style, sb); return _number; });
+				{ PrintInteger((uint)lit.Value, lit.Style, sb); return __u; });
 			AddPrinter(true, typeof(long), (lit, sb) =>
-				{ PrintInteger((long)lit.Value, lit.Style, sb); return lit.TypeMarker ?? _number; });
+				{ PrintInteger((long)lit.Value, lit.Style, sb); return lit.TypeMarker ?? __L; });
 			AddPrinter(true, typeof(ulong), (lit, sb) =>
-				{ PrintInteger((ulong)lit.Value, lit.Style, sb); return lit.TypeMarker ?? _number; });
+				{ PrintInteger((ulong)lit.Value, lit.Style, sb); return lit.TypeMarker ?? __uL; });
 			// TODO: improve BigInteger support (ie. support hex & binary, support digit separators)
 			AddPrinter(true, typeof(BigInteger), (lit, sb) =>
 				{ sb.Append(((BigInteger)lit.Value).ToString()); return __z; });
 			AddPrinter(true, typeof(float), (lit, sb) =>
-				{ PrintFloat((float)lit.Value, lit.TypeMarker, lit.Style, false, sb); return __r32; });
+				{ PrintFloat((float)lit.Value, lit.TypeMarker, lit.Style, false, sb); return __f; });
 			AddPrinter(true, typeof(double), (lit, sb) =>
 				{ PrintFloat((double)lit.Value, lit.TypeMarker, lit.Style, true, sb); return lit.TypeMarker ?? _number; });
 			// output for void is intentionally left blank
