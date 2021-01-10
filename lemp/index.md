@@ -85,8 +85,6 @@ public static partial class ExtensionMethods
 
 LeMP helps you solve the **repetition-of-boilerplate** problem, and it allows you to transform code at compile-time in arbitrary ways.
 
-<div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
-
 ### Example: compile-time code execution and code manipulation ###
 
 LeMP can be used for compile-time calculations, reflection and code generation. It is possible to use ordinary [reflection](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection), but this example shows off more features of LeMP. It scans a syntax tree at compile-time and produces a list of the function names that it saw.
@@ -302,6 +300,8 @@ struct EmailAddress
    }
 }
 ~~~
+
+<div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/><i>Using LeMP in Visual Studio</i></div>
 
 Learn more
 ----------
