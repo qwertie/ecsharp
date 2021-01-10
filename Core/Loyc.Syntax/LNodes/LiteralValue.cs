@@ -7,7 +7,7 @@ namespace Loyc.Syntax
 	/// </summary>
 	public struct LiteralValue : ILiteralValue, ILiteralValueProvider
 	{
-		public LiteralValue(object value, UString textValue, Symbol typeMarker)
+		public LiteralValue(object value, Symbol typeMarker, UString textValue = default)
 		{
 			Value = value;
 			TextValue = textValue;

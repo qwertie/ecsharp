@@ -178,6 +178,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Syntax\LiteralHandlerTableTests.cs" />
     <Compile Include="Syntax\StandardTriviaInjectorTests.cs" />
     <Compile Include="Syntax\StreamCharSourceTests.cs" />
     <Compile Include="Syntax\TokensToTreeTests.cs" />

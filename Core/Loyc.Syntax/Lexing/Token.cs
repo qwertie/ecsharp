@@ -415,7 +415,7 @@ namespace Loyc.Syntax.Lexing
 		internal LiteralNode UninterpretedTokenToLNode(ISourceFile file, object value)
 		{
 			if (SubstringOffset == 0xFF) {
-				var lv = new LiteralValue(value, TextValue(file.Text), TypeMarker);
+				var lv = new LiteralValue(value, TypeMarker, TextValue(file.Text));
 				return new StdLiteralNode<LiteralValue>(lv, SourceRange.New(file, this), Style);
 			} else {
 				var lfp = new LiteralFromParser(value, _startIndex + SubstringOffset, _length - SubstringOffset - SubstringOffsetFromEnd, TypeMarker);

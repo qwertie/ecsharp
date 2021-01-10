@@ -180,7 +180,7 @@ namespace Loyc.Syntax
 			if (list.Count == 1)
 				return list[0];
 			else {
-				var r = SourceRange.Nowhere;
+				var r = SourceRange.Synthetic;
 				if (list.Count != 0) {
 					r = list[0].Range;
 					r = new SourceRange(r.Source, r.StartIndex, list.Last.Range.EndIndex - r.StartIndex);

@@ -103,14 +103,12 @@ namespace Loyc.Syntax
 				if (Printers.ContainsKey(type))
 					return true;
 				if (searchBases) {
-					var baseTypeQueue = new List<Type>();
-					AddBaseTypes(type, baseTypeQueue);
-					for (int i = 0; i < baseTypeQueue.Count; i++)
-					{
-						if (_printers.ContainsKey(baseTypeQueue[i]))
+					for (var type2 = type; type2.BaseType != null; type2 = type2.BaseType)
+						if (_printers.ContainsKey(type2.BaseType))
 							return true;
-						AddBaseTypes(baseTypeQueue[i], baseTypeQueue);
-					}
+					foreach (var iface in type.GetInterfaces())
+						if (_printers.ContainsKey(iface))
+							return true;
 				}
 			}
 			return false;
@@ -129,17 +127,30 @@ namespace Loyc.Syntax
 			return new Either<object, ILogMessage>((ILogMessage) new LogMessage(Severity.Note, textValue, "No parser is registered for type marker '{0}'".Localized(PrintHelpers.EscapeCStyle(typeMarker.Name))));
 		}
 
+		public Either<Symbol, ILogMessage> TryPrint(ILNode literal, out StringBuilder sb)
+		{
+			sb = new StringBuilder();
+			return TryPrint(literal, sb);
+		}
+
 		/// <summary>Searches <see cref="Printers"/> for a printer for the value and uses it 
 		/// to convert the value to a string. When a printer can be found both by type marker
 		/// Symbol and by Type, the printer for the matching type marker is used (takes priority).
-		/// The complete search order is (1) type marker (if any), (2) exact type, (3) base class 
-		/// and base interfaces, in that order, recursively, breadth-first.</summary>
+		/// The complete search order is (1) type marker (if any), (2) exact type, (3) base 
+		/// classes and (4) interfaces, in that order.</summary>
 		/// <param name="literal">A literal that you want to convert to a string.</param>
 		/// <returns>Either the type marker for the literal, or an error message. 
 		/// On return, the string form of the literal is appended to the StringBuilder.
 		/// If an error occurs, it is possible that some kind of output was added to
 		/// the StringBuilder anyway.</returns>
 		/// <remarks>
+		/// Note: this uses `Type.GetInterfaces` to obtain the list of interfaces, and this 
+		/// list is officially not "in a particular order". It appears that the list is 
+		/// constructed with some kind of depth-first search, so in simple cases derived 
+		/// interfaces are searched before base interfaces, but if there are "diamonds" in
+		/// the interface hierarchy then it will not be uncommon for a lower-level interface 
+		/// to be checked before a higher-level one. Sorry.
+		/// <para/>
 		/// If a printer returns an error, this method tries to find other printers that might
 		/// be able to print the value. If no printer succeeds, the <i>first</i> error that 
 		/// occurred is returned.
@@ -163,7 +174,6 @@ namespace Loyc.Syntax
 				return tm;
 			
 			if (literal.Value == null) {
-				sb.Clear(); // in case the printer for the typemarker put something in it
 				return tm;
 			}
 			
@@ -171,19 +181,16 @@ namespace Loyc.Syntax
 			if (TryPrint(literal, type, sb, ref tm, ref firstError))
 				return tm;
 
-			// Breadth-first traversal of the type tree
-			var baseTypeQueue = new List<Type>();
-			AddBaseTypes(type, baseTypeQueue);
-			for (int pass_start = 0, pass_end; pass_start < baseTypeQueue.Count; pass_start = pass_end)
+			for (var type2 = type; type2.BaseType != null; type2 = type2.BaseType)
 			{
-				pass_end = baseTypeQueue.Count;
-
-				for (int i = pass_start; i < pass_end; i++)
-					if (TryPrint(literal, baseTypeQueue[i], sb, ref tm, ref firstError))
-						return tm;
-
-				for (int i = pass_start; i < pass_end; i++)
-					AddBaseTypes(baseTypeQueue[i], baseTypeQueue);
+				var @base = type2.BaseType;
+				if (TryPrint(literal, @base, sb, ref tm, ref firstError))
+					return tm;
+			}
+			foreach (var iface in type.GetInterfaces())
+			{
+				if (TryPrint(literal, iface, sb, ref tm, ref firstError))
+					return tm;
 			}
 
 			return new Either<Symbol, ILogMessage>(firstError ??
@@ -192,9 +199,9 @@ namespace Loyc.Syntax
 		}
 		private bool TryPrint(ILNode literal, object key, StringBuilder sb, ref Symbol typeMarker, ref ILogMessage firstError)
 		{
-			sb.Clear();
 			if (_printers.TryGetValue(key, out var printer))
 			{
+				sb.Clear();
 				Either<Symbol, LogMessage> result;
 				try {
 					result = printer(literal, sb);
@@ -205,20 +212,11 @@ namespace Loyc.Syntax
 					firstError = firstError ?? result.Right.Value;
 					return false;
 				} else {
-					typeMarker = result.Left.Value;
+					typeMarker = result.Left.Value ?? typeMarker;
 					return true;
 				}
 			}
 			return false;
-		}
-
-		static void AddBaseTypes(Type type, List<Type> bases)
-		{
-			if (type.BaseType != null && !bases.Contains(type.BaseType))
-				bases.Add(type.BaseType);
-			foreach (Type ift in type.GetInterfaces())
-				if (!bases.Contains(ift))
-					bases.Add(ift);
 		}
 	}
 }

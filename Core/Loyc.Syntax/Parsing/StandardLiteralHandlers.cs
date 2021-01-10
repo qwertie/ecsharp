@@ -308,7 +308,7 @@ namespace Loyc.Syntax
 
 		static Either<object, LogMessage> Overflow(UString input, Symbol typeMarker)
 		{
-			return new LogMessage(Severity.Error, input, "Number is loo large for its associated type");
+			return new LogMessage(Severity.Error, input, "Number is out of range for its associated type");
 		}
 
 		static Either<object, LogMessage> GeneralNumberParser(UString s, Symbol tm)
