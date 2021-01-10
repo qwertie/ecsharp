@@ -16,7 +16,7 @@ namespace Loyc.Collections.Impl
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class ListSourceBase<T> : ReadOnlyCollectionBase<T>, IListAndListSource<T>, IIsEmpty
+	public abstract class ListSourceBase<T> : ReadOnlyCollectionBase<T>, IListImpl<T>
 	{
 		#region IListSource<T> Members
 
@@ -25,7 +25,7 @@ namespace Loyc.Collections.Impl
 		
 		public bool IsEmpty { get { return Count == 0; } }
 
-		public T this[int index]
+        public T this[int index]
 		{ 
 			get {
 				bool fail;
@@ -74,33 +74,25 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		#region IList<T> Members
+		#region IList<T> / IListImpl<T> Members
 
+		T IArraySink<T>.this[int index] { set => throw new ReadOnlyException(); }
 		T IList<T>.this[int index]
 		{
-		    get {
-		        bool fail;
-		        T value = TryGet(index, out fail);
-		        if (fail)
-		            ThrowIndexOutOfRange(index);
-		        return value;
-		    }
-		    set { throw new ReadOnlyException(); }
+			get {
+				bool fail;
+				T value = TryGet(index, out fail);
+				if (fail)
+					ThrowIndexOutOfRange(index);
+				return value;
+			}
+			set { throw new ReadOnlyException(); }
 		}
-		void IList<T>.Insert(int index, T item)
-		{
-		    throw new ReadOnlyException();
-		}
-		void IList<T>.RemoveAt(int index)
-		{
-		    throw new ReadOnlyException();
-		}
+		void IList<T>.Insert(int index, T item) => throw new ReadOnlyException();
+		void IList<T>.RemoveAt(int index) => throw new ReadOnlyException();
 
 		#endregion
 
-		void ICollectionSource<T>.CopyTo(T[] array, int arrayIndex)
-		{
-			ListExt.CopyTo(this, array, arrayIndex);
-		}
+		void ICollectionSource<T>.CopyTo(T[] array, int arrayIndex) => ListExt.CopyTo(this, array, arrayIndex);
 	}
 }

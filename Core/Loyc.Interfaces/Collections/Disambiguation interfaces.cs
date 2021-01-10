@@ -85,7 +85,7 @@ namespace Loyc.Collections
 	/// (except parameters to disambiguation methods, in which case the parameter is 
 	/// immediately casted to another type).
 	/// </remarks>
-	public interface IListImpl<T> : IList<T>, IListSource<T>, IListSink<T>, IListAndReadOnly<T> { }
+	public interface IListImpl<T> : IListAndListSource<T>, IListSink<T>, ICollectionImpl<T> { }
 
 	#endregion
 
