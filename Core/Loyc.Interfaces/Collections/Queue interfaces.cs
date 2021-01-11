@@ -4,33 +4,65 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary>Represents a collection that accepts a sequence of items.</summary>
-	public interface IPush<in T>
+	/// <summary>Encapsulates a Push(T) method.</summary>
+	public interface IHasPush<in T>
 	{
 		void Push(T item);
 	}
-	
+
+	[Obsolete("This was renamed to IHasPush for consistency with other interfaces")]
+	public interface IPush<in T> : IHasPush<T> { }
+
+	/// <summary>Encapsulates a First property (for sequences).</summary>
+	public interface IHasFirst<out T> : IIsEmpty
+	{
+		/// <summary>Gets the first item in the deque.</summary>
+		/// <exception cref="EmptySequenceException">The collection is empty.</exception>
+		T First { get; }
+	}
+
+	/// <summary>Encapsulates a Last property (for sequences).</summary>
+	public interface IHasLast<out T> : IIsEmpty
+	{
+		/// <summary>Gets the first item in the collection.</summary>
+		/// <exception cref="EmptySequenceException">The collection is empty.</exception>
+		T Last { get; }
+	}
+
+	/// <summary>Encapsulates a mutable First property.</summary>
+	public interface IHasMFirst<T> : IHasFirst<T>
+	{
+		new T First { get; set; }
+	}
+
+	/// <summary>Encapsulates a mutable Last property.</summary>
+	public interface IHasMLast<T> : IHasLast<T>
+	{
+		new T Last { get; set; }
+	}
+
 	/// <summary>Represents a collection that produces a sequence of items, and can
 	/// return the next item without popping it (the Peek operation).</summary>
 	/// <remarks>Push/Pop methods that throw an exception on failure, and
-	/// TryPush/TryPop methods that don't require a "ref" argument, are
+	/// TryPush/TryPop methods that don't require an "out" argument, are
 	/// available as extension methods.</remarks>
-	public interface IPop<out T>
+	public interface ITryPop<out T> : IIsEmpty
 	{
 		T TryPop(out bool isEmpty);
 		T TryPeek(out bool isEmpty);
-		bool IsEmpty { get; }
 	}
+	[Obsolete("This was renamed to ITryPop")]
+	public interface IPop<out T> : ITryPop<T> { }
 
 	public static partial class LCInterfaces
 	{
-		public static bool TryPop<T>(this IPop<T> c, out T value)
+		public static bool TryPop<T>(this ITryPop<T> c, out T value)
 		{
 			bool isEmpty;
 			value = c.TryPop(out isEmpty);
 			return !isEmpty;
 		}
-		public static bool TryPeek<T>(this IPop<T> c, out T value)
+		public static bool TryPeek<T>(this ITryPop<T> c, out T value)
 		{
 			bool isEmpty;
 			value = c.TryPeek(out isEmpty);
@@ -41,13 +73,13 @@ namespace Loyc.Collections
 	/// <summary>Represents a FIFO (first-in-first-out) queue (or a priority queue 
 	/// if <see cref="IPriorityQueue{ThisAssembly}"/> is also implemented).</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IQueue<T> : IPush<T>, IPop<T>, ICount
+	public interface IQueue<T> : IHasPush<T>, ITryPop<T>, ICount
 	{
 	}
 
 	/// <summary>Represents a LIFO (last-in-first-out) stack.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IStack<T> : IPush<T>, IPop<T>, ICount
+	public interface IStack<T> : IHasPush<T>, ITryPop<T>, ICount
 	{
 	}
 
@@ -60,7 +92,7 @@ namespace Loyc.Collections
 	/// <summary>Represents a double-ended queue that allows items to be added or
 	/// removed at the beginning or end.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IDeque<T> : IIsEmpty, ICount
+	public interface IDeque<T> : IHasMFirst<T>, IHasMLast<T>, ICount
 	{
 		void PushFirst(T item);
 		void PushLast(T item);
@@ -68,11 +100,6 @@ namespace Loyc.Collections
 		Maybe<T> TryPeekFirst();
 		Maybe<T> TryPopLast();
 		Maybe<T> TryPeekLast();
-
-		/// <summary>Gets the first item in the deque.</summary>
-		/// <exception cref="InvalidOperationException"></exception>
-		T First { get; set; }
-		T Last { get; set; }
 	}
 
 	public static partial class LCInterfaces

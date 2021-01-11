@@ -50,7 +50,7 @@ namespace Loyc.Collections.Impl
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
 	[Serializable]
-	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>//, IGetIteratorSlice<T>
+	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>
 	{
 		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalList<T> Empty = new InternalList<T>(EmptyArray<T>.Value, 0);

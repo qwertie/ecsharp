@@ -204,8 +204,8 @@ namespace Loyc
 			fail = true;
 			return default(char);
 		}
-		char IFRange<char>.First => this[0];
-		char IBRange<char>.Last => this[_count - 1];
+		char IHasFirst<char>.First => this[0];
+		char IHasLast<char>.Last => this[_count - 1];
 		IFRange<uchar>  ICloneable<IFRange<uchar>>.Clone() => Clone();
 		IBRange<uchar>  ICloneable<IBRange<uchar>>.Clone() => Clone();
 		IFRange<char>   ICloneable<IFRange<char>>.Clone() => Clone();

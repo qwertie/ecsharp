@@ -68,10 +68,6 @@ namespace Loyc.Collections
 		/// </pre>
 		/// </remarks>
 		IRange<T> Slice(int start, int count = int.MaxValue);
-		/*
-			IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-			public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
-		*/
 	}
 
 	public static partial class LCInterfaces

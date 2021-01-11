@@ -174,17 +174,18 @@ namespace Loyc.Collections
 	///             RangeMBinumerator for IMBRange{T},
 	///         and RangeMEnumerator for IMEnumerator{T}.
 	/// </remarks>
-	public interface IFRange<out T> : IEnumerable<T>, ICloneable<IFRange<T>>, IIsEmpty
+	public interface IFRange<out T> : IEnumerable<T>, ICloneable<IFRange<T>>, IHasFirst<T>, IIsEmpty
 	{
-		/// <summary>Returns the first value in the range, without popping it.</summary>
-		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
-		/// <remarks>
-		/// A possible default implementation:
-		/// <pre>
-		/// T First { get { return Range.PopFirst(Clone()); } }
-		/// </pre>
-		/// </remarks>
-		T First { get; }
+		// <summary>Returns the first value in the range, without popping it.</summary>
+		// <exception cref="EmptySequenceException">The sequence is empty.</exception>
+		// <remarks>
+		// A possible default implementation:
+		// <pre>
+		// T First { get { return Range.PopFirst(Clone()); } }
+		// </pre>
+		// </remarks>
+		//T First { get; }
+
 		/// <summary>Removes the first item from the range and returns it.</summary>
 		/// <param name="fail">Receives the current value of <see cref="IIsEmpty.IsEmpty"/>.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
@@ -225,11 +226,11 @@ namespace Loyc.Collections
 	///     var r2 = (IMFRange&lt;T>)r.Clone();
 	/// </code>
 	/// </remarks>
-	public interface IMFRange<T> : IFRange<T>
+	public interface IMFRange<T> : IFRange<T>, IHasMFirst<T>
 	{
-		/// <summary>Gets or sets the value of the first item in the range.</summary>
-		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
-		new T First { get; set; }
+		// <summary>Gets or sets the value of the first item in the range.</summary>
+		// <exception cref="EmptySequenceException">The sequence is empty.</exception>
+		//new T First { get; set; }
 	}
 
 	/// <summary>A bidirectional range. Allows you to read or remove the first
@@ -241,17 +242,18 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
-	public interface IBRange<out T> : IFRange<T>, ICloneable<IBRange<T>>
+	public interface IBRange<out T> : IFRange<T>, ICloneable<IBRange<T>>, IHasLast<T>
 	{
-		/// <summary>Returns the value of the last item in the range.</summary>
-		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
-		/// <remarks>
-		/// A reasonable default implementation:
-		/// <pre>
-		/// T Last { get { return Range.PopLast(Clone()); } }
-		/// </pre>
-		/// </remarks>
-		T Last { get; }
+		// <summary>Returns the value of the last item in the range.</summary>
+		// <exception cref="EmptySequenceException">The sequence is empty.</exception>
+		// <remarks>
+		// A reasonable default implementation:
+		// <pre>
+		// T Last { get { return Range.PopLast(Clone()); } }
+		// </pre>
+		// </remarks>
+		//T Last { get; }
+
 		/// <summary>Removes the last item from the range and returns it.</summary>
 		/// <param name="fail">Receives the current value of IsEmpty.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>

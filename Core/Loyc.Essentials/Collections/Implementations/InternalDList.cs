@@ -66,7 +66,7 @@ namespace Loyc.Collections.Impl
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
-	public struct InternalDList<T> : IListSource<T>, ICloneable<InternalDList<T>>
+	public struct InternalDList<T> : IListSource<T>, IHasFirst<T>, IHasLast<T>, ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
