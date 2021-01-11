@@ -10,7 +10,7 @@ namespace Loyc
 	/// <summary>Holds an argument list compatible with 
 	/// <see cref="IMessageSink{TContext}.Write(Severity,TContext,string)"/>.
 	/// Typically used with <see cref="MessageHolder"/>.</summary>
-	public struct LogMessage : IHasLocation, ILogMessage
+	public struct LogMessage : ILocation, ILogMessage
 	{
 		public LogMessage(Severity type, object context, string format, object arg0, object arg1 = null)
 			: this (type, context, format, new object[2] { arg0, arg1 }) {}

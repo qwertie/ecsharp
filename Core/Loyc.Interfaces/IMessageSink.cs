@@ -76,7 +76,7 @@ namespace Loyc
 	/// <seealso cref="MessageFilter"/>
 	/// <seealso cref="MessageHolder"/>
 	/// <seealso cref="MessageMulticaster"/>
-	/// <seealso cref="IHasLocation"/>
+	/// <seealso cref="ILocation"/>
 	public interface IMessageSink<in TContext>
 	{
 		/// <summary>Writes a message to the target that this object represents.</summary>

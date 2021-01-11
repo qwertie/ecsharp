@@ -598,7 +598,7 @@ namespace Loyc.Syntax.Lexing
 	/// a token <see cref="Type"/>, which is the type of a "word" in the program 
 	/// (string, identifier, plus sign, etc.), a value (e.g. the name of an 
 	/// identifier), and an index where the token starts in the source file.</summary>
-	public interface ISimpleToken<TokenType> : IHasValue<object>
+	public interface ISimpleToken<TokenType> : IValue<object>
 	{
 		/// <summary>The category of the token (integer, keyword, etc.) used as
 		/// the primary value for identifying the token in a parser.</summary>

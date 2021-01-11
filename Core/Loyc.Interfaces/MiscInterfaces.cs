@@ -36,18 +36,24 @@ namespace Loyc
 	public interface IReferenceEquatable { }
 
 	/// <summary>Interface for things that have a Value property.</summary>
-	public interface IHasValue<out T>
+	public interface IValue<out T>
 	{
 		T Value { get; }
 	}
-	
+
+	[Obsolete("This was renamed to IValue")]
+	public interface IHasValue<out T> : IValue<T> { }
+
 	/// <summary>Interface for things that have a mutable Value property.</summary>
-	public interface IHasMutableValue<T> : IHasValue<T>
+	public interface IMValue<T> : IValue<T>
 	{
 		new T Value { get; set; }
 	}
 
-	public interface IMaybe<out T> : IHasValue<T>
+	[Obsolete("This was renamed to IMValue")]
+	public interface IHasMutableValue<T> : IMValue<T> { }
+
+	public interface IMaybe<out T> : IValue<T>
 	{
 		bool HasValue { get; }
 	}

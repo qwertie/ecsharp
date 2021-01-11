@@ -2,10 +2,14 @@ using System;
 
 namespace Loyc.Syntax
 {
-	public interface IHasFileName
+	public interface IFileName
 	{
 		string FileName { get; }
 	}
+
+	[Obsolete("This was renamed to IFileName")]
+	public interface IHasFileName : IFileName { }
+
 	/// <summary>A line/column pair representing a location in a text file. 
 	/// Numbering starts at one for both Line and Column.</summary>
 	public interface ILineAndColumn
@@ -13,5 +17,5 @@ namespace Loyc.Syntax
 		int Line { get; }
 		int Column { get; }
 	}
-	public interface ILineColumnFile : ILineAndColumn, IHasFileName { }
+	public interface ILineColumnFile : ILineAndColumn, IFileName { }
 }

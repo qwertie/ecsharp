@@ -7,7 +7,7 @@ namespace Loyc.Syntax.Lexing
 {
 	/// <summary>Filters out tokens whose <c>Value</c> is <see cref="WhitespaceTag.Value"/>.</summary>
 	public class WhitespaceFilter<Token> : LexerWrapper<Token>
-		where Token : IHasValue<object>
+		where Token : IValue<object>
 	{
 		public WhitespaceFilter(ILexer<Token> lexer) : base(lexer) { }
 

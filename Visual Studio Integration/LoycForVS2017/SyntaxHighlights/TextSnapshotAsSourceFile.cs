@@ -36,7 +36,7 @@ namespace Loyc.VisualStudio
 				length = c - startIndex;
 			return _ss.GetText(startIndex, length);
 		}
-		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
 		public UString Slice(int start, int count = 2147483647)
 		{
 			string s = SubstringCore(start, count);
@@ -92,7 +92,7 @@ namespace Loyc.VisualStudio
 			return line.Start.Position;
 		}
 
-		string IHasFileName.FileName
+		string IFileName.FileName
 		{
 			get { return ""; }
 		}

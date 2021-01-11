@@ -1,4 +1,4 @@
-// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from MessageSink.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,21 +21,21 @@ namespace Loyc
 	public static class MessageSink
 	{
 	#region Get/set default global message sink
-
-		static ThreadLocalVariable<IMessageSink> _default = new ThreadLocalVariable<IMessageSink>(null, autoFallback: true);
 	
+		static ThreadLocalVariable<IMessageSink> _default = new ThreadLocalVariable<IMessageSink>(null, autoFallback: true);
+
 		public static IMessageSink Default
 		{
 			get { return _default.Value ?? Null; }
 		}
-	
+
 		[Obsolete("This property is now called Default")] 
 		public static IMessageSink Current
 		{
 			get { return Default; }
 			set { _default.Value = value ?? Null; }
 		}
-	
+
 		/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
 		/// <example><code>
 		/// using (MessageSink.SetDefault(ConsoleMessageSink.Value))
@@ -51,10 +51,10 @@ namespace Loyc
 		{
 			return new SavedValue<IMessageSink>(_default, sink);
 		}
-	
+
 		[Obsolete("This method is now called SetDefault()")] 
 		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
-	
+
 		/// <summary>Returned by <see cref="PushCurrent(IMessageSink)"/>.</summary>
 		public struct PushedCurrent : IDisposable
 		{
@@ -62,34 +62,34 @@ namespace Loyc
 			public PushedCurrent(IMessageSink @new) { OldValue = Default; _default.Value = @new ?? NullMessageSink.Value; }
 			public void Dispose() { _default.Value = OldValue; }
 		}
-	
+		
 		#endregion
-	
+		
 		#region Context-to-string conversion strategy
-	
+		
 		/// <summary>Returns context.Location if context implements 
-		/// <see cref="IHasLocation"/>; otherwise, returns context itself.</summary>
+		/// <see cref="ILocation"/>; otherwise, returns context itself.</summary>
 		public static object LocationOf(object context)
 		{
-			var loc = context as IHasLocation;
+			var loc = context as ILocation;
 			if (loc == null)
 				return context;
 			return loc.Location;
 		}
-	
+
 		[Obsolete("Name changed to ContextToString")] 
 		public static string LocationString(object context)
 		{
 			return ContextToString(context);
 		}
-	
+
 		/// <summary>Gets the location information from the specified object, or
 		/// converts the object to a string. This is the default method returned
 		/// from <see cref="ContextToString"/>.</summary>
 		/// <param name="context">A value whose string representation you want to get.</param>
 		/// <returns>
-		/// If <c>context</c> implements <see cref="IHasLocation"/>,
-		/// this converts <see cref="IHasLocation.Location"/> to a string; 
+		/// If <c>context</c> implements <see cref="ILocation"/>,
+		/// this converts <see cref="ILocation.Location"/> to a string; 
 		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
 		/// it returns <c>context.ToString()</c>.
 		/// </returns>
@@ -97,14 +97,14 @@ namespace Loyc
 		{
 			if (context == null)
 				return null;
-			var ils = context as IHasLocation;
+			var ils = context as ILocation;
 			return (ils != null ? ils.Location ?? context : context).ToString();
 		}
-	
+
 		static readonly Func<object, string> _getLocationString = GetLocationString;
 		static ThreadLocalVariable<Func<object, string>> _contextToString = 
 		new ThreadLocalVariable<Func<object, string>>(_getLocationString, autoFallback: true);
-	
+
 		/// <summary>Gets the strategy that message sinks should use to convert 
 		/// a context object to a string.</summary>
 		/// <remarks>
@@ -129,7 +129,7 @@ namespace Loyc
 		{
 			get { return _contextToString.Value; }
 		}
-	
+
 		/// <summary>Sets the strategy that message sinks should use to convert 
 		/// a context object to a string.</summary>
 		/// <remarks><see cref="ContextToString"/> is a thread-local value, but since
@@ -144,7 +144,9 @@ namespace Loyc
 		{
 			return new SavedValue<Func<object, string>>(_contextToString, contextToString ?? _getLocationString);
 		}
-	
+		
+		#endregion
+		
 		public static bool IsFatalEnabled<C>(this IMessageSink<C> sink)
 		{
 			return sink.IsEnabled(Severity.Fatal);
@@ -285,10 +287,8 @@ namespace Loyc
 		{
 			sink.Write(Severity.Debug, null, format, arg0, arg1);
 		}
-		#endregion
-	
 		#region Other stuff
-	
+		
 		/// <summary>Converts a quadruplet (type, context, format, args) to a single 
 		/// string containing all that information. The format string and the Severity
 		/// are localized with <see cref="Localize.Localized(string, object[])"/>.</summary>
@@ -304,7 +304,7 @@ namespace Loyc
 				return loc + ": " + 
 				type.ToString().Localized() + ": " + formatted;
 		}
-	
+
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 		[Obsolete("Use TraceMessageSink.Value instead")] 
 		public static readonly TraceMessageSink Trace = TraceMessageSink.Value;
@@ -313,13 +313,13 @@ namespace Loyc
 		public static readonly ConsoleMessageSink Console = ConsoleMessageSink.Value;
 		/// <summary>The message sink that discards all messages.</summary>
 		public static readonly NullMessageSink Null = NullMessageSink.Value;
-	
+
 		/// <summary>Sends all messages to a user-defined method.</summary>
 		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
 		{
 			return new MessageSinkFromDelegate(writer, isEnabled);
 		}
-	
+
 		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"/> with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
@@ -328,7 +328,7 @@ namespace Loyc
 		{
 			return new MessageSinkWithContext(null, context, messagePrefix);
 		}
-	
+
 		/// <summary>Creates a message sink with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
@@ -337,7 +337,7 @@ namespace Loyc
 		{
 			return new MessageSinkWithContext<TContext>(target, context, messagePrefix);
 		}
-	
+
 		public static void Write(this IMessageSink<object> sink, LogMessage msg)
 		{
 			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
@@ -346,7 +346,7 @@ namespace Loyc
 		{
 			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
 		}
-	
+		
 		#endregion
 	}
 }

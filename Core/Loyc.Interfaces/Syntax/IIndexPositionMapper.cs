@@ -14,7 +14,7 @@ namespace Loyc.Syntax
 	/// return values from <see cref="IndexToLine(int)"/> use this filename. 
 	/// For example, the file may have mappings to other files; see 
 	/// <see cref="SourceFileWithLineRemaps"/>.</remarks>
-	public interface IIndexToLine : IHasFileName
+	public interface IIndexToLine : IFileName
 	{
 		/// <summary>Returns the position in a source file of the specified index.</summary>
 		/// <remarks>If index is negative, this should return a SourcePos where 
@@ -25,7 +25,7 @@ namespace Loyc.Syntax
 	}
 
 	/// <summary>Contains <see cref="LineToIndex"/> methods.</summary>
-	public interface ILineToIndex : IHasFileName
+	public interface ILineToIndex : IFileName
 	{
 		/// <summary>Returns the index in a source file of the beginning of the 
 		/// specified line, where the first line is number 1, not 0.</summary>

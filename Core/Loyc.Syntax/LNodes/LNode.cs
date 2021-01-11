@@ -54,7 +54,7 @@ namespace Loyc.Syntax
 	/// </ol>
 	/// To learn more about working with LNode, see http://loyc.net/loyc-trees/dotnet.html
 	/// </remarks>
-	public abstract class LNode : ILNode, ILiteralValue, ICloneable<LNode>, IEquatable<LNode>, IHasLocation, IHasValue<object>, INegListSource<LNode>
+	public abstract class LNode : ILNode, ILiteralValue, ICloneable<LNode>, IEquatable<LNode>, ILocation, IValue<object>, INegListSource<LNode>
 	{
 		#region Constructors and static node creator methods
 
@@ -214,7 +214,7 @@ namespace Loyc.Syntax
 
 		/// <summary>Returns Range.</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		object IHasLocation.Location
+		object ILocation.Location
 		{
 			get { return Range; }
 		}

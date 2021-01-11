@@ -18,10 +18,13 @@ namespace Loyc
 	/// Given a context object that may or may not implement this interface, it's
 	/// handy to use <see cref="MessageSink.ContextToString"/> to convert the 
 	/// "context" of a message into a string, or <see cref="MessageSink.LocationOf(object)"/> 
-	/// to unwrap objects that implement IHasLocation.
+	/// to unwrap objects that implement ILocation.
 	/// </remarks>
-	public interface IHasLocation
+	public interface ILocation
 	{
 		object Location { get; }
 	}
+	
+	[Obsolete("This was renamed to ILocation")]
+	public interface IHasLocation : ILocation { }
 }

@@ -465,7 +465,7 @@ namespace Loyc.Threading
 	/// TODO: consider switching from TinyReaderWriterLock+Dictionary to 
 	/// ConcurrentDictionary which has fine-grained locking (.NET 4 only).
 	/// </remarks>
-	public class ThreadLocalVariable<T> : ThreadLocalVariableBase, IHasMutableValue<T>
+	public class ThreadLocalVariable<T> : ThreadLocalVariableBase, IMValue<T>
 	{
 		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
 		protected TinyReaderWriterLock _lock = TinyReaderWriterLock.New;

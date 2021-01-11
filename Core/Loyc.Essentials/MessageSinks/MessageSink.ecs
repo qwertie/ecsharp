@@ -61,10 +61,10 @@ namespace Loyc
 		#region Context-to-string conversion strategy
 
 		/// <summary>Returns context.Location if context implements 
-		/// <see cref="IHasLocation"/>; otherwise, returns context itself.</summary>
+		/// <see cref="ILocation"/>; otherwise, returns context itself.</summary>
 		public static object LocationOf(object context)
 		{
-			var loc = context as IHasLocation;
+			var loc = context as ILocation;
 			if (loc == null) return context;
 			return loc.Location;
 		}
@@ -80,15 +80,15 @@ namespace Loyc
 		/// from <see cref="ContextToString"/>.</summary>
 		/// <param name="context">A value whose string representation you want to get.</param>
 		/// <returns>
-		/// If <c>context</c> implements <see cref="IHasLocation"/>,
-		/// this converts <see cref="IHasLocation.Location"/> to a string; 
+		/// If <c>context</c> implements <see cref="ILocation"/>,
+		/// this converts <see cref="ILocation.Location"/> to a string; 
 		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
 		/// it returns <c>context.ToString()</c>.
 		/// </returns>
 		public static string GetLocationString(object context)
 		{
 			if (context == null) return null;
-			var ils = context as IHasLocation;
+			var ils = context as ILocation;
 			return (ils != null ? ils.Location ?? context : context).ToString();
 		}
 

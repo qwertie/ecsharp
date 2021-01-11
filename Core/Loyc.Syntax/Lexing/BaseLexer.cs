@@ -58,7 +58,7 @@ namespace Loyc.Syntax.Lexing
 	/// is a wrapper around <c>System.String</c> that, among other things, 
 	/// implements <c>ICharSource</c>; please note that C# will implicitly convert 
 	/// normal strings to <see cref="UString"/> for you).</typeparam>
-	public abstract class BaseLexer<CharSrc> : IIndexToLine, IHasFileName
+	public abstract class BaseLexer<CharSrc> : IIndexToLine, IFileName
 		where CharSrc : ICharSource
 	{
 		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }

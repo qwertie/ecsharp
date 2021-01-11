@@ -5,13 +5,10 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>Encapsulates a Push(T) method.</summary>
-	public interface IHasPush<in T>
+	public interface IPush<in T>
 	{
 		void Push(T item);
 	}
-
-	[Obsolete("This was renamed to IHasPush for consistency with other interfaces")]
-	public interface IPush<in T> : IHasPush<T> { }
 
 	/// <summary>Encapsulates a First property (for sequences).</summary>
 	public interface IHasFirst<out T> : IIsEmpty
@@ -73,13 +70,13 @@ namespace Loyc.Collections
 	/// <summary>Represents a FIFO (first-in-first-out) queue (or a priority queue 
 	/// if <see cref="IPriorityQueue{ThisAssembly}"/> is also implemented).</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IQueue<T> : IHasPush<T>, ITryPop<T>, ICount
+	public interface IQueue<T> : IPush<T>, ITryPop<T>, ICount
 	{
 	}
 
 	/// <summary>Represents a LIFO (last-in-first-out) stack.</summary>
 	/// <typeparam name="T">Type of each element</typeparam>
-	public interface IStack<T> : IHasPush<T>, ITryPop<T>, ICount
+	public interface IStack<T> : IPush<T>, ITryPop<T>, ICount
 	{
 	}
 

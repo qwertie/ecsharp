@@ -82,7 +82,7 @@ namespace Loyc.Syntax
 	/// "null" UString since the list of characters is the same. Do not compare UString 
 	/// with null; instead, use <see cref="UString.IsNull"/>.
 	/// </remarks>
-	public interface ILiteralValue : IUninterpretedLiteral, IHasValue<object>
+	public interface ILiteralValue : IUninterpretedLiteral, IValue<object>
 	{
 		//bool IsParsed { get; }
 	}

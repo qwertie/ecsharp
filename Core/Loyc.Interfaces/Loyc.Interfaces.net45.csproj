@@ -128,7 +128,7 @@
     <Compile Include="Concrete\UString.cs" />
     <Compile Include="Concrete\ValueCollection.cs" />
     <Compile Include="Concrete\WeakValueDictionary.cs" />
-    <Compile Include="IHasLocation.cs" />
+    <Compile Include="ILocation.cs" />
     <Compile Include="Concrete\Localize.cs" />
     <Compile Include="Concrete\Maybe.cs" />
     <Compile Include="ILogMessage.cs" />
