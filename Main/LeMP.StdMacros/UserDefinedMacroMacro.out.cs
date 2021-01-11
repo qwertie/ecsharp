@@ -79,6 +79,10 @@ namespace LeMP
 				Debug.Assert((modes & (MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier | MacroMode.MatchEveryLiteral)) != 0);
 			}
 
+			// ensure operator macros like `'+` are not printed as `operator+` which C# will reject
+			if (EcsValidators.IsOperator(macroName.Name))
+				macroName = F.Id(EcsValidators.SanitizeIdentifier(macroName.Name.Name));
+
 			LNode modesExpr = null;
 			foreach (LNode mode in modeNodes)
 				modesExpr = LNode.MergeBinary(modesExpr, LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "MacroMode"))).SetStyle(NodeStyle.Operator), mode)).SetStyle(NodeStyle.Operator), S.OrBits);
