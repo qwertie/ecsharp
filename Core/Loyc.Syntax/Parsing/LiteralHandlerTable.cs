@@ -133,6 +133,9 @@ namespace Loyc.Syntax
 			return TryPrint(literal, sb);
 		}
 
+		public Either<Symbol, ILogMessage> TryPrint(object value, Symbol typeMarker, out StringBuilder sb, NodeStyle style = NodeStyle.Default) =>
+			TryPrint(LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, typeMarker), style), out sb);
+
 		/// <summary>Searches <see cref="Printers"/> for a printer for the value and uses it 
 		/// to convert the value to a string. When a printer can be found both by type marker
 		/// Symbol and by Type, the printer for the matching type marker is used (takes priority).

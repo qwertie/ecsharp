@@ -11,7 +11,6 @@ using Loyc;
 namespace Loyc.Syntax
 {
 	using ParseFunc = Func<UString, Symbol, Either<object, LogMessage>>;
-	using PrintFunc = Func<object, Symbol, Either<UString, LogMessage>>;
 
 	/// <summary>
 	/// A <see cref="LiteralHandlerTable"/> that is preinitialized with all standard 
