@@ -50,7 +50,7 @@ namespace Loyc.Collections
 		{
 			return (fail = (uint)index >= (uint)_obj.Count) ? default(T) : _obj[index];
 		}
-		IRange<T> IListSource<T>.Slice(int start, int count) => new Slice_<T>(this, start, count);
+		IListSource<T> IListSource<T>.Slice(int start, int count) => new Slice_<T>(this, start, count);
 		public Slice_<T> Slice(int start, int count) => new Slice_<T>(this, start, count);
 	}
 }

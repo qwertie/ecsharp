@@ -564,7 +564,7 @@ namespace Loyc.LLParserGenerator
 			return this;
 		}
 		
-		IRange<IntRange> IListSource<IntRange>.Slice(int start, int count) { return new Slice_<IntRange>(this, start, count); }
+		IListSource<IntRange> IListSource<IntRange>.Slice(int start, int count) { return new Slice_<IntRange>(this, start, count); }
 	}
 
 	/// <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>

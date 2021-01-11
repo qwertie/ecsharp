@@ -82,7 +82,7 @@ namespace Loyc.Collections
 				return default(T);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			var slice = Slice(start, count);
 			return new Slice_<T>(_list, slice._start, slice._count);

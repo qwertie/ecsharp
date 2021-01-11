@@ -498,7 +498,7 @@ namespace Loyc.Syntax.Lexing
 		}
 		bool IIsEmpty.IsEmpty => Count == 0;
 
-		IRange<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<Token> IListSource<Token>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<Token> Slice(int start, int count) { return new Slice_<Token>(this, start, count); }
 
 		#endregion

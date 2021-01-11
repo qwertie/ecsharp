@@ -63,11 +63,11 @@ namespace Loyc.Collections
 		/// </ul>
 		/// Most collections should use the following implementation:
 		/// <pre>
-		/// IRange&lt;T> IListSource&lt;T>.Slice(int start, int count) { return Slice(start, count); }
+		/// IListSource&lt;T> IListSource&lt;T>.Slice(int start, int count) { return Slice(start, count); }
 		/// public Slice_&lt;T> Slice(int start, int count) { return new Slice_&lt;T>(this, start, count); }
 		/// </pre>
 		/// </remarks>
-		IRange<T> Slice(int start, int count = int.MaxValue);
+		IListSource<T> Slice(int start, int count = int.MaxValue);
 	}
 
 	public static partial class LCInterfaces

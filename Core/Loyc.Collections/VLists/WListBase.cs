@@ -394,7 +394,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
 		
 		#endregion

@@ -296,7 +296,7 @@ namespace Loyc
 			return default(char);
 		}
 
-		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
 		public UString Slice(int start, int count = int.MaxValue)
 		{
 			// if either parameter is below zero...

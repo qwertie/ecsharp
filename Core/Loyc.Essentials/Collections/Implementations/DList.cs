@@ -357,7 +357,7 @@ namespace Loyc.Collections
 			_dlist.Sort(index, count, comp);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			return new Slice_<T>(this, start, count);
 		}

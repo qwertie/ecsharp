@@ -81,7 +81,7 @@ namespace Loyc.Syntax
 		public bool Remove(LNode item) => _list.Remove(item);
 		void IList<LNode>.RemoveAt(int index) => RemoveAt(index);
 		public LNodeList RemoveAt(int index) => new LNodeList(_list.RemoveAt(index));
-		IRange<LNode> IListSource<LNode>.Slice(int start, int count) => Slice(start, count);
+		IListSource<LNode> IListSource<LNode>.Slice(int start, int count) => Slice(start, count);
 		public Slice_<LNode> Slice(int start, int count = int.MaxValue) => _list.Slice(start, count);
 		public LNode TryGet(int index, out bool fail) => _list.TryGet(index, out fail);
 		IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();

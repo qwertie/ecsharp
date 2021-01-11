@@ -1090,7 +1090,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int length)
 		{
 			return new Slice_<T>(this, start, length);
@@ -1230,7 +1230,7 @@ namespace Loyc.Collections
 		public int Count => _list.Count;
 		public bool IsEmpty => _list.Count == 0;
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
 	}
 }

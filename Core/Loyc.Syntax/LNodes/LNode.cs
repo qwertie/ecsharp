@@ -936,7 +936,7 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public IRange<LNode> Slice(int start, int count = int.MaxValue)
+		public IListSource<LNode> Slice(int start, int count = int.MaxValue)
 		{
 			return new NegListSlice<LNode>(this, start, count);
 		}
@@ -963,7 +963,7 @@ namespace Loyc.Syntax
 		ILNode IIndexed<int, ILNode>.this[int index] { get { return this[index]; } }
 		ILNode ITryGet<int, ILNode>.TryGet(int index, out bool fail) { return TryGet(index, out fail); }
 		IEnumerator<ILNode> IEnumerable<ILNode>.GetEnumerator() { return GetEnumerator(); }
-		IRange<ILNode> INegListSource<ILNode>.Slice(int start, int count)
+		IListSource<ILNode> INegListSource<ILNode>.Slice(int start, int count)
 		{
 			return new NegListSlice<ILNode>(this, start, count);
 		}

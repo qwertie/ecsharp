@@ -127,7 +127,7 @@ namespace Loyc.Collections
 				return default(T);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) => Slice(start, count);
+		IListSource<T> IListSource<T>.Slice(int start, int count) => Slice(start, count);
 		public ROLSlice<T, TList> Slice(int start, int count = int.MaxValue)
 		{
 			var slice = new ROLSlice<T, TList>();

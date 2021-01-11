@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/12/2011
@@ -90,7 +90,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Returns a sub-range of this list.</summary>
-		public IRange<T> Slice(int start, int count = int.MaxValue)
+		public IListSource<T> Slice(int start, int count = int.MaxValue)
 		{
 			return _list.Slice(_offset + start, count);
 		}

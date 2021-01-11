@@ -420,7 +420,7 @@ namespace Loyc.Collections.Impl
 			InternalList.Sort(_array, index, count, comp);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			return new Slice_<T>(this, start, count);
 		}

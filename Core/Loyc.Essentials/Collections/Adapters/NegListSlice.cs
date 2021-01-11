@@ -130,8 +130,8 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		IRange<T> INegListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> INegListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public NegListSlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0) throw new ArgumentException("The start index was below zero.");

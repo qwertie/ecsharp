@@ -28,7 +28,7 @@ namespace Loyc.Collections.Impl
 		public virtual void RemoveAt(int index) => _obj.RemoveAt(index);
 
 		public virtual int IndexOf(T item) => _obj.IndexOf(item);
-		public virtual IRange<T> Slice(int start, int count = int.MaxValue) => new ListSlice<T>(_obj, start, count);
+		public virtual IListSource<T> Slice(int start, int count = int.MaxValue) => new ListSlice<T>(_obj, start, count);
 		public virtual T TryGet(int index, out bool fail) => (fail = (uint)index >= (uint)_obj.Count) ? default(T) : _obj[index];
 	}
 }

@@ -23,7 +23,7 @@ namespace Loyc.Collections
 		int Max { get; }
 
 		/// <summary>Returns a sub-range of this list.</summary>
-		IRange<T> Slice(int start, int count = int.MaxValue);
+		IListSource<T> Slice(int start, int count = int.MaxValue);
 	}
 
 	public static partial class LCInterfaces

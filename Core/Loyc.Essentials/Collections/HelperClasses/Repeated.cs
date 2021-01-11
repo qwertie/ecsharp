@@ -79,7 +79,7 @@ namespace Loyc.Collections
 			return LCInterfaces.IndexOf(this, item);
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			return Slice(start, count); 
 		}

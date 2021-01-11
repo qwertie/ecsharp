@@ -46,7 +46,7 @@ namespace Loyc.Collections.Impl
 				"Index out of range: {0}[{1} of {2}]", GetType().Name, index, Count));
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			return Slice(start, count); 
 		}

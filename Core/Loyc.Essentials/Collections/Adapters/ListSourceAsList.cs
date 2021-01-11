@@ -99,7 +99,7 @@ namespace Loyc.Collections
 		{
 			return _obj.TryGet(index, out fail);
 		}
-		IRange<T> IListSource<T>.Slice(int start, int count)
+		IListSource<T> IListSource<T>.Slice(int start, int count)
 		{
 			return Slice(start, count); 
 		}

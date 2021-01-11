@@ -519,7 +519,7 @@ namespace Loyc.Collections
 			return value;
 		}
 
-		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
+		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public Slice_<T> Slice(int start, int count = int.MaxValue) { return new Slice_<T>(this, start, count); }
 		
 		#endregion 

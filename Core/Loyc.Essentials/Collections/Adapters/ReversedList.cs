@@ -146,7 +146,7 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
-		public IRange<T> Slice(int start, int count = int.MaxValue)
+		public IListSource<T> Slice(int start, int count = int.MaxValue)
 		{
 			return new Slice_<T>(this, start, count);
 		}
