@@ -694,6 +694,7 @@ namespace Loyc.Ecs.Tests
 				F.Call("FindNodeAt", F.Call(S.Substitute, _("errorLoc"))), 
 				F.Assign(F.Call(S.Substitute, _("errorLoc")), F.Dot("e", "Errors", "First", "SourceRange")));
 			Expr("FindNodeAt($errorLoc) where $errorLoc = e.Errors.First.SourceRange", expr);
+			Expr("lit when #.IsLiteral", F.Call(S.When, _("lit"), F.Dot("#", "IsLiteral")));
 		}
 
 		[Test]

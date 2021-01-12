@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Ecs;
 using Loyc.MiniTest;
 
 namespace LeMP.Tests
@@ -31,12 +32,8 @@ namespace LeMP.Tests
 						}
 					}"
 				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
-			TestEcs(@"matchCode(code) { 
-					$(lit && #.IsLiteral) => Literal(); 
-					$(id[#.IsId]) => Id(); 
-					$_ => Call();
-				}",
-				@"{
+			
+			string expectOutput = @"{
 					LNode id, lit;
 					if ((lit = code) != null && lit.IsLiteral) {
 						Literal();
@@ -45,7 +42,24 @@ namespace LeMP.Tests
 					} else {
 						Call();
 					}
-				}");
+				}";
+			// Use older condition syntaxes (id && cond, id[cond]) when input syntax is LES
+			TestEcs(@"matchCode(code) { 
+					$(lit && #.IsLiteral) => Literal(); 
+					$(id[#.IsId]) => Id(); 
+					$_ => Call();
+				}",
+				expectOutput);
+			// Use new `when` operator in EC#
+			Test(@"matchCode(code) { 
+					case $(lit when #.IsLiteral): Literal(); 
+					case $(id when #.IsId): Id(); 
+					default: Call();
+				}",
+				EcsLanguageService.Value,
+				expectOutput,
+				EcsLanguageService.Value);
+
 			TestEcs(@"matchCode(code) { 
 					case foo, FOO:  Foo(); 
 					case 1, 1.0:    One(); 

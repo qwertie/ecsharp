@@ -388,12 +388,12 @@ namespace LeMP
 					refExistingVar = true;
 
 				if (id.Calls(S.IndexBracks, 2)) {
-					// old style
+					// very old style
 					condition = id.Args[1];
 					id = id.Args[0];
 				} else
-					while (id.Calls(S.And, 2)) {
-						// new style (recommended)
+					while (id.Calls(S.And, 2) || id.Calls(S.When, 2)) {
+						// old style `&&` and new style `when`
 						condition = condition == null ? id.Args[1] : LNode.Call(CodeSymbols.And, LNode.List(id.Args[1], condition)).SetStyle(NodeStyle.Operator);
 						id = id.Args[0];
 					}
