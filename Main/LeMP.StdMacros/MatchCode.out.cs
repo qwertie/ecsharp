@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -35,15 +35,15 @@ namespace LeMP
 			var cases = GetCases(body, context.Sink);
 			if (cases.IsEmpty)
 				return null;
-		
+
 			var output = new WList<LNode>();
 			var var = MaybeAddTempVarDecl(context, args[0], output);
-		
+
 			var ifClauses = new List<Pair<LNode, LNode>>();
 			var cmc = new CodeMatchContext { 
 				Context = context
 			};
-		
+
 			foreach (var @case in cases)
 			{
 				cmc.ThenClause.Clear();
@@ -74,7 +74,7 @@ namespace LeMP
 					handler = LNode.MergeLists(F.Braces(cmc.ThenClause), handler, S.Braces);
 				ifClauses.Add(Pair.Create(testExpr, handler));
 			}
-		
+
 			LNode ifStmt = null;
 			for (int i = ifClauses.Count - 1; i >= 0; i--)
 			{
@@ -90,7 +90,7 @@ namespace LeMP
 						ifStmt = F.Call(S.If, ifClauses[i].Item1, ifClauses[i].Item2, ifStmt);
 				}
 			}
-		
+
 			if (cmc.NodeVars.Count > 0)
 				output.Add(F.Call(S.Var, ListExt.Single(F.Id("LNode")).Concat(
 				cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
@@ -106,9 +106,9 @@ namespace LeMP
 				return F.Braces(output.ToVList()).IncludingTriviaFrom(node);
 			}
 		}
-	
+
 		static readonly Symbol __ = (Symbol) "_";
-	
+
 		/// <summary>Given the contents of case statement like `matchCode` or 
 		/// `switch`, this method gets a list of the cases.</summary>
 		/// <returns>The first item in each pair is a list of the cases associated
@@ -141,7 +141,7 @@ namespace LeMP
 			}
 			return pairs;
 		}
-	
+
 		static LNode AutoStripBraces(LNode node)
 		{
 			if (node.Calls(S.Braces, 1) && !node.HasPAttrs())
@@ -152,7 +152,7 @@ namespace LeMP
 		{
 			return stmt.Calls(S.Label, 1) && stmt[0].IsIdNamed(S.Default);
 		}
-	
+
 		class CodeMatchContext
 		{
 			HashSet<Symbol> DuplicateDetector = new HashSet<Symbol>();
@@ -169,13 +169,13 @@ namespace LeMP
 				DuplicateDetector.Clear();
 				Tests.Clear();
 				MakeTestExpr(pattern, var);
-			
+
 				LNode result = null;
 				foreach (var test in Tests)
 					result = LNode.MergeBinary(result, test, S.And);
 				return result;
 			}
-		
+
 			private void MakeTestExpr(LNode pattern, LNode candidate)
 			{
 				Symbol varArgSym;
@@ -187,12 +187,12 @@ namespace LeMP
 			private void MakeTestExpr(LNode pattern, LNode candidate, out Symbol varArgSym, out LNode varArgCond)
 			{
 				varArgSym = null; varArgCond = null;
-			
+
 				// is this a $substitutionVar?
 				LNode condition;
 				bool isParams, refExistingVar;
 				var nodeVar = DecodeSubstitutionExpr(pattern, out condition, out isParams, out refExistingVar);
-			
+
 				// Unless the candidate is a simple variable name, avoid repeating 
 				// it by creating a temporary variable to hold its value
 				int predictedTests = pattern.Attrs.Count + 
@@ -200,7 +200,7 @@ namespace LeMP
 				(!pattern.HasSimpleHeadWithoutPAttrs() ? 1 : 0);
 				if (predictedTests > 1)
 					candidate = MaybePutCandidateInTempVar(candidate.IsCall, candidate);
-			
+
 				MatchAttributes(pattern, candidate);	// Look for @[$(...var)]
 				// case $_
 				if (nodeVar != null) {
@@ -228,7 +228,7 @@ namespace LeMP
 				} else {	// call(...)
 					int? varArgAt;
 					int fixedArgC = GetFixedArgCount(pattern.Args, out varArgAt);
-				
+
 					// Test if the call target matches
 					var pTarget = pattern.Target;
 					if (pTarget.IsId && !pTarget.HasPAttrs()) {
@@ -253,11 +253,11 @@ namespace LeMP
 						int i = Tests.Count;
 						MakeTestExpr(pTarget, LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Target"))).SetStyle(NodeStyle.Operator));
 					}
-				
+
 					MakeArgListTests(pattern.Args, ref candidate);
 				}
 			}
-		
+
 			// Used for optimization, to avoid writing complicated expressions in the output:
 			// e.g. instead of  code.Args[0].Target.Args.Count == 1 && code.Args[0].Target.Args[0].IsIdNamed((Symbol) "_")
 			//   we might write (tmp_5 = code.Args[0].Target) != null && tmp_5.Args.Count == 1 && tmp_5.Args[0].IsIdNamed((Symbol) "_")
@@ -273,7 +273,7 @@ namespace LeMP
 					return candidate;
 				}
 			}
-		
+
 			private void AddVar(Symbol varName, bool isList, LNode errAt)
 			{
 				if (!DuplicateDetector.Add(varName))
@@ -283,7 +283,7 @@ namespace LeMP
 					vars[varName] = false;
 				UsageCounters[varName] = UsageCounters.TryGetValue(varName, 0) + 1;
 			}
-		
+
 			private void MatchAttributes(LNode pattern, LNode candidate)
 			{
 				LNode condition;
@@ -301,7 +301,7 @@ namespace LeMP
 				} else if (pAttrs.Count != 0)
 					Context.Sink.Error(pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
-		
+
 			private int GetFixedArgCount(LNodeList patternArgs, out int? varArgAt)
 			{
 				varArgAt = null;
@@ -317,7 +317,7 @@ namespace LeMP
 				}
 				return argc;
 			}
-		
+
 			private void MakeArgListTests(LNodeList patternArgs, ref LNode candidate)
 			{
 				// Note: at this point we can assume that the quantity of 
@@ -326,7 +326,7 @@ namespace LeMP
 				LNode varArgCond = null;
 				int i;
 				for (i = 0; i < patternArgs.Count; i++) {
-					MakeTestExpr(patternArgs[i], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), F.Literal(i))), out varArgSym, out varArgCond);
+					MakeTestExpr(patternArgs[i], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), F.Literal(i))).SetStyle(NodeStyle.Operator), out varArgSym, out varArgCond);
 					if (varArgSym != null)
 						break;
 				}
@@ -334,7 +334,7 @@ namespace LeMP
 				for (int left = patternArgs.Count - i2; i2 < patternArgs.Count; i2++) {
 					Symbol varArgSym2 = null;
 					LNode varArgCond2 = null;
-					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), F.Literal(left))).SetStyle(NodeStyle.Operator))), out varArgSym2, out varArgCond2);
+					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), F.Literal(left))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator), out varArgSym2, out varArgCond2);
 					if (varArgSym2 != null) {
 						Context.Sink.Error(patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
 						break;
@@ -358,7 +358,7 @@ namespace LeMP
 						else
 							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call((Symbol) "LNodeList", LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Slice"))).SetStyle(NodeStyle.Operator), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Count"))).SetStyle(NodeStyle.Operator), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
 					}
-				
+
 					// Add an extra condition on the $(...list) if requested by user
 					if (varArgCond != null || IsMultiCase) {
 						Tests.Add(LNode.Call(CodeSymbols.OrBits, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(grabVarArgs.PlusAttrs(LNode.List(LNode.InParensTrivia)), LNode.Id((Symbol) "IsEmpty"))).SetStyle(NodeStyle.Operator), LNode.Literal(true))).SetStyle(NodeStyle.Operator));
@@ -368,7 +368,7 @@ namespace LeMP
 				}
 			}
 		}
-	
+
 		internal static Symbol DecodeSubstitutionExpr(LNode expr, out LNode condition, out bool isParams, out bool refExistingVar)
 		{
 			condition = null;
@@ -383,10 +383,10 @@ namespace LeMP
 					isParams = true;
 					id = id.Args[0];
 				}
-			
+
 				if (id.AttrNamed(S.Ref) != null)
 					refExistingVar = true;
-			
+
 				if (id.Calls(S.IndexBracks, 2)) {
 					// old style
 					condition = id.Args[1];
@@ -397,7 +397,7 @@ namespace LeMP
 						condition = condition == null ? id.Args[1] : LNode.Call(CodeSymbols.And, LNode.List(id.Args[1], condition)).SetStyle(NodeStyle.Operator);
 						id = id.Args[0];
 					}
-			
+
 				if (condition != null)
 					condition = condition.ReplaceRecursive(n => n.IsIdNamed(S._HashMark) ? id : null);
 				if (!id.IsId)

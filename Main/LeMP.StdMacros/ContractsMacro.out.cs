@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -19,9 +19,9 @@ namespace LeMP
 	partial class StandardMacros
 	{
 		static readonly Symbol sy_notnull = (Symbol) "notnull", sy_ensuresOnThrow = (Symbol) "ensuresOnThrow", sy_requires = (Symbol) "requires", sy_assert = (Symbol) "assert", sy_ensures = (Symbol) "ensures", sy_ensuresAssert = (Symbol) "ensuresAssert", sy_ensuresFinally = (Symbol) "ensuresFinally", sy__numassertMethodForRequires = (Symbol) "#assertMethodForRequires", sy__numassertMethodForEnsures = (Symbol) "#assertMethodForEnsures", sy__numassertMethodForEnsuresFinally = (Symbol) "#assertMethodForEnsuresFinally", sy__numexceptionTypeForEnsuresOnThrow = (Symbol) "#exceptionTypeForEnsuresOnThrow";
-	
+
 		static readonly Symbol _haveContractRewriter = (Symbol) "#haveContractRewriter";
-	
+
 		static bool SetScopedProperty<T>(LNode literal, IMacroContext context, object key)
 		{
 			if (literal != null) {
@@ -34,7 +34,7 @@ namespace LeMP
 			Reject(context, literal, "Expected a literal of type {0}.".Localized(typeof(T).Name));
 			return false;
 		}
-	
+
 		// Hmm, our macro processor design makes this... unwise to modularize 
 		// across multiple macros. Really we should think of a new and fancy 
 		// macroprocessor design, but right now the important thing is to provide 
@@ -60,16 +60,16 @@ namespace LeMP
 			LNode oldFn = fn;
 			if (fn.ArgCount >= 4) {
 				var rw = new CodeContractRewriter(fn.Args[0], fn.Args[1], context);
-			
+
 				// If this thing has an argument list, scan it
 				fn = ProcessArgContractAttributes(fn, 2, rw);
-			
+
 				// Scan attributes on return type, then attributes on the whole method
 				if (fn.Args[0].HasAttrs)
 					fn = fn.WithArgChanged(0, fn.Args[0].WithAttrs(rw.Process(fn.Args[0].Attrs, null)));
 				if (fn.HasAttrs)
 					fn = fn.WithAttrs(rw.Process(fn.Attrs, null));
-			
+
 				if (rw.PrependStmts.IsEmpty) {
 					return null;	// this is the common case
 				} else {
@@ -84,9 +84,9 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
-	
+
 		[LexicalMacro(@"([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + 
 		"([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", 
 		"Generates Contract checks in a lambda function. See the documentation of " + 
@@ -99,14 +99,14 @@ namespace LeMP
 			LNode oldFn = fn;
 			if (fn.ArgCount == 2) {
 				var rw = new CodeContractRewriter(LNode.Missing, Id_lambda_function, context);
-			
+
 				// If this thing has an argument list, scan it
 				fn = ProcessArgContractAttributes(fn, 0, rw, isLambda: true);
-			
+
 				// Scan attributes on the lambda as a whole
 				if (fn.HasAttrs)
 					fn = fn.WithAttrs(rw.Process(fn.Attrs, null));
-			
+
 				if (rw.PrependStmts.IsEmpty) {
 					return null;	// this is the common case
 				} else {
@@ -121,9 +121,9 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static readonly LNode Id_value = LNode.Id(CodeSymbols.value);
-	
+
 		[LexicalMacro(@"notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + 
 		"T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + 
 		"[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", 
@@ -143,15 +143,15 @@ namespace LeMP
 				LNode braces = prop[3];
 				var oldBraces = braces;
 				var rw = new CodeContractRewriter(prop.Args[0], prop.Args[1], context);
-			
+
 				// If this has an argument list (this[...]), process its contract attributes
 				prop = ProcessArgContractAttributes(prop, 2, rw);
-			
+
 				// Remove contract attributes from the property and store in a list
 				LNodeList cAttrs = LNode.List();
 				prop = prop.WithArgChanged(0, GrabContractAttrs(prop.Args[0], ref cAttrs, ContractAppliesTo.Getter));
 				prop = GrabContractAttrs(prop, ref cAttrs);
-			
+
 				// Find the getter and setter
 				LNode getter = null, setter = null;
 				int getterIndex = -1, setterIndex = -1;
@@ -171,14 +171,14 @@ namespace LeMP
 						if (part.Calls(S.get)) { getter = part; getterIndex = i; }
 						if (part.Calls(S.set)) { setter = part; setterIndex = i; }
 					}
-				
+
 					// Now create separate lists of contract attributes for the getter and the setter
 					if (cAttrs.Count != 0) {
 						getterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
 						setterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
 					}
 				}
-			
+
 				// Process the discovered attributes to produce prepended statements
 				var sharedPrependStmts = rw.PrependStmts;
 				if (getter != null) {
@@ -192,7 +192,7 @@ namespace LeMP
 					rw.Process(setterAttrs, LNode.Id(CodeSymbols.value), true);
 					rw.PrependStmtsToGetterOrSetter(ref braces, setterIndex, setter);
 				}
-			
+
 				// Update the property
 				if (braces == oldBraces)
 					return null;	// this is the common case
@@ -201,7 +201,7 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static LNode ProcessArgContractAttributes(LNode fn, int argsIndex, CodeContractRewriter rw, bool isLambda = false)
 		{
 			LNode fnArgs = fn.Args[argsIndex];
@@ -220,7 +220,7 @@ namespace LeMP
 			}
 			return fn;
 		}
-	
+
 		static LNode GrabContractAttrs(LNode node, ref LNodeList cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
 		{
 			if (node.HasAttrs) {
@@ -237,7 +237,7 @@ namespace LeMP
 			}
 			return node;
 		}
-	
+
 		static bool ReplaceContractUnderscore(ref LNode condition, LNode variableName)
 		{
 			bool hasUnderscore = false;
@@ -251,25 +251,26 @@ namespace LeMP
 			});
 			return hasUnderscore;
 		}
-	
+
 		static LNode GetVarName(LNode arg)
 		{
 			{
 				LNode tmp_10 = null, variableName;
-				if (arg.Calls(CodeSymbols.Var, 2) && (tmp_10 = arg.Args[1]) != null && tmp_10.Calls(CodeSymbols.Assign, 2) && (variableName = tmp_10.Args[0]) != null || arg.Calls(CodeSymbols.Var, 2) && (variableName = arg.Args[1]) != null)
+				if (arg.Calls(CodeSymbols.Var, 2) && (tmp_10 = arg.Args[1]) != null && tmp_10.Calls(CodeSymbols.Assign, 2) && (variableName = tmp_10.Args[0]) != null || arg.Calls(CodeSymbols.Var, 2) && (variableName = arg.Args[1]) != null) {
 					return variableName;
-				else
+				} else {
 					return arg.WithoutAttrs();
+				}
 			}
 		}
-	
+
 		static readonly Symbol __notnull = (Symbol) "#notnull";
 		static readonly LNode Id_return_value = LNode.Id((Symbol) "return_value");
 		static readonly LNode Id__exception__ = LNode.Id((Symbol) "__exception__");
-	
-		[Flags] // Some contract attributes only apply to the property getter or setter
-		enum ContractAppliesTo { Getter = 1, Setter = 2, Both = 3, Neither = 0 } ;
-	
+
+		// Some contract attributes only apply to the property getter or setter
+		[Flags] enum ContractAppliesTo { Getter = 1, Setter = 2, Both = 3, Neither = 0 } ;
+
 		static ContractAppliesTo PropertyContractInterpretation(LNode attribute)
 		{
 			LNode _;
@@ -286,7 +287,7 @@ namespace LeMP
 			else
 				return ContractAppliesTo.Both;
 		}
-	
+
 		static Symbol GetContractAttrMode(LNode attr, out LNode exceptionType)
 		{
 			var mode = attr.Name;
@@ -305,7 +306,7 @@ namespace LeMP
 				return mode;
 			return null;
 		}
-	
+
 		// Helper class encapsulating the low-level behavior of contract attributes.
 		private class CodeContractRewriter
 		{
@@ -317,10 +318,9 @@ namespace LeMP
 			{
 				ReturnType = returnType;
 				FullMethodName = fullMethodName;
-				Context = context;
-				PrependStmts = new LNodeList();
+				Context = context; PrependStmts = new LNodeList();
 			}
-		
+
 			// Looks for contract attributes in a list and creates statements that 
 			// should be inserted at the beginning of the method that those attributes 
 			// are a part of. `variableName` is the name of the associated method 
@@ -339,15 +339,15 @@ namespace LeMP
 					return true;	// No change
 				});
 			}
-		
+
 			bool _haveCCRewriter;
-		
+
 			void ProcessAttribute(LNode attr, Symbol mode, LNode exceptionType, LNode variableName, bool isPropSetter)
 			{
 				var conditions = attr.Args;
 				object haveCCRewriter = Context.ScopedProperties.TryGetValue(_haveContractRewriter, null);
 				_haveCCRewriter = haveCCRewriter is bool ? (bool) haveCCRewriter : false;
-			
+
 				// #notnull is equivalent to either requires(_ != null) or ensures(_ != null)
 				if (mode == sy_notnull) {
 					if (attr.Args.Count != 0)
@@ -362,7 +362,7 @@ namespace LeMP
 				} else if (!attr.IsCall) {
 					Context.Sink.Warning(attr, "'{0}' expects a list of conditions.", attr.Name);
 				}
-			
+
 				if (mode == sy_requires || mode == sy_assert)
 					ProcessRequiresAttribute(conditions, mode, variableName);
 				else {	// mode == @@ensures || mode == @@ensuresFinally || mode == @@ensuresOnThrow
@@ -372,7 +372,7 @@ namespace LeMP
 						ProcessEnsuresAttribute(conditions, mode, exceptionType, variableName);
 				}
 			}
-		
+
 			void ProcessRequiresAttribute(LNodeList conditions, Symbol mode, LNode variableName)
 			{
 				// Create a "Contract.Requires()" check for each provided condition.
@@ -380,7 +380,7 @@ namespace LeMP
 				{
 					LNode condition = condition_;	// make it writable so we can replace `_`
 					LNode conditionStr;
-				
+
 					if (ReplaceContractUnderscore(ref condition, variableName))
 						if (variableName == null)
 							Context.Sink.Error(condition, "`{0}`: underscore has no meaning in this location.", mode);
@@ -394,7 +394,7 @@ namespace LeMP
 					}
 				}
 			}
-		
+
 			void ProcessEnsuresAttribute(LNodeList conditions, Symbol mode, LNode exceptionType, LNode variableName)
 			{
 				// Create a "Contract.Whatever()" check for each provided condition.
@@ -404,7 +404,7 @@ namespace LeMP
 				{
 					LNode condition = condition_;	// make it writable so we can replace `_`
 					LNode conditionStr;
-				
+
 					LNode contractResult = null;
 					string underscoreError = null;
 					if (mode == sy_ensuresOnThrow) {
@@ -421,7 +421,7 @@ namespace LeMP
 					}
 					if (ReplaceContractUnderscore(ref condition, contractResult) && underscoreError != null)
 						Context.Sink.Error(condition, underscoreError, mode);
-				
+
 					if (haveCCRewriter) {
 						if (mode == sy_ensuresOnThrow)
 							checks.Add(exceptionType != null 
@@ -433,8 +433,8 @@ namespace LeMP
 						mode == sy_ensuresOnThrow 
 						? "Postcondition failed after throwing an exception: {1}" : 
 						"Postcondition failed: {1}");
-					
-					
+						
+						
 						if (mode == sy_ensuresOnThrow) {
 							var excType = GetExceptionTypeForEnsuresOnThrow();
 							checks.Add(LNode.Call(CodeSymbols.If, LNode.List(LNode.Call(CodeSymbols.Not, LNode.List(condition)).SetStyle(NodeStyle.Operator), LNode.Call(CodeSymbols.Throw, LNode.List(LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(excType, LNode.List(conditionStr, Id__exception__)))))))));
@@ -446,12 +446,12 @@ namespace LeMP
 								assertMethod = GetAssertMethodForEnsuresFinally();
 							else
 								assertMethod = GetAssertMethodForEnsures();
-						
+
 							checks.Add(LNode.Call(assertMethod, LNode.List(condition, conditionStr)));
 						}
 					}
 				}
-			
+
 				// Request that the checks be added to the beginning of the method
 				if (checks.Count > 0) {
 					if (_haveCCRewriter) {
@@ -466,28 +466,28 @@ namespace LeMP
 					}
 				}
 			}
-		
+
 			static readonly LNode defaultContractAssert = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "Assert"))).SetStyle(NodeStyle.Operator);
-		
-		
+
+			
 			LNode GetAssertMethodForRequires()
 			{
-				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForRequires, null)as LNode) ?? defaultContractAssert;
+				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForRequires, null) as LNode) ?? defaultContractAssert;
 			}
 			LNode GetAssertMethodForEnsures()
 			{
-				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForEnsures, null)as LNode) ?? defaultContractAssert;
+				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForEnsures, null) as LNode) ?? defaultContractAssert;
 			}
 			LNode GetAssertMethodForEnsuresFinally()
 			{
-				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForEnsuresFinally, null)as LNode) ?? defaultContractAssert;
+				return (Context.ScopedProperties.TryGetValue(sy__numassertMethodForEnsuresFinally, null) as LNode) ?? defaultContractAssert;
 			}
 			LNode GetExceptionTypeForEnsuresOnThrow()
 			{
-				return (Context.ScopedProperties.TryGetValue(sy__numexceptionTypeForEnsuresOnThrow, null)as LNode) 
+				return (Context.ScopedProperties.TryGetValue(sy__numexceptionTypeForEnsuresOnThrow, null) as LNode) 
 				?? LNode.Id((Symbol) "InvalidOperationException");
 			}
-		
+
 			LNode ConditionToStringLit(LNode condition, string formatStr)
 			{
 				// TODO: consider removing FullMethodName. To match MS Code 
@@ -500,7 +500,7 @@ namespace LeMP
 				ps.Print(methodName, Context.Sink, ParsingMode.Expressions), 
 				ps.Print(condition, Context.Sink, ParsingMode.Expressions)));
 			}
-		
+
 			// For properties only
 			public void PrependStmtsToGetterOrSetter(ref LNode braces, int getterIndex, LNode getter)
 			{
@@ -519,7 +519,7 @@ namespace LeMP
 					}
 				}
 			}
-		
+			
 		}
 	}
 }

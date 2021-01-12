@@ -1,4 +1,4 @@
-// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -20,9 +20,10 @@ namespace Loyc.Syntax.Les
 	using P = LesPrecedence;
 	using S = CodeSymbols;
 
-	public partial class Les3Lexer {
+	public partial class Les3Lexer
+	{
 		static readonly Symbol sy_c = (Symbol) "c", sy__apos_commat = (Symbol) "'@";
-	
+
 		void DotIndent()
 		{
 			int la0, la1;
@@ -54,7 +55,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-	
+
 		object Newline(bool ignoreIndent = false)
 		{
 			int la0;
@@ -78,7 +79,7 @@ namespace Loyc.Syntax.Les
 			// line 44
 			return _brackStack.Last == TokenType.LBrace && ch_vert != '|' ? null : WhitespaceTag.Value;
 		}
-	
+
 		object SLComment()
 		{
 			int la0, la1;
@@ -113,7 +114,7 @@ namespace Loyc.Syntax.Les
 			// line 47
 			return WhitespaceTag.Value;
 		}
-	
+
 		object MLComment()
 		{
 			int la1;
@@ -157,7 +158,7 @@ namespace Loyc.Syntax.Les
 			return WhitespaceTag.Value;
 		}
 		static readonly HashSet<int> Number_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z');
-	
+
 		object Number()
 		{
 			int la0;
@@ -197,7 +198,7 @@ namespace Loyc.Syntax.Les
 			// line 64
 			return GetTypeMarkerSymbol(suffix, true);
 		}
-	
+
 		void DecDigits()
 		{
 			int la0, la1;
@@ -233,12 +234,12 @@ namespace Loyc.Syntax.Les
 			}
 		}
 		static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
-	
+
 		void HexDigit()
 		{
 			Match(HexDigit_set0);
 		}
-	
+
 		void HexDigits()
 		{
 			int la0, la1;
@@ -273,7 +274,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-	
+
 		void DecNumber()
 		{
 			int la0, la1;
@@ -306,7 +307,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 		static readonly HashSet<int> HexNumber_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'P', 'P', 'a', 'f', 'p', 'p');
-	
+
 		void HexNumber()
 		{
 			int la0, la1;
@@ -345,7 +346,7 @@ namespace Loyc.Syntax.Les
 			// line 82
 			_style = NodeStyle.HexLiteral;
 		}
-	
+
 		void BinNumber()
 		{
 			int la0, la1;
@@ -381,7 +382,7 @@ namespace Loyc.Syntax.Les
 			// line 88
 			_style = NodeStyle.BinaryLiteral;
 		}
-	
+
 		void SQChar()
 		{
 			int la0;
@@ -419,7 +420,7 @@ namespace Loyc.Syntax.Les
 			// line 100
 			_textValue = UnescapeSQStringValue(parseNeeded);
 		}
-	
+
 		void DQString()
 		{
 			int la0, la1;
@@ -453,7 +454,7 @@ namespace Loyc.Syntax.Les
 			// line 106
 			_textValue = GetUnescapedString(parseNeeded, isTripleQuoted: false);
 		}
-	
+
 		void TQString()
 		{
 			int la0, la1, la2;
@@ -535,7 +536,7 @@ namespace Loyc.Syntax.Les
 			// line 113
 			_textValue = GetUnescapedString(true, isTripleQuoted: true);
 		}
-	
+
 		void BQString(out bool parseNeeded)
 		{
 			int la0;
@@ -566,12 +567,12 @@ namespace Loyc.Syntax.Les
 			}
 		}
 		static readonly HashSet<int> LettersOrPunc_set0 = NewSetOfRanges('!', '!', '#', '&', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
-	
+
 		void LettersOrPunc()
 		{
 			Match(LettersOrPunc_set0);
 		}
-	
+
 		object Operator()
 		{
 			int la0, la1;
@@ -658,7 +659,7 @@ namespace Loyc.Syntax.Les
 			result = ParseOp(out _type);
 			return result;
 		}
-	
+
 		object SQOperator()
 		{
 			int la0;
@@ -682,7 +683,7 @@ namespace Loyc.Syntax.Les
 			return (Symbol) Text();
 		}
 		static readonly HashSet<int> TreeDefOrBackRef_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
-	
+
 		object TreeDefOrBackRef()
 		{
 			int la0;
@@ -707,7 +708,7 @@ namespace Loyc.Syntax.Les
 			// line 143
 			return null;
 		}
-	
+
 		object Id()
 		{
 			int la0, la1, la2;
@@ -716,8 +717,7 @@ namespace Loyc.Syntax.Les
 			// Line 150: (BQString | NormalId)
 			la0 = LA0;
 			if (la0 == '`') {
-				bool parseNeeded;
-				BQString(out parseNeeded);
+				BQString(out bool parseNeeded);
 				// line 150
 				idText = GetUnescapedString(parseNeeded, false);
 			} else {
@@ -791,7 +791,7 @@ namespace Loyc.Syntax.Les
 				}
 			} while (false);
 		}
-	
+
 		void IdContChar()
 		{
 			int la0;
@@ -806,7 +806,7 @@ namespace Loyc.Syntax.Les
 				Check(!(LA(0) == '\'' && LA(0 + 1) == '\''), "Did not expect LA($LI) == '\\'' && LA($LI + 1) == '\\''");
 			}
 		}
-	
+
 		bool Try_ScanIdContChar(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return ScanIdContChar();
@@ -828,7 +828,7 @@ namespace Loyc.Syntax.Les
 			}
 			return true;
 		}
-	
+
 		private void NormalId()
 		{
 			int la0;
@@ -847,7 +847,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-	
+
 		object Shebang()
 		{
 			int la0;
@@ -869,7 +869,7 @@ namespace Loyc.Syntax.Les
 			// line 182
 			return WhitespaceTag.Value;
 		}
-	
+
 		public override Maybe<Token> NextToken()
 		{
 			int la0, la1, la2, la3;
@@ -1217,7 +1217,7 @@ namespace Loyc.Syntax.Les
 			Debug.Assert(InputPosition > _startPosition);
 			return new Token((int) _type, _startPosition, Text(), _style, value, _textValue);
 		}
-	
+
 		public bool TDQStringLine()
 		{
 			int la0, la1, la2;
@@ -1261,7 +1261,7 @@ namespace Loyc.Syntax.Les
 				return true;
 			}
 		}
-	
+
 		public bool TSQStringLine()
 		{
 			int la0, la1, la2;
@@ -1305,7 +1305,7 @@ namespace Loyc.Syntax.Les
 				return true;
 			}
 		}
-	
+
 		public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
@@ -1367,7 +1367,7 @@ namespace Loyc.Syntax.Les
 				return true;
 			}
 		}
-	
+
 		private bool Try_MLCommentLine_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return MLCommentLine_Test0();

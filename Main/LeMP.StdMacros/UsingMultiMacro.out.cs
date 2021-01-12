@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -26,7 +26,7 @@ namespace LeMP
 		{
 			{
 				LNode multiNamespace;
-				if (input.Calls(CodeSymbols.Import, 1) && (multiNamespace = input.Args[0]) != null)
+				if (input.Calls(CodeSymbols.Import, 1) && (multiNamespace = input.Args[0]) != null) {
 					try {
 						var list = GetNamespaces(multiNamespace);
 						if (list == null)
@@ -35,10 +35,11 @@ namespace LeMP
 					} catch (LogException exc) {
 						exc.Msg.WriteTo(context.Sink);
 					}
+				}
 			}
 			return null;
 		}
-	
+
 		static IEnumerable<LNode> GetNamespaces(LNode multiName) {
 			{
 				LNode outerNamespace;
@@ -48,7 +49,7 @@ namespace LeMP
 					// Allow Namespace { stuff; } as alternate notation; just ignore the braces
 					if (args.Count == 1 && args[0].Calls(S.Braces))
 						args = args[0].Args;
-				
+
 					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg))
 					.Select(subNS => MergeIdentifiers(outerNamespace, subNS));
 				}
@@ -63,12 +64,13 @@ namespace LeMP
 				return left;
 			{
 				LNode right1, right2;
-				if (right.Calls(CodeSymbols.Dot, 1) && (right2 = right.Args[0]) != null)
+				if (right.Calls(CodeSymbols.Dot, 1) && (right2 = right.Args[0]) != null) {
 					return LNode.Call(CodeSymbols.Dot, LNode.List(left, right2)).SetStyle(NodeStyle.Operator);
-				else if (right.Calls(CodeSymbols.Dot, 2) && (right1 = right.Args[0]) != null && (right2 = right.Args[1]) != null)
+				} else if (right.Calls(CodeSymbols.Dot, 2) && (right1 = right.Args[0]) != null && (right2 = right.Args[1]) != null) {
 					return LNode.Call(CodeSymbols.Dot, LNode.List(MergeIdentifiers(left, right1), right2)).SetStyle(NodeStyle.Operator);
-				else
+				} else {
 					throw new LogException(Severity.Note, right, "Multi-using statement seems malformed. Correct example: `using System(.Text, .Linq));`");
+				}
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-// Generated from InRange.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from InRange.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -40,24 +40,25 @@ namespace LeMP
 					if (parens == null) {
 						{
 							LNode hi, lo;
-							if (range.Calls(CodeSymbols.DotDot, 2) && (lo = range.Args[0]) != null && (hi = range.Args[1]) != null)
+							if (range.Calls(CodeSymbols.DotDot, 2) && (lo = range.Args[0]) != null && (hi = range.Args[1]) != null) {
 								if (lo.IsIdNamed(__))
 									return LNode.Call(CodeSymbols.LT, LNode.List(x, hi)).SetStyle(NodeStyle.Operator);
 								else if (hi.IsIdNamed(__))
 									return LNode.Call(CodeSymbols.GE, LNode.List(x, lo)).SetStyle(NodeStyle.Operator);
 								else
 									return LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(x, LNode.Id((Symbol) "IsInRangeExcludeHi"))).SetStyle(NodeStyle.Operator), LNode.List(lo, hi));
-							else if (range.Calls(CodeSymbols.DotDot, 1) && (hi = range.Args[0]) != null)
+							} else if (range.Calls(CodeSymbols.DotDot, 1) && (hi = range.Args[0]) != null) {
 								return LNode.Call(CodeSymbols.LT, LNode.List(x, hi)).SetStyle(NodeStyle.Operator);
-							else if (range.Calls(CodeSymbols.DotDotDot, 2) && (lo = range.Args[0]) != null && (hi = range.Args[1]) != null)
+							} else if (range.Calls(CodeSymbols.DotDotDot, 2) && (lo = range.Args[0]) != null && (hi = range.Args[1]) != null) {
 								if (lo.IsIdNamed(__))
 									return LNode.Call(CodeSymbols.LE, LNode.List(x, hi)).SetStyle(NodeStyle.Operator);
 								else if (hi.IsIdNamed(__))
 									return LNode.Call(CodeSymbols.GE, LNode.List(x, lo)).SetStyle(NodeStyle.Operator);
 								else
 									return LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(x, LNode.Id((Symbol) "IsInRange"))).SetStyle(NodeStyle.Operator), LNode.List(lo, hi));
-							else if (range.Calls(CodeSymbols.DotDotDot, 1) && (hi = range.Args[0]) != null)
+							} else if (range.Calls(CodeSymbols.DotDotDot, 1) && (hi = range.Args[0]) != null) {
 								return LNode.Call(CodeSymbols.LE, LNode.List(x, hi)).SetStyle(NodeStyle.Operator);
+							}
 						}
 					}
 					return LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(range, LNode.Id((Symbol) "Contains"))).SetStyle(NodeStyle.Operator), LNode.List(x));
@@ -65,21 +66,21 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static LNode Range_ExcludeHi = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "ExcludeHi"))).SetStyle(NodeStyle.Operator);
 		static LNode Range_Inclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "Inclusive"))).SetStyle(NodeStyle.Operator);
 		static LNode Range_StartingAt = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "StartingAt"))).SetStyle(NodeStyle.Operator);
 		static LNode Range_UntilInclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilInclusive"))).SetStyle(NodeStyle.Operator);
 		static LNode Range_UntilExclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilExclusive"))).SetStyle(NodeStyle.Operator);
 		static LNode Range_Everything = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "Everything"))).SetStyle(NodeStyle.Operator));
-	
+
 		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'..")] 
 		public static LNode RangeExcl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;
 			{
 				LNode hi;
-				if (node.Args.Count == 2 && (lo = node.Args[0]) != null && (hi = node.Args[1]) != null || node.Args.Count == 1 && (hi = node.Args[0]) != null)
+				if (node.Args.Count == 2 && (lo = node.Args[0]) != null && (hi = node.Args[1]) != null || node.Args.Count == 1 && (hi = node.Args[0]) != null) {
 					if (lo == null || lo.IsIdNamed(__))
 						if (hi.IsIdNamed(__))
 							return Range_Everything;
@@ -89,17 +90,18 @@ namespace LeMP
 						return LNode.Call(Range_StartingAt, LNode.List(lo));
 					else
 						return LNode.Call(Range_ExcludeHi, LNode.List(lo, hi));
+				}
 			}
 			return null;
 		}
-	
+
 		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'...")] 
 		public static LNode RangeIncl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;
 			{
 				LNode hi;
-				if (node.Args.Count == 2 && (lo = node.Args[0]) != null && (hi = node.Args[1]) != null || node.Args.Count == 1 && (hi = node.Args[0]) != null)
+				if (node.Args.Count == 2 && (lo = node.Args[0]) != null && (hi = node.Args[1]) != null || node.Args.Count == 1 && (hi = node.Args[0]) != null) {
 					if (lo == null || lo.IsIdNamed(__))
 						if (hi.IsIdNamed(__))
 							return Range_Everything;
@@ -109,6 +111,7 @@ namespace LeMP
 						return LNode.Call(Range_StartingAt, LNode.List(lo));
 					else
 						return LNode.Call(Range_Inclusive, LNode.List(lo, hi));
+				}
 			}
 			return null;
 		}

@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -22,8 +22,6 @@ namespace LeMP
 	partial class StandardMacros
 	{
 		[LexicalMacro("match (var) { case ...: ... }; // In LES, use a => b instead of case a: b", 
-		"DEPRECATED - use C# 9 pattern matching instead. The syntax `x is T(...)` and `x is T t(...)` has been disabled in the parser.\n" +
-		"\n" +
 		"Attempts to match and deconstruct an object against \"patterns\", such as tuples, ranges or an algebraic data type. Example:\n" + 
 		"match (obj) {  \n" + 
 		"   case is Shape(ShapeType.Circle, $size, Location is Point<int> $p($x, $y)): \n" + 
@@ -62,7 +60,7 @@ namespace LeMP
 					contents = node.Args[1].Args;
 					var outputs = new WList<LNode>();
 					input = MaybeAddTempVarDecl(context, input, outputs);
-				
+
 					// Process the braced block, one case at a time
 					int next_i = 0;
 					for (int case_i = 0; case_i < contents.Count; case_i = next_i) {
@@ -82,7 +80,7 @@ namespace LeMP
 						}
 						//  handler: the list of statements underneath `case`
 						var handler = new LNodeList(contents.Slice(case_i + 1, next_i - (case_i + 1)));
-					
+
 						if (@case .Calls(S.Case) && @case .Args.Count > 0) {
 							var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
 							foreach (var pattern in @case .Args)
@@ -102,12 +100,12 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static bool IsCaseLabel(LNode @case) {
-			if (@case .Calls(CodeSymbols.Case) || @case .Calls(CodeSymbols.Label, 1) && @case .Args[0].IsIdNamed((Symbol) "'default")) return true;
+			if (@case .Calls(CodeSymbols.Case) || @case .Calls(CodeSymbols.Label, 1) && @case .Args[0].IsIdNamed((Symbol) "'default")) { return true; }
 			return false;
 		}
-	
+
 		/** This class is for generating code for a single case pattern.
 
 			Microsoft C# plan as of 2018-04
@@ -241,14 +239,14 @@ namespace LeMP
 				GenCodeForPattern(_input, pattern);
 				return GetOutputAsLNode();
 			}
-		
+
 			// _output is a list of conditions and statements in the order they 
 			// must be executed to check whether a single case pattern matches.
 			List<Pair<Mode, LNode>> _output;
 			enum Mode { Statement, Condition }
 			void PutStmt(LNode stmt) { _output.Add(Pair.Create(Mode.Statement, stmt)); }
 			void PutCond(LNode cond) { _output.Add(Pair.Create(Mode.Condition, cond)); }
-		
+
 			void GenCodeForPattern(LNode input, LNode pattern, string defaultPropName = null)
 			{
 				// Get the parts of the pattern, e.g. `$x is T(sp)` => varBinding=x, isType=T, sp is returned
@@ -256,7 +254,7 @@ namespace LeMP
 				LNode varBinding, cmpExpr, isType, inRange, propName;
 				LNodeList subPatterns, conditions;
 				GetPatternComponents(pattern, out propName, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
-			
+
 				if (defaultPropName == null) {	// Outermost pattern
 					if (propName != null)
 						_context.Sink.Error(propName, "match: property name not allowed on outermost pattern");
@@ -264,7 +262,7 @@ namespace LeMP
 					if ((propName = propName ?? LNode.Id(defaultPropName, pattern)) != null)
 						input = LNode.Call(CodeSymbols.Dot, LNode.List(input, propName)).SetStyle(NodeStyle.Operator);
 				}
-			
+				
 				// For a pattern like `is Type varBinding(subPatterns) in A...B && conds`, 
 				// our goal is to generate code like this:
 				//
@@ -281,54 +279,54 @@ namespace LeMP
 						if (!LooksLikeSimpleValue(input))
 							PutStmt(TempVarDecl(_context, input, out input));
 					}
-				
+
 					PutCond(LNode.Call(CodeSymbols.Is, LNode.List(input, isType)).SetStyle(NodeStyle.Operator));
-				
+
 					if (varBinding == null && ((cmpExpr ?? inRange) != null || subPatterns.Count > 0))
 						// we'll need another temp variable to hold the same value, casted.
 						varBinding = LNode.Id(NextTempName(_context), isType);
 				}
-			
+
 				if (varBinding != null) {
 					if (isType != null) {
 						if (refExistingVar)
 							PutStmt(LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator));
 						else
-							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(isType, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType)).SetStyle(NodeStyle.Operator))))));
+							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(isType, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, LNode.Call(CodeSymbols.Cast, LNode.List(input, isType)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator))));
 					} else {
 						if (refExistingVar)
 							PutStmt(LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, input)).SetStyle(NodeStyle.Operator));
 						else
-							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, input)))));
+							PutStmt(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(varBinding, input)).SetStyle(NodeStyle.Operator))));
 					}
 					input = varBinding;
 				}
-			
+
 				if (cmpExpr != null) {	// do equality test
 					if (cmpExpr.Value == null)
 						PutCond(LNode.Call(CodeSymbols.Eq, LNode.List(input, LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 					else
 						PutCond(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(cmpExpr, LNode.Id((Symbol) "Equals"))).SetStyle(NodeStyle.Operator), LNode.List(input)));
 				}
-			
+
 				// Generate code for subpatterns
 				for (int itemIndex = 0; itemIndex < subPatterns.Count; itemIndex++) {
 					var subPattern = subPatterns[itemIndex];
 					GenCodeForPattern(input, subPattern, "Item" + (itemIndex + 1));
 				}
-			
+
 				if (inRange != null) {
 					PutCond(LNode.Call(CodeSymbols.In, LNode.List(input, inRange)).SetStyle(NodeStyle.Operator));
 				}
-			
+
 				foreach (var cond in conditions)
 					PutCond(cond);
 			}
-		
+
 			void GetPatternComponents(LNode pattern, out LNode propName, 
-				out LNode varBinding, out bool refExistingVar, 
-				out LNode cmpExpr, out LNode isType, out LNode inRange, 
-				out LNodeList subPatterns, out LNodeList conditions)
+			  out LNode varBinding, out bool refExistingVar, 
+			  out LNode cmpExpr, out LNode isType, out LNode inRange, 
+			  out LNodeList subPatterns, out LNodeList conditions)
 			{
 				// Format: PropName: is DerivedClass name(...) in Range
 				// Here's a typical pattern (case expr):
@@ -350,7 +348,7 @@ namespace LeMP
 				// 
 				subPatterns = LNodeList.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
-			
+
 				propName = varBinding = cmpExpr = isType = inRange = null;
 				// Deconstruct `PropName: pattern` (fun fact: we can't use `matchCode` 
 				// to detect a named parameter here, because if we write 
@@ -365,12 +363,13 @@ namespace LeMP
 					conditions.Add(pattern.Args.Last);
 					pattern = pattern.Args[0];
 				}
-			
+
 				// deconstruct `pattern in Range`
 				{
 					LNode lhs;
-					if (pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null)
+					if (pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.In, 2) && (lhs = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null) {
 						pattern = lhs;
+					}
 				}
 				// Deconstruct `PropName is Type` with optional list of subpatterns.
 				// In LES let's accept ``PropName `is` (Type `with` (subpatterns))`` instead.
@@ -380,9 +379,9 @@ namespace LeMP
 					if (pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 3) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null && (subpatterns = pattern.Args[2]) != null || pattern.Calls((Symbol) "is", 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null || pattern.Calls(CodeSymbols.Is, 2) && (lhs = pattern.Args[0]) != null && (type = pattern.Args[1]) != null) {
 						if (subpatterns == null) {
 							// Check for syntax for LES with `with`
-							if (type.Calls((Symbol) "with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null || type.Calls((Symbol) "'with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null) { }
+							if (type.Calls((Symbol) "with", 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null || type.Calls(CodeSymbols.With, 2) && (isType = type.Args[0]) != null && (subpatterns = type.Args[1]) != null) { }
 						}
-						if (type.Calls(CodeSymbols.Var, 2) && (isType = type.Args[0]) != null && (varBinding = type.Args[1]) != null) { } else isType = type;
+						if (type.Calls(CodeSymbols.Var, 2) && (isType = type.Args[0]) != null && (varBinding = type.Args[1]) != null) { } else { isType = type; }
 						if (lhs.Calls(S.Substitute, 1)) {
 							if (varBinding != null)
 								_context.Sink.Error(varBinding, "match: cannot bind two variable names to one value");
@@ -395,16 +394,18 @@ namespace LeMP
 						if (type.IsIdNamed("")	// is var x
 						)
 							isType = null;
-					} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1))
+					} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
 						inRange = pattern;
-					else if (pattern.Calls(CodeSymbols.AltList) || pattern.Calls(CodeSymbols.Tuple))
+					} else if (pattern.Calls(CodeSymbols.AltList) || pattern.Calls(CodeSymbols.Tuple)) {
 						subpatterns = pattern;
-					else if (pattern.Calls(S.Substitute, 1))
-						varBinding = pattern[0];
-					else
-						cmpExpr = pattern;
+					} else {
+						if (pattern.Calls(S.Substitute, 1))
+							varBinding = pattern[0];
+						else
+							cmpExpr = pattern;
+					}
 				}
-			
+
 				if (subpatterns != null) {
 					if (subpatterns.Calls(S.Tuple) || subpatterns.Calls(S.AltList))
 						subPatterns = subpatterns.Args;
@@ -431,7 +432,7 @@ namespace LeMP
 					}
 				}
 			}
-		
+
 			LNode GetOutputAsLNode()
 			{
 				WList<LNode> finalOutput = _handler.ToWList();
@@ -439,6 +440,7 @@ namespace LeMP
 					var tmp_10 = _output[end];
 					Mode mode = tmp_10.Item1;
 					LNode code = tmp_10.Item2;
+
 					if (mode == Mode.Condition) {
 						// Merge adjacent conditions into the same if-statement
 						int start = end;
@@ -447,7 +449,7 @@ namespace LeMP
 						for (int i = start + 1; i <= end; i++)
 							cond = LNode.Call(CodeSymbols.And, LNode.List(cond, _output[i].B)).SetStyle(NodeStyle.Operator);
 						end = start;
-					
+
 						finalOutput = new WList<LNode> { 
 							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToLNodeList().AsLNode(S.Braces)))
 						};
@@ -457,6 +459,6 @@ namespace LeMP
 				return finalOutput.ToLNodeList().AsLNode(S.Braces);
 			}
 		}
-	
+		
 	}
 }

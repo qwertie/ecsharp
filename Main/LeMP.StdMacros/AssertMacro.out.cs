@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -16,7 +16,8 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
-	partial class StandardMacros {
+	partial class StandardMacros
+	{
 		static readonly Symbol sy__numassertMethod = (Symbol) "#assertMethod";
 		// Finds the method/property/constructor/event in which a macro was called,
 		// and also the class/struct/interface/alias or, if not found, namespace.
@@ -39,7 +40,7 @@ namespace LeMP
 			}
 			return null;
 		}
-	
+
 		static string GetFnAndClassNameString(IMacroContext context)
 		{
 			LNode @class, fn;
@@ -56,14 +57,14 @@ namespace LeMP
 				ps.Print(fn, MessageSink.Null, ParsingMode.Expressions));
 			}
 		}
-	
+
 		static readonly LNode defaultAssertMethod = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Diagnostics"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Debug"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "Assert"))).SetStyle(NodeStyle.Operator);
-	
+
 		internal static LNode GetAssertMethod(IMacroContext context)
 		{
-			return (context.ScopedProperties.TryGetValue(sy__numassertMethod, null)as LNode) ?? defaultAssertMethod;
+			return (context.ScopedProperties.TryGetValue(sy__numassertMethod, null) as LNode) ?? defaultAssertMethod;
 		}
-	
+
 		[LexicalMacro(@"assert(condition);", 
 		"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\"). " 
 		+ "You can change the assert method with `#snippet` as follows:\n\n" 
@@ -78,7 +79,7 @@ namespace LeMP
 					var ps = LNode.Printer;
 					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
 					name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
-				
+
 					var assertFn = GetAssertMethod(context);
 					if (assertFn.IsIdNamed(node.Name))
 						return null;	// disabled!

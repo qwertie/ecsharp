@@ -1,4 +1,4 @@
-// Generated from Les3Printer_CanPrintAsNumber.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from Les3Printer_CanPrintAsNumber.ecs by LeMP custom tool. LeMP version: 2.9.0.1
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -22,8 +22,8 @@ namespace Loyc.Syntax.Les
 	{
 		[ThreadStatic] static LexerSource<UString> src;	// provides the APIs expected by LLLPG
 		[ThreadStatic] static NullMessageSink msgCounter;
-	
-	
+
+		
 		public static bool CanPrintAsNumber(UString textValue, Symbol typeMarker)
 		{
 			int la0;
@@ -36,7 +36,7 @@ namespace Loyc.Syntax.Les
 			// line 29
 			if (firstTMChar == 'e' || firstTMChar == 'E' || firstTMChar == 'p' || firstTMChar == 'P')
 				return false;
-		
+
 			// Prepare LexerSource needed by LLLPG, and our error counter
 			// line 33
 			if (src == null) {
@@ -46,7 +46,7 @@ namespace Loyc.Syntax.Les
 				src.Reset(textValue, "", 0, false);	// re-use old object
 				msgCounter.ResetCountersToZero();
 			}
-		
+
 			// Find out whether textValue is in numeric format
 			// line 42
 			bool isHex = false;
@@ -93,8 +93,7 @@ namespace Loyc.Syntax.Les
 			return msgCounter.ErrorCount == 0 && 
 			!(isHex && (firstTMChar >= 'a' && firstTMChar <= 'f' || firstTMChar >= 'A' && firstTMChar <= 'F'));
 		}
-	
-	
+
 		static void DecDigits()
 		{
 			int la0, la1;
@@ -130,12 +129,12 @@ namespace Loyc.Syntax.Les
 			}
 		}
 		static readonly HashSet<int> HexDigit_set0 = LexerSource.NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
-	
+
 		static void HexDigit()
 		{
 			src.Match(HexDigit_set0);
 		}
-	
+
 		static void HexDigits()
 		{
 			int la0, la1;
@@ -170,8 +169,7 @@ namespace Loyc.Syntax.Les
 					break;
 			}
 		}
-	
-	
+
 		static void DecNumber()
 		{
 			int la0;
@@ -220,7 +218,7 @@ namespace Loyc.Syntax.Les
 					src.Error(0, "In rule 'DecNumber', expected one of: [\\$Ee]");
 			} while (false);
 		}
-	
+
 		static void HexNumber()
 		{
 			int la0;
@@ -283,7 +281,7 @@ namespace Loyc.Syntax.Les
 					src.Error(0, "In rule 'HexNumber', expected one of: [\\$.]");
 			} while (false);
 		}
-	
+
 		static void BinNumber()
 		{
 			int la0;
