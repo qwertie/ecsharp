@@ -125,12 +125,42 @@ namespace Loyc
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
 		/// <param name="s">String to decode.</param>
+		/// <exception cref="FormatException">The string cannot be interpreted as a byte array in BAIS format.</exception>
 		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
 		/// if you need a true array).</returns>
-		public static ArraySlice<byte> Convert(string s)
+		public static ArraySlice<byte> Convert(string s) =>
+			TryConvert(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
+
+		/// <summary>Decodes a BAIS string back to a byte array.</summary>
+		/// <param name="s">String to decode.</param>
+		/// <exception cref="FormatException">The string cannot be interpreted as a byte array in BAIS format.</exception>
+		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
+		/// if you need a true array).</returns>
+		public static ArraySlice<byte> Convert(UString s) =>
+			TryConvert(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
+
+		/// <summary>Decodes a BAIS string back to a byte array.</summary>
+		/// <param name="s">String to decode.</param>
+		/// <returns>Decoded byte array, or null if decoding fails.</returns>
+		public static ArraySlice<byte>? TryConvert(UString s)
+		{
+			// Maybe when we go to .NET Core they'll offer a Span overload to make this efficient?
+			return TryConvert(s.ToString());
+		}
+
+		/// <summary>Decodes a BAIS string back to a byte array.</summary>
+		/// <param name="s">String to decode.</param>
+		/// <returns>Decoded byte array, or null if decoding fails.</returns>
+		public static ArraySlice<byte>? TryConvert(string s)
 		{
 			byte[] b = Encoding.UTF8.GetBytes(s);
-			for (int i = 0; i < s.Length - 1; ++i)
+			var result = ConvertToBytes(b);
+			return result.InternalList == null ? (ArraySlice<byte>?)null : result;
+		}
+
+		private static ArraySlice<byte> ConvertToBytes(byte[] b)
+		{
+			for (int i = 0; i < b.Length - 1; ++i)
 			{
 				if (b[i] == '\b')
 				{
@@ -161,7 +191,7 @@ namespace Loyc
 						}
 
 						if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
-							throw new FormatException("String cannot be interpreted as byte array".Localized());
+							return default;
 						i++;
 
 						// Start taking bytes verbatim
@@ -175,6 +205,7 @@ namespace Loyc
 			}
 			return b;
 		}
+
 
 		public static char EncodeBase64Digit(int digit)
 			=> (char)((digit + 1 & 63) + 63);

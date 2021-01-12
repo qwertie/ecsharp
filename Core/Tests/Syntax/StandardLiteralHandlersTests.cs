@@ -44,6 +44,7 @@ namespace Loyc.Syntax.Tests
 			T("void",  "",     @void.Value),
 			T("bool",  "TRUE",  true),
 			T("bool",  "False", false),
+			T("bais",  "Cat\b`@iE?tEB!CD", new byte[] { 67, 97, 116, 128, 10, 69, 255, 65, 66, 67, 68 }),
 		};
 
 		[Test]
@@ -67,7 +68,10 @@ namespace Loyc.Syntax.Tests
 				var result = SLH.TryParse(item.Item2, item.Item1);
 				Assert.IsTrue(result.Left.HasValue, "TryParse failed for {0} {1}", item.Item1, item.Item2);
 				Assert.AreEqual(item.Item3.GetType(), result.Left.Value.GetType());
-				Assert.AreEqual(item.Item3, result.Left.Value);
+				if (result.Left.Value is byte[] bytes)
+					Loyc.Collections.Impl.TestHelpers.ExpectList((byte[]) item.Item3, bytes);
+				else
+					Assert.AreEqual(item.Item3, result.Left.Value);
 			}
 		}
 

@@ -19,23 +19,24 @@ namespace Loyc.Syntax
 	/// <remarks>
 	/// The following types are fully supported:
 	/// <ul>
-	/// <li>Int8 (type marker: _i8)			  </li>
+	/// <li>SByte (type marker: _i8)			  </li>
 	/// <li>Int16 (type marker: _i16)		  </li>
 	/// <li>Int32 (type marker: _i32)		  </li>
 	/// <li>Int64 (type markers: _i64, _L)	  </li>
-	/// <li>UInt8 (type marker: _u8)		  </li>
+	/// <li>Byte  (type marker: _u8)		  </li>
 	/// <li>UInt16 (type marker: _u16)		  </li>
 	/// <li>UInt32 (type marker: _u32)		  </li>
 	/// <li>UInt64 (type markers: _u64, _uL)  </li>
 	/// <li>BigInteger (type marker: _z)	  </li>
 	/// <li>Single (type markerS: _r32, _f)	  </li>
 	/// <li>Double (type markerS: _r64, _d)	  </li>
-	/// <li>Char (type marker: c)			  </li>
+	/// <li>Char   (type marker: c)			  </li>
 	/// <li>String (type marker: empty string)</li>
 	/// <li>Symbol (type marker: s)			  </li>
 	/// <li>Loyc.@void (type marker: void)	  </li>
 	/// <li>Boolean (type marker: bool)		  </li>
 	/// <li>UString (no specific type marker) </li>
+	/// <li>Byte[]  (type marker: bais) </li>
 	/// </ul>
 	/// There are also two general type markers, _ for a number of unspecified type,
 	/// and _u for an unsigned number of unspecified size. In LES, any type marker 
@@ -172,6 +173,7 @@ namespace Loyc.Syntax
 		protected static Symbol _number = GSymbol.Get("_"); // number without explicit type marker
 		protected static Symbol _string = GSymbol.Empty; // string without explicit type marker
 		protected static Symbol _re = GSymbol.Get("re"); // regular expression
+		protected static Symbol _bais = GSymbol.Get("bais"); // byte array in string
 
 		char _digitSeparator;
 		/// <summary>Gets or sets a character used to separate groups of digits.
@@ -237,14 +239,20 @@ namespace Loyc.Syntax
 					return OK(G.BoxedTrue);
 				if (s.Equals((UString)"false", true))
 					return OK(G.BoxedFalse);
-				return new LogMessage(Severity.Error, s, "bool literal should be 'true' or 'false'");
+				return new LogMessage(Severity.Error, s, "`bool` literal should be 'true' or 'false'");
 			});
 			AddParser(true, _c, (s, tm) => {
 				UString s2 = s;	
 				int ch = s2.PopFirst(out bool fail);
 				if (fail || s2.Length > 0)
-					return new LogMessage(Severity.Error, s, "character literal should be a single character");
+					return new LogMessage(Severity.Error, s, "Character literal should be a single character");
 				return OK(ch < 0x10000 ? (char)ch : (object)s.ToString());
+			});
+			AddParser(true, _bais, (s, tm) => {
+				var slice = ByteArrayInString.TryConvert(s);
+				if (slice == null)
+					return new LogMessage(Severity.Error, s, "This is not a valid BAIS string.");
+				return slice.Value.ToArray();
 			});
 		}
 
@@ -285,6 +293,8 @@ namespace Loyc.Syntax
 				{ sb.Append(((Symbol)lit.Value).Name); return _s; });
 			AddPrinter(true, typeof(UString), (lit, sb) =>
 				{ sb.Append((UString)lit.Value); return lit.TypeMarker; });
+			AddPrinter(true, typeof(byte[]), (lit, sb) =>
+				{ sb.Append(ByteArrayInString.Convert((byte[])lit.Value, false)); return _bais; });
 
 			// NON-STANDARD TYPES
 
