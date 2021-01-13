@@ -404,7 +404,7 @@ namespace Loyc.Syntax
 
 		#endregion
 
-		#region Call with stored target range
+		#region Calls with automatic ranges: CallPrefix, CallPrefixOp, CallInfixOp, CallSuffixOp, CallBrackets
 		// Assumptions:
 		// 1. the left-hand side of each expression has a valid range but the right-hand side might be Missing.
 		// 2. If a token represents an operator, Value is its Symbol

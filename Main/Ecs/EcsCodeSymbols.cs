@@ -29,7 +29,6 @@ namespace Loyc.Ecs
 		public static readonly Symbol PatternAnd = GSymbol.Get("'and"); //!< @'and(@`'>=`('a'), @`'<=`('z')) <=> >= 'a' and <= 'z'
 		public static readonly Symbol PatternOr = GSymbol.Get("'or"); //!< @'or(@'or(1, 3), @`'<`(0)) <=> 1 or 3 or < 0
 
-
 		public static new readonly Symbol TriviaCsRawText = GSymbol.Get("%C#RawText");             //!< "%C#RawText" - `%C#RawText`("stuff") - Raw text that is only printed by the C# printer (not printers for other languages)
 		public static new readonly Symbol TriviaCsPPRawText = GSymbol.Get("%C#PPRawText");         //!< "%C#PPRawText" - `%C#PPRawText`("#stuff") - Raw text that is guaranteed to be preceded by a newline and is only printed by the C# printer
 		public static new readonly Symbol CsRawText = GSymbol.Get("#C#RawText");
