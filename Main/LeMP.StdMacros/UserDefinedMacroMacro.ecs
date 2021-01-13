@@ -107,7 +107,7 @@ namespace LeMP
 				// Note: the body is already preprocessed; #noLexicalMacros prevents double-processing
 				body = quote {
 					{
-						matchCode(node) {
+						matchCode(#node) {
 							case $pattern:
 								#noLexicalMacros($(..body.AsList(S.Braces)));
 						}
@@ -121,7 +121,7 @@ namespace LeMP
 					$(..usingDirectives);
 
 					[$lmAttribute, $(..attrs)]
-					public static LNode $macroName(LNode node, global::LeMP.IMacroContext context) => $body;
+					public static LNode $macroName(LNode #node, global::LeMP.IMacroContext #context) => $body;
 				}
 			};
 		}

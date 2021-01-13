@@ -1,4 +1,4 @@
-// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.1
+// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.2
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -111,10 +111,10 @@ namespace LeMP
 			&& pattern_apos.ArgCount == 1 && pattern_apos[0].Equals(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Call(CodeSymbols.DotDot, LNode.List(LNode.Id((Symbol) "_"))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator))))
 			{
 				// Note: the body is already preprocessed; #noLexicalMacros prevents double-processing
-				body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) "matchCode", LNode.List(LNode.Id((Symbol) "node"), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Case, LNode.List(pattern)), LNode.Call((Symbol) "#noLexicalMacros", LNode.List(body.AsList(S.Braces))))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special), LNode.Call(CodeSymbols.Return, LNode.List(LNode.Literal(null))))).SetStyle(NodeStyle.StatementBlock);
+				body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) "matchCode", LNode.List(LNode.Id((Symbol) "#node"), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Case, LNode.List(pattern)), LNode.Call((Symbol) "#noLexicalMacros", LNode.List(body.AsList(S.Braces))))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special), LNode.Call(CodeSymbols.Return, LNode.List(LNode.Literal(null))))).SetStyle(NodeStyle.StatementBlock);
 			}
 
-			return LNode.Call((Symbol) "compileTime", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(usingDirectives).Add(LNode.Call(LNode.List().Add(lmAttribute).AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)).Add(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(LNode.Id((Symbol) "LNode"), macroName, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id((Symbol) "LNode"), LNode.Id((Symbol) "node"))), LNode.Call(CodeSymbols.Var, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "IMacroContext"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "context"))))), body)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special);
+			return LNode.Call((Symbol) "compileTime", LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(usingDirectives).Add(LNode.Call(LNode.List().Add(lmAttribute).AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)).Add(LNode.Id(CodeSymbols.Static)), CodeSymbols.Fn, LNode.List(LNode.Id((Symbol) "LNode"), macroName, LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id((Symbol) "LNode"), LNode.Id((Symbol) "#node"))), LNode.Call(CodeSymbols.Var, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Id((Symbol) "global"), LNode.Id((Symbol) "LeMP"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "IMacroContext"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "#context"))))), body)))).SetStyle(NodeStyle.StatementBlock))).SetStyle(NodeStyle.Special);
 		}
 	}
 }
