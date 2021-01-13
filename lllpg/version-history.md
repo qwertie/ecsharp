@@ -5,6 +5,14 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with [underlying](http://core.loyc.net/version-history.html) [subsystems](/lemp/version-history.html) which change more frequently.
 
+### LLLPG v2.9.0.3: January 13, 2021 ###
+
+- Fix bug in prediction in situations involving clauses of the form (&a | &b) nested in another list of alternatives. An example of this bug is a token rule that contains `(X (&a | &b))*`. In this case `&b` was ignored except when `X` was followed by another `X`.
+- Fixed a bug where syntax errors in ANTLR-style grammar were not reported to the user.
+- Added new `recognizer` and `nonrecognizer` keywords.
+    - `recognizer { code block; }` adds code (only) in a recognizer. Previously there was no (good) way to insert code in a recognizer.
+    - Generally, `recognizer(...)` includes grammar elements only in a recognizer, while  `nonrecognizer(...)` excludes grammar elements from a recognizer. **Important:** please note that the effects of `nonrecognizer(...)` and `recognizer(...)` are local to a rule; they do not affect code generation of other recognizers. For example, if rule A makes a prediction decision about whether or not to call rule B, the recognizer for rule A ignores `nonrecognizer(...)` and `recognizer(...)` blocks in rule B. The reason for this is simply that nonlocal reasoning would have been more difficult to implement.
+
 ### LLLPG v2.7.0: February 17, 2020 ###
 
 - Enable FullLLk mode by default. To restore the old default, use `[FullLLk(false)]` attribute on your grammar (above the LLLPG statement).

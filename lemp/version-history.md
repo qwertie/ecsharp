@@ -6,6 +6,73 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v2.9.0.3 (a.k.a. v29): January 13, 2021 ###
+
+Potentially breaking changes:
+- Renamed `EcsCodeSymbols.InitializerAssignment` to `DictionaryInitAssign`
+- Renamed `MacroMode.MatchIdentifier` to `MatchIdentifierOrCall` to clarify its behavior; the old identifier still exists and is marked Obsolete.
+
+#### Enhanced C#: ####
+
+- Added support for `switch` expressions and C# 8/9 patterns in the right-hand side of `is` (here's a [video about my work](https://youtu.be/ExJzi3MMiws) in that regard)
+- Added infix operators `with {...}`, `when` and `where`
+- Multiple empty type parameters (such as `Dictionary<,>`) can now be parsed and printed ([#125](https://github.com/qwertie/ecsharp/issues/125))
+- EC# now has special-case code that allows it to print `ref var X = ref Y` instead than `ref var X = (ref Y)`, as the C# compiler rejects the latter.
+- Added `|=>` and `?|=>` operators, with precedence between `=` and `??`. These operators don't currently do anything, as no macros are attached to them, but the intention is that `|=>` could be used as an assignment operator with reversed argument order (i.e. `A |=> B` means `B = A`). These operators are meant to resemble the pipe operators proposed in [issue #113](https://github.com/qwertie/ecsharp/issues/113). By analogy to the `?|>` operator (and its synonym `?>`), `A ?|=> B` should probably mean `A::tmp == null ? null : B = tmp`. 
+- `?>` as synonym for `?|>` and allow `?=>` as synonym for `?|=>`
+- When using `ParsingMode.Expressions`, the EC# parser no longer expects a newline between items and will not insert `%appendStatement` trivia when the expected newline isn't there
+- Bug fix: Line numbers reported for errors located after the end of a triple-quoted string were wrong (too low).
+
+#### LeMP macros: ####
+
+- `compileTime` (and related macros such as `compileTimeAndRuntime` and `macro`) now map C# compiler errors back to the original code (as demonstrated in [this video](https://www.youtube.com/watch?v=Ue3W52iVH8c)
+- Added the `macro` macro, which builds on `compileTime` to allow users to define macros at compile time that contain arbitrary logic. I made a [short video](https://youtu.be/S7uJ793H59w) about this, but it doesn't explain in much detail and I should probably made a more detailed video or article about it.
+    - Known inconsistency: `macro` recognizes `using` directives from _before_ the `macro` block, but `compileTime` does not. `compileTime` was implemented first, and ignoring `using` directives made more sense for it, because `using` statements might refer to namespaces that don't exist at compile time, and because LeMP did not provide plumbing necessary to scan above anyway. I am considering whether to recognize `using` statements above `compileTime` in the next release, which is potentially a breaking change. Also, it has been proposed in C# itself to use a new ambiguous syntax for `using` that could cause problems for EC#, so `macro` might drop support for `using` directives inside its body.
+- Enhanced `define` with the ability to generate unique variable names. Inside the body of a `define` block, identifiers are searched for the substring `unique#`, which is replaced with a unique number each time the macro is invoked; also, variables whose name starts with `temp#` are uniquely numbered.
+- `compileTime` and `compileTimeAndRuntime` will now detect when a method has a `[LexicalMacro(...)]` attribute attached to it, and will add hidden code to register the macro so that it can be used immediately after the end of the `compileTime` block.
+- `compileTime` and `compileTimeAndRuntime` now provide a predefined variable called `#macro_context` of type `LeMP.IMacroContext`, which points to the current macro context object.
+- Added macros `rawCompileTime` and `rawCompileTimeAndRuntime`, which do not preprocess the code block and do not warn if they are nested somewhere they ought not to be
+- When `#useSequenceExpressions;` is added to a file or block, `#runSequence` will work outside methods, which notably means that it will now work directly inside `compileTime`. The new behavior of `#useSequenceExpressions` is to assume it is in a method context until a type definition such as a class is encountered, which proves it is not in a method context.
+- Fixed about 4 bugs in `#useSequenceExpressions`
+- `#runSequence` now recognizes the contents of a single braced argument as a sequence (EC# syntax: `#runSequence { statement1; statement2; }`)
+- When using `compileTime` or `precompute`, a `__macro_context` variable now exists
+- Added `concat` macro
+- Enhanced `concatId` macro to use `LNode.TextValue` when available.
+- Added `#statement { ... }` macro, whose only job is to replace itself with its own argument(s). This is sometimes useful in order to switch to statement syntax in an expression context.
+- Added `#preprocessArgsOf` and `#preprocessChild` macros
+- `matchCode` supports the new `when` operator, e.g. `case $(id when id.IsId):`
+- Bug fix ([#59](https://github.com/qwertie/ecsharp/issues/59)): `#useSymbols` no longer deletes attributes from the `Target` of braced blocks.
+- Bug fix: now that C# supports `Foo(out int x)`, `#useSequenceExpressions` no longer needs to transform it (and won't). It was causing errors by changing code like `Method(out var x)` to `var x; Method(out x)`.
+- Removed old name `use_symbols;`. Use `#useSymbols;` instead.
+- Removed old name of binary `code==` operator macro, which was `tree==`
+
+#### LeMP engine: ####
+
+- Added `ICollection<Symbol> OpenMacroNamespaces` property to `IMacroContext`. This allows macros to change the set of open namespaces for the purpose of macro resolution. Changes apply only to the current braced block.
+- Added `PreviousSiblings` and `AncestorsAndPreviousSiblings` properties to `IMacroContext`, with support in LeMP.
+- LeMP now allows you to define macros that are called on every literal node, every identifier node, and/or every call node. For this purpose, new mode flags were added: `MacroMode.MatchEveryLiteral`,   `MacroMode.MatchEveryCall`, and `MacroMode.MatchEveryIdentifier`.
+- A new macro flag `MacroMode.UseLogicalNameInErrorMessages` is used to show a clearer source location when a user-defined macro doesn't match. Previously, LeMP would show the true namespace and method, which was the same for every macro created with `define`.
+- Added a new mode, `MacroMode.MatchIdentifierOnly`, which won't match calls. Introducing `MacroMode.MatchIdentifierOnly` will slightly reduce LeMP performance, which I didn't realize until the feature was nearly done.
+- Added `#inputPath` scoped property, which has the input folder and input filename together
+- When run without arguments, LeMP now reports its own location and full assembly name
+- Bug fix in Visual Studio extension: `--outlang` and `--outext` options failed to change output language
+- Bug fix: `#inputFolder` could be missing, or was a relative path, when LeMP was invoked on the command line. Now it is an absolute path.
+- LeMP is now more willing to print notes from macros that reject their input. LeMP chooses a threshold for the minimum `Severity` a message must have in order to be printed after a macro call returns:
+    - The default threshold is Warning
+    - If a macro produces output, all messages are shown
+    - If none of the matching macro(s) produce output for a particular node, the threshold drops to `NoteDetail` normally, or `InfoDetail` (which is between `Note` and `Debug`) if the node's base style is `NodeStyle.Special`.
+- LeMPDemo:
+    - `--macros:LLLPG.exe` is now included in the options list by default
+    - Fixed a couple of visual bugs in the process of saving files
+- Added `--eval` command-line option. Here are examples:
+
+        # Bash on Windows and PowerShell
+        LeMP.exe '--eval:define S($x) { You Said=$x; } S(2+1); S("Hello");' --inlang=.cs
+        # Example (Windows cmd):
+        LeMP "--eval:define S($x) { You Said=$x; } S(1+2); S(""Hello"");" --inlang=.cs
+
+    Note: In single quotes, PowerShell treats two single quotes (`''`) as one, while in Bash you need `'"'"'` to get the same effect.
+
 ### v2.8.3: November 16, 2020 ###
 
 EC# Parser/Printer:
