@@ -16,7 +16,7 @@ namespace LeMP.Tests
 			TestEcs(@"
 				macro poop($(.._))
 				{
-					return node.WithTarget((Symbol)""POOP"");
+					return #node.WithTarget((Symbol)""POOP"");
 				}
 				[Passive]
 				macro ({ Int32 $(..v); })
@@ -57,7 +57,7 @@ namespace LeMP.Tests
 				macro poop($(.._))
 				{
 					var sb = new StringBuilder(""POOP"");
-					return node.WithTarget((Symbol) sb.ToString());
+					return #node.WithTarget((Symbol) sb.ToString());
 				}
 
 				int i = poop(123);
@@ -77,7 +77,7 @@ namespace LeMP.Tests
 			TestEcs(@"[""Change first argument to HELLO if it's not an identifier"", Passive]
 				macro StupidDemoMacro($(arg0 && !arg0.IsId), $(..rest))
 				{
-					return node.WithArgChanged(0, quote(HELLO));
+					return #node.WithArgChanged(0, quote(HELLO));
 				}
 
 				StupidDemoMacro(1 + 1, 2 + 2);
@@ -89,12 +89,12 @@ namespace LeMP.Tests
 				[""Change first argument to 'hi'"", PriorityOverride, Passive]
 				macro priorityTest($(arg0 && !arg0.IsIdNamed(""hi"")), $(.._))
 				{
-					return node.WithArgChanged(0, quote(hi));
+					return #node.WithArgChanged(0, quote(hi));
 				}
 				[""Swap arg 0 and arg 1"", ProcessChildrenAfter, Passive]
 				macro priorityTest($arg0, $arg1)
 				{
-					return node.WithArgs(arg1, arg0);
+					return #node.WithArgs(arg1, arg0);
 				}
 				priorityTest(0, 1);",
 				@"priorityTest(1, hi);");

@@ -27,7 +27,8 @@ namespace LeMP
 		//       so sessions for different files are separate and proper cleanup can occur 
 		//       at the end. In practice, this is working fine, but it's fragile.
 		const string __result_of_precompute = nameof(__result_of_precompute);
-		const string __macro_context = nameof(__macro_context);
+		const string __macro_context = "#macro_context";
+		static string __macro_context_sanitized = EcsValidators.SanitizeIdentifier("#macro_context");
 		[ThreadStatic] static ScriptState<object> _roslynScriptState;
 		[ThreadStatic] static StreamWriter _roslynSessionLog;
 		[ThreadStatic] static string _roslynSessionLogFileName;
@@ -238,7 +239,7 @@ namespace LeMP
 					$"dynamic {__result_of_precompute};\n" +
 					// Using dynamic for this variable type gave me an error when calling .RegisterMacro on it:
 					// Error CS0656 Missing compiler required member 'Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo.Create'
-					$"global::LeMP.IMacroContext {__macro_context};", scriptOptions).Result;
+					$"global::LeMP.IMacroContext {__macro_context_sanitized};", scriptOptions).Result;
 			}
 		}
 
@@ -259,7 +260,7 @@ namespace LeMP
 					return LNode.List(stmt.WithArgChanged(0, stmt[0].WithValue("\"" + fullPath + "\"")));
 				}
 
-				// For each (top-level) LexicalMacro method, call __macro_context.RegisterMacro().
+				// For each (top-level) LexicalMacro method, call #macro_context.RegisterMacro().
 				LNode attribute = null;
 				if ((attribute = stmt.Attrs.FirstOrDefault(
 						attr => AppearsToCall(attr, "LeMP", nameof(LexicalMacroAttribute).WithoutSuffix("Attribute"))
@@ -284,7 +285,7 @@ namespace LeMP
 			_roslynSessionLog?.WriteLine(codeText);
 			_roslynSessionLog?.Flush();
 
-			_roslynScriptState.GetVariable(__macro_context).Value = context;
+			_roslynScriptState.GetVariable(__macro_context_sanitized).Value = context;
 			try
 			{
 				// Allow users to write messages via MessageSink.Default
