@@ -453,13 +453,21 @@ namespace Loyc.Ecs
 
 		internal static readonly HashSet<Symbol> OperatorIdentifiers = new HashSet<Symbol> {
 			// >>, << and ** are special: the lexer provides them as two separate tokens
+
+			// Standard C# operators:
 			S.NotBits, S.Not, S.Mod, S.XorBits, S.AndBits, S.And, S.Mul, S.Exp, S.Add, S.PreInc,
-			S.Sub, S.PreDec, S.Eq, S.NotEq, S.Sub, S.PreDec, S.Eq, S.NotEq, /*"{}", "[]",*/ S.OrBits, S.Or, S.Backslash,
+			S.Sub, S.PreDec, S.Eq, S.NotEq, S.Sub, S.PreDec, S.Eq, S.NotEq, /*"{}", "[]",*/ S.OrBits, S.Or, 
 			S.Semicolon, S.Colon, S.Comma, S.Dot, S.DotDot, S.LT, S.Shl, S.GT, S.Shr, S.Div,
-			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.Forward, S.RightArrow, S.Substitute,
-			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, S.ShrAssign, S.ShlAssign,
-			S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
-			S.ConcatAssign, S.ExpAssign
+			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.RightArrow,
+			// Standard C# assignment operators:
+			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, 
+			S.ShrAssign, S.ShlAssign, S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, 
+			S.NullCoalesceAssign,
+			// EC#-specific operators, starting with assignment operators
+			S.ExpAssign, S.QuickBindAssign, S.ConcatAssign, S.QuickBind, S.UsingCast, 
+			S.DotDotDot, S.Backslash, S.Forward, S.Substitute, S.Compare, 
+			S.ForwardPipeArrow, S.ForwardAssign, S.NullForwardPipeArrow, 
+			S.ForwardNullCoalesceAssign, S.When, S.WhereOp
 		};
 
 		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(

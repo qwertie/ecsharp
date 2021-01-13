@@ -56,8 +56,6 @@ namespace Loyc.Ecs
 			// and is not handled by the normal infix operator printer. Likewise, C# 9
 			// `and`/`or` pattern operators, `with`, and `switch` operators have their 
 			// own special handlers.
-			// Note: I cancelled my plan to add a binary ~ operator because it would
-			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
 			P(S.RightArrow, EP.Primary), P(S.NullDot, EP.NullDot),
 			P(S.Exp, EP.Power),        P(S.Mul, EP.Multiply),
