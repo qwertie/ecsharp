@@ -171,7 +171,13 @@ namespace Loyc.VisualStudio
 						
 				Configure(c);
 				_requestedExtension = c.OutExt;
-				c.Run();
+
+				// Help user code send messages to error list via MessageSink.Default. 
+				// `compileTime` already uses `using` to change the default sink to the 
+				// macro context, but this doesn't work in macros or events because they 
+				// execute after the `compileTime` or `macro` block has ended.
+				using (MessageSink.SetDefault(sink))
+					c.Run();
 
 				// Report errors
 				foreach (var msg in sink.List)
@@ -209,28 +215,3 @@ namespace Loyc.VisualStudio
 		}
 	}
 }
-
-#if false
-namespace SingleFileGenerator
-{
-	public partial class InstallForm
-	{
-		protected override void OnLoad(EventArgs e)
-		{
-			base.OnLoad(e);
-			
-			// This is a simple self test to make sure there's no DLLs version mismatches.
-			try {
-				var testCode = @"Hello(""World!"");";
-				var parsed = EcsLanguageService.Value.Parse(testCode);
-				string printed = EcsLanguageService.Value.Print(parsed.First());
-				Loyc.MiniTest.Assert.AreEqual(testCode, printed);
-			} catch (Exception ex) {
-				MessageBox.Show(
-					string.Format("Self-test failed with the following exception:\n{0}\n{1}",
-						ex.ExceptionMessageAndType(), ex.StackTrace));
-			}
-		}
-	}
-}
-#endif

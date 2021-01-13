@@ -140,7 +140,12 @@ namespace TextEditor
 				LempStarted = true;
 				new Thread(() => {
 					try {
-						c.Run();
+						// Help user code send messages to error list via MessageSink.Default. 
+						// `compileTime` already uses `using` to change the default sink to the 
+						// macro context, but this doesn't work in macros or events because they 
+						// execute after the `compileTime` or `macro` block has ended.
+						using (MessageSink.SetDefault(sink))
+							c.Run();
 						// Must get OutFileName after calling Run()
 						_outFileName = sourceFile.OutFileName;
 						ShowOutput(c.Output.ToString());
@@ -188,7 +193,7 @@ namespace TextEditor
 			});
 			lvi.BackColor = severity >= Severity.Error ? Color.Pink : 
 			                severity >= Severity.Warning ? Color.LightYellow : 
-							messageList.BackColor;
+			                messageList.BackColor;
 			messageList.Items.Add(lvi);
 		}
 
