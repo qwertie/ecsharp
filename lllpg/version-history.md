@@ -11,7 +11,8 @@ _Note_: some version numbers are skipped because the LLLPG version number is syn
 - Fixed a bug where syntax errors in ANTLR-style grammar were not reported to the user.
 - Added new `recognizer` and `nonrecognizer` keywords.
     - `recognizer { code block; }` adds code (only) in a recognizer. Previously there was no (good) way to insert code in a recognizer.
-    - Generally, `recognizer(...)` includes grammar elements only in a recognizer, while  `nonrecognizer(...)` excludes grammar elements from a recognizer. **Important:** please note that the effects of `nonrecognizer(...)` and `recognizer(...)` are local to a rule; they do not affect code generation of other recognizers. For example, if rule A makes a prediction decision about whether or not to call rule B, the recognizer for rule A ignores `nonrecognizer(...)` and `recognizer(...)` blocks in rule B. The reason for this is simply that nonlocal reasoning would have been more difficult to implement.
+    - Generally, `recognizer(...)` includes grammar elements only in a recognizer, while  `nonrecognizer(...)` excludes grammar elements from a recognizer.
+    - **Important:** please note that the effects of `nonrecognizer(...)` and `recognizer(...)` are local to a rule; they do not affect code generation of other recognizers. For example, if rule A makes a prediction decision about whether or not to call rule B, the recognizer for rule A ignores `nonrecognizer(...)` and `recognizer(...)` blocks in rule B. The reason for this is simply that nonlocal reasoning would have been more difficult to implement.
 
 ### LLLPG v2.7.0: February 17, 2020 ###
 
