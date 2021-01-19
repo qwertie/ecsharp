@@ -39,7 +39,7 @@ namespace LeMP
 			if (args.Count != 1)
 				return Reject(context, args[1], "Expected only one expression to match");
 
-			var expression = context.PreProcess(AutoStripBraces(args[0]));
+			var expression = context.PreProcess(UnwrapBraces(args[0]));
 
 			var cases = GetCases(body, context.Sink);
 			// The `default:` case is represented by an empty list of patterns.
@@ -76,8 +76,8 @@ namespace LeMP
 			if (node.ArgCount != 2)
 				return null;
 
-			LNode candidate = context.PreProcess(AutoStripBraces(node[0]));
-			LNode pattern = AutoStripBraces(node[1]);
+			LNode candidate = context.PreProcess(UnwrapBraces(node[0]));
+			LNode pattern = UnwrapBraces(node[1]);
 			MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
 			if (LNodeExt.MatchesPattern(candidate, pattern, ref captures, out LNodeList _)) {
 				SetSyntaxVariables(captures, context);

@@ -115,6 +115,17 @@ namespace Loyc.Syntax
 		public static LNodeList AsList(this LNode block, Symbol listIdentifier) =>
 			block.Calls(listIdentifier) ? block.Args : new LNodeList(block);
 
+
+		/// <summary>Returns <c>node.Args[0]</c> if <c>node.Calls(S.Braces, 1)</c>, otherwise returns <c>node</c> itself.</summary>
+		/// <remarks>This is useful for macros that want to allow their arguments 
+		/// to use statement syntax, indicated by braces, which will themselves be 
+		/// ignored.</remarks>
+		public static LNode UnwrapBraces(this LNode node) => node.Calls(S.Braces, 1) ? node.Args[0] : node;
+
+		/// <summary>Returns <c>node.Args[0]</c> if <c>node.Calls(wrapper, 1)</c>, otherwise returns <c>node</c> itself.</summary>
+		/// <remarks>This is a more general version of <see cref="UnwrapBraces"/>.</remarks>
+		public static LNode Unwrap(this LNode node, Symbol wrapper) => node.Calls(wrapper, 1) ? node.Args[0] : node;
+
 		/// <summary>Converts an expression to a list. Similar to calling 
 		/// <c>AsList(block, CodeSymbols.Splice)</c>, if the expression calls #splice
 		/// then the arguments of the splice are returned, and if not then the 

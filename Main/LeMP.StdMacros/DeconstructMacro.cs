@@ -1,4 +1,4 @@
-﻿using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Ecs;
 using Loyc.Syntax;
@@ -75,8 +75,8 @@ namespace LeMP
 			patterns.Add(patternSpec);
 
 			// Remove outer braces, then run macros
-			patterns = patterns.SmartSelect(p => p.Calls(S.Braces, 1) ? p[0] : p);
-			input = input.Calls(S.Braces, 1) ? input[0] : input;
+			patterns = patterns.SmartSelect(p => p.UnwrapBraces());
+			input = input.UnwrapBraces();
 			input = context.PreProcess(input);
 
 			// Perform matching & capturing

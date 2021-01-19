@@ -131,7 +131,7 @@ namespace LeMP.Prelude
 			"will be this macro rather than the original parent (the other macro). " +
 			"Also, the argument may be preprocessed twice: this macro processes it once, and if " +
 			"the other macro includes its arguments in its output, it can be processed again " +
-			"(unless the other macro happens to block preprocessing).",
+			"(unless the other macro prevents futher processing).",
 			"#preprocessChild")]
 		public static LNode preprocessChild(LNode node, IMacroContext context)
 		{

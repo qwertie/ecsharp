@@ -13,69 +13,68 @@ namespace LeMP
 {
 	public partial class StandardMacros
 	{
-		static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
-
-		[LexicalMacro("e.g. quote({ foo(); }) ==> F.Id(id);", 
-			"Macro-based code quote mechanism, to be used as long as a more complete compiler is not availabe. "+
-			"If there is a single parameter that is braces, the braces are stripped out. "+
-			"If there are multiple parameters, or multiple statements in braces, the result is a call to #splice(). "+
+		[LexicalMacro("quote(code); quote { code(); } /* EC# syntax */",
+			"Macro-based code quote mechanism, to be used as long as a more complete compiler is not availabe. " +
+			"If there is a single parameter that is braces, the braces are stripped out. " +
+			"If there are multiple parameters, or multiple statements in braces, the result is a call to #splice(). " +
 			"The output refers unqualified to `CodeSymbols` and `LNode` so you must have 'using Loyc.Syntax' at the top of your file. " +
 			"The substitution operator $(expr) causes the specified expression to be inserted unchanged into the output.",
 			"quote", "#quote")]
-		public static LNode quote(LNode node, IMessageSink sink)
-		{
-			return new CodeQuoter(sink, true, true).Quote(node);
-		}
+		public static LNode quote(LNode node, IMessageSink sink) => Quote(node, true, true);
+
 		[LexicalMacro(@"e.g. rawQuote($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
 			"Behaves the same as quote(code) except that the substitution operator $ is not recognized as a request for substitution.",
 			"rawQuote", "#rawQuote")]
-		public static LNode rawQuote(LNode node, IMessageSink sink)
-		{
-			return new CodeQuoter(sink, false, true).Quote(node);
-		}
+		public static LNode rawQuote(LNode node, IMessageSink sink) => Quote(node, false, true);
 
 		[LexicalMacro(@"e.g. quoteWithTrivia(/* cool! */ $foo) ==> foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")))",
 			"Behaves the same as quote(code) except that trivia is included in the output.")]
-		public static LNode quoteWithTrivia(LNode node, IMessageSink sink)
-		{
-			return new CodeQuoter(sink, true, false).Quote(node);
-		}
+		public static LNode quoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, true, false);
 
 		[LexicalMacro(@"e.g. rawQuoteWithTrivia(/* cool! */ $foo) ==> LNode.Call(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")), CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""foo"")))",
 			"Behaves the same as rawQuote(code) except that trivia is included in the output.")]
-		public static LNode rawQuoteWithTrivia(LNode node, IMessageSink sink)
+		public static LNode rawQuoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, false, false);
+
+		/// <summary>This implements `quote` and related macros. It converts a 
+		/// Loyc tree (e.g. `Foo(this)`) into a piece of .NET code that can 
+		/// construct the essence of the same tree (e.g.
+		/// `LNode.Call((Symbol) "Foo", LNode.List(LNode.Id(CodeSymbols.This)));`),
+		/// although this code does not preserve the Range properties.
+		/// <param name="allowSubstitutions">If this flag is true, when a calls to 
+		///   <c>@`'$`</c> is encountered, it is treated as a substitution request,
+		///   e.g. <c>$node</c> causes <c>node</c> to be included unchanged in the 
+		///   output, and by example, <c>Foo($x, $(..list))</c> produces this tree:
+		///   <c>LNode.Call((Symbol) "Foo", LNode.List().Add(x).AddRange(list))</c>.
+		///   </param>
+		/// <param name="ignoreTrivia">If this flag is true, the output expression
+		///   does not construct trivia attributes.</param>
+		/// <returns>The quoted form.</returns>
+		public static LNode Quote(LNode node, bool allowSubstitutions, bool ignoreTrivia)
 		{
-			return new CodeQuoter(sink, false, false).Quote(node);
+			LNode code = node, arg;
+			if (code.ArgCount == 1 && (arg = code.Args[0]).Calls(S.Braces) && !arg.HasPAttrs()) {
+				// Braces are needed to allow statement syntax in EC#; they are 
+				// not necessarily desired in the output, so ignore them. The user 
+				// can still write quote {{...}} to include braces in the output.
+				code = arg;
+			}
+			return new CodeQuoter(allowSubstitutions, ignoreTrivia).Quote(code.Args.AsLNode(S.Splice));
 		}
 
+		static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
 		static LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("CodeQuoteMacro.cs"));
 		static LNode _CodeSymbols = F_.Id("CodeSymbols");
 
 		public class CodeQuoter
 		{
-			public IMessageSink _sink;
 			public bool _doSubstitutions;
 			public bool _ignoreTrivia;
 			public CodeQuoter(
-				IMessageSink sink, 
 				bool doSubstitutions, 
 				bool ignoreTrivia = true)
 			{
-				_sink = sink;
 				_doSubstitutions = doSubstitutions;
 				_ignoreTrivia = ignoreTrivia;
-			}
-
-			public LNode Quote(LNode node)
-			{
-				LNode code = node, arg;
-				if (code.ArgCount == 1 && (arg = code.Args[0]).Calls(S.Braces) && !arg.HasPAttrs()) {
-					// Braces are needed to allow statement syntax in EC#; they are 
-					// not necessarily desired in the output, so ignore them. The user 
-					// can still write quote {{...}} to include braces in the output.
-					code = arg;
-				}
-				return QuoteOne(code.Args.AsLNode(S.Splice));
 			}
 
 			static LNode Id_LNode = F_.Id("LNode");
@@ -93,7 +92,7 @@ namespace LeMP
 			static LNode LNode_InParensTrivia = F_.Dot(Id_LNode, F_.Id("InParensTrivia"));
 			static LNode LNode_Missing = F_.Dot(Id_LNode, F_.Id("Missing"));
 
-			public LNode QuoteOne(LNode node)
+			public LNode Quote(LNode node)
 			{
 				// TODO: When quoting, ignore injected trivia (trivia with the TriviaInjected flag)
 				if (node.Equals(LNode.InParensTrivia))
@@ -143,7 +142,7 @@ namespace LeMP
 						if (node.Target.IsId)
 							creationArgs.Add(QuoteSymbol(node.Name));
 						else
-							creationArgs.Add(QuoteOne(node.Target));
+							creationArgs.Add(Quote(node.Target));
 
 						var argList = MaybeQuoteList(node.Args);
 						if (argList != null)
@@ -179,12 +178,12 @@ namespace LeMP
 						if (vae != null)
 							argList = F.Call(F.Dot(argList, F.Id("AddRange")), vae);
 						else
-							argList = F.Call(F.Dot(argList, F.Id("Add")), QuoteOne(arg));
+							argList = F.Call(F.Dot(argList, F.Id("Add")), Quote(arg));
 					}
 					return argList;
 				}
 				else
-					return F.Call(LNode_List, list.SmartSelect(item => QuoteOne(item)));
+					return F.Call(LNode_List, list.SmartSelect(item => Quote(item)));
 			}
 
 			private static LNode VarArgExpr(LNode arg)

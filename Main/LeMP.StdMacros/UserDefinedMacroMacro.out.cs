@@ -1,4 +1,4 @@
-// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.2
+// Generated from UserDefinedMacroMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.3
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -33,7 +33,7 @@ namespace LeMP
 		{
 			if (node.Args.Count != 2)
 				return Reject(context, node, "Expected one macro pattern and one body.");
-			LNode pattern = node.Args[0], body = node.Args[1];
+			LNode pattern = node.Args[0].UnwrapBraces(), body = node.Args[1];
 			if (!body.Calls(S.Braces))
 				return Reject(context, body, "Expected a braced block containing C# code to run when the pattern on the left is matched.");
 
@@ -63,7 +63,7 @@ namespace LeMP
 		{
 			var modeNodes = attrs.Where(a => Enum.TryParse(a.Name.Name, out MacroMode _));
 			// unwrap braces (they're not part of the pattern, they just enable statement syntax in EC#)
-			var pattern_apos = pattern.Calls(S.Braces, 1) ? pattern[0] : pattern;
+			var pattern_apos = pattern.UnwrapBraces();
 			MacroMode modes = GetMacroMode(ref attrs, pattern_apos);
 
 			// compileTime {...} can recognize macro method definitions. 

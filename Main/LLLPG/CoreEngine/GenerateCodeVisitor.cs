@@ -371,10 +371,7 @@ namespace Loyc.LLParserGenerator
 						return GetExitStmt(haveLoop);
 					} else {
 						var code = matchingCode[branch.Sub.Alt].A;
-						if (code.Calls(S.Braces, 1))
-							return code.Args[0].Clone();
-						else
-							return code.Clone();
+						return code.UnwrapBraces().Clone();
 					}
 				}
 			}

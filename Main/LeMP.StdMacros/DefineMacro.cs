@@ -28,7 +28,7 @@ namespace LeMP
 		{
 			if (node.Args.Count != 2)
 				return Reject(context, node, "Expected one macro pattern and one body.");
-			LNode pattern = node.Args[0], body = node.Args[1];
+			LNode pattern = node.Args[0].UnwrapBraces(), body = node.Args[1];
 			if (!body.Calls(S.Braces))
 				return Reject(context, body, "Expected a braced block containing a replacement pattern to emit when the pattern on the left is matched.");
 

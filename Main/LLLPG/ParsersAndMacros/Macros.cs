@@ -457,12 +457,9 @@ namespace Loyc.LLPG
 					case "recognizer": case "Recognizer":
 						LNode sig = attr.Args[0, null];
 						if (sig != null) {
-							if (sig.Calls(S.Braces, 1))
-								sig = sig.Args[0];
-
 							// Invoke macros here so that LES code like "public fn Foo()::bool"
 							// is transformed into a method signature.
-							sig = context.PreProcess(sig);
+							sig = context.PreProcess(sig.UnwrapBraces());
 						}
 						if (sig != null && sig.CallsMin(S.Fn, 3)) {
 							sig = sig.WithoutAttrNamed(S.TriviaAppendStatement); // prevent weird-looking output

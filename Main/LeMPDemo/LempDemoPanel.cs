@@ -197,11 +197,11 @@ namespace TextEditor
 			messageList.Items.Add(lvi);
 		}
 
-		private ILineColumnFile GetSourcePos(object context)
+		private ILineAndColumn GetSourcePos(object context)
 		{
 			context = MessageSink.LocationOf(context);
-			if (context is ILineColumnFile)
-				return (ILineColumnFile)context;
+			if (context is ILineAndColumn)
+				return (ILineAndColumn)context;
 			if (context is ISourceRange)
 				return ((ISourceRange)context).Start();
 			return null;

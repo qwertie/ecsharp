@@ -56,7 +56,7 @@ namespace LeMP
 		{
 			var modeNodes = attrs.Where(a => Enum.TryParse(a.Name.Name, out MacroMode _));
 			// unwrap braces (they're not part of the pattern, they just enable statement syntax in EC#)
-			var pattern' = pattern.Calls(S.Braces, 1) ? pattern[0] : pattern;
+			var pattern' = pattern.UnwrapBraces();
 			MacroMode modes = GetMacroMode(ref attrs, pattern');
 
 			// compileTime {...} can recognize macro method definitions. 

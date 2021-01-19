@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.9.0.1
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 2.9.0.3
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -122,12 +122,12 @@ namespace LeMP
 				bool isDefault;
 				if (body[i].Calls(S.Lambda, 2))
 				{
-					var alts = body[i][0].WithoutOuterParens().AsList(S.Tuple).SmartSelect(AutoStripBraces);
+					var alts = body[i][0].WithoutOuterParens().AsList(S.Tuple).SmartSelect(UnwrapBraces);
 					pairs.Add(Pair.Create(alts, body[i][1].AsList(S.Braces)));
 				} else
 				if ((isDefault = IsDefaultLabel(body[i])) || body[i].CallsMin(S.Case, 1))
 				{
-					var alts = isDefault ? LNodeList.Empty : body[i].Args.SmartSelect(AutoStripBraces);
+					var alts = isDefault ? LNodeList.Empty : body[i].Args.SmartSelect(UnwrapBraces);
 					int bodyStart = ++i;
 					for (; i < body.Count && !IsDefaultLabel(body[i]) && !body[i].CallsMin(S.Case, 1); i++) { }
 					var handler = new LNodeList(body.Slice(bodyStart, i - bodyStart));
@@ -142,7 +142,7 @@ namespace LeMP
 			return pairs;
 		}
 
-		static LNode AutoStripBraces(LNode node)
+		static LNode UnwrapBraces(LNode node)
 		{
 			if (node.Calls(S.Braces, 1) && !node.HasPAttrs())
 				return node.Args[0];
