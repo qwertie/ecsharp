@@ -115,6 +115,7 @@
     <Compile Include="Collections\ICharSource.cs" />
     <Compile Include="Collections\IDictionarySource.cs" />
     <Compile Include="Collections\INotifyListChanged.cs" />
+    <Compile Include="Collections\ITuple.cs" />
     <Compile Include="Concrete\BaseDictionary.cs" />
     <Compile Include="Concrete\Either.cs" />
     <Compile Include="Concrete\EmptySourceFile.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Loyc.Compatibility;
 
 namespace Loyc
 {
