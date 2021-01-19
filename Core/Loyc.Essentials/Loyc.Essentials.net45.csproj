@@ -115,6 +115,11 @@
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
     <Compile Include="Collections\Adapters\SparseListSourceSlice.cs" />
     <Compile Include="Collections\BaseClasses\CollectionWrapper.cs" />
+    <Compile Include="Collections\ExtensionMethods\EnumerableExt.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EnumerableExt.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Collections\HelperClasses\DictionaryWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\DictionaryWrapper.cs" />
     <Compile Include="Collections\HelperClasses\ListWithChangeEvents.cs" />
@@ -134,6 +139,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SelectListSource.ecs</DependentUpon>
     </Compile>
+    <None Include="Collections\ExtensionMethods\EnumerableExt.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>EnumerableExt.out.cs</LastGenOutput>
+    </None>
     <None Include="Collections\HelperClasses\SelectCollection.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>SelectCollection.out.cs</LastGenOutput>
@@ -157,7 +166,6 @@
     <Compile Include="Collections\BaseClasses\ReadOnlyCollectionBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
-    <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsSparse.cs" />

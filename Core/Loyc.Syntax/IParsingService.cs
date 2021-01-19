@@ -110,6 +110,14 @@ namespace Loyc.Syntax
 			set { Default = value; }
 		}
 
+		/// <summary>Sets the current language service, returning a value suitable 
+		/// for use in a C# using statement, which will restore the old service.</summary>
+		/// <param name="newValue">new value of Default</param>
+		/// <example><code>
+		/// LNode code;
+		/// using (ParsingService.SetDefault(LesLanguageService.Value))
+		///     code = ParsingService.Default.ParseSingle("This `is` LES_code;");
+		/// </code></example>
 		public static SavedValue<IParsingService> SetDefault(IParsingService newValue)
 		{
 			return new SavedValue<IParsingService>(_default, newValue);
@@ -175,7 +183,7 @@ namespace Loyc.Syntax
 		{
 			return RegisteredLanguages
 				.Where(pair => ExtensionMatches(pair.Key, filename))
-				.MaxOrDefault(pair => pair.Key.Length).Value;
+				.MaxItemOrDefault(pair => pair.Key.Length).Value;
 		}
 		static bool ExtensionMatches(string ext, string fn)
 		{
