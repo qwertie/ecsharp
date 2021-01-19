@@ -311,7 +311,6 @@ namespace Loyc.Syntax
 
 		static Either<object, LogMessage> SyntaxError(UString input, Symbol typeMarker)
 		{
-		
 			return new LogMessage(Severity.Error, input, "Syntax error in '{0}' literal", typeMarker);
 		}
 

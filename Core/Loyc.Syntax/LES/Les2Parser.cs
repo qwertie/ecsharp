@@ -37,7 +37,13 @@ namespace Loyc.Syntax.Les
 		{
 			ErrorSink = messageSink;
 		}
-		
+
+		public new IMessageSink ErrorSink
+		{
+			get { return base.ErrorSink; }
+			set { base.ErrorSink = value; F.ErrorSink = base.ErrorSink; }
+		}
+
 		public void Reset(IList<Token> list, ISourceFile file, int startIndex = 0)
 		{
 			Reset(list, default(Token), file, startIndex);

@@ -51,8 +51,8 @@ namespace Loyc.Syntax.Les
 		public void NegativeLiteral()
 		{
 			Exact("-x;", F.Call(S.Sub, x));
-			Stmt ("−2u;", F.Literal((UString)"−2", "_u"));
-			Stmt ("−2uL;", F.Literal((UString)"−2", "_uL"));
+			Stmt ("−2u;", F.Literal((UString)"−2", "_u"), 1);
+			Stmt ("−2uL;", F.Literal((UString)"−2", "_uL"), 1);
 			Exact("-2;", F.Call(S.Sub, two));
 			Stmt ("−3;", Number(-3));
 			Exact(@"_""-4"";", Number(-4));
