@@ -168,6 +168,16 @@ namespace LeMP.Tests
 		}
 
 		[Test]
+		public void TestDefineIgnoresBracesAroundPattern()
+		{
+			TestEcs(@"define ({ 'x'; }) { 'X'; }
+					Console.WriteLine('x');",
+					@"Console.WriteLine('X');");
+			TestLes(@"define ({ WL(); }) { Console.WriteLine(); }; WL(); WL();",
+					@"Console.WriteLine(); Console.WriteLine();");
+		}
+
+		[Test]
 		public void TestDefineComplexCall()
 		{
 			TestEcs(@"define ($x << $y) { $x.Append($y); }
