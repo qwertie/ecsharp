@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Loyc
@@ -59,9 +60,15 @@ namespace Loyc
 	}
 
 	/// <summary>Represents a type that holds a single value of one of two types (L or R).</summary>
-	public interface IEither<out L, out R>
+	public interface IEither<out L, out R> : ITuple
 	{
 		IMaybe<L> Left { get; }
 		IMaybe<R> Right { get; }
+	}
+	public interface IEither<out A, out B, out C> : ITuple
+	{
+		IMaybe<A> Item1 { get; }
+		IMaybe<B> Item2 { get; }
+		IMaybe<C> Item3 { get; }
 	}
 }

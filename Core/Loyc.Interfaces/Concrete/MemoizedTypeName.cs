@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,9 +43,10 @@ namespace Loyc
 		internal static string ComputeGenericName(Type type)
 		{
 			string result = type.Name;
+			
 			if (type.IsGenericType)
 			{
-				// remove genric indication (e.g. `1)
+				// remove generic indication (e.g. `1)
 				result = result.Substring(0, result.LastIndexOf('`'));
 
 				result = string.Format(
@@ -57,7 +58,7 @@ namespace Loyc
 			return result;
 		}
 
-		/// <summary>Extension method on <c>Type</c> that is an alias for the <see cref="Get"/> method.</summary>
+		[Obsolete("I accidentally made two of these methods; this one is less popular. Use NameWithGenericArgs() or "+nameof(MemoizedTypeName)+".Get instead")]
 		public static string NameWithGenericParams(this Type t)
 		{
 			return Get(t);

@@ -58,7 +58,7 @@ namespace Loyc
 	/// The <see cref="Or"/> method replicates the C# <c>??</c> operator.
 	/// </remarks>
 	[DebuggerDisplay("{HasValue ? (object)Value : Loyc.NoValue.Value}")]
-	public struct Maybe<T> : IMaybe<T>
+	public struct Maybe<T> : IMaybe<T>, IEquatable<Maybe<T>>, IEquatable<IMaybe<T>>
 	{
 		public static Maybe<T> NoValue { get { return new Maybe<T>(); } }
 		public Maybe(T value) { _value = value; _hasValue = true; }
@@ -77,6 +77,18 @@ namespace Loyc
 
 		public static implicit operator Maybe<T>(T value) { return new Maybe<T>(value); }
 		public static implicit operator Maybe<T>(NoValue _) { return new Maybe<T>(); }
+
+		public bool Equals(Maybe<T> obj)
+			=> _hasValue == obj._hasValue && (!_hasValue || (_value == null ? obj.Value == null : _value.Equals(obj.Value)));
+		public bool Equals(IMaybe<T> obj) => obj != null
+			&& _hasValue == obj.HasValue && (!_hasValue || (_value == null ? obj.Value == null : _value.Equals(obj.Value)));
+		public override bool Equals(object obj) => Equals(obj as IMaybe<T>);
+		public override int GetHashCode() => !_hasValue ? -1 : _value == null ? 0 : _value.GetHashCode();
+
+		public override string ToString()
+		{
+			return _hasValue ? "Value: {0}".Localized(_value) : Loyc.NoValue.Value.ToString();
+		}
 
 		// Although C# can now infer type parameters on an extension method like 
 		//    public static T Or<M,T>(this M m, T defVal) where M: IMaybe<T> => m.HasValue ? m.Value : defVal;

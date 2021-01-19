@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Loyc
 {
@@ -18,7 +19,7 @@ namespace Loyc
 	/// </remarks>
 	[Serializable]
 	[DebuggerDisplay("A = {A}, B = {B}, C = {C}")]
-	public struct Triplet<T1, T2, T3>
+	public struct Triplet<T1, T2, T3> : ITuple
 	{
 		public Triplet(T1 a, T2 b, T3 c) { A = a; B = b; C = c; }
 		public T1 A;
@@ -30,6 +31,13 @@ namespace Loyc
 		public T2 Item2 { [DebuggerStepThrough] get { return B; } set { B = value; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter in debugger
 		public T3 Item3 { [DebuggerStepThrough] get { return C; } set { C = value; } }
+
+		int ITuple.Length => 3;
+		public object this[int index] => 
+			index == 0 ? Item1 : 
+			index == 1 ? Item2 : 
+			index == 2 ? (object)Item3 :
+			throw new IndexOutOfRangeException();
 
 		static readonly EqualityComparer<T1> T1Comp = EqualityComparer<T1>.Default;
 		static readonly EqualityComparer<T2> T2Comp = EqualityComparer<T2>.Default;

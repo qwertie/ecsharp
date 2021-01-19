@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Loyc
 {
@@ -36,7 +37,7 @@ namespace Loyc
 	/// </remarks>
 	[Serializable]
 	[DebuggerDisplay("A = {A}, B = {B}")]
-	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>, IValue<T2>
+	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>, IValue<T2>, ITuple
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }
 		public T1 A;
@@ -50,6 +51,9 @@ namespace Loyc
 		public T1 Key   { [DebuggerStepThrough] get { return A; } set { A = value; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // reduce clutter in debugger
 		public T2 Value { [DebuggerStepThrough] get { return B; } set { B = value; } }
+
+		int ITuple.Length => 2;
+		public object this[int index] => index == 0 ? Item1 : index == 1 ? (object) Item2 : throw new IndexOutOfRangeException();
 
 		static readonly EqualityComparer<T1> T1Comparer = EqualityComparer<T1>.Default;
 		static readonly EqualityComparer<T2> T2Comparer = EqualityComparer<T2>.Default;
