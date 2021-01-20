@@ -391,28 +391,43 @@ namespace LeMP.Tests
 		[Test]
 		public void TestPreprocessArgsOf()
 		{
-			// TODO: come up with a more complicated test
-			TestLes(@"x = #preprocessArgsOf(concatId(concatId(abc, 123), 456));", @"x = abc123456");
-
-			TestEcs(@"x = #preprocessChild(0 in concatId(concatId(ABC, 123), 456));", @"x = ABC123456;");
-			TestLes(@"x = #preprocessChild(0, concatId(concatId(xyz, 123), 456));", @"x = xyz123456");
-			// Ignore the error in concatId
-			Test(@"x = #preprocessChild(1 in concatId(concatId(abc, def), ghi));", Les3LanguageService.Value,
-				@"x = concatId(abcdef, ghi);", Les3LanguageService.Value, 0xFFFF, MessageSink.Null);
-			Test(@"x = #preprocessChild((0, 2) in concatId(concatId(zero), 1, concatId(2)));", EcsLanguageService.Value,
-				@"x = zero12;", Les3LanguageService.Value, 0xFFFF, MessageSink.Null);
+			TestLes(@"replace good => bad { concatId(go, od); }", @"good;");
+			TestLes(@"#preprocessArgsOf(replace good => food { concatId(go, od); })", @"food;");
+			TestLes(@"#preprocessChild(1/0/(-2), replace took => book { @[concatId(to, ok)] thing; })", @"@[book] thing;");
+			TestLes(@"#preprocessChild(1/0 `'in` (replace grp => grape { @[concatId(g, r, p)] soda; }))", @"@[grape] soda;");
+			TestLes(@"#preprocessChild(1/0/(-2; 1), replace good => book { @[concatId(go, od)] read(concatId(go, od), concatId(go, od)); })",
+			        @"@[book] read(good, book);");
 			
-			// Error should mention the correct range
+			// A branch of this path contains an error, but the rest of the path should still work
 			var errors = new MessageHolder();
-			Test(@"x = #preprocessChild((1, 3) in concatId(concatId(x), y, concatId(z)));", Les3LanguageService.Value,
-				@"x = concatId(x, y, z);", Les3LanguageService.Value, 0xFFFF, errors);
-			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Warning).Formatted.Contains("-1 to 2"));
+			Test(@"#preprocessChild(1 / (0; 1) / (-2; 0), 
+					replace good => evil {
+						@[concatId(go, od)] deeds_are(concatId(go, od), concatId(go, od));
+					});",
+				Les2LanguageService.Value,
+				@"@[evil] deeds_are(evil, good);",
+				Les2LanguageService.Value, 0xFFFF, errors);
+			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Warning).Formatted.Contains("Index is out of range"));
 
-			// Error should mention the need for an "integer literal"
-			errors.List.Clear();
-			Test(@"x = #preprocessChild(0.5, concatId(concatId(A), B));", Les3LanguageService.Value,
-				@"x = #preprocessChild(0.5, concatId(A, B));", Les3LanguageService.Value, 0xFFFF, errors);
-			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Error).Formatted.Contains("integer literal"));
+			errors = new MessageHolder();
+			Test(@"#preprocessChild((0; 3.3), replace success => failure { concatId(suc, cess)(1); })",
+				Les2LanguageService.Value,
+				@"success(1);",
+				Les2LanguageService.Value, 0xFFFF, errors);
+			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Warning).Formatted.Contains("Expected a (32-bit) integer literal"));
+
+			// Names of children can be used instead of indexes
+			Test(@"#preprocessChild(@`'{}` / 0 / concatId, replace failure => success { concatId(fail, u, r, e)(2); })",
+				Les2LanguageService.Value,
+				@"success(2);",
+				Les2LanguageService.Value, 0xFFFF, errors);
+
+			errors = new MessageHolder();
+			Test(@"#preprocessChild(0 / 1 / 0, replace success => failure { concatId(suc, cess)(3); })",
+				Les2LanguageService.Value,
+				@"success(3);",
+				Les2LanguageService.Value, 0xFFFF, errors);
+			Assert.IsTrue(errors.List.First(m => m.Severity == Severity.Warning).Formatted.Contains("'failure' has no children"));
 		}
 
 		[Test]

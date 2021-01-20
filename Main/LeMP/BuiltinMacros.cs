@@ -119,19 +119,24 @@ namespace LeMP.Prelude
 			return node[0].WithArgs(newArgs);
 		}
 
-		[LexicalMacro("#preprocessChild(N, macroCall(...)), #preprocessChild(N, macroCall(...))",
-			"This macro preprocesses one or more specific arguments that was passed to its " +
-			"single argument, to work around issues with macro evaluation order. If you want" +
-			"to process multiple children, N can be a tuple of numbers. After preprocessing N," +
-			"it must be an integer or a tuple of integers. Each integer must be either a zero-" +
-			"based argument index, or -1 for the call target, or a lower number to refer to " +
-			"attributes (e.g. -2 is the final attribute)." +
+		[LexicalMacro("#preprocessChild(paths, syntaxTree(...)); #preprocessChild(paths in syntaxTree(...)); // EC# syntax",
+			"This macro preprocesses one or more specific subtrees of its second argument, " +
+			"to work around issues with macro evaluation order. `paths` is either (1) an " +
+			"integer indicating which child to preprocess, where 0 is the first argument, (2) " +
+			"the Name of a child to preprocess (only the first matching name is processed)," +
+			"(3) a tuple containing a list of children to preprocess, or (4) a 'path' to a " +
+			"subchild to preprocess, represented by paths separated by the / operator. A " +
+			"single path can be a mixture of these four things; for example, if you write " +
+			"e.g. #preprocessChild(0 / (hi, -1), { greetings(hi(Fred), hello); }), the path " +
+			"0 / (hi, -1) means \"inside child 0, preprocess the child whose name is 'hi' and " +
+			"the child whose index is -1\". 0 refers to the first statement inside the braced " +
+			"block, -1 refers to the target 'greetings' and 'hi' refers to the subtree 'hi(Fred)'." +
 			"\n\n" +
-			"Caution: if an argument contains a macro that queries its Parent node, the parent " +
-			"will be this macro rather than the original parent (the other macro). " +
-			"Also, the argument may be preprocessed twice: this macro processes it once, and if " +
-			"the other macro includes its arguments in its output, it can be processed again " +
-			"(unless the other macro prevents futher processing).",
+			"Caution: if a path refers to a macro that queries its Parent node, the parent " +
+			"will be this macro rather than the original parent. Also, the argument may be " +
+			"preprocessed twice: this macro processes it once, and if the other macro includes " +
+			"its arguments in its output, it can be processed again (unless the other macro " +
+			"prevents futher processing).",
 			"#preprocessChild")]
 		public static LNode preprocessChild(LNode node, IMacroContext context)
 		{
@@ -140,21 +145,40 @@ namespace LeMP.Prelude
 				|| node.Args.Count == 1 && (@in = node.Args[0]) != null && @in.Calls(CodeSymbols.In, 2) && (indexes = @in.Args[0]) != null && (call = @in.Args[1]) != null
 				) && call.IsCall)
 			{
-				var result = call;
-				indexes = context.PreProcess(indexes);
-				foreach (var index in indexes.AsList(CodeSymbols.Tuple)) {
-					if (index.Value is int iArg) {
-						LNode arg = call.TryGet(iArg, null);
-						if (arg == null)
-							context.Warning(index, "Index out of range (expected {0} to {1})", call.Min, call.Max);
-						else
-							result = result.WithArgChanged(iArg, context.PreProcess(arg));
-					} else
-						return Reject(context, index, "Expected a (32-bit) integer literal");
-				}
-				return result;
+				return ChangePath(call, indexes, context, (arg, ctx) => context.PreProcess(arg));
 			}
 			return null;
+		}
+		private static LNode ChangePath(LNode call, LNode path, IMacroContext context, Func<LNode, IMacroContext, LNode> change)
+		{
+			foreach (var index in path.AsList(CodeSymbols.Tuple)) {
+				// Check if index is an integer, a negated integer, or an 
+				// identifier matching the name of an argument of `call`...
+				if (index.Value is int iArg || 
+					index.Calls(S.Sub, 1) && index[0].Value is int negArg && ((iArg = -negArg) & 0) == 0 ||
+					index.IsId 
+					&& (iArg = EnumerableExt.FirstIndexWhere<LNode>(call, n => n.Name == index.Name) ?? -1) != -1 
+					&& ((iArg += call.Min) & 0) == 0)
+				{
+					LNode arg = call.TryGet(iArg, null);
+					if (arg == null) {
+						context.Warning(path, "Index is out of range ({1})", iArg, call.Min <= call.Max 
+							? "expected {0} to {1}".Localized(call.Min, call.Max) 
+							: "'{0}' has no children".Localized(LNode.Printer.Print(call, null, ParsingMode.Expressions)));
+					} else
+						call = call.WithChildChanged(iArg, change(arg, context));
+				}
+				else if (index.Calls(S.Div, 2))
+				{
+					call = ChangePath(call, path.Args[0], context, (n, ctx) =>
+						ChangePath(n, path.Args[1], ctx, change));
+				}
+				else
+				{
+					context.Warning(index, "Expected a (32-bit) integer literal");
+				}
+			}
+			return call;
 		}
 
 		static readonly Symbol _macros = GSymbol.Get("macros");

@@ -164,7 +164,7 @@ namespace LeMP
 
 		[LexicalMacro(@"concat(a, b)",
 			"Concatenates identifiers and/or literals to produce a string. For example, " +
-			"the output of `concat(abc, 123)` is `abc123`.\n")]
+			"the output of `concat(abc, 123)` is `abc123`.\n", Mode = MacroMode.ProcessChildrenBefore)]
 		public static LNode concat(LNode node, IMacroContext context)
 		{
 			var result = ConcatCore(node, out var attrs, context.Sink);
@@ -174,7 +174,7 @@ namespace LeMP
 		[LexicalMacro(@"a `##` b; concatId(a, b)", 
 			"Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`.\n"
 			+"\n**Note**: concatId cannot be used directly as a variable or method name unless you use `$(out concatId(...))`.", 
-			"##", "concatId")]
+			"##", "concatId", Mode = MacroMode.ProcessChildrenBefore)]
 		public static LNode concatId(LNode node, IMacroContext context)
 		{
 			StringBuilder sb = ConcatCore(node, out var attrs, context.Sink, allowLastToBeCall: true);
@@ -440,10 +440,11 @@ namespace LeMP
 			return null;
 		}
 
-		[LexicalMacro(@"$(out concatId(a, b, c))", 
-			"`$(out ...)` allows you to use a macro in Enhanced C# in places where macros are ordinarily not allowed, "
-			+"such as in places where a data type or a method name are expected. The `out` attribute is required "
-			+"to make it clear you want to run this macro and that some other meaning of `$` does not apply. Examples:\n\n"
+		[LexicalMacro(@"$(out concatId(a, b, c)) // Enhanced C# syntax", 
+			"`$(out X)` simply returns X. It allows you to use a macro in Enhanced C# in places " +
+			"where macros are ordinarily not allowed, such as in places where a data type or a " +
+			"method name are expected. The `out` attribute is required to make it clear you want " +
+			"to run this macro and that some other meaning of `$` does not apply. Examples:\n\n"
 			+"    $(out Foo) number; // variable of type Foo\n"
 			+"    int $(out concatId(Sq, uare))(int x) => x*x;",
 			"'$", Mode = MacroMode.Passive)]
@@ -459,7 +460,7 @@ namespace LeMP
 			return null;
 		}
 
-		[LexicalMacro("unless (Condition) {Then...}; /* LES only */ unless Condition {Then...} else {Else...}",
+		[LexicalMacro("unless (Condition) {Then...}; /* LES only: */ unless Condition {Then...} else {Else...}",
 			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @unless(LNode node, IMessageSink sink)
 		{
