@@ -227,7 +227,7 @@ namespace LeMP.Tests
 				.Replace("_min_1", "_min_" + MacroProcessor.NextTempCounter));
 
 			// It's only a test. Don't actually write code this way
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Console.WriteLine(""Please press a digit."");
 					while (#runSequence(#var(char, key), {
@@ -236,7 +236,7 @@ namespace LeMP.Tests
 						}, key) != '\0')
 						Console.WriteLine(""You pressed ({0}, {1})"", foo.Property::p.Item1, p.Item2);
 					Console.WriteLine(""Okay bye!"");
-				}", EcsLanguageService.Value,
+				}",
 				@"void f() {
 					Console.WriteLine(""Please press a digit."");
 					for (;;) {
@@ -257,8 +257,7 @@ namespace LeMP.Tests
 							break;
 					}
 					Console.WriteLine(""Okay bye!"");
-				}".Replace("_min_1", "_min_" + MacroProcessor.NextTempCounter),
-				EcsLanguageService.WithPlainCSharpPrinter);
+				}".Replace("_min_1", "_min_" + MacroProcessor.NextTempCounter));
 		}
 
 		[Test]
@@ -749,17 +748,17 @@ namespace LeMP.Tests
 		[Test]
 		public void RefVarLogic()
 		{
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				ref int a = ref b;
 				Foo(ref int c = 0);
 				Foo(ref int x = ref y);
-			", EcsLanguageService.Value, @"
+			", @"
 				ref int a = ref b;
 				int c = 0;
 				Foo(ref c);
 				ref int x = ref y;
 				Foo(x);
-			", EcsLanguageService.WithPlainCSharpPrinter);
+			");
 		}
 
 		[Test]
@@ -770,15 +769,15 @@ namespace LeMP.Tests
 			// was needed to support the braces had not been applied to the special case 
 			// of `$T $x = #runSequence {...}`. In addition, I added a special case for
 			// `using ($T $x = ...)` to improve the output and there's a test here for it.
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				Foo(var x = #runSequence { FirstThing(); SecondThing(); });
-			", EcsLanguageService.Value, @"
+			", @"
 				FirstThing();
 				var x = SecondThing();
 				Foo(x);
-			", EcsLanguageService.WithPlainCSharpPrinter);
+			");
 
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				PlainStatement(var x = #runSequence {
 					moveOutsideCurrentMethod {
 						class InnerClassX : BaseType {
@@ -788,7 +787,7 @@ namespace LeMP.Tests
 					}
 					new InnerClassX(this);
 				}, #runSequence(int y = 5, y));
-			", EcsLanguageService.Value, @"
+			", @"
 				moveOutsideCurrentMethod {
 					class InnerClassX : BaseType {
 						OuterType outer;
@@ -798,7 +797,7 @@ namespace LeMP.Tests
 				var x = new InnerClassX(this);
 				int y = 5;
 				PlainStatement(x, y);
-			", EcsLanguageService.WithPlainCSharpPrinter);
+			");
 		}
 
 		[Test]
@@ -813,7 +812,7 @@ namespace LeMP.Tests
 					DoStuffWith(Q);
 			");
 			// TODO: the transform of the `if` statement probably shouldn't add braces
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				if (var x = #runSequence(#splice(), #splice(), new Thing()))
 					#runSequence(#splice(), DoStuffWith)(#runSequence(#splice(), x));
 				while (#runSequence(condition))
@@ -823,7 +822,7 @@ namespace LeMP.Tests
 				while (#runSequence(bored));
 				for (#runSequence(#splice(), int x = 0); #runSequence(x < 10); #runSequence(x++))
 					Console.WriteLine(#runSequence(x));
-			", EcsLanguageService.Value, @"
+			", @"
 				{
 					var x = new Thing();
 					if (x)
@@ -836,18 +835,18 @@ namespace LeMP.Tests
 				while (bored);
 				for (int x = 0; x < 10; x++)
 					Console.WriteLine(x);
-			", EcsLanguageService.WithPlainCSharpPrinter);
+			");
 			TestEcs(@"#useSequenceExpressions;
 				Foo(x, y - #runSequence(#splice()), #runSequence(#splice()));
 			", @"
 				Foo(x, y - #runSequence(), #runSequence());
 			");
-			Test(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				Foo(var x = #runSequence { new Crapola(this); });
-			", EcsLanguageService.Value, @"
+			", @"
 				var x = new Crapola(this);
 				Foo(x);
-			", EcsLanguageService.WithPlainCSharpPrinter);
+			");
 		}
 	}
 }

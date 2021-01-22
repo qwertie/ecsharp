@@ -59,11 +59,11 @@ namespace LeMP
 		/// <param name="description"></param>
 		/// <param name="names"></param>
 		public LexicalMacroAttribute(string syntax, string description, params string[] names)
-			{ Syntax = syntax; Description = description; Names = names; Mode = MacroMode.PriorityNormal; }
+			{ Syntax = syntax; Description = description; Names = names ?? EmptyArray<string>.Value; Mode = MacroMode.PriorityNormal; }
 
 		public string Syntax { get; protected set; }
 		public string Description { get; protected set; }
-		public string[] Names { get; private set; }
+		public string[] Names { get; protected set; }
 		MacroMode _mode;
 		public MacroMode Mode {
 			get { return _mode; }
@@ -74,6 +74,15 @@ namespace LeMP
 			}
 		}
 		public MacroMode Priority { get { return Mode & MacroMode.PriorityMask; } }
+		/// <summary>A list of names of the macro that have been deprecated. If a name is 
+		/// included in this list, it is not necessary to also include it in the list of 
+		/// Names, but doing so is allowed and won't make a difference.</summary>
+		public string[] DeprecatedNames { get; set; }
+		/// <summary>A message to show when the deprecated macro is used. It is not
+		/// necessary to set this property if the macro was simply renamed, as LeMP 
+		/// can automatically tell the user about the new name if both versions use
+		/// the same method.</summary>
+		public string DeprecationMessage { get; set; }
 	}
 
 	/// <summary>Flags that affect the way that <see cref="LeMP.MacroProcessor"/>
@@ -92,9 +101,15 @@ namespace LeMP
 		/// <summary>The result is pre-processed before calling the macro, and not processed afterward
 		/// (if the macro accepts the input by returning a non-null result).</summary>
 		ProcessChildrenBefore = 4,
-		/// <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input by returning null.</summary>
+		/// <summary>Indicates that it is normal for this macro not to change the code, 
+		/// so a warning should not be printed when the macro "rejects" the input by 
+		/// returning null.</summary>
 		Passive = 8,
-		/// <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce equivalent results.</summary>
+		/// <summary>If this macro is ambiguous with one or more macro of the same priority, 
+		/// this flag blocks the ambiguity warning message when all the macros produce 
+		/// equivalent results. This flag is only required on one member of a group, i.e. 
+		/// if there are three copies of a macro that all produce the same results, the 
+		/// warning is suppressed if just one of them uses this flag.</summary>
 		AllowDuplicates = 16,
 		/// <summary>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</summary>
 		/// <remarks>This option may be used by macros that splice together the list of <see cref="IMacroContext.RemainingNodes"/> into their own result.
@@ -148,12 +163,22 @@ namespace LeMP
 	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
 	public class MacroInfo : LexicalMacroAttribute
 	{
-		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) : this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
-		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro)
-			: base(a.Syntax, a.Description, a.Names != null && a.Names.Length > 0 
-				? a.Names : (a.Mode & (MacroMode.MatchEveryCall | MacroMode.MatchEveryLiteral)) != 0
-				? EmptyArray<string>.Value : new[] { macro.Method.Name })
+		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) 
+			: this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
+		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro, bool deprecateAllNames = false)
+			: base(a.Syntax, a.Description, a.Names)
 		{
+			DeprecatedNames = a.DeprecatedNames;
+			DeprecationMessage = a.DeprecationMessage;
+
+			if (Names.Length == 0
+				&& (a.DeprecatedNames == null || a.DeprecatedNames.Length == 0)
+				&& (a.Mode & (MacroMode.MatchEveryCall | MacroMode.MatchEveryLiteral | MacroMode.MatchEveryIdentifier)) == 0)
+				Names = new string[1] { macro.Method.Name };
+
+			if (deprecateAllNames)
+				DeprecatedNames = (DeprecatedNames ?? EmptyArray<string>.Value).Union(Names).ToArray();
+
 			CheckParam.IsNotNull("macro", macro);
 			Namespace = @namespace;
 			Macro = macro;
@@ -206,7 +231,8 @@ namespace LeMP
 						if (d != null)
 							results.AddRange(((Func<IEnumerable<MacroInfo>>)d)());
 					} catch (Exception e) {
-						errorSink.Warning(method.DeclaringType, "Unable to get macros from '{0}': {1}", method.Name, e.Message);
+						errorSink.Warning(method.DeclaringType, "Exception while getting macros from '{0}': {1}",
+							method.Name, e.Message);
 					}
 				}
 			}
@@ -218,7 +244,8 @@ namespace LeMP
 					return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method,
 						throwOnBindFailure: true);
 				} catch (Exception e) {
-					errorSink.Write(Severity.Warning, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
+					errorSink.Warning(method.DeclaringType, "Macro '{0}' is uncallable: {1}",
+						method.Name, e.Message);
 					return null;
 				}
 			}

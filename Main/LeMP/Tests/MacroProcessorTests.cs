@@ -149,6 +149,19 @@ namespace LeMP.Tests
 
 			return LNode.Call(S.Splice); // delete this node
 		}
+
+		[LexicalMacro("", "", DeprecatedNames = new[] { "deprecatedMacro" }, 
+			DeprecationMessage = "This macro is sooo last century.")]
+		public static LNode DeprecatedMacro(LNode node, IMacroContext context)
+		{
+			return LNode.Id("groovy_macro_dude");
+		}
+
+		[LexicalMacro("", "", "nonDeprecatedAlias", "deprecatedAlias", DeprecatedNames = new[] { "deprecatedAlias" })]
+		public static LNode partlyDeprecatedMacro(LNode node, IMacroContext context)
+		{
+			return LNode.Id("multi_name_macro");
+		}
 	}
 
 	namespace A
@@ -185,12 +198,15 @@ namespace LeMP
 			: base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(text, "TEST") })
 		{
 			Parallel = false;
-			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
-			MacroProcessor.AddMacros(typeof(LeMP.Les3.To.CSharp.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.les2.to.ecs.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.les3.to.ecs.Macros));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.TestMacros));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.A.AliasTest));
 			MacroProcessor.AddMacros(typeof(LeMP.Tests.B.AliasTest));
+			// Register all the old names, as we would in production
+			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.Les3.To.CSharp.Macros));
 			MacroProcessor.PreOpenedNamespaces.Add((Symbol)"LeMP.Prelude");
 			foreach (var ns in preOpenedNamespaces)
 				MacroProcessor.PreOpenedNamespaces.Add((Symbol)ns);
@@ -479,13 +495,36 @@ namespace LeMP
 				});", 0xFFFF, Les2LanguageService.Value, Les2LanguageService.Value);
 		}
 
+		[Test]
+		public void DeprecatedMacros()
+		{
+			var msgs = new MessageHolder();
+			var msgs2 = new SeverityMessageFilter(msgs, Severity.Warning);
+			Test("#importMacros(LeMP.Tests); DeprecatedMacro(); deprecatedMacro();",
+				"DeprecatedMacro(); groovy_macro_dude;", 1, 
+				Les2LanguageService.Value, Les2LanguageService.Value, msgs2);
+			Assert.IsTrue(msgs.List.First().Format.Contains("deprecated"));
+			Assert.IsTrue(msgs.List.First().Formatted.Contains("This macro is sooo last century"));
+
+			msgs.List.Clear();
+			Test(@"#importMacros(LeMP.Tests);
+				nonDeprecatedAlias();
+				deprecatedAlias();",
+				@"multi_name_macro;
+				multi_name_macro;", 1,
+				Les2LanguageService.Value, Les2LanguageService.Value, msgs2);
+			Assert.IsTrue(msgs.List.First().Format.Contains("deprecated"));
+			Assert.AreEqual(3, ((SourceRange)msgs.List.First().Location).Start.Line);
+			Assert.IsTrue(msgs.List.First().Formatted.Contains("nonDeprecatedAlias"));
+		}
+
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
 
-		private void Test(string input, string output, int maxExpand = 0xFFFF, IParsingService parser = null, ILNodePrinter printer = null)
+		private void Test(string input, string output, int maxExpand = 0xFFFF, IParsingService parser = null, ILNodePrinter printer = null, IMessageSink sink = null)
 		{
 			using (ParsingService.SetDefault(parser ?? Les2LanguageService.Value))
 			using (LNode.SetPrinter(printer ?? EcsLanguageService.WithPlainCSharpPrinter))
-				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.Prelude.Les");
+				TestCompiler.Test(input, output, sink ?? _sink, maxExpand, "LeMP.les2.to.ecs");
 		}
 	}
 }

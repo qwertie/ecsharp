@@ -1,0 +1,61 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+using static LeMP.StandardMacros;
+using S = Loyc.Syntax.CodeSymbols;
+
+namespace LeMP.ecs.deprecated
+{
+	[ContainsMacros]
+	public partial class Macros
+	{
+		static LNode Range_ExcludeHi = quote(Range.ExcludeHi);
+		static LNode Range_Inclusive = quote(Range.Inclusive);
+		static LNode Range_StartingAt  = quote(Range.StartingAt);
+		static LNode Range_UntilInclusive  = quote(Range.UntilInclusive);
+		static LNode Range_UntilExclusive  = quote(Range.UntilExclusive);
+		static LNode Range_Everything = quote(Range.Everything());
+
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'..")]
+		public static LNode RangeExcl(LNode node, IMacroContext context)
+		{
+			LNode lo = null;
+			matchCode(node) {
+				case $_($(ref lo), $hi), $_($hi):
+					if (lo == null || lo.IsIdNamed(__))
+						if (hi.IsIdNamed(__))
+							return Range_Everything;
+						else
+							return quote($Range_UntilExclusive($hi));
+					else if (hi.IsIdNamed(__))
+						return quote($Range_StartingAt($lo));
+					else
+						return quote($Range_ExcludeHi($lo, $hi));
+			}
+			return null;
+		}
+
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'...")]
+		public static LNode RangeIncl(LNode node, IMacroContext context)
+		{
+			LNode lo = null;
+			matchCode(node) {
+				case $_($(ref lo), $hi), $_($hi):
+					if (lo == null || lo.IsIdNamed(__))
+						if (hi.IsIdNamed(__))
+							return Range_Everything;
+						else
+							return quote($Range_UntilInclusive($hi));
+					else if (hi.IsIdNamed(__))
+						return quote($Range_StartingAt($lo));
+					else
+						return quote($Range_Inclusive($lo, $hi));
+			}
+			return null;
+		}
+	}
+}

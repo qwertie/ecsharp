@@ -43,7 +43,7 @@ namespace LeMP
  			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },
-			{ "inlang",    Pair.Create("name", "Set input language: --inlang=ecs for Enhanced C#, --inlang=les for LES") },
+			{ "inlang",    Pair.Create("name", "Set default input language: --inlang=ecs for Enhanced C#, --inlang=les for LES") },
 			{ "outext",    Pair.Create("name", "Set output extension and optional suffix:\n  .ecs (Enhanced C#), .cs (C#), .les (LES)\n"+
 			               "This can include a suffix before the extension, e.g. --outext=.output.cs\n"+
 			               "If --outlang is not used, output language is chosen by file extension.") },
@@ -63,6 +63,7 @@ namespace LeMP
 			{ "o-explicit-trivia",     Pair.Create("bool", "Sets ILNodePrintingOptions.PrintTriviaExplicitly") },
 			{ "o-compatibility-mode",  Pair.Create("bool", "Sets ILNodePrintingOptions.CompatibilityMode") },
 			{ "o-compact-mode",        Pair.Create("bool", "Sets ILNodePrintingOptions.CompactMode") },
+			{ "nologo",    Pair.Create("", "Don't print name and version number of the program") },
 		};
 
 		#region Main()
@@ -88,18 +89,20 @@ namespace LeMP
 			
 			if (!MaybeShowHelp(options, KnownOptions))
 			{
-				WarnAboutUnknownOptions(options, filter,
-					KnownOptions.With("nologo", Pair.Create("", "")));
+				WarnAboutUnknownOptions(options, filter, KnownOptions);
 
 				if (c.Files.Count == 0)
 				{
 					Console.WriteLine();
 					filter.Error(null, "No input files provided, stopping. Add --help for usage info.".Localized());
-					// Give users a simple way to find out which copy they're using:
-					// Windows doesn't have `which` and the dotnet tools version of 
-					// LeMP.exe is not the real one anyway (it's not a .NET module)
-					Console.WriteLine("You're using {0}".Localized(typeof(MacroProcessor).Assembly.Location));
-					Console.WriteLine("  ({0})".Localized(typeof(MacroProcessor).Assembly.FullName));
+					if (!options.ContainsKey("nologo"))
+					{
+						// Give users a simple way to find out which copy they're using:
+						// Windows doesn't have `which` and the dotnet tools version of 
+						// LeMP.exe is not the real one anyway (it's not a .NET module)
+						Console.WriteLine("You're using {0}".Localized(typeof(MacroProcessor).Assembly.Location));
+						Console.WriteLine("  ({0})".Localized(typeof(MacroProcessor).Assembly.FullName));
+					}
 					return;
 				}
 				else
@@ -183,13 +186,14 @@ namespace LeMP
 
 		/// <summary>Processes command-line arguments to build a BMultiMap and 
 		/// sends those options to the other overload of this method.</summary>
-		/// <param name="args">Arg list from which to extract options. **NOTE**:
-		/// discovered options are removed from the list. This parameter 
-		/// cannot be an array.</param>
+		/// <param name="args">Arg list from which to extract options. <b>NOTE</b>:
+		///   discovered options are removed from the list, so this parameter 
+		///   cannot be an array.</param>
 		/// <param name="warnAboutUnknownOptions">Whether this method should
-		/// call <see cref="WarnAboutUnknownOptions"/> for you.</param>
+		///   call <see cref="WarnAboutUnknownOptions"/> for you.</param>
 		/// <param name="autoOpenInputFiles">Whether to open input files 
-		/// for you by calling <see cref="OpenSourceFiles(IMessageSink, IEnumerable{string})"/>.
+		///   for you by calling <see cref="OpenSourceFiles(IMessageSink, IEnumerable{string})"/>
+		///   and adding the files to the <see cref="Files"/> list.
 		/// </param>
 		/// <param name="inputFiles">A list of input files to open if 
 		/// autoOpenInputFiles is true. If this is null, The input files are 
@@ -523,10 +527,11 @@ namespace LeMP
 			return dot;
 		}
 
-		/// <summary>Opens a set of source files by file name, and creates a text file for each.</summary>
-		/// <param name="sink"></param>
-		/// <param name="fileNames"></param>
-		/// <returns></returns>
+		/// <summary>Opens a set of source files by file name, and creates an <see cref="InputOutput"/> object for each.</summary>
+		/// <param name="sink">Any I/O errors that occur will be logged to this object.</param>
+		/// <param name="fileNames">List of file names</param>
+		/// <returns>a list of files that were opened, together with their settings. 
+		/// This method does not run the macro processor on these files.</returns>
 		public static List<InputOutput> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
 		{
 			var openFiles = new List<InputOutput>();
@@ -547,7 +552,10 @@ namespace LeMP
 			return MacroProcessor.AddMacros(assembly);
 		}
 
-		/// <summary>Runs the <see cref="MacroProcessor"/> on all input <see cref="Files"/>.</summary>
+		/// <summary>Calls <see cref="CompleteInputOutputOptions"/>, runs the 
+		/// <see cref="MacroProcessor"/> on all input <see cref="Files"/>, and writes 
+		/// the output to the output files by calling the protected method
+		/// <see cref="WriteOutput"/>.</summary>
 		public void Run()
 		{
 			CompleteInputOutputOptions();
@@ -557,6 +565,11 @@ namespace LeMP
 				MacroProcessor.ProcessSynchronously(Files.AsListSource(), WriteOutput);
 		}
 
+		/// <summary>Writes results from <see cref="InputOutput.Output"/> to 
+		/// <see cref="InputOutput.OutFileName"/> using <see cref="InputOutput.OutPrinter"/>
+		/// according to <see cref="InputOutput.OutOptions"/>.</summary>
+		/// <remarks>In case of --eval inputs, output is sent to the Console.
+		/// Status, warning and error messages are sent to <see cref="Sink"/>.</remarks>
 		protected virtual void WriteOutput(InputOutput io)
 		{
 			Debug.Assert(io.FileName != io.OutFileName);

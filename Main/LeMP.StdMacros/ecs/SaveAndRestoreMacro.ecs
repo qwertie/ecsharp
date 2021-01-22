@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using LeMP.CSharp7.To.OlderVersions;
+using static LeMP.StandardMacros;
+using S = Loyc.Syntax.CodeSymbols;
+
+namespace LeMP.ecs
+{
+	partial class StandardMacros
+	{
+		[LexicalMacro("saveAndRestore(VarOrProperty); saveAndRestore(VarOrProperty = NewValue);", 
+			"Saves the value of a variable or property, and uses `on_finally` to restore it at the end of the current scope. "
+			+"If the argument is an assignment `P = V`, then the property `P` is set to `V` after its value is saved. "
+			+"Warning: any references through which the variable or property is accessed is evaluated multiple times. "
+			+"For example, `saveAndRestore(A.B)` evaluates `A` twice, once to save the value and again to restore it. "
+			+"If `A` changes between the save and restore points, the value will be \"restored\" into the wrong `B`. ", 
+			Mode = MacroMode.Normal)]
+		public static LNode saveAndRestore(LNode node, IMacroContext context)
+		{
+			(var args, var body) = context.GetArgsAndBody(true);
+			if (args.Count == 1) {
+				LNode newValue = null;
+				matchCode (args[0]) {
+				case $property = $(ref newValue), $property:
+					string mainProp = KeyNameComponentOf(property).Name;
+					string varPrefix = "old" + mainProp + "_";
+					LNode varName, varDecl = TempVarDecl(context, property, out varName, varPrefix);
+					LNode tryFinally = quote {
+						try {
+							$(...body);
+						} finally {
+							$property = $varName;
+						}
+					};
+					if (newValue != null) {
+						return (quote {
+							$varDecl;
+							$property = $newValue;
+							$tryFinally;
+						}).IncludingTriviaFrom(node);
+					} else {
+						return (quote {
+							$varDecl;
+							$tryFinally;
+						}).IncludingTriviaFrom(node);
+					}
+				}
+			}
+			return null;
+		}
+	}
+}

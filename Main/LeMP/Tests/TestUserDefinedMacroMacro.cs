@@ -36,7 +36,7 @@ namespace LeMP.Tests
 		{
 			// TODO: add LeMP feature for disposing/end of file/end of block
 			//       until then Reset manually to avoid interference from other tests
-			StandardMacros.ResetRoslyn();
+			LeMP.ecs.StandardMacros.ResetRoslyn();
 
 			TestEcs(@"
 				macro digits($(str && str.Value is string strValue))
@@ -50,7 +50,7 @@ namespace LeMP.Tests
 				", @"
 				int i = 3;");
 
-			StandardMacros.ResetRoslyn();
+			LeMP.ecs.StandardMacros.ResetRoslyn();
 			TestEcs(@"
 				using System.Text;
 
@@ -72,7 +72,7 @@ namespace LeMP.Tests
 		{
 			// TODO: add LeMP feature for disposing/end of file/end of block
 			//       until then Reset manually to avoid interference from other tests
-			StandardMacros.ResetRoslyn();
+			LeMP.ecs.StandardMacros.ResetRoslyn();
 
 			TestEcs(@"[""Change first argument to HELLO if it's not an identifier"", Passive]
 				macro StupidDemoMacro($(arg0 && !arg0.IsId), $(..rest))

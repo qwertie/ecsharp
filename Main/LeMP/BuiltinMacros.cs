@@ -203,7 +203,7 @@ namespace LeMP.Prelude
 			return F.Call(S.Splice, context.AllKnownMacros.SelectMany(p => p.Value)
 				.GroupBy(mi => mi.Namespace).OrderBy(g => g.Key).Select(group => {
 					var descriptions = group.OrderBy(mi => mi.Macro.Method.Name).Select(GetDescriptionOfMacro);
-					if ((group.Key ?? GSymbol.Empty).Name != "")
+					if (!GSymbol.IsNullOrEmpty(group.Key))
 						return F.Attr(F.Trivia(S.TriviaSLComment, " printKnownMacros output:"),
 							F.Call(S.Namespace, NamespaceSymbolToLNode(group.Key ?? GSymbol.Empty),
 								LNode.Missing, F.Braces(descriptions)));

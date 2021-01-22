@@ -64,15 +64,14 @@ namespace LeMP.Tests
 		protected virtual MacroProcessor NewLemp(int maxExpand, IParsingService inLang)
 		{
 			var lemp = new MacroProcessor(MessageSink.Default, typeof(LeMP.Prelude.BuiltinMacros));
-			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			lemp.AddMacros(typeof(LeMP.Prelude.Les3.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.ecs"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			if (inLang.FileExtensions.Any(e => e == "les2"))
-				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.les2.to.ecs"));
 			if (inLang.FileExtensions.Any(e => e == "les3"))
-				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les3"));
+				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.les3.to.ecs"));
 			lemp.MaxExpansions = maxExpand;
 			return lemp;
 		}

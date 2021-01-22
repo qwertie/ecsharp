@@ -42,7 +42,7 @@ namespace Loyc.LLParserGenerator
 		{
 			using (ParsingService.SetDefault(parser ?? Les2LanguageService.Value))
 			using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter)) {
-				var c = new TestCompiler(sink ?? _sink, new UString(input), "LeMP.Prelude.Les");
+				var c = new TestCompiler(sink ?? _sink, new UString(input), "LeMP.les2.to.ecs");
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}

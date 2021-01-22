@@ -17,6 +17,7 @@ using S = Loyc.Syntax.CodeSymbols;
 /// </summary>
 namespace Loyc.LLPG
 {
+	using Loyc.Ecs;
 	using Loyc.LLParserGenerator;
 
 	/// <summary>
@@ -194,7 +195,7 @@ namespace Loyc.LLPG
 					returnType = sig.Args[1];
 					name = sig.Args[0];
 				}
-				if (LeMP.Prelude.Les.Macros.IsComplexId(name))
+				if (EcsValidators.IsComplexIdentifier(name))
 					name = F.Call(name); // def requires an argument list
 				
 				LNodeList args = name.Args;

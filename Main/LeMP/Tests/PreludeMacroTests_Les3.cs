@@ -18,9 +18,11 @@ namespace LeMP.Tests
 		{
 			using (LNode.SetPrinter(printer ?? EcsLanguageService.Value))
 			using (ParsingService.SetDefault(Les3LanguageService.Value))
-				TestCompiler.Test(input, output, _sink, maxExpand,
-					// LeMP.Prelude.Les3 is set up as an alias; both namespaces should work
-					(++_alternator & 1) != 0 ? "LeMP.Les3.To.CSharp" : "LeMP.Prelude.Les3");
+				TestCompiler.Test(input, output, _sink, maxExpand, "LeMP.les3.to.ecs");
+					// LeMP.Prelude.Les3 is set up as an alias; both namespaces should work,
+					// but we're not using this logic as of 2021/01 because we don't have a
+					// way to turn off annoying deprecation warnings
+					//(++_alternator & 1) != 0 ? "LeMP.les3.to.ecs" : "LeMP.Prelude.Les3");
 		}
 
 		[Test]

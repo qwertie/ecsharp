@@ -156,6 +156,8 @@ namespace Loyc
 			Debug.Assert(Empty.Id == 0 && Empty.Name == "");
 			Debug.Assert(((Symbol)Empty).Pool == Pool);
 		}
+		
+		public static bool IsNullOrEmpty(Symbol symbol) => symbol == null || symbol.Name.Length == 0;
 	}
 
 	/// <summary>A collection of <see cref="Symbol"/>s.</summary>

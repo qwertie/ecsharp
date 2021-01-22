@@ -1,4 +1,5 @@
-﻿#importMacros(LeMP.Prelude.Les);
+﻿#importMacros(LeMP.les2.to.ecs);
+#importMacros(LeMP.ecs);
 #useSymbols;
 import System;
 import System.Collections.Generic;

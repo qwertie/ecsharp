@@ -1,4 +1,4 @@
-#importMacros LeMP.Prelude.Les;
+#importMacros LeMP.les2.to.ecs;
 import System;
 import System.Collections.Generic;
 import System.Linq;
@@ -191,52 +191,52 @@ namespace Loyc.Ecs.Parser
 		/ "..<" { _type = TT.DotDot; _value = S.DotDot; }
 		/ ".."  { _type = TT.DotDot; _value = S.DotDot; }
 		/ "."   { _type = TT.Dot; _value = S.Dot; }
-		| ">>=" { _type = TT.CompoundSet; _value = S.ShrAssign; }
+		| ">>=" { _type = TT.CompoundAssign; _value = S.ShrAssign; }
 		/ ">="  { _type = TT.LEGE; _value = S.GE; }
 		/ ">"   { _type = TT.GT; _value = S.GT; }
 		/ "<=>" { _type = TT.Compare; _value = S.Compare; }
-		/ "<<=" { _type = TT.CompoundSet; _value = S.ShlAssign; }
+		/ "<<=" { _type = TT.CompoundAssign; _value = S.ShlAssign; }
 		/ "<="  { _type = TT.LEGE; _value = S.LE; }
 		/ "<"   { _type = TT.LT; _value = S.LT; }
 		| "&&"  { _type = TT.And; _value = S.And; }
-		/ "&="  { _type = TT.CompoundSet; _value = S.AndBitsAssign; }
+		/ "&="  { _type = TT.CompoundAssign; _value = S.AndBitsAssign; }
 		/ "&"   { _type = TT.AndBits; _value = S.AndBits; }
 		| "|>"  { _type = TT.PipeArrow; _value = S.ForwardPipeArrow; }
 		/ "|=>" { _type = TT.PipeArrow; _value = S.ForwardAssign; }
 		/ "||"  { _type = TT.OrXor; _value = S.Or; }
-		/ "|="  { _type = TT.CompoundSet; _value = S.OrBitsAssign; }
+		/ "|="  { _type = TT.CompoundAssign; _value = S.OrBitsAssign; }
 		/ "|"   { _type = TT.OrBits; _value = S.OrBits; }
 		| "^^"  { _type = TT.OrXor; _value = S.Xor; }
-		/ "^="  { _type = TT.CompoundSet; _value = S.XorBitsAssign; }
+		/ "^="  { _type = TT.CompoundAssign; _value = S.XorBitsAssign; }
 		/ "^"   { _type = TT.XorBits; _value = S.XorBits; }
-		| ":="  { _type = TT.CompoundSet; _value = S.QuickBindAssign; }
+		| ":="  { _type = TT.CompoundAssign; _value = S.QuickBindAssign; }
 		/ "=:"  { _type = TT.QuickBind; _value = S.QuickBind; }
 		/ "::"  { _type = TT.ColonColon; _value = S.ColonColon; }
 		/ ":"   { _type = TT.Colon; _value = S.Colon; }
 		/ "==>" { _type = TT.Forward; _value = S.Forward; }
 		/ "=="  { _type = TT.EqNeq; _value = S.Eq; }
 		/ "=>"  { _type = TT.LambdaArrow; _value = S.Lambda; }
-		/ "="   { _type = TT.Set; _value = S.Assign; }
+		/ "="   { _type = TT.Assign; _value = S.Assign; }
 		| "!="  { _type = TT.EqNeq; _value = S.NotEq; }
 		/ "!"   { _type = TT.Not; _value = S.Not; }
-		| "~="  { _type = TT.CompoundSet; _value = S.ConcatAssign; }
+		| "~="  { _type = TT.CompoundAssign; _value = S.ConcatAssign; }
 		/ "~"   { _type = TT.NotBits; _value = S.NotBits; }
-		| "**=" { _type = TT.CompoundSet; _value = S.ExpAssign; }
+		| "**=" { _type = TT.CompoundAssign; _value = S.ExpAssign; }
 		/ "**"  { _type = TT.Power; _value = S.Exp; }
-		/ "*="  { _type = TT.CompoundSet; _value = S.MulAssign; }
+		/ "*="  { _type = TT.CompoundAssign; _value = S.MulAssign; }
 		/ "*"   { _type = TT.Mul; _value = S.Mul; }
-		| "/="  { _type = TT.CompoundSet; _value = S.DivAssign; }
+		| "/="  { _type = TT.CompoundAssign; _value = S.DivAssign; }
 		/ "/"   { _type = TT.DivMod; _value = S.Div; }
-		| "%="  { _type = TT.CompoundSet; _value = S.ModAssign; }
+		| "%="  { _type = TT.CompoundAssign; _value = S.ModAssign; }
 		/ "%"   { _type = TT.DivMod; _value = S.Mod; }
-		| "+="  { _type = TT.CompoundSet; _value = S.AddAssign; }
+		| "+="  { _type = TT.CompoundAssign; _value = S.AddAssign; }
 		/ "++"  { _type = TT.IncDec; _value = S.PreInc; }
 		/ "+"   { _type = TT.Add; _value = S.Add; }
 		| "->"  { _type = TT.PtrArrow; _value = S.RightArrow; } 
-		/ "-="  { _type = TT.CompoundSet; _value = S.SubAssign; }
+		/ "-="  { _type = TT.CompoundAssign; _value = S.SubAssign; }
 		/ "--"  { _type = TT.IncDec; _value = S.PreDec; }
 		/ "-"   { _type = TT.Sub; _value = S.Sub; }
-		| "??=" { _type = TT.CompoundSet; _value = S.NullCoalesceAssign; }
+		| "??=" { _type = TT.CompoundAssign; _value = S.NullCoalesceAssign; }
 		/ "??"  { _type = TT.NullCoalesce; _value = S.NullCoalesce; }
 		/ "?."  { _type = TT.NullDot; _value = S.NullDot; }
 		/ "?|>" { _type = TT.PipeArrow; _value = S.NullForwardPipeArrow; }

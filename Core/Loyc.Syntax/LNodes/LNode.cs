@@ -293,14 +293,14 @@ namespace Loyc.Syntax
 
 		/// <summary>Returns true if <see cref="Name"/> is a "special" name 
 		/// (i.e. starts with '#' or '\'' or '.' or any character below 48 in ASCII).</summary>
-		/// <remarks>Note that this property returns false for the empty identifier <c>@``</c>.</remarks>
+		/// <remarks>Note that this property returns true for the empty identifier <c>@``</c>.</remarks>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool HasSpecialName { get { return IsSpecialName(Name.Name); } }
 
 		/// <summary>Returns true if <c>name</c> is considered a "special" name that
 		/// starts with any character below 48 in ASCII, such as '#', '\'', and '.'.</summary>
 		/// <remarks>
-		/// This returns false for the empty string or null. 
+		/// This returns true for the empty string or null. 
 		/// <para/>
 		/// In order to keep the check trivially simple, this returns true for '$'
 		/// even though it is <i>not</i> special in some languages (e.g. JavaScript).
@@ -309,8 +309,8 @@ namespace Loyc.Syntax
 		/// The full list of specials is <c>! " # $ % &amp; ' ( ) * + , - . /</c> plus
 		/// the space character and the control characters.
 		/// </remarks>
-		public static bool IsSpecialName(string name) { return name != null && name.Length > 0 && name[0] <= '\''; }
-		public static bool IsSpecialName(Symbol name) { return name != null && name.Name.Length > 0 && name.Name[0] <= '\''; }
+		public static bool IsSpecialName(string name) { return name == null || name.Length == 0 || name[0] <= '\''; }
+		public static bool IsSpecialName(Symbol name) { return name == null || name.Name.Length == 0 || name.Name[0] <= '\''; }
 		public static bool IsSpecialNamePrefix(char c) { return c <= '\''; }
 
 		/// <summary>Creates a node with a new value for Name.</summary>

@@ -1,4 +1,4 @@
-// Generated from Les3Printer_CanPrintAsNumber.ecs by LeMP custom tool. LeMP version: 2.9.0.1
+// Generated from Les3Printer_CanPrintAsNumber.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')

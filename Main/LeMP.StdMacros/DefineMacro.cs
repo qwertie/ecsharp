@@ -69,7 +69,7 @@ namespace LeMP
 			return RegisterSimpleMacro(node.Attrs, macroId, body, context);
 		}
 
-		static MacroMode GetMacroMode(ref LNodeList attrs, LNode pattern)
+		internal static MacroMode GetMacroMode(ref LNodeList attrs, LNode pattern)
 		{
 			MacroMode modes = 0;	
 			attrs = attrs.SmartWhere(attr =>
@@ -92,8 +92,6 @@ namespace LeMP
 				modes |= MacroMode.MatchEveryCall; // custom matching code needed
 			return modes;
 		}
-
-
 
 		private static LNode RegisterSimpleMacro(LNodeList attrs, LNode pattern, LNode body, IMacroContext context)
 		{

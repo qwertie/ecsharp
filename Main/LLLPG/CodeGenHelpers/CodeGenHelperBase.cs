@@ -382,7 +382,7 @@ namespace Loyc.LLParserGenerator
 		// Decides whether to add a "break" at the end of a switch case.
 		internal protected static bool EndMayBeReachable(LNode stmt)
 		{
-			return LeMP.StandardMacros.NextStatementMayBeReachable(stmt);
+			return LeMP.ecs.StandardMacros.NextStatementMayBeReachable(stmt);
 		}
 
 		/// <summary>Creates the default method definition wrapped around the body 

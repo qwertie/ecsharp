@@ -1,4 +1,4 @@
-// Generated from SelectCollection.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from SelectCollection.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -12,9 +12,10 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
+
 	/// <summary>Helper class for <see cref="LinqToLists"/>.</summary>
-	public class SelectCollection<ListT, T, TResult>
-	 : ReadOnlyCollectionBase<TResult> where ListT: ICollection<T>
+	public class SelectCollection<ListT, T, TResult> : ReadOnlyCollectionBase<TResult> where ListT: ICollection<T>
+	
 	{
 		protected ListT _list;
 		protected Func<T, TResult> _selector;
@@ -24,7 +25,7 @@ namespace Loyc.Collections
 			if (_list == null || _selector == null)
 				throw new ArgumentNullException();
 		}
-	
+
 		public sealed override IEnumerator<TResult> GetEnumerator()
 		{
 			return Enumerable.Select(_list, _selector).GetEnumerator();
@@ -36,8 +37,8 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Helper class for <see cref="LinqToLists"/>.</summary>
-	public class SelectReadOnlyCollection<ListT, T, TResult>
-	 : ReadOnlyCollectionBase<TResult> where ListT: IReadOnlyCollection<T>
+	public class SelectReadOnlyCollection<ListT, T, TResult> : ReadOnlyCollectionBase<TResult> where ListT: IReadOnlyCollection<T>
+	
 	{
 		protected ListT _list;
 		protected Func<T, TResult> _selector;
@@ -47,7 +48,7 @@ namespace Loyc.Collections
 			if (_list == null || _selector == null)
 				throw new ArgumentNullException();
 		}
-	
+
 		public sealed override IEnumerator<TResult> GetEnumerator()
 		{
 			return Enumerable.Select(_list, _selector).GetEnumerator();

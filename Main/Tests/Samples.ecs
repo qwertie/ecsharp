@@ -1,4 +1,5 @@
 #importMacros(Loyc.LLPG);
+#importMacros(LeMP.ecs.deprecated);
 using System(, .Collections(, .Generic), .Text, .Linq);
 using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing, .Les), .Ecs);
 using TT = Loyc.Syntax.Les.TokenType;
@@ -215,4 +216,18 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	};
 }
 
- 
+define WriteLine1($message, $(..args)) => 
+  MessageSink.Default.Write(Severity.Note, "", $message, $args);
+
+macro WriteLine2($message, $(..args)) => 
+  quote(MessageSink.Default.Write(Severity.Note,
+    new LineColumnFile(
+      $(LNode.Literal(#node.Range.Start.Line)),
+      $(LNode.Literal(#node.Range.Start.Column)),
+      $(LNode.Literal(#node.Range.Source.FileName))),
+    $message, $(..args)));
+
+compileTime{
+	WriteLine1("Hello {0}", "world");
+	WriteLine2("Goodbye {0}", "Fred");
+}

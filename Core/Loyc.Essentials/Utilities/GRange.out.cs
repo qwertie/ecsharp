@@ -1,4 +1,4 @@
-// Generated from GRange.ecs by LeMP custom tool. LeMP version: 2.8.3.0
+// Generated from GRange.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -14,11 +14,12 @@ namespace Loyc
 {
 	partial class G
 	{
-		// These methods were supposed to be in Loyc.Range, but Loyc.Range contains methods
-		// that return NumRange<Num,Math>, which uses Maths and therefore must be in 
-		// Loyc.Math, not Loyc.Essentials. The problem is that some of these methods are 
-		// used by Loyc.Syntax, which doesn't reference Loyc.Math and so can't use Range.
-		// Since these are extension methods, hopefully few will notice that they moved.
+	// These methods were supposed to be in Loyc.Range, but Loyc.Range contains methods
+	// that return NumRange<Num,Math>, which uses Maths and therefore must be in 
+	// Loyc.Math, not Loyc.Essentials. The problem is that some of these methods are 
+	// used by Loyc.Syntax, which doesn't reference Loyc.Math and so can't use Range.
+	// Since these are extension methods, hopefully few will notice that they moved.
+
 		/// <summary>Returns true if `num` is between `lo` and `hi`, excluding `hi` but not `lo`.</summary>
 		public static bool IsInRangeExcludeHi(this int num, int lo, int hi) {
 			return num >= lo && num < hi;
@@ -121,7 +122,7 @@ namespace Loyc
 				return max;
 			return n;
 		}
-	
+
 		public static bool IsInRangeExcludeHi<T>(this T num, T lo, T hi) where T: IComparable<T>
 		{
 			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) < 0;

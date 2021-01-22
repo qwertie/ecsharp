@@ -13,7 +13,7 @@ namespace LeMP.Tests
 		public void TestMatch1()
 		{
 			// Check the basics: equality of literals, deconstruction, multiple case handlers.
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 					match (obj) {
 						case (Prop1: 1, Prop2: '2', Prop3: @@3): 
 							DoSomething1();
@@ -38,7 +38,7 @@ namespace LeMP.Tests
 			// Test core features used separately: type testing (is X), literal testing (2), 
 			// field names and deconstruction (C: c), and a guard (c > 3)
 			int n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 					match (obj) {
 						case is Thing(is A, 2, C: $c) && c > 3:
 							DoSomethingWith(c);
@@ -60,7 +60,7 @@ namespace LeMP.Tests
 			// Use core features together, with nesting
 			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
 			/*n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 					match (obj) {
 						case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
 							Circle(size, x, y);
@@ -93,7 +93,7 @@ namespace LeMP.Tests
 				.Replace("tmp_B", "tmp_" + (n + 1)));*/
 
 			n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 				match (Foo.Bar) {
 					case true || false: True();
 					case null:
@@ -119,7 +119,7 @@ namespace LeMP.Tests
 			// Test `ref` inside and outside `$`
 			int n = MacroProcessor.NextTempCounter;
 			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
-			/*TestEcs(@"
+			/*TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 				int x, y;
 				SizeF size;
 				Point<int> p;
@@ -152,7 +152,7 @@ namespace LeMP.Tests
 				.Replace("tmp_B", "tmp_" + (n + 1)));*/
 
 			// Test two patterns on one case
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 				match (obj) {
 					case ((x), $y), ($y, x): DoSomethingWith(x, y);
 				}",
@@ -179,7 +179,7 @@ namespace LeMP.Tests
 			// Test ranges
 			int n = MacroProcessor.NextTempCounter;
 			// UNUSABLE, EC# v29 disabled argument list after `is TypeName`
-			/*TestEcs(@"
+			/*TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 				match (obj) {
 					case $t is Thing(ref $r is double in x..y, c...d) in x..<y:
 						DoSomethingWith(t, r);
@@ -201,7 +201,7 @@ namespace LeMP.Tests
 
 			// Bug fix: This combination didn't work
 			n = MacroProcessor.NextTempCounter;
-			TestEcs(@"
+			TestEcs(@"#importMacros(LeMP.ecs.deprecated); 
 				match (value) {
 					case is Point(X: $x, Y: $y) in polygon:
 						CollisionDetected(x, y);

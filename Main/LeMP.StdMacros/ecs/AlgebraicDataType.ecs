@@ -1,0 +1,269 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+
+namespace LeMP.ecs
+{
+	using S = CodeSymbols;
+
+	public partial class StandardMacros
+	{
+		static readonly Symbol __alt = (Symbol)"#alt";
+		static readonly Symbol _alt = (Symbol)"alt";
+
+		[LexicalMacro(@"e.g. alt class Pair<A,B> { alt this(A Item1, B Item2); }",
+			"Expands a short description of an 'algebraic data type' into a set of classes with a common base class. "
+			+"All data members are read-only, and for each member (e.g. Item1 and Item2 above), "
+			+"a With() method is generated to let users create modified versions.", 
+			"#class", Mode = MacroMode.Passive | MacroMode.Normal)]
+		public static LNode AlgebraicDataType(LNode classDecl, IMacroContext context)
+		{
+			int? i;
+			matchCode(classDecl) {
+				case {
+					[$(..attrs[(i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null])]
+					class $baseName : $(..baseTypes) {
+						$(..body);
+					}
+				}:
+					attrs = attrs.RemoveAt(i.Value);
+					var adt = new AltType(attrs, baseName, baseTypes, null);
+					adt.ScanClassBody(body);
+					var output = new LNodeList();
+					adt.GenerateOutput(ref output);
+					return quote(#splice($(..output)));
+			}
+			return null;
+		}
+
+		// Info about one variant of an ADT
+		class AltType
+		{
+			// The Member variables come from...
+			// EITHER [$(.._classAttrs)] alt class $TypeName : $(..BaseTypes) { ScanClassBody produces _children }
+			// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
+			// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
+
+			public AltType(private LNodeList _classAttrs, public LNode TypeName, public LNodeList BaseTypes, public AltType ParentType)
+			{
+				//matchCode (TypeName) {
+				//	case $stem<$(..a)>, $stem: 
+				//		_typeNameStem = stem;
+				//		_genericArgs = a; 
+				//  default:
+				//		_genericArgs = new WList<LNode>();
+				//}
+				{	// Above matchCode expanded:
+					LNode stem;
+					LNodeList a = default(LNodeList);
+					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new LNodeList(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
+						_typeNameStem = stem;
+						_genericArgs = a.ToWList();
+					} else {
+						_genericArgs = new WList<LNode>();
+					}
+				}
+				if (ParentType != null) {
+					BaseTypes.Insert(0, ParentType.TypeNameWithoutAttrs);
+
+					// Search for all 'where' clauses on the ParentType and make sure OUR generic args have them too.
+					bool changed = false;
+					for (int i = 0; i < _genericArgs.Count; i++) {
+						var arg = _genericArgs[i];
+						var parentArg = ParentType._genericArgs.FirstOrDefault(a => a.IsIdNamed(arg.Name));
+						if (parentArg != null) {
+							var wheres = new HashSet<LNode>(WhereTypes(arg));
+							int oldCount = wheres.Count;
+							var parentWheres = WhereTypes(parentArg);
+							foreach (var where in parentWheres)
+								wheres.Add(where);
+							if (wheres.Count > oldCount) {
+								arg = arg.WithAttrs(arg.Attrs.SmartWhere(a => !a.Calls(S.WhereClause))
+								                    .Add(LNode.Call(S.WhereClause, LNode.List(wheres))));
+								_genericArgs[i] = arg;
+								changed = true;
+							}
+						}
+					}
+					if (changed)
+						TypeName = quote($_typeNameStem<$(.._genericArgs)>);
+				}
+				TypeNameWithoutAttrs = TypeName.Select(n => n.WithoutAttrs());
+			}
+
+			static IEnumerable<LNode> WhereTypes(LNode genericParameter)
+			{
+				return genericParameter.Attrs.Where(a => a.Calls(S.WhereClause)).SelectMany(a => a.Args);
+			}
+
+			LNode _typeNameStem;
+			WList<LNode> _genericArgs;
+			LNode TypeNameWithoutAttrs; // TypeName with type-param attributes (e.g. #in #out #where) removed
+			List<AltType> _children = new List<AltType>();
+			internal List<AdtParam> Parts = new List<AdtParam>();
+			LNodeList _constructorAttrs;
+			LNodeList _extraConstrLogic;
+			LNodeList _classBody = new LNodeList();
+
+			internal void AddParts(LNodeList parts)
+			{
+				foreach (var part in parts)
+					Parts.Add(new AdtParam(part, this));
+			}
+			internal void ScanClassBody(LNodeList body)
+			{
+				foreach (var stmt in body) {
+					int? i;
+					matchCode (stmt) {
+					case { [$(..attrs)] alt $altName($(..parts));                     }, 
+						 { [$(..attrs)] alt $altName($(..parts)) { $(..childBody); }  }:
+						LNode genericAltName = altName;
+						matchCode (altName) {
+							case $_<$(.._)>: // do nothing
+							default:
+								if (_genericArgs.Count > 0)
+									genericAltName = quote($altName<$(.._genericArgs.ToVList())>);
+						}
+						var child = new AltType(attrs, genericAltName, LNode.List(), this);
+						child.AddParts(parts);
+						child.ScanClassBody(childBody);
+						_children.Add(child);
+					case [$(..attrs[(i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null])] 
+					     #cons($_, this, #($(..parts)), $(..rest[rest.Count <= 1])):
+						attrs.RemoveAt(i.Value);
+						_constructorAttrs.AddRange(attrs);
+						if (rest.Count > 0 && rest[0].Calls(S.Braces))
+							_extraConstrLogic.AddRange(rest[0].Args);
+						AddParts(parts);
+					default:
+						_classBody.Add(stmt);
+					}
+				}
+			}
+			// Generates a class declaration for the current alt and its subtypes
+			internal void GenerateOutput(ref LNodeList list)
+			{
+				bool isAbstract = _classAttrs.Any(a => a.IsIdNamed(S.Abstract));
+				
+				var baseParts = new List<AdtParam>();
+				for (var type = ParentType; type != null; type = type.ParentType)
+					baseParts.InsertRange(0, type.Parts);
+				var allParts = baseParts.Concat(Parts);
+
+				var initialization = Parts.Select(p => quote { this.$(p.NameId) = $(p.NameId); }).ToList();
+				if (baseParts.Count > 0)
+					initialization.Insert(0, F.Call(S.Base, baseParts.Select(p => p.NameId)));
+
+				var args = new LNodeList(allParts.Select(p => p.OriginalDecl));
+				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
+					_constructorAttrs.Add(F.Id(S.Public));
+				LNode constructor = quote {
+					[$(.._constructorAttrs)] #cons(@``, $_typeNameStem, #($(..args)), {
+						$(..initialization);
+						$(.._extraConstrLogic);
+					});
+				};
+
+				var outBody = new LNodeList();
+				outBody.Add(constructor);
+				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));
+				outBody.AddRange(baseParts.Select(p => GetWithFn(p, isAbstract, S.Override, allParts)));
+				outBody.AddRange(Parts.Select(p => GetWithFn(p, isAbstract, _children.Count > 0 ? S.Virtual : null, allParts)));
+				outBody.AddRange(Parts.WithIndexes()
+					.Where(kvp => kvp.Value.NameId.Name.Name != "Item" + (baseParts.Count + kvp.Key + 1))
+					.Select(kvp => kvp.Value.GetItemDecl(baseParts.Count + kvp.Key + 1)));
+				outBody.AddRange(_classBody);
+
+				list.Add(quote {
+					[$(.._classAttrs)] class $TypeName : $(..BaseTypes)
+					{
+						$(..outBody);
+					}
+				});
+				if (_genericArgs.Count > 0 && Parts.Count > 0) {
+					var argNames = allParts.Select(p => p.NameId);
+					list.Add(quote {
+						[$(.._classAttrs)] static partial class $_typeNameStem
+						{
+							public static $TypeNameWithoutAttrs New<$(.._genericArgs)>($(..args))
+								{ return new $TypeNameWithoutAttrs($(..argNames)); }
+						}
+					});
+				}
+				foreach (var child in _children)
+					child.GenerateOutput(ref list);
+			}
+			internal LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
+			{
+				int totalParts = allParts.Count();
+				var withField = F.Id("With" + part.NameId.Name);
+				
+				var args = LNode.List();
+				foreach(AdtParam otherPart in allParts) {
+					if (part == otherPart)
+						args.Add(F.Id("newValue"));
+					else
+						args.Add(otherPart.NameId);
+				}
+				
+				var attrs = new LNodeList(F.Id(S.Public));
+				if (isAbstract)
+					attrs.Add(F.Id(S.Abstract));
+				if (virtualOverride != null && (!isAbstract || virtualOverride == S.Override))
+					attrs.Add(F.Id(virtualOverride));
+
+				LNode method;
+				LNode type = part.Type;
+				LNode retType = part.ContainingType.TypeNameWithoutAttrs;
+				if (isAbstract) {
+					method = quote {
+						[$(..attrs)] $retType $withField([$(..part.OriginalDecl.Attrs)] $type newValue);
+					};
+				} else {
+					method = quote {
+						[$(..attrs)] $retType $withField([$(..part.OriginalDecl.Attrs)] $type newValue) 
+							{ return new $TypeNameWithoutAttrs($(..args)); }
+					};
+				}
+				return method;
+			}
+		}
+
+		// Info about one parameter of one ADT
+		class AdtParam
+		{
+			internal AdtParam(internal LNode OriginalDecl, internal AltType ContainingType)
+			{
+				if (!OriginalDecl.Calls(S.Var, 2))
+					throw new LogException(OriginalDecl, "alt: Expected a variable declaration");
+				Type = OriginalDecl.Args[0];
+				NameId = OriginalDecl.Args[1];
+				if (NameId.Calls(S.Assign, 2))
+					NameId = NameId.Args[0];
+				if (!NameId.IsId)
+					throw new LogException(NameId, "alt: Expected a simple variable name");
+			}
+
+			internal readonly LNode Type;
+			internal readonly LNode NameId;
+			
+			internal LNode GetFieldDecl() {
+				return quote {
+					public $Type $NameId { get; private set; }
+				};
+			}
+			internal LNode GetItemDecl(int itemNum) {
+				LNode ItemN = F.Id("Item" + itemNum);
+				// ItemN properties are used by the code generated for pattern matching
+				return quote {
+					[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+					public $Type $ItemN { get { return $NameId; } }
+				};
+			}
+		}
+	}
+}

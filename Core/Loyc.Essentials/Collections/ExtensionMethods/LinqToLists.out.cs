@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -28,7 +28,7 @@ namespace Loyc.Collections
 		// *** Visual Studio lets me edit the generated output, so I'm sprinkling notes to myself not to do that.
 		public static int Count<T>(this IReadOnlyCollection<T> list) => list.Count;
 		public static int Count<T>(this INegListSource<T> list) => list.Count;
-	
+
 		public static T FirstOrDefault<T>(this IListSource<T> list)
 		{
 			bool _;
@@ -42,7 +42,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			return result;
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
 		/// <exception cref="EmptySequenceException">The list is empty</exception>
@@ -59,10 +59,10 @@ namespace Loyc.Collections
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		public static T Last<T>(this IListAndListSource<T> list) { return Last((IListSource<T>) list); }
-	
+
 		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
 		/// <exception cref="EmptySequenceException">The list is empty</exception>
 		public static T Last<T>(this INegListSource<T> list)
@@ -78,7 +78,7 @@ namespace Loyc.Collections
 			int last = list.Max;
 			return last < list.Min ? defaultValue : list[last];
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Skips the specified number of elements immediately and 
 		/// returns a slice of part of the list that remains, or an empty 
@@ -109,7 +109,7 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(list, 0, count);
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		public static NegListSlice<T> Skip<T>(this INegListSource<T> list, int count)
 		{
@@ -121,7 +121,7 @@ namespace Loyc.Collections
 			CheckParam.IsNotNegative("count", count);
 			return new NegListSlice<T>(list, list.Min, count);
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Returns a slice of the initial elements of the list that meet the provided criteria. 
 		/// The word "now" is added to the name because unlike Enumerable.TakeWhile, this method scans 
@@ -184,7 +184,7 @@ namespace Loyc.Collections
 					return new NegListSlice<T>(list, i);
 			}
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Copies the contents of a list to an array.</summary>
 		public static T[] ToArray<T>(this IReadOnlyList<T> c)
@@ -194,9 +194,9 @@ namespace Loyc.Collections
 				array[i] = c[i];
 			return array;
 		}
-	
+
 		public static T[] ToArray<T>(this IListAndListSource<T> c) => MutableListExtensionMethods.LinqToLists.ToArray(c);
-	
+
 		/// <summary>Copies the contents of an <see cref="INegListSource{T}"/> to an array.</summary>
 		public static T[] ToArray<T>(this INegListSource<T> c)
 		{
@@ -206,7 +206,7 @@ namespace Loyc.Collections
 				array[i] = c[i + min];
 			return array;
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		public static SelectListSource<IListSource<T>, T, TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
 		{
@@ -220,7 +220,7 @@ namespace Loyc.Collections
 		{
 			return new SelectReadOnlyCollection<IReadOnlyCollection<T>, T, TResult>(list, selector);
 		}
-	
+
 		public static T[] ConcatNow<T>(this T[] a, T[] b)
 		{
 			T[] @out = new T[a.Length + b.Length];
@@ -242,14 +242,14 @@ namespace Loyc.Collections
 			}
 			return @out;
 		}
-	
+
 		/// <summary>Returns a reversed view of a read-only list.</summary>
 		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
 		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);
 		}
-	
+		
 		// The following methods operate on mutable collections (contrary to the plan in 
 		// #84 to avoid ambiguity errors) because there's no IReadOnlyList version of 
 		// them and so we can reasonably expect the collection to implement IListAndListSource
@@ -257,20 +257,20 @@ namespace Loyc.Collections
 		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
 		public static ReversedList<T> Reverse<T>(this IList<T> list) => new ReversedList<T>(list);
 		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list) => new ReversedList<T>(list);
-	
+
 		public static bool SequenceEqual<TSource>(this IReadOnlyCollection<TSource> first, IReadOnlyCollection<TSource> second)
 		{
 			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
 		}
-	
-			// TODO: interface-preserving version of this
-			//     Projects each element of a sequence into a new form by incorporating the element's index.
-			//   source:
-			//     A sequence of values to invoke a transform function on.
-			//   selector:
-			//     A transform function to apply to each source element; the second parameter of
-			//     the function represents the index of the source element.
-			// public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, TResult> selector);
+		
+		// TODO: interface-preserving version of this
+		//     Projects each element of a sequence into a new form by incorporating the element's index.
+		//   source:
+		//     A sequence of values to invoke a transform function on.
+		//   selector:
+		//     A transform function to apply to each source element; the second parameter of
+		//     the function represents the index of the source element.
+		// public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, TResult> selector);
 	}
 }
 
@@ -279,14 +279,14 @@ namespace Loyc.Collections.MutableListExtensionMethods
 	public static partial class LinqToLists
 	{
 		public static int Count<T>(this IList<T> list) => list.Count;
-	
+
 		public static T FirstOrDefault<T>(this IList<T> list, T defaultValue = default(T))
 		{
 			if (list.Count > 0)
 				return list[0];
 			return defaultValue;
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		/// <summary>Gets the last item from the list (at <c>list.Max</c>).</summary>
 		/// <exception cref="EmptySequenceException">The list is empty</exception>
@@ -349,7 +349,7 @@ namespace Loyc.Collections.MutableListExtensionMethods
 					return new ListSlice<T>(list, i);
 			}
 		}
-	
+
 		public static SelectCollection<ICollection<T>, T, TResult> Select<T, TResult>(this ICollection<T> list, Func<T, TResult> selector)
 		{
 			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
@@ -358,19 +358,19 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		{
 			return new SelectList<IList<T>, T, TResult>(list, selector);
 		}
-	
+
 		public static T[] ToArray<T>(this ICollection<T> c)
 		{
 			var array = new T[c.Count];
 			c.CopyTo(array, 0);
 			return array;
 		}
-	
+
 		public static bool SequenceEqual<TSource>(this IList<TSource> first, IList<TSource> second)
 		{
 			return first.Count == second.Count && Enumerable.SequenceEqual(first, second);
 		}
-	
+		
 		#region Disambiguating methods (for collections that support them)
 		// https://github.com/qwertie/ecsharp/issues/84 describes the problem solved by these methods
 		// *** Reminder: do not edit the generated output! ***
@@ -379,10 +379,10 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		LastOrDefault((IList<T>) list, defaultValue);
 		public static T FirstOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) => 
 		FirstOrDefault((IList<T>) list, defaultValue);
-	
+
 		public static SelectList<T[], T, TResult> Select<T, TResult>(this T[] list, Func<T, TResult> selector) => 
 		new SelectList<T[], T, TResult>(list, selector);
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		// Avoid ambiguity errors involving collections that support the ambiguity-avoidance interfaces
 		public static SelectListSource<IListSource<T>, T, TResult> Select<T, TResult>(this IListAndListSource<T> source, Func<T, TResult> selector)
@@ -405,7 +405,7 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		{
 			return new SelectCollection<ICollection<KeyValuePair<K, V>>, KeyValuePair<K, V>, TResult>(list, selector);
 		}
-	
+
 		// *** Reminder: do not edit the generated output! ***
 		public static ListSlice<T> TakeNowWhile<T>(this IListAndListSource<T> list, Func<T, bool> predicate)
 		{
@@ -415,12 +415,12 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		{
 			return SkipNowWhile((IList<T>) list, predicate);
 		}
-	
+
 		public static bool SequenceEqual<TSource>(this IListAndListSource<TSource> first, IListAndListSource<TSource> second)
 		{
 			return ((IList<TSource>) first).Count == ((IList<TSource>) second).Count && Enumerable.SequenceEqual(first, second);
 		}
-	
+		
 		#endregion
 	}
 }

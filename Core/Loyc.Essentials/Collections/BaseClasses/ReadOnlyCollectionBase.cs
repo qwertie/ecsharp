@@ -40,7 +40,12 @@ namespace Loyc.Collections.Impl
 
 		public bool Contains(T item)
 		{
-			return Enumerable.Contains(this, item);
+			var comp = EqualityComparer<T>.Default;
+			foreach (T member in this) {
+				if (comp.Equals(item, member))
+					return true;
+			}
+			return false;
 		}
 
 		#endregion

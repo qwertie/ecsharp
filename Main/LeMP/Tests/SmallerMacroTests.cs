@@ -106,30 +106,30 @@ namespace LeMP.Tests
 		[Test]
 		public void TestDotDotRanges()
 		{
-			TestEcs("A.B..C.D", "Range.ExcludeHi(A.B, C.D)");
-			TestEcs("A.B...C.D", "Range.Inclusive(A.B, C.D)");
-			TestEcs("..C.D", "Range.UntilExclusive(C.D)");
-			TestEcs("_..C.D", "Range.UntilExclusive(C.D)");
-			TestEcs("...C.D", "Range.UntilInclusive(C.D)");
-			TestEcs("_...C.D", "Range.UntilInclusive(C.D)");
-			TestEcs("A.B.._", "Range.StartingAt(A.B)");
-			TestEcs("A.B..._", "Range.StartingAt(A.B)");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.B..C.D;", "Range.ExcludeHi(A.B, C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.B...C.D;", "Range.Inclusive(A.B, C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); ..C.D;", "Range.UntilExclusive(C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); _..C.D;", "Range.UntilExclusive(C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); ...C.D;", "Range.UntilInclusive(C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); _...C.D;", "Range.UntilInclusive(C.D);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.B.._;", "Range.StartingAt(A.B);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.B..._;", "Range.StartingAt(A.B);");
 		}
 
 		[Test]
 		public void Test_in()
 		{
-			TestEcs("A + 1 in C.D;", "C.D.Contains(A + 1);");
-			TestEcs("A.B in x..y;",  "A.B.IsInRangeExcludeHi(x, y);");
-			TestEcs("A.C in x...y;", "A.C.IsInRange(x, y);");
-			TestEcs("A.D in ..y;",   "A.D < y;");
-			TestEcs("A.E in _..y;",  "A.E < y;");
-			TestEcs("A.F in ...y;",  "A.F <= y;");
-			TestEcs("A.G in _...y;", "A.G <= y;");
-			TestEcs("A.H in x.._;",  "A.H >= x;");
-			TestEcs("A.I in x..._;", "A.I >= x;");
-			TestEcs("A.J in (x..y);", "Range.ExcludeHi(x, y).Contains(A.J);");
-			TestEcs("A.K in (x...y);","Range.Inclusive(x, y).Contains(A.K);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A + 1 in C.D;", "C.D.Contains(A + 1);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.B in x..y;",  "A.B.IsInRangeExcludeHi(x, y);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.C in x...y;", "A.C.IsInRange(x, y);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.D in ..y;",   "A.D < y;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.E in _..y;",  "A.E < y;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.F in ...y;",  "A.F <= y;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.G in _...y;", "A.G <= y;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.H in x.._;",  "A.H >= x;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.I in x..._;", "A.I >= x;");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.J in (x..y);", "Range.ExcludeHi(x, y).Contains(A.J);");
+			TestEcs("#importMacros(LeMP.ecs.deprecated); A.K in (x...y);", "Range.Inclusive(x, y).Contains(A.K);");
 		}
 
 		[Test]

@@ -22,20 +22,39 @@ namespace LeMP
 	{
 		public InputOutput(ICharSource text, string fileName, IParsingService input = null, ILNodePrinter outPrinter = null, string outFileName = null)
 		{
-			Text = text; FileName = fileName ?? ""; InputLang = input; OutPrinter = outPrinter; OutFileName = outFileName;
+			Text = text;
+			FileName = fileName ?? "";
+			InputLang = input;
+			OutPrinter = outPrinter;
+			OutFileName = outFileName;
+			PreOpenedNamespaces = AutoPreOpenedNamespaces(FileName);
 		}
 		public readonly ICharSource Text;
 		public readonly string FileName; // Should include the full path
 		public IParsingService InputLang;
 		public bool? PreserveComments; // null means unassigned (to use the Compiler default)
 		public ParsingMode ParsingMode; // inputType argument when parsing with IParsingService.Parse
+		
 		public ILNodePrinter OutPrinter;
 		public ILNodePrinterOptions OutOptions;
 		public string OutFileName;
 		public LNodeList Output;
+		/// <summary>Specifies namespaces to be opened implicitly. It is combined with 
+		/// <see cref="MacroProcessor.PreOpenedNamespaces"/> when LeMP processes the 
+		/// file. The constructor of this class adds pre-opened namespaces `LeMP.ext` 
+		/// and `ext` based on the file extension `ext`.</summary>
+		public MSet<Symbol> PreOpenedNamespaces;
 		public override string ToString()
 		{
 			return FileName;
+		}
+		public static MSet<Symbol> AutoPreOpenedNamespaces(string fileName)
+		{
+			var ext = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
+			if (ext.Length != 0)
+				return new MSet<Symbol> { (Symbol)("LeMP" + ext), (Symbol)ext.Slice(1) };
+			else
+				return new MSet<Symbol>();
 		}
 	}
 
@@ -112,7 +131,8 @@ namespace LeMP
 
 		/// <summary>Macros in these namespaces will be available without an explicit 
 		/// import command (#importMacros). By default this list has one item: 
-		/// @@LeMP.Prelude (i.e. (Symbol)"LeMP.Prelude")</summary>
+		/// @@LeMP.Prelude (i.e. (Symbol)"LeMP.Prelude"). This set is combined with
+		/// <see cref="InputOutput.PreOpenedNamespaces"/> when processing starts.</summary>
 		public ICollection<Symbol> PreOpenedNamespaces { get { return _preOpenedNamespaces; } }
 		internal MSet<Symbol> _preOpenedNamespaces = new MSet<Symbol>();
 
@@ -171,19 +191,22 @@ namespace LeMP
 		{
 			if (newMacro?.Macro == null)
 				return; // TODO: should we throw? log an error?
-			
-			foreach (string name_ in newMacro.Names)
-				if (name_ != null)
-					AddMacroByName(macros, (Symbol)name_, newMacro);
+
+			if (newMacro.DeprecatedNames != null)
+				foreach (string name_ in newMacro.DeprecatedNames.WhereNotNull())
+					AddMacroByName(macros, (Symbol)name_, true, newMacro);
+			if (newMacro.Names != null)
+				foreach (string name_ in newMacro.Names.WhereNotNull())
+					AddMacroByName(macros, (Symbol)name_, false, newMacro);
 
 			if ((newMacro.Mode & MacroMode.MatchEveryCall) != 0)
-				AddMacroByName(macros, MatchEveryCall, newMacro);
+				AddMacroByName(macros, MatchEveryCall, false, newMacro);
 			if ((newMacro.Mode & MacroMode.MatchEveryIdentifier) != 0)
-				AddMacroByName(macros, MatchEveryIdentifier, newMacro);
+				AddMacroByName(macros, MatchEveryIdentifier, false, newMacro);
 			if ((newMacro.Mode & MacroMode.MatchEveryLiteral) != 0)
-				AddMacroByName(macros, MatchEveryLiteral, newMacro);
+				AddMacroByName(macros, MatchEveryLiteral, false, newMacro);
 		}
-		private static void AddMacroByName(MMap<Symbol, InternalList<InternalMacroInfo>> macros, Symbol name, MacroInfo newMacro)
+		private static void AddMacroByName(MMap<Symbol, InternalList<InternalMacroInfo>> macros, Symbol name, bool isDeprecatedName, MacroInfo newMacro)
 		{
 			var macrosWithThisName = macros[name, InternalList<InternalMacroInfo>.Empty];
 
@@ -192,20 +215,21 @@ namespace LeMP
 			{
 				if (macro.Macro.Equals(newMacro.Macro))
 				{
-					if (!macro.Namespaces.Contains(newMacro.Namespace))
-						macro.Namespaces.Add(newMacro.Namespace);
+					if (!macro.Namespaces.Select(p => p.A).Contains(newMacro.Namespace))
+						macro.Namespaces.Add(Pair.Create(newMacro.Namespace, isDeprecatedName));
 					return;
 				}
 			}
 
 			// It's a new macro, add it
-			macrosWithThisName.Add(new InternalMacroInfo
+			var imi = new InternalMacroInfo
 			{
 				Name = name,
 				Attr = newMacro,
 				Macro = newMacro.Macro,
-				Namespaces = new InternalList<Symbol>(new Symbol[] { newMacro.Namespace })
-			});
+				Namespaces = new InternalList<Pair<Symbol, bool>>(new [] { Pair.Create(newMacro.Namespace, isDeprecatedName) })
+			};
+			macrosWithThisName.Add(imi);
 			macros[name] = macrosWithThisName;
 		}
 
@@ -215,7 +239,7 @@ namespace LeMP
 		/// <remarks>Note: <c>AbortTimeout</c> doesn't work when using this overload.</remarks>
 		public LNodeList ProcessSynchronously(LNodeList stmts)
 		{
-			return new MacroProcessorTask(this).ProcessRoot(stmts);
+			return new MacroProcessorTask(this).ProcessRoot(stmts, _preOpenedNamespaces);
 		}
 
 		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessAsync
@@ -280,10 +304,26 @@ namespace LeMP
 		public Symbol Name;
 		public LexicalMacro Macro;
 		public LexicalMacroAttribute Attr;
-		public InternalList<Symbol> Namespaces = InternalList<Symbol>.Empty;
-		public MacroMode Mode { get { return Attr.Mode; } }
+		// The boolean is true if the macro is deprecated in the given namespace
+		public InternalList<Pair<Symbol, bool>> Namespaces = InternalList<Pair<Symbol, bool>>.Empty;
+		public MacroMode Mode => Attr.Mode;
+	}
 
-		public static Comparison<InternalMacroInfo> CompareDescendingByPriority =
-			(a, b) => b.Attr.Priority.CompareTo(a.Attr.Priority);
+	internal struct QualifiedMacroInfo
+	{
+		public InternalMacroInfo IMI;
+		public Symbol Namespace;
+		public bool IsDeprecated;
+		public MacroMode Mode => IMI.Attr.Mode;
+
+		public QualifiedMacroInfo(InternalMacroInfo imi, Symbol @namespace, bool deprecated)
+		{
+			IMI = imi;
+			Namespace = @namespace;
+			IsDeprecated = deprecated;
+		}
+		
+		public static Comparison<QualifiedMacroInfo> CompareDescendingByPriority =
+			(a, b) => b.IMI.Attr.Priority.CompareTo(a.IMI.Attr.Priority);
 	}
 }

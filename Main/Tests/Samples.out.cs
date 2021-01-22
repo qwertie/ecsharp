@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.9.0.1
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -417,7 +417,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 140: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 141: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -433,11 +433,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 145: (([\-])? [0-9A-Za-z])*
+		// Line 146: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 145: ([\-])?
+				// Line 146: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -453,13 +453,13 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		// line 153
+		// line 154
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);	// re-use old object
 		UsernameChars(src);
-		// Line 158: ([.] UsernameChars)*
+		// Line 159: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -468,13 +468,13 @@ struct EmailAddress
 			} else
 				break;
 		}
-		// line 159
-		int at = src.InputPosition;
 		// line 160
+		int at = src.InputPosition;
+		// line 161
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 162: ([.] DomainCharSeq)*
+		// Line 163: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -484,9 +484,9 @@ struct EmailAddress
 				break;
 		}
 		src.Match(-1);
-		// line 163
-		UString domain = email.Substring(at + 1);
 		// line 164
+		UString domain = email.Substring(at + 1);
+		// line 165
 		return new EmailAddress(userName, domain);
 	}
 	
@@ -525,7 +525,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 204: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 205: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen: case TT.SpaceLParen:
 			result = List();
@@ -535,14 +535,14 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		case TT.PreOrSufOp:
 			{
 				t = MatchAny();
-				// line 206
+				// line 207
 				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
 		default:
 			{
 				t = Match((int) TT.Literal);
-				// line 207
+				// line 208
 				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
@@ -556,19 +556,19 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		Token lit_lpar = default(Token);
 		Token lit_rpar = default(Token);
 		LNode target = default(LNode);
-		// Line 210: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
+		// Line 211: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
 		la1 = (TT) LA(1);
 		if (la1 == TT.RParen) {
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
-			// line 211
+			// line 212
 			return F.AltList(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
 		} else {
-			// line 212
+			// line 213
 			var parts = LNode.List();
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
-			// Line 213: (Atom)*
+			// Line 214: (Atom)*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Dot:
@@ -582,7 +582,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 			}
 		stop:;
 			lit_rpar = Match((int) TT.RParen);
-			// line 214
+			// line 215
 			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
 		}
 	}

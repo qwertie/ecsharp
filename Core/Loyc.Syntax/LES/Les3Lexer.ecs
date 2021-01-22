@@ -1,5 +1,6 @@
-#ecs;
+#importMacros(LeMP.ecs);
 #importMacros(Loyc.LLPG);
+#ecs;
 using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
 using Loyc;               // optional (for IMessageSink, Symbol, etc.)
 using Loyc.Collections;   // optional (many handy interfaces & classes)

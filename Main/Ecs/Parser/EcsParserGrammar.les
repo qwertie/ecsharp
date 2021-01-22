@@ -8,7 +8,8 @@
 // C# (e.g. "struct X { Y(); }"). Such invalid code is allowed by the parser in 
 // case a macro might transform it later into something that makes more sense.
 //
-#importMacros LeMP.Prelude.Les;
+#importMacros LeMP.les2.to.ecs;
+#importMacros LeMP.ecs;
 #importMacros Loyc.LLPG; // (pulled in implicitly by using LLLPG custom tool)
 #ecs;
 import System;
@@ -1441,7 +1442,10 @@ namespace Loyc.Ecs.Parser
 		// `expr:` make sense as an abbreviation for `case expr:`, it also 
 		// makes parsing easier. Speaking of things that make parsing easier, 
 		// a recursive pattern syntax of `Type? Id? Tuple? Braces?` would have
-		// been easier than their choice of `Type? Tuple? Braces? Id?`.
+		// been easier than their choice of `Type? Tuple? Braces? Id?` (though,
+		// thinking on it further, the latter would be less compact sometimes,
+		// since `(...) x` would have to be expresed as `var x (...)`. But the
+		// ambiguity of `(A<B>.C) x` - cast or variable creation? - disappears)
 
 		rule SwitchBody()::LNode @{
 			"{" "}" {

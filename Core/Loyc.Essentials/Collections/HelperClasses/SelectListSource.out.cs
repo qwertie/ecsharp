@@ -1,4 +1,4 @@
-// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,6 +13,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+
 	// *** Reminder: DO NOT MODIFY generated code ***
 	/// <summary>
 	/// Helper class: provides a modified view of an IList by transforming each element 
@@ -22,8 +23,9 @@ namespace Loyc.Collections
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
 	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
-	public class SelectList<ListT, T, TResult>
-	 : ListSourceBase<TResult> where ListT: IList<T> {
+	public class SelectList<ListT, T, TResult> : ListSourceBase<TResult> where ListT: IList<T>
+	
+	{
 		protected ListT _list;
 		protected Func<T, TResult> _selector;
 		public SelectList(ListT list, Func<T, TResult> selector) {
@@ -32,12 +34,12 @@ namespace Loyc.Collections
 			if (_list == null || _selector == null)
 				throw new ArgumentNullException();
 		}
-	
+
 		new public TResult this[int index]
 		{
 			get { return _selector(_list[index]); }
 		}
-	
+
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -45,7 +47,7 @@ namespace Loyc.Collections
 			else
 				return default(TResult);
 		}
-	
+
 		public sealed override int Count
 		{
 			get { return _list.Count; }
@@ -60,8 +62,9 @@ namespace Loyc.Collections
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
 	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
-	public class SelectReadOnlyList<ListT, T, TResult>
-	 : ListSourceBase<TResult> where ListT: IReadOnlyList<T> {
+	public class SelectReadOnlyList<ListT, T, TResult> : ListSourceBase<TResult> where ListT: IReadOnlyList<T>
+	
+	{
 		protected ListT _list;
 		protected Func<T, TResult> _selector;
 		public SelectReadOnlyList(ListT list, Func<T, TResult> selector) {
@@ -70,12 +73,12 @@ namespace Loyc.Collections
 			if (_list == null || _selector == null)
 				throw new ArgumentNullException();
 		}
-	
+
 		new public TResult this[int index]
 		{
 			get { return _selector(_list[index]); }
 		}
-	
+
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -83,7 +86,7 @@ namespace Loyc.Collections
 			else
 				return default(TResult);
 		}
-	
+
 		public sealed override int Count
 		{
 			get { return _list.Count; }
@@ -98,10 +101,11 @@ namespace Loyc.Collections
 	/// <typeparam name="T">input type</typeparam>
 	/// <typeparam name="TResult">output type</typeparam>
 	/// <typeparam name="ListT">Type of list being wrapped</typeparam>
-	public class SelectListSource<ListT, T, TResult>
-	 : SelectReadOnlyList<ListT, T, TResult> where ListT: IListSource<T> {
-		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
+	public class SelectListSource<ListT, T, TResult> : SelectReadOnlyList<ListT, T, TResult> where ListT: IListSource<T>
 	
+	{
+		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
+
 		public override TResult TryGet(int index, out bool fail)
 		{
 			T t = _list.TryGet(index, out fail);

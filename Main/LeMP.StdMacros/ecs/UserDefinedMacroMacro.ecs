@@ -1,0 +1,130 @@
+using Loyc;
+using Loyc.Collections;
+using Loyc.Ecs;
+using Loyc.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static LeMP.StandardMacros;
+using S = Loyc.Ecs.EcsCodeSymbols;
+
+namespace LeMP.ecs
+{
+	partial class StandardMacros
+	{
+		[LexicalMacro("macro (pattern) { /* C# macro method body */ }",
+			"Compiles and registers a macro that recognizes the specified syntactical pattern and " +
+			"optionally produces a replacement pattern. LeMP will preprocess the method body before " +
+			"giving it to the C# scripting engine, so LeMP macros can be used inside the method body. " +
+			"The method body has access to two parameter variables (LNode node, IMacroContext context) " +
+			"and it can change the matched code by returning new code. " +
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority. " +
+			"Example: macro ($lhs += 1) { return quote($lhs++); }")]
+		public static LNode macro(LNode node, IMacroContext context)
+		{
+			if (node.Args.Count != 2)
+				return Reject(context, node, "Expected one macro pattern and one body.");
+			LNode pattern = node.Args[0], body = node.Args[1];
+			if (!body.Calls(S.Braces))
+				return Reject(context, body, "Expected a braced block containing C# code to run when the pattern on the left is matched.");
+
+			return CompileMacro(pattern, body, context, node.Attrs);
+		}
+
+		[LexicalMacro(@"macro Name($arg1, $arg2, ...) { /* C# macro method body */ }; macro Name($arg1, $arg2, ...) => /* C# expression */;",
+			"Compiles and registers a macro that recognizes the specified syntactical pattern and " +
+			"optionally produces a replacement pattern. LeMP will preprocess the method body before " +
+			"giving it to the C# scripting engine, so LeMP macros can be used inside the method body. " +
+			"The method body has access to two parameter variables (LNode node, IMacroContext context) " +
+			"and it can change the matched code by returning new code. " +
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority. " +
+			"Example: macro ExprToString($expr) { return LNode.Literal(expr.ToString()); }",
+			"#fn", Mode = MacroMode.Passive)]
+		public static LNode methodStyleMacro(LNode node, IMacroContext context)
+		{
+			if (EcsValidators.MethodDefinitionKind(node, out var defineKw, out var macroName, out var args, out var body) == S.Fn && body != null && defineKw.IsIdNamed("macro"))
+			{
+				var pattern = args.WithTarget(macroName);
+				return CompileMacro(pattern, body, context, node.Attrs);
+			}
+			return null;
+		}
+
+		public static LNode CompileMacro(LNode pattern, LNode body, IMacroContext context, LNodeList attrs)
+		{
+			var modeNodes = attrs.Where(a => Enum.TryParse(a.Name.Name, out MacroMode _));
+			// unwrap braces (they're not part of the pattern, they just enable statement syntax in EC#)
+			var pattern' = pattern.UnwrapBraces();
+			MacroMode modes = GetMacroMode(ref attrs, pattern');
+
+			// compileTime {...} can recognize macro method definitions. 
+			// Take advantage of this by generating a macro method which it will register for us.
+			LNode macroName = pattern'.Target ?? pattern';
+			LNode syntax = F.Literal(pattern'.ToString());
+			LNode description = attrs.FirstOrDefault(a => a.Value is string) ?? F.Literal("User-defined macro at {0}".Localized(pattern.Range.Start));
+			attrs = attrs.SmartWhere(a => !(a.Value is string)); // remove docstring, if any
+			
+			var extraArgs = LNode.List();
+			if (macroName.IsId) {
+				extraArgs.Add(F.Literal(macroName.Name.Name));
+			} else {
+				Debug.Assert((modes & (MacroMode.MatchEveryCall | MacroMode.MatchEveryIdentifier | MacroMode.MatchEveryLiteral)) != 0);
+			}
+
+			// ensure operator macros like `'+` are not printed as `operator+` which C# will reject
+			if (EcsValidators.IsOperator(macroName.Name))
+				macroName = F.Id(EcsValidators.SanitizeIdentifier(macroName.Name.Name));
+			
+			LNode modesExpr = null;
+			foreach (LNode mode in modeNodes)
+				modesExpr = LNode.MergeBinary(modesExpr, quote(global::LeMP.MacroMode.$mode), S.OrBits);
+			if (modesExpr != null)
+				extraArgs.Add(quote(Mode = $modesExpr));
+
+			LNode lmAttribute = quote(global::LeMP.LexicalMacroAttribute($syntax, $description, $(..extraArgs)));
+
+			if (!body.Calls(S.Braces))
+				body = quote { { return $body; } };
+
+			body = context.PreProcess(body);
+
+			// Look for "using" statements above the macro() call
+			LNodeList usingDirectives = LNode.List(context.PreviousSiblings.Where(n => n.Calls(S.Import)));
+			
+			// Look for "using" and "#r" statements at the beginning of the body
+			if (body.Calls(S.Braces)) {
+				var bodyUsings = body.Args.TakeNowWhile(stmt => stmt.Calls(S.Import) || stmt.Calls(S.CsiReference));
+				usingDirectives.AddRange(bodyUsings);
+				body = body.WithArgs(body.Args.Slice(bodyUsings.Count));
+			}
+
+			// Create a matchCode statement unless the pattern is MacroName($(.._)), which always matches
+			unless (pattern'.HasSimpleHeadWithoutPAttrs() && pattern'.Target.IsId 
+				&& pattern'.ArgCount == 1 && pattern'[0].Equals(rawQuote($(.._))))
+			{
+				// Note: the body is already preprocessed; #noLexicalMacros prevents double-processing
+				body = quote {
+					{
+						matchCode(#node) {
+							case $pattern:
+								#noLexicalMacros($(..body.AsList(S.Braces)));
+						}
+						return null;
+					}
+				};
+			}
+
+			return quote {
+				compileTime {
+					$(..usingDirectives);
+
+					[$lmAttribute, $(..attrs)]
+					public static LNode $macroName(LNode #node, global::LeMP.IMacroContext #context) => $body;
+				}
+			};
+		}
+	}
+}

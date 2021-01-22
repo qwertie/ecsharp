@@ -15,7 +15,7 @@ namespace LeMP
 	{
 		static readonly Symbol @in = GSymbol.Get("in");
 
-		[LexicalMacro(@"unroll ((X, Y) \in ((X, Y), (Y, X))) {...}",
+		[LexicalMacro(@"/* LES syntax */ unroll ((X, Y) `in` ((X, Y), (Y, X))) {...}; /* EC#/LES3 syntax */ unroll ((X, Y) in ((X, Y), (Y, X))) {...}",
 			 "Produces variations of a block of code, by replacing an identifier left of `in` "
 			+"with each of the corresponding expressions on the right of `in`. The list on the "
 			+"right side can either be a tuple or a braced list of statements.\n\n"
