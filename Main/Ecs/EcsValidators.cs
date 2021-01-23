@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.Collections;
 using Loyc.Math;
 using Loyc.Syntax;
-using S = Loyc.Syntax.CodeSymbols;
+using S = Loyc.Ecs.EcsCodeSymbols;
 
 namespace Loyc.Ecs
 {
@@ -20,15 +20,15 @@ namespace Loyc.Ecs
 	/// </remarks>
 	public static class EcsValidators
 	{
-		static readonly HashSet<Symbol> SimpleStmts = EcsNodePrinter.SimpleStmts;
-		static readonly HashSet<Symbol> SpaceDefinitionStmts = EcsNodePrinter.SpaceDefinitionStmts;
-		static readonly HashSet<Symbol> OperatorIdentifiers = EcsNodePrinter.OperatorIdentifiers;
+		static readonly HashSet<Symbol> SimpleStmts = EcsFacts.SimpleStmts;
+		static readonly HashSet<Symbol> SpaceDefinitionStmts = EcsFacts.SpaceDefinitionStmts;
+		static readonly HashSet<Symbol> OperatorIdentifiers = EcsFacts.OperatorIdentifiers;
 		static readonly HashSet<Symbol> AssignmentOperators = new HashSet<Symbol> {
 			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, S.ShrAssign,
 			S.ShlAssign, S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
 			S.ExpAssign, S.ConcatAssign
 		};
-		static readonly Dictionary<Symbol, string> AttributeKeywords = EcsNodePrinter.AttributeKeywords;
+		static readonly Dictionary<Symbol, string> AttributeKeywords = EcsFacts.AttributeKeywords;
 
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {
@@ -361,9 +361,13 @@ namespace Loyc.Ecs
 				return true;
 			return false;
 		}
+		/// <summary>Returns true if `n` is a potential type name.</summary>
+		/// <param name="n"></param>
+		/// <param name="f"></param>
+		/// <param name="p"></param>
+		/// <returns></returns>
 		public static bool IsComplexIdentifier(LNode n, ICI f = ICI.Default, Pedantics p = Pedantics.Lax)
 		{
-			// Returns true if 'n' is printable as a complex identifier (a potential type name).
 			//
 			// To be printable, a complex identifier in EC# must not contain 
 			// attributes ((p & Pedantics.DropNonDeclAttrs) != 0 to override) and must be
@@ -408,6 +412,8 @@ namespace Loyc.Ecs
 			if (n.IsId)
 				return true;
 			if (CallsWPAIH(n, S.Substitute, 1, p))
+				return true;
+			if (CallsWPAIH(n, S.CsRawText, 1, p) && n[0].IsLiteral)
 				return true;
 
 			var args = n.Args;
@@ -805,4 +811,25 @@ namespace Loyc.Ecs
 			return sb.ToString();
 		}
 	}
+
+	/// <summary>Flags for <see cref="EcsValidators.IsComplexIdentifier"/>.</summary>
+	[Flags]
+	public enum ICI
+	{
+		Default = 0,
+		AllowAttrs = 2, // outer level only. e.g. this flag is used on return types, where
+		                // #fn([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
+		// For internal use
+		DisallowDotted = 8, // inside right-hand side of dot
+		DisallowColonColon = 16, // inside right-hand side of `::`
+		InOf = 32,          // inside <...>
+		// hmm
+		AllowAnyExprInOf = 64,
+		// Allows in out, e.g. IFoo<in A, out B, c>, but requires type params 
+		// to be simple (e.g. IFoo<A.B, C<D>> is illegal)
+		NameDefinition = 128,
+		// allows parentheses around the outside of the complex identifier.
+		AllowParensAround = 256,
+	}
+
 }

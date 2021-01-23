@@ -1,0 +1,53 @@
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using S = Loyc.Ecs.EcsCodeSymbols;
+
+namespace LeMP.ecs
+{
+	partial class StandardMacros
+	{
+		[LexicalMacro("(array literal T[])",
+			"Converts an array literal to a C# `new T[] {...}` expression", 
+			Mode = MacroMode.MatchEveryLiteral | MacroMode.PriorityInternalFallback)]
+		public static LNode ArrayLiteral(LNode node, IMacroContext context)
+		{
+			var value = node.Value;
+			if (value is Array array) {
+				Type elementType = value.GetType().GetElementType();
+				string elementTypeName = elementType.NameWithGenericArgs();
+				LNode elementTypeN = LNode.Call(S.CsRawText, LNode.List(LNode.Literal(elementTypeName)));
+
+				Func<object, LNode, LNode> newLiteral = (el, pnode) => LNode.Literal(el, pnode);
+				// Reduce output text size by preventing the printer from using casts 
+				// e.g. print `23` instead of `(byte) 23` or `(short) 23`. Also, unbox
+				// ints to save memory (ideally we'd do this for all Value Types)
+				unroll(SmallInt in (byte, sbyte, short, ushort, int)) {
+					if (elementType == typeof(SmallInt))
+						newLiteral = (el, pnode) => LNode.Literal((int)(SmallInt) el, pnode);
+				}
+
+				if (array.Rank == 1) {
+					var initializers = new List<LNode>();
+					int count = 0;
+					foreach (object element in array) {
+						LNode elemNode = newLiteral(element, node);
+						if ((count++ & 7) == 0 && array.Length > 8)
+							elemNode = elemNode.PlusAttr(LNode.Id(S.TriviaNewline));
+						initializers.Add(elemNode);
+					}
+					return quote(new $elementTypeN[] { $(..initializers) });
+				} else {
+					return null; // TODO
+					//Stmt("int[,] Foo = new[,] { {\n 0 }, {\n 1,\n 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+					//	F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
+				}
+			}
+			return null;
+		}
+	}
+}

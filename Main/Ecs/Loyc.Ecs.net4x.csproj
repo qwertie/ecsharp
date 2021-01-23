@@ -91,6 +91,7 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="EcsCodeSymbols.cs" />
+    <Compile Include="EcsFacts.cs" />
     <Compile Include="Parser\EcsLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

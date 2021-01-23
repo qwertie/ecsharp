@@ -37,25 +37,6 @@ namespace Loyc.Ecs
 		// | Expression stmt     | x += y;                | When none of the above    |
 		// | Assembly attribute  | [assembly: Foo]        | Name is S.Assembly        |
 
-		// Space definitions are containers for other definitions
-		internal static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
-		});
-		// Definition statements define types, spaces, methods, properties, events and variables
-		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Var, S.Fn, S.Constructor, S.Delegate, S.Event, S.Property
-		});
-		// Block statements take block(s) as arguments
-		static readonly HashSet<Symbol> TwoArgBlockStmts = new HashSet<Symbol>(new[] {
-			S.DoWhile, S.Fixed, S.Lock, S.SwitchStmt, S.UsingStmt, S.While
-		});
-		static readonly HashSet<Symbol> OtherBlockStmts = new HashSet<Symbol>(new[] {
-			S.If, S.Checked, S.For, S.ForEach, S.If, S.Try, S.Unchecked
-		});
-		static readonly HashSet<Symbol> LabelStmts = new HashSet<Symbol>(new[] {
-			S.Label, S.Case
-		});
-
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
 		/// <summary>Result from statement printer</summary>
@@ -70,15 +51,15 @@ namespace Loyc.Ecs
 		{
 			// Build a dictionary of printers for each operator name.
 			var d = new Dictionary<Symbol, StatementPrinter>();
-			AddAll(d, SpaceDefinitionStmts, nameof(AutoPrintSpaceDefinition));
-			AddAll(d, OtherDefinitionStmts, nameof(AutoPrintMethodDefinition));
+			AddAll(d, EcsFacts.SpaceDefinitionStmts, nameof(AutoPrintSpaceDefinition));
+			AddAll(d, EcsFacts.OtherDefinitionStmts, nameof(AutoPrintMethodDefinition));
 			d[S.Var]      = OpenDelegate<StatementPrinter>(nameof(AutoPrintVarDecl));
 			d[S.Event]    = OpenDelegate<StatementPrinter>(nameof(AutoPrintEvent));
 			d[S.Property] = OpenDelegate<StatementPrinter>(nameof(AutoPrintProperty));
-			AddAll(d, SimpleStmts, nameof(AutoPrintSimpleStmt));
-			AddAll(d, TwoArgBlockStmts, nameof(AutoPrintTwoArgBlockStmt));
-			AddAll(d, OtherBlockStmts, nameof(AutoPrintOtherBlockStmt));
-			AddAll(d, LabelStmts, nameof(AutoPrintLabelStmt));
+			AddAll(d, EcsFacts.SimpleStmts, nameof(AutoPrintSimpleStmt));
+			AddAll(d, EcsFacts.TwoArgBlockStmts, nameof(AutoPrintTwoArgBlockStmt));
+			AddAll(d, EcsFacts.OtherBlockStmts, nameof(AutoPrintOtherBlockStmt));
+			AddAll(d, EcsFacts.LabelStmts, nameof(AutoPrintLabelStmt));
 			d[S.Braces] = OpenDelegate<StatementPrinter>(nameof(AutoPrintBlockOfStmts));
 			d[S.Result] = OpenDelegate<StatementPrinter>(nameof(AutoPrintResult));
 			d[S.Missing] = OpenDelegate<StatementPrinter>(nameof(AutoPrintMissingStmt));

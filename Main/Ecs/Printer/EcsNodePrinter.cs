@@ -443,112 +443,6 @@ namespace Loyc.Ecs
 			return result;
 		}
 
-		#region Sets and dictionaries of keywords and tokens
-
-		static readonly HashSet<Symbol> PreprocessorCollisions = SymbolSet(
-			"#if", "#else", "#elif", "#endif", "#define", "#undef",
-			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line",
-			"#nullable", "#r", "#load", "#cls", "#clear", "#reset", "#help"
-		);
-
-		internal static readonly HashSet<Symbol> OperatorIdentifiers = new HashSet<Symbol> {
-			// >>, << and ** are special: the lexer provides them as two separate tokens
-
-			// Standard C# operators:
-			S.NotBits, S.Not, S.Mod, S.XorBits, S.AndBits, S.And, S.Mul, S.Exp, S.Add, S.PreInc,
-			S.Sub, S.PreDec, S.Eq, S.NotEq, S.Sub, S.PreDec, S.Eq, S.NotEq, /*"{}", "[]",*/ S.OrBits, S.Or, 
-			S.Semicolon, S.Colon, S.Comma, S.Dot, S.DotDot, S.LT, S.Shl, S.GT, S.Shr, S.Div,
-			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.RightArrow,
-			// Standard C# assignment operators:
-			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, 
-			S.ShrAssign, S.ShlAssign, S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, 
-			S.NullCoalesceAssign,
-			// EC#-specific operators, starting with assignment operators
-			S.ExpAssign, S.QuickBindAssign, S.ConcatAssign, S.QuickBind, S.UsingCast, 
-			S.DotDotDot, S.Backslash, S.Forward, S.Substitute, S.Compare, 
-			S.ForwardPipeArrow, S.ForwardAssign, S.NullForwardPipeArrow, 
-			S.ForwardNullCoalesceAssign, S.When, S.WhereOp
-		};
-
-		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(
-			"abstract",  "event",     "new",        "struct", 
-			"as",        "explicit",  "null",       "switch", 
-			"base",      "extern",    "object",     "this", 
-			"bool",      "false",     "operator",   "throw", 
-			"break",     "finally",   "out",        "true", 
-			"byte",      "fixed",     "override",   "try", 
-			"case",      "float",     "params",     "typeof", 
-			"catch",     "for",       "private",    "uint", 
-			"char",      "foreach",   "protected",  "ulong", 
-			"checked",   "goto",      "public",     "unchecked", 
-			"class",     "if",        "readonly",   "unsafe", 
-			"const",     "implicit",  "ref",        "ushort", 
-			"continue",  "in",        "return",     "using", 
-			"decimal",   "int",       "sbyte",      "virtual", 
-			"default",   "interface", "sealed",     "volatile", 
-			"delegate",  "internal",  "short",      "void", 
-			"do",        "is",        "sizeof",     "while", 
-			"double",    "lock",      "stackalloc",
-			"else",      "long",      "static",
-			"enum",      "namespace", "string");
-
-		internal static readonly Dictionary<Symbol, string> AttributeKeywords = KeywordDict(
-			"abstract", "const", "explicit", "extern", "implicit", "internal", 
-			"override", "params", "private", "protected", "public", "readonly", "ref",
-			"sealed", "static", "unsafe", "virtual", "volatile", "out");
-
-		internal static readonly Dictionary<Symbol, string> TypeKeywords = Dictionary(
-			P(S.Void, "void"),  P(S.Object, "object"), P(S.Bool, "bool"), P(S.Char, "char"), 	
-			P(S.Int8, "sbyte"), P(S.UInt8, "byte"), P(S.Int16, "short"), P(S.UInt16, "ushort"), 
-			P(S.Int32, "int"), P(S.UInt32, "uint"), P(S.Int64, "long"), P(S.UInt64, "ulong"), 
-			P(S.Single, "float"), P(S.Double, "double"), P(S.String, "string"), P(S.Decimal, "decimal")
-		);
-
-		static readonly Dictionary<Symbol, string> KeywordStmts = KeywordDict(
-			"break", "case", "checked", "continue", "default",  "do", "fixed", 
-			"for", "foreach", "goto", "if", "lock", "return", "switch", "throw", "try",
-			"unchecked", "using", "while", "enum", "struct", "class", "interface", 
-			"namespace", "trait", "alias", "event", "delegate", "goto case");
-
-		static readonly HashSet<Symbol> KnownTrivia = new HashSet<Symbol> {
-			S.TriviaInParens, S.TriviaTrailing,
-			S.TriviaNewline, S.TriviaAppendStatement, S.TriviaSpaces,
-			S.TriviaSLComment, S.TriviaMLComment, 
-			S.TriviaRawText, S.TriviaCsRawText, S.TriviaCsPPRawText,
-			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
-			S.TriviaRegion, S.TriviaEndRegion,
-		};
-
-		internal static HashSet<Symbol> SymbolSet(params string[] input)
-		{
-			return new HashSet<Symbol>(input.Select(s => GSymbol.Get(s)));
-		}
-		static Dictionary<Symbol, string> KeywordDict(params string[] input)
-		{
-			var d = new Dictionary<Symbol, string>(input.Length);
-			for (int i = 0; i < input.Length; i++)
-			{
-				string name = input[i], text = name;
-				if (name == "goto case")
-					name = "#gotoCase";
-				else
-					name = "#" + name;
-				d[GSymbol.Get(name)] = text;
-			}
-			return d;
-		}
-		static Pair<K,V> P<K,V>(K key, V value) 
-			{ return Pair.Create(key, value); }
-		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
-		{
-			var d = new Dictionary<K,V>();
-			for (int i = 0; i < input.Length; i++)
-				d.Add(input[i].Key, input[i].Value);
-			return d;
-		}
-
-		#endregion
-
 		#region Validation helpers (note: most of them were moved to EcsValidators)
 		// These are validators for printing purposes: they check that each node 
 		// that shouldn't have attributes, doesn't; if attributes are present in
@@ -616,7 +510,7 @@ namespace Loyc.Ecs
 
 		#endregion
 
-		#region Parts of expressions: attributes, identifiers, literals, trivia
+		#region Printing of attributes & trivia
 
 		// Used with PrintAttrs()
 		enum AttrStyle {
@@ -750,7 +644,7 @@ namespace Loyc.Ecs
 
 				string text;
 				var name = attr.Name;
-				if (AttributeKeywords.TryGetValue(name, out text)) {
+				if (EcsFacts.AttributeKeywords.TryGetValue(name, out text)) {
 					if (dropMostAttrs && name != S.Out && name != S.Ref)
 						continue;
 
@@ -800,7 +694,7 @@ namespace Loyc.Ecs
 		bool DetectAndMaybePrintTrivia(LNode attr, bool trailingMode, ref int parenCount)
 		{
 			var name = attr.Name;
-			if (!KnownTrivia.Contains(name))
+			if (!EcsFacts.KnownTrivia.Contains(name))
 				return _o.OmitUnknownTrivia && S.IsTriviaSymbol(name);
 
 			if (name == S.TriviaRawText || name == S.TriviaCsRawText || name == S.TriviaCsPPRawText) {
@@ -902,12 +796,12 @@ namespace Loyc.Ecs
 				return false;
 			else {
 				bool result, difficult = false;
-				if (AttributeKeywords.ContainsKey(node.Name) || (difficult = node.Name == S.NewAttribute))
+				if (EcsFacts.AttributeKeywords.ContainsKey(node.Name) || (difficult = node.Name == S.NewAttribute))
 					result = style >= AttrStyle.AllowKeywordAttrs &&
 						(node.Name != S.NewAttribute || style >= AttrStyle.IsDefinition);
 				else
 					result = style >= AttrStyle.AllowWordAttrs && (node.Name == S.This ||
-						!CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));
+						!EcsFacts.CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));
 
 				if (result && difficult)
 					hasDifficultWordAttribute = true;
@@ -915,7 +809,7 @@ namespace Loyc.Ecs
 			}
 		}
 
-		static readonly Symbol Var = GSymbol.Get("var"), Def = GSymbol.Get("def");
+		#endregion
 
 		[ThreadStatic] static StringBuilder _staticStringBuilder;
 		[ThreadStatic] static EcsNodePrinterWriter _staticWriter;
@@ -960,13 +854,15 @@ namespace Loyc.Ecs
 			return _staticStringBuilder.ToString();
 		}
 
+		#region Printing of identifiers & strings
+
 		private void PrintSimpleIdent(Symbol name, Ambiguity flags, IdPrintMode mode = IdPrintMode.Normal)
 		{
 			if (mode == IdPrintMode.Operator)
 			{
 				_out.Write("operator");
 				Space(SpaceOpt.AfterOperatorKeyword);
-				if (OperatorIdentifiers.Contains(name)) {
+				if (EcsFacts.OperatorIdentifiers.Contains(name)) {
 					Debug.Assert(name.Name.StartsWith("'"));
 					_out.Write(name.Name.Substring(1));
 				} else
@@ -991,7 +887,7 @@ namespace Loyc.Ecs
 					return;
 				}
 				string keyword;
-				if (TypeKeywords.TryGetValue(name, out keyword)) {
+				if (EcsFacts.TypeKeywords.TryGetValue(name, out keyword)) {
 					_out.Write(keyword);
 					return;
 				}
@@ -1032,16 +928,14 @@ namespace Loyc.Ecs
 			{
 				if (isPunctuationIdentifier = !EcsValidators.IsIdentStartChar(first) 
 					|| mode == IdPrintMode.Verbatim 
-					|| PreprocessorCollisions.Contains(name) 
-					|| CsKeywords.Contains(name))
+					|| EcsFacts.PreprocessorKeywordNames.Contains(name) 
+					|| EcsFacts.CsKeywords.Contains(name))
 					_out.Write("@");
 			}
 			_out.Write(name.Name);
 			if (isPunctuationIdentifier)
 				_out.OnPunctuationIdentifierEnding();
 		}
-
-		static readonly Symbol _Verbatim = GSymbol.Get("%verbatim");
 
 		private void PrintString(string text, char quoteType, Symbol verbatim, bool includeAtSign = false)
 		{
@@ -1053,26 +947,33 @@ namespace Loyc.Ecs
 				for (int i = 0; i < text.Length; i++) {
 					if (text[i] == quoteType)
 						_out.Write(quoteType);
-					else
-						_out.Write(text[i]);
+					_out.Write(text[i]);
 				}
 			} else {
-				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType));
+				_out.Write(PrintHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse | EscapeC.ABFV, quoteType));
 			}
 			_out.Write(quoteType);
 		}
 
+		#endregion
+
+		#region Printing of literals
+
+		static readonly Symbol _Verbatim = GSymbol.Get("%verbatim");
+
+		static Pair<K, V> P<K, V>(K key, V value) => Pair.Create(key, value);
+
 		static Pair<RuntimeTypeHandle,Action<EcsNodePrinter>> P<T>(Action<EcsNodePrinter> value) 
 			{ return Pair.Create(typeof(T).TypeHandle, value); }
-		static Dictionary<RuntimeTypeHandle,Action<EcsNodePrinter>> LiteralPrinters = Dictionary(
-			P<int>    (np => np.PrintIntegerToString("")),
-			P<long>   (np => np.PrintIntegerToString("L")),
-			P<uint>   (np => np.PrintIntegerToString("u")),
-			P<ulong>  (np => np.PrintIntegerToString("uL")),
-			P<short>  (np => np.PrintIntegerToString("(->short)")),  // Unnatural. Not produced by parser.
-			P<ushort> (np => np.PrintIntegerToString("(->ushort)")), // Unnatural. Not produced by parser.
-			P<sbyte>  (np => np.PrintIntegerToString("(->sbyte)")),  // Unnatural. Not produced by parser.
-			P<byte>   (np => np.PrintIntegerToString("(->byte)")),   // Unnatural. Not produced by parser.
+		static Dictionary<RuntimeTypeHandle,Action<EcsNodePrinter>> EcsSpecificLiteralPrinters = EcsFacts.Dictionary(
+			P<int>    (np => np.PrintIntegerToString((int)np._n.Value, "")),
+			P<long>   (np => np.PrintIntegerToString((long)np._n.Value, "L")),
+			P<uint>   (np => np.PrintIntegerToString((uint)np._n.Value, "u")),
+			P<ulong>  (np => np.PrintIntegerToString((long)(ulong)np._n.Value, "uL", isULong: true)),
+			P<short>  (np => np.PrintIntegerWithCast((short)np._n.Value, "short")),  // Never produced by parser.
+			P<ushort> (np => np.PrintIntegerWithCast((ushort)np._n.Value, "ushort")), // Never produced by parser.
+			P<sbyte>  (np => np.PrintIntegerWithCast((sbyte)np._n.Value, "sbyte")),  // Never produced by parser.
+			P<byte>   (np => np.PrintIntegerWithCast((byte)np._n.Value, "byte")),   // Never produced by parser.
 			P<double> (np => {
 				double n = ((double)np._n.Value);
 				np.PrintValueToString(System.Math.Floor(n) == n ? "d" : "");
@@ -1080,14 +981,9 @@ namespace Loyc.Ecs
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),
 			P<bool>   (np => np._out.Write((bool)np._n.Value ? "true" : "false")),
-			P<@void>  (np => np._out.Write("default(void)")),
+			P<@void>  (np => np._out.Write("default(@void)")),
 			P<char>   (np => np.PrintString(np._n.Value.ToString(), '\'', null)),
-			P<string> (np => {
-				var n = np._n;
-				// TODO: add ability to print triple-quoted strings when !PreferPlainCSharp
-				var v = n.BaseStyle == NodeStyle.VerbatimStringLiteral || n.BaseStyle == NodeStyle.TQStringLiteral || n.BaseStyle == NodeStyle.TDQStringLiteral ? _Verbatim : null;
-				np.PrintString(n.Value.ToString(), '"', v, true);
-			}),
+			P<string> (np => np.PrintCustomLiteral(np._n.TypeMarker, np._n.Value.ToString(), np._n.BaseStyle)),
 			P<Symbol> (np => {
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, IdPrintMode.Symbol);
 			}),
@@ -1095,18 +991,18 @@ namespace Loyc.Ecs
 				np._out.Write("@{");
 				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString));
 				np._out.Write(" }");
-			}),
-			P<IEnumerable<byte>> (np => { // Unnatural. Not produced by parser.
-				var data = (IEnumerable<byte>)np._n.Value;
-				if (np._n.BaseStyle == NodeStyle.HexLiteral)
-					np.WriteArrayLiteral("byte", data, (num, _out) => {
-						_out.Write("0x");
-						_out.Write(num.ToString("X", null));
-					});
-				else
-					np.WriteArrayLiteral("byte", data, (num, _out) => 
-						_out.Write(num.ToString()));
 			})
+			//P<IEnumerable<byte>> (np => { // Never produced by parser.
+			//	var data = (IEnumerable<byte>)np._n.Value;
+			//	if (np._n.BaseStyle == NodeStyle.HexLiteral)
+			//		np.WriteArrayLiteral("byte", data, (num, _out) => {
+			//			_out.Write("0x");
+			//			_out.Write(num.ToString("X", null));
+			//		});
+			//	else
+			//		np.WriteArrayLiteral("byte", data, (num, _out) => 
+			//			_out.Write(num.ToString()));
+			//})
 		);
 		
 		void PrintValueToString(string suffix)
@@ -1114,95 +1010,117 @@ namespace Loyc.Ecs
 			_out.Write(_n.Value.ToString());
 			_out.Write(suffix);
 		}
-		void PrintIntegerToString(string suffix)
+		void PrintIntegerWithCast(int value, string type)
 		{
-			string asStr;
-			if (_n.BaseStyle == NodeStyle.HexLiteral) {
-				var value = (IFormattable)_n.Value;
-				_out.Write("0x");
-				asStr = value.ToString("x", null);
-			} else
-				asStr = _n.Value.ToString();
-			if (suffix == "")
-				_out.Write(asStr);
-			else {
-				_out.Write(asStr);
-				_out.Write(suffix);
+			if (_o.PreferPlainCSharp) {
+				bool extraParens = !EP.Prefix.CanAppearIn(_context, true);
+				if (extraParens) _out.Write('(');
+				_out.Write('(');
+				_out.Write(type);
+				_out.Write(')');
+				Space(SpaceOpt.AfterCast);
+				PrintIntegerToString(value, "");
+				if (extraParens) _out.Write(')');
+			} else {
+				PrintIntegerToString(value, "(->");
+				Space(SpaceOpt.AfterCastArrow);
+				_out.Write(type);
+				_out.Write(')');
 			}
+		}
+		void PrintIntegerToString(long value, string suffix, bool isULong = false)
+		{
+			string asStr, prefix = "";
+			int @base = 10, separatorInterval = 9;
+			if (_n.BaseStyle == NodeStyle.HexLiteral) {
+				@base = 16;
+				prefix = "0x";
+				separatorInterval = 8;
+			} else if (_n.BaseStyle == NodeStyle.BinaryLiteral) {
+				@base = 2;
+				prefix = "0b";
+				separatorInterval = 16;
+			}
+
+			if (isULong)
+				asStr = PrintHelpers.IntegerToString((ulong)value, prefix, @base, separatorInterval);
+			else
+				asStr = PrintHelpers.IntegerToString(value, prefix, @base, separatorInterval);
+
+			_out.Write(asStr);
+			_out.Write(suffix);
 		}
 		void PrintValueFormatted(string format)
 		{
 			_out.Write(string.Format(format, _n.Value));
 		}
 
-		void WriteArrayLiteral<T>(string elementType, IEnumerable<T> data, Action<T, EcsNodePrinterWriter> writeElement)
-		{
-			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
-			_out.Write("new ");
-			_out.Write(elementType);
-			_out.Write("[] {");
-			NewlineOrSpace(NewlineOpt.AfterOpenBraceInNewExpr);
-			int count = 0;
-			foreach (T datum in data)
-			{
-				if (count++ != 0) {
-					_out.Write(',');
-					if ((count & 0xF) == 0)
-						NewlineOrSpace(NewlineOpt.Minimal);
-				}
-				writeElement(datum, _out);
-			}
-			NewlineOrSpace(NewlineOpt.BeforeCloseBraceInExpr);
-			_out.Write("}");
-			WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
-		}
+		//void WriteArrayLiteral<T>(string elementType, IEnumerable<T> data, Action<T, EcsNodePrinterWriter> writeElement)
+		//{
+		//	WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
+		//	_out.Write("new ");
+		//	_out.Write(elementType);
+		//	_out.Write("[] {");
+		//	NewlineOrSpace(NewlineOpt.AfterOpenBraceInNewExpr);
+		//	int count = 0;
+		//	foreach (T datum in data)
+		//	{
+		//		if (count++ != 0) {
+		//			_out.Write(',');
+		//			if ((count & 0xF) == 0)
+		//				NewlineOrSpace(NewlineOpt.Minimal);
+		//		}
+		//		writeElement(datum, _out);
+		//	}
+		//	NewlineOrSpace(NewlineOpt.BeforeCloseBraceInExpr);
+		//	_out.Write("}");
+		//	WriteOpenParen(ParenFor.Grouping, !_context.CanParse(EP.Primary));
+		//}
 
 		private void PrintLiteral()
 		{
 			Debug.Assert(_n.IsLiteral);
+			object value = _n.Value;
+
 			Action<EcsNodePrinter> p;
-			if (_n.Value == null)
+			if (value == null)
 				_out.Write("null");
-			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p)
-				|| (p = LiteralPrinters.FirstOrDefault(pair => Type.GetTypeFromHandle(pair.Key).IsAssignableFrom(_n.Value.GetType())).Value) != null)
+			else if (EcsSpecificLiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
 				p(this);
 			else {
-				ErrorSink.Error(_n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
-				bool quote = _o.QuoteUnprintableLiterals;
-				string unprintable;
-				try {
-					unprintable = _n.Value.ToString();
-				} catch (Exception ex) {
-					unprintable = ex.Message;
-					quote = true;
+				var sb = new StringBuilder();
+				var printer = _o.LiteralPrinter ?? StandardLiteralHandlers.Value;
+				var result = printer.TryPrint(_n, sb);
+				if (result.Left.HasValue) {
+					// Success
+					PrintCustomLiteral(_n.TypeMarker ?? result.Left.Value as Symbol, sb.ToString(), _n.BaseStyle);
+				} else {
+					ErrorSink.Warning(_n, "EcsNodePrinter: No printer is registered for literal type '{0}'", value.GetType().Name);
+					string unprintable;
+					try {
+						unprintable = value.ToString();
+					} catch (Exception ex) {
+						ErrorSink.Error(_n, "Exception in Value.ToString: {0}", ex.Description());
+						unprintable = ex.Message;
+					}
+					PrintCustomLiteral(_n.TypeMarker ?? (Symbol)MemoizedTypeName.Get(value.GetType()), unprintable, _n.BaseStyle);
 				}
-				if (quote)
-					PrintString(unprintable, '"', null);
-				else
-					_out.Write(unprintable);
 			}
 		}
 
-#endregion
-	}
+		private void PrintCustomLiteral(Symbol typeMarker, string textValue, NodeStyle baseStyle)
+		{
+			if (!GSymbol.IsNullOrEmpty(typeMarker))
+				PrintSimpleIdent(typeMarker, 0, IdPrintMode.Normal);
+			
+			// TODO: add ability to print triple-quoted strings when !PreferPlainCSharp
+			var verbatim = baseStyle == NodeStyle.VerbatimStringLiteral 
+			            || baseStyle == NodeStyle.TQStringLiteral 
+			            || baseStyle == NodeStyle.TDQStringLiteral;
+			PrintString(textValue, '"', verbatim ? _Verbatim : null, true);
+		}
 
-	/// <summary>Flags for <see cref="EcsNodePrinter.IsComplexIdentifier"/>.</summary>
-	[Flags] public enum ICI
-	{
-		Default = 0,
-		AllowAttrs = 2, // outer level only. e.g. this flag is used on return types, where
-			// #fn([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
-		// For internal use
-		DisallowDotted = 8, // inside right-hand side of dot
-		DisallowColonColon = 16, // inside right-hand side of `::`
-		InOf = 32,          // inside <...>
-		// hmm
-		AllowAnyExprInOf = 64,
-		// Allows in out, e.g. IFoo<in A, out B, c>, but requires type params 
-		// to be simple (e.g. IFoo<A.B, C<D>> is illegal)
-		NameDefinition = 128,
-		// allows parentheses around the outside of the complex identifier.
-		AllowParensAround = 256,
+		#endregion
 	}
 
 	/// <summary>Controls the locations where spaces appear as <see cref="EcsNodePrinter"/> 
@@ -1389,9 +1307,10 @@ namespace Loyc.Ecs
 		/// <remarks>Initial value: true</remarks>
 		public bool ObeyRawText { get; set; }
 
-		/// <summary>When the printer encounters an unprintable literal, it calls
-		/// Value.ToString(). When this flag is set, the string is placed in double
-		/// quotes; when this flag is clear, it is printed as raw text.</summary>
+		/// <summary>No longer supported. If you wish to print a literal as raw
+		/// text (as it used to be when this flag was false), use the type marker 
+		/// <c>#C#RawText</c>.</summary>
+		[Obsolete]
 		public bool QuoteUnprintableLiterals { get; set; }
 
 		/// <summary>Causes the ambiguity between constructors and method calls to

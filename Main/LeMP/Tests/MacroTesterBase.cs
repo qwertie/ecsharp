@@ -42,12 +42,20 @@ namespace LeMP.Tests
 		}
 		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF, IMessageSink sink = null)
 		{
-			var lemp = NewLemp(maxExpand, inLang).With(l => l.Sink = sink);
-			
-			// The current printer affects the assert macro and contract macros
+			MacroProcessor lemp = NewLemp(maxExpand, inLang).With(l => l.Sink = sink);
+			var inputCode = new LNodeList(inLang.Parse(input, MessageSink.Default));
+
+			Test(inputCode, lemp, expected, outLang);
+		}
+		protected void Test(LNode input, MacroProcessor lemp, string expected, IParsingService outLang)
+			=> Test(LNode.List(input), lemp, expected, outLang);
+		protected void Test(LNodeList input, MacroProcessor lemp, string expected, IParsingService outLang)
+		{
+			// The current printer affects the assert macro and contract macros,
+			// so we'll want to set it up before running LeMP
 			using (LNode.SetPrinter((ILNodePrinter)outLang))
 			{
-				var inputCode = new LNodeList(inLang.Parse(input, MessageSink.Default));
+				var inputCode = input;
 				var results = lemp.ProcessSynchronously(inputCode);
 				var expectCode = outLang.Parse(expected, MessageSink.Default);
 				if (!results.SequenceEqual(expectCode))
@@ -68,9 +76,9 @@ namespace LeMP.Tests
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.ecs"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-			if (inLang.FileExtensions.Any(e => e == "les2"))
+			if (inLang?.FileExtensions.Any(e => e == "les2") ?? false)
 				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.les2.to.ecs"));
-			if (inLang.FileExtensions.Any(e => e == "les3"))
+			if (inLang?.FileExtensions.Any(e => e == "les3") ?? false)
 				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.les3.to.ecs"));
 			lemp.MaxExpansions = maxExpand;
 			return lemp;

@@ -123,6 +123,15 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>UserDefinedMacroMacro.out.cs</LastGenOutput>
     </None>
+    <None Include="ecs\Literals.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Literals.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="ecs\Literals.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Literals.ecs</DependentUpon>
+    </Compile>
     <Compile Include="lesX.to.ecs\les2.to.ecs.Macros.cs" />
     <Compile Include="ecs\MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>

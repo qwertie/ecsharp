@@ -17,98 +17,6 @@ namespace Loyc.Ecs
 	{
 		#region Sets and dictionaries of operators
 
-		// Simple statements with the syntax "keyword;" or "keyword expr;" can also be
-		// used as expressions, except for `using` (S.Import).
-		internal static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
-			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
-		});
-
-		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary(
-			// This is a list of unary prefix operators only. Does not include the
-			// binary prefix operator 'cast or the unary suffix operators ++ and --.
-			// Although @`.` can be a prefix operator, it is not included in this list
-			// because it needs special treatment because its precedence is higher
-			// than EP.Primary (i.e. above prefix notation). Therefore, it's printed
-			// as an identifier if possible (e.g. @`.`(a)(x) is printed ".a(x)") and
-			// uses prefix notation if not (e.g. @`.`(a(x)) must be in prefix form.)
-			//
-			// The substitute operator $ also has higher precedence than Primary, 
-			// but its special treatment is in the parser: the parser produces the
-			// same tree for $(x) and $x, unlike e.g. ++(x) and ++x which are 
-			// different trees. Therefore we can treat $ as a normal operator in
-			// the printer except that we must emit parenthesis around the argument
-			// if it is anything but a simple identifier (CanAppearIn detects when
-			// this is necessary.)
-			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
-			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
-			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
-			P(S.DotDot,     EP.Prefix), P(S.DotDotDot,    EP.Prefix), 
-			P(S.Dot,    EP.Substitute), P(S.Substitute, EP.Substitute),
-			P(S.LT, EP.Compare), P(S.GT, EP.Compare),
-			P(S.LE, EP.Compare), P(S.GE, EP.Compare), P(S.PatternNot, EP.PatternNot)
-		);
-
-		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
-			// This is a list of infix binary opertors only. Does not include the
-			// conditional operator `?` or non-infix binary operators such as a[i].
-			// Comma is not an operator at all and generally should not occur. 
-			// '=>' is not included because it has a special 'delegate() {}' form
-			// and is not handled by the normal infix operator printer. Likewise, C# 9
-			// `and`/`or` pattern operators, `with`, and `switch` operators have their 
-			// own special handlers.
-			P(S.Dot, EP.Primary),      P(S.ColonColon, EP.Primary), P(S.QuickBind, EP.Primary), 
-			P(S.RightArrow, EP.Primary), P(S.NullDot, EP.NullDot),
-			P(S.Exp, EP.Power),        P(S.Mul, EP.Multiply),
-			P(S.Div, EP.Multiply),     P(S.Mod, EP.Multiply),
-			P(S.Add, EP.Add),          P(S.Sub, EP.Add),        P(S.NotBits, EP.Add),
-			P(S.Shl, EP.Shift),        P(S.Shr, EP.Shift),
-			P(S.DotDot, EP.Range),     P(S.DotDotDot, EP.Range),
-			P(S.LE, EP.Compare),       P(S.GE, EP.Compare),
-			P(S.LT, EP.Compare),       P(S.GT, EP.Compare),
-			P(S.Is, EP.Is),            P(S.As, EP.AsUsing),       P(S.UsingCast, EP.AsUsing),
-			P(S.Eq, EP.Equals),        P(S.NotEq, EP.Equals),     P(S.In, EP.Equals),
-			P(S.AndBits, EP.AndBits),  P(S.XorBits, EP.XorBits),  P(S.OrBits, EP.OrBits), 
-			P(S.And, EP.And),          P(S.Or, EP.Or),            P(S.Xor, EP.Or),
-			P(S.Assign, EP.Assign),    P(S.MulAssign, EP.Assign),      P(S.DivAssign, EP.Assign),
-			P(S.ModAssign, EP.Assign),      P(S.SubAssign, EP.Assign), P(S.AddAssign, EP.Assign), 
-			P(S.ConcatAssign, EP.Assign),   P(S.ShlAssign, EP.Assign), P(S.ShrAssign, EP.Assign), 
-			P(S.ExpAssign, EP.Assign),      P(S.XorBitsAssign, EP.Assign),
-			P(S.AndBitsAssign, EP.Assign),  P(S.OrBitsAssign, EP.Assign), 
-			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceAssign, EP.Assign),
-			P(S.Compare, EP.Compare3Way),   P(S.ForwardPipeArrow, EP.PipeArrow),
-			P(S.ForwardAssign, EP.PipeArrow),
-			P(S.NullForwardPipeArrow, EP.PipeArrow),
-			P(S.ForwardNullCoalesceAssign, EP.PipeArrow),
-			P(S.When, EP.WhenWhere), P(S.WhereOp, EP.WhenWhere)
-		);
-
-		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
-			P(S.Cast, EP.Prefix),         // (Foo)x      (preferred form)
-			P(S.As, EP.AsUsing),        // x as Foo    (preferred form)
-			P(S.UsingCast, EP.AsUsing)  // x using Foo (preferred form)
-		);
-
-		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
-			S.Tuple, S.Braces, S.ArrayInit });
-
-		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
-			// Operators that need special treatment (neither prefix nor infix nor casts)
-			// ?  []  suf++  suf--  'of  .  'isLegal  'new
-			P(S.QuestionMark,EP.IfElse),  // a?b:c
-			P(S.IndexBracks, EP.Primary), // a[]
-			P(S.NullIndexBracks, EP.Primary), // a?[] (C# 6 feature)
-			P(S.PostInc,     EP.Primary), // x++
-			P(S.PostDec,     EP.Primary), // x--
-			P(S.IsLegal,     EP.Compare)  // x is legal
-			//P(S.New,         EP.Primary),
-			//P(S.Lambda,      EP.Substitute) // delegate(int x) { return x+1; }
-		);
-
-		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
-			S.Typeof, S.Checked, S.Unchecked, S.Default, S.Sizeof
-		});
-
-
 		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec);
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters = OperatorPrinters_();
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters_()
@@ -130,32 +38,35 @@ namespace Loyc.Ecs
 			d.Add(S.Of, Pair.Create(EP.Of, OpenDelegate<OperatorPrinter>(nameof(AutoPrintOfOperator))));
 			d.Add(S.Linq, Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>(nameof(AutoPrintLinqExpression))));
 
-			foreach (var p in PrefixOperators)
+			foreach (var p in EcsFacts.PrefixOperators)
 				d.Add(p.Key, Pair.Create(p.Value, prefix));
-			foreach (var p in InfixOperators)
+			// Note: certain operators such as `'switch` have their own special handler 
+			// method. InfixOperatorPrecedenceTable includes these operators, but the
+			// dictionary entry will be replaced below with the custom handler.
+			foreach (var p in EcsFacts.InfixOperators)
 				if (d.ContainsKey(p.Key))
 					d[p.Key] = Pair.Create(p.Value, both); // both prefix and infix
 				else
 					d.Add(p.Key, Pair.Create(p.Value, infix));
-			foreach (Symbol op in SimpleStmts)
+			foreach (Symbol op in EcsFacts.SimpleStmts)
 				if (op != S.Import)
 					d[op] = Pair.Create(EcsPrecedence.Lambda, throwEtc);
-			foreach (var p in CastOperators)
+			foreach (var p in EcsFacts.CastOperators)
 				d[p.Key] = Pair.Create(p.Value, cast);
 			d[S.Is] = Pair.Create(EP.Is, isOp);
-			foreach (Symbol op in ListOperators)
+			foreach (Symbol op in EcsFacts._listOperators)
 				d[op] = Pair.Create(Precedence.MaxValue, list);
-			foreach (var p in SpecialCaseOperators)
+			foreach (var p in EcsFacts.SpecialCaseOperators)
 				d.Add(p.Key, Pair.Create(p.Value, other));
 
 			// Other special cases
-			foreach (var op in CallOperators)
+			foreach (var op in EcsFacts.CallOperators)
 				d.Add(op, Pair.Create(Precedence.MaxValue, call));
 			d[S.SwitchOp]   = Pair.Create(EP.Switch, wordOp);
 			d[S.With]       = Pair.Create(EP.Switch, wordOp);
 			d[S.When]       = Pair.Create(EP.WhenWhere, wordOp);
 			d[S.WhereOp]    = Pair.Create(EP.WhenWhere, wordOp);
-			d[S.New]        = Pair.Create(EP.Primary, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNewOperator)));
+			d[S.New]        = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(AutoPrintNewOperator)));
 			d[S.Lambda]     = Pair.Create(EP.Lambda, OpenDelegate<OperatorPrinter>(nameof(AutoPrintLambdaFunction)));
 			d[S.RawText]    = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
 			d[S.CsRawText]  = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>(nameof(PrintRawText)));
@@ -303,7 +214,7 @@ namespace Loyc.Ecs
 			var name = n.Name;
 			if (HasPAttrs(n.Args[0]) && name != S.Substitute)
 				return false;
-			if (checkName && !PrefixOperators.ContainsKey(name))
+			if (checkName && !EcsFacts.PrefixOperators.ContainsKey(name))
 				return false;
 			return true;
 		}
@@ -365,7 +276,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintInfixBinaryOperator(Precedence prec)
 		{
-			Debug.Assert(!CastOperators.ContainsKey(_name)); // not called for cast operators
+			Debug.Assert(!EcsFacts.CastOperators.ContainsKey(_name)); // not called for cast operators
 			if (_n.ArgCount != 2)
 				return false;
 
@@ -462,7 +373,7 @@ namespace Loyc.Ecs
 				Debug.Assert(_name.IsOneOf(S.LT, S.GT, S.LE, S.GE));
 				return AutoPrintPatternUnaryOperator(EP.Compare);
 			} else
-				return AutoPrintPrefixUnaryOperator(PrefixOperators[_name]);
+				return AutoPrintPrefixUnaryOperator(EcsFacts.PrefixOperators[_name]);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -799,7 +710,7 @@ namespace Loyc.Ecs
 					if (constructorCall.ArgCount != 0 || (argCount == 1 && dims == 0))
 						PrintArgTuple(constructorCall, ParenFor.MethodCall, false, _o.OmitMissingArguments);
 				}
-				if (_n.Args.Count > 1)
+				if (_n.Args.Count > 1 || dims > 0 && constructorCall.ArgCount == 0)
 					PrintBracedBlockInNewOrDeconstructExpr(1);
 			}
 			return true;
@@ -1058,9 +969,7 @@ namespace Loyc.Ecs
 			if (!skipAttrs)
 				inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
 
-			if (!_n.IsCall)
-				PrintSimpleIdentOrLiteral();
-			else {
+			if (_n.IsCall) {
 	 			Debug.Assert(EP.Primary.CanAppearIn(_context));
 				if (!_o.AllowConstructorAmbiguity && _n.Calls(_spaceName) && _context == StartStmt && inParens == 0)
 				{
@@ -1089,6 +998,10 @@ namespace Loyc.Ecs
 					first = false;
 				}
 				WriteCloseParen(ParenFor.MethodCall);
+			} else if (_n.IsId) {
+				PrintSimpleIdent();
+			} else {
+				PrintLiteral();
 			}
 			WriteCloseParens(inParens);
 		}
@@ -1104,20 +1017,16 @@ namespace Loyc.Ecs
 			object tVal = rawTextNode.TriviaValue;
 			return tVal == NoValue.Value || tVal == null ? "" : tVal.ToString();
 		}
-		private void PrintSimpleIdentOrLiteral()
+		private void PrintSimpleIdent()
 		{
 			Debug.Assert(_n.HasSimpleHead());
-			if (_n.IsLiteral)
-				PrintLiteral();
-			else {
-				var mode = IdPrintMode.Normal;
-				if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null 
-					|| (_n.Name.Name.StartsWith("'") && (_flags & Ambiguity.InDefinitionName) != 0))
-					mode = IdPrintMode.Operator;
-				if (_n.BaseStyle == NodeStyle.VerbatimId)
-					mode = IdPrintMode.Verbatim;
-				PrintSimpleIdent(_name, _flags, mode);
-			}
+			var mode = IdPrintMode.Normal;
+			if (_n.AttrNamed(S.TriviaUseOperatorKeyword) != null 
+				|| (_n.Name.Name.StartsWith("'") && (_flags & Ambiguity.InDefinitionName) != 0))
+				mode = IdPrintMode.Operator;
+			if (_n.BaseStyle == NodeStyle.VerbatimId)
+				mode = IdPrintMode.Verbatim;
+			PrintSimpleIdent(_name, _flags, mode);
 		}
 
 		private void PrintVariableDecl(bool printAttrs, LNode skipClause = null)

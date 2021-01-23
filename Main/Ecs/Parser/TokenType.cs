@@ -218,7 +218,7 @@ namespace Loyc.Ecs.Parser
 				case TT.TypeKeyword:
 					Symbol valueSym = (t.Value as Symbol) ?? GSymbol.Empty;
 					string result;
-					if (EcsNodePrinter.TypeKeywords.TryGetValue(valueSym, out result))
+					if (EcsFacts.TypeKeywords.TryGetValue(valueSym, out result))
 						return result;
 					else {
 						Debug.Fail("Unexpected value for " + t.Type());

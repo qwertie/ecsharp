@@ -36,7 +36,7 @@ namespace Loyc.Ecs.Tests
 			Expr("0uL",      F.Literal(0uL));
 			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
 			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
-			Expr("0xff",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
+			Expr("0xFF",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
 			Expr("null",     F.Null);
 			Expr("false",    F.False);
 			Expr("true",     F.True);
@@ -46,8 +46,9 @@ namespace Loyc.Ecs.Tests
 			Expr(@"""hi!""", F.Literal("hi!"));
 			Expr(@"@""hi""", F.Literal("hi").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
 			Expr("@\"\n\"",  F.Literal("\n").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
-			Expr("123456789123456789uL", F.Literal(123456789123456789uL));
-			Expr("0xffffffffffffffffuL", F.Literal(0xFFFFFFFFFFFFFFFFuL).SetBaseStyle(NodeStyle.HexLiteral));
+			Expr(@"@""I """"love"""" you!""", F.Literal(@"I ""love"" you!").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
+			Expr("123456789_123456789uL", F.Literal(123456789123456789uL));
+			Expr("0xFFFFFFFF_FFFFFFFFuL", F.Literal(0xFFFFFFFFFFFFFFFFuL).SetBaseStyle(NodeStyle.HexLiteral));
 			Expr("1.234568E+08f",F.Literal(1.234568E+08f));
 			Expr("12345678.9", F.Literal(12345678.9));
 			Expr("1.23456789012346E+17d",F.Literal(1.23456789012346E+17d));
@@ -227,15 +228,19 @@ namespace Loyc.Ecs.Tests
 			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Array, S.Int32)), a, b));
 			Expr("new[] { a, b }",        F.Call(S.New, F.Call(S.Array), a, b));
 			Expr("new[] { }",             F.Call(S.New, F.Call(S.Array)));
-			Expr("new int[][,] { a }",    F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32))), a));
-			// This expression is illegal since it requires an initializer list, but it's parsable so should print ok
-			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.Both | Mode.ExpectAndDropParserError);
-			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
-			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), x, x)));
-			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))), Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("new int[][,] { x }",    F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32))), x));
+			// These are illegal without a dimension argument or initializer list, but are parsable
+			Expr("new byte[]",            F.Call(S.New, F.Call(F.Of(S.Array, S.UInt8))), Mode.ParserTest | Mode.ExpectAndDropParserError);
+			Expr("new byte[] { }",        F.Call(S.New, F.Call(F.Of(S.Array, S.UInt8))));
+			Expr("new uint[,]",           F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.UInt32))), Mode.ParserTest | Mode.ExpectAndDropParserError);
+			Expr("new uint[,] { }",       F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.UInt32))));
+			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(S.Array, F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.ParserTest | Mode.ExpectAndDropParserError);
+			Expr("new int[][,][,,] { }",  F.Call(S.New, F.Call(F.Of(S.Array, F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.Both);
+			Expr("new short[x, x][]",     F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, F.Of(S.Array, S.Int16)), x, x)));
+			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(S.Array, F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
 			Option(Mode.PrintBothParseFirst,
-				"@'new(@`'[,]`!([Foo] int)());", "new int[,];",
-				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
+				"@'new(@`'[,]`!([Foo] sbyte)());", "new sbyte[,] { };",
+				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int8)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F.Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
 		}
 
@@ -310,7 +315,7 @@ namespace Loyc.Ecs.Tests
 
 			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Assign(x, F.Call(a)),
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
-			Stmt("unchecked {\n  0xbaad * 0xf00d\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
+			Stmt("unchecked {\n  0xBAAD * 0xF00D\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
 			                                                F.Call(S.Mul, F.Literal(0xBAAD).SetBaseStyle(NodeStyle.HexLiteral), 
 			                                                              F.Literal(0xF00D).SetBaseStyle(NodeStyle.HexLiteral))))));
 

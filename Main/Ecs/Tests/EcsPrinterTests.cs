@@ -97,15 +97,6 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void ByteArrayTest()
-		{
-			// Printer supports byte arrays for the sake of the `binaryFile("...")` macro
-			var bytes = new byte[] { 33,66,132,200 };
-			Expr("new byte[] { 33,66,132,200\n}", F.Literal(bytes));
-			Expr("new byte[] { 0x21,0x42,0x84,0xC8\n}", F.Literal(bytes).SetBaseStyle(NodeStyle.HexLiteral));
-		}
-
-		[Test]
 		public void PrintEmptySpliceWithTrivia()
 		{
 			// Note (2020/09): normal parsing won't produce code like {/*comment*/} (using an 

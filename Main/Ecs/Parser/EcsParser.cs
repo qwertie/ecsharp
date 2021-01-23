@@ -569,7 +569,7 @@ namespace Loyc.Ecs.Parser
 			return list;
  		}
 
-		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3
+		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3, [7] => -1 if !allowNonCommas
 		private int CountDims(Token token, bool allowNonCommas)
 		{
 			if (token.Type() != TT.LBrack)

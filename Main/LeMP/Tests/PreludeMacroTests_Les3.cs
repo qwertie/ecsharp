@@ -12,7 +12,7 @@ namespace LeMP.Tests
 	public class PreludeMacroTests_Les3
 	{
 		SeverityMessageFilter _sink = new SeverityMessageFilter(ConsoleMessageSink.Value, Severity.DebugDetail);
-		int _alternator;
+		//int _alternator;
 
 		public void Test(string input, string output, int maxExpand = 0xFFFF, ILNodePrinter printer = null)
 		{
