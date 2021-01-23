@@ -14,9 +14,11 @@ namespace Loyc
 
 		protected static readonly EqualityComparer<T> TComp = EqualityComparer<T>.Default;
 
-		/// <summary>Returns true iff the parameter 'obj' is a wrapper around the same object that this object wraps.</summary>
+		/// <summary>Returns true iff the parameter 'obj' is a wrapper around an object that 
+		/// is equal to the object that this object wraps.</summary>
 		/// <param name="obj">The object to compare with the current object.</param>
-		/// <remarks>If obj actually refers to the wrapped object, this method returns false to preserve commutativity of the "Equals" relation.</remarks>
+		/// <remarks>If obj actually refers to the wrapped object, this method returns 
+		/// false to preserve commutativity of the "Equals" relation.</remarks>
 		public override bool Equals(object obj)
 		{
 			var w = obj as WrapperBase<T>;

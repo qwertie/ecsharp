@@ -37,9 +37,11 @@ How to build
 
 Open Loyc.netfx.sln in Visual Studio (or Loyc.netstd.sln for the .NET Standard edition), set the build configuration to Debug, and build it!
 
+If you need to change any .ecs or .les source files (Enhanced C# or [LES](http://loyc.net/les/)), you'll need to install the latest LeMP extension for Visual Studio, which can be found on the [Releases page](https://github.com/qwertie/ecsharp/releases). There is no _build step_ for these files, so the extension is not required for building. Unfortunately VS Code is not supported at this time - let me know if you need support.
+
 If Visual Studio complains about OxyPlot, the easiest fix is to unload the LoycCore.Benchmarks project (nothing depends on it). To fix it properly, open Core\Loyc.netstd.sln, right-click the solution, choose "Restore NuGet packages", build the solution (just to make sure it worked), and then return to the original solution.
 
-If you need to change any .ecs or .les source files (Enhanced C# or [LES](http://loyc.net/les/)), you'll need to install the latest LeMP extension for Visual Studio, which can be found on the [Releases page](https://github.com/qwertie/ecsharp/releases). There is no _build step_ for these files, so the extension is not required for building. Unfortunately VS Code is not supported at this time - let me know if you need support.
+Visual Studio may complain, while building a .NET Framework 4.7.2 project, that 'Your project does not reference ".NETFramework,Version=v4.7.2" framework...." if you built the .NET Standard version of the same project earlier. To fix this, locate the folder named `obj` inside the project from which the error message originated, delete the entire `obj` folder, and rebuild (the `project.assets.json` file inside that folder seems to be causing the error).
 
 How to publish new versions
 ---------------------------

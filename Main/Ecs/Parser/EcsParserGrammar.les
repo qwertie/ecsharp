@@ -483,7 +483,7 @@ namespace Loyc.Ecs.Parser
 			) {return r;}
 		};
 
-		token AnyOperator::Token // operators allowed after the "operator" keyword
+		token AnyOperator()::Token // operators allowed after the "operator" keyword
 		@{
 			// Create synthetic token for >> or <<
 			&{LT($LI).EndIndex == LT($LI+1).StartIndex}
@@ -497,7 +497,7 @@ namespace Loyc.Ecs.Parser
 			|	":=" | "$"     | "=>"    | "==>" | "|>,?|>" )
 		};
 
-		token NewExpr::LNode @{
+		token NewExpr()::LNode @{
 			{
 				majorDimension::opt!Token = null;
 				var list = LNodeList.Empty;
@@ -652,7 +652,7 @@ namespace Loyc.Ecs.Parser
 
 		// Prefix expressions, atoms, and high-precedence expressions like f(x) and List<T>
 		@[LL(3)] // to distinguish (cast) expr from (parens)
-		@[private] rule PrefixExpr::LNode
+		@[private] rule PrefixExpr()::LNode
 		@{	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
 			{return F.CallPrefixOp(op, e);}
 		|	op:="**"
@@ -670,7 +670,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[LL(2), private]
-		rule KeywordOrPrimaryExpr::LNode
+		rule KeywordOrPrimaryExpr()::LNode
 		@{	// C# 5 await
 			&{@[Hoist] Is($LI, @@await)} op:=TT.ContextualKeyword e:=PrefixExpr
 			{return F.CallPrefixOp(op, e, @@await);}
@@ -940,7 +940,7 @@ namespace Loyc.Ecs.Parser
 			{$result = $result.PlusAttrs(attrs);}
 		};
 
-		@[private] rule VarDeclStart::Pair!(LNode, LNode) @{
+		@[private] rule VarDeclStart()::Pair!(LNode, LNode) @{
 			e:=DataType
 			id:=IdAtom
 			{MaybeRecognizeVarAsKeyword(ref e);}
@@ -1536,7 +1536,7 @@ namespace Loyc.Ecs.Parser
 		// == LINQ =============================================================
 		// =====================================================================
 		
-		@[public] rule LinqQueryExpression::LNode @{
+		@[public] rule LinqQueryExpression()::LNode @{
 			{
 				startIndex::int = LT0.StartIndex;
 				change_temporarily(_insideLinqExpr = true);
@@ -1547,14 +1547,14 @@ namespace Loyc.Ecs.Parser
 			{return F.Call(S.Linq, parts, startIndex, parts.Last.Range.EndIndex, startIndex, startIndex);}
 		};
 		
-		@[private] rule LinqFromClause::LNode @{
+		@[private] rule LinqFromClause()::LNode @{
 			&{@[Hoist] Is($LI, @@from)} kw:=TT.LinqKeyword 
 			((TT.Id|TT.ContextualKeyword|"$") =>)
 			e:=Var_In_Expr
 			{return F.CallPrefixOp(S.From, kw, e);}
 		};
 
-		rule Var_In_Expr::LNode
+		rule Var_In_Expr()::LNode
 		@{	&VarIn 
 			VarIn(out inTok::Token)
 			e:=ExprStart(false)
@@ -1573,7 +1573,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[LL(1)]
-		@[private] rule QueryBodyClause::LNode
+		@[private] rule QueryBodyClause()::LNode
 		@{	result:LinqFromClause
 		|	result:LinqLet
 		|	result:LinqWhere
@@ -1581,19 +1581,19 @@ namespace Loyc.Ecs.Parser
 		|	result:LinqOrderBy
 		};
 
-		@[private] rule LinqLet::LNode @{
+		@[private] rule LinqLet()::LNode @{
 			&{@[Hoist] Is($LI, @@let)} kw:=TT.LinqKeyword e:=ExprStart(false)
 			{if (!e.Calls(S.Assign, 2)) { Error("Expected an assignment after 'let'"); };}
 			{return F.CallPrefixOp(S.Let, kw, e);}
 		};
 		
-		@[private] rule LinqWhere::LNode @{
+		@[private] rule LinqWhere()::LNode @{
 			&{@[Hoist] Is($LI, @@where)} kw:=TT.ContextualKeyword e:=ExprStart(false)
 			{return F.CallPrefixOp(S.WhereClause, kw, e);}
 		};
 		
 		@[LL(1)]
-		@[private] rule LinqJoin::LNode  @{ 
+		@[private] rule LinqJoin()::LNode  @{ 
 			&{@[Hoist] Is($LI, @@join)} kw:=TT.LinqKeyword from:Var_In_Expr
 			&{@[Hoist] Is($LI, @@on)} TT.LinqKeyword
 			lhs:=ExprStart(false) 
@@ -1615,14 +1615,14 @@ namespace Loyc.Ecs.Parser
 		};
 		
 		@[LL(1)]
-		@[private] rule LinqOrderBy::LNode @{ 
+		@[private] rule LinqOrderBy()::LNode @{ 
 			&{@[Hoist] Is($LI, @@orderby)} kw:=TT.LinqKeyword
 			{var parts = LNode.List();}
 			parts+=LinqOrdering ["," parts+=LinqOrdering]*
 			{return F.CallPrefixOp(S.OrderBy, kw, parts);}
 		};
 		@[LL(1)]
-		@[private] rule LinqOrdering::LNode @{ 
+		@[private] rule LinqOrdering()::LNode @{ 
 			result:ExprStart(false)
 			greedy
 			[	&{Is($LI, @@ascending)} dir:TT.LinqKeyword
@@ -1632,12 +1632,12 @@ namespace Loyc.Ecs.Parser
 			]?
 		};
 
-		@[private] rule LinqSelectClause::LNode @{
+		@[private] rule LinqSelectClause()::LNode @{
 			&{@[Hoist] Is($LI, @@select)} kw:=TT.LinqKeyword e:=ExprStart(false)
 			{return F.CallPrefixOp(S.Select, kw, e);}
 		};
 
-		@[private] rule LinqGroupClause::LNode @{ 
+		@[private] rule LinqGroupClause()::LNode @{ 
 			&{@[Hoist] Is($LI, @@group)} kw:TT.LinqKeyword lhs:ExprStart(false) 
 			( &{@[Hoist] Is($LI, @@by) } by:TT.LinqKeyword rhs:ExprStart(false)
 			| error { Error("Expected 'by'"); rhs = MissingHere(); } )
@@ -1645,7 +1645,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[LL(1)]
-		@[private] rule QueryContinuation::LNode @{
+		@[private] rule QueryContinuation()::LNode @{
 			&{@[Hoist] Is($LI, @@into)} kw:TT.LinqKeyword IdAtom
 			{var parts = LNode.List($IdAtom);}
 			QueryBody(ref parts)
@@ -1890,7 +1890,7 @@ namespace Loyc.Ecs.Parser
 			}
 		};
 
-		rule ExprStatement::LNode @{
+		rule ExprStatement()::LNode @{
 			result:SubExpr(StartExpr)
 			(	(EOF | TT.Else | TT.While | TT.Catch | TT.Finally) => 
 				{var rr = result.Range;}
@@ -1991,7 +1991,7 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
-		@[private] rule BaseListOpt::LNode @{
+		@[private] rule BaseListOpt()::LNode @{
 			(	{var bases = (new LNodeList());}
 				":" bases+=DataType
 				("," bases+=DataType)*
@@ -2032,7 +2032,7 @@ namespace Loyc.Ecs.Parser
 				(return S.Missing));
 		};
 
-		@[private] rule WhereClause::KeyValuePair!(Symbol, LNode) @{
+		@[private] rule WhereClause()::KeyValuePair!(Symbol, LNode) @{
 			&{@[Hoist] Is($LI, @@where)} where:=TT.ContextualKeyword T:=(TT.Id|TT.ContextualKeyword|TT.LinqKeyword) ":" 
 			{var constraints = LNodeList.Empty;}
 			constraints+=WhereConstraint
@@ -2040,7 +2040,7 @@ namespace Loyc.Ecs.Parser
 			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol, 
 				F.CallPrefixOp(S.WhereClause, where, constraints)));}
 		};
-		@[private] rule WhereConstraint::LNode @{
+		@[private] rule WhereConstraint()::LNode @{
 			(	t:=(TT.Class | TT.Struct) {return F.Id(t);}
 			|	newkw:=TT.New &{LT($LI).Count == 0} lp:="(" rp:=")"  
 				                          {return F.CallPrefix(newkw, ExprListInside(lp), rp);}
@@ -2052,7 +2052,7 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 
 		@[recognizer(fn Scan_AsmOrModLabel()), private] // recognizer used by AssemblyOrModuleAttribute
-		rule AsmOrModLabel::Token @{
+		rule AsmOrModLabel()::Token @{
 			&{@[Hoist] LT($LI).Value==@@assembly || LT($LI).Value==@@module} t:=TT.ContextualKeyword ":"
 			{return t;}
 		};
@@ -2248,7 +2248,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[recognizer(fn HasNoSemicolons()::bool), private] 
-		rule NoSemicolons @{ ~";"* EOF };
+		rule NoSemicolons() @{ ~";"* EOF };
 
 		// ---------------------------------------------------------------------
 		// Constructor/destructor ----------------------------------------------
@@ -2610,7 +2610,7 @@ namespace Loyc.Ecs.Parser
 			EOF
 		};
 		@[LL(3)]
-		rule InitializerExpr::LNode @{
+		rule InitializerExpr()::LNode @{
 			( lb:="{" rb:="}"
 			  {
 				var exprs = InitializerListInside(lb);
