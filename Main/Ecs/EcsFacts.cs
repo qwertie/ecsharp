@@ -18,6 +18,7 @@ namespace Loyc.Ecs
 	{
 		#region Lists of statement types (used mainly by the printer)
 
+		#if !DotNet45
 		/// <summary>Returns a list of the Names of all space definition statements, 
 		/// namely: #struct #class #interface #namespace #enum #trait #alias.</summary>
 		public static IReadOnlyCollection<Symbol> SpaceDefinitionStatements => SpaceDefinitionStmts;
@@ -26,6 +27,7 @@ namespace Loyc.Ecs
 		/// that can be found outside method definitions, namely: 
 		/// #var #fn #cons (constructor) #delegate #event #property.</summary>
 		public static IReadOnlyCollection<Symbol> OtherDefinitionStatements => OtherDefinitionStmts;
+		#endif
 
 		internal static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
 			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
@@ -135,7 +137,9 @@ namespace Loyc.Ecs
 		/// <summary>Returns a list of the three list operators, `'tuple`, `'{}` (braced 
 		/// block), and `#arrayInit` (which is only valid as an initializer for an array 
 		/// variable).</summary>
+		#if !DotNet45
 		public static IReadOnlyCollection<Symbol> ListOperators => _listOperators;
+		#endif
 		internal static readonly HashSet<Symbol> _listOperators = new HashSet<Symbol>(new[] {
 			S.Tuple, S.Braces, S.ArrayInit
 		});

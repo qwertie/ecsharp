@@ -54,6 +54,7 @@ namespace Loyc.Tests
 				new PreludeMacroTests_Les3(),
 				new CompilerTests(),
 				new SmallerMacroTests(),
+				new LiteralTests(),
 				new TestAlgebraicDataTypes(),
 				new TestCodeContractMacros(),
 				new TestCodeQuoteMacro(),
