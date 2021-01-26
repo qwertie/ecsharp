@@ -33,6 +33,7 @@ namespace Loyc.Ecs.Parser
 		// index into source text of the first token at the current depth (inside 
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
+		ILiteralParser _literalParser;
 
 		public IListSource<Token> TokensRoot { get { return _tokensRoot; } }
 
@@ -41,10 +42,10 @@ namespace Loyc.Ecs.Parser
 		protected LNode _triviaForwardedProperty;
 		protected LNode _filePrivate;
 
-		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : base(file)
+		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingOptions parsingOptions) : base(file)
 		{
 			ErrorSink = messageSink;
-			Reset(tokens, file);
+			Reset(tokens, file, parsingOptions);
 			
 			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
 			_triviaUseOperatorKeyword = F.Id(S.TriviaUseOperatorKeyword);
@@ -52,12 +53,13 @@ namespace Loyc.Ecs.Parser
 			_filePrivate = F.Id(S.FilePrivate);
 		}
 
-		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
+		public virtual void Reset(IListSource<Token> tokens, ISourceFile file, IParsingOptions parsingOptions)
 		{
 			CheckParam.IsNotNull("tokens", tokens);
 			CheckParam.IsNotNull("file", file);
 			_tokensRoot = _tokens = tokens;
 			_sourceFile = file;
+			_literalParser = parsingOptions?.LiteralParser ?? EcsLiteralHandlers.Value;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
 			_tentativeErrors = new TentativeState(false);

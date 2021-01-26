@@ -416,9 +416,13 @@ namespace Loyc.Syntax.Les
 	public partial class Les3Parser : BaseParserForList<Token, int>
 	{
 		LNodeFactory F;
+		ILiteralParser _literalParser;
 
-		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, int startIndex = 0)
-			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex) { ErrorSink = sink; }
+		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, IParsingOptions options, int startIndex = 0)
+			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex) {
+			_literalParser = options?.LiteralParser ?? StandardLiteralHandlers.Value;
+			ErrorSink = sink;
+		}
 
 		public new IMessageSink ErrorSink
 		{
@@ -426,9 +430,10 @@ namespace Loyc.Syntax.Les
 			set { base.ErrorSink = value; F.ErrorSink = base.ErrorSink; }
 		}
 
-		public void Reset(IList<Token> list, ISourceFile file, int startIndex = 0)
+		public void Reset(IList<Token> list, ISourceFile file, IParsingOptions options, int startIndex = 0)
 		{
 			Reset(list, default(Token), file, startIndex);
+			_literalParser = options?.LiteralParser ?? StandardLiteralHandlers.Value;
 		}
 		protected override void Reset(IList<Token> list, Func<Token, Token> getEofToken, int eof, ISourceFile file, int startIndex = 0)
 		{

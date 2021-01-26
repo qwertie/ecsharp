@@ -22,20 +22,21 @@ namespace Loyc.Ecs.Tests
 			Expr(@"@@`1+1`", F.Literal(GSymbol.Get("1+1")));
 			Expr(@"@@1", F.Literal(GSymbol.Get("1")));
 			// Not yet supported in printer (which will use @"...")
-			Expr(@"'''hello'''", F.Literal("hello").SetBaseStyle(NodeStyle.TQStringLiteral), Mode.ParserTest);
+			Expr(@"'''hello'''", String("hello").SetBaseStyle(NodeStyle.TQStringLiteral), Mode.ParserTest);
 			Expr("default(@void)", F.Literal(@void.Value), Mode.PrinterTest);
 			Expr("#public", @public);
 			Expr("Don't", _("Don't"));
 		}
 
-		[Test(Fails = "Not implemented in parser yet")]
+		[Test]
 		public void EcsCustomLiterals()
 		{
 			// 2021/01 change of plan: all arrays including byte arrays will be converted to new[]
 			// expressions by a LeMP.ecs macro. However, it's still useful to test byte arrays
 			// without LeMP, which will use the custom literal system with type marker "bais".
 			var bytes = new byte[] { 33, 66, 132, 200 };
-			Expr("bais\"!B\\baL`\"", F.Literal(bytes));
+			Expr("x = bais\"!B\\baL`\"", F.Assign(x, F.Literal(bytes)), Mode.PrinterTest);
+			Expr("x = bais\"!B\\baL`\"", F.Assign(x, F.Literal(bytes, "bais")), Mode.CompareAsLes);
 
 			Expr("insult\"You suck, loser!\"", F.Literal((UString)"You suck, loser!", (Symbol)"insult"));
 			Expr(@"swoon@""I """"♥"""" you!""", F.Literal((UString)@"I ""♥"" you!", (Symbol)"swoon").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
@@ -72,7 +73,7 @@ namespace Loyc.Ecs.Tests
 		{
 			Expr("a. 2", F.Dot(a, two));
 			Expr("a::b.c. 2", F.Dot(F.Call(S.ColonColon, a, b), c, two));
-			Expr("1 `Foo` 2", F.Call(Foo, F.Literal(1), F.Literal(2)).SetStyle(NodeStyle.Operator));
+			Expr("1 `Foo` 2", F.Call(Foo, one, two).SetStyle(NodeStyle.Operator));
 			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceAssign, a, F.Call(S.UsingCast, b, Foo)));
 			Expr("(Foo) x", F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)", F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));

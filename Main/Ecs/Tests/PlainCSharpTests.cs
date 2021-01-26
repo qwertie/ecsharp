@@ -13,10 +13,10 @@ namespace Loyc.Ecs.Tests
 		public void CsSimpleAtoms()
 		{
 			Expr("Foo",      Foo);
-			Expr("1024",     F.Literal(1024));
-			Expr("0.5",      F.Literal(0.5));
+			Expr("1024",     Number(1024));
+			Expr("0.5",      Number(0.5));
 			Expr("'$'",      F.Literal('$'));
-			Expr(@"""hi""",  F.Literal("hi"));
+			Expr(@"""hi""",  String("hi"));
 			Expr("null",     F.Null);
 			Expr("true",     F.True);
 		}
@@ -25,33 +25,33 @@ namespace Loyc.Ecs.Tests
 		public void CsLiterals()
 		{
 			// See also: EcsLexerTests
-			Expr("6",        F.Literal(6));
-			Expr("5m",       F.Literal(5m));
-			Expr("4L",       F.Literal(4L));
-			Expr("3.5",      F.Literal(3.5d));
-			Expr("3d",       F.Literal(3d));
-			Expr("2.5f",     F.Literal(2.5f));
-			Expr("2f",       F.Literal(2f));
-			Expr("1u",       F.Literal(1u));
-			Expr("0uL",      F.Literal(0uL));
-			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
+			Expr("6",        Number(6));
+			Expr("4L",       F.Literal(4L, "_L"));
+			Expr("5m",       F.Literal(5m, "_m"));
+			Expr("3.5",      F.Literal(3.5, "_"));
+			Expr("3d",       F.Literal(3d, "_d"));
+			Expr("2.5f",     F.Literal(2.5f, "_f"));
+			Expr("2f",       F.Literal(2f, "_f"));
+			Expr("1u",       F.Literal(1u, "_u"));
+			Expr("0uL",      F.Literal(0uL, "_uL"));
+			Expr("-1",       F.Call(S._Negate, Number(1)));
 			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
-			Expr("0xFF",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
+			Expr("0xFF",     Number(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
 			Expr("null",     F.Null);
 			Expr("false",    F.False);
 			Expr("true",     F.True);
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"'\0'",    F.Literal('\0'));
 			Expr("'\uFEFF'", F.Literal('\uFEFF'));
-			Expr(@"""hi!""", F.Literal("hi!"));
-			Expr(@"@""hi""", F.Literal("hi").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
-			Expr("@\"\n\"",  F.Literal("\n").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
+			Expr(@"""hi!""", String("hi!"));
+			Expr(@"@""hi""", String("hi").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
+			Expr("@\"\n\"",  String("\n").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
 			Expr(@"@""I """"love"""" you!""", F.Literal(@"I ""love"" you!").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
-			Expr("123456789_123456789uL", F.Literal(123456789123456789uL));
-			Expr("0xFFFFFFFF_FFFFFFFFuL", F.Literal(0xFFFFFFFFFFFFFFFFuL).SetBaseStyle(NodeStyle.HexLiteral));
-			Expr("1.234568E+08f",F.Literal(1.234568E+08f));
-			Expr("12345678.9", F.Literal(12345678.9));
-			Expr("1.23456789012346E+17d",F.Literal(1.23456789012346E+17d));
+			Expr("123456789_123456789uL", F.Literal(123456789123456789uL, "_uL"));
+			Expr("0xFFFFFFFF_FFFFFFFFuL", F.Literal(0xFFFFFFFFFFFFFFFFuL, "_uL").SetBaseStyle(NodeStyle.HexLiteral));
+			Expr("1.234568E+08f",F.Literal(1.234568E+08f, "_f"));
+			Expr("12345678.9", Number(12345678.9));
+			Expr("1.23456789012346E+17d",F.Literal(1.23456789012346E+17d, "_d"));
 		}
 
 		[Test]
@@ -237,7 +237,7 @@ namespace Loyc.Ecs.Tests
 			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(S.Array, F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.ParserTest | Mode.ExpectAndDropParserError);
 			Expr("new int[][,][,,] { }",  F.Call(S.New, F.Call(F.Of(S.Array, F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.Both);
 			Expr("new short[x, x][]",     F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, F.Of(S.Array, S.Int16)), x, x)));
-			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(S.Array, F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
+			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(S.Array, F.Of(S.TwoDimensionalArray, S.Int32)), Number(10)), a));
 			Option(Mode.PrintBothParseFirst,
 				"@'new(@`'[,]`!([Foo] sbyte)());", "new sbyte[,] { };",
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int8)))), p => p.DropNonDeclarationAttributes = true);
@@ -316,8 +316,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Assign(x, F.Call(a)),
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
 			Stmt("unchecked {\n  0xBAAD * 0xF00D\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
-			                                                F.Call(S.Mul, F.Literal(0xBAAD).SetBaseStyle(NodeStyle.HexLiteral), 
-			                                                              F.Literal(0xF00D).SetBaseStyle(NodeStyle.HexLiteral))))));
+			                                                F.Call(S.Mul, Number(0xBAAD).SetBaseStyle(NodeStyle.HexLiteral), 
+			                                                              Number(0xF00D).SetBaseStyle(NodeStyle.HexLiteral))))));
 
 			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, ChildStmt(F.Call(a)), OnNewLine(c)));
 			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));
@@ -368,15 +368,15 @@ namespace Loyc.Ecs.Tests
 			};
 			Stmt("for (;;) { }",   F.Call(S.For, forArgs));
 			forArgs = new LNode[] {
-				F.AltList(F.Var(F.Int32, x.Name, F.Literal(0))),
-				F.Call(S.LT, x, F.Literal(10)),
+				F.AltList(F.Var(F.Int32, x.Name, zero)),
+				F.Call(S.LT, x, Number(10)),
 				F.AltList(F.Call(S.PostInc, x)),
 				F.Braces()
 			};
 			Stmt("for (int x = 0; x < 10; x++) { }",   F.Call(S.For, forArgs));
 			forArgs = new LNode[] {
 				F.AltList(F.Assign(a, zero), F.Assign(b, one)),
-				F.Call(S.LT, a, F.Literal(10)),
+				F.Call(S.LT, a, Number(10)),
 				F.AltList(F.Call(S.PostInc, a), F.Call(S.PreInc, b)),
 				F.Braces()
 			};
@@ -388,7 +388,7 @@ namespace Loyc.Ecs.Tests
 			// part is not mistaken for part of the variable decl, see? But how?
 			forArgs = new LNode[] {
 				F.AltList(F.Var(F.Int32, a, zero), F.Assign(b, one), c),
-				F.Call(S.LT, a, F.Literal(10)),
+				F.Call(S.LT, a, Number(10)),
 				F.AltList(F.Call(S.PostInc, a)),
 				F.Braces()
 			};
@@ -399,10 +399,10 @@ namespace Loyc.Ecs.Tests
 		public void CsSwitchStatement()
 		{
 			var stmt = F.Call(S.SwitchStmt, x, F.Braces(
-				F.Call(S.Case, F.Literal(1)),
-				F.Call(S.Case, F.Literal(2)),
-				F.Call(S.GotoCase, F.Literal(3)),
-				F.Call(S.Case, F.Literal(3), F.Literal(4)),
+				F.Call(S.Case, one),
+				F.Call(S.Case, two),
+				F.Call(S.GotoCase, Number(3)),
+				F.Call(S.Case, Number(3), Number(4)),
 				F.Call(S.Break),
 				F.Call(S.Label, F.Id(S.Default)),
 				F.Call(S.Break)));
@@ -484,7 +484,7 @@ namespace Loyc.Ecs.Tests
 			//Stmt(@"struct Foo<$T> if default(T) + 1 is legal;", stmt);
 			//Expr(@"[@#if(default(T) + 1 is legal)] #struct(Foo<$T>, @``)", stmt);
 
-			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), F.Braces(F.Assign(a, one), b, c, F.Assign(x, F.Literal(24))));
+			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), F.Braces(F.Assign(a, one), b, c, F.Assign(x, Number(24))));
 			Stmt("enum Foo : byte {\n  a = 1,\n  b,\n  c,\n  x = 24\n}", stmt);
 			Expr("#enum(Foo, #(byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
 			stmt = F.Call(S.Enum, F.Call(S.Substitute, F.Dot(Foo, x)), F.AltList(), F.Braces(F.Assign(a, one)));
@@ -751,7 +751,7 @@ namespace Loyc.Ecs.Tests
 			// Eventually we should convince the printer to support `await`, but
 			// it's a low priority since await(x) works just as well as `await x`;
 			// so for now test the parser and printer separately.
-			Expr("await x ** 2", F.Call(S.Exp, F.Call(_await, x), F.Literal(2)), Mode.ParserTest);
+			Expr("await x ** 2", F.Call(S.Exp, F.Call(_await, x), two), Mode.ParserTest);
 			Expr("await Foo.x", F.Call(_await, F.Dot(Foo, x)), Mode.ParserTest);
 			Expr("await(Foo.x)", F.Call(_await, F.Dot(Foo, x)), Mode.PrinterTest);
 			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(_await, F.Dot(Foo, x))), Mode.ParserTest);
@@ -783,8 +783,8 @@ namespace Loyc.Ecs.Tests
 			// Tentative tree structure - there is an undesirable inconsistency between ?. and ?[]
 			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.AltList(x)), Foo)));
 			Stmt("int Foo(int x) => x * x;",           F.Fn(F.Int32, Foo, F.AltList(F.Var(F.Int32, x)), F.Call(S.Mul, x, x)));
-			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, F.Literal(5)));
-			Stmt("int Foo { get; } = x * 5;",     F.Property(F.Int32, Foo, F.Missing, BracesOnOneLine(get), F.Call(S.Mul, x, F.Literal(5))));
+			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, Number(5)));
+			Stmt("int Foo { get; } = x * 5;",     F.Property(F.Int32, Foo, F.Missing, BracesOnOneLine(get), F.Call(S.Mul, x, Number(5))));
 			Stmt("public Foo this[long x] => get(x);", Attr(F.Public, F.Property(Foo, F.@this, F.AltList(F.Var(F.Int64, x)), F.Call(get, x))));
 			Stmt("new Foo { [0] = a, [1] = b };",
 				F.Call(S.New, F.Call(Foo), F.Call(S.DictionaryInitAssign, zero, a), F.Call(S.DictionaryInitAssign, one, b)));
@@ -826,7 +826,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("(Foo x, a b) Foo = 2;", F.Var(TupleType(F.Var(Foo, x), F.Var(a, b)), Foo, two));
 			Stmt("(Foo x, Foo.a b) Foo => 2;", F.Property(TupleType(F.Var(Foo, x), F.Var(F.Dot(Foo, a), b)), Foo, two));
 			Stmt("(Foo<x>, int x) Foo;", F.Var(TupleType(F.Of(Foo, x), F.Var(F.Int32, x)), Foo));
-			LNode stmt = F.Var(TupleType(F.Var(F.String, a), F.Var(F.String, b)), F.Call(S.Assign, x, F.Tuple(F.Literal("a"), F.Literal("b"))));
+			LNode stmt = F.Var(TupleType(F.Var(F.String, a), F.Var(F.String, b)), F.Call(S.Assign, x, F.Tuple(String("a"), String("b"))));
 			Stmt(@"(string a, string b) x = (""a"", ""b"");", stmt);
 
 			Stmt("(Foo?, int?) x;", F.Var(TupleType(F.Of(_(S.QuestionMark), Foo), F.Of(_(S.QuestionMark), F.Int32)), x));
@@ -865,7 +865,7 @@ namespace Loyc.Ecs.Tests
 		{
 			LNode tuple = F.Tuple(F.Call(S.NamedArg, a, one), F.Call(S.NamedArg, b, two));
 			Stmt(@"var x = (a: 1, b: 2);", F.Var(F.Missing, F.Call(S.Assign, x, tuple)));
-			tuple = tuple.PlusArg(F.Call(S.NamedArg, T, F.Call(S.Assign, x, F.Literal("Tee tea"))));
+			tuple = tuple.PlusArg(F.Call(S.NamedArg, T, F.Call(S.Assign, x, String("Tee tea"))));
 			Stmt(@"var x = (a: 1, b: 2, T: x = ""Tee tea"");", F.Var(F.Missing, F.Call(S.Assign, x, tuple)));
 		}
 
@@ -956,7 +956,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("x ??= throw null;", F.Call(S.NullCoalesceAssign, x, F.Call(S.Throw, F.Null)));
 
 			// Binary literals and digit separators (underscores are not preserved)
-			Stmt("x = 0b0001_0000 + 1_234;", F.Assign(x, F.Call(S.Add, F.Literal(0x10), F.Literal(1234))), Mode.ParserTest);
+			Stmt("x = 0b0001_0000 + 1_234;", F.Assign(x, F.Call(S.Add, Number(0x10), Number(1234))), Mode.ParserTest);
 
 			// Ref returns
 			LNode stmt;
@@ -1006,14 +1006,14 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void CSharp8Nullable()
 		{
-			Stmt("#nullable enable", F.Call(S.PPNullable, F.Literal("enable")));
+			Stmt("#nullable enable", F.Call(S.PPNullable, String("enable")));
 			Stmt("int x;\n" +
 				"#nullable disable", F.Splice(
 				F.Var(F.Int32, x),
-				F.Call(S.PPNullable, F.Literal("disable"))));
+				F.Call(S.PPNullable, String("disable"))));
 			Stmt("#nullable restore\n" +
 				"int x;", F.Splice(
-				F.Call(S.PPNullable, F.Literal("restore")),
+				F.Call(S.PPNullable, String("restore")),
 				F.Var(F.Int32, x)));
 
 			// Try to trick the printer into bad output
@@ -1086,7 +1086,7 @@ namespace Loyc.Ecs.Tests
 		public void CSharp8SwitchPatterns()
 		{
 			Expr("x switch { }", F.Call(S.SwitchOp, x, F.Braces()));
-			Stmt("x switch {\n  int => \"num\"\n};", F.Call(S.SwitchOp, x, F.Braces(Lambda(F.Int32, F.Literal("num")))));
+			Stmt("x switch {\n  int => \"num\"\n};", F.Call(S.SwitchOp, x, F.Braces(Lambda(F.Int32, String("num")))));
 			var body = F.Braces(
 				Lambda(F.Var(F.String, _("s")), a),
 				Lambda(F.Var(Foo, x), b),
@@ -1117,9 +1117,9 @@ namespace Loyc.Ecs.Tests
 				"  _ => \"unknown\"\n" +
 				"};";
 			body = F.Braces(
-				Lambda(F.Var(F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), zero), F.NamedArg(_("Y"), zero)), _("p")), F.Literal("origin")),
-				Lambda(      F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), F.Var(null, a)), F.NamedArg(_("Y"), F.Var(null, b))), F.Call(S.Substitute, F.Literal("({a}, {b})"))),
-				Lambda(_("_"), F.Literal("unknown")));
+				Lambda(F.Var(F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), zero), F.NamedArg(_("Y"), zero)), _("p")), String("origin")),
+				Lambda(      F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), F.Var(null, a)), F.NamedArg(_("Y"), F.Var(null, b))), F.Call(S.Substitute, String("({a}, {b})"))),
+				Lambda(_("_"), String("unknown")));
 			Stmt(text, F.Attr(_(S.Static), F.Fn(F.String, _("Display"), F.AltList(F.Var(F.Object, x)), F.Call(S.SwitchOp, x, body))));
 
 			var Mood = _("Mood");
@@ -1156,7 +1156,7 @@ namespace Loyc.Ecs.Tests
 			Expr("x is not null",      F.Call(S.Is, x, F.Call(S.PatternNot, F.Null)));
 			Expr("x is not not 2",     F.Call(S.Is, x, F.Call(S.PatternNot, F.Call(S.PatternNot, two))));
 			Expr("x is not (not Foo)", F.Call(S.Is, x, F.Call(S.PatternNot, F.InParens(F.Call(S.PatternNot, Foo)))));
-			Expr("x is 1 or 3 or < 0", F.Call(S.Is, x, F.Call(S.PatternOr, F.Call(S.PatternOr, one, F.Literal(3)), F.Call(S.LT, zero))));
+			Expr("x is 1 or 3 or < 0", F.Call(S.Is, x, F.Call(S.PatternOr, F.Call(S.PatternOr, one, Number(3)), F.Call(S.LT, zero))));
 			Expr("x is 1 or (2 or < 0)", F.Call(S.Is, x, F.Call(S.PatternOr, one, F.InParens(F.Call(S.PatternOr, two, F.Call(S.LT, zero))))));
 			var pat = F.Call(S.Unchecked, F.Call(S.Cast, F.InParens(F.Call(S.Sub, one)), F.UInt32).SetStyle(NodeStyle.OldStyle));
 			Expr("uint.MaxValue is unchecked((uint) (-1))", F.Call(S.Is, F.Dot(F.UInt32, F.Id("MaxValue")), pat));
@@ -1178,7 +1178,7 @@ namespace Loyc.Ecs.Tests
 		public void CSharp9SwitchPatterns()
 		{
 			var body = F.Braces(
-				Lambda(When(F.Call(S.Add, two, two), _("BlueMoon")), F.Literal(5)),
+				Lambda(When(F.Call(S.Add, two, two), _("BlueMoon")), Number(5)),
 				Lambda(_("_"), a));
 			Expr("a switch {\n  2 + 2 when BlueMoon => 5,\n  _ => a\n}", F.Call(S.SwitchOp, a, body));
 

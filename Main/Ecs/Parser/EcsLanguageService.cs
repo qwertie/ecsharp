@@ -106,10 +106,10 @@ namespace Loyc.Ecs
 			{
 				EcsParser parser = _parser;
 				if (parser == null)
-					_parser = parser = new EcsParser(input, file, msgs);
+					_parser = parser = new EcsParser(input, file, msgs, options);
 				else {
 					parser.ErrorSink = msgs ?? MessageSink.Default;
-					parser.Reset(input, file);
+					parser.Reset(input, file, options);
 				}
 				if (inputType == ParsingMode.Expressions)
 					return parser.ParseExprs(false, allowUnassignedVarDecl: false);
@@ -122,7 +122,7 @@ namespace Loyc.Ecs
 			}
 			else
 			{
-				var parser = new EcsParser(input, file, msgs);
+				var parser = new EcsParser(input, file, msgs, options);
 				return parser.ParseStmtsLazy().Buffered();
 			}
 		}

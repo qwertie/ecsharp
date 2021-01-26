@@ -1,11 +1,21 @@
 #importMacros LeMP.les2.to.ecs;
+#importMacros LeMP.ecs;
+#ecs;
 import System;
 import System.Collections.Generic;
+import System.Diagnostics;
 import System.Linq;
 import System.Text;
 import Loyc;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
+
+define change_temporarily($lhs = $rhs)
+{
+	var old_unique# = $lhs; // save old value in uniquely-named variable
+	$lhs = $rhs;
+	on_finally { $lhs = old_unique#; }
+};
 
 namespace Loyc.Ecs.Parser
 {
@@ -72,38 +82,39 @@ namespace Loyc.Ecs.Parser
 		@[private] rule HexDigits() @{ greedy(HexDigit)+ greedy('_' HexDigit+)* };
 		@[private] rule BinDigits() @{ '0'..'1'+ ('_' '0'..'1'+)* };
 		@[private] rule DecNumber() @{
-			{_numberBase=10;}
-			( '.' DecDigits   {_isFloat=true;}
-			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			( '.' DecDigits
+			| DecDigits     ( '.' DecDigits )?
 			)
-			( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
+			( ('e'|'E') ('+'|'-')? DecDigits )?
 		};
 		@[private] rule HexNumber() @{
-		   '0' ('x'|'X') {_numberBase=16;}
+			'0' ('x'|'X')
 			HexDigits?
 			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
 			(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 
-				{_isFloat=true;} HexDigits )?
-			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+				HexDigits )?
+			{ if InputPosition == _startPosition + 2 { Error(0, "Expected digits or '.'"); }; }
+			( ('p'|'P') ('+'|'-')? DecDigits )?
 		};
 		@[private] rule BinNumber() @{
-			'0' ('b'|'B')     {_numberBase=2;}
-			( '.' DecDigits   {_isFloat=true;}
-			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			'0' ('b'|'B')     
+			( '.' DecDigits   
+			| DecDigits     (  '.' DecDigits )?
 			)
-			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+			( ('p'|'P') ('+'|'-')? DecDigits )?
 		};
 		@[private] token Number() @{
-		    { _isFloat = false; _typeSuffix = null; }
-		    (HexNumber / BinNumber / DecNumber)
-		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
-		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
-		      | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
-		      )
-		    | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
-		    | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?
-		    )?
-		    {ParseNumberValue();}
+			(HexNumber / BinNumber / DecNumber)
+			{ _textValue = Text(); }
+			{ _value = @@_; }
+			( ( ('f'|'F') { _value = @@_f; }
+			  | ('d'|'D') { _value = @@_d; }
+			  | ('m'|'M') { _value = @@_m; }
+			  )
+			| ('l'|'L') { _value = @@_L; } (('u'|'U') { _value = @@_uL;})?
+			| ('u'|'U') { _value = @@_u; } (('l'|'L') { _value = @@_uL;})?
+			| ('z'|'Z') { _value = @@_z; }
+			)?
 		};
 		
 		// Strings ---------------------------------------------------------------
@@ -120,7 +131,7 @@ namespace Loyc.Ecs.Parser
 			(   '"' ['\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n')]* '"'
 			   | {_verbatim = true; _style = NodeStyle.VerbatimStringLiteral;}
 			     '@' '"' [ '"' '"' {_parseNeeded = true;} / ~'"' ]* '"' )
-			{ParseStringValue();}
+			{_textValue = UnescapeQuotedString();}
 		};
 		@[k(4), private]
 		token TQString @{
@@ -128,7 +139,7 @@ namespace Loyc.Ecs.Parser
 			( '"' '"' '"' nongreedy(Newline / _)* '"' '"' '"' {_style = NodeStyle.TDQStringLiteral;}
 			| "'''"       nongreedy(Newline / _)* "'''"       {_style = NodeStyle.TQStringLiteral;}
 			)
-			{ParseStringValue();}
+			{_textValue = UnescapeQuotedString();}
 		};
 		//@[private] rule BQStringV @{ {_verbatim=true;}
 		//	'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
@@ -139,25 +150,27 @@ namespace Loyc.Ecs.Parser
 		@[private] token BQString @{
 			{_parseNeeded = false;}
 			BQStringN
-			{ParseBQStringValue();}
+			{_value = UnescapeQuotedString() -> Symbol;}
 		};
 
 		// Identifiers and Symbols -----------------------------------------------
 
 		@[private] rule IdStartChar @{ '_'|'a'..'z'|'A'..'Z'|'#' };
 		@[k(9), private]
-		rule IdUniLetter @
+		token IdUniLetter @
 		{	&{char.IsLetter(LA0 -> char)} 0x80..0xFEFE
 		|	"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
-		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit? HexDigit? { _parseNeeded = true; }
 		};
-		@[k(9), private]
-		rule IdContChars @{ ('0'..'9'|'\''|IdStartChar|IdUniLetter)* };
-		@[private] rule NormalId @{ (IdStartChar|IdUniLetter) IdContChars };
+		@[private]
+		token IdContChars @{ ('0'..'9'|IdStartChar|IdUniLetter|'\'' &!{LA($LI) == '\''})* };
 		
-		@[private] rule CommentStart @{ '/' ('/'|'*') };
+		@[private] rule NormalId @{
+			(IdStartChar|IdUniLetter) IdContChars
+		};
+		
 		@[k(9), private]
-		rule FancyId::bool @{ 
+		token FancyId::bool @{ 
 			(	BQStringN                      {return true;} 
 			|	(IdUniLetter / LettersOrPunc)+ {return false;})
 		};
@@ -166,16 +179,26 @@ namespace Loyc.Ecs.Parser
 			{_parseNeeded = _verbatim = false;}
 			{isBQ::bool = false;}
 			'@' '@' (NormalId / isBQ=FancyId)
-			{ParseSymbolValue(isBQ);}
+			{_value = ParseSymbolValue(isBQ);}
 		};
-		@[k(7), private] // detect completeness of \uABCD
+
+		@[k(2), private]
 		token Id @{
 			{_parseNeeded = _verbatim = false;}
 			{isBQ::bool = false;}
-			{skipAt::int = 0;}
-			(	'@' (NormalId / isBQ=FancyId) {skipAt=1; _style = NodeStyle.VerbatimId;} 
+			{skipTheAt::int = 0;}
+			(	'@' (NormalId / isBQ=FancyId) {skipTheAt=1; _style = NodeStyle.VerbatimId;} 
 			|	default NormalId )
-			{ParseIdValue(skipAt, isBQ);}
+			{_value = ParseIdValue(skipTheAt, isBQ);}
+			{Debug.Assert(_value `'is` Symbol);}
+			// TQString is hopelessly ambiguous from LLLPG's perspective, as foo''' 
+			// appears to be a valid 6-character identifier, and makes LLLPG process 
+			// IdOrKeyword slowly. The gate (=>) fixes this issue.
+			(=>)
+			{ change_temporarily(_startPosition = InputPosition); }
+			(	TQString {_type = TT.Literal;}
+			/	DQString {_type = TT.Literal;}
+			)?
 		};
 		@[private] rule LettersOrPunc @{ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' };
@@ -261,7 +284,8 @@ namespace Loyc.Ecs.Parser
 
 		@[k(12), private]
 		token IdOrKeyword
-		@{	  "abstract"   (EndId=>{_type=TT.AttrKeyword; _value = S.Abstract;})
+		@{ // Slug: the 2-second analysis in LLLPG appeared when &!{LA($LI) == '\''} was added in IdContChars
+		      "abstract"   (EndId=>{_type=TT.AttrKeyword; _value = S.Abstract;})
 			/ "as"         (EndId=>{_type=TT.As;          _value = S.As;})
 			/ "base"       (EndId=>{_type=TT.Base;        _value = S.Base;})
 			/ "bool"       (EndId=>{_type=TT.TypeKeyword; _value = S.Bool;})

@@ -38,7 +38,7 @@ namespace Loyc.Syntax.Les
 		protected NodeStyle _style;
 		protected int _numberBase;
 		protected TokenType _type; // predicted type of the current token
-		protected object _value;
+		protected object _value; // if !_textValue.IsNull, this must be the type marker of a literal
 		protected UString _textValue;
 		protected int _startPosition;
 

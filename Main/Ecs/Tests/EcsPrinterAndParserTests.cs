@@ -26,9 +26,11 @@ namespace Loyc.Ecs.Tests
 	public abstract partial class EcsPrinterAndParserTests : Assert
 	{
 		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
+		protected static LiteralNode Number(object num) => F.Literal(num, (Symbol)"_");
+		protected static LiteralNode String(string s) => F.Literal(s);
 		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
 		protected LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
-		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		protected LNode zero = Number(0), one = Number(1), two = Number(2);
 		protected LNode @class = F.Id(S.Class), @partial = F.Id(S.Partial);
 		protected LNode partialWA = F.Attr(F.Id(S.TriviaWordAttribute), F.Id(S.Partial));
 		protected LNode @public = F.Id(S.Public), @static = F.Id(S.Static);
@@ -85,6 +87,10 @@ namespace Loyc.Ecs.Tests
 			ExpectAndDropParserError = 16,
 			// Remove trivia when parsing
 			IgnoreTrivia = 32,
+			// Compare parsed node with other node by printing to string and 
+			// comparing the strings. This is being used to compare array literals
+			// because (new[] {X}).Equals(new[] {X}) == false.
+			CompareAsLes = 64
 		};
 
 		// The tests were originally designed for printer tests, so they take

@@ -155,7 +155,7 @@ namespace Loyc.VisualStudio
 			private IAdd<ITagSpan<ClassificationTag>> _results;
 			public MyLesParser(IList<Token> tokens, TextSnapshotAsSourceFile file, 
 			                   IMessageSink messageSink, IAdd<ITagSpan<ClassificationTag>> results)
-				: base(tokens, file, messageSink)
+				: base(tokens, file, messageSink, null)
 			{
 				_file = file;
 				_results = results;

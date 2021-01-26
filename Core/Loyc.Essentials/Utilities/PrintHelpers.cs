@@ -259,8 +259,7 @@ namespace Loyc.Syntax
 		HasEscapes = 0x100, 
 		/// <summary>While unescaping, an unrecognized escape was encountered .</summary>
 		Unrecognized = 0x200,
-		/// <summary>While unescaping, a valid \U escape was encountered with more than 4 digits.
-		/// To detect whether the value was above 0xFFFF, however, one must check the output.</summary>
+		/// <summary>While unescaping, a valid \U escape was encountered.</summary>
 		HasLongEscape = 0x400,
 		/// <summary>While unescaping, a valid \U escape was encountered with 6 digits, but the
 		/// number was more than 0x10FFFF and had to be treated as 5 digits to make it valid.</summary>

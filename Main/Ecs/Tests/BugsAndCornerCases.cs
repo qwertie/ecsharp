@@ -15,7 +15,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrintingRegressions()
 		{
-			Stmt("\"Hello\";", F.Literal("Hello")); // bug: was handled as an empty statement because Name.Name=="" for a literal
+			Stmt("\"Hello\";", String("Hello")); // bug: was handled as an empty statement because Name.Name=="" for a literal
 			Stmt("new Foo().x;", F.Dot(F.Call(S.New, F.Call(Foo)), x));            // this worked
 			Stmt("new Foo().x();", F.Call(F.Dot(F.Call(S.New, F.Call(Foo)), x)));  // but this used to Assert
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes

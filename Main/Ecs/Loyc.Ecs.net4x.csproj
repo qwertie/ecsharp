@@ -97,6 +97,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsLexerGrammar.les</DependentUpon>
     </Compile>
+    <Compile Include="Parser\EcsLiteralHandlers.cs" />
     <Compile Include="Parser\EcsParserGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -210,8 +210,8 @@ namespace Loyc.Ecs.Parser
 
 		private LNode ParseExpr(IListSource<Token> tree)
 		{
-			if (_parser == null) _parser = new EcsParser(tree, SourceFile, ErrorSink);
-			else _parser.Reset(tree, SourceFile);
+			if (_parser == null) _parser = new EcsParser(tree, SourceFile, ErrorSink, null);
+			else _parser.Reset(tree, SourceFile, null);
 			LNode expr = _parser.ExprStart(false);
 			return expr;
 		}

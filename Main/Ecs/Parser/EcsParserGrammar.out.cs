@@ -1411,7 +1411,7 @@ namespace Loyc.Ecs.Parser
 				{
 					var t = MatchAny();
 					// line 456
-					r = F.Literal(t);
+					r = F.Literal(t, _literalParser);
 				}
 				break;
 			case TT.LParen:
@@ -2420,8 +2420,8 @@ namespace Loyc.Ecs.Parser
 					break;
 				case TT.ContextualKeyword:
 					{
-						if (context.CanParse(prec = EP.Switch)) {
-							if (Is(0, sy_with)) {
+						if (Is(0, sy_with)) {
+							if (context.CanParse(prec = EP.Switch)) {
 								if (context.CanParse(prec = EP.WhenWhere)) {
 									if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
 										la1 = LA(1);
@@ -2456,7 +2456,7 @@ namespace Loyc.Ecs.Parser
 									goto stop;
 							} else
 								goto stop;
-						} else if (Is(0, sy_with)) {
+						} else if (context.CanParse(prec = EP.Switch)) {
 							if (context.CanParse(prec = EP.WhenWhere)) {
 								if (((lt0 = LT(0)).Value == sy_when || lt0.Value == sy_where && !_insideLinqExpr) && SourceFile.Text.TryGet(lt0.StartIndex, '\0') != '@') {
 									la1 = LA(1);
@@ -3454,8 +3454,8 @@ namespace Loyc.Ecs.Parser
 								// Line 1279: (&{type == @null && subpats.Count == 1} &!(IdAtomButNotPatternKeyword) ~(TT.LBrace) => {..} / (~(EOF))? => {..})
 								la0 = LA0;
 								if (la0 != TT.LBrace) {
-									if (!Try_Scan_IdAtomButNotPatternKeyword(0)) {
-										if (type == null && subpats.Count == 1)
+									if (type == null && subpats.Count == 1) {
+										if (!Try_Scan_IdAtomButNotPatternKeyword(0))
 											// line 1283
 											result = F.InParens(lit_lpar, subpats[0], lit_rpar);
 										else

@@ -510,8 +510,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.BQId:
 							{
-								if (context.CanParse(P.SuffixWord)) {
-									if (!compactMode || IsConjoinedToken(0)) {
+								if (!compactMode || IsConjoinedToken(0)) {
+									if (context.CanParse(P.SuffixWord)) {
 										var unit = MatchAny();
 										// line 278
 										e = F.CallInfixOp(e, S.IS, unit, F.Id(unit));
@@ -523,8 +523,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.Not:
 							{
-								if (context.CanParse(P.Of)) {
-									if (!compactMode || IsConjoinedToken(0)) {
+								if (!compactMode || IsConjoinedToken(0)) {
+									if (context.CanParse(P.Of)) {
 										lit_excl = MatchAny();
 										// line 283
 										LNodeList args;
@@ -759,7 +759,7 @@ namespace Loyc.Syntax.Les
 				{
 					var lit = MatchAny();
 					// line 363
-					result = F.Literal(lit);
+					result = F.Literal(lit, _literalParser);
 				}
 				break;
 			case TT.LBrace:
@@ -897,7 +897,7 @@ namespace Loyc.Syntax.Les
 			} else if (la0 == TT.Literal) {
 				var t = MatchAny();
 				// line 416
-				return F.Literal(t);
+				return F.Literal(t, _literalParser);
 			} else {
 				var t = MatchExcept(ErrorTokenList_set0);
 				// line 417

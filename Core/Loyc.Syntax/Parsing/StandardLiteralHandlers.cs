@@ -307,9 +307,9 @@ namespace Loyc.Syntax
 
 		#region Parsing code
 
-		static Either<object, LogMessage> OK(object result) => new Either<object, LogMessage>(result);
+		protected static Either<object, LogMessage> OK(object result) => new Either<object, LogMessage>(result);
 
-		static Either<object, LogMessage> SyntaxError(UString input, Symbol typeMarker)
+		protected static Either<object, LogMessage> SyntaxError(UString input, Symbol typeMarker)
 		{
 			return new LogMessage(Severity.Error, input, "Syntax error in '{0}' literal", typeMarker);
 		}
@@ -319,7 +319,7 @@ namespace Loyc.Syntax
 			return new LogMessage(Severity.Error, input, "Number is out of range for its associated type");
 		}
 
-		static Either<object, LogMessage> GeneralNumberParser(UString s, Symbol tm)
+		protected static Either<object, LogMessage> GeneralNumberParser(UString s, Symbol tm)
 		{
 			long n;
 			BigInteger z;
@@ -349,7 +349,7 @@ namespace Loyc.Syntax
 				return SyntaxError(s, tm);
 		}
 
-		static bool ParseSigned(UString s, out long n)
+		protected static bool ParseSigned(UString s, out long n)
 		{
 			n = 0;
 			bool negative;
@@ -366,7 +366,7 @@ namespace Loyc.Syntax
 			return false;
 		}
 
-		static bool ParseBigInt(UString s, out BigInteger n)
+		protected static bool ParseBigInt(UString s, out BigInteger n)
 		{
 			n = BigInteger.Zero;
 			bool negative;
@@ -393,7 +393,7 @@ namespace Loyc.Syntax
 			return ParseHelpers.TryParseUInt(ref s, out u, radix, flags) && s.Length == 0;
 		}
 
-		private static bool ParseDouble(UString s, out double d)
+		protected static bool ParseDouble(UString s, out double d)
 		{
 			d = double.NaN;
 			char first = s[0, '\0'];

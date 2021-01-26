@@ -26,6 +26,13 @@ namespace Loyc.Syntax
 		/// <summary>If tabs are significant, this option controls the number of 
 		/// spaces a single tab should be equated with.</summary>
 		int SpacesPerTab { get; }
+
+		/// <summary>Requests that a specific parser be used to convert literals into strings.</summary>
+		/// <remarks>Support for this property is optional, and if it is supported,
+		/// the parser may choose to use this parser only for type markers for which
+		/// it does not have built-in support, or it may use it for all literals.
+		/// </remarks>
+		ILiteralParser LiteralParser { get; }
 	}
 
 	/// <summary>A simple implementation of <see cref="IParsingOptions"/>.</summary>
@@ -38,5 +45,7 @@ namespace Loyc.Syntax
 		public bool SurfaceScanOnly { get; set; } = false;
 		
 		public int SpacesPerTab { get; set; } = 4;
+		
+		public ILiteralParser LiteralParser { get; set; }
 	}
 }

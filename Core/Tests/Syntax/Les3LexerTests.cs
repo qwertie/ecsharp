@@ -154,6 +154,8 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestHexEscapeSequences()
 		{
+			// \U escape sequences have variable length
+			Case(@"'\UA' '\U020'", A(TT.Literal, TT.Literal), "\n", " ");
 			Case(@"'\U1F4A9'", A(TT.Literal), "💩");
 			Case(@"'\U01F4A9'", A(TT.Literal), "💩");
 			Case(@"""\u0020\U00020\x20""", A(TT.Literal), "   ");

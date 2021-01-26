@@ -165,13 +165,13 @@ namespace Loyc.Ecs.Tests
 		public void TriviaTest_Enums()
 		{
 			var stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), OnNewLine(F.Braces(
-				F.Assign(a, one), AppendStmt(b), AppendStmt(c), AppendStmt(F.Assign(x, F.Literal(24))))));
+				F.Assign(a, one), AppendStmt(b), AppendStmt(c), AppendStmt(F.Assign(x, Number(24))))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
 			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), OnNewLine(BracesOnOneLine(
-				F.Assign(a, two), b, c, F.Assign(x, F.Literal(24)))));
+				F.Assign(a, two), b, c, F.Assign(x, Number(24)))));
 			Stmt("enum Foo : byte\n{ a = 2, b, c, x = 24 }", stmt);
 			stmt = F.Call(S.Enum, Foo, F.AltList(F.UInt8), BracesOnOneLine(
-				F.Assign(a, zero), F.Assign(b, one), c, F.Assign(x, F.Literal(24))));
+				F.Assign(a, zero), F.Assign(b, one), c, F.Assign(x, Number(24))));
 			Stmt("enum Foo : byte { a = 0, b = 1, c, x = 24 }", stmt);
 		}
 

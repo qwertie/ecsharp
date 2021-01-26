@@ -177,7 +177,7 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("@#error(\"FAIL!\");", F.Call(S.Error, F.Literal("FAIL!")));
 			Stmt("@#if(c, Foo());",     AsStyle(NodeStyle.Expression, F.Call(S.If, c, F.Call(Foo))));
-			Stmt("@#region(57);",       AsStyle(NodeStyle.Expression, F.Call(GSymbol.Get("#region"), F.Literal(57))));
+			Stmt("@#region(57);",       AsStyle(NodeStyle.Expression, F.Call(GSymbol.Get("#region"), Number(57))));
 		}
 
 		[Test]

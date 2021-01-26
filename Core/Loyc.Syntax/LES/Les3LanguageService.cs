@@ -90,21 +90,20 @@ namespace Loyc.Syntax.Les
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = options.Mode == ParsingMode.Expressions;
 			if (options.Mode == ParsingMode.Expressions || file.Text.TryGet(255).HasValue) {
 				Les3Parser parser = _parser;
 				if (parser == null)
-					_parser = parser = new Les3Parser(input.AsList(), file, msgs);
+					_parser = parser = new Les3Parser(input.AsList(), file, msgs, options);
 				else {
 					parser.ErrorSink = msgs;
-					parser.Reset(input.AsList(), file);
+					parser.Reset(input.AsList(), file, options);
 				}
 				if (options.Mode == ParsingMode.Expressions)
 					return parser.Start(new Holder<TokenType>(default(TokenType))).Buffered();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {
-				var parser = new Les3Parser(input.AsList(), file, msgs);
+				var parser = new Les3Parser(input.AsList(), file, msgs, options);
 				return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			}
 		}

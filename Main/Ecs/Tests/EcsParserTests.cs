@@ -41,7 +41,7 @@ namespace Loyc.Ecs.Tests
 				ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", sink);
 				var preprocessed = new EcsPreprocessor(lexer, true);
 				var treeified = new TokensToTree(preprocessed, false);
-				var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
+				var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink, null);
 				LNodeList results = exprMode ? LNode.List(parser.ExprStart(false)) : LNode.List(parser.ParseStmtsGreedy());
 
 				// Inject comments
@@ -62,7 +62,11 @@ namespace Loyc.Ecs.Tests
 				}
 				if (!expected.Equals(result, LNode.CompareMode.TypeMarkers))
 				{
-					AreEqual(expected, result);
+					if ((mode & Mode.CompareAsLes) != 0)
+						using (LNode.SetPrinter(Syntax.Les.Les3LanguageService.Value))
+							AreEqual(expected.ToString(), result.ToString());
+					else
+						AreEqual(expected, result);
 					Fail("{0} has a different type marker than {1}", expected, result);
 				}
 			}

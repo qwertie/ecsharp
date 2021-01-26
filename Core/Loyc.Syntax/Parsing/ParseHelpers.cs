@@ -152,26 +152,20 @@ namespace Loyc.Syntax
 				return c;
 
 			encountered |= EscapeC.HasEscapes;
-			int code; // hex code after \u or \x
+			int code; // hex code after \u or \x or \U
+			int len; // length of hex code after \u or \x or \U
 			UString slice, original = s;
 			int type = s.PopFirst(out fail);
 			switch (type) {
+				case 'x':
+					encountered |= EscapeC.BackslashX;
+					goto case 'u';
 				case 'u':
-				case 'U':
-					slice = s.Left(type == 'U' ? 6 : 4);
-					if (TryParseHex(ref slice, out code) >= 4) {
-						if (code <= 0x10FFFF) {
-							s = s.Substring(slice.InternalStart - s.InternalStart);
-						} else {
-							Debug.Assert(slice.Length == 0);
-							// It appears to be 6 digits but only the first 5 can 
-							// be treated as part of the escape sequence.
-							s = s.Substring(5);
-							code >>= 4;
-							encountered |= EscapeC.HasInvalid6DigitEscape;
-						}
-						if (slice.InternalStart > s.InternalStart + 4)
-							encountered |= EscapeC.HasLongEscape;
+					len = type == 'u' ? 4 : 2;
+					slice = s.Left(len);
+					if (TryParseHex(ref slice, out code) == len) {
+						s = s.Substring(slice.InternalStart - s.InternalStart);
+
 						if (code < 32)
 							encountered |= EscapeC.Control;
 						else if (code > 127)
@@ -179,15 +173,25 @@ namespace Loyc.Syntax
 						return code;
 					} else
 						break;
-				case 'x':
-					slice = s.Left(2);
-					if (TryParseHex(slice, out code)) {
-						encountered |= EscapeC.BackslashX;
+				case 'U':
+					encountered |= EscapeC.HasLongEscape;
+					slice = s.Left(6);
+					len = TryParseHex(ref slice, out code);
+					if (len > 0) {
+						if (code <= 0x10FFFF) {
+							s = s.Substring(len);
+						} else {
+							Debug.Assert(slice.Length == 0);
+							// It appears to be 6 digits but only the first 5 can 
+							// be treated as part of the escape sequence.
+							encountered |= EscapeC.HasInvalid6DigitEscape;
+							s = s.Substring(5);
+							code >>= 4;
+						}
 						if (code < 32)
 							encountered |= EscapeC.Control;
 						else if (code > 127)
 							encountered |= EscapeC.NonAscii;
-						s = s.Substring(2);
 						return code;
 					} else
 						break;

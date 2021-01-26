@@ -138,7 +138,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...} (note: use #import or CodeSymbols.Import for a using directive)
 		public static readonly Symbol For = GSymbol.Get("#for");             //!< e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
 		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     //!< e.g. #foreach(#var(@``, n), list, {...}); <=> foreach(var n in list) {...}
-		public static readonly Symbol Label = GSymbol.Get("#label");         //!< e.g. #label(success) <=> success:
+		public static readonly Symbol Label = GSymbol.Get("#label");         //!< e.g. #label(success) <=> success: and #label(@`'default`) <=> default:
 		public static readonly Symbol Case = GSymbol.Get("#case");           //!< e.g. #case(10, 20) <=> case 10, 20:
 		public static readonly Symbol Return = GSymbol.Get("#return");       //!< e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
 		public static readonly Symbol Continue = GSymbol.Get("#continue");   //!< e.g. #continue(); <=> continue;

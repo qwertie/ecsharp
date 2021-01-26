@@ -360,7 +360,7 @@ partial class Les3Parser
 		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=TT.Literal // literal
-			{$result = F.Literal(lit);}
+			{$result = F.Literal(lit, _literalParser);}
 		|	// {statements; in; braces}
 			result:BracedBlock
 		|	// [list]
@@ -413,7 +413,7 @@ partial class Les3Parser
 			{ return F.CallBrackets(@@`'()`, $"(", $TokenListEx, $")"); }
 		/	SquareBracketList { return $SquareBracketList; }
 		/	BracedBlock       { return $BracedBlock; }
-		/	t:=TT.Literal     { return F.Literal(t); }
+		/	t:=TT.Literal     { return F.Literal(t, _literalParser); }
 		/	t:=(~(","|";"|"\n"|")"|"]"|"}"|"'")) { return F.Id(t); };
 
 	BracedBlock returns [LNode result] : 

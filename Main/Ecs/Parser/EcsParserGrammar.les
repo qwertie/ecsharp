@@ -453,7 +453,7 @@ namespace Loyc.Ecs.Parser
 			|	t:=LinqKeywordAsId
 				{r = F.Id(t);}
 			|	t:=TT.Literal
-				{r = F.Literal(t);}
+				{r = F.Literal(t, _literalParser);}
 			|	r=ExprInParensAuto  // (...)
 			|	r=NewExpr           // new ...
 			|	r=BracedBlock       // {...}
