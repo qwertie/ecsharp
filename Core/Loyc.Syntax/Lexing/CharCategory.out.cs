@@ -1,4 +1,4 @@
-// Generated from CharCategory.ecs by LeMP custom tool. LeMP version: 2.9.0.0
+// Generated from CharCategory.ecs by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -6,15 +6,10 @@
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
-
 using System.Collections.Generic;
-
 using System.Linq;
-
 using System.Text;
-
 using System.Threading.Tasks;
-
 //string propList_txt = includeFileText("PropList.txt");
 namespace Loyc.Syntax.Lexing
 {

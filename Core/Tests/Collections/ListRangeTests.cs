@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -72,8 +72,29 @@ namespace Loyc.Collections.Tests
 		}
 		protected static void ExpectList<T>(IEnumerator<T> it, IList<T> expected)
 		{
-			for (int i = 0; i < expected.Count; i++)
-			{
+			Assert.AreEqual(null, FirstIndexWhereDifferent(it, expected));
+		}
+
+		protected static int? FirstIndexWhereDifferent<T>(IEnumerable<T> it, IList<T> expected)
+			=> FirstIndexWhereDifferent(it.GetEnumerator(), expected);
+		protected static int? FirstIndexWhereDifferent<T>(IEnumerator<T> it, IList<T> expected)
+		{
+			var comp = EqualityComparer<T>.Default;
+			int i;
+			for (i = 0; i < expected.Count; i++) {
+				if (!it.MoveNext())
+					return i;
+				if (!comp.Equals(expected[i], it.Current))
+					return i;
+			}
+			if (!it.MoveNext())
+				return i;
+			return null;
+		}
+
+		protected static void AreEqual<T>(IEnumerator<T> it, IList<T> expected)
+		{
+			for (int i = 0; i < expected.Count; i++) {
 				Assert.That(it.MoveNext());
 				Assert.AreEqual(expected[i], it.Current);
 			}

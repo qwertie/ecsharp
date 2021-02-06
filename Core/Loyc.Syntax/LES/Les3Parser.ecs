@@ -91,10 +91,9 @@ partial class Les3Parser
 		)
 		ErrorTokensOpt
 		greedy( &{isBracedBlock} (")"|"]") { Error(-1, "Ignoring unexpected closing bracket"); } )?
-		greedy(
-			trailingSeparator=(";"|","|"\n")
+		(	trailingSeparator=(";"|","|"\n")
 		/	{ trailingSeparator = default; }
-		)?
+		)
 		NewlinesOpt
 		{ bool endOfExprList = false; }
 		( (")"|"]"|"}"|EOF) => { endOfExprList = true; } )?
