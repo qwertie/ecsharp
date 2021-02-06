@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -187,6 +188,14 @@ namespace LeMP
 		public Symbol Namespace { get; private set; }
 		public LexicalMacro Macro { get; private set; }
 
+		#region GetMacros(Type)
+
+		// This cache decreases time spent in LeMP tests by about 40%. It only helps 
+		// when the macro processor is reinitialized many times, so in "production"
+		// it's unimportant.
+		public static ConcurrentDictionary<Pair<RuntimeTypeHandle, Symbol>, List<MacroInfo>> _macroCache 
+		        = new ConcurrentDictionary<Pair<RuntimeTypeHandle, Symbol>, List<MacroInfo>>();
+
 		/// <summary>Uses reflection to find a list of macros within the specified 
 		/// type by searching for (static) methods that
 		/// (1) are marked with <see cref="LexicalMacroAttribute"/> and
@@ -195,20 +204,30 @@ namespace LeMP
 		/// </summary>
 		/// <param name="type">The type to search for macros.</param>
 		/// <param name="namespace">Optionally overrides the namespace associated 
-		/// with macros marked with <see cref="LexicalMacroAttribute"/>. Does not
-		/// affect macros returned in a list of <see cref="MacroInfo"/>.</param>
+		///   with macros marked with <see cref="LexicalMacroAttribute"/>. Does not
+		///   affect macros returned in a list of <see cref="MacroInfo"/>.</param>
 		/// <param name="errorSink">An object in which to send error messages
-		/// (<see cref="Severity.Warning"/> is used because unavailability of a macro
-		/// should not appear as an error when compiling something with LeMP.)</param>
+		///   (<see cref="Severity.Warning"/> is used because unavailability of a macro
+		///   should not appear as an error when compiling something with LeMP.)</param>
 		/// <param name="instance">An optional object of the same type as <c>type</c>, 
-		/// which will be used to bind instance methods. If this is null, only static
-		/// methods are discovered.</param>
+		///   which will be used to bind instance methods. If this is null, only static
+		///   methods are discovered.</param>
+		/// <param name="permaCache">If true, the list of macros is saved to avoid 
+		///   doing the reflection operations again if the same type is queried again.
+		///   This is mainly useful in testing, when LeMP is reinitialized many times.
+		///   This method is slow because of the reflection methods 
+		///   `Delegate.CreateDelegate` and especially `MethodInfo.GetCustomAttributes`.
+		///   Note: caching is not supported when instance != null.</param>
 		/// <returns></returns>
-		public static IEnumerable<MacroInfo> GetMacros(Type type, IMessageSink errorSink = null, Symbol @namespace = null, object instance = null)
+		public static IEnumerable<MacroInfo> GetMacros(Type type, IMessageSink errorSink = null, Symbol @namespace = null, object instance = null, bool permaCache = true)
 		{
-			List<MacroInfo> results = new List<MacroInfo>();
-			errorSink = errorSink ?? MessageSink.Default;
 			@namespace = @namespace ?? (Symbol)type.Namespace;
+
+			if (instance == null && _macroCache.TryGetValue(Pair.Create(type.TypeHandle, @namespace), out List<MacroInfo> results))
+				return results;
+
+			results = new List<MacroInfo>();
+			errorSink = errorSink ?? MessageSink.Default;
 
 			var flags = BindingFlags.Public | BindingFlags.Static;
 			if (instance != null)
@@ -237,6 +256,9 @@ namespace LeMP
 				}
 			}
 
+			if (instance == null && permaCache)
+				_macroCache[Pair.Create(type.TypeHandle, @namespace)] = results;
+
 			return results;
 
 			LexicalMacro AsDelegate(MethodInfo method) {
@@ -250,5 +272,7 @@ namespace LeMP
 				}
 			}
 		}
+
+		#endregion
 	}
 }
