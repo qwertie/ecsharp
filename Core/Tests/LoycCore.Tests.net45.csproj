@@ -66,12 +66,12 @@
     <BaseAddress>4194304</BaseAddress>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
+  <!--<PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
+  </PropertyGroup>-->
+  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
@@ -90,7 +90,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

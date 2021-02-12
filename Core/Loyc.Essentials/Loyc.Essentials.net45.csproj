@@ -39,10 +39,10 @@
     <FileAlignment>512</FileAlignment>
     <NoWarn>1591, 1573, 0419</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' or '$(Configuration)' == 'Release.NET45' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' or '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' or '$(Configuration)' == 'Debug.NET45' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' or '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
@@ -74,7 +74,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
+  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -97,7 +97,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Optimize>true</Optimize>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="System" />
