@@ -62,13 +62,13 @@ namespace Loyc.Collections
 			return null;
 		}
 	}
-	
+
 	/// <summary>This interface models the capabilities of an array: getting and
-	/// setting elements by index, but not adding or removing elements. This 
-	/// interface is the counterpart to <see cref="IListSource{T}"/> 
-	/// for lists whose minimum index is not (necessarily) zero.
-	/// </summary>
-	public interface INegArray<T> : INegListSource<T>
+	/// setting elements by index, but not adding or removing elements. Implementing 
+	/// <see cref="INegListSource{T}"/> makes it slightly different from  
+	/// <see cref="IArray{T}"/>, in that indexes can be negative, so there are
+	/// Min and Max properties.</summary>
+	public interface INegArray<T> : INegListSource<T>, IArraySink<T>, IIndexed<int, T>
 	{
 		/// <summary>Gets or sets an element of the array-like collection.</summary>
 		/// <returns>The value of the array at the specified index.</returns>
@@ -80,6 +80,12 @@ namespace Loyc.Collections
 		
 		bool TrySet(int index, T value);
 	}
+
+	/// <summary>This is a tag interface indicating that the boundaries of the array
+	/// can be expanded implcitly by writing to an index outside the range. However,
+	/// the indexer may still throw when reading outside the current boundaries.
+	/// To avoid exceptions, please use a TryGet extension method.</summary>
+	public interface IAutoNegArray<T> : INegArray<T> { }
 
 	/// <summary>An auto-sizing array is a list structure that allows you to modify
 	/// the element at any index, including indexes that don't yet exist; the

@@ -731,14 +731,14 @@ namespace Loyc.Collections.Impl
 		{
 			return new Slice_<T>(this, start, count);
 		}
-		InternalDList<T> Slice(int start, int subcount)
+		public InternalDList<T> Slice(int start, int subcount)
 		{
 			CheckParam.IsNotNegative("start", start);
 			CheckParam.IsNotNegative("subcount", subcount);
 			if (start > _count)
 				start = _count;
-		    if (subcount > _count - start)
-		        subcount = _count - start;
+			if (subcount > _count - start)
+				subcount = _count - start;
 
 			return new InternalDList<T> { 
 				_start = IncMod(_start, start),

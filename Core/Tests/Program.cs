@@ -111,6 +111,7 @@ namespace Loyc.Tests
 		public static int Loyc_Collections()
 		{
 			return MiniTest.RunTests.RunMany(
+				new InternalDArrayTests(_seed),
 				new ListSourceSliceTests(),
 				new ListSliceTests(),
 				new ROLSliceTests(),

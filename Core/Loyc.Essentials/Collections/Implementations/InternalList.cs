@@ -741,7 +741,6 @@ namespace Loyc.Collections.Impl
 		}
 		
 		internal const int QuickSortThreshold = 9;
-		internal const int QuickSortMedianThreshold = 15;
 
 		/// <summary>Performs a quicksort using a Comparison function.</summary>
 		/// <remarks>
