@@ -16,7 +16,7 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Interfaces Collections</tags>
     <dependencies>
-      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework=".NETFramework4.7.2" />
       <group targetFramework=".NETStandard2.0" />
       <!--<dependency id="SampleDependency" version="1.0"/>-->
     </dependencies>
@@ -25,7 +25,7 @@
     <file src="readme.md" />
 
     <file src="Bin\Release\netstandard2.0\Loyc.Interfaces.*" target="lib\netstandard2.0\" />
-    <file src="Bin\Release.NET45\Loyc.Interfaces.*" target="lib\net45\" />
+    <file src="Bin\Release\Loyc.Interfaces.*" target="lib\net472\" />
     <file src="Loyc.Interfaces\**\*.cs" target="src" />
     <file src="Loyc.Interfaces\**\*.ecs" target="src" />
   </files>

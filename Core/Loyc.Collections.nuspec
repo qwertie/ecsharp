@@ -28,7 +28,7 @@
     <file src="readme.md" />
     
     <file src="Bin\Release\netstandard2.0\Loyc.Collections.*" target="lib\netstandard2.0\" />
-    <file src="Bin\Release.NET45\Loyc.Collections.*" target="lib\net45\" />
+    <file src="Bin\Release\Loyc.Collections.*" target="lib\net45\" />
     <file src="Loyc.Collections\**\*.cs" target="src" />
     <file src="Loyc.Collections\**\*.ecs" target="src" />
   </files>
