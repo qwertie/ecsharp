@@ -112,6 +112,7 @@ namespace Loyc.Tests
 		{
 			return MiniTest.RunTests.RunMany(
 				new InternalDArrayTests(_seed),
+				new TypeDictionaryWithBaseTypeLookupsTests(),
 				new ListSourceSliceTests(),
 				new ListSliceTests(),
 				new ROLSliceTests(),

@@ -114,6 +114,7 @@
     <Compile Include="Sets\MMap.cs" />
     <Compile Include="Sets\MSet.cs" />
     <Compile Include="Sets\Set.cs" />
+    <Compile Include="TypeDictionaryWithBaseTypeLookups.cs" />
     <Compile Include="VLists\FVList.cs" />
     <Compile Include="VLists\FWList.cs" />
     <Compile Include="VLists\VList.cs" />

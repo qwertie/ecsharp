@@ -119,6 +119,7 @@
     <Compile Include="Collections\HeapTests.cs" />
     <Compile Include="Collections\InternalDArrayTests.cs" />
     <Compile Include="Collections\ReadOnlyDictionaryTests.cs" />
+    <Compile Include="Collections\TypeDictionaryWithBaseTypeLookupsTests.cs" />
     <Compile Include="Collections\VLists\FVListTests.cs" />
     <Compile Include="Collections\VLists\FWListTests.cs" />
     <Compile Include="Collections\VLists\VListTests.cs" />
