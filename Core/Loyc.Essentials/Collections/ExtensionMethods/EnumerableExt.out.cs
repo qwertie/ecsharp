@@ -28,10 +28,20 @@ namespace Loyc.Collections
 	/// </remarks>
 	public static partial class EnumerableExt
 	{
+		/// <summary>Runs an foreach loop on the list, calling the given action for each element.</summary>
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{
 			foreach (T item in list)
 				action(item);
+		}
+
+		/// <summary>Runs an foreach loop on the list, calling the given action for each element.</summary>
+		/// <remarks>The second argument of the Action is the index (zero for the first element)</remarks>
+		public static void ForEach<T>(this IEnumerable<T> list, Action<T, int> action)
+		{
+			int index = 0;
+			foreach (T item in list)
+				action(item, index++);
 		}
 
 		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)

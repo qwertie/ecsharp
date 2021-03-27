@@ -26,12 +26,6 @@ namespace Loyc
 			a = b;
 			b = tmp;
 		}
-		public static void Swap(ref dynamic a, ref dynamic b)
-		{
-			var tmp = a;
-			a = b;
-			b = tmp;
-		}
 
 		public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp)
 		{

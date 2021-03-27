@@ -99,6 +99,7 @@ namespace Loyc.Collections
 			int space = array.Length - arrayIndex;
 			if (c.Count > space)
 				CheckParam.ThrowBadArgument(nameof(array), "CopyTo: array is too small ({0} < {1})", space, c.Count);
+			CheckParam.IsNotNegative(nameof(arrayIndex), arrayIndex);
 			foreach (var item in c)
 				array[arrayIndex++] = item;
 		}

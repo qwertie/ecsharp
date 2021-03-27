@@ -7,11 +7,11 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// A dictionary from Type to another type of your choice. This dictionary 
-	/// behaves almost identically to a standard dictionary, except that the 
-	/// TryGetValue method will find matches on base types and interfaces, e.g. 
-	/// if you add a dictionary entry for <c>IEnumerable</c>, then 
-	/// <c>TryGetValue(typeof(BitArray), out _)</c> will return true.
+	/// A dictionary whose keys are Type objects. This dictionary behaves almost 
+	/// identically to a standard dictionary, except that the TryGetValue method 
+	/// will find matches on base types and interfaces, e.g. if you add a dictionary 
+	/// entry for <c>IEnumerable</c>, then <c>TryGetValue(typeof(BitArray), out _)</c> 
+	/// will return true.
 	/// </summary>
 	/// <remarks>
 	/// This class is not thread-safe.
