@@ -1,24 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Nullability is broken in .NET Standard 2; must add 2.1 for correct IntelliSense -->
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>8.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+  <!-- 👇 disable broken nullable warnings when compiling for .NET Standard 2.0 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <NoWarn>$(NoWarn);nullable</NoWarn>
+    <DefineConstants>TRACE;NetStandard20</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net5.0'">
+    <DefineConstants>TRACE;NULLABLE_ATTRIBUTES_DISABLE</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <Compile Update="Collections\ExtensionMethods\EnumerableExt.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EnumerableExt.ecs</DependentUpon>
+    </Compile>
     <Compile Update="Collections\ExtensionMethods\LinqToLists.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
+    <None Update="Collections\ExtensionMethods\EnumerableExt.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>EnumerableExt.out.cs</LastGenOutput>
+    </None>
     <None Update="Collections\ExtensionMethods\LinqToLists.ecs">
       <Generator>LLLPG</Generator>
       <LastGenOutput>LinqToLists.out.cs</LastGenOutput>

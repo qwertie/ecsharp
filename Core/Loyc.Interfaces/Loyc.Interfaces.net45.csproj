@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Interfaces</BaseIntermediateOutputPath>
     <ProjectGuid>{834F7631-149C-4172-83C2-C6BF9F8BF26B}</ProjectGuid>
@@ -135,6 +136,17 @@
     <Compile Include="ILogMessage.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="Concrete\NoValue.cs" />
+    <Compile Include="Nullable\AllowNullAttribute.cs" />
+    <Compile Include="Nullable\DisallowNullAttribute.cs" />
+    <Compile Include="Nullable\DoesNotReturnAttribute.cs" />
+    <Compile Include="Nullable\DoesNotReturnIfAttribute.cs" />
+    <Compile Include="Nullable\MaybeNullAttribute.cs" />
+    <Compile Include="Nullable\MaybeNullWhenAttribute.cs" />
+    <Compile Include="Nullable\MemberNotNullAttribute.cs" />
+    <Compile Include="Nullable\MemberNotNullWhenAttribute.cs" />
+    <Compile Include="Nullable\NotNullAttribute.cs" />
+    <Compile Include="Nullable\NotNullIfNotNullAttribute.cs" />
+    <Compile Include="Nullable\NotNullWhenAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NamespaceDocs.cs" />
     <Compile Include="Collections\ISparseList.cs" />
@@ -176,6 +188,7 @@
     <Compile Include="Concrete\ScratchBuffer.cs" />
     <Compile Include="Syntax\ParsingMode.cs" />
     <None Include="OpenSourceKey.snk" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

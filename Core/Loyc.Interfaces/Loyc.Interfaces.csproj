@@ -1,23 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Nullability is broken in .NET Standard 2; must add Core 3 for correct IntelliSense -->
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+  <!-- 👇 disable broken nullable warnings when compiling for .NET Standard 2.0 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <NoWarn>$(NoWarn);nullable</NoWarn>
+    <DefineConstants>TRACE;NetStandard20;NULLABLE_ATTRIBUTES_DISABLE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net5.0'">
+    <DefineConstants>TRACE;NULLABLE_ATTRIBUTES_DISABLE</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Interfaces.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;NetStandard20</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE;NetStandard20</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Nullable" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
