@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Loyc.Collections
@@ -8,13 +9,17 @@ namespace Loyc.Collections
 	/// <see cref="IDictionary{K,V}"/> and <see cref="IDictionaryEx{K, V}"/>.</summary>
 	public static partial class DictionaryExt
 	{
+		// They want me to put a "where K: notnull" constraint on these. I disagree. The warning says:
+		// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+		#pragma warning disable 8714 
+
 		/// <summary>Adds a key/value pair to the dictionary if the key is not already present,
 		/// and returns the existing or new value.</summary>
 		/// <returns>The existing value (if the key already existed) or the new value.</returns>
 		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
 		public static V GetOrAdd<K, V>(this IDictionary<K, V> dict, K key, V value)
 		{
-			if (dict.TryGetValue(key, out V existing))
+			if (dict.TryGetValue(key, out V? existing))
 				return existing;
 			dict.Add(key, value);
 			return value;
@@ -25,7 +30,7 @@ namespace Loyc.Collections
 		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
 		public static V GetOrAdd<K, V>(this IDictionary<K, V> dict, K key, Func<K, V> valueFactory)
 		{
-			if (dict.TryGetValue(key, out V value))
+			if (dict.TryGetValue(key, out V? value))
 				return value;
 			value = valueFactory(key);
 			dict.Add(key, value);
@@ -40,7 +45,7 @@ namespace Loyc.Collections
 		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
 		public static V AddOrUpdate<K, V>(this IDictionary<K, V> dict, K key, Func<K, V> addValueFactory, Func<K, V, V> updateValueFactory)
 		{
-			if (dict.TryGetValue(key, out V value))
+			if (dict.TryGetValue(key, out V? value))
 				dict[key] = value = updateValueFactory(key, value);
 			else
 				dict.Add(key, value = addValueFactory(key));
@@ -53,7 +58,7 @@ namespace Loyc.Collections
 		/// <remarks>This is not thread-safe. Only one thread should access the dictionary at once.</remarks>
 		public static V AddOrUpdate<K, V>(this IDictionary<K, V> dict, K key, V addValue, Func<K, V, V> updateValueFactory)
 		{
-			if (dict.TryGetValue(key, out V value))
+			if (dict.TryGetValue(key, out V? value))
 				dict[key] = value = updateValueFactory(key, value);
 			else
 				dict.Add(key, value = addValue);
@@ -67,7 +72,7 @@ namespace Loyc.Collections
 		/// if no value is associated with the key.</returns>
 		public static V TryGetValue<K, V>(this Dictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
+			V? value;
 			if (key == null || !dict.TryGetValue(key, out value))
 				return defaultValue;
 			return value;
@@ -75,7 +80,7 @@ namespace Loyc.Collections
 		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
 		public static V TryGetValue<K, V>(this IDictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
+			V? value;
 			if (key == null || !dict.TryGetValue(key, out value))
 				return defaultValue;
 			return value;
@@ -83,7 +88,7 @@ namespace Loyc.Collections
 		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
 		public static V TryGetValue<K, V>(this IReadOnlyDictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
+			V? value;
 			if (key == null || !dict.TryGetValue(key, out value))
 				return defaultValue;
 			return value;
@@ -98,7 +103,7 @@ namespace Loyc.Collections
 		/// the result in an "out" parameter.</summary>
 		public static Maybe<V> TryGetValue<K, V>(this IDictionary<K, V> dict, K key)
 		{
-			V value;
+			V? value;
 			if (key == null || !dict.TryGetValue(key, out value))
 				return Maybe<V>.NoValue;
 			return value;
@@ -106,7 +111,7 @@ namespace Loyc.Collections
 		/// <inheritdoc cref="TryGetValue{K,V}(IDictionary{K,V},K)"/>
 		public static Maybe<V> TryGetValue<K, V>(this IReadOnlyDictionary<K, V> dict, K key)
 		{
-			V value;
+			V? value;
 			if (key == null || !dict.TryGetValue(key, out value))
 				return Maybe<V>.NoValue;
 			return value;
@@ -126,7 +131,7 @@ namespace Loyc.Collections
 
 		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
 		/// not throw an exception when <c>key==null</c> (it simply returns false).</summary>
-		public static bool TryGetValueSafe<K, V>(this IDictionary<K, V> dict, K key, out V value)
+		public static bool TryGetValueSafe<K, V>(this IDictionary<K, V> dict, K key, [MaybeNullWhen(false)] out V value)
 		{
 			if (key != null)
 				return dict.TryGetValue(key, out value);
@@ -173,7 +178,7 @@ namespace Loyc.Collections
 			foreach (var pair in data)
 			{
 				K key = pair.Key;
-				V val = pair.Value;
+				V? val = pair.Value;
 				if (!LCInterfaces.GetAndEdit(dict, key, ref val, mode))
 					numMissing++;
 			}
@@ -185,7 +190,7 @@ namespace Loyc.Collections
 		/// pair with that key from the dictionary.</summary>
 		public static Maybe<V> GetAndRemove<K, V>(this IDictionary<K, V> dict, K key)
 		{
-			if (dict.TryGetValue(key, out V value)) {
+			if (dict.TryGetValue(key, out V? value)) {
 				dict.Remove(key);
 				return value;
 			}

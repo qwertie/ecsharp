@@ -57,18 +57,18 @@ namespace Loyc.Threading
 	public struct ScratchBuffer<T> : IValue<T> where T : class
 	{
 		volatile int _threadID;
-		volatile T _buffer;
+		volatile T? _buffer;
 		Func<T> _factory;
 
-		public ScratchBuffer(Func<T> factory) { _threadID = 0; _buffer = default(T); _factory = factory; }
+		public ScratchBuffer(Func<T> factory) { _threadID = 0; _buffer = null; _factory = factory; }
 
 		/// <summary>Please see the documentation of <see cref="ScratchBuffer{T}"/> itself.</summary>
 		public T Value
 		{
 			get {
-				T buffer = _buffer;
+				T? buffer = _buffer;
 				if (_threadID == Thread.CurrentThread.ManagedThreadId)
-					return buffer;
+					return buffer!;
 				return CallFactory();
 			}
 			set {
@@ -82,7 +82,9 @@ namespace Loyc.Threading
 			// By putting this code (which I hope is called infrequently) in a 
 			// separate method, I hope that the hot path (Value) will be inlined
 			if (_factory == null)
-				return null;
+				// Nullability dilemma: T might be nullable, in which case returning
+				// null is fine, but we can't tell here.
+				return null!;
 			T newT = _factory();
 			Value = newT;
 			return newT;

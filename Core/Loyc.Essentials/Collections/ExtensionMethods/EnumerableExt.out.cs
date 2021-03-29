@@ -7,6 +7,7 @@
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -28,20 +29,10 @@ namespace Loyc.Collections
 	/// </remarks>
 	public static partial class EnumerableExt
 	{
-		/// <summary>Runs an foreach loop on the list, calling the given action for each element.</summary>
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{
 			foreach (T item in list)
 				action(item);
-		}
-
-		/// <summary>Runs an foreach loop on the list, calling the given action for each element.</summary>
-		/// <remarks>The second argument of the Action is the index (zero for the first element)</remarks>
-		public static void ForEach<T>(this IEnumerable<T> list, Action<T, int> action)
-		{
-			int index = 0;
-			foreach (T item in list)
-				action(item, index++);
 		}
 
 		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
@@ -91,7 +82,7 @@ namespace Loyc.Collections
 		IndexOfMin < T > (source, selector, out T _);
 
 		/// <summary>Finds the minimum element's index in the list, and returns it with the item itself</summary>
-		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector, out T min)
+		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
 		{
 			min = default(T);
 			var e = source.GetEnumerator();
@@ -136,7 +127,7 @@ namespace Loyc.Collections
 		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
 		IndexOfMin<T, R>(source, selector, out T _);
 		/// <summary>Finds the minimum element's index in the list</summary>
-		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector, out T min)
+		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{
 			min = default(T);
 			var e = source.GetEnumerator();
@@ -156,7 +147,7 @@ namespace Loyc.Collections
 			}
 			return min_i;
 		}
-
+		[return: MaybeNull] 
 		/// <summary>Finds the minimum element in the list (given some selector) and returns it</summary>
 		/// <param name="list">A list that will be scanned from beginning to end</param>
 		/// <param name="selector">A function that gets a comparable value for each item</param>
@@ -168,33 +159,40 @@ namespace Loyc.Collections
 		/// If the developer actually wanted the min/max <i>number</i>, he 
 		/// could have just used <c>list.Select(lambda).Max()</c>.
 		/// </remarks>
-		public static T MinItemOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+		public static T MinItemOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T))
 		{
-			int i = IndexOfMin(list, selector, out T value);
+			int i = IndexOfMin(list, selector, out T? value);
 			return i > -1 ? value : defaultValue;
 		}
-		public static T MinItemOrDefault<T, S>(this IEnumerable<T> list, Func<T, S> selector, T defaultValue = default(T))
+		[return: MaybeNull]	// Issue #137: https://github.com/qwertie/ecsharp/issues/137
+		public static T MinItemOrDefault<T, S>(this IEnumerable<T> list, Func<T, S> selector, [AllowNull] T defaultValue = default(T))
 		{
-			int i = IndexOfMin(list, selector, out T value);
+			int i = IndexOfMin(list, selector, out T? value);
 			return i > -1 ? value : defaultValue;
 		}
 
+		// Passing `selector` from MinOrDefault to MinItemOrDefault causes an apparently 
+		// spurious warning. Surprisingly it appears to be a bug in the C# compiler
+		#pragma warning disable 8620
+		[return: MaybeNull] 
+		
 		[Obsolete("This has been renamed to MinItemOrDefault")] 
-		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T)) => 
+		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T)) => 
 		MinItemOrDefault(list, selector, defaultValue);
 
+		#pragma warning disable 8604	// Can't use ! suffix (issue #139)
 		/// <summary>Finds the minimum element (as determined by the selector) and returns it.
 		/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 		public static Maybe<T> MinItem<T>(this IEnumerable<T> list, Func<T, int> selector)
 		{
-			int i = IndexOfMin(list, selector, out T value);
+			int i = IndexOfMin(list, selector, out T? value);
 			return i > -1 ? value : new Maybe<T>();
 		}
 		/// <summary>Finds the minimum element (as determined by the selector) and returns it.
 		/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 		public static Maybe<T> MinItem<T, S>(this IEnumerable<T> list, Func<T, S> selector)
 		{
-			int i = IndexOfMin(list, selector, out T value);
+			int i = IndexOfMin(list, selector, out T? value);
 			return i > -1 ? value : new Maybe<T>();
 		}
 		/// <summary>Finds the maximum element's index in the list</summary>
@@ -218,7 +216,7 @@ namespace Loyc.Collections
 		IndexOfMax < T > (source, selector, out T _);
 
 		/// <summary>Finds the maximum element's index in the list, and returns it with the item itself</summary>
-		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector, out T min)
+		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
 		{
 			min = default(T);
 			var e = source.GetEnumerator();
@@ -263,7 +261,7 @@ namespace Loyc.Collections
 		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
 		IndexOfMin<T, R>(source, selector, out T _);
 		/// <summary>Finds the maximum element's index in the list</summary>
-		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector, out T min)
+		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{
 			min = default(T);
 			var e = source.GetEnumerator();
@@ -283,7 +281,7 @@ namespace Loyc.Collections
 			}
 			return min_i;
 		}
-
+		[return: MaybeNull] 
 		/// <summary>Finds the maximum element in the list (given some selector) and returns it</summary>
 		/// <param name="list">A list that will be scanned from beginning to end</param>
 		/// <param name="selector">A function that gets a comparable value for each item</param>
@@ -295,33 +293,40 @@ namespace Loyc.Collections
 		/// If the developer actually wanted the min/max <i>number</i>, he 
 		/// could have just used <c>list.Select(lambda).Max()</c>.
 		/// </remarks>
-		public static T MaxItemOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+		public static T MaxItemOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T))
 		{
-			int i = IndexOfMax(list, selector, out T value);
+			int i = IndexOfMax(list, selector, out T? value);
 			return i > -1 ? value : defaultValue;
 		}
-		public static T MaxItemOrDefault<T, S>(this IEnumerable<T> list, Func<T, S> selector, T defaultValue = default(T))
+		[return: MaybeNull]	// Issue #137: https://github.com/qwertie/ecsharp/issues/137
+		public static T MaxItemOrDefault<T, S>(this IEnumerable<T> list, Func<T, S> selector, [AllowNull] T defaultValue = default(T))
 		{
-			int i = IndexOfMax(list, selector, out T value);
+			int i = IndexOfMax(list, selector, out T? value);
 			return i > -1 ? value : defaultValue;
 		}
 
+		// Passing `selector` from MinOrDefault to MinItemOrDefault causes an apparently 
+		// spurious warning. Surprisingly it appears to be a bug in the C# compiler
+		#pragma warning disable 8620
+		[return: MaybeNull] 
+		
 		[Obsolete("This has been renamed to MaxItemOrDefault")] 
-		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T)) => 
+		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T)) => 
 		MaxItemOrDefault(list, selector, defaultValue);
 
+		#pragma warning disable 8604	// Can't use ! suffix (issue #139)
 		/// <summary>Finds the maximum element (as determined by the selector) and returns it.
 		/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 		public static Maybe<T> MaxItem<T>(this IEnumerable<T> list, Func<T, int> selector)
 		{
-			int i = IndexOfMax(list, selector, out T value);
+			int i = IndexOfMax(list, selector, out T? value);
 			return i > -1 ? value : new Maybe<T>();
 		}
 		/// <summary>Finds the maximum element (as determined by the selector) and returns it.
 		/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 		public static Maybe<T> MaxItem<T, S>(this IEnumerable<T> list, Func<T, S> selector)
 		{
-			int i = IndexOfMax(list, selector, out T value);
+			int i = IndexOfMax(list, selector, out T? value);
 			return i > -1 ? value : new Maybe<T>();
 		}
 
@@ -385,7 +390,8 @@ namespace Loyc.Collections
 			// I am no expert in hash functions.
 			int hc = 517617279;	// a random number
 			foreach (T item in list)
-				hc = hc * 257 ^ comp.GetHashCode(item);
+				// GetHashCode(null) works (returns 0) but gives us a warning anyway
+				hc = hc * 257 ^ comp.GetHashCode(item!);
 			return hc;
 		}
 

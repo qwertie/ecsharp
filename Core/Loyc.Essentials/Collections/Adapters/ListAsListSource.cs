@@ -8,6 +8,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -20,7 +21,7 @@ namespace Loyc.Collections
 		public static IListSource<T> AsListSource<T>(this IList<T> c)
 		{
 			if (c == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("c")]
 			var listS = c as IListSource<T>;
 			if (listS != null)
 				return listS;
@@ -65,6 +66,7 @@ namespace Loyc.Collections
 					return _obj[index];
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_obj.Count) {

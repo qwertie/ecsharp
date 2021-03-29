@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 #if !CompactFramework
 using System.Runtime.Serialization;
 #else
@@ -57,10 +58,10 @@ namespace Loyc.Threading
 	/// </remarks>
 	public class ThreadEx
 	{
-		protected Thread _parent; // set by Start()
+		protected Thread? _parent; // set by Start()
 		protected Thread _thread; // underlying thread
-		protected ThreadStart _ts1;
-		protected ParameterizedThreadStart _ts2;
+		protected ThreadStart? _ts1;
+		protected ParameterizedThreadStart? _ts2;
 		protected int _startState = 0;
 		[ThreadStatic]
 		static bool _areThreadVarsInitialized;
@@ -73,14 +74,14 @@ namespace Loyc.Threading
 		/// than Thread.Start()).
 		/// </summary>
 		/// <remarks>The Start() method blocks until this event completes.</remarks>
-		public static event EventHandler<ThreadStartEventArgs> ThreadStarting;
+		public static event EventHandler<ThreadStartEventArgs>? ThreadStarting;
 
 		/// <summary>
 		/// This event is called when a thread is stopping, if the thread is stopping
 		/// gracefully and provided that it was started by the Start() method of this 
 		/// class (rather than Thread.Start()).
 		/// </summary>
-		public static event EventHandler<ThreadStartEventArgs> ThreadStopping;
+		public static event EventHandler<ThreadStartEventArgs>? ThreadStopping;
 
 		public ThreadEx(ParameterizedThreadStart start)
 			{ _thread = new Thread(ThreadStart); _ts2 = start; }
@@ -104,7 +105,7 @@ namespace Loyc.Threading
 		/// </summary><remarks>
 		/// Once the thread terminates, it CANNOT be restarted with another call to Start.
 		/// </remarks>
-		public virtual void Start(object parameter)
+		public virtual void Start(object? parameter)
 		{
 			if (Interlocked.CompareExchange(ref _startState, 1, 0) != 0)
 				throw new ThreadStateException("The thread has already been started.");
@@ -120,16 +121,16 @@ namespace Loyc.Threading
 				Thread.Sleep(0);
 		}
 
-		private object _startParameter;
+		private object? _startParameter;
 		protected virtual void ThreadStart()
 		{
-			object parameter = _startParameter;
+			object? parameter = _startParameter;
 			_startParameter = null;
 			Debug.Assert(_thread == Thread.CurrentThread);
 
 			try {
 				// Inherit thread-local variables from parent
-				InheritThreadLocalVars(_parent.ManagedThreadId);
+				InheritThreadLocalVars(_parent!.ManagedThreadId);
 
 				// Note that Start() is still running in the parent thread
 				if (ThreadStarting != null)
@@ -140,12 +141,12 @@ namespace Loyc.Threading
 				if (_ts2 != null)
 					_ts2(parameter);
 				else
-					_ts1();
+					_ts1!();
 			} finally {
 				_startState = 3; // ensure parent thread continues
 
 				if (ThreadStopping != null)
-					ThreadStopping(this, new ThreadStartEventArgs(_parent, this));
+					ThreadStopping(this, new ThreadStartEventArgs(_parent!, this));
 
 				DeinitThreadLocalVars();
 			}
@@ -157,7 +158,7 @@ namespace Loyc.Threading
 			if (!_areThreadVarsInitialized && (threadId = Thread.CurrentThread.ManagedThreadId) != parentThreadId) {
 				_areThreadVarsInitialized = true;
 				for (int i = 0; i < _TLVs.Count; i++) {
-					ThreadLocalVariableBase v = _TLVs[i].Target();
+					ThreadLocalVariableBase? v = _TLVs[i].Target();
 					if (v != null)
 						v.Propagate(parentThreadId, threadId);
 				}
@@ -169,7 +170,7 @@ namespace Loyc.Threading
 		{
 			// Notify thread-local variables of termination
 			for (int i = 0; i < _TLVs.Count; i++) {
-				ThreadLocalVariableBase v = _TLVs[i].Target();
+				ThreadLocalVariableBase? v = _TLVs[i].Target();
 				if (v != null)
 					v.Terminate(Thread.CurrentThread.ManagedThreadId);
 			}
@@ -226,7 +227,7 @@ namespace Loyc.Threading
 		/// <summary>
 		/// Gets or sets the name of the thread.
 		/// </summary>
-		public string Name { get { return _thread.Name; } set { _thread.Name = value; } }
+		public string? Name { get { return _thread.Name; } set { _thread.Name = value; } }
 		/// <summary>
 		/// Gets or sets a value indicating the scheduling priority of a thread.
 		/// </summary>
@@ -273,7 +274,7 @@ namespace Loyc.Threading
 		public static void Sleep(int millisecondsTimeout) { Thread.Sleep(millisecondsTimeout); }
 
 		public Thread Thread { get { return _thread; } }
-		public Thread ParentThread { get { return _parent; } }
+		public Thread? ParentThread { get { return _parent; } }
 
 		#if !CompactFramework
 		public bool IsAlive { 
@@ -470,6 +471,7 @@ namespace Loyc.Threading
 		protected Dictionary<int, T> _tls = new Dictionary<int,T>(5);
 		protected TinyReaderWriterLock _lock = TinyReaderWriterLock.New;
 		protected Func<T,T> _propagator = delegate(T v) { return v; };
+		[AllowNull] // we would like to allow null if and only if T is nullable. There's no way to do it AFAIK
 		protected T _fallbackValue;
 		protected bool _autoFallback;
 
@@ -494,7 +496,7 @@ namespace Loyc.Threading
 		/// <param name="propagator">A function that copies (and possibly 
 		/// modifies) the Value from a parent thread when starting a new 
 		/// thread.</param>
-		public ThreadLocalVariable(T initialValue, T fallbackValue, Func<T, T> propagator)
+		public ThreadLocalVariable(T initialValue, T fallbackValue, Func<T, T>? propagator)
 		{
 			_fallbackValue = fallbackValue;
 			Value = initialValue;
@@ -505,7 +507,7 @@ namespace Loyc.Threading
 
 		internal override void Propagate(int parentThreadId, int childThreadId)
 		{
-			T value;
+			T? value;
 
 			_lock.EnterWriteLock();
 			try {
@@ -549,7 +551,7 @@ namespace Loyc.Threading
 		public T Value { 
 			get {
 				_lock.EnterReadLock();
-				T value;
+				T? value;
 				// Wrapping in a try-finally hurts performance by about 11% in a 
 				// Release build. Even though TryGetValue doesn't throw, an 
 				// asynchronous thread abort is theoretically possible :(

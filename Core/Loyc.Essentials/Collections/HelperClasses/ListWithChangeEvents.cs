@@ -27,8 +27,8 @@ namespace Loyc.Collections.Impl
 	{
 		public ListWithChangeEvents(TList list) : base(list) { }
 
-		public virtual event ListChangingHandler<T, IListSource<T>> ListChanging;
-		public virtual event ListChangingHandler<T, IListSource<T>> ListChanged;
+		public virtual event ListChangingHandler<T, IListSource<T>>? ListChanging;
+		public virtual event ListChangingHandler<T, IListSource<T>>? ListChanged;
 
 		public override T this[int index]
 		{

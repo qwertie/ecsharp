@@ -18,21 +18,22 @@ namespace Loyc
 	public class Holder<T> : IMValue<T>
 	{
 		public Holder(T value) { Value = value; }
-		public Holder() { }
+		// Nullability: We want a way to disallow this constructor if T is not nullable
+		public Holder() { Value = default(T)!; }
 
 		/// <summary>Any value of type T.</summary>
 		public T Value;
 		T IValue<T>.Value { get { return Value; } }
 		T IMValue<T>.Value { get { return Value; } set { Value = value; } }
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is Holder<T>)
 				obj = ((Holder<T>)obj).Value;
 			return Value == null ? obj == null : Value.Equals(obj);
 		}
 		public override int GetHashCode() => Value == null ? 0 : Value.GetHashCode();
-		public override string ToString() => Value?.ToString();
+		public override string? ToString() => Value?.ToString();
 		public static implicit operator Holder<T>(T value) { return new Holder<T>(value); }
 	}
 }

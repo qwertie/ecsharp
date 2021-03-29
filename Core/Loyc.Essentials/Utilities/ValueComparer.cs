@@ -37,7 +37,8 @@ namespace Loyc
 			else {
 				// return new ReferenceComparer<T>()
 				Type type = typeof(ReferenceComparer<>).MakeGenericType(new Type[] { typeof(T) });
-				return (EqualityComparer<T>)Activator.CreateInstance(type);
+				// Surely Activator.CreateInstance doesn't return null?
+				return (EqualityComparer<T>)Activator.CreateInstance(type)!;
 			}
 		}
 	}
@@ -46,11 +47,11 @@ namespace Loyc
 	{
 		public ReferenceComparer() {}
 
-		public override bool Equals(T x, T y)
+		public override bool Equals(T? x, T? y)
 		{
 			return x == y;
 		}
-		public override int GetHashCode(T obj)
+		public override int GetHashCode(T? obj)
 		{
 			if (obj == null)
 				return 0;

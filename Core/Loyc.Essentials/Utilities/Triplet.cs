@@ -34,10 +34,10 @@ namespace Loyc
 		public T3 Item3 { [DebuggerStepThrough] get { return C; } set { C = value; } }
 
 		int ITuple.Length => 3;
-		public object this[int index] => 
+		public object? this[int index] => 
 			index == 0 ? Item1 : 
 			index == 1 ? Item2 : 
-			index == 2 ? (object)Item3 :
+			index == 2 ? (object?)Item3 :
 			throw new IndexOutOfRangeException();
 
 		static readonly EqualityComparer<T1> T1Comp = EqualityComparer<T1>.Default;
@@ -50,7 +50,7 @@ namespace Loyc
 		}
 		public static bool operator ==(Triplet<T1, T2, T3> a, Triplet<T1, T2, T3> b) { return a.Equals(b); }
 		public static bool operator !=(Triplet<T1, T2, T3> a, Triplet<T1, T2, T3> b) { return !a.Equals(b); }
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is Triplet<T1, T2, T3>)
 				return Equals((Triplet<T1, T2, T3>) obj);
@@ -58,7 +58,8 @@ namespace Loyc
 		}
 		public override int GetHashCode()
 		{
-			return T1Comp.GetHashCode(A) ^ T2Comp.GetHashCode(B) ^ T3Comp.GetHashCode(C);
+			// GetHashCode(null) works (returns 0) but gives us a warning anyway
+			return T1Comp.GetHashCode(A!) ^ T2Comp.GetHashCode(B!) ^ T3Comp.GetHashCode(C!);
 		}
 		public override string ToString()
 		{

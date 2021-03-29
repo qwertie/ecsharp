@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -11,8 +12,8 @@ namespace Loyc.Collections
 	{
 		public static readonly IEnumerator<T> Value = new EmptyEnumerator<T>();
 
-		public T Current { get { return default(T); } }
-		object IEnumerator.Current { get { return this.Current; } }
+		public T Current => default(T)!;
+		object? IEnumerator.Current => this.Current;
 		public void Dispose() { }
 		public bool MoveNext() { return false; }
 		public void Reset() { }

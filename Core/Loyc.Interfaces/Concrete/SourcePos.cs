@@ -47,9 +47,9 @@ namespace Loyc.Syntax
 				return string.Format("{0}:{1}", Line, Column);
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			LineAndCol other = obj as LineAndCol;
+			LineAndCol? other = obj as LineAndCol;
 			if (other == null)
 				return false;
 			return other._line == _line && other._column == _column;
@@ -71,7 +71,7 @@ namespace Loyc.Syntax
 	[Obsolete("Please use the new name of this class: LineColumnFile")]
 	public class SourcePos : LineAndColumn, ILineColumnFile
 	{
-		protected SourcePos() { }
+		protected SourcePos() { _fileName = ""; }
 		public SourcePos(string FileName, int Line, int PosInLine)
 			: base(Line, PosInLine) { _fileName = FileName ?? ""; }
 		
@@ -85,9 +85,9 @@ namespace Loyc.Syntax
 			else
 				return string.Format("{0}({1},{2})", FileName, Line, Column);
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			SourcePos other = obj as SourcePos;
+			SourcePos? other = obj as SourcePos;
 			if (other == null)
 				return false;
 			return other._fileName == _fileName && base.Equals(obj);

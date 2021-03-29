@@ -1,6 +1,7 @@
 using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Loyc.Collections
@@ -65,6 +66,7 @@ namespace Loyc.Collections
 		IListSource<T> _list;
 		public UpCastListSource(IListSource<T> original) { _list = original; }
 		
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public override TOut TryGet(int index, out bool fail)
 		{
 			return _list.TryGet(index, out fail);

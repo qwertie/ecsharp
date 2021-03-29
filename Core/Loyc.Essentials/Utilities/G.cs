@@ -145,12 +145,12 @@ namespace Loyc
 			static Comparison<T> GetC() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo")!);
 			}
 			static Func<T, T, int> GetF() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo")!);
 			}
 		}
 		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
@@ -192,7 +192,7 @@ namespace Loyc
 			return list;
 		}
 
-		static char[] _invalids;
+		static char[]? _invalids;
 
 		/// <summary>Replaces characters in <c>text</c> that are not allowed in 
 		/// file names with the specified replacement character.</summary>
@@ -232,7 +232,7 @@ namespace Loyc
 			return condition;
 		}
 
-		static Dictionary<char, string> HtmlEntityTable;
+		static Dictionary<char, string>? HtmlEntityTable;
 
 		/// <summary>Gets a bare HTML entity name for an ASCII character, or null if
 		/// there is no entity name for the given character, e.g. 
@@ -242,7 +242,7 @@ namespace Loyc
 		/// Some HTML entities have multiple names; this function returns one of them.
 		/// There is a name in this table for all ASCII punctuation characters.
 		/// </remarks>
-		public static string BareHtmlEntityNameForAscii(char c)
+		public static string? BareHtmlEntityNameForAscii(char c)
 		{
 			if (HtmlEntityTable == null)
 				HtmlEntityTable = new Dictionary<char,string>() {
@@ -256,8 +256,7 @@ namespace Loyc
 					{'_', "lowbar"}, {'`', "grave"},  {'{', "lcub"},   {'}', "rcub"},
 					{'|', "vert"},   {'~', "tilde"}, // {(char)0xA0, "nbsp"}
 				};
-			string name;
-			HtmlEntityTable.TryGetValue(c, out name);
+			HtmlEntityTable.TryGetValue(c, out string? name);
 			return name;
 		}
 
@@ -506,7 +505,7 @@ namespace Loyc
 		/// ensure that the hyphen is actually displayed on the screen. For simplicity, this 
 		/// replacement is not part of the wrapping algorithm itself. 
 		/// </remarks>
-		public static List<string> WordWrap(IEnumerable<Pair<int, int>> paragraph, int lineWidth, Func<int, WordWrapCharType> getCharType = null)
+		public static List<string> WordWrap(IEnumerable<Pair<int, int>> paragraph, int lineWidth, Func<int, WordWrapCharType>? getCharType = null)
 		{
 			getCharType = getCharType ?? _getWordWrapCharType;
 			if (lineWidth == int.MaxValue)

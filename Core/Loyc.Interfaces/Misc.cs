@@ -20,5 +20,6 @@ namespace Loyc
 	/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
 	/// <param name="args">Optional arguments to fill in placeholders in the format 
 	/// string.</param>
-	public delegate void WriteMessageFn(Severity type, object context, string format, params object[] args);
+	public delegate void WriteMessageFn(Severity type, object? context, string format, params object?[] args);
+	public delegate void WriteMessageFn<Context>(Severity type, Context context, string format, params object?[] args);
 }

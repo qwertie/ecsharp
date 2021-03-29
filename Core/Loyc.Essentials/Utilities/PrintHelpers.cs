@@ -43,7 +43,7 @@ namespace Loyc.Syntax
 				if (fail) break;
 				usedEscapes |= EscapeCStyle(c, s2, flags, quoteType);
 			}
-			if (!usedEscapes && s.InternalString.Length == s.Length)
+			if (!usedEscapes && s.InternalString?.Length == s.Length)
 				return s.InternalString;
 			return s2.ToString();
 		}

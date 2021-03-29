@@ -80,9 +80,9 @@ namespace Loyc
 
 		public bool Equals(Maybe<T> obj)
 			=> _hasValue == obj._hasValue && (!_hasValue || (_value == null ? obj.Value == null : _value.Equals(obj.Value)));
-		public bool Equals(IMaybe<T> obj) => obj != null
+		public bool Equals(IMaybe<T>? obj) => obj != null
 			&& _hasValue == obj.HasValue && (!_hasValue || (_value == null ? obj.Value == null : _value.Equals(obj.Value)));
-		public override bool Equals(object obj) => Equals(obj as IMaybe<T>);
+		public override bool Equals(object? obj) => Equals(obj as IMaybe<T>);
 		public override int GetHashCode() => !_hasValue ? -1 : _value == null ? 0 : _value.GetHashCode();
 
 		public override string ToString()

@@ -58,7 +58,7 @@ namespace Loyc
 		public static readonly UString Null = default(UString);
 		public static readonly UString Empty = new UString("");
 
-		private readonly string _str;
+		private readonly string? _str;
 		private int _start, _count;
 		
 		/// <summary>Initializes a UString slice.</summary>
@@ -72,7 +72,7 @@ namespace Loyc
 		/// slice is reduced to <c>list.Length - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public UString(string str, int start, int count = int.MaxValue)
+		public UString(string? str, int start, int count = int.MaxValue)
 		{
 			if (start < 0)
 				throw new ArgumentException("UString: the start index was below zero.");
@@ -89,13 +89,13 @@ namespace Loyc
 			}
 			_count = count;
 		}
-		public UString(string str)
+		public UString(string? str)
 		{
 			_str = str;
 			_start = 0;
 			_count = str == null ? 0 : str.Length;
 		}
-		private UString(int start, int count, string str)
+		private UString(int start, int count, string? str)
 		{
 			// Constructs without bounds checking
 			_str = str;
@@ -111,7 +111,7 @@ namespace Loyc
 		/// form of a triple (string, start index, count). In order to call such an
 		/// old-style API using a slice, one must be able to extract the internal
 		/// string and start index values.</remarks>
-		public string InternalString { get { return _str; } }
+		public string? InternalString { get { return _str; } }
 		public int InternalStart { get { return _start; } }
 		public int InternalStop { get { return _start + _count; } }
 
@@ -188,7 +188,7 @@ namespace Loyc
 			{
 				fail = false;
 				_count--;
-				return _str[_start++];
+				return _str![_start++];
 			}
 			fail = true;
 			return default(char);
@@ -199,7 +199,7 @@ namespace Loyc
 			{
 				fail = false;
 				_count--;
-				return _str[_start + _count];
+				return _str![_start + _count];
 			}
 			fail = true;
 			return default(char);
@@ -226,7 +226,7 @@ namespace Loyc
 		public uchar TryDecodeAt(int index)
 		{
 			if ((uint)index < (uint)_count) {
-				int c = _str[_start + index];
+				int c = _str![_start + index];
 				if (c < 0xD800 || c > 0xDBFF || (uint)(index + 1) >= (uint)_count)
 					return c;
 				int c1 = _str[_start + index + 1];
@@ -261,7 +261,7 @@ namespace Loyc
 			get { 
 				if ((uint)index >= (uint)_count)
 					ThrowIndexOutOfRange(index);
-				return _str[_start + index];
+				return _str![_start + index];
 			}
 		}
 		/// <summary>Returns the code unit (16-bit value) at the specified index,
@@ -271,7 +271,7 @@ namespace Loyc
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get {
 				if ((uint)index < (uint)_count)
-					return _str[_start + index];
+					return _str![_start + index];
 				return defaultValue;
 			}
 		}
@@ -290,7 +290,7 @@ namespace Loyc
 		{
 			if ((uint)index < (uint)_count) {
 				fail = false;
-				return _str[_start + index];
+				return _str![_start + index];
 			}
 			fail = true;
 			return default(char);
@@ -305,7 +305,7 @@ namespace Loyc
 					throw new ArgumentOutOfRangeException("start", start, "The start index was below zero.");
 				count = 0;
 			}
-			Debug.Assert(_start <= _str.Length);
+			Debug.Assert(_start == 0 || _start <= _str!.Length);
 			if (start > _count)
 				start = _count;
 			if (count > _count - start)
@@ -315,27 +315,32 @@ namespace Loyc
 
 		#region GetHashCode, Equals, ToString
 
+		/// <summary>Computes a hashcode. Note: empty strings are equal and produce the same 
+		/// hashcode whether or not the underlying string is null.</summary>
 		public override int GetHashCode()
 		{
 			int hc1 = 352654597, hc2 = hc1;
 			for (int i = _start, e = _start + _count; i < e; i++) {
-				hc1 = ((hc1 << 5) + hc1 + (hc1 >> 27)) ^ _str[i];
+				hc1 = ((hc1 << 5) + hc1 + (hc1 >> 27)) ^ _str![i];
 				if (++i == e) break;
 				hc2 = ((hc2 << 5) + hc2 + (hc2 >> 27)) ^ _str[i];
 			}
 			return hc1 + hc2 * 1566083941;
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return (obj is UString) && Equals((UString)obj);
 		}
+		/// <summary>Compares for equality. Note: empty strings are equal and produce 
+		/// the same hashcode whether or not the underlying string is null.</summary>
 		public bool Equals(UString other) { return Equals(other, false); }
 		public bool Equals(UString other, bool ignoreCase)
 		{
 			if (other._count != _count) return false;
-			return SubstringEqualHelper(_str, _start, other, ignoreCase);
+			// If _count = 0 = other._count, SubstringEqualHelper doesn't use _str, so _str! is safe
+			return SubstringEqualHelper(_str!, _start, other, ignoreCase);
 		}
-		public override string ToString()
+		public override string? ToString()
 		{
 			// Don't worry: var x = "x"; ReferenceEquals(x.Substring(0,1), x) == true
 			return _str?.Substring(_start, _count);
@@ -346,7 +351,7 @@ namespace Loyc
 		public static bool operator ==(UString x, UString y) { return x.Equals(y); }
 		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
 		public static explicit operator string(UString s) { return s._str?.Substring(s._start, s._count) ?? ""; }
-		public static implicit operator UString(string s) { return new UString(s); }
+		public static implicit operator UString(string? s) { return new UString(s); }
 
 		/// <summary>Synonym for Slice()</summary>
 		public UString Substring(int start, int count)
@@ -413,6 +418,8 @@ namespace Loyc
 							return was;
 					}
 				} else {
+					if (_str == null)
+						return this;
 					int i = _str.IndexOf((char)what, _start, _count);
 					if (i == -1) 
 						return new UString(InternalStop, 0, _str);
@@ -443,20 +450,22 @@ namespace Loyc
 				what = what.ToUpper();
 			char first = what[0];
 			int i = _start, last = _start + _count - what.Length;
+			Debug.Assert(_str != null || i == last);
 			if (ignoreCase)
 				for (; i <= last; i++) {
-					if (char.ToUpperInvariant(_str[i]) == first && EqualsAtCaseInsensitive(i, what))
+					if (char.ToUpperInvariant(_str![i]) == first && EqualsAtCaseInsensitive(i, what))
 						return new UString(i, _start + _count - i, _str);
 				}
 			else
 				for (; i <= last; i++) {
-					if (_str[i] == first && EqualsAt(i, what))
+					if (_str![i] == first && EqualsAt(i, what))
 						return new UString(i, _start + _count - i, _str);
 				}
 			return new UString(_start + _count, 0, _str);
 		}
 		private bool EqualsAtCaseInsensitive(int i, UString what)
 		{
+			Debug.Assert(_str != null);
 			for (int w = 0; w < what.Length; w++) {
 				if (char.ToUpperInvariant(_str[i++]) != what[w])
 					return false;
@@ -465,6 +474,7 @@ namespace Loyc
 		}
 		private bool EqualsAt(int i, UString what)
 		{
+			Debug.Assert(_str != null);
 			for (int w = 0; w < what.Length; w++) {
 				if (_str[i++] != what[w])
 					return false;
@@ -472,14 +482,14 @@ namespace Loyc
 			return true;
 		}
 
-		private bool IsSmallSlice { get { return (_count << 1) < (_str.Length - 4); } }
+		private bool IsSmallSlice { get { return _str != null && (_count << 1) < (_str.Length - 4); } }
 		
 		/// <summary>This method makes a copy of the string if this is a 
 		/// sufficiently small slice of a larger string.</summary>
 		/// <returns>returns ToString() if <c>InternalString.Length - Length > maxExtra</c>, otherwise this.</returns>
 		public UString ShedExcessMemory(int maxExtra)
 		{
-			if (_str.Length - _count > maxExtra)
+			if (_str != null && _str.Length - _count > maxExtra)
 				return ToString();
 			else
 				return this;
@@ -491,7 +501,7 @@ namespace Loyc
 			var sb = new StringBuilder(Length);
 			bool change = false;
 			for (int i = _start; i < _start + _count; i++) {
-				char c = _str[i], uc = char.ToUpperInvariant(c);
+				char c = _str![i], uc = char.ToUpperInvariant(c);
 				if (c != uc) change = true;
 				sb.Append(uc);
 			}
@@ -505,14 +515,16 @@ namespace Loyc
 		{
 			if (what.Length > Length)
 				return false;
-			return SubstringEqualHelper(_str, _start, what, ignoreCase);
+			// If Length = 0 = what.Length, SubstringEqualHelper doesn't use _str, so _str! is safe
+			return SubstringEqualHelper(_str!, _start, what, ignoreCase);
 		}
 
 		public bool EndsWith(UString what, bool ignoreCase = false)
 		{
 			if (what.Length > Length)
 				return false;
-			return SubstringEqualHelper(_str, _start + Length - what.Length, what, ignoreCase);
+			// If Length = 0 = what.Length, SubstringEqualHelper doesn't use _str, so _str! is safe
+			return SubstringEqualHelper(_str!, _start + Length - what.Length, what, ignoreCase);
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -572,16 +584,18 @@ namespace Loyc
 
 		public int? IndexOf(char find, bool ignoreCase = false)
 		{
-			if (ignoreCase) {
-				int stop = _start + _count;
-				find = char.ToUpperInvariant(find);
-				for (int i = _start; i < stop; i++)
-					if (char.ToUpperInvariant(_str[i]) == find)
+			if (_str != null) {
+				if (ignoreCase) {
+					int stop = _start + _count;
+					find = char.ToUpperInvariant(find);
+					for (int i = _start; i < stop; i++)
+						if (char.ToUpperInvariant(_str![i]) == find)
+							return i - _start;
+				} else {
+					int i = _str.IndexOf(find, _start, _count);
+					if (i > -1)
 						return i - _start;
-			} else {
-				int i = _str.IndexOf(find, _start, _count);
-				if (i > -1)
-					return i - _start;
+				}
 			}
 			return null;
 		}
@@ -589,7 +603,7 @@ namespace Loyc
 		{
 			int end = _start + _count - find.Length;
 			for (int i = _start; i <= end; i++) {
-				if (SubstringEqualHelper(_str, i, find, ignoreCase))
+				if (SubstringEqualHelper(_str!, i, find, ignoreCase))
 					return i - _start;
 			}
 			return null;

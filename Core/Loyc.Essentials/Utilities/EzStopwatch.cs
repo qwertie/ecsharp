@@ -48,7 +48,7 @@ namespace Loyc
 	/// </remarks>
 	public struct EzStopwatch
 	{
-		Stopwatch _timer;
+		Stopwatch? _timer;
 		long _offs;
 
 		public EzStopwatch(bool start)
@@ -74,7 +74,7 @@ namespace Loyc
 		public long LongMillisec
 		{
 			get { return (_timer == null ? 0 : _timer.ElapsedMilliseconds) - _offs; }
-			set { AutoInit(); _offs = _timer.ElapsedMilliseconds - value; }
+			set { AutoInit(); _offs = _timer!.ElapsedMilliseconds - value; }
 		}
 
 		/// <summary>Restarts the timer from zero (unpausing it if it is paused), 
@@ -86,14 +86,14 @@ namespace Loyc
 			_offs += ms; // reset to zero
 			if ((int)_offs != _offs)
 				Reset(); // _base getting huge => re-center on zero
-			_timer.Start();
+			_timer!.Start();
 			return ms < int.MinValue ? int.MinValue :
 			       ms > int.MaxValue ? int.MaxValue : (int)ms;
 		}
 		/// <summary>Resets the timer to 0 and pauses it there.</summary>
 		public void Reset()
 		{
-			_timer.Reset();
+			_timer?.Reset();
 			_offs = 0;
 		}
 		public bool Paused 
@@ -108,7 +108,7 @@ namespace Loyc
 		public void Resume()
 		{
 			AutoInit();
-			_timer.Start();
+			_timer!.Start();
 		}
 		/// <summary>Restarts the timer from zero if the specified number of 
 		/// milliseconds have passed, and returns the former value of Millisec.</summary>

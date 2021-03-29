@@ -1,6 +1,7 @@
 using Loyc.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -46,6 +47,7 @@ namespace Loyc.Collections
 		/// <see cref="TryGetExt.TryGet{K, V}(ITryGet{K, V}, K)"/> is provided that returns
 		/// <see cref="Maybe{V}"/>.
 		/// </remarks>
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		V TryGet(K key, out bool fail);
 	}
 
@@ -61,13 +63,13 @@ namespace Loyc.Collections
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Maybe<V> TryGet<K, V>(this ITryGet<K, V> self, K key)
 		{
-			V value = self.TryGet(key, out bool fail);
+			V value = self.TryGet(key, out bool fail)!;
 			return fail ? default(Maybe<V>) : new Maybe<V>(value);
 		}
 
 		public static Maybe<T> TryGet<T>(this ITryGet<int, T> self, int key)
 		{
-			T value = self.TryGet(key, out bool fail);
+			T value = self.TryGet(key, out bool fail)!;
 			return fail ? default(Maybe<T>) : new Maybe<T>(value);
 		}
 
@@ -76,10 +78,15 @@ namespace Loyc.Collections
 		/// <param name="key">A lookup key that might be associated with a value in this 
 		/// object. If K is an integer, this value could be an index into a list.</param>
 		/// <param name="defaultValue">A value to return if lookup fails.</param>
+		/// <remarks>
+		/// There's no attribute like [return: MaybeNullIfNull("defaultValue")], so 
+		/// instead defaultValue is NOT marked with [AllowNull]. If you want to use
+		/// defaultValue == null, use the other overload: x.TryGet(key).Or(null).
+		/// </remarks>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static V TryGet<K, V>(this ITryGet<K, V> self, K key, V defaultValue)
 		{
-			V value = self.TryGet(key, out bool fail);
+			V value = self.TryGet(key, out bool fail)!;
 			return fail ? defaultValue : value;
 		}
 
@@ -108,12 +115,15 @@ namespace Loyc.Collections
 
 	}
 
+	#pragma warning disable 8714
+
 	/// <summary>Combines <see cref="IReadOnlyDictionary{K, V}"/> with related interfaces
 	/// <see cref="IIndexed{K, V}"/>, <see cref="ITryGet{K, V}"/> and 
 	/// <see cref="ISource{KeyValuePair{K,V}}"/>.</summary>
 	/// <typeparam name="K">Used for lookups</typeparam>
 	/// <typeparam name="V">Type of value associated with each key</typeparam>
 	public interface IDictionarySource<K, V> : IReadOnlyDictionary<K, V>, IIndexed<K, V>, ITryGet<K, V>, ISource<KeyValuePair<K, V>>
+		//where K: notnull
 	{
 	}
 }

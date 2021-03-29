@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Loyc.Collections
@@ -33,10 +34,10 @@ namespace Loyc.Collections
 		/// <param name="value">A variable that will be changed to the retrieved value. If the index is not valid, this variable is left unmodified.</param>
 		/// <returns>True on success, or false if the index was not valid.</returns>
 		[Obsolete("Please use another overload (TryGetExt.TryGet()); this one will be deleted eventually")]
-		public static bool TryGet<T>(this INegListSource<T> list, int index, ref T value)
+		public static bool TryGet<T>(this INegListSource<T> list, int index, [AllowNull] ref T value)
 		{
 			bool fail;
-			T result = list.TryGet(index, out fail);
+			T result = list.TryGet(index, out fail)!;
 			if (fail)
 				return false;
 			value = result;

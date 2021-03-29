@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -23,7 +24,7 @@ namespace Loyc.Collections
 		public static bool operator ==(ReversedList<T> a, ReversedList<T> b) { return a.Equals(b); }
 		public static bool operator !=(ReversedList<T> a, ReversedList<T> b) { return !a.Equals(b); }
 		/// <summary>Returns true iff the parameter 'obj' is a wrapper around the same object that this object wraps.</summary>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is ReversedList<T> && Equals((ReversedList<T>)obj);
 		}
@@ -33,7 +34,7 @@ namespace Loyc.Collections
 			return _list.GetHashCode();
 		}
 		/// <summary>Returns ToString() of the wrapped object.</summary>
-		public override string ToString()
+		public override string? ToString()
 		{
 			return _list.ToString();
 		}
@@ -135,6 +136,7 @@ namespace Loyc.Collections
 			return true;
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			int c = Count;

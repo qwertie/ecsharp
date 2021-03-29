@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc;
@@ -12,13 +13,15 @@ namespace Loyc.Collections
 	public struct RangeEnumerator<R, T> : IEnumerator<T> where R : IFRange<T>, ICloneable<R>
 	{
 		R _range;
+		[AllowNull]
 		T _current;
+
 		public RangeEnumerator(R range) { _range = R_Clone<R>(range); _current = default(T); }
 
 		public bool MoveNext() { bool empty; _current = _range.PopFirst(out empty); return !empty; }
 		public T Current { get { return _current; } }
 
-		object System.Collections.IEnumerator.Current { get { return Current; } }
+		object? System.Collections.IEnumerator.Current { get { return Current; } }
 		void IDisposable.Dispose() { }
 		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 

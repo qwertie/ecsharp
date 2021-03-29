@@ -10,6 +10,6 @@ namespace Loyc.Collections
 	[Serializable]
 	public static class EmptyList<T>
 	{
-		public static readonly IListAndListSource<T> Value = new Repeated<T>(default(T), 0);
+		public static readonly IListAndListSource<T> Value = new Repeated<T>(default(T)!, 0);
 	}
 }

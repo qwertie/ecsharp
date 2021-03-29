@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -79,7 +80,7 @@ namespace Loyc.Collections
 				=> concatId(IndexOf,Min)<T>(source, selector, out T _);
 
 			[SLComment(#preprocessChild(0, concat(comment, "'s index in the list, and returns it with the item itself</summary>")))]
-			public static int $(out concatId(IndexOf,Min))<T>(this IEnumerable<T> source, Func<T, int> selector, out T min)
+			public static int $(out concatId(IndexOf,Min))<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
 			{
 				min = default(T);
 				var e = source.GetEnumerator();
@@ -124,7 +125,7 @@ namespace Loyc.Collections
 			public static int $(out concatId(IndexOf,Min))<T, R>(this IEnumerable<T> source, Func<T, R> selector)
 				=> IndexOfMin<T, R>(source, selector, out T _);
 			[SLComment(#preprocessChild(0, concat(comment, "'s index in the list</summary>")))]
-			public static int $(out concatId(IndexOf,Min))<T, R>(this IEnumerable<T> source, Func<T, R> selector, out T min)
+			public static int $(out concatId(IndexOf,Min))<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 			{
 				min = default(T);
 				var e = source.GetEnumerator();
@@ -156,33 +157,42 @@ namespace Loyc.Collections
 			/// If the developer actually wanted the min/max <i>number</i>, he 
 			/// could have just used <c>list.Select(lambda).Max()</c>.
 			/// </remarks>
-			public static T $(out concatId(Min,ItemOrDefault))<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T))
+			[return: MaybeNull]
+			public static T $(out concatId(Min,ItemOrDefault))<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T))
 			{
-				int i = concatId(IndexOf,Min)(list, selector, out T value);
+				int i = concatId(IndexOf,Min)(list, selector, out T? value);
 				return i > -1 ? value : defaultValue;
 			}
-			public static T $(out concatId(Min,ItemOrDefault))<T, S>(this IEnumerable<T> list, Func<T, S> selector, T defaultValue = default(T))
+			#rawText("[return: MaybeNull]"); // Issue #137: https://github.com/qwertie/ecsharp/issues/137
+			public static T $(out concatId(Min,ItemOrDefault))<T, S>(this IEnumerable<T> list, Func<T, S> selector, [AllowNull] T defaultValue = default(T))
 			{
-				int i = concatId(IndexOf,Min)(list, selector, out T value);
+				int i = concatId(IndexOf,Min)(list, selector, out T? value);
 				return i > -1 ? value : defaultValue;
 			}
 			
+			// Passing `selector` from MinOrDefault to MinItemOrDefault causes an apparently 
+			// spurious warning. Surprisingly it appears to be a bug in the C# compiler
+			#rawText("#pragma warning disable 8620");
+
+			[return: MaybeNull]
 			[Obsolete(#preprocessChild(1, concat("This has been renamed to ", Min, "ItemOrDefault")))]
-			public static T $(out concatId(Min,OrDefault))<T>(this IEnumerable<T> list, Func<T, int> selector, T defaultValue = default(T)) 
+			public static T $(out concatId(Min,OrDefault))<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T)) 
 				=> concatId(Min,ItemOrDefault)(list, selector, defaultValue);
+
+			#rawText("#pragma warning disable 8604"); // Can't use ! suffix (issue #139)
 
 			[SLComment(#preprocessChild(0, concat(comment, " (as determined by the selector) and returns it.")))]
 			/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 			public static Maybe<T> $(out concatId(Min,Item))<T>(this IEnumerable<T> list, Func<T, int> selector)
 			{
-				int i = concatId(IndexOf,Min)(list, selector, out T value);
+				int i = concatId(IndexOf,Min)(list, selector, out T? value);
 				return i > -1 ? value : new Maybe<T>();
 			}
 			[SLComment(#preprocessChild(0, concat(comment, " (as determined by the selector) and returns it.")))]
 			/// If the list is empty, an empty <see cref="Maybe{T}"/> value is returned.</summary>
 			public static Maybe<T> $(out concatId(Min,Item))<T, S>(this IEnumerable<T> list, Func<T, S> selector)
 			{
-				int i = concatId(IndexOf,Min)(list, selector, out T value);
+				int i = concatId(IndexOf,Min)(list, selector, out T? value);
 				return i > -1 ? value : new Maybe<T>();
 			}
 		}

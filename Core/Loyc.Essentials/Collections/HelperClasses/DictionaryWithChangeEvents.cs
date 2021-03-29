@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Loyc.Collections;
 
+// They want me to put a "where K: notnull" constraint on these. I disagree. The warning says:
+// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+#pragma warning disable 8714 
+
 namespace Loyc.Collections
 {
 	/// <summary>A dictionary wrapper that provides ListChanging and ListChanged events.
@@ -35,8 +39,8 @@ namespace Loyc.Collections.Impl
 	{
 		public DictionaryWithChangeEvents(TDictionary dictionary) : base(dictionary) { }
 
-		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanging;
-		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>> ListChanged;
+		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>>? ListChanging;
+		public virtual event ListChangingHandler<KeyValuePair<K, V>, IDictionary<K, V>>? ListChanged;
 
 		public override V this[K key]
 		{
@@ -56,7 +60,7 @@ namespace Loyc.Collections.Impl
 			IListSource<KeyValuePair<K, V>> oldItem = EmptyList<KeyValuePair<K, V>>.Value;
 			var sizeChange = 1;
 			var action = NotifyCollectionChangedAction.Add;
-			if (_obj.TryGetValueSafe(key, out V oldValue))
+			if (_obj.TryGetValueSafe(key, out V? oldValue))
 			{
 				oldItem = ListExt.Single(new KeyValuePair<K, V>(key, oldValue));
 				sizeChange = 0;
@@ -130,7 +134,7 @@ namespace Loyc.Collections.Impl
 				return _obj.Remove(key);
 			else
 			{
-				if (!_obj.TryGetValueSafe(key, out V value))
+				if (!_obj.TryGetValueSafe(key, out V? value))
 					return false;
 				var oldItem = ListExt.Single(new KeyValuePair<K, V>(key, value));
 				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, EmptyList<KeyValuePair<K, V>>.Value, oldItem);

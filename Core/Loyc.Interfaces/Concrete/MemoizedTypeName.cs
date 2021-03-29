@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -21,11 +22,12 @@ namespace Loyc
 		/// <returns>Name with generic parameters, as explained in the summary.</returns>
 		/// <remarks>The result is memoized for generic types, so that the name is
 		/// computed only once.</remarks>
-		public static string Get(Type type)
+		[return: NotNullIfNotNull("type")]
+		public static string? Get(Type? type)
 		{
 			if (type == null)
 				return null;
-			string name;
+			string? name;
 			lock (_shortNames)
 			{
 				if (!_shortNames.TryGetValue(type, out name))
@@ -71,7 +73,7 @@ namespace Loyc
 	/// demands more memory and initialization overhead from the CLR.</remarks>
 	public static class MemoizedTypeName<T>
 	{
-		static string _name;
+		static string? _name;
 		public static string Get()
 		{
 			if (_name == null)

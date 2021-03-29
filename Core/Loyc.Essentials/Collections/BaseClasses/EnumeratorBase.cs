@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace Loyc.Collections
 	public abstract class EnumeratorBase<T> : IEnumerator<T>
 	{
 		public abstract bool MoveNext();
+		[AllowNull]
 		private T _current;
 		public T Current
 		{
@@ -20,7 +22,7 @@ namespace Loyc.Collections
 		public void Dispose()
 		{
 		}
-		object System.Collections.IEnumerator.Current
+		object? System.Collections.IEnumerator.Current
 		{
 			get { return Current; }
 		}

@@ -108,7 +108,7 @@ namespace Loyc
 					sb.AppendFormat("{0}: {1}\n", ex.GetType().Name, ex.Message);
 					AppendDataList(ex.Data, sb, "  ", " = ", "\n");
 					sb.Append(ex.StackTrace);
-					if ((ex = ex.InnerException) == null)
+					if ((ex = ex.InnerException!) == null)
 						break;
 					sb.Append("\n\n");
 					sb.Append("Inner exception:".Localized());
@@ -133,10 +133,12 @@ namespace Loyc
 			return AppendDataList(ex.Data, null, linePrefix, keyValueSeparator, newLine).ToString();
 		}
 
-		public static StringBuilder AppendDataList(IDictionary dict, StringBuilder sb, string linePrefix, string keyValueSeparator, string newLine)
+		public static StringBuilder AppendDataList(IDictionary dict, StringBuilder? sb, string linePrefix, string keyValueSeparator, string newLine)
 		{
 			sb = sb ?? new StringBuilder();
+			#pragma warning disable CS8605 // Unboxing a possibly null value.
 			foreach (DictionaryEntry kvp in dict)
+			#pragma warning restore CS8605
 			{
 				sb.Append(linePrefix);
 				sb.Append(kvp.Key);
@@ -175,9 +177,9 @@ namespace Loyc
 		public static void PreserveStackTrace(this Exception exception)
 		{
 			try {
-				MethodInfo preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
+				MethodInfo? preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
 					BindingFlags.Instance | BindingFlags.NonPublic);
-				preserveStackTrace.Invoke(exception, null);
+				preserveStackTrace?.Invoke(exception, null);
 			} catch { }
 		}
 	}

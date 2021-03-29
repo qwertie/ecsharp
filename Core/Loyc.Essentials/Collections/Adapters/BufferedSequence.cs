@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -45,7 +46,7 @@ namespace Loyc.Collections
 	public class BufferedSequence<T> : ListSourceBase<T>
 	{
 		InternalList<T> _buffer = InternalList<T>.Empty;
-		IEnumerator<T> _e; // set to null when ended
+		IEnumerator<T>? _e; // set to null when ended
 
 		public BufferedSequence(IEnumerable<T> e) : this(e.GetEnumerator()) { }
 		public BufferedSequence(IEnumerator<T> e) { _e = e; }
@@ -54,12 +55,13 @@ namespace Loyc.Collections
 		{
 			bool fail;
 			for (int i = 0; ; i++) {
-				T value = TryGet(i, out fail);
+				T? value = TryGet(i, out fail);
 				if (fail) break;
-				yield return value;
+				yield return value!;
 			}
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public override T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_buffer.Count) {

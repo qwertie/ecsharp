@@ -4,6 +4,7 @@ namespace Loyc.Collections.Impl
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.CompilerServices;
 
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
@@ -173,7 +174,7 @@ namespace Loyc.Collections.Impl
 					Capacity = newSize;
 				} else {
 					for (int i = newSize; i < _count; i++)
-						_array[i] = default(T);
+						_array[i] = default(T)!;
 					_count = newSize;
 				}
 			}
@@ -304,7 +305,7 @@ namespace Loyc.Collections.Impl
 
 		public void Pop()
 		{
-			_array[_count - 1] = default(T);
+			_array[_count - 1] = default(T)!;
 			_count--;
 		}
 
@@ -403,6 +404,7 @@ namespace Loyc.Collections.Impl
 		//        subcount = _count - start;
 		//    return InternalList.GetIterator(_array, start, subcount);
 		//}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count) {
@@ -703,7 +705,7 @@ namespace Loyc.Collections.Impl
 			Array.Copy(array, index + 1, array, index, count - index - 1);
 			//for (int i = index; i + 1 < count; i++)
 			//	array[i] = array[i + 1];
-			array[count - 1] = default(T);
+			array[count - 1] = default(T)!; // Clear unused element of the array
 			return count - 1;
 		}
 		
@@ -718,7 +720,7 @@ namespace Loyc.Collections.Impl
 				//for (int i = index; i + removeCount < count; i++)
 				//	array[i] = array[i + removeCount];
 				for (int i = count - removeCount; i < count; i++)
-					array[i] = default(T);
+					array[i] = default(T)!; // Clear unused region of the array
 				return count - removeCount;
 			}
 			return count;
@@ -871,7 +873,7 @@ namespace Loyc.Collections.Impl
 		{
 			private T[] _array;
 			private int _startAt, _index, _stopAt;
-			private T _current;
+			private T? _current;
 
 			public Enumerator(T[] array, int startAt, int stopAt)
 			{
@@ -891,8 +893,8 @@ namespace Loyc.Collections.Impl
 				}
 				return false;
 			}
-			public T Current => _current;
-			object System.Collections.IEnumerator.Current => Current;
+			public T Current => _current!;
+			object? System.Collections.IEnumerator.Current => Current;
 			public void Dispose() { }
 			public void Reset() => _index = _startAt - 1;
 		}

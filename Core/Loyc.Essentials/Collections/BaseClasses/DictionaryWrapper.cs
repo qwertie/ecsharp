@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Loyc.Collections.Impl
 {
+	// They want me to put a "where K: notnull" constraint on this. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714 
+
 	///	<summary>A simple base class that helps you use the decorator pattern on a dictionary.
 	///	By default, all it does is forward every method to the underlying collection
 	///	(including GetHashCode, Equals and ToString). You can change its behavior by
@@ -31,11 +36,12 @@ namespace Loyc.Collections.Impl
 		public virtual bool Remove(K key) => _obj.Remove(key);
 
 		public virtual bool ContainsKey(K key) => _obj.ContainsKey(key);
-		public virtual bool TryGetValue(K key, out V value) => _obj.TryGetValue(key, out value);
+		public virtual bool TryGetValue(K key, [MaybeNullWhen(false)] out V value) => _obj.TryGetValue(key, out value);
+		[return: MaybeNull]
 		public V TryGet(K key, out bool fail)
 		{
 			if (key != null) {
-				fail = !TryGetValue(key, out V value);
+				fail = !TryGetValue(key, out V? value);
 				return value;
 			} else {
 				fail = true;

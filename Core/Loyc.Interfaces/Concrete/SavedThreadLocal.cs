@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Loyc.Threading
@@ -9,7 +10,7 @@ namespace Loyc.Threading
 	/// </summary>
 	public struct SavedThreadLocal<T> : IDisposable
 	{
-		T _oldValue;
+		[AllowNull] T _oldValue;
 		ThreadLocal<T> _variable;
 
 		public SavedThreadLocal(ThreadLocal<T> variable, T newValue)
@@ -23,7 +24,8 @@ namespace Loyc.Threading
 			_variable.Value = _oldValue;
 		}
 
+		[MaybeNull] 
 		public T OldValue { get { return _oldValue; } }
-		public T Value { get { return _variable.Value; } }
+		public T Value { get { return _variable.Value!; } }
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,8 +31,10 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		/// <summary>Maps a list to an array of the same length.</summary>
 		public static R[] SelectArray<T, R>(this ICollection<T> input, Func<T, R> selector)
 		{
+			// There's no attribute like [return: MaybeNullIfNull("input")], but `input` is
+			// not nullable so it won't return null if the contract is followed.
 			if (input == null)
-				return null;
+				return null!;
 			R[] result = new R[input.Count];
 			var e = input.GetEnumerator();
 			for (int i = 0; i < result.Length; i++)

@@ -5,6 +5,7 @@ using System.Collections;
 using Loyc.Threading;
 using System.Text;
 using Loyc.Syntax;
+using Loyc.Collections;
 
 namespace Loyc.MiniTest
 {
@@ -24,16 +25,10 @@ namespace Loyc.MiniTest
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 	public class TestFixtureAttribute : Attribute
 	{
-		private string description;
-
 		/// <summary>
 		/// Descriptive text for this fixture
 		/// </summary>
-		public string Description
-		{
-			get { return description; }
-			set { description = value; }
-		}
+		public string? Description { get; set; }
 	}
 
 	/// <summary>Identifies a method that contains a unit test, or that
@@ -82,18 +77,10 @@ namespace Loyc.MiniTest
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class TestAttribute : Attribute
 	{
-		private string _description;
-		private int _maxParallelThreads;
-		private object _failInfo;
-
 		/// <summary>
 		/// Descriptive text for this test
 		/// </summary>
-		public string Description
-		{
-			get { return _description; }
-			set { _description = value; }
-		}
+		public string? Description { get; set; }
 
 		/// <summary>
 		/// Indicates whether this test can be run in parallel with other tests
@@ -102,16 +89,12 @@ namespace Loyc.MiniTest
 		/// <remarks>This property does not exist in NUnit.</remarks>
 		public bool AllowParallel
 		{
-			get { return _maxParallelThreads > 1; }
+			get { return MaxParallelThreads > 1; }
 			set {
-				if (AllowParallel != value) _maxParallelThreads = (value ? 256 : 1);
+				if (AllowParallel != value) MaxParallelThreads = (value ? 256 : 1);
 			}
 		}
-		public int MaxParallelThreads
-		{
-			get { return _maxParallelThreads; }
-			set { _maxParallelThreads = value; }
-		}
+		public int MaxParallelThreads { get; set; }
 
 		/// <summary>Setting this property is used to indicate that the test is 
 		/// known to fail. It is used to mark tests that should be fixed eventually, 
@@ -122,11 +105,7 @@ namespace Loyc.MiniTest
 		/// backburner to be fixed "someday", or feature requests that have not
 		/// yet been addressed. Setting this property suggests that a failure may 
 		/// be low-priority and may be an old issue.</remarks>
-		public object Fails
-		{
-			get { return _failInfo; }
-			set { _failInfo = value; }
-		}
+		public object? Fails { get; set; }
 	}
 
 	/// <summary>
@@ -257,15 +236,15 @@ namespace Loyc.MiniTest
 			Success, Fail, Ignore, Inconclusive
 		}
 
-		public delegate void StopTestDelegate(StopReason reason, string format, params object[] args);
+		public delegate void StopTestDelegate(StopReason reason, string format, params object?[]? args);
 
 		public static ThreadLocalVariable<StopTestDelegate> StopTestHandler = new ThreadLocalVariable<StopTestDelegate>(ThrowException);
 
-		protected static void ThrowException(StopReason reason, string format, params object[] args)
+		protected static void ThrowException(StopReason reason, string format, params object?[]? args)
 		{
 			string msg = format;
 			try {
-				msg = format.Localized(args);
+				msg = format.Localized(args ?? EmptyArray<object?>.Value);
 			} catch(Exception ex) {
 				// Exception occurred while converting arguments to string
 				msg += string.Format(" [FORMATTING:{0}]", ex.GetType().Name);
@@ -283,7 +262,7 @@ namespace Loyc.MiniTest
 
 		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(), 
 		/// which, by default, throws an AssertionException.</summary>
-		public static void Fail(string format, params object[] args)
+		public static void Fail(string format, params object?[]? args)
 		{
 			StopTestHandler.Value(StopReason.Fail, format, args);
 		}
@@ -348,14 +327,15 @@ namespace Loyc.MiniTest
 			return false;
 		}
 
-		private static void Fail2(string userMsg, object[] userArgs, string stdMsg, params object[] stdArgs)
+		
+		private static void Fail2(string? userMsg, object?[]? userArgs, string stdMsg, params object?[]? stdArgs)
 		{
 			if (userMsg != null) {
 				try {
 					Fail(userMsg, userArgs);
 				} catch (Exception ex) {
 					try {
-						ex.Data["Failed Assertion"] = stdMsg.Localized(stdArgs);
+						ex.Data["Failed Assertion"] = stdMsg.Localized(stdArgs ?? EmptyArray<object?>.Value);
 					} catch {
 						ex.Data["Failed Assertion"] = stdMsg;
 					}
@@ -389,10 +369,10 @@ namespace Loyc.MiniTest
 			else {
 				int i, c = System.Math.Min((a ?? "").Length, (b ?? "").Length);
 				for (i = 0; i < c; i++)
-					if (a[i] != b[i])
+					if (a![i] != b![i])
 						break;
 				StringBuilder msg = new StringBuilder();
-				if (a.Length == b.Length)
+				if (a!.Length == b!.Length)
 					msg.AppendFormat("  String lengths are both {0}. Strings differ at index {1}.\n", c, i);
 				else
 					msg.AppendFormat("  Expected string length {0} but was {1}. Strings differ at index {2}.\n", a.Length, b.Length, i);
@@ -426,7 +406,7 @@ namespace Loyc.MiniTest
 			}
 			return "\"" + PrintHelpers.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
 		}
-		static string StringifyObject(object obj)
+		static string? StringifyObject(object? obj)
 		{
 			if (obj == null)
 				return "null";
@@ -444,8 +424,8 @@ namespace Loyc.MiniTest
 			return obj.ToString();
 		}
 
-		static string GetObjectMismatchMessage(object a, object b) { return GetObjectMismatchMessage(a, b, false); }
-		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual)
+		static string GetObjectMismatchMessage(object? a, object? b) { return GetObjectMismatchMessage(a, b, false); }
+		static string GetObjectMismatchMessage(object? a, object? b, bool expectedNotEqual)
 		{
 			if (a is string && b is string)
 				return GetStringsNotEqualMessage((string)a, (string)b);
@@ -537,7 +517,7 @@ namespace Loyc.MiniTest
 		/// <param name="code">A method to run</param>
 		/// <param name="message">The message that will be displayed on failure</param>
 		/// <param name="args">Arguments to be used in formatting the message</param>
-		public static Exception ThrowsAny(Type expectedExceptionType, Action code, string message, params object[] args)
+		public static Exception? ThrowsAny(Type expectedExceptionType, Action code, string? message, params object?[]? args)
 		{
 			try {
 				code();
@@ -550,28 +530,28 @@ namespace Loyc.MiniTest
 			return null; // normally unreachable
 		}
 		
-		public static Exception ThrowsAny(Type expectedExceptionType, Action code)
+		public static Exception? ThrowsAny(Type expectedExceptionType, Action code)
 		{
 			return ThrowsAny(expectedExceptionType, code, null, null);
 		}
 
 		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
-		public static T Throws<T>(Action code, string message, params object[] args) where T : Exception
+		public static T? Throws<T>(Action code, string message, params object[] args) where T : Exception
 		{
-			return (T)ThrowsAny(typeof(T), code, message, args);
+			return (T?)ThrowsAny(typeof(T), code, message, args);
 		}
 		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
-		public static T Throws<T>(Action code) where T : Exception
+		public static T? Throws<T>(Action code) where T : Exception
 		{
-			return (T)ThrowsAny(typeof(T), code);
+			return (T?)ThrowsAny(typeof(T), code);
 		}
-		public static T ThrowsAny<T>(Action code, string message, params object[] args) where T : Exception
+		public static T? ThrowsAny<T>(Action code, string message, params object[] args) where T : Exception
 		{
-			return (T)ThrowsAny(typeof(T), code, message, args);
+			return (T?)ThrowsAny(typeof(T), code, message, args);
 		}
-		public static T ThrowsAny<T>(Action code) where T : Exception
+		public static T? ThrowsAny<T>(Action code) where T : Exception
 		{
-			return (T)ThrowsAny(typeof(T), code);
+			return (T?)ThrowsAny(typeof(T), code);
 		}
 
 		/// <summary>
@@ -580,7 +560,7 @@ namespace Loyc.MiniTest
 		/// <param name="code">A method to run</param>
 		/// <param name="message">The message that will be displayed on failure</param>
 		/// <param name="args">Arguments to be used in formatting the message</param>
-		public static Exception Catch(Action code, string message, params object[] args)
+		public static Exception? Catch(Action code, string? message, params object?[]? args)
 		{
 			return ThrowsAny(typeof(Exception), code, message, args);
 		}
@@ -590,7 +570,7 @@ namespace Loyc.MiniTest
 		/// and returns it.
 		/// </summary>
 		/// <param name="code">A TestDelegate</param>
-		public static Exception Catch(Action code)
+		public static Exception? Catch(Action code)
 		{
 			return ThrowsAny(typeof(Exception), code);
 		}
@@ -600,7 +580,7 @@ namespace Loyc.MiniTest
 		/// </summary>
 		/// <param name="code">Code to run</param>
 		/// <param name="message">The message that will be displayed on failure</param>
-		public static void DoesNotThrow(Action code, string message, params object[] args)
+		public static void DoesNotThrow(Action code, string? message, params object?[]? args)
 		{
 			try {
 				code();
@@ -617,7 +597,7 @@ namespace Loyc.MiniTest
 			DoesNotThrow(code, null, null);
 		}
 
-		public static void IsTrue(bool condition, string message, params object[] args)
+		public static void IsTrue(bool condition, string? message, params object?[]? args)
 		{
 			if (!condition) 
 				Fail2(message, args, "IsTrue: condition is unexpectedly false");
@@ -626,7 +606,7 @@ namespace Loyc.MiniTest
 		{
 			IsTrue(condition, null, null);
 		}
-		public static void IsFalse(bool condition, string message, params object[] args)
+		public static void IsFalse(bool condition, string? message, params object?[]? args)
 		{
 			if (condition) 
 				Fail2(message, args, "IsFalse: condition is unexpectedly true");
@@ -635,7 +615,7 @@ namespace Loyc.MiniTest
 		{
 			IsFalse(condition, null, null);
 		}
-		public static void IsNotNull(object anObject, string message, params object[] args)
+		public static void IsNotNull(object anObject, string? message, params object?[]? args)
 		{
 			if (anObject == null) 
 				Fail2(message, args, "IsNotNull: object is null");
@@ -644,7 +624,7 @@ namespace Loyc.MiniTest
 		{
 			IsNotNull(anObject, null, null);
 		}
-		public static void IsNull(object anObject, string message, params object[] args)
+		public static void IsNull(object anObject, string? message, params object?[]? args)
 		{
 			if (anObject != null) 
 				Fail2(message, args, "IsNull: object is not null");
@@ -667,14 +647,14 @@ namespace Loyc.MiniTest
 		{
 			if (collection == null) 
 				Fail ("IsEmpty: collection is null");
-			if (collection.GetEnumerator().MoveNext())
+			else if (collection.GetEnumerator().MoveNext())
 				Fail("IsEmpty: collection is not empty");
 		}
 		public static void IsNotEmpty(System.Collections.IEnumerable collection)
 		{
-			if (collection != null)
+			if (collection == null)
 				Fail("IsNotEmpty: collection is null");
-			if (!collection.GetEnumerator().MoveNext())
+			else if (!collection.GetEnumerator().MoveNext())
 				Fail("IsNotEmpty: collection is empty");
 		}
 		public static void IsNullOrEmpty(string aString)
@@ -691,7 +671,7 @@ namespace Loyc.MiniTest
 		{
 			if (actual == null)
 				Fail("IsInstanceOf: value is null");
-			if (!expected.IsAssignableFrom(actual.GetType()))
+			else if (!expected.IsAssignableFrom(actual.GetType()))
 				Fail("IsInstanceOf: expected {0}, got {1} ({2})", expected.Name, actual.GetType().Name, actual);
 		}
 		public static void IsNotInstanceOf(Type expected, object actual)
@@ -709,12 +689,12 @@ namespace Loyc.MiniTest
 		}
 
 
-		public static void AreEqual(long expected, long actual, string message, params object[] args)
+		public static void AreEqual(long expected, long actual, string? message, params object?[]? args)
 		{
 			if (expected != actual)
 				Fail2(message, args, "AreEqual: {0} != {1}", expected, actual);
 		}
-		public static void AreEqual(ulong expected, ulong actual, string message, params object[] args)
+		public static void AreEqual(ulong expected, ulong actual, string? message, params object?[]? args)
 		{
 			if (expected != actual)
 				Fail2(message, args, "AreEqual: {0} != {1}", expected, actual);
@@ -737,7 +717,7 @@ namespace Loyc.MiniTest
 			if (expected != actual)
 				Fail("AreEqual: {0} != {1}", expected, actual);
 		}
-		public static void AreEqual(double expected, double actual, double delta, string message, params object[] args)
+		public static void AreEqual(double expected, double actual, double delta, string? message, params object?[]? args)
 		{
 			if (!DoublesAreEqual(expected, actual, delta))
 				Fail2(message, args, "AreEqual: {0} != {1} (delta: {2})", expected, actual, delta);
@@ -750,10 +730,10 @@ namespace Loyc.MiniTest
 		{
 			AreEqual(expected, actual, 0, null, null);
 		}
-		public static void AreEqual(object expected, object actual, string message, params object[] args)
+		public static void AreEqual(object expected, object actual, string? message, params object?[]? args)
 		{
 			if (!object.Equals(expected, actual))
-				Fail2(message, args, GetObjectMismatchMessage(expected, actual), (object[])null);
+				Fail2(message, args, GetObjectMismatchMessage(expected, actual), (object?[]?)null);
 		}
 		public static void AreEqual(object expected, object actual)
 		{
@@ -761,12 +741,12 @@ namespace Loyc.MiniTest
 		}
 
 
-		public static void AreNotEqual(long expected, long actual, string message, params object[] args)
+		public static void AreNotEqual(long expected, long actual, string? message, params object?[]? args)
 		{
 			if (expected == actual)
 				Fail2(message, args, "AreNotEqual: {0} == {1}", expected, actual);
 		}
-		public static void AreNotEqual(ulong expected, ulong actual, string message, params object[] args)
+		public static void AreNotEqual(ulong expected, ulong actual, string? message, params object?[]? args)
 		{
 			if (expected == actual)
 				Fail2(message, args, "AreNotEqual: {0} == {1}", expected, actual);
@@ -789,7 +769,7 @@ namespace Loyc.MiniTest
 			if (expected == actual)
 				Fail("AreNotEqual: {0} == {1}", expected, actual);
 		}
-		public static void AreNotEqual(double expected, double actual, double delta, string message, params object[] args)
+		public static void AreNotEqual(double expected, double actual, double delta, string? message, params object?[]? args)
 		{
 			if (DoublesAreEqual(expected, actual, delta))
 				Fail2(message, args, "AreNotEqual: {0} == {1} (delta: {2})", expected, actual, delta);
@@ -798,7 +778,7 @@ namespace Loyc.MiniTest
 		{
 			AreNotEqual(expected, actual, delta, null, null);
 		}
-		public static void AreNotEqual(object expected, object actual, string message, params object[] args)
+		public static void AreNotEqual(object expected, object actual, string? message, params object?[]? args)
 		{
 			if (object.Equals(expected, actual))
 				Fail2(message, args, GetObjectMismatchMessage(expected, actual, true));
@@ -809,7 +789,7 @@ namespace Loyc.MiniTest
 		}
 
 
-		public static void AreSame(object expected, object actual, string message, params object[] args)
+		public static void AreSame(object expected, object actual, string? message, params object?[]? args)
 		{
 			if (!object.ReferenceEquals(expected, actual))
 				Fail2(message, args, "AreSame: references are not equal: {0} != {1}", expected, actual);
@@ -818,7 +798,7 @@ namespace Loyc.MiniTest
 		{
 			AreSame(expected, actual, null, null);
 		}
-		public static void AreNotSame(object expected, object actual, string message, params object[] args)
+		public static void AreNotSame(object expected, object actual, string? message, params object?[]? args)
 		{
 			if (object.ReferenceEquals(expected, actual))
 				Fail2(message, args, "AreNotSame: references are equal: {0} == {1}", expected, actual);
@@ -829,17 +809,17 @@ namespace Loyc.MiniTest
 		}
 
 
-		public static void Greater(long arg1, long arg2, string message, params object[] args)
+		public static void Greater(long arg1, long arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 > arg2))
 				Fail2(message, args, "Greater: {0} <= {1}", arg1, arg2);
 		}
-		public static void Greater(double arg1, double arg2, string message, params object[] args)
+		public static void Greater(double arg1, double arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 > arg2))
 				Fail2(message, args, "Greater: {0} <= {1}", arg1, arg2);
 		}
-		public static void Greater(IComparable arg1, IComparable arg2, string message, params object[] args)
+		public static void Greater(IComparable arg1, IComparable? arg2, string? message, params object?[]? args)
 		{
 			if (arg1.CompareTo(arg2) <= 0)
 				Fail2(message, args, "Greater: {0} <= {1}", arg1, arg2);
@@ -856,23 +836,23 @@ namespace Loyc.MiniTest
 		{
 			Greater(arg1, arg2, null, null);
 		}
-		public static void Greater(IComparable arg1, IComparable arg2)
+		public static void Greater(IComparable arg1, IComparable? arg2)
 		{
 			Greater(arg1, arg2, null, null);
 		}
 
 
-		public static void Less(long arg1, long arg2, string message, params object[] args)
+		public static void Less(long arg1, long arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 < arg2))
 				Fail2(message, args, "Less: {0} >= {1}", arg1, arg2);
 		}
-		public static void Less(double arg1, double arg2, string message, params object[] args)
+		public static void Less(double arg1, double arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 < arg2))
 				Fail2(message, args, "Less: {0} >= {1}", arg1, arg2);
 		}
-		public static void Less(IComparable arg1, IComparable arg2, string message, params object[] args)
+		public static void Less(IComparable arg1, IComparable? arg2, string? message, params object?[]? args)
 		{
 			if (arg1.CompareTo(arg2) >= 0)
 				Fail2(message, args, "Less: {0} >= {1}", arg1, arg2);
@@ -889,23 +869,23 @@ namespace Loyc.MiniTest
 		{
 			Less(arg1, arg2, null, null);
 		}
-		public static void Less(IComparable arg1, IComparable arg2)
+		public static void Less(IComparable arg1, IComparable? arg2)
 		{
 			Less(arg1, arg2, null, null);
 		}
 
 
-		public static void GreaterOrEqual(long arg1, long arg2, string message, params object[] args)
+		public static void GreaterOrEqual(long arg1, long arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 >= arg2))
 				Fail2(message, args, "GreaterOrEqual: {0} < {1}", arg1, arg2);
 		}
-		public static void GreaterOrEqual(double arg1, double arg2, string message, params object[] args)
+		public static void GreaterOrEqual(double arg1, double arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 >= arg2))
 				Fail2(message, args, "GreaterOrEqual: {0} < {1}", arg1, arg2);
 		}
-		public static void GreaterOrEqual(IComparable arg1, IComparable arg2, string message, params object[] args)
+		public static void GreaterOrEqual(IComparable arg1, IComparable? arg2, string? message, params object?[]? args)
 		{
 			if (arg1.CompareTo(arg2) < 0)
 				Fail2(message, args, "GreaterOrEqual: {0} < {1}", arg1, arg2);
@@ -922,23 +902,23 @@ namespace Loyc.MiniTest
 		{
 			GreaterOrEqual(arg1, arg2, null, null);
 		}
-		public static void GreaterOrEqual(IComparable arg1, IComparable arg2)
+		public static void GreaterOrEqual(IComparable arg1, IComparable? arg2)
 		{
 			GreaterOrEqual(arg1, arg2, null, null);
 		}
 	
 		
-		public static void LessOrEqual(long arg1, long arg2, string message, params object[] args)
+		public static void LessOrEqual(long arg1, long arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 <= arg2))
 				Fail2(message, args, "LessOrEqual: {0} > {1}", arg1, arg2);
 		}
-		public static void LessOrEqual(double arg1, double arg2, string message, params object[] args)
+		public static void LessOrEqual(double arg1, double arg2, string? message, params object?[]? args)
 		{
 			if (!(arg1 <= arg2))
 				Fail2(message, args, "LessOrEqual: {0} > {1}", arg1, arg2);
 		}
-		public static void LessOrEqual(IComparable arg1, IComparable arg2, string message, params object[] args)
+		public static void LessOrEqual(IComparable arg1, IComparable? arg2, string? message, params object?[]? args)
 		{
 			if (arg1.CompareTo(arg2) > 0)
 				Fail2(message, args, "LessOrEqual: {0} > {1}", arg1, arg2);
@@ -955,7 +935,7 @@ namespace Loyc.MiniTest
 		{
 			LessOrEqual(arg1, arg2, null, null);
 		}
-		public static void LessOrEqual(IComparable arg1, IComparable arg2)
+		public static void LessOrEqual(IComparable arg1, IComparable? arg2)
 		{
 			LessOrEqual(arg1, arg2, null, null);
 		}
@@ -968,10 +948,10 @@ namespace Loyc.MiniTest
 		/// <param name="actual">The list to be examined</param>
 		/// <param name="message">The message to display in case of failure</param>
 		/// <param name="args">Array of objects to be used in formatting the message</param>
-		public static void Contains(object expected, IEnumerable actual, string message, params object[] args)
+		public static void Contains(object? expected, IEnumerable actual, string? message, params object?[]? args)
 		{
 			int count = 0;
-			foreach (object item in actual) {
+			foreach (object? item in actual) {
 				count++;
 				if (object.Equals(item, expected))
 					return;
@@ -983,7 +963,7 @@ namespace Loyc.MiniTest
 		/// </summary>
 		/// <param name="expected">The expected object</param>
 		/// <param name="actual">The list to be examined</param>
-		public static void Contains(object expected, IEnumerable actual)
+		public static void Contains(object? expected, IEnumerable actual)
 		{
 			Contains(expected, actual, null, null);
 		}

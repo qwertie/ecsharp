@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Loyc
 	public class InvalidStateException : InvalidOperationException
 	{
 		public InvalidStateException() : this(null) { }
-		public InvalidStateException(string msg) : base(msg ?? "This object is in an invalid state.".Localized()) { }
+		public InvalidStateException(string? msg) : base(msg ?? "This object is in an invalid state.".Localized()) { }
 		public InvalidStateException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -34,7 +35,7 @@ namespace Loyc
 	public class ConcurrentModificationException : InvalidOperationException
 	{
 		public ConcurrentModificationException() : this(null) { }
-		public ConcurrentModificationException(string msg) : base(msg ?? "A concurrect access was detected during modification.".Localized()) { }
+		public ConcurrentModificationException(string? msg) : base(msg ?? "A concurrect access was detected during modification.".Localized()) { }
 		public ConcurrentModificationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -43,7 +44,7 @@ namespace Loyc
 	public class ReadOnlyException : InvalidOperationException
 	{
 		public ReadOnlyException() : this(null) { }
-		public ReadOnlyException(string msg) : base(msg ?? "An attempt was made to modify a read-only object.".Localized()) { }
+		public ReadOnlyException(string? msg) : base(msg ?? "An attempt was made to modify a read-only object.".Localized()) { }
 		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -51,7 +52,7 @@ namespace Loyc
 	/// when an argument value is not acceptable.</summary>
 	public static class CheckParam
 	{
-		public static T IsNotNull<T>(string paramName, T arg) where T : class
+		public static T IsNotNull<T>(string paramName, T? arg) where T : class
 		{
 			if (arg == null)
 				ThrowArgumentNull(paramName);
@@ -69,35 +70,43 @@ namespace Loyc
 				ThrowOutOfRange(paramName, value, min, max);
 			return value;
 		}
+		[DoesNotReturn]
 		public static void ThrowOutOfRange(string argName)
 		{
 			throw new ArgumentOutOfRangeException(argName);
 		}
+		[DoesNotReturn]
 		public static void ThrowOutOfRange(string argName, string message)
 		{
 			throw new ArgumentOutOfRangeException(argName, message.Localized());
 		}
-		public static void ThrowOutOfRange(string argName, string message, object arg1, object arg2 = null)
+		[DoesNotReturn]
+		public static void ThrowOutOfRange(string argName, string message, object? arg1, object? arg2 = null)
 		{
 			throw new ArgumentOutOfRangeException(argName, message.Localized(arg1, arg2));
 		}
+		[DoesNotReturn]
 		public static void ThrowOutOfRange(string argName, int value, int min, int max)
 		{
 			throw new ArgumentOutOfRangeException(argName, @"Argument ""{0}"" value '{1}' is not within the expected range ({2}...{3})".Localized(argName, value, min, max)); 
 		}
+		[DoesNotReturn]
 		public static void ThrowArgumentNull(string argName)
 		{
 			throw new ArgumentNullException(argName);
 		}
+		[DoesNotReturn]
 		public static void ThrowBadArgument(string message)
 		{
 			throw new ArgumentException(message.Localized());
 		}
+		[DoesNotReturn]
 		public static void ThrowBadArgument(string argName, string message)
 		{
 			throw new ArgumentException(message.Localized(), argName);
 		}
-		public static void ThrowBadArgument(string argName, string message, object arg1, object arg2 = null)
+		[DoesNotReturn]
+		public static void ThrowBadArgument(string argName, string message, object? arg1, object? arg2 = null)
 		{
 			throw new ArgumentException(message.Localized(arg1, arg2), argName);
 		}
@@ -114,12 +123,12 @@ namespace Loyc
 			if (count < 0) CheckParam.ThrowBadArgument("The count was below zero.");
 			return count <= outerCount - start ? count : System.Math.Max(outerCount - start, 0);
 		}
-		public static void Arg(string argName, bool condition, object argValue)
+		public static void Arg(string argName, [DoesNotReturnIf(false)] bool condition, object argValue)
 		{
 			if (!condition)
 				throw new ArgumentException("Invalid argument ({0} = '{1}')".Localized(argName, argValue));
 		}
-		public static void Arg(string argName, bool condition)
+		public static void Arg(string argName, [DoesNotReturnIf(false)] bool condition)
 		{
 			if (!condition)
 				throw new ArgumentException("Invalid value for '{0}'".Localized(argName));
@@ -135,7 +144,7 @@ namespace Loyc.Collections
 	public class EnumerationException : InvalidOperationException
 	{
 		public EnumerationException() : this(null) { }
-		public EnumerationException(string msg) : base(msg ?? "The collection was modified after enumeration started.".Localized()) { }
+		public EnumerationException(string? msg) : base(msg ?? "The collection was modified after enumeration started.".Localized()) { }
 		public EnumerationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -145,7 +154,7 @@ namespace Loyc.Collections
 	public class KeyAlreadyExistsException : InvalidOperationException
 	{
 		public KeyAlreadyExistsException() : this(null) { }
-		public KeyAlreadyExistsException(string msg) : base(msg ?? "The item or key being added already exists in the collection.".Localized()) { }
+		public KeyAlreadyExistsException(string? msg) : base(msg ?? "The item or key being added already exists in the collection.".Localized()) { }
 		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -155,7 +164,7 @@ namespace Loyc.Collections
 	public class EmptySequenceException : InvalidOperationException
 	{
 		public EmptySequenceException() : this(null) { }
-		public EmptySequenceException(string msg) : base(msg ?? "Failed to access the sequence because it is empty.".Localized()) { }
+		public EmptySequenceException(string? msg) : base(msg ?? "Failed to access the sequence because it is empty.".Localized()) { }
 		public EmptySequenceException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 }

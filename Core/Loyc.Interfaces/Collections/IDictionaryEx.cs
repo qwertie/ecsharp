@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Loyc.Collections
@@ -17,6 +18,10 @@ namespace Loyc.Collections
 		/// <summary>Insert a key-value pair, replacing an existing one if the key already exists.</summary>
 		AddOrReplace = 3,
 	}
+
+	// They want me to put a "where K: notnull" constraint on IDictionaryEx. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714 
 
 	/// <summary>Combines <c>IDictionary</c>, <c>IReadOnlyDictionary</c>, and <c>IDictonarySink</c> 
 	/// with a few additional methods.</summary>
@@ -102,8 +107,12 @@ namespace Loyc.Collections
 
 	public static partial class LCInterfaces
 	{
+		// They want me to put a "where K: notnull" constraint on these. I disagree. The warning says:
+		// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+		//#pragma warning disable 8714 
+
 		/// <summary>Default implementation of <see cref="IDictionaryEx{K, V}.GetAndEdit"/>.</summary>
-		public static bool GetAndEdit<K, V>(IDictionary<K, V> dict, K key, ref V value, DictEditMode mode)
+		public static bool GetAndEdit<K, V>(IDictionary<K, V> dict, K key, [MaybeNull] ref V value, DictEditMode mode)
 		{
 			V newValue = value;
 			if (dict.TryGetValue(key, out value))
@@ -129,6 +138,7 @@ namespace Loyc.Collections
 			return !dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
 		public static bool TryAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			return !dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 		}
@@ -137,6 +147,7 @@ namespace Loyc.Collections
 		/// and returns the existing or new value.</summary>
 		/// <returns>The existing value (if the key already existed) or the new value.</returns>
 		public static V GetOrAdd<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent);
 			return value;
@@ -146,6 +157,7 @@ namespace Loyc.Collections
 		/// <returns>The existing value. If a new pair was added, the result has no value.</returns>
 		/// <seealso cref="GetOrAdd{K, V}(IDictionaryEx{K, V}, K, V)"/>
 		public static Maybe<V> AddOrGetExisting<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			if (dict.GetAndEdit(ref key, ref value, DictEditMode.AddIfNotPresent))
 				return value;
@@ -155,6 +167,7 @@ namespace Loyc.Collections
 		/// If the key was not already present, this method has no effect.</summary>
 		/// <returns>True if a value existed and was replaced, false if not.</returns>
 		public static bool ReplaceIfPresent<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			return dict.GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent);
 		}
@@ -162,17 +175,21 @@ namespace Loyc.Collections
 		/// If the key was not already present, this method has no effect.</summary>
 		/// <returns>The old value if a value was replaced, or an empty value of <see cref="Maybe{V}"/> otherwise.</returns>
 		public static Maybe<V> SwapIfPresent<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			return dict.GetAndEdit(ref key, ref value, DictEditMode.ReplaceIfPresent) ?
 				(Maybe<V>)value : default(Maybe<V>);
 		}
 		[Obsolete("This was renamed to GetAndSet")]
-		public static Maybe<V> SetAndGet<K, V>(this IDictionaryEx<K, V> dict, K key, V value) => GetAndSet(dict, key, value);
+		public static Maybe<V> SetAndGet<K, V>(this IDictionaryEx<K, V> dict, K key, V value) 
+			where K: notnull
+			=> GetAndSet(dict, key, value);
 		/// <summary>Associates a key with a value in the dictionary, and gets the old value
 		/// if the key was already present.</summary>
 		/// <returns>The old value associated with the same key. If a new pair was added,
 		/// the result has no value.</returns>
 		public static Maybe<V> GetAndSet<K, V>(this IDictionaryEx<K, V> dict, K key, V value)
+			where K: notnull
 		{
 			if (dict.GetAndEdit(ref key, ref value, DictEditMode.AddOrReplace))
 				return value;
@@ -181,10 +198,12 @@ namespace Loyc.Collections
 	}
 
 	public interface IDictionaryWithChangeEvents<K, V> : IDictionaryAndReadOnly<K, V>, INotifyListChanging<KeyValuePair<K, V>, IDictionary<K, V>>, INotifyListChanged<KeyValuePair<K, V>, IDictionary<K, V>>
+		where K: notnull
 	{
 	}
 
 	public interface IDictionaryExWithChangeEvents<K, V> : IDictionaryEx<K, V>, IDictionaryWithChangeEvents<K, V>
+		where K: notnull
 	{
 	}
 }

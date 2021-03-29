@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 using Loyc.Compatibility;
 
 namespace Loyc
@@ -10,7 +12,7 @@ namespace Loyc
 	/// <remarks>For efficiency, this is a struct, but this makes it possible
 	/// to default-construct it. In that case its value will be <c>default(R)</c>.</remarks>
 	[System.Diagnostics.DebuggerDisplay("{ToString()}")]
-	public struct Either<L, R> : IEither<L, R>, IValue<object>, IEquatable<Either<L, R>>, IEquatable<ITuple>, ITuple
+	public struct Either<L, R> : IEither<L, R>, IValue<object?>, IEquatable<Either<L, R>>, IEquatable<ITuple>, ITuple
 	{
 		/// <summary>Simply calls the constructor. This method exists to make
 		/// it possible to construct an Either when both types are the same.</summary>
@@ -38,13 +40,13 @@ namespace Loyc
 			_right = right;
 		}
 
-		private readonly L _left;
-		private readonly R _right;
+		[AllowNull] private readonly L _left;
+		[AllowNull] private readonly R _right;
 		private readonly bool _hasLeft;
 
 		public Maybe<L> Left => _hasLeft ? _left : new Maybe<L>();
 		public Maybe<R> Right => _hasLeft ? new Maybe<R>() : _right;
-		public object Value => _hasLeft ? (object)_left : _right;
+		public object? Value => _hasLeft ? (object?)_left : _right;
 
 		int ITuple.Length => 2;
 		public object this[int index] => 
@@ -105,9 +107,9 @@ namespace Loyc
 			return _hasLeft ? _left?.GetHashCode() ?? 0 : ~(_right?.GetHashCode() ?? 0);
 		}
 
-		public override bool Equals(object obj) => Equals(obj as IEither<L, R>);
+		public override bool Equals(object? obj) => Equals(obj as IEither<L, R>);
 
-		public bool Equals(ITuple other)
+		public bool Equals(ITuple? other)
 		{
 			if (other != null)
 				return other.Length == 2 && Left.Equals(other[0]) && Right.Equals(other[1]);

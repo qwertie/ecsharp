@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -22,7 +23,7 @@ namespace Loyc.Collections
 		public static IList<T> AsList<T>(this IListSource<T> c)
 		{
 			if (c == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("c")]
 			var list = c as IList<T>;
 			if (list != null)
 				return list;
@@ -95,6 +96,8 @@ namespace Loyc.Collections
 		#endregion
 
 		public bool IsEmpty => _obj.Count == 0;
+		
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return _obj.TryGet(index, out fail);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -70,6 +71,7 @@ namespace Loyc.Collections
 			get { return this[_count - 1]; }
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopFirst(out bool empty)
 		{
 			if (_count != 0) {
@@ -80,6 +82,7 @@ namespace Loyc.Collections
 			empty = true;
 			return default(T);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopLast(out bool empty)
 		{
 			if (_count != 0) {
@@ -111,17 +114,24 @@ namespace Loyc.Collections
 				throw new ArgumentOutOfRangeException("index");
 			}
 		}
+		/// <summary>Gets the value at the specified index, or a default value it the 
+		/// index is not valid.</summary>
+		/// <param name="defaultValue">Default value. If you would like to use null 
+		/// for this parameter, consider using the extension method 
+		/// TryGet(index).Or(defaultValue) as there is no way in C# 9 to tell the C# 
+		/// compiler that the return value may be null if the default value is null.</param>
 		public T this[int index, T defaultValue]
 		{
 			get { 
 				if ((uint)index < (uint)_count) {
 					bool fail;
 					var r = _list.TryGet(_start + index, out fail);
-					return fail ? defaultValue : r;
+					return fail ? defaultValue : r!;
 				}
 				return defaultValue;
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count)

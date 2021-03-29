@@ -7,6 +7,7 @@
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Loyc.Collections
@@ -28,13 +29,17 @@ namespace Loyc.Collections
 		// *** Visual Studio lets me edit the generated output, so I'm sprinkling notes to myself not to do that.
 		public static int Count<T>(this IReadOnlyCollection<T> list) => list.Count;
 		public static int Count<T>(this INegListSource<T> list) => list.Count;
-
+		[return: MaybeNull] 
+		
 		public static T FirstOrDefault<T>(this IListSource<T> list)
 		{
 			bool _;
 			return list.TryGet(0, out _);
 		}
-		public static T FirstOrDefault<T>(this IListSource<T> list, T defaultValue)
+		[return: MaybeNull] 
+		// There seems to be no attribute like [MaybeNullIfNull("defaultValue")]. There is 
+		// [return: NotNullIfNotNull("defaultValue")] but that's wrong (as list[i] may be null)
+		public static T FirstOrDefault<T>(this IListSource<T> list, [AllowNull] T defaultValue)
 		{
 			bool fail;
 			var result = list.TryGet(0, out fail);
@@ -53,8 +58,8 @@ namespace Loyc.Collections
 				throw new EmptySequenceException();
 			return list[last];
 		}
-		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
-		public static T LastOrDefault<T>(this IReadOnlyList<T> list, T defaultValue = default(T))
+		[return: MaybeNull] /// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
+		public static T LastOrDefault<T>(this IReadOnlyList<T> list, [AllowNull] T defaultValue = default(T))
 		{
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
@@ -72,8 +77,8 @@ namespace Loyc.Collections
 				throw new EmptySequenceException();
 			return list[last];
 		}
-		/// <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
-		public static T LastOrDefault<T>(this INegListSource<T> list, T defaultValue = default(T))
+		[return: MaybeNull] /// <summary>Gets the last item from the list (at <c>list.Max</c>), or <c>defaultValue</c> if the list is empty.</summary>
+		public static T LastOrDefault<T>(this INegListSource<T> list, [AllowNull] T defaultValue = default(T))
 		{
 			int last = list.Max;
 			return last < list.Min ? defaultValue : list[last];
@@ -279,8 +284,10 @@ namespace Loyc.Collections.MutableListExtensionMethods
 	public static partial class LinqToLists
 	{
 		public static int Count<T>(this IList<T> list) => list.Count;
-
-		public static T FirstOrDefault<T>(this IList<T> list, T defaultValue = default(T))
+		[return: MaybeNull] 
+		// There seems to be no attribute like [MaybeNullIfNull("defaultValue")]. There is 
+		// [return: NotNullIfNotNull("defaultValue")] but that's wrong (as list[i] may be null)
+		public static T FirstOrDefault<T>(this IList<T> list, [AllowNull] T defaultValue = default(T))
 		{
 			if (list.Count > 0)
 				return list[0];
@@ -297,8 +304,8 @@ namespace Loyc.Collections.MutableListExtensionMethods
 				throw new EmptySequenceException();
 			return list[last];
 		}
-		/// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
-		public static T LastOrDefault<T>(this IList<T> list, T defaultValue = default(T))
+		[return: MaybeNull] /// <summary>Gets the last item from the list (Count - 1), or <c>defaultValue</c> if the list is empty.</summary>
+		public static T LastOrDefault<T>(this IList<T> list, [AllowNull] T defaultValue = default(T))
 		{
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
@@ -375,9 +382,16 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		// https://github.com/qwertie/ecsharp/issues/84 describes the problem solved by these methods
 		// *** Reminder: do not edit the generated output! ***
 		public static T Last<T>(this IListAndListSource<T> list) => Last((IList<T>) list);
-		public static T LastOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) => 
+
+		// Passing `list` from LastOrDefault to LastOrDefault causes an apparently 
+		// spurious warning. Surprisingly it appears to be a bug in the C# compiler
+		#pragma warning disable 8620
+		[return: MaybeNull] 
+		
+		public static T LastOrDefault<T>(this IListAndListSource<T> list, [AllowNull] T defaultValue = default(T)) => 
 		LastOrDefault((IList<T>) list, defaultValue);
-		public static T FirstOrDefault<T>(this IListAndListSource<T> list, T defaultValue = default(T)) => 
+		[return: MaybeNull]	// Issue #137: https://github.com/qwertie/ecsharp/issues/137
+		public static T FirstOrDefault<T>(this IListAndListSource<T> list, [AllowNull] T defaultValue = default(T)) => 
 		FirstOrDefault((IList<T>) list, defaultValue);
 
 		public static SelectList<T[], T, TResult> Select<T, TResult>(this T[] list, Func<T, TResult> selector) => 
@@ -401,7 +415,8 @@ namespace Loyc.Collections.MutableListExtensionMethods
 		{
 			return new SelectCollection<ICollection<T>, T, TResult>(list, selector);
 		}
-		public static SelectCollection<ICollection<KeyValuePair<K, V>>, KeyValuePair<K, V>, TResult> Select<K, V, TResult>(this Dictionary<K, V> list, Func<KeyValuePair<K, V>, TResult> selector)
+		public static SelectCollection<ICollection<KeyValuePair<K, V>>, KeyValuePair<K, V>, TResult> Select<K, V, TResult>(this Dictionary<K, V> list, Func<KeyValuePair<K, V>, TResult> selector) where K: notnull
+		
 		{
 			return new SelectCollection<ICollection<KeyValuePair<K, V>>, KeyValuePair<K, V>, TResult>(list, selector);
 		}

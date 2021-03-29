@@ -3,7 +3,7 @@
     <!-- Nullability is broken in .NET Standard 2; must add 2.1 for correct IntelliSense -->
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
     <SignAssembly>true</SignAssembly>

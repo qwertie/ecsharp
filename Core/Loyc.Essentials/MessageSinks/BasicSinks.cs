@@ -30,7 +30,7 @@ namespace Loyc
 		/// <remarks>Initial value: Severity.Warning</remarks>
 		public Severity PrintSeverityAt { get; set; }
 
-		protected virtual ConsoleColor PickColor(Severity level, out string levelText)
+		protected virtual ConsoleColor PickColor(Severity level, out string? levelText)
 		{
 			bool isDetail = ((int)level & 1) != 0;
 			bool implicitLevel = level < PrintSeverityAt || isDetail;
@@ -58,29 +58,29 @@ namespace Loyc
 			return color;
 		}
 
-		public void Write(Severity level, object context, string format)
+		public void Write(Severity level, object? context, string format)
 		{
 			WriteCore(level, context, format.Localized());
 		}
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object? context, string format, object? arg0, object? arg1 = null)
 		{
 			WriteCore(level, context, format.Localized(arg0, arg1));
 		}
-		public void Write(Severity level, object context, string format, params object[] args)
+		public void Write(Severity level, object? context, string format, params object?[] args)
 		{
 			WriteCore(level, context, format.Localized(args));
 		}
-		void WriteCore(Severity level, object context, string text)
+		void WriteCore(Severity level, object? context, string text)
 		{
-			string typeText;
+			string? typeText;
 			var color = PickColor(level, out typeText);
 			if (typeText != null)
 				text = typeText + ": " + text;
 			WriteColoredMessage(color, context, text);
 		}
-		public static void WriteColoredMessage(ConsoleColor color, object context, string text)
+		public static void WriteColoredMessage(ConsoleColor color, object? context, string text)
 		{
-			string loc = MessageSink.ContextToString(context);
+			string? loc = MessageSink.ContextToString(context);
 			if (!string.IsNullOrEmpty(loc))
 				Console.Write(loc + ": ");
 
@@ -117,9 +117,9 @@ namespace Loyc
 			if (level >= Severity.Error && ((int) level & 1) == 0)
 				_errorCount++;
 		}
-		public void Write(Severity level, object context, string format) => Write(level);
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null) => Write(level);
-		public void Write(Severity level, object context, string format, params object[] args) => Write(level);
+		public void Write(Severity level, object? context, string format) => Write(level);
+		public void Write(Severity level, object? context, string format, object? arg0, object? arg1 = null) => Write(level);
+		public void Write(Severity level, object? context, string format, params object?[] args) => Write(level);
 		
 		/// <summary>Always returns false.</summary>
 		public bool IsEnabled(Severity level) => false;
@@ -130,21 +130,21 @@ namespace Loyc
 	{
 		public static readonly TraceMessageSink Value = new TraceMessageSink();
 
-		public void Write(Severity type, object context, string format)
+		public void Write(Severity type, object? context, string format)
 		{
 			WriteCore(type, context, Localize.Localized(format));
 		}
-		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object? context, string format, object? arg0, object? arg1 = null)
 		{
 			WriteCore(type, context, Localize.Localized(format, arg0, arg1));
 		}
-		public void Write(Severity type, object context, string format, params object[] args)
+		public void Write(Severity type, object? context, string format, params object?[] args)
 		{
 			WriteCore(type, context, Localize.Localized(format, args));
 		}
-		public void WriteCore(Severity type, object context, string text)
+		public void WriteCore(Severity type, object? context, string text)
 		{
-			string loc = MessageSink.ContextToString(context);
+			string? loc = MessageSink.ContextToString(context);
 			if (!string.IsNullOrEmpty(loc))
 				text = loc + ": " + text;
 			Trace.WriteLine(text, type.ToString());
@@ -158,10 +158,10 @@ namespace Loyc
 
 	/// <summary>This helper class lets you implement <see cref="IMessageSink"/> 
 	/// with one or two delegates (a writer method, and an optional severity filter).</summary>
-	public class MessageSinkFromDelegate : IMessageSink
+	public class MessageSinkFromDelegate<TContext> : IMessageSink<TContext>
 	{
-		WriteMessageFn _writer;
-		Func<Severity, bool> _isEnabled;
+		WriteMessageFn<TContext> _writer;
+		Func<Severity, bool>? _isEnabled;
 
 		/// <summary>Initializes this object.</summary>
 		/// <param name="writer">Required. A method that accepts output.</param>
@@ -169,24 +169,24 @@ namespace Loyc
 		/// output based on the message type. If this parameter is provided,
 		/// then <see cref="Write"/>() will not invoke the writer when isEnabled
 		/// returns false. This delegate is also called by <see cref="IsEnabled"/>().</param>
-		public MessageSinkFromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
+		public MessageSinkFromDelegate(WriteMessageFn<TContext> writer, Func<Severity, bool>? isEnabled = null)
 		{
 			CheckParam.IsNotNull("writer", writer);
 			_writer = writer;
 			_isEnabled = isEnabled;
 		}
 
-		public void Write(Severity level, object context, string format)
+		public void Write(Severity level, TContext context, string format)
 		{
 			if (IsEnabled(level))
 				_writer(level, context, format, EmptyArray<object>.Value);
 		}
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, TContext context, string format, object? arg0, object? arg1 = null)
 		{
 			if (IsEnabled(level))
 				_writer(level, context, format, new[] { arg0, arg1 });
 		}
-		public void Write(Severity level, object context, string format, params object[] args)
+		public void Write(Severity level, TContext context, string format, params object?[] args)
 		{
 			if (IsEnabled(level))
 				_writer(level, context, format, args);
@@ -196,5 +196,11 @@ namespace Loyc
 		{
 			return _isEnabled != null ? _isEnabled(level) : true;
 		}
+	}
+
+	public class MessageSinkFromDelegate : MessageSinkFromDelegate<object?>, IMessageSink
+	{
+		public MessageSinkFromDelegate(WriteMessageFn<object?> writer, Func<Severity, bool>? isEnabled = null) 
+			: base(writer, isEnabled) { }
 	}
 }

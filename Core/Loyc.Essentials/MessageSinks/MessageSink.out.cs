@@ -22,7 +22,7 @@ namespace Loyc
 	{
 	#region Get/set default global message sink
 	
-		static ThreadLocalVariable<IMessageSink> _default = new ThreadLocalVariable<IMessageSink>(null, autoFallback: true);
+		static ThreadLocalVariable<IMessageSink?> _default = new ThreadLocalVariable<IMessageSink?>(null, autoFallback: true);
 
 		public static IMessageSink Default
 		{
@@ -47,9 +47,9 @@ namespace Loyc
 		/// This property follows the Ambient Service Pattern:
 		/// http://core.loyc.net/essentials/ambient-service-pattern.html
 		/// </remarks>
-		public static SavedValue<IMessageSink> SetDefault(IMessageSink sink)
+		public static SavedValue<IMessageSink?> SetDefault(IMessageSink sink)
 		{
-			return new SavedValue<IMessageSink>(_default, sink);
+			return new SavedValue<IMessageSink?>(_default, sink);
 		}
 
 		[Obsolete("This method is now called SetDefault()")] 
@@ -69,7 +69,7 @@ namespace Loyc
 		
 		/// <summary>Returns context.Location if context implements 
 		/// <see cref="ILocation"/>; otherwise, returns context itself.</summary>
-		public static object LocationOf(object context)
+		public static object? LocationOf(object? context)
 		{
 			var loc = context as ILocation;
 			if (loc == null)
@@ -78,7 +78,7 @@ namespace Loyc
 		}
 
 		[Obsolete("Name changed to ContextToString")] 
-		public static string LocationString(object context)
+		public static string? LocationString(object? context)
 		{
 			return ContextToString(context);
 		}
@@ -93,7 +93,7 @@ namespace Loyc
 		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
 		/// it returns <c>context.ToString()</c>.
 		/// </returns>
-		public static string GetLocationString(object context)
+		public static string? GetLocationString(object? context)
 		{
 			if (context == null)
 				return null;
@@ -101,9 +101,9 @@ namespace Loyc
 			return (ils != null ? ils.Location ?? context : context).ToString();
 		}
 
-		static readonly Func<object, string> _getLocationString = GetLocationString;
-		static ThreadLocalVariable<Func<object, string>> _contextToString = 
-		new ThreadLocalVariable<Func<object, string>>(_getLocationString, autoFallback: true);
+		static readonly Func<object?, string?> _getLocationString = GetLocationString;
+		static ThreadLocalVariable<Func<object?, string?>> _contextToString = 
+		new ThreadLocalVariable<Func<object?, string?>>(_getLocationString, autoFallback: true);
 
 		/// <summary>Gets the strategy that message sinks should use to convert 
 		/// a context object to a string.</summary>
@@ -125,7 +125,7 @@ namespace Loyc
 		/// default strategy works, but message sinks should call this delegate 
 		/// rather than GetLocationString().
 		/// </remarks>
-		public static Func<object, string> ContextToString
+		public static Func<object?, string?> ContextToString
 		{
 			get { return _contextToString.Value; }
 		}
@@ -140,9 +140,9 @@ namespace Loyc
 		/// This property follows the Ambient Service Pattern:
 		/// http://core.loyc.net/essentials/ambient-service-pattern.html
 		/// </remarks>
-		public static SavedValue<Func<object, string>> SetContextToString(Func<object, string> contextToString)
+		public static SavedValue<Func<object?, string?>> SetContextToString(Func<object?, string?> contextToString)
 		{
-			return new SavedValue<Func<object, string>>(_contextToString, contextToString ?? _getLocationString);
+			return new SavedValue<Func<object?, string?>>(_contextToString, contextToString ?? _getLocationString);
 		}
 		
 		#endregion
@@ -155,23 +155,23 @@ namespace Loyc
 		{
 			sink.Write(Severity.Fatal, context, format);
 		}
-		public static void Fatal<C>(this IMessageSink<C> sink, C context, string format, params object[] args)
+		public static void Fatal<C>(this IMessageSink<C> sink, C context, string format, params object?[] args)
 		{
 			sink.Write(Severity.Fatal, context, format, args);
 		}
-		public static void Fatal<C>(this IMessageSink<C> sink, C context, string format, object arg0, object arg1 = null)
+		public static void Fatal<C>(this IMessageSink<C> sink, C context, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Fatal, context, format, arg0, arg1);
 		}
-		public static void Fatal(this IMessageSink<object> sink, string format)
+		public static void Fatal(this IMessageSink<object?> sink, string format)
 		{
 			sink.Write(Severity.Fatal, null, format);
 		}
-		public static void FatalFormat(this IMessageSink<object> sink, string format, params object[] args)
+		public static void FatalFormat(this IMessageSink<object?> sink, string format, params object?[] args)
 		{
 			sink.Write(Severity.Fatal, null, format, args);
 		}
-		public static void FatalFormat(this IMessageSink<object> sink, string format, object arg0, object arg1 = null)
+		public static void FatalFormat(this IMessageSink<object?> sink, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Fatal, null, format, arg0, arg1);
 		}
@@ -183,23 +183,23 @@ namespace Loyc
 		{
 			sink.Write(Severity.Error, context, format);
 		}
-		public static void Error<C>(this IMessageSink<C> sink, C context, string format, params object[] args)
+		public static void Error<C>(this IMessageSink<C> sink, C context, string format, params object?[] args)
 		{
 			sink.Write(Severity.Error, context, format, args);
 		}
-		public static void Error<C>(this IMessageSink<C> sink, C context, string format, object arg0, object arg1 = null)
+		public static void Error<C>(this IMessageSink<C> sink, C context, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Error, context, format, arg0, arg1);
 		}
-		public static void Error(this IMessageSink<object> sink, string format)
+		public static void Error(this IMessageSink<object?> sink, string format)
 		{
 			sink.Write(Severity.Error, null, format);
 		}
-		public static void ErrorFormat(this IMessageSink<object> sink, string format, params object[] args)
+		public static void ErrorFormat(this IMessageSink<object?> sink, string format, params object?[] args)
 		{
 			sink.Write(Severity.Error, null, format, args);
 		}
-		public static void ErrorFormat(this IMessageSink<object> sink, string format, object arg0, object arg1 = null)
+		public static void ErrorFormat(this IMessageSink<object?> sink, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Error, null, format, arg0, arg1);
 		}
@@ -211,23 +211,23 @@ namespace Loyc
 		{
 			sink.Write(Severity.Warning, context, format);
 		}
-		public static void Warning<C>(this IMessageSink<C> sink, C context, string format, params object[] args)
+		public static void Warning<C>(this IMessageSink<C> sink, C context, string format, params object?[] args)
 		{
 			sink.Write(Severity.Warning, context, format, args);
 		}
-		public static void Warning<C>(this IMessageSink<C> sink, C context, string format, object arg0, object arg1 = null)
+		public static void Warning<C>(this IMessageSink<C> sink, C context, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Warning, context, format, arg0, arg1);
 		}
-		public static void Warn(this IMessageSink<object> sink, string format)
+		public static void Warn(this IMessageSink<object?> sink, string format)
 		{
 			sink.Write(Severity.Warning, null, format);
 		}
-		public static void WarnFormat(this IMessageSink<object> sink, string format, params object[] args)
+		public static void WarnFormat(this IMessageSink<object?> sink, string format, params object?[] args)
 		{
 			sink.Write(Severity.Warning, null, format, args);
 		}
-		public static void WarnFormat(this IMessageSink<object> sink, string format, object arg0, object arg1 = null)
+		public static void WarnFormat(this IMessageSink<object?> sink, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Warning, null, format, arg0, arg1);
 		}
@@ -239,23 +239,23 @@ namespace Loyc
 		{
 			sink.Write(Severity.Info, context, format);
 		}
-		public static void Info<C>(this IMessageSink<C> sink, C context, string format, params object[] args)
+		public static void Info<C>(this IMessageSink<C> sink, C context, string format, params object?[] args)
 		{
 			sink.Write(Severity.Info, context, format, args);
 		}
-		public static void Info<C>(this IMessageSink<C> sink, C context, string format, object arg0, object arg1 = null)
+		public static void Info<C>(this IMessageSink<C> sink, C context, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Info, context, format, arg0, arg1);
 		}
-		public static void Info(this IMessageSink<object> sink, string format)
+		public static void Info(this IMessageSink<object?> sink, string format)
 		{
 			sink.Write(Severity.Info, null, format);
 		}
-		public static void InfoFormat(this IMessageSink<object> sink, string format, params object[] args)
+		public static void InfoFormat(this IMessageSink<object?> sink, string format, params object?[] args)
 		{
 			sink.Write(Severity.Info, null, format, args);
 		}
-		public static void InfoFormat(this IMessageSink<object> sink, string format, object arg0, object arg1 = null)
+		public static void InfoFormat(this IMessageSink<object?> sink, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Info, null, format, arg0, arg1);
 		}
@@ -267,23 +267,23 @@ namespace Loyc
 		{
 			sink.Write(Severity.Debug, context, format);
 		}
-		public static void Debug<C>(this IMessageSink<C> sink, C context, string format, params object[] args)
+		public static void Debug<C>(this IMessageSink<C> sink, C context, string format, params object?[] args)
 		{
 			sink.Write(Severity.Debug, context, format, args);
 		}
-		public static void Debug<C>(this IMessageSink<C> sink, C context, string format, object arg0, object arg1 = null)
+		public static void Debug<C>(this IMessageSink<C> sink, C context, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Debug, context, format, arg0, arg1);
 		}
-		public static void Debug(this IMessageSink<object> sink, string format)
+		public static void Debug(this IMessageSink<object?> sink, string format)
 		{
 			sink.Write(Severity.Debug, null, format);
 		}
-		public static void DebugFormat(this IMessageSink<object> sink, string format, params object[] args)
+		public static void DebugFormat(this IMessageSink<object?> sink, string format, params object?[] args)
 		{
 			sink.Write(Severity.Debug, null, format, args);
 		}
-		public static void DebugFormat(this IMessageSink<object> sink, string format, object arg0, object arg1 = null)
+		public static void DebugFormat(this IMessageSink<object?> sink, string format, object? arg0, object? arg1 = null)
 		{
 			sink.Write(Severity.Debug, null, format, arg0, arg1);
 		}
@@ -294,9 +294,9 @@ namespace Loyc
 		/// are localized with <see cref="Localize.Localized(string, object[])"/>.</summary>
 		/// <remarks>For example, <c>FormatMessage(Severity.Error, "context", "Something happened!")</c>
 		/// comes out as "Error: context: Something happened!".</remarks>
-		public static string FormatMessage(Severity type, object context, string format, params object[] args)
+		public static string FormatMessage(Severity type, object? context, string format, params object?[] args)
 		{
-			string loc = ContextToString(context);
+			string? loc = ContextToString(context);
 			string formatted = Localize.Localized(format, args);
 			if (string.IsNullOrEmpty(loc))
 				return type.ToString().Localized() + ": " + formatted;
@@ -315,16 +315,22 @@ namespace Loyc
 		public static readonly NullMessageSink Null = NullMessageSink.Value;
 
 		/// <summary>Sends all messages to a user-defined method.</summary>
-		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
+		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn<object?> writer, Func<Severity, bool>? isEnabled = null)
 		{
 			return new MessageSinkFromDelegate(writer, isEnabled);
+		}
+
+		/// <summary>Sends all messages to a user-defined method.</summary>
+		public static MessageSinkFromDelegate<TContext> FromDelegate<TContext>(WriteMessageFn<TContext> writer, Func<Severity, bool>? isEnabled = null)
+		{
+			return new MessageSinkFromDelegate<TContext>(writer, isEnabled);
 		}
 
 		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"/> with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
 		/// have any context parameter.</summary>
-		public static MessageSinkWithContext WithContext(object context, string messagePrefix = null)
+		public static MessageSinkWithContext WithContext(object? context, string? messagePrefix = null)
 		{
 			return new MessageSinkWithContext(null, context, messagePrefix);
 		}
@@ -333,16 +339,16 @@ namespace Loyc
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
 		/// have any context parameter.</summary>
-		public static MessageSinkWithContext<TContext> WithContext<TContext>(IMessageSink<TContext> target, TContext context, string messagePrefix = null) where TContext: class
+		public static MessageSinkWithContext<TContext> WithContext<TContext>(IMessageSink<TContext> target, TContext context, string? messagePrefix = null) where TContext: class
 		{
 			return new MessageSinkWithContext<TContext>(target, context, messagePrefix);
 		}
 
-		public static void Write(this IMessageSink<object> sink, LogMessage msg)
+		public static void Write(this IMessageSink<object?> sink, LogMessage msg)
 		{
 			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
 		}
-		public static void Write(this IMessageSink<object> sink, ILogMessage msg)
+		public static void Write(this IMessageSink<object?> sink, ILogMessage msg)
 		{
 			sink.Write(msg.Severity, msg.Context, msg.Format, msg.Args);
 		}

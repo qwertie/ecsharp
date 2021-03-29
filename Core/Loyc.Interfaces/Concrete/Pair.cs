@@ -54,7 +54,7 @@ namespace Loyc
 		public T2 Value { [DebuggerStepThrough] get { return B; } set { B = value; } }
 
 		int ITuple.Length => 2;
-		public object this[int index] => index == 0 ? Item1 : index == 1 ? (object) Item2 : throw new IndexOutOfRangeException();
+		public object? this[int index] => index == 0 ? Item1 : index == 1 ? (object?) Item2 : throw new IndexOutOfRangeException();
 
 		static readonly EqualityComparer<T1> T1Comparer = EqualityComparer<T1>.Default;
 		static readonly EqualityComparer<T2> T2Comparer = EqualityComparer<T2>.Default;
@@ -67,7 +67,7 @@ namespace Loyc
 		public static implicit operator KeyValuePair<T1, T2>(Pair<T1, T2> p) { return new KeyValuePair<T1, T2>(p.A, p.B); }
 		public static bool operator ==(Pair<T1, T2> a, Pair<T1, T2> b) { return a.Equals(b); }
 		public static bool operator !=(Pair<T1, T2> a, Pair<T1, T2> b) { return !a.Equals(b); }
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is Pair<T1, T2>)
 				return Equals((Pair<T1, T2>) obj);
@@ -75,7 +75,8 @@ namespace Loyc
 		}
 		public override int GetHashCode()
 		{
-			return T1Comparer.GetHashCode(A) ^ T2Comparer.GetHashCode(B);
+			// GetHashCode(null) works (returns 0) but gives us a warning anyway
+			return T1Comparer.GetHashCode(A!) ^ T2Comparer.GetHashCode(B!);
 		}
 		public override string ToString()
 		{
@@ -88,9 +89,9 @@ namespace Loyc
 				c = Comparer<T2>.Default.Compare(B, other.B);
 			return c;
 		}
-		public int CompareTo(object obj)
+		public int CompareTo(object? obj)
 		{
-			return CompareTo((Pair<T1, T2>)obj);
+			return obj == null ? 1 : CompareTo((Pair<T1, T2>)obj);
 		}
 	}
 }

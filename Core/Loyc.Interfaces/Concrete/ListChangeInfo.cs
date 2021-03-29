@@ -20,10 +20,10 @@ namespace Loyc.Collections
 	public struct ListChangeInfo<T>
 	{
 		/// <summary>Initializes the members of <see cref="ListChangeInfo{T}"/>.</summary>
-		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems) 
+		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T>? newItems) 
 			: this(action, index, sizeChange, newItems, null) { }
 
-		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems, IListSource<T> oldItems)
+		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T>? newItems, IListSource<T>? oldItems)
 		{
 			Action = action;
 			Index = index;
@@ -32,7 +32,7 @@ namespace Loyc.Collections
 			_oldItems = oldItems;
 			_collection = null;
 			Debug.Assert(
-				(action == NotifyCollectionChangedAction.Add && newItems != null && NewItems.Count == sizeChange) ||
+				(action == NotifyCollectionChangedAction.Add && newItems != null && newItems.Count == sizeChange) ||
 				(action == NotifyCollectionChangedAction.Remove && (newItems == null || newItems.Count == 0) && sizeChange < 0) ||
 				(action == NotifyCollectionChangedAction.Replace && newItems != null && sizeChange == 0) ||
 				(action == NotifyCollectionChangedAction.Move && sizeChange == 0) ||
@@ -43,7 +43,7 @@ namespace Loyc.Collections
 		/// It computes the OldItems property automatically, on-demand, if the user gets it.</summary>
 		/// <param name="collection">The list that is about to change.</param>
 		/// <param name="action">Should be Remove, Reset or Replace.</param>
-		public ListChangeInfo(IListSource<T> collection, NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems = null)
+		public ListChangeInfo(IListSource<T> collection, NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T>? newItems = null)
 			: this(action, index, sizeChange, newItems, null) => _collection = collection;
 
 		/// <summary>Gets a value that indicates the type of change being made to 
@@ -69,8 +69,8 @@ namespace Loyc.Collections
 		public readonly int SizeChange;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		private readonly IListSource<T> _newItems;
-		private IListSource<T> _oldItems, _collection;
+		private readonly IListSource<T>? _newItems;
+		private IListSource<T>? _oldItems, _collection;
 
 		/// <summary>Represents either new item(s) that are being added to the 
 		/// collection, or item(s) that are replacing existing item(s) in the 
@@ -81,7 +81,7 @@ namespace Loyc.Collections
 		/// could be a slice that will be invalid after the event is over.
 		/// Avoid storing it without making a copy.
 		/// </remarks>
-		public IListSource<T> NewItems => _newItems;
+		public IListSource<T>? NewItems => _newItems;
 
 		/// <summary>This member may provide a list of old items that are being 
 		/// removed or replaced in the collection. It may be null when items are
@@ -93,13 +93,13 @@ namespace Loyc.Collections
 		/// typically a slice and therefore is not valid after the event is over;
 		/// avoid storing it without making a copy.
 		/// </remarks>
-		public IListSource<T> OldItems => _oldItems ?? ComputeOldItems();
+		public IListSource<T>? OldItems => _oldItems ?? ComputeOldItems();
 
-        private IListSource<T> ComputeOldItems()
-        {
+		private IListSource<T>? ComputeOldItems()
+		{
 			if (_collection == null)
 				return null;
 			return _oldItems = _collection.Slice(Index, (NewItems?.Count ?? 0) - SizeChange);
 		}
-    }
+	}
 }

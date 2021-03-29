@@ -6,6 +6,7 @@ namespace Loyc.Collections
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using System.Runtime.CompilerServices;
+	using System.Diagnostics.CodeAnalysis;
 
 	/// <summary>
 	/// A compact auto-enlarging list that efficiently supports supports insertions 
@@ -205,6 +206,7 @@ namespace Loyc.Collections
 		{
 			return _dlist.TrySet(index, value);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return _dlist.TryGet(index, out fail);
@@ -372,7 +374,7 @@ namespace Loyc.Collections
 	/// also implements the IList interface.
 	/// </summary>
 	[Serializable()]
-	public class DList : DList<object>, System.Collections.IList
+	public class DList : DList<object?>, System.Collections.IList
 	{
 		public bool IsFixedSize
 		{
@@ -385,7 +387,7 @@ namespace Loyc.Collections
 			if (arrayIndex < 0 || array.Length - arrayIndex < Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
 			
-			foreach(object obj in this)
+			foreach(object? obj in this)
 				array.SetValue(obj, arrayIndex++);
 		}
 		public bool IsSynchronized
@@ -396,11 +398,11 @@ namespace Loyc.Collections
 		{
 			get { return this; }
 		}
-		public new void Remove(object obj)
+		public new void Remove(object? obj)
 		{
 			base.Remove(obj);
 		}
-		public new int Add(object obj)
+		public new int Add(object? obj)
 		{
 			base.Add(obj);
 			return Count - 1;

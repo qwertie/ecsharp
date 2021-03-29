@@ -91,8 +91,8 @@ namespace Loyc
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
 		void Write(Severity level, TContext context, [Localizable] string format);
-		void Write(Severity level, TContext context, [Localizable] string format, object arg0, object arg1 = null);
-		void Write(Severity level, TContext context, [Localizable] string format, params object[] args);
+		void Write(Severity level, TContext context, [Localizable] string format, object? arg0, object? arg1 = null);
+		void Write(Severity level, TContext context, [Localizable] string format, params object?[] args);
 		
 		/// <summary>Returns true if messages of the specified type will actually be 
 		/// printed, or false if Write(type, ...) has no effect.</summary>
@@ -101,7 +101,7 @@ namespace Loyc
 	
 	/// <summary>Alias for IMessageSink&lt;object>.</summary>
 	/// <seealso cref="IMessageSink{TContext}"/>
-	public interface IMessageSink : IMessageSink<object>
+	public interface IMessageSink : IMessageSink<object?>
 	{
 	}
 

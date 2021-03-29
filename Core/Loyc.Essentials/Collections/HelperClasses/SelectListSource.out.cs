@@ -8,6 +8,7 @@
 using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -40,6 +41,7 @@ namespace Loyc.Collections
 			get { return _selector(_list[index]); }
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -79,6 +81,7 @@ namespace Loyc.Collections
 			get { return _selector(_list[index]); }
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -106,11 +109,12 @@ namespace Loyc.Collections
 	{
 		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public override TResult TryGet(int index, out bool fail)
 		{
-			T t = _list.TryGet(index, out fail);
+			T? t = _list.TryGet(index, out fail);
 			if (!fail)
-				return _selector(t);
+				return _selector(t!);
 			else
 				return default(TResult);
 		}

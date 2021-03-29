@@ -13,6 +13,7 @@ namespace Loyc.Collections.Impl
 	using System.Diagnostics;
 	using Loyc.Math;
 	using System.Runtime.CompilerServices;
+	using System.Diagnostics.CodeAnalysis;
 
 	/// <summary>A compact auto-enlarging deque structure that is intended to be 
 	/// used within other data structures. It should only be used internally in
@@ -70,7 +71,7 @@ namespace Loyc.Collections.Impl
 	{
 		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
-		internal T[] _array;
+		internal T[] _array; // Unused regions of the array are default(T)
 		internal int _count, _start;
 
 		public InternalDList(int capacity)
@@ -216,7 +217,7 @@ namespace Loyc.Collections.Impl
 			_count -= amount;
 			int i = IncMod(_start, _count);
 			for (;;) {
-				_array[i] = default(T);
+				_array[i] = default(T)!;
 				if (--amount == 0)
 					break;
 				i = IncMod(i);
@@ -233,7 +234,7 @@ namespace Loyc.Collections.Impl
 			int i = _start;
 			_start = IncMod(_start, amount);
 			while (i != _start) {
-				_array[i] = default(T);
+				_array[i] = default(T)!;
 				i = IncMod(i);
 			}
 
@@ -531,11 +532,11 @@ namespace Loyc.Collections.Impl
 			if (adjusted >= array.Length) {
 				adjusted -= array.Length;
 				for (int i = start; (uint)i < array.Length; i++)
-					array[(uint)i] = default(T);
+					array[(uint)i] = default(T)!;
 				start = 0;
 			}
 			for (int i = start; i < adjusted; i++)
-				array[i] = default(T);
+				array[i] = default(T)!;
 			start = adjusted;
 		}
 
@@ -660,6 +661,7 @@ namespace Loyc.Collections.Impl
 			_array[Internalize(index)] = value;
 			return true;
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count) {
@@ -762,16 +764,16 @@ namespace Loyc.Collections.Impl
 			int size1, stop, stop2, i, oldCount;
 			T[] array;
 			DList<T> _wrapper;
-			T _current;
+			T? _current;
 			
-			internal Enumerator(InternalDList<T> list, DList<T> wrapper)
+			internal Enumerator(InternalDList<T> list, DList<T>? wrapper)
 			{
 				size1 = list.FirstHalfSize;
 				i = list._start;
 				stop = i + size1;
 				stop2 = list._count - size1;
 				array = list._array;
-				wrapper = wrapper ?? NoWrapper;
+				wrapper ??= NoWrapper;
 				this._wrapper = wrapper;
 				oldCount = wrapper.Count;
 			}
@@ -802,10 +804,10 @@ namespace Loyc.Collections.Impl
 				return true;
 			}
 
-			public T Current { get { return _current; } }
+			public T Current { get { return _current!; } }
 		
 			void  IDisposable.Dispose() { }
-			object  System.Collections.IEnumerator.Current { get { return Current; } }
+			object? System.Collections.IEnumerator.Current { get { return Current; } }
 			void  System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		}
 

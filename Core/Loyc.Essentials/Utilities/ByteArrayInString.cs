@@ -145,7 +145,7 @@ namespace Loyc
 		public static ArraySlice<byte>? TryConvert(UString s)
 		{
 			// Maybe when we go to .NET Core they'll offer a Span overload to make this efficient?
-			return TryConvert(s.ToString());
+			return TryConvert(s.ToString() ?? "");
 		}
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
@@ -166,37 +166,41 @@ namespace Loyc
 				{
 					int iOut = i++;
 
-					for (; ; )
+					for (;;)
 					{
 						byte cur;
-						if (i >= b.Length || (uint)((cur = b[i]) - 63) > 63)
-							throw new FormatException("String cannot be interpreted as a byte array".Localized());
-						int digit = (cur - 64) & 63;
-						int zeros = 16 - 6; // number of 0 bits on right side of accum
-						int accum = digit << zeros;
-
-						while (++i < b.Length)
+						if (i < b.Length)
 						{
 							if ((uint)((cur = b[i]) - 63) > 63)
-								break;
-							digit = (cur - 64) & 63;
-							zeros -= 6;
-							accum |= digit << zeros;
-							if (zeros <= 8)
+								return default;
+							int digit = (cur - 64) & 63;
+							int zeros = 16 - 6; // number of 0 bits on right side of accum
+							int accum = digit << zeros;
+
+							while (++i < b.Length)
 							{
-								b[iOut++] = (byte)(accum >> 8);
-								accum <<= 8;
-								zeros += 8;
+								if ((uint)((cur = b[i]) - 63) > 63)
+									break;
+								digit = (cur - 64) & 63;
+								zeros -= 6;
+								accum |= digit << zeros;
+								if (zeros <= 8)
+								{
+									b[iOut++] = (byte)(accum >> 8);
+									accum <<= 8;
+									zeros += 8;
+								}
 							}
+
+							// Invalid states: unused bits in accumulator, or invalid base-64 char
+							if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
+								return default;
+							i++;
+
+							// Start taking bytes verbatim
+							while (i < b.Length && b[i] != '\b')
+								b[iOut++] = b[i++];
 						}
-
-						if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
-							return default;
-						i++;
-
-						// Start taking bytes verbatim
-						while (i < b.Length && b[i] != '\b')
-							b[iOut++] = b[i++];
 						if (i >= b.Length)
 							return b.Slice(0, iOut);
 						i++;

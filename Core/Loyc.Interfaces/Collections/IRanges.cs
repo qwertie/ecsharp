@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -199,6 +200,7 @@ namespace Loyc.Collections
 		/// which, ironically, is not compatible with "out T" parameters, only with 
 		/// return values.
 		/// </remarks>
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		T PopFirst(out bool fail);
 	}
 
@@ -258,6 +260,7 @@ namespace Loyc.Collections
 		/// <param name="fail">Receives the current value of IsEmpty.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
 		/// <remarks>The remarks of <see cref="IFRange{T}.PopFirst"/> apply to this method.</remarks>
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		T PopLast(out bool fail);
 	}
 

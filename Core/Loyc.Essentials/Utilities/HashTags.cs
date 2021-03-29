@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Collections;
 
 namespace Loyc
@@ -13,9 +14,10 @@ namespace Loyc
 	/// </summary>
 	public class HashTags<ValueT> : ITags<ValueT>, IDictionary<Symbol, ValueT>, IReadOnlyDictionary<Symbol, ValueT>
 	{
-		protected Symbol _cachedAttrKey;
+		protected Symbol? _cachedAttrKey;
+		[AllowNull]
 		protected ValueT _cachedAttrValue;
-		protected Dictionary<Symbol, ValueT> _attrs;
+		protected Dictionary<Symbol, ValueT>? _attrs;
 
 		public HashTags() { }
 		public HashTags(HashTags<ValueT> original)
@@ -28,10 +30,12 @@ namespace Loyc
 
 		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
+		[return: MaybeNull]
 		public ValueT GetTag(string key) { return GetTag(GSymbol.GetIfExists(key)); }
-		public ValueT GetTag(Symbol key)
+		[return: MaybeNull]
+		public ValueT GetTag(Symbol? key)
 		{
-			ValueT val;
+			ValueT? val;
 			if (key == _cachedAttrKey)
 				return _cachedAttrValue;
 			else if (_attrs == null || key == null)
@@ -67,7 +71,7 @@ namespace Loyc
 		}
 
 		public bool RemoveTag(string key) { return RemoveTag(GSymbol.GetIfExists(key)); }
-		public bool RemoveTag(Symbol key)
+		public bool RemoveTag(Symbol? key)
 		{
 			if (key == null)
 				return false;
@@ -86,7 +90,7 @@ namespace Loyc
 		}
 
 		public bool HasTag(string key) { return HasTag(GSymbol.GetIfExists(key)); }
-		public bool HasTag(Symbol key)
+		public bool HasTag(Symbol? key)
 		{
 			if (key == null)
 				return false;
@@ -108,11 +112,17 @@ namespace Loyc
 		}
 		
 		#region IDictionary<Symbol, ValueT> and IReadOnlyDictionary<Symbol, ValueT>
+		
+		// Nullability: grandfathered in: we're violating the interface's expectation
+		#pragma warning disable 8768
+
+		[MaybeNull]
 		ValueT IDictionary<Symbol, ValueT>.this[Symbol key]
 		{
 			get { return GetTag(key); }
 			set { SetTag(key, value); }
 		}
+		[MaybeNull]
 		ValueT IReadOnlyDictionary<Symbol, ValueT>.this[Symbol key]
 		{
 			get { return GetTag(key); }
@@ -163,12 +173,12 @@ namespace Loyc
 		bool IDictionary<Symbol, ValueT>.Remove(Symbol key)
 			{ return this.RemoveTag(key); }
 		
-		bool IDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
+		bool IDictionary<Symbol, ValueT>.TryGetValue(Symbol key, [MaybeNullWhen(false)] out ValueT value)
 		{
 			value = GetTag(key);
 			return HasTag(key);
 		}
-		bool IReadOnlyDictionary<Symbol, ValueT>.TryGetValue(Symbol key, out ValueT value)
+		bool IReadOnlyDictionary<Symbol, ValueT>.TryGetValue(Symbol key, [MaybeNullWhen(false)] out ValueT value)
 		{
 			value = GetTag(key);
 			return HasTag(key);
@@ -183,19 +193,19 @@ namespace Loyc
 		{
 			_cachedAttrKey = null;
 			_cachedAttrValue = default(ValueT);
-			_attrs.Clear();
+			_attrs?.Clear();
 		}
 		
 		bool ICollection<KeyValuePair<Symbol, ValueT>>.Contains(KeyValuePair<Symbol, ValueT> item)
 		{
-			return HasTag(item.Key) && GetTag(item.Key).Equals(item.Value);
+			return HasTag(item.Key) && GetTag(item.Key)!.Equals(item.Value);
 		}
 		
 		void ICollection<KeyValuePair<Symbol, ValueT>>.CopyTo(KeyValuePair<Symbol, ValueT>[] array, int arrayIndex)
 		{
 			if (((IDictionary<Symbol, ValueT>)this).Count > array.Length - arrayIndex)
 				CheckParam.ThrowBadArgument("Insufficient space in supplied array");
-			if (_attrs == null)
+			if (_attrs != null)
 				((ICollection<KeyValuePair<Symbol, ValueT>>)_attrs).CopyTo(array, arrayIndex);
 			if (_cachedAttrKey != null)
 				array[arrayIndex] = new KeyValuePair<Symbol, ValueT>(_cachedAttrKey, _cachedAttrValue);
@@ -203,7 +213,7 @@ namespace Loyc
 		
 		bool ICollection<KeyValuePair<Symbol, ValueT>>.Remove(KeyValuePair<Symbol, ValueT> item)
 		{
-			if (GetTag(item.Key).Equals(item.Value))
+			if (GetTag(item.Key)?.Equals(item.Value) == true)
 				return RemoveTag(item.Key);
 			else
 				return false;

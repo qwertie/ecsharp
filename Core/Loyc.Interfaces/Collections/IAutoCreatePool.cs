@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -25,6 +26,7 @@ namespace Loyc.Collections
 		/// <summary>Gets the item with the specified key, if it was created earlier.</summary>
 		/// <returns>The value corresponding to the specified key, or 
 		/// <c>default(TValue)</c> if the value has not been created.</returns>
+		[return: MaybeNull]
 		TValue GetIfExists(TKey key);
 	}
 }

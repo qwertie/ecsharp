@@ -48,6 +48,7 @@ namespace Loyc.Collections
 	/// to use IDictionary instead of Dictionary.</summary>
 	[Serializable]
 	public class KeyCollection<TKey, TValue> : ICollection<TKey>, ICollectionAndReadOnly<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
+		where TKey: notnull
 	{
 		IReadOnlyDictionary<TKey, TValue> dictionary;
 

@@ -1,12 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Loyc.Collections
 {
+	// They want me to put a "where K: notnull" constraint on these. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714 
+
 	public static partial class EnumerableExt
 	{
 		/// <summary>Converts a collection of keys to an IReadOnlyDictionary,
@@ -46,7 +51,7 @@ namespace Loyc.Collections
 		/// }
 		/// </code>
 		/// </example>
-		public static IReadOnlyDictionary<K, V> AsReadOnlyDictionary<K, V>(this IReadOnlyCollection<K> keys, Func<K, Maybe<V>> tryGetValue, Func<K, V> getValue = null)
+		public static IReadOnlyDictionary<K, V> AsReadOnlyDictionary<K, V>(this IReadOnlyCollection<K> keys, Func<K, Maybe<V>> tryGetValue, Func<K, V>? getValue = null)
 		{
 			return new SelectDictionaryFromKeys<K, V>(keys, tryGetValue, getValue);
 		}
@@ -60,7 +65,7 @@ namespace Loyc.Collections
 	{
 		IReadOnlyCollection<K> _keys;
 		Func<K, Maybe<V>> _tryGetValue;
-		Func<K, V> _getValue;
+		Func<K, V>? _getValue;
 
 		/// <summary>Initializes the adapter.</summary>
 		/// <param name="keys">A collection of dictionary keys.</param>
@@ -68,7 +73,7 @@ namespace Loyc.Collections
 		/// <param name="getValue">This function is optional. It is used to get values when it is known 
 		/// in advance that the key exists (in GetEnumerator() and in the Values property). If this is 
 		/// null, tryGetValue is used instead. Providing this function can increase performance.</param>
-		public SelectDictionaryFromKeys(IReadOnlyCollection<K> keys, Func<K, Maybe<V>> tryGetValue, Func<K, V> getValue = null)
+		public SelectDictionaryFromKeys(IReadOnlyCollection<K> keys, Func<K, Maybe<V>> tryGetValue, Func<K, V>? getValue = null)
 		{
 			if (keys == null)        throw new ArgumentNullException("keys");
 			if (tryGetValue == null) throw new ArgumentNullException("tryGetValue");
@@ -90,7 +95,7 @@ namespace Loyc.Collections
 
 		public IEnumerable<V> Values => _getValue != null 
 			? _keys.Select(k => _getValue(k))
-			: _keys.Select(k => _tryGetValue(k).Or(default(V)));
+			: _keys.Select(k => _tryGetValue(k).Or(default(V)!)); // _tryGetValue not expected to fail
 
 		public int Count => _keys.Count;
 
@@ -104,10 +109,10 @@ namespace Loyc.Collections
 				.GetEnumerator();
 		}
 
-		public bool TryGetValue(K key, out V value)
+		public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
 		{
 			var result = _tryGetValue(key);
-			value = result.Or(default(V));
+			value = result.Or(default(V)!);
 			return result.HasValue;
 		}
 
