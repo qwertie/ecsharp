@@ -115,6 +115,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="ecs\InRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>InRange.out.cs</LastGenOutput>

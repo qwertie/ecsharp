@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Loyc.Compatibility
 {
-	#if NetStandard20 || DotNet45
+	#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462
 
 	/// <summary>Defines ITuple in .NET Standard 2.0. System.Runtime.CompilerServices.ITuple
 	/// was added to .NET Core 2.0 and .NET Framework 4.7.1, but it wasn't added to .NET 
