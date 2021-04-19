@@ -23,102 +23,102 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="AlgebraicDataType.ecs">
+    <None Update="ecs\AlgebraicDataType.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
     </None>
-    <Compile Update="AlgebraicDataType.out.cs">
+    <Compile Update="ecs\AlgebraicDataType.out.cs">
       <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="AssertMacro.ecs">
+    <None Update="ecs\AssertMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>AssertMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Update="AssertMacro.out.cs">
+    <Compile Update="ecs\AssertMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AssertMacro.ecs</DependentUpon>
     </Compile>
-    <None Update="ContractsMacro.ecs">
+    <None Update="ecs\ContractsMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ContractsMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Update="ContractsMacro.out.cs">
+    <Compile Update="ecs\ContractsMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ContractsMacro.ecs</DependentUpon>
     </Compile>
-    <None Update="InRange.ecs">
+    <None Update="ecs\InRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>InRange.out.cs</LastGenOutput>
     </None>
-    <Compile Update="InRange.out.cs">
+    <Compile Update="ecs\InRange.out.cs">
       <DependentUpon>InRange.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="MatchCode.ecs">
+    <None Update="ecs\MatchCode.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>
     </None>
-    <Compile Update="MatchCode.out.cs">
+    <Compile Update="ecs\MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="MatchMacro.ecs">
+    <None Update="ecs\MatchMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Update="MatchMacro.out.cs">
+    <Compile Update="ecs\MatchMacro.out.cs">
       <DependentUpon>MatchMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="OnReturn.ecs">
+    <None Update="ecs\OnReturn.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>OnReturn.out.cs</LastGenOutput>
     </None>
-    <Compile Update="OnReturn.out.cs">
+    <Compile Update="ecs\OnReturn.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OnReturn.ecs</DependentUpon>
     </Compile>
-    <None Update="SaveAndRestoreMacro.ecs">
+    <None Update="ecs\SaveAndRestoreMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>SaveAndRestoreMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Update="SaveAndRestoreMacro.out.cs">
+    <Compile Update="ecs\SaveAndRestoreMacro.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SaveAndRestoreMacro.ecs</DependentUpon>
     </Compile>
-    <None Update="UseSequenceExpressions.ecs">
+    <None Update="ecs\UseSequenceExpressions.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>UseSequenceExpressions.out.cs</LastGenOutput>
     </None>
-    <Compile Update="UseSequenceExpressions.out.cs">
+    <Compile Update="ecs\UseSequenceExpressions.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>UseSequenceExpressions.ecs</DependentUpon>
     </Compile>
-    <None Update="UsingMultiMacro.ecs">
+    <None Update="ecs\UsingMultiMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>
     </None>
-    <Compile Update="UsingMultiMacro.out.cs">
+    <Compile Update="ecs\UsingMultiMacro.out.cs">
       <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="Prelude.Les3.ecs">
+    <None Update="lesX.to.ecs\les3.to.ecs.Macros.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>Prelude.Les3.out.cs</LastGenOutput>
+      <LastGenOutput>les3.to.ecs.Macros.out.cs</LastGenOutput>
     </None>
-    <Compile Update="Prelude.Les3.out.cs">
-      <DependentUpon>Prelude.Les3.ecs</DependentUpon>
+    <Compile Update="lesX.to.ecs\les3.to.ecs.Macros.out.cs">
+      <DependentUpon>les3.to.ecs.Macros.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
