@@ -10,6 +10,7 @@ using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Loyc
 {
@@ -120,17 +121,22 @@ namespace Loyc
 		
 		/// <summary>Returns <c>action(obj)</c>. This method lets you embed statements 
 		/// in any expression.</summary>
-		public static R Do<T, R>(this T obj, Func<T, R> action)
-		{
-			return action(obj);
-		}
+		public static R Do<T, R>(this T obj, Func<T, R> action) => action(obj);
 
-		/// <summary>Returns true. This method has no effect; it is used to do an action in a conditional expression.</summary>
+		/// <summary>Returns true. This method has no effect; it is used to do an action 
+		/// in a conditional expression.</summary>
 		/// <param name="value">Ignored.</param>
 		/// <returns>True.</returns>
-		public static bool True<T>(T value) { return true; }
+		public static bool True<T>(T value) => true;
 		
-        /// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
+		/// <summary>This method simply assigns a value to a variable and returns true.
+		/// For example, <c>G.Var(out int x, 777)</c> is used to create a variable 
+		/// called x with a value of 777.</summary>
+		/// <returns>True.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool Var<T>(out T var, T value) { var = value; return true; }
+
+		/// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
 		/// <returns>True</returns>
 		public static bool True(Action action) { action(); return true; }
 
@@ -226,6 +232,7 @@ namespace Loyc
 
 		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 
 		/// evaluated even in a Release build.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);

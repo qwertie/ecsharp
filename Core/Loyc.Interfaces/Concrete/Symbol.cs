@@ -123,6 +123,7 @@ namespace Loyc
 
 		#endregion
 
+		[return: NotNullIfNotNull("s")]
 		public static explicit operator Symbol?(string? s) => s == null ? null : GSymbol.Get(s);
 		public static explicit operator string(Symbol s) => s.Name;
 		public static explicit operator Symbol(UString s) => GSymbol.Get(s);
