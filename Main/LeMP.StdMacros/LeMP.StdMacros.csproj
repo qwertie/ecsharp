@@ -20,7 +20,7 @@
     <Compile Include="..\..\Core\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.9.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="ecs\AlgebraicDataType.ecs">

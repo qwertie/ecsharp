@@ -228,6 +228,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="OpenSourceKey.snk" />
     <None Include="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>

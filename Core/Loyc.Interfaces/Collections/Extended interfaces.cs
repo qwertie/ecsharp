@@ -21,8 +21,9 @@ namespace Loyc.Collections
 	/// interface. ICollectionEx adds the following methods that ICollection(T) lacks:
 	/// AddRange() and RemoveAll().
 	/// </remarks>
-	public interface ICollectionEx<T> : ICollectionImpl<T>, IAddRange<T>, IIsEmpty
+	public interface ICollectionEx<T> : ICollectionImpl<T>, IAddRange<T>, IIsEmpty //, IScannable<T>
 	{
+		//void AddRange(IScannable<T> e);
 	}
 
 	/// <summary>Combines <see cref="ICollectionEx{T}"/> with INotifyListChanging{T, ICollection{T}}.

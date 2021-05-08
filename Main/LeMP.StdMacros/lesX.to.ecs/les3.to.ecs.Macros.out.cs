@@ -527,14 +527,14 @@ namespace LeMP.les3.to.ecs
 			return Les2.TranslateSpaceDefinition(node, context, S.Namespace);
 		}
 
-		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifierOrCall | MacroMode.AllowDuplicates)] 
-		public static LNode @this(LNode node, IMessageSink sink)
+		[LexicalMacro("this; this(Params...)", "Refers to current object, or calls a constructor in the same class.", Mode = MacroMode.MatchIdentifierOrCall)] 
+		public static LNode @_numthis(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.This);
 		}
 
-		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifierOrCall | MacroMode.AllowDuplicates)] 
-		public static LNode @base(LNode node, IMessageSink sink)
+		[LexicalMacro("base; base(Params...)", "Refers to base class, or calls a constructor in the base class.", Mode = MacroMode.MatchIdentifierOrCall)] 
+		public static LNode @_numbase(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Base);
 		}

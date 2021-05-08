@@ -117,6 +117,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Les3Lexer.ecs</DependentUpon>
     </Compile>
+    <None Include="app.config" />
     <None Include="LES\Les3Printer_CanPrintAsNumber.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>Les3Printer_CanPrintAsNumber.out.cs</LastGenOutput>
