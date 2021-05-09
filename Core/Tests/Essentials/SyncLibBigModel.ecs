@@ -1,0 +1,49 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Numerics;
+
+macro typeToName($type) => LNode.Id(type.Name.Name[1].ToString().ToUpper() + type.Name.Name.Substring(2));
+
+namespace Loyc.Essentials.Tests
+{
+	//define operator$($expr) { precompute($expr); }
+
+	define primitiveTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char);
+
+	define ({
+		forEachPrimitiveType($type) { $(..code); }
+	}) {
+		// (primitiveTypes,) informs the EC# parser that we're constructing 
+		// a tuple, not a parenthsized expression. Sadly, #preprocessChild is
+		// needed because unroll doesn't understand #splice.
+		#preprocessChild(0/1,
+			unroll ($type in (primitiveTypes,)) { $(..code); });
+	}
+
+	class BigClass
+	{
+		//forEachPrimitiveType(type) {
+		//	public type $(out typeToName(type)) { get; set; }
+		//}
+		//forEachPrimitiveType(type) {
+		//	public type? $(out #preprocessArgsOf(concatId(typeToName(type), "Nullable")));
+		//}
+		//forEachPrimitiveType(type) {
+		//	public type[] $(out #preprocessArgsOf(concatId(typeToName(type), "Array")));
+		//}
+		//forEachPrimitiveType(type) {
+		//	public List<type> $(out #preprocessArgsOf(concatId(typeToName(type), "List")));
+		//}
+		//forEachPrimitiveType(type) {
+		//	public List<type? > $(out #preprocessArgsOf(concatId("Nullable", typeToName(type), "List")));
+		//}
+		//forEachPrimitiveType(type) {
+		//	public List<type[]> $(out #preprocessArgsOf(concatId(typeToName(type), "ArrayList")));
+		//}
+	}
+
+	class SyncLibBigModel<Manager>
+	{
+	}
+}

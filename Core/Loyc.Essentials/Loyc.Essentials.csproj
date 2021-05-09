@@ -38,6 +38,16 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
+    <Compile Update="SyncLib\ISyncManager.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ISyncManager.ecs</DependentUpon>
+    </Compile>
+    <Compile Update="SyncLib\SyncJson.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncJson.ecs</DependentUpon>
+    </Compile>
     <None Update="Collections\ExtensionMethods\EnumerableExt.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>EnumerableExt.out.cs</LastGenOutput>
@@ -69,6 +79,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>GRange.ecs</DependentUpon>
     </Compile>
+    <None Update="SyncLib\ISyncManager.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
+    </None>
+    <None Update="SyncLib\SyncJson.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncJson.out.cs</LastGenOutput>
+    </None>
     <None Update="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>GRange.out.cs</LastGenOutput>

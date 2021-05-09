@@ -12,17 +12,27 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj"/>
-    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj"/>
-    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj"/>
-    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj"/>
-    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj"/>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj" />
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <Compile Update="Essentials\SyncLibBigModel.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncLibBigModel.ecs</DependentUpon>
+    </Compile>
     <Compile Update="Syntax\LexerSourceTest.out.cs">
       <DependentUpon>LexerSourceTest.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Update="Essentials\SyncLibBigModel.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncLibBigModel.out.cs</LastGenOutput>
+    </None>
     <None Update="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>

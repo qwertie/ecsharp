@@ -1,0 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Loyc.SyncLib
+{
+	public static partial class SyncJson
+	{
+		public partial struct Writer
+		{
+			
+		}
+	}
+}
