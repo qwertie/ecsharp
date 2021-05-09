@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Loyc;
@@ -12,6 +13,45 @@ namespace LeMP.ecs
 {
 	partial class StandardMacros
 	{
+		[LexicalMacro("matches(expr, pattern, ...)",
+			"Attempts to match and deconstruct a Loyc tree against one or more code patterns at "+
+			"runtime. For example, `matches(quote(Sqrt(9) + 3*4), $a + $b)` will return true "+
+			"and create variables called `a` and `b` that contain the Loyc trees for `Sqrt(9)` and "+
+			"`3*4`. You can use `$(...x)` in the pattern to gather zero or more parameters into a "+
+			"list `x`. To re-use a pre-existing variable x in a pattern, use $(ref x) instead of "+
+			"$x. To match a variable conditionally in EC# or LES3, use `$(x when condition)`. For "+
+			"example, `$(x when x.IsId && x.AttrCount == 0)` will match only if x is a simple "+
+			"identifier with no attributes or trivia attached to it.\n\n"+
+			"You can specify multiple patterns. In that case, the input is compared with each "+
+			"pattern in order, the matching process stops at the first successful match, and "+
+			"the result is true if any of the patterns match.")]
+		public static LNode matches(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount < 2)
+				return null;
+
+			var input = node[0];
+
+			// If we're matching against something nontrivial like `matches(foo(x), ...)`,
+			// create a temporary variable to hold the result of `foo(x)`.
+			LNode tempVarForInput = null;
+			if (!LooksLikeSimpleValue(input)) {
+				var tempVarId = LNode.Id(NextTempName(context, input), input);
+				tempVarForInput = quote(LNode.Var(out var $tempVarId, $input));
+				input = tempVarId;
+			}
+
+			var cmc = new CodeMatchContext { Context = context, IsMultiCase = node.ArgCount > 2 };
+			
+			var patterns = node.Args.Skip(1).Select(UnwrapBraces);
+			var tests = patterns.Aggregate((LNode)null, (tests_, pattern) => {
+				var test = cmc.MakeTopTestExpr(pattern, input)
+				return LNode.MergeBinary(tests_, test, S.Or);
+			});
+
+			return LNode.MergeBinary(tempVarForInput, tests, S.And);
+		}
+
 		[LexicalMacro("matchCode (var) { case ...: ... }; // In LES, use a => b instead of case a: b",
 			"Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. "+
 			"`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. "+
@@ -23,64 +63,73 @@ namespace LeMP.ecs
 			if (node.AttrNamed(S.Static) != null)
 				return null; // this case is handled by static_matchCode macro
 
+			// Expect a single arg (the variable being matched) and a body (braced block with cases)
 			var args_body = context.GetArgsAndBody(false);
 			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1 || body.Count < 1)
 				return null;
-			var cases = GetCases(body, context.Sink);
-			if (cases.IsEmpty)
+
+			// Get a list of case blocks in the body. Each block has a list of patterns, and a 
+			// list of statements to run if the pattern is matched.
+			VList<(LNodeList Cases, LNodeList Handler)> blocks = GetCases(body, context.Sink);
+			if (blocks.IsEmpty)
 				return null;
 			
+			// If we're matching against something nontrivial like `matchCode(foo(x))`,
+			// create a temporary variable to hold the result of `foo(x)`.
 			var output = new WList<LNode>();
 			var var = MaybeAddTempVarDecl(context, args[0], output);
 
-			var ifClauses = new List<Pair<LNode,LNode>>();
-			var cmc = new CodeMatchContext { Context = context };
+			// `ifClauses` will hold the output code, with one pair per case block. The first 
+			// item in each pair is the expression used to decide whether the input matches 
+			// the pattern; the second is the user-defined code to run if the pattern matches.
+			var ifClauses = new List<(LNode TestExpr, LNode Handler)>();
 
-			foreach (var @case in cases) 
+			// This is the workhorse of code generation, and it holds intermediate state.
+			var cmc = new CodeMatchContext { Context = context, DeclareVarsSeparately = true };
+
+			foreach (var block in blocks) 
 			{
-				cmc.ThenClause.Clear();
 				// e.g. case [$(..._)] Foo($x + 1, $y) => 
 				//      LNode x, y, tmp9; 
 				//      if (var.Calls((Symbol) "Foo", 2) && (tmp9 = var.Args[0]).Calls(CodeSymbols.Plus, 2)
 				//          && (x = tmp9.Args[0]) != null // this will never be null, but we want to put it the assignment in the 'if' statement
 				//          && 1.Equals(tmp9.Args[1].Value) && (y = var.Args[1]) != null) { ... }
 				LNode testExpr = null;
-				if (@case.Key.Count > 0) {
-					if (cmc.IsMultiCase = @case.Key.Count > 1) {
+				if (block.Cases.Count > 0) {
+					if (cmc.IsMultiCase = block.Cases.Count > 1) {
 						cmc.UsageCounters.Clear();
-						testExpr = @case.Key.Aggregate((LNode)null, (test, pattern) => {
-							test = LNode.MergeBinary(test, cmc.MakeTopTestExpr(pattern, var), S.Or);
-							return test;
+						testExpr = block.Cases.Aggregate((LNode)null, (tests_, pattern) => {
+							var test = cmc.MakeTopTestExpr(pattern, var);
+							return LNode.MergeBinary(tests_, test, S.Or);
 						});
-						foreach (var pair in cmc.UsageCounters.Where(p => p.Value < @case.Key.Count)) {
+						foreach (var pair in cmc.UsageCounters.Where(p => p.Value < block.Cases.Count)) {
 							if (cmc.NodeVars.ContainsKey(pair.Key))
 								cmc.NodeVars[pair.Key] = true;
 							if (cmc.ListVars.ContainsKey(pair.Key))
 								cmc.ListVars[pair.Key] = true;
 						}
 					} else
-						testExpr = cmc.MakeTopTestExpr(@case.Key[0], var);
+						testExpr = cmc.MakeTopTestExpr(block.Cases[0], var);
 				}
-				var handler = F.Braces(@case.Value);
-				if (cmc.ThenClause.Count > 0)
-					handler = LNode.MergeLists(F.Braces(cmc.ThenClause), handler, S.Braces);
-				ifClauses.Add(Pair.Create(testExpr, handler));
+				var handler = F.Braces(block.Handler);
+				ifClauses.Add((testExpr, handler));
 			}
 
+			// Combine all the conditions and code blocks into a single if-else chain.
 			LNode ifStmt = null;
 			for (int i = ifClauses.Count-1; i >= 0; i--)
 			{
-				if (ifClauses[i].Item1 == null) {
+				if (ifClauses[i].TestExpr == null) {
 					if (ifStmt == null)
-						ifStmt = ifClauses[i].Item2;
+						ifStmt = ifClauses[i].Handler;
 					else
 						context.Sink.Error(node, "The default case must appear last, and there can be only one.");
 				} else {
 					if (ifStmt == null)
-						ifStmt = F.Call(S.If, ifClauses[i].Item1, ifClauses[i].Item2);
+						ifStmt = F.Call(S.If, ifClauses[i].TestExpr, ifClauses[i].Handler);
 					else
-						ifStmt = F.Call(S.If, ifClauses[i].Item1, ifClauses[i].Item2, ifStmt);
+						ifStmt = F.Call(S.If, ifClauses[i].TestExpr, ifClauses[i].Handler, ifStmt);
 				}
 			}
 
@@ -102,21 +151,33 @@ namespace LeMP.ecs
 
 		class CodeMatchContext
 		{
+			// For detecting when the same $var is used more than once
 			HashSet<Symbol> DuplicateDetector = new HashSet<Symbol>();
+
+			// UsageCounters will count how many of the patterns in a single 'case' (or the 
+			// patterns given to 'matches') refer to each pattern variable, e.g. for 
+			// `matches(x, $x, $x + $y)`, $y is used once and $x twice.
 			public Dictionary<Symbol, int> UsageCounters = new Dictionary<Symbol,int>();
-			// The boolean value indicates whether the variable needs initialization due to multi-case
+			// These dictionaries will have an entry for each variable (from a pattern) that needs 
+			// to be declared. The boolean value in each of the two dictionaries will be set to 
+			// false if the variable will be definitely initialized on all paths, and true if the 
+			// variable needs to be initialized to a default value. In matchCode statements,
+			// these dictionaries are for all the code blocks (not reset between blocks).
 			public Dictionary<Symbol, bool> NodeVars = new Dictionary<Symbol, bool>(); // LNode vars to declare
 			public Dictionary<Symbol, bool> ListVars = new Dictionary<Symbol, bool>(); // LNodeList vars to declare
-			public LNodeList ThenClause = new LNodeList(); // stuff to do at the start of the {block} inside the if-statement
 			public IMacroContext Context;
 			public bool IsMultiCase; // true if building a case statement with multiple patterns
 			public WList<LNode> Tests = new WList<LNode>(); // list of tests involved in matching the current pattern
+			// The old style (used by matchCode) is to declare variables on separate lines, while 
+			// the new style (used by the `matches`, which is newer) relies on `LNode.Var(out var...)`.
+			// Someday we can remove `DeclareVarsSeparately` mode along with the separate var decls.
+			public bool DeclareVarsSeparately = false;
 
-			internal LNode MakeTopTestExpr(LNode pattern, LNode var)
+			internal LNode MakeTopTestExpr(LNode pattern, LNode input)
 			{
 				DuplicateDetector.Clear();
 				Tests.Clear();
-				MakeTestExpr(pattern, var);
+				MakeTestExpr(pattern, input);
 				
 				LNode result = null;
 				foreach (var test in Tests)
@@ -124,22 +185,24 @@ namespace LeMP.ecs
 				return result;
 			}
 
-			private void MakeTestExpr(LNode pattern, LNode candidate)
+			private void MakeTestExpr(LNode pattern, LNode candidate) // Matches a top-level expr or a Target
 			{
-				Symbol varArgSym;
-				LNode varArgCond;
-				MakeTestExpr(pattern, candidate, out varArgSym, out varArgCond);
-				if (varArgSym != null)
-					Context.Sink.Error(pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
+				MakeTestExpr(pattern, (Symbol varArgSym, bool hasCondition) => {
+					if (varArgSym != null) {
+						Context.Sink.Error(pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
+						return null;
+					}
+					return candidate;
+				});
 			}
-			private void MakeTestExpr(LNode pattern, LNode candidate, out Symbol varArgSym, out LNode varArgCond)
+			private void MakeTestExpr(LNode pattern, Func<Symbol, bool, LNode> getCandidateSubtree)
 			{
-				varArgSym = null; varArgCond = null;
-
-				// is this a $substitutionVar?
+				// is this a $substitutionVar? (if yes, nodeVar != null)
 				LNode condition;
 				bool isParams, refExistingVar;
 				var nodeVar = DecodeSubstitutionExpr(pattern, out condition, out isParams, out refExistingVar);
+
+				var candidate = getCandidateSubtree(isParams ? nodeVar : null, condition != null);
 
 				// Unless the candidate is a simple variable name, avoid repeating 
 				// it by creating a temporary variable to hold its value
@@ -149,23 +212,14 @@ namespace LeMP.ecs
 				if (predictedTests > 1)
 					candidate = MaybePutCandidateInTempVar(candidate.IsCall, candidate);
 
-				MatchAttributes(pattern, candidate); // Look for @[$(...var)]
+				// Look for an attribute list of the form [$(...var)] in the pattern
+				MatchAttributes(pattern, candidate);
 
-				// case $_
 				if (nodeVar != null) {
+					// Handle $_, $normalName, $(name when ...), and $(...varArgName)
 					if (nodeVar != __ || condition != null) {
-						if (!refExistingVar)
-							AddVar(nodeVar, isParams, errAt: pattern);
-						if (!isParams) {
-							var assignment = quote($(F.Id(nodeVar)) = $candidate);
-							Tests.Add(quote(($assignment) != null));
-							Tests.Add(condition);
-						}
-					}
-					if (isParams) {
-						varArgSym = nodeVar;
-						varArgCond = condition;
-						return;
+						bool isNew = TryAddVar(nodeVar, isParams, refExistingVar);
+						AddVarAssignmentOrComparisonTest(isNew, nodeVar, candidate, condition, isParams);
 					}
 				} else if (pattern.IsId) {
 					Tests.Add(quote($candidate.IsIdNamed((Symbol) $(F.Literal(pattern.Name.Name)))));
@@ -203,7 +257,7 @@ namespace LeMP.ecs
 						MakeTestExpr(pTarget, quote($candidate.Target));
 					}
 
-					MakeArgListTests(pattern.Args, ref candidate);
+					MakeArgListTests(pattern.Args, candidate);
 				}
 			}
 
@@ -215,22 +269,46 @@ namespace LeMP.ecs
 				if (condition) {
 					var targetTmp = NextTempName(Context);
 					var targetTmpId = F.Id(targetTmp);
-					AddVar(targetTmp, false, errAt: candidate);
-					Tests.Add(quote(($targetTmpId = $candidate) != null));
+					G.Verify(TryAddVar(targetTmp, false));
+					if (DeclareVarsSeparately)
+						Tests.Add(quote(($targetTmpId = $candidate) != null));
+					else
+						Tests.Add(quote(LNode.Var(out var $targetTmpId, $candidate)));
 					return targetTmpId;
 				} else {
 					return candidate;
 				}
 			}
 
-			private void AddVar(Symbol varName, bool isList, LNode errAt)
+			private bool TryAddVar(Symbol varName, bool isList, bool doNotAddBecauseRef = false)
 			{
 				if (!DuplicateDetector.Add(varName))
-					Context.Sink.Error(errAt, "'{0}': Each matched $variable must have a unique name.", varName);
-				var vars = isList ? ListVars : NodeVars;
-				if (!vars.ContainsKey(varName))
-					vars[varName] = false;
-				UsageCounters[varName] = UsageCounters.TryGetValue(varName, 0) + 1;
+					return false;
+				unless (doNotAddBecauseRef) {
+					var vars = isList ? ListVars : NodeVars;
+					if (!vars.ContainsKey(varName))
+						vars[varName] = false;
+					UsageCounters[varName] = UsageCounters.TryGetValue(varName, 0) + 1;
+				}
+				return true;
+			}
+
+			private void AddVarAssignmentOrComparisonTest(bool isNew, Symbol varName, LNode candidateSubtree, LNode condition = null, bool isLNodeList = false)
+			{
+				var varId = F.Id(varName);
+				if (isNew) {
+					if (!DeclareVarsSeparately)
+						Tests.Add(quote(LNode.Var(out var $varId, $candidateSubtree)));
+					else if (isLNodeList)
+						Tests.Add(quote(($varId = $candidateSubtree).IsEmpty | true));
+					else
+						Tests.Add(quote(($varId = $candidateSubtree) != null));
+				} else {
+					if (varName != __)
+						Tests.Add(quote(LNode.Equals($varId, $candidateSubtree, LNode.CompareMode.IgnoreTrivia)));
+				}
+				if (condition != null)
+					Tests.Add(condition);
 			}
 
 			private void MatchAttributes(LNode pattern, LNode candidate)
@@ -241,11 +319,8 @@ namespace LeMP.ecs
 				var pAttrs = pattern.PAttrs();
 				if (pAttrs.Count == 1 && (listVar = DecodeSubstitutionExpr(pAttrs[0], out condition, out isParams, out refExistingVar)) != null && isParams) {
 					if (listVar != __ || condition != null) {
-						if (!refExistingVar)
-							AddVar(listVar, true, errAt: pattern);
-						Tests.Add(quote(($(F.Id(listVar)) = $candidate.Attrs).IsEmpty | true));
-						if (condition != null)
-							Tests.Add(quote($condition));
+						bool isNew = TryAddVar(listVar, true, refExistingVar);
+						AddVarAssignmentOrComparisonTest(isNew, listVar, quote($candidate.Attrs), condition, true);
 					}
 				} else if (pAttrs.Count != 0)
 					Context.Sink.Error(pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
@@ -267,53 +342,45 @@ namespace LeMP.ecs
 				return argc;
 			}
 
-			private void MakeArgListTests(LNodeList patternArgs, ref LNode candidate)
+			private void MakeArgListTests(LNodeList patternArgs, LNode candidate)
 			{
-				// Note: at this point we can assume that the quantity of 
-				// arguments has already been checked and is not too small.
-				Symbol varArgSym = null;
-				LNode varArgCond = null;
- 				int i;
-				for (i = 0; i < patternArgs.Count; i++) {
-					MakeTestExpr(patternArgs[i], quote($candidate.Args[$(F.Literal(i))]), out varArgSym, out varArgCond);
-					if (varArgSym != null)
-						break;
-				}
-				int i2 = i + 1;
-				for (int left = patternArgs.Count - i2; i2 < patternArgs.Count; i2++) {
-					Symbol varArgSym2 = null;
-					LNode varArgCond2 = null;
-					MakeTestExpr(patternArgs[i2], quote($candidate.Args[$candidate.Args.Count - $(F.Literal(left))]), out varArgSym2, out varArgCond2);
-					if (varArgSym2 != null) {
-						Context.Sink.Error(patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
-						break;
-					}
-					left--;
-				}
-				if (varArgSym != null && (varArgSym != __ || varArgCond != null)) {
-					// Extract variable arg list
-					LNode varArgSymId = F.Id(varArgSym);
-					LNode grabVarArgs;
-					if (i == 0 && patternArgs.Count == 1) {
-						grabVarArgs = quote($varArgSymId = $candidate.Args);
-					} else if (i == 0 && patternArgs.Count > 1) {
-						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
-						grabVarArgs = quote($varArgSymId = $candidate.Args.WithoutLast($fixedArgsLit));
-					} else {
-						var varArgStartLit = F.Literal(i);
-						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
-						if (i + 1 == patternArgs.Count)
-							grabVarArgs = quote($varArgSymId = new LNodeList($candidate.Args.Slice($varArgStartLit)));
-						else
-							grabVarArgs = quote($varArgSymId = new LNodeList($candidate.Args.Slice($varArgStartLit, $candidate.Args.Count - $fixedArgsLit)));
-					}
+				// Note: at this point we can assume that a check on the number of 
+				// args in the candidate has already been emitted.
+ 				bool seenVarArg = false;
+				int i;
+				for (i = 0; i < patternArgs.Count; i++)
+				{
+					MakeTestExpr(patternArgs[i], (Symbol varArgSym, bool hasCondition) => {
+						if (varArgSym != null && !seenVarArg) {
+							seenVarArg = true;
+							
+							LNode argList;
+							if (i == 0 && patternArgs.Count == 1) {
+								argList = quote($candidate.Args);
+							} else {
+								var numFixedArgs = F.Literal(patternArgs.Count - 1);
+								if (i == 0 && patternArgs.Count > 1)
+									argList = quote($candidate.Args.WithoutLast($numFixedArgs));
+								else {
+									var varArgStartLit = F.Literal(i);
+									if (i + 1 == patternArgs.Count)
+										argList = quote(new LNodeList($candidate.Args.Slice($varArgStartLit)));
+									else
+										argList = quote(new LNodeList($candidate.Args.Slice($varArgStartLit, $candidate.Args.Count - $numFixedArgs)));
+								}
+							}
+							return argList;
+						} else {
+							if (varArgSym != null && seenVarArg)
+								Context.Sink.Error(patternArgs[i], "More than a single $(...varargs) variable is not supported in a single argument list.");
 
-					// Add an extra condition on the $(...list) if requested by user
-					if (varArgCond != null || IsMultiCase) {
-						Tests.Add(quote(($grabVarArgs).IsEmpty | true));
-						Tests.Add(varArgCond);
-					} else
-						ThenClause.Add(grabVarArgs);
+							if (seenVarArg) {
+								int left = patternArgs.Count - i;
+								return quote($candidate.Args[$candidate.Args.Count - $(F.Literal(left))]);
+							} else
+								return quote($candidate.Args[$(F.Literal(i))]);
+						}
+					});
 				}
 			}
 		}

@@ -50,20 +50,20 @@ namespace LeMP
 
 			var cases = GetCases(body, context.Sink);
 			// The `default:` case is represented by an empty list of patterns.
-			if (cases.WithoutLast(1).Any(pair => pair.Key.IsEmpty))
+			if (cases.WithoutLast(1).Any(pair => pair.Cases.IsEmpty))
 				context.Write(Severity.Error, node, "The `default:` case must be the last one, because the cases are tested in the order they appear, so no case after `default:` can be matched.");
 
 			MMap<Symbol, LNode> captures = new MMap<Symbol, LNode>();
-			foreach (Pair<LNodeList, LNodeList> pair in cases)
+			foreach (var pair in cases)
 			{
-				var patterns = pair.Key.IsEmpty ? new VList<LNode>((LNode)null) : new VList<LNode>(pair.Key);
+				var patterns = pair.Cases.IsEmpty ? new VList<LNode>((LNode)null) : new VList<LNode>(pair.Cases);
 				foreach (var pattern in patterns)
 				{
 					captures.Clear();
 					if (pattern == null || LNodeExt.MatchesPattern(expression, pattern, ref captures, out LNodeList _)) {
 						captures[_hash] = expression; // define $#
 						captures.Remove(__);
-						return ReplaceCaptures(pair.Value.AsLNode(S.Splice), captures);
+						return ReplaceCaptures(pair.Handler.AsLNode(S.Splice), captures);
 					}
 				}
 			}

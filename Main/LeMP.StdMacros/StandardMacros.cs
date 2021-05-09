@@ -94,20 +94,20 @@ namespace LeMP
 		/// <returns>The first item in each pair is a list of the cases associated
 		/// with a single handler (for `default:`, the list is empty). The second 
 		/// item is the handler code.</returns>
-		static internal VList<Pair<LNodeList, LNodeList>> GetCases(LNodeList body, IMessageSink sink)
+		static internal VList<(LNodeList Cases, LNodeList Handler)> GetCases(LNodeList body, IMessageSink sink)
 		{
-			var pairs = VList<Pair<LNodeList, LNodeList>>.Empty;
+			var pairs = VList<(LNodeList Cases, LNodeList Handler)>.Empty;
 			for (int i = 0; i < body.Count; i++) {
 				bool isDefault;
 				if (body[i].Calls(S.Lambda, 2)) {
 					var alts = body[i][0].WithoutOuterParens().AsList(S.Tuple).SmartSelect(UnwrapBraces);
-					pairs.Add(Pair.Create(alts, body[i][1].AsList(S.Braces)));
+					pairs.Add((alts, body[i][1].AsList(S.Braces)));
 				} else if ((isDefault = IsDefaultLabel(body[i])) || body[i].CallsMin(S.Case, 1)) {
 					var alts = isDefault ? LNodeList.Empty : body[i].Args.SmartSelect(UnwrapBraces);
 					int bodyStart = ++i;
 					for (; i < body.Count && !IsDefaultLabel(body[i]) && !body[i].CallsMin(S.Case, 1); i++) { }
 					var handler = new LNodeList(body.Slice(bodyStart, i - bodyStart));
-					pairs.Add(Pair.Create(alts, handler));
+					pairs.Add((alts, handler));
 					i--;    // counteract i++ when loop repeats (redo)
 				} else {
 					Reject(sink, body[i], "expected 'case _:' or '_ => _'");

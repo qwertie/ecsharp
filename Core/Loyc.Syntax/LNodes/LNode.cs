@@ -7,6 +7,7 @@ using System.ComponentModel;
 using Loyc.Utilities;
 using Loyc.Threading;
 using Loyc.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Loyc.Syntax
 {
@@ -1076,5 +1077,16 @@ namespace Loyc.Syntax
 			};
 			return LNode.List(SelectMany(selector, options));
 		}
+
+		/// <summary>This method simply assigns a value to a variable and returns true.
+		/// For example, <c>G.Var(out int x, 777)</c> is used to create a variable 
+		/// called x with a value of 777.</summary>
+		/// <returns>True.</returns>
+		/// <remarks>This method is a copy of <see cref="G.Var{T}(out T, T)"/> in the 
+		/// Loyc.Syntax namespace; it exists so that only `using Loyc.Syntax` (not 
+		/// `using Loyc`) is required to use macros that work on syntax trees.</remarks>
+		[EditorBrowsable(EditorBrowsableState.Never)] // hide from IntelliSense
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool Var<T>(out T var, T value) { var = value; return true; }
 	}
 }
