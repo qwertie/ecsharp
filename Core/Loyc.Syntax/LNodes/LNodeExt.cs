@@ -363,35 +363,41 @@ namespace Loyc.Syntax
 		/// </summary>
 		/// <param name="candidate">A node that you want to compare with a 'pattern'.</param>
 		/// <param name="pattern">A syntax tree that may contain placeholders. A 
-		/// placeholder is a call to the $ operator with one parameter, which must 
-		/// be either (A) a simple identifier, or (B) the ".." operator with a simple
-		/// identifier as its single parameter. Otherwise, the $ operator is treated 
-		/// literally as something that must exist in <c>candidate</c>). The subtree 
-		/// in <c>candidate</c> corresponding to the placeholder is saved in 
-		/// <c>captures</c>.</param>
+		///   placeholder is a call to the $ operator with one parameter, which must 
+		///   be either (A) a simple identifier, or (B) the ".." operator with a simple
+		///   identifier as its single parameter. Otherwise, the $ operator is treated 
+		///   literally as something that must exist in <c>candidate</c>). The subtree 
+		///   in <c>candidate</c> corresponding to the placeholder is saved in 
+		///   <c>captures</c>.</param>
 		/// <param name="captures">A table that maps placeholder names from 
-		/// <c>pattern</c> to subtrees in <c>candidate</c>. You can set your map to 
-		/// null and a map will be created for you if necessary. If you already have
-		/// a map, you should clear it before calling this method.</param>
+		///   <c>pattern</c> to subtrees in <c>candidate</c>. You can set your map to 
+		///   null and a map will be created for you if necessary. If you already have
+		///   a map, you should clear it before calling this method.</param>
 		/// <param name="unmatchedAttrs">On return, a list of trivia attributes in 
-		/// <c>candidate</c> that were not present in <c>pattern</c>.</param>
+		///   <c>candidate</c> that were not present in <c>pattern</c>.</param>
+		/// <param name="gatherDuplicatesInList">This parameter controls the behavior
+		///   of this method in case the pattern repeats the same $placeholder more
+		///   than once. If this is true, the old behavior is used: the two or more
+		///   matched subtrees are combined into a single output node (calling #splice).
+		///   For example, matching `$x + $x` against `1 + 2` would succeed, assigning
+		///   `#splice(1, 2)` to `x` in <c>captures</c>. If this is false, the default
+		///   behavior is used: the two or more matched subtrees must be equal, and
+		///   only the first matching subtree is saved in <c>captures</c>. For example,
+		///   matching `$x + $x` against `1 + 2` fails.</param>
 		/// <returns>true if <c>pattern</c> matches <c>candidate</c>, false otherwise.</returns>
 		/// <remarks>
 		/// Attributes in patterns are not yet supported.
 		/// <para/>
 		/// This method supports multi-part captures, which are matched to 
 		/// placeholders whose identifier either (A) has a #params attribute or
-		/// (B) has the unary ".." operator applied to it (for example, if 
-		/// the placeholder is called p, this is written as <c>$(params p)</c> in 
+		/// (B) has the unary ".." or "..." operator applied to it (for example, if 
+		/// the placeholder is called p, this is written as <c>$(...p)</c> in 
 		/// EC#.) A placeholder that looks like this can match multiple arguments or
 		/// multiple statements in the <c>candidate</c> (or <i>no</i> arguments, or
 		/// no statements), and will become a #splice(...) node in <c>captures</c>
 		/// if it matches multiple items. Multi-part captures are often useful for
 		/// getting lists of statements before and after some required element,
-		/// e.g. <c>{ $(params before); MatchThis($something); $(params after); }</c>
-		/// <para/>
-		/// If the same placeholder appears twice then the two matching items are 
-		/// combined into a single output node (calling #splice).
+		/// e.g. <c>{ $(...before); MatchThis($something); $(...after); }</c>
 		/// <para/>
 		/// If matching is unsuccessful, <c>captures</c> and <c>unmatchedAttrs</c>
 		/// may contain irrelevant information gathered during the attempt to match.
@@ -399,10 +405,10 @@ namespace Loyc.Syntax
 		/// In EC#, the quote(...) macro can be used to create the LNode object for 
 		/// a pattern.
 		/// </remarks>
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
 		{
 			// [$capture] (...)
-			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs))
+			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs, gatherDuplicatesInList))
 				return false;
 
 			// $capture or $(..capture)
@@ -410,7 +416,8 @@ namespace Loyc.Syntax
 			if (sub != null)
 			{
 				captures = captures ?? new MMap<Symbol, LNode>();
-				AddCapture(captures, sub.Name, candidate);
+				if (!AddCapture(captures, sub.Name, candidate, gatherDuplicatesInList))
+					return false;
 				unmatchedAttrs = LNodeList.Empty; // The attrs (if any) were captured
 				return true;
 			}
@@ -425,18 +432,33 @@ namespace Loyc.Syntax
 				return object.Equals(candidate.Value, pattern.Value);
 			else if (kind == LNodeKind.Call)
 			{
-				if (!MatchesPatternNested(candidate.Target, pattern.Target, ref captures, ref unmatchedAttrs))
+				if (!MatchesPatternNested(candidate.Target, pattern.Target, ref captures, ref unmatchedAttrs, gatherDuplicatesInList))
 					return false;
 				var cArgs = candidate.Args;
 				var pArgs = pattern.Args;
 
-				return ListMatches(cArgs, pArgs, ref captures, ref unmatchedAttrs);
+				return ListMatches(cArgs, pArgs, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
 			}
 			else // kind == Id
 				return true;
 		}
 
-		private static bool ListMatches(LNodeList candidates, LNodeList patterns, ref MMap<Symbol, LNode> captures, ref LNodeList unmatchedAttrs)
+		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
+		{
+			MMap<Symbol, LNode> captures2 = null;
+			var matched = MatchesPattern(candidate, pattern, ref captures2, out unmatchedAttrs, gatherDuplicatesInList);
+			captures = captures2;
+			return matched;
+		}
+
+		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, bool gatherDuplicatesInList = false)
+		{
+			return MatchesPattern(candidate, pattern, out captures, out var _, gatherDuplicatesInList);
+		}
+
+		private static bool ListMatches(LNodeList candidates, LNodeList patterns, ref MMap<Symbol, LNode> captures, ref LNodeList unmatchedAttrs, bool gatherDuplicatesInList)
 		{
 			if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
 				return false;
@@ -447,45 +469,42 @@ namespace Loyc.Syntax
 			{
 				LNode pArg = patterns.Pop();
 				if (IsParamsCapture(pArg))
-					return MatchThenParams(candidates, patterns, pArg, ref captures, ref unmatchedAttrs);
+					return MatchThenParams(candidates, patterns, pArg, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
 				if (candidates.IsEmpty)
 					return false;
-				if (!MatchesPatternNested(candidates.Pop(), pArg, ref captures, ref unmatchedAttrs))
+				if (!MatchesPatternNested(candidates.Pop(), pArg, ref captures, ref unmatchedAttrs, gatherDuplicatesInList))
 					return false;
 			}
 			return true;
 		}
 
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
-		{
-			MMap<Symbol, LNode> captures2 = null;
-			var matched = MatchesPattern(candidate, pattern, ref captures2, out unmatchedAttrs);
-			captures = captures2;
-			return matched;
-		}
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures)
-		{
-			return MatchesPattern(candidate, pattern, out captures, out var _);
-		}
-
-		static void AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items)
+		static bool AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items, bool gatherDuplicatesInList)
 		{
 			LNode capId = GetCaptureIdentifier(cap);
 			if (items.Count == 1)
-				AddCapture(captures, capId.Name, items[0]);
+				return AddCapture(captures, capId.Name, items[0], gatherDuplicatesInList);
 			else
-				AddCapture(captures, capId.Name, F.Call(S.Splice, items));
-		}
-		static void AddCapture(MMap<Symbol, LNode> captures, Symbol capName, LNode candidate)
-		{
-			LNode oldCap = captures.TryGetValue(capName, null);
-			captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
+				return AddCapture(captures, capId.Name, F.Call(S.Splice, items), gatherDuplicatesInList);
 		}
 
-		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref LNodeList trivia)
+		static readonly Symbol __ = (Symbol)"_";
+
+		static bool AddCapture(MMap<Symbol, LNode> captures, Symbol capName, LNode candidate, bool gatherDuplicatesInList)
+		{
+			LNode oldCap = captures.TryGetValue(capName, null);
+			if (oldCap == null || gatherDuplicatesInList || capName == __) {
+				captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
+			} else {
+				if (!LNode.Equals(oldCap, candidate, LNode.CompareMode.IgnoreTrivia))
+					return false;
+			}
+			return true;
+		}
+
+		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref LNodeList trivia, bool gatherDuplicatesInList)
 		{
 			LNodeList unmatchedAttrs;
-			if (!MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs))
+			if (!MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs, gatherDuplicatesInList))
 				return false;
 			if (unmatchedAttrs.Any(a => !a.IsTrivia))
 				return false;
@@ -493,11 +512,11 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs)
+		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList)
 		{
 			if (pattern.HasPAttrs()) {
 				unmatchedAttrs = LNode.List();
-				return ListMatches(candidate.Attrs, pattern.Attrs, ref captures, ref unmatchedAttrs);
+				return ListMatches(candidate.Attrs, pattern.Attrs, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
 			} else {
 				unmatchedAttrs = candidate.Attrs;
 			}
@@ -529,10 +548,10 @@ namespace Loyc.Syntax
 			return null;
 		}
 
-		static bool MatchThenParams(LNodeList cArgs, LNodeList pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref LNodeList attrs)
+		static bool MatchThenParams(LNodeList cArgs, LNodeList pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref LNodeList attrs, bool gatherDuplicatesInList)
 		{
 			// This helper function of MatchesPattern() is called when pArgs is followed 
-			// by a $(params capture). cArgs is the list of candidate.Args that have not 
+			// by a $(...listCapture). cArgs is the list of candidate.Args that have not 
 			// yet been matched; pArgs is the list of pattern.Args that have not yet been 
 			// matched, and paramsCap is the $(params capture) node that follows pArgs.
 			captures = captures ?? new MMap<Symbol, LNode>();
@@ -540,21 +559,20 @@ namespace Loyc.Syntax
 		restart:
 			for (; p < pArgs.Count; p++, c++) {
 				if (IsParamsCapture(pArgs[p])) {
-					if (!CaptureGroup(ref c, ref p, cArgs, pArgs, ref captures, ref attrs))
+					if (!CaptureGroup(ref c, ref p, cArgs, pArgs, ref captures, ref attrs, gatherDuplicatesInList))
 						return false;
 					goto restart;
 				} else {
 					if (c >= cArgs.Count)
 						return false;
-					if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs))
+					if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs, gatherDuplicatesInList))
 						return false;
 				}
 			}
-			AddCapture(captures, paramsCap, new Slice_<LNode>(cArgs, c));
-			return true;
+			return AddCapture(captures, paramsCap, new Slice_<LNode>(cArgs, c), gatherDuplicatesInList);
 		}
 
-		static bool CaptureGroup(ref int c, ref int p, LNodeList cArgs, LNodeList pArgs, ref MMap<Symbol, LNode> captures, ref LNodeList attrs)
+		static bool CaptureGroup(ref int c, ref int p, LNodeList cArgs, LNodeList pArgs, ref MMap<Symbol, LNode> captures, ref LNodeList attrs, bool gatherDuplicatesInList)
 		{
 			Debug.Assert(IsParamsCapture(pArgs[p]));
 			// The goal now is to find a sequence of nodes in cArgs that matches
@@ -574,7 +592,7 @@ namespace Loyc.Syntax
 					} else {
 						if (c >= cArgs.Count)
 							return false;
-						if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs))
+						if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs, gatherDuplicatesInList))
 							goto continue_group;
 					}
 				}
@@ -585,8 +603,7 @@ namespace Loyc.Syntax
 				captures = savedCaptures.AsMutable();
 			}
 		done_group:
-			AddCapture(captures, pArgs[saved_p], cArgs.Slice(saved_c, captureSize));
-			return true;
+			return AddCapture(captures, pArgs[saved_p], cArgs.Slice(saved_c, captureSize), gatherDuplicatesInList);
 		}
 
 		#endregion

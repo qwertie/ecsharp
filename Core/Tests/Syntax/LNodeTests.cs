@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.MiniTest;
+using Loyc.Syntax.Les;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax
@@ -119,6 +120,51 @@ namespace Loyc.Syntax
 			var assign2 = assign.WithAttrs(F.Call(Foo));
 			var expected = assign2.PlusAttrBefore(F.TriviaNewline).PlusTrailingTrivia(comment);
 			Assert.AreEqual(expected, assign2.IncludingTriviaFrom(add));
+		}
+
+		[Test]
+		public void TestExt_MatchesPattern_1()
+		{
+			var les3 = Les3LanguageService.Value;
+			LNode candidate = les3.ParseSingle("Foo(x, y + z)");
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("x + $x"), out var captures));
+			Assert.IsTrue(captures == null || captures.Count == 0);
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x, y)"), out captures));
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x, y + z, zzz)"), out captures));
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x)"), out captures));
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("Foo($x, $y)"), out captures));
+			Assert.AreEqual(2, captures.Count);
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x(x, $y)"), out captures));
+			Assert.AreEqual(2, captures.Count);
+		}
+
+		[Test]
+		public void TestExt_MatchesPattern_2()
+		{
+			var les3 = Les3LanguageService.Value;
+			var candidate = les3.ParseSingle("1 + 2");
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("1 - 2"), out var captures));
+			Assert.IsTrue(captures == null || captures.Count == 0);
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("x + $x"), out captures));
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("1 + $x"), out captures));
+			Assert.AreEqual(1, captures.Count);
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x + $x"), out captures, true));
+			Assert.AreEqual(1, captures.Count);
+			// OMG the order is reversed.
+			// I bet no one is using this, then.
+			Assert.AreEqual(new KeyValuePair<Symbol,LNode>((Symbol)"x", les3.ParseSingle("#splice(2, 1)")), captures.Single());
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("$x + $x"), out captures, false));
+
+			candidate = les3.ParseSingle("123 + 123");
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$N + $N"), out captures, false));
+			Assert.AreEqual(1, captures.Count);
+			Assert.AreEqual(new KeyValuePair<Symbol,LNode>((Symbol)"N", LNode.Literal(123)), captures.Single());
 		}
 	}
 }
