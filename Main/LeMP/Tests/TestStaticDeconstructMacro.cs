@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -21,7 +21,7 @@ namespace LeMP.Tests
 			TestEcs("#deconstruct($WL = Console.WriteLine); $WL();", 
 			        "Console.WriteLine();");
 
-			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.ErrorDetail))) {
+			using (MessageSink.SetDefault(new SeverityMessageFilter(_msgHolder, Severity.WarningDetail))) {
 				TestEcs("$X = $Y;", "$X = $Y;");
 				Assert.AreEqual(2, _msgHolder.List.Count, "expected errors because $X and $Y don't exist");
 			}

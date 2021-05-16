@@ -111,7 +111,7 @@ namespace LeMP.ecs
 						context.Sink.Warning(id, "The specified scoped property is not a syntax tree. "+
 							"Use `#getScopedProperty({0})` to insert it as a literal.", EcsNodePrinter.PrintId(id.Name));
 				} else {
-					context.Sink.Error(id, "There is no macro property in scope named `{0}`", id.Name);
+					context.Sink.Warning(id, "There is no macro property in scope named `{0}`", id.Name);
 				}
 			}
 			return null;

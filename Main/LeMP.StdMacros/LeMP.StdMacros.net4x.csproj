@@ -159,6 +159,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>les3.to.ecs.Macros.ecs</DependentUpon>
     </Compile>
+    <Compile Include="MapSyntaxMacro.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplaceMacro.cs" />
     <None Include="ecs\AssertMacro.ecs">

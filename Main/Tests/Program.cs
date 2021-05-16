@@ -49,6 +49,7 @@ namespace Loyc.Tests
 		public static int Test_LeMP()
 		{
 			return RunTests.RunMany(
+				new TestMapSyntaxMacro(),
 				new MacroProcessorTests(),
 				new PreludeMacroTests_Les2(),
 				new PreludeMacroTests_Les3(),
@@ -60,7 +61,7 @@ namespace Loyc.Tests
 				new TestCodeQuoteMacro(),
 				new TestMacroCombinations(),
 				new TestMatchCodeMacro(),
-				new TestStaticMatchCodeMacro(),
+				new TestStaticMatchCodeAndSwitchMacro(),
 				new TestStaticDeconstructMacro(),
 				new TestMatchMacro(),
 				new TestOnFinallyReturnThrowMacros(),

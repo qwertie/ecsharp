@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.MiniTest;
@@ -7,7 +7,7 @@ using Loyc;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class TestStaticMatchCodeMacro : MacroTesterBase
+	public class TestStaticMatchCodeAndSwitchMacro : MacroTesterBase
 	{
 		[Test]
 		public void OneSimpleCase()
@@ -18,6 +18,13 @@ namespace LeMP.Tests
 			        "result = 123; goto stop;");
 			TestEcs("static matchCode(return 123) { case return $x: { result = $x; goto stop; } }",
 			        "{ result = 123; goto stop; }");
+		}
+
+		[Test]
+		public void OneSimpleCase_Switch()
+		{
+			TestLes("##switch f(123) { { f($x) } => { result = $x; etc; } };",
+			        "result = 123; etc;");
 		}
 
 		[Test]
@@ -76,6 +83,30 @@ namespace LeMP.Tests
 			TestEcs(@"bool b4 = (x + 1) `staticMatches` ($x + 1);", @"bool b4 = true;");
 			TestEcs(@"bool b5 = (x + 2) `staticMatches` ($x + 3);", @"bool b5 = false;");
 			TestEcs(@"bool b6 = { Foo(1); } `staticMatches` Foo($x);", @"bool b6 = true;");
+		}
+
+		[Test]
+		public void TestSwitch()
+		{
+			// Suppress "Warning: LeMP.StandardMacros.switch: None of the cases matched."
+			using (MessageSink.SetDefault(MessageSink.Null))
+				TestEcs(
+					@"##switch(5 + 7) { case $x+$x: 2*$x; }",
+					@"5 + 7;");
+			TestEcs(@"define ADD($x,$y) { $x+$y; }
+				##switch(ADD(7,7)) { case $x+$x: 2*$x; }",
+				@"2 * 7;");
+			TestEcs(@"define STUFF() { Foo(55); }
+					##switch(STUFF()) { 
+						case Bar($N):
+							$N; 
+						case { Foo($N); }: 
+							Matched();
+							Food($N);
+					}
+				", @"
+					Matched(); 
+					Food(55);");
 		}
 	}
 }

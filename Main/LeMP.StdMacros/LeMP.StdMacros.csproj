@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
     <OutputPath>..\..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419, 1587</NoWarn>
     <SignAssembly>true</SignAssembly>

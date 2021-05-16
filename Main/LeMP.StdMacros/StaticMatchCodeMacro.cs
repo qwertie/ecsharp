@@ -10,37 +10,70 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		internal static void SetSyntaxVariables(IDictionary<Symbol, LNode> captures, IMacroContext context)
-		{
-			foreach (var captured in captures)
-				if (captured.Key != __)
-					context.ScopedProperties["$" + captured.Key.Name] = captured.Value;
-		}
+		[LexicalMacro(@"##switch(syntaxTree) { case expr1: result1; ... } // EC# syntax. In LES, use a => b instead of case a: b",
+			"Preprocesses `syntaxTree`, then tries to match it against each pattern "+
+			"(which is also preprocessed). When a match succeeds, the `##switch` call is " +
+			"replaced with the result block. For example, `##switch(2+3) { case $a+$b: Add($a,$b) }` " +
+			"replaces itself with `Add(2, 3)`." +
+			"\n\n"+
+			"You can use `case pattern1, pattern2:` to handle multiple cases with the same handler, "+
+			"and each case can optionally be enclosed in braces, as you can see in this example:" +
+			"\n\n" +
+			"    #set varDecl = List<int> list;\n"+
+			"    static matchCode($varDecl) {\n"+
+			"        case { $T[] $x; }, { $T[,] $x; }: length = $x.Length;\n"+
+			"        default:                          length = $x.Count;\n"+
+			"    }" +
+			"\n\n"+
+			"This example's output is `length = list.Count`. " +
+			"If none of the cases match and there is no `default:` case, the input syntaxTree " +
+			"is used as the output, and a warning is printed. For example, " +
+			"`##switch(x*y) { case $a+$b: Add($a,$b) }` produces `x*y`. If instead you'd like the entire " +
+			"`static matchCode` construct and all its cases to be deleted from the output in that case, "+
+			"you can use a default case, e.g. `##switch(x*y) { case $a+$b: Add($a,$b); default: }`." +
+			"\n\n"+
+			"Unlike C# `switch`, `##switch` does not expect `break` at the end of each case. If `break` "+
+			"is present at the end of the matching case, it is emitted literally into the output." +
+			"\n\n" +
+			"This macro is a synonym for the older `static matchCode` macro, " +
+			"except that this macro behaves differently if there is no match, and "+
+			"unlike `static matchCode`, this macro preprocesses each case pattern.",
+			"##switch")]
+		public static LNode @switch(LNode node, IMacroContext context)
+			=> static_matchCode(node, context, true);
 
 		[LexicalMacro("static matchCode (expr) { case ...: ... }; // In LES, use a => b instead of case a: b",
 			"Attempts to match and deconstruct a syntax tree at compile-time, e.g. `case $a + $b:` "+
 			"expects a tree that calls `+` with two parameters, placed in compile-time variables called $a and $b. "+
-			"Example: \n\n"+
+			"Example:" +
+			"\n\n"+
 			"    #set varDecl = List<int> x;\n"+
 			"    static matchCode($varDecl) {\n"+
 			"        case $T[] $x, $T[,] $x: length = $x.Length;\n"+
 			"        default:                length = $x.Count;\n"+
-			"    }\n\n"+
+			"    }" +
+			"\n\n"+
 			"If `expr` is a single statement inside braces, the braces are stripped. Then, macros are executed "+
 			"on `expr` to produce a new syntax tree which is then matched."+
 			"`matchCode` then scans the cases to find one that matches. Finally, the entire `static matchCode` "+
 			"construct is replaced with the handler associated with the matching `case`. "+
 			"If none of the cases match and there is no `default:` case, the entire `static matchCode` "+
-			"construct and all its cases are eliminated from the output.\n\n"+
+			"construct and all its cases are eliminated from the output." +
+			"\n\n"+
 			"Use `case pattern1, pattern2:` to handle multiple cases with the same handler. "+
 			"Unlike C# `switch`, this statement does not expect `break` at the end of each case. If `break` "+
-			"is present at the end of the matching case, it is emitted literally into the output.\n\n",
+			"is present at the end of the matching case, it is emitted literally into the output.",
 			"matchCode", "#matchCode", Mode = MacroMode.Passive)]
 		public static LNode static_matchCode(LNode node, IMacroContext context)
 		{
 			if (node.AttrNamed(S.Static) == null && !node.HasSpecialName)
 				return null; // handled by normal matchCode macro
 
+			return static_matchCode(node, context, false);
+		}
+
+		public static LNode static_matchCode(LNode node, IMacroContext context, bool defaultToInput, bool preprocessCases = false)
+		{
 			var args_body = context.GetArgsAndBody(false);
 			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1)
@@ -57,8 +90,9 @@ namespace LeMP
 			foreach (var pair in cases)
 			{
 				var patterns = pair.Cases.IsEmpty ? new VList<LNode>((LNode)null) : new VList<LNode>(pair.Cases);
-				foreach (var pattern in patterns)
+				foreach (var pattern_ in patterns)
 				{
+					var pattern = preprocessCases ? context.PreProcess(pattern_) : pattern_;
 					captures.Clear();
 					if (pattern == null || LNodeExt.MatchesPattern(expression, pattern, ref captures, out LNodeList _)) {
 						captures[_hash] = expression; // define $#
@@ -67,7 +101,9 @@ namespace LeMP
 					}
 				}
 			}
-			return F.Call(S.Splice); // none of the cases matched
+
+			context.Warning(expression, "None of the cases matched.");
+			return defaultToInput ? args[0] : F.Call(S.Splice); // none of the cases matched
 		}
 
 		[LexicalMacro(@"syntaxTree `staticMatches` pattern", 
@@ -91,6 +127,13 @@ namespace LeMP
 				return F.True;
 			}
 			return F.False;
+		}
+		
+		internal static void SetSyntaxVariables(IDictionary<Symbol, LNode> captures, IMacroContext context)
+		{
+			foreach (var captured in captures)
+				if (captured.Key != __)
+					context.ScopedProperties["$" + captured.Key.Name] = captured.Value;
 		}
 	}
 }
