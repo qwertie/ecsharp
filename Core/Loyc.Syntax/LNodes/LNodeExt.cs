@@ -407,49 +407,19 @@ namespace Loyc.Syntax
 		/// </remarks>
 		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
 		{
-			// [$capture] (...)
-			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs, gatherDuplicatesInList))
-				return false;
-
-			// $capture or $(..capture)
-			LNode sub = GetCaptureIdentifier(pattern);
-			if (sub != null)
-			{
-				captures = captures ?? new MMap<Symbol, LNode>();
-				if (!AddCapture(captures, sub.Name, candidate, gatherDuplicatesInList))
-					return false;
-				unmatchedAttrs = LNodeList.Empty; // The attrs (if any) were captured
-				return true;
-			}
-
-			var kind = candidate.Kind;
-			if (kind != pattern.Kind)
-				return false;
-
-			if (kind == LNodeKind.Id && candidate.Name != pattern.Name)
-				return false;
-			if (kind == LNodeKind.Literal)
-				return object.Equals(candidate.Value, pattern.Value);
-			else if (kind == LNodeKind.Call)
-			{
-				if (!MatchesPatternNested(candidate.Target, pattern.Target, ref captures, ref unmatchedAttrs, gatherDuplicatesInList))
-					return false;
-				var cArgs = candidate.Args;
-				var pArgs = pattern.Args;
-
-				return ListMatches(cArgs, pArgs, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
-			}
-			else // kind == Id
-				return true;
+			MatchPatternHelper helper = new MatchPatternHelper(captures, gatherDuplicatesInList);
+			bool result = helper.MatchesPattern(candidate, pattern, out unmatchedAttrs);
+			captures = helper.captures;
+			return result;
 		}
 
 		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
 		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
 		{
-			MMap<Symbol, LNode> captures2 = null;
-			var matched = MatchesPattern(candidate, pattern, ref captures2, out unmatchedAttrs, gatherDuplicatesInList);
-			captures = captures2;
-			return matched;
+			MatchPatternHelper helper = new MatchPatternHelper(null, gatherDuplicatesInList);
+			bool result = helper.MatchesPattern(candidate, pattern, out unmatchedAttrs);
+			captures = helper.captures;
+			return result;
 		}
 
 		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
@@ -458,79 +428,188 @@ namespace Loyc.Syntax
 			return MatchesPattern(candidate, pattern, out captures, out var _, gatherDuplicatesInList);
 		}
 
-		private static bool ListMatches(LNodeList candidates, LNodeList patterns, ref MMap<Symbol, LNode> captures, ref LNodeList unmatchedAttrs, bool gatherDuplicatesInList)
+		struct MatchPatternHelper // helper methods of MatchesPattern()
 		{
-			if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
-				return false;
+			internal MMap<Symbol, LNode> captures;
+			//internal LNodeList unmatchedAttrs;
+			internal bool gatherDuplicatesInList;
+			internal MatchPatternHelper(MMap<Symbol, LNode> captures, bool gatherDuplicatesInList = false) {
+				this.captures = captures;
+				//this.unmatchedAttrs = unmatchedAttrs;
+				this.gatherDuplicatesInList = gatherDuplicatesInList;
+			}
 
-			// Scan from the end of the list to the beginning (RVLists is good at this),
-			// matching args one-by-one. Use MatchThenParams() in case of $(params capture).
-			while (!patterns.IsEmpty)
+			internal bool MatchesPattern(LNode candidate, LNode pattern, out LNodeList unmatchedAttrs)
 			{
-				LNode pArg = patterns.Pop();
-				if (IsParamsCapture(pArg))
-					return MatchThenParams(candidates, patterns, pArg, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
-				if (candidates.IsEmpty)
+				// [$capture] (...)
+				if (!AttributesMatch(candidate, pattern, out unmatchedAttrs))
 					return false;
-				if (!MatchesPatternNested(candidates.Pop(), pArg, ref captures, ref unmatchedAttrs, gatherDuplicatesInList))
+
+				// $capture or $(..capture)
+				LNode sub = GetCaptureIdentifier(pattern);
+				if (sub != null)
+				{
+					if (!AddCapture(sub.Name, candidate))
+						return false;
+					unmatchedAttrs = LNodeList.Empty; // The attrs (if any) were captured
+					return true;
+				}
+
+				var kind = candidate.Kind;
+				if (kind != pattern.Kind)
 					return false;
+
+				if (kind == LNodeKind.Id && candidate.Name != pattern.Name)
+					return false;
+				if (kind == LNodeKind.Literal)
+					return object.Equals(candidate.Value, pattern.Value);
+				else if (kind == LNodeKind.Call)
+				{
+					if (!MatchesPatternNested(candidate.Target, pattern.Target, ref unmatchedAttrs))
+						return false;
+					var cArgs = candidate.Args;
+					var pArgs = pattern.Args;
+
+					return ListMatches(cArgs, pArgs, ref unmatchedAttrs);
+				}
+				else // kind == Id
+					return true;
 			}
-			return true;
-		}
 
-		static bool AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items, bool gatherDuplicatesInList)
-		{
-			LNode capId = GetCaptureIdentifier(cap);
-			if (items.Count == 1)
-				return AddCapture(captures, capId.Name, items[0], gatherDuplicatesInList);
-			else
-				return AddCapture(captures, capId.Name, F.Call(S.Splice, items), gatherDuplicatesInList);
-		}
-
-		static readonly Symbol __ = (Symbol)"_";
-
-		static bool AddCapture(MMap<Symbol, LNode> captures, Symbol capName, LNode candidate, bool gatherDuplicatesInList)
-		{
-			LNode oldCap = captures.TryGetValue(capName, null);
-			if (oldCap == null || gatherDuplicatesInList || capName == __) {
-				captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
-			} else {
-				if (!LNode.Equals(oldCap, candidate, LNode.CompareMode.IgnoreTrivia))
+			internal bool ListMatches(LNodeList candidates, LNodeList patterns, ref LNodeList unmatchedAttrs)
+			{
+				if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
 					return false;
-			}
-			return true;
-		}
 
-		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref LNodeList trivia, bool gatherDuplicatesInList)
-		{
-			LNodeList unmatchedAttrs;
-			if (!MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs, gatherDuplicatesInList))
+				// Scan from the end of the list to the beginning (RVLists is good at this),
+				// matching args one-by-one. Use MatchThenParams() in case of $(params capture).
+				while (!patterns.IsEmpty)
+				{
+					LNode pArg = patterns.Pop();
+					if (IsParamsCapture(pArg))
+						return MatchThenParams(candidates, patterns, pArg, ref unmatchedAttrs);
+					if (candidates.IsEmpty)
+						return false;
+					if (!MatchesPatternNested(candidates.Pop(), pArg, ref unmatchedAttrs))
+						return false;
+				}
+				return true;
+			}
+
+			bool AddCapture(LNode cap, Slice_<LNode> items)
+			{
+				LNode capId = GetCaptureIdentifier(cap);
+				if (items.Count == 1)
+					return AddCapture(capId.Name, items[0]);
+				else
+					return AddCapture(capId.Name, F.Call(S.Splice, items));
+			}
+
+			static readonly Symbol __ = (Symbol)"_";
+
+			internal bool AddCapture(Symbol capName, LNode candidate)
+			{
+				captures = captures ?? new MMap<Symbol, LNode>();
+				LNode oldCap = captures.TryGetValue(capName, null);
+				if (oldCap == null || gatherDuplicatesInList || capName == __) {
+					captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
+				} else {
+					if (!LNode.Equals(oldCap, candidate, LNode.CompareMode.IgnoreTrivia))
+						return false;
+				}
+				return true;
+			}
+
+			internal bool MatchesPatternNested(LNode candidate, LNode pattern, ref LNodeList trivia)
+			{
+				LNodeList unmatchedAttrs;
+				if (!MatchesPattern(candidate, pattern, out unmatchedAttrs))
+					return false;
+				if (unmatchedAttrs.Any(a => !a.IsTrivia))
+					return false;
+				trivia.AddRange(unmatchedAttrs);
+				return true;
+			}
+
+			internal bool AttributesMatch(LNode candidate, LNode pattern, out LNodeList unmatchedAttrs)
+			{
+				if (pattern.HasPAttrs()) {
+					unmatchedAttrs = LNode.List();
+					return ListMatches(candidate.Attrs, pattern.Attrs, ref unmatchedAttrs);
+				} else {
+					unmatchedAttrs = candidate.Attrs;
+				}
+				return true;
+			}
+			internal static bool IsParamsCapture(LNode pattern)
+			{
+				if (pattern.Calls(S.Substitute, 1)) {
+					LNode arg = pattern.Args.Last;
+					return (arg.Calls(S.DotDot, 1) || arg.Calls(S.DotDotDot, 1) || arg.AttrNamed(S.Params) != null)
+						&& GetCaptureIdentifier(pattern) != null;
+				}
 				return false;
-			if (unmatchedAttrs.Any(a => !a.IsTrivia))
-				return false;
-			trivia.AddRange(unmatchedAttrs);
-			return true;
+			}
+
+			bool MatchThenParams(LNodeList cArgs, LNodeList pArgs, LNode paramsCap, ref LNodeList attrs)
+			{
+				// This helper function of MatchesPattern() is called when pArgs is followed 
+				// by a $(...listCapture). cArgs is the list of candidate.Args that have not 
+				// yet been matched; pArgs is the list of pattern.Args that have not yet been 
+				// matched, and paramsCap is the $(params capture) node that follows pArgs.
+				captures = captures ?? new MMap<Symbol, LNode>();
+				int c = 0, p = 0;
+			restart:
+				for (; p < pArgs.Count; p++, c++) {
+					if (IsParamsCapture(pArgs[p])) {
+						if (!CaptureList(ref c, ref p, cArgs, pArgs, ref attrs))
+							return false;
+						goto restart;
+					} else {
+						if (c >= cArgs.Count)
+							return false;
+						if (!MatchesPatternNested(cArgs[c], pArgs[p], ref attrs))
+							return false;
+					}
+				}
+				return AddCapture(paramsCap, new Slice_<LNode>(cArgs, c));
+			}
+
+			bool CaptureList(ref int c, ref int p, LNodeList cArgs, LNodeList pArgs, ref LNodeList attrs)
+			{
+				Debug.Assert(IsParamsCapture(pArgs[p]));
+				// The goal now is to find a sequence of nodes in cArgs that matches
+				// the sequence pArgs[p+1 .. p+x] where x is the maximum value such
+				// that none of the nodes in the sequence are $(params caps).
+				int saved_p = p, saved_c = c;
+				var savedCaptures = captures.AsImmutable();
+				var savedAttrs = attrs;
+				int captureSize = 0;
+				for (;; captureSize++) {
+					for (p++, c += captureSize; ; c++, p++) {
+						// If we run out of pArgs, great, we're done; if we run out 
+						// of cArgs, the match fails, unless all remaining pArgs are 
+						// $(params caps).
+						if (p >= pArgs.Count || IsParamsCapture(pArgs[p])) {
+							goto done_group;
+						} else {
+							if (c >= cArgs.Count)
+								return false;
+							if (!MatchesPatternNested(cArgs[c], pArgs[p], ref attrs))
+								goto continue_group;
+						}
+					}
+					continue_group:;
+					p = saved_p;
+					c = saved_c;
+					attrs = savedAttrs;
+					captures = savedCaptures.AsMutable();
+				}
+			done_group:
+				return AddCapture(pArgs[saved_p], cArgs.Slice(saved_c, captureSize));
+			}
 		}
 
-		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList)
-		{
-			if (pattern.HasPAttrs()) {
-				unmatchedAttrs = LNode.List();
-				return ListMatches(candidate.Attrs, pattern.Attrs, ref captures, ref unmatchedAttrs, gatherDuplicatesInList);
-			} else {
-				unmatchedAttrs = candidate.Attrs;
-			}
-			return true;
-		}
-		static bool IsParamsCapture(LNode pattern)
-		{
-			if (pattern.Calls(S.Substitute, 1)) {
-				LNode arg = pattern.Args.Last;
-				return (arg.Calls(S.DotDot, 1) || arg.Calls(S.DotDotDot, 1) || arg.AttrNamed(S.Params) != null)
-					&& GetCaptureIdentifier(pattern) != null;
-			}
-			return false;
-		}
 		/// <summary>Checks if <c>pattern</c> matches one of the syntax trees 
 		/// <c>$x</c> or <c>$(..x)</c> or <c>$(...x)</c> for some identifier <c>x</c>.
 		/// These are conventionally used to represent partial syntax trees.</summary>
@@ -546,64 +625,6 @@ namespace Loyc.Syntax
 					return arg;
 			}
 			return null;
-		}
-
-		static bool MatchThenParams(LNodeList cArgs, LNodeList pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref LNodeList attrs, bool gatherDuplicatesInList)
-		{
-			// This helper function of MatchesPattern() is called when pArgs is followed 
-			// by a $(...listCapture). cArgs is the list of candidate.Args that have not 
-			// yet been matched; pArgs is the list of pattern.Args that have not yet been 
-			// matched, and paramsCap is the $(params capture) node that follows pArgs.
-			captures = captures ?? new MMap<Symbol, LNode>();
-			int c = 0, p = 0;
-		restart:
-			for (; p < pArgs.Count; p++, c++) {
-				if (IsParamsCapture(pArgs[p])) {
-					if (!CaptureGroup(ref c, ref p, cArgs, pArgs, ref captures, ref attrs, gatherDuplicatesInList))
-						return false;
-					goto restart;
-				} else {
-					if (c >= cArgs.Count)
-						return false;
-					if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs, gatherDuplicatesInList))
-						return false;
-				}
-			}
-			return AddCapture(captures, paramsCap, new Slice_<LNode>(cArgs, c), gatherDuplicatesInList);
-		}
-
-		static bool CaptureGroup(ref int c, ref int p, LNodeList cArgs, LNodeList pArgs, ref MMap<Symbol, LNode> captures, ref LNodeList attrs, bool gatherDuplicatesInList)
-		{
-			Debug.Assert(IsParamsCapture(pArgs[p]));
-			// The goal now is to find a sequence of nodes in cArgs that matches
-			// the sequence pArgs[p+1 .. p+x] where x is the maximum value such
-			// that none of the nodes in the sequence are $(params caps).
-			int saved_p = p, saved_c = c;
-			var savedCaptures = captures.AsImmutable();
-			var savedAttrs = attrs;
-			int captureSize = 0;
-			for (;; captureSize++) {
-				for (p++, c += captureSize; ; c++, p++) {
-					// If we run out of pArgs, great, we're done; if we run out 
-					// of cArgs, the match fails, unless all remaining pArgs are 
-					// $(params caps).
-					if (p >= pArgs.Count || IsParamsCapture(pArgs[p])) {
-						goto done_group;
-					} else {
-						if (c >= cArgs.Count)
-							return false;
-						if (!MatchesPatternNested(cArgs[c], pArgs[p], ref captures, ref attrs, gatherDuplicatesInList))
-							goto continue_group;
-					}
-				}
-				continue_group:;
-				p = saved_p;
-				c = saved_c;
-				attrs = savedAttrs;
-				captures = savedCaptures.AsMutable();
-			}
-		done_group:
-			return AddCapture(captures, pArgs[saved_p], cArgs.Slice(saved_c, captureSize), gatherDuplicatesInList);
 		}
 
 		#endregion

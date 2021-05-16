@@ -166,5 +166,39 @@ namespace Loyc.Syntax
 			Assert.AreEqual(1, captures.Count);
 			Assert.AreEqual(new KeyValuePair<Symbol,LNode>((Symbol)"N", LNode.Literal(123)), captures.Single());
 		}
+
+		[Test]
+		public void TestExt_MatchesPattern_3()
+		{
+			var les3 = Les3LanguageService.Value;
+			var candidate = les3.ParseSingle("@Attr 2 + 3 * 4");
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x + $y"), out var captures, out var unmatchedAttrs));
+			Assert.AreEqual(2, captures.Count);
+			Assert.AreEqual(1, unmatchedAttrs.Count);
+
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@($a) $x + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(3, captures.Count);
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("@Blah $x + $y"), out captures, out unmatchedAttrs));
+			
+			candidate = les3.ParseSingle("((@Attr1 2 + 3 * 4))");
+			Assert.AreEqual(2, candidate.AttrCount); // 1 normal attribute + 1 parens trivia
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@($(..attrs)) 2 + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(2, captures.Count);
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+			
+			// TODO: Probably this should not fail; we're treating the attribute list like an 
+			//       argument list, but they are used differently.
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("@Attr1 2 + $y"), out captures, out unmatchedAttrs));
+			
+			// OTOH If the attribute list pattern has $(..list) in it, then maybe we should
+			// treat the attribute list like an argument list.
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@$(.._) @Attr1 @$(.._) 2 + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+
+			// TODO: tests with attributes inside subexpressions
+		}
 	}
 }
