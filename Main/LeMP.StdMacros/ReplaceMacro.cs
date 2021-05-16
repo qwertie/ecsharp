@@ -88,7 +88,7 @@ namespace LeMP
 		/// to insert the captured subexpression(s) into the output.</param>
 		/// <param name="replacementCount">Number of replacements that occurred.</param>
 		/// <returns>The result of applying the replacements.</returns>
-		/// <remarks><see cref="LNodeExt.MatchesPattern"/> is used for matching.</remarks>
+		/// <remarks><see cref="LNodeExt.MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/> is used for matching.</remarks>
 		public static LNodeList Replace(LNodeList stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			// This list is used to support simple token replacement in TokenTrees

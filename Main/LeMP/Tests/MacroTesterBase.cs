@@ -26,9 +26,9 @@ namespace LeMP.Tests
 		{
 			Test(input, Les2LanguageService.Value, outputLes, Les2LanguageService.Value, maxExpand);
 		}
-		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF)
+		protected void TestEcs(string inputEcs, string outputEcs, int maxExpand = 0xFFFF)
 		{
-			Test(input, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+			Test(inputEcs, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
 		}
 		protected void TestCs(string input, string outputCs, int maxExpand = 0xFFFF)
 		{
