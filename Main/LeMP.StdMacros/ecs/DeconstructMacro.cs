@@ -104,7 +104,8 @@ namespace LeMP.ecs
 			LNode id;
 			if (node.ArgCount == 1 && (id = node.Args[0]).IsId && !id.HasPAttrs()) {
 				object value;
-				if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value)) {
+				if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value) ||
+					context.ScopedProperties.TryGetValue(id.Name, out value)) {
 					if (value is LNode)
 						return ((LNode)value).WithRange(id.Range);
 					else

@@ -13,17 +13,55 @@ namespace LeMP
 {
 	public partial class StandardMacros
 	{
+		[LexicalMacro(@"##unroll (pattern in inputList) { output }; // EC# syntax; use .#unroll in LES3",
+			"Produces variations of a block of code, matching each item in the `inputList` against " +
+			"a pattern to the left of `in`. The `inputList` is preprocessed before its items are " +
+			"matched against the pattern. The item list must be a tuple, a braced block, a JSON-style " +
+			"list (the '[] operator), or a call to #splice. Every item in inputList should match the " +
+			"pattern, or an error is produced." +
+			"\n\n" +
+			"This macro is closely related to ##map, but a warning is produced if any items in " +
+			"`inputList` don't match the pattern.",
+			"##unroll")]
+		public static LNode unroll(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount != 2)
+				Reject(context, node, "Expected two arguments, got {0}.".Localized(node.ArgCount));
+
+			LNode spec = node[0], body = node[1];
+			if (spec.Calls(CodeSymbols.In, 2) || spec.Calls(@in, 2)) {
+				var pattern = spec.Args[0];
+				var input = context.PreProcess(spec.Args[1]);
+				var listType = input.Target?.Name;
+				if (listType == null || !listType.IsOneOf(S.Tuple, S.Braces, S.Array, S.Splice)) {
+					return Reject(context, input, "Expected a list (Target must be 'tuple, '[], '{} or #splice)");
+				}
+
+				var @case = new List<(LNodeList, LNodeList)> { (pattern.AsList(S.Braces), body.AsList(S.Braces)) };
+				var (results, failIndex) = DoMapping(input, 0, input.ArgCount, @case);
+				if (failIndex > -1)
+					context.Error(input[failIndex], "Item #{0} does not match the pattern".Localized(failIndex + 1));
+
+				return input.With(S.Splice, LNode.List(results));
+			}
+			return Reject(context, spec, "Expected binary `in` operator. If you already used one, try enclosing the left-hand side in parentheses.");
+		}
+
 		static readonly Symbol @in = GSymbol.Get("in");
 
 		[LexicalMacro(@"/* LES syntax */ unroll ((X, Y) `in` ((X, Y), (Y, X))) {...}; /* EC#/LES3 syntax */ unroll ((X, Y) in ((X, Y), (Y, X))) {...}",
-			 "Produces variations of a block of code, by replacing an identifier left of `in` "
+			 "This is obsolete. Please use ##foreach instead, which accepts arbitrary patterns" +
+			 "on the left but expects the `$` operator to mark all uses of each variable." +
+			 "For example, `unroll (f in (F,G)) { f(f); }` should be changed to " +
+			 "`##unroll ($f in (F,G)) { $f($f); }`.\n\n"
+			+"Produces variations of a block of code, by replacing an identifier left of `in` "
 			+"with each of the corresponding expressions on the right of `in`. The list on the "
 			+"right side can either be a tuple or a braced list of statements.\n\n"
 			+"The braces around the final block of code are omitted from the output.\n\n"
 			+"If the right-hand side of `in` is not a list (tuple, splice or braced block), "
 			+"macros are executed on the right-hand side in the hope of creating a list.",
 			"unroll", "#unroll")]
-		public static LNode unroll(LNode node, IMacroContext context)
+		public static LNode old_unroll(LNode node, IMacroContext context)
 		{
 			LNode clause;
 			// unroll (X, Y) \in ((X, Y), (Y, X)) {...}
@@ -36,7 +74,7 @@ namespace LeMP
 					if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces) && !cases.Calls(S.Splice))
 						return Reject(context, cases, "The right-hand side of 'in' should be a tuple or braced block.");
 				}
-				var result = unroll(identifiers, cases.Args, node.Args[1], context.Sink);
+				var result = old_unroll(identifiers, cases.Args, node.Args[1], context.Sink);
 				if (result != null)
 				{
 					if (node.HasPAttrs())
@@ -47,7 +85,7 @@ namespace LeMP
 			return null;
 		}
 		
-		public static LNode unroll(LNode var, LNodeList cases, LNode body, IMessageSink sink)
+		public static LNode old_unroll(LNode var, LNodeList cases, LNode body, IMessageSink sink)
 		{
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			var replacements = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -99,7 +137,7 @@ namespace LeMP
 			
 			return body.With(S.Splice, output.ToLNodeList());
 		}
-		class UnrollCtx // helper class for unroll
+		class UnrollCtx // helper class for old_unroll
 		{
 			Func<LNode, Maybe<LNode>> _replace;
 			public UnrollCtx() { _replace = Replace; } // optimization

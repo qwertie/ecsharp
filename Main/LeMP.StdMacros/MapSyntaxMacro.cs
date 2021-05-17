@@ -125,7 +125,7 @@ namespace LeMP
 			if (range.Value.start < -1) {
 				// Perform the mapping operation on the attributes
 				int stop = Math.Min(range.Value.stop, -1);
-				List<LNode> outputAttrs = DoMapping(input, range.Value.start, stop, cases);
+				var (outputAttrs, _) = DoMapping(input, range.Value.start, stop, cases);
 				outputAttrs.InsertRange(0, input.Attrs.Slice(0, range.Value.start - input.Min));
 				outputAttrs.AddRange(input.Attrs.Slice(input.Attrs.Count - (-1 - stop)));
 				input = input.WithAttrs(LNode.List(outputAttrs));
@@ -134,7 +134,7 @@ namespace LeMP
 			if (range.Value.stop > -1) {
 				// Perform the mapping operation on the Target and/or Args
 				int min = Math.Max(range.Value.start, -1);
-				List<LNode> output = DoMapping(input, min, range.Value.stop, cases);
+				var (output, _) = DoMapping(input, min, range.Value.stop, cases);
 				if (min > -1)
 					output.InsertRange(0, input.Slice(0, min));
 				output.AddRange(input.Slice(range.Value.stop));
@@ -155,9 +155,10 @@ namespace LeMP
 			}
 		}
 
-		static List<LNode> DoMapping(LNode input, int start, int stop, List<(LNodeList Pattern, LNodeList Replacement)> cases)
+		static (List<LNode> output, int failIndex) DoMapping(LNode input, int start, int stop, List<(LNodeList Pattern, LNodeList Replacement)> cases)
 		{
 			List<LNode> output = new List<LNode>();
+			int failIndex = -1;
 			for (int i = start; i < stop; i++)
 			{
 				foreach (var @case in cases)
@@ -178,13 +179,15 @@ namespace LeMP
 					foreach (var outputSpec in @case.Replacement)
 						output.Add(ReplaceCaptures(outputSpec, captures).PlusAttrsBefore(unmatchedAttrs));
 					i += @case.Pattern.Count - 1;
-					break;
+					goto matched;
 
 					not_matched: continue;
 				}
+				failIndex = i;
+				matched: continue;
 			}
 
-			return output;
+			return (output, failIndex);
 		}
 
 		public static int? GetIntValue(LNode integer)

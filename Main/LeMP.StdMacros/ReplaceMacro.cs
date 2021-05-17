@@ -161,7 +161,7 @@ namespace LeMP
 					LNode id, cap;
 					if ((id = LNodeExt.GetCaptureIdentifier(n)) != null) {
 						if (captures.TryGetValue(id.Name, out cap))
-							return cap;
+							return cap.PlusAttrsBefore(n.Attrs);
 					}
 					return null;
 				});

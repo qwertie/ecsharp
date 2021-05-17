@@ -34,6 +34,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Update="ecs\Literals.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Literals.ecs</DependentUpon>
+    </Compile>
+    <Compile Update="ecs\UserDefinedMacroMacro.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UserDefinedMacroMacro.ecs</DependentUpon>
+    </Compile>
     <None Update="ecs\AssertMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>AssertMacro.out.cs</LastGenOutput>
@@ -61,6 +71,10 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Update="ecs\Literals.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Literals.out.cs</LastGenOutput>
+    </None>
     <None Update="ecs\MatchCode.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>
@@ -97,6 +111,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SaveAndRestoreMacro.ecs</DependentUpon>
     </Compile>
+    <None Update="ecs\UserDefinedMacroMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UserDefinedMacroMacro.out.cs</LastGenOutput>
+    </None>
     <None Update="ecs\UseSequenceExpressions.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>UseSequenceExpressions.out.cs</LastGenOutput>
