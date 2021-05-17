@@ -942,10 +942,11 @@ namespace Loyc.Syntax
 			return new NegListSlice<LNode>(this, start, count);
 		}
 
-		public int Count
-		{
-			get { return Max - Min + 1; }
-		}
+		/// <summary>Gets the total number of children that this node has (Max - Min + 1).</summary>
+		[Obsolete("It's usually a mistake to read this property. Did you mean ArgCount?")]
+		public int Count => Max - Min + 1;
+		int IReadOnlyCollection<LNode>.Count => Max - Min + 1;
+		int IReadOnlyCollection<ILNode>.Count => Max - Min + 1;
 
 		public IEnumerator<LNode> GetEnumerator()
 		{
