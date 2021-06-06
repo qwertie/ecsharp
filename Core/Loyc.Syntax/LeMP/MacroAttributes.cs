@@ -193,8 +193,8 @@ namespace LeMP
 		// This cache decreases time spent in LeMP tests by about 40%. It only helps 
 		// when the macro processor is reinitialized many times, so in "production"
 		// it's unimportant.
-		public static ConcurrentDictionary<Pair<RuntimeTypeHandle, Symbol>, List<MacroInfo>> _macroCache 
-		        = new ConcurrentDictionary<Pair<RuntimeTypeHandle, Symbol>, List<MacroInfo>>();
+		public static ConcurrentDictionary<Pair<Type, Symbol>, List<MacroInfo>> _macroCache 
+		        = new ConcurrentDictionary<Pair<Type, Symbol>, List<MacroInfo>>();
 
 		/// <summary>Uses reflection to find a list of macros within the specified 
 		/// type by searching for (static) methods that
@@ -223,7 +223,7 @@ namespace LeMP
 		{
 			@namespace = @namespace ?? (Symbol)type.Namespace;
 
-			if (instance == null && _macroCache.TryGetValue(Pair.Create(type.TypeHandle, @namespace), out List<MacroInfo> results))
+			if (instance == null && _macroCache.TryGetValue(Pair.Create(type, @namespace), out List<MacroInfo> results))
 				return results;
 
 			results = new List<MacroInfo>();
@@ -257,7 +257,7 @@ namespace LeMP
 			}
 
 			if (instance == null && permaCache)
-				_macroCache[Pair.Create(type.TypeHandle, @namespace)] = results;
+				_macroCache[Pair.Create(type, @namespace)] = results;
 
 			return results;
 

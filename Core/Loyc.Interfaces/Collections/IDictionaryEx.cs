@@ -35,7 +35,7 @@ namespace Loyc.Collections
 	/// And, as always, <see cref="KeyCollection{K,V}"/>, <see cref="ValueCollection{K,V}"/> 
 	/// and <see cref="Impl.DictionaryBase{K,V}"/>will help you implement dictionary types.
 	/// </remarks>
-	public interface IDictionaryEx<K, V> : IDictionaryImpl<K, V>, ICloneable<IDictionaryEx<K, V>>, ITryGet<K, V>
+	public interface IDictionaryEx<K, V> : IDictionaryImpl<K, V>, ICloneable<IDictionaryEx<K, V>>
 	{
 		// Disambiguation through duplication: since they decided IDictionary wouldn't
 		// derive from IReadOnlyDictionary...and that the two would have different types

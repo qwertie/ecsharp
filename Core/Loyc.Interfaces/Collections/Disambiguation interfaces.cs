@@ -115,7 +115,7 @@ namespace Loyc.Collections
 	/// of <see cref="IListImpl{T}"/>.) Variables should not have this type (except in
 	/// disambiguation methods, which immediately cast the variable to another type).
 	/// </remarks>
-	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, IDictionarySource<K, V>, IMIndexed<K, V> { }
+	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, IDictionarySource<K, V>, IMIndexed<K, V>, ITryGet<K, V> { }
 
 	#endregion
 }
