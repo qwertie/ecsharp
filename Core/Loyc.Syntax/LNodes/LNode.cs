@@ -1083,9 +1083,10 @@ namespace Loyc.Syntax
 		/// For example, <c>G.Var(out int x, 777)</c> is used to create a variable 
 		/// called x with a value of 777.</summary>
 		/// <returns>True.</returns>
-		/// <remarks>This method is a copy of <see cref="G.Var{T}(out T, T)"/> in the 
-		/// Loyc.Syntax namespace; it exists so that only `using Loyc.Syntax` (not 
-		/// `using Loyc`) is required to use macros that work on syntax trees.</remarks>
+		/// <remarks>This method exists mainly to help implement the `matches` macro.
+		/// For example, the EC# statement <c>if (matches(expr, Foo($x))) {}</c> will 
+		/// produce C# code that uses this method:
+		/// <c>if (expr.Calls((Symbol) "Foo", 1) && LNode.Var(out var x, expr.Args[0])) { }</c></remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)] // hide from IntelliSense
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Var<T>(out T var, T value) { var = value; return true; }

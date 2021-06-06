@@ -214,7 +214,7 @@ namespace LeMP
 		public static (int start, int stop)? GetIntRange(LNode rangeSpec, int listCount)
 		{
 			int? start = null, stop = null;
-			if (rangeSpec.Calls(CodeSymbols.DotDot, 2) && G.Var(out LNode first, rangeSpec.Args[0]) && G.Var(out LNode second, rangeSpec.Args[1])
+			if (rangeSpec.Calls(CodeSymbols.DotDot, 2) && LNode.Var(out LNode first, rangeSpec.Args[0]) && LNode.Var(out LNode second, rangeSpec.Args[1])
 				|| rangeSpec.Calls(CodeSymbols.DotDot, 1) && G.True(second = rangeSpec.Args[0]) && G.True(first = null)
 				|| rangeSpec.Calls(CodeSymbols.SufDotDot, 1) && G.True(first = rangeSpec.Args[0]) && G.True(second = null)) {
 				if (first != null) {

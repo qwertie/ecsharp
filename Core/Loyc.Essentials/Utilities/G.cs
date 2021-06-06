@@ -11,6 +11,8 @@ using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections;
 using System.Runtime.CompilerServices;
+using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Loyc
 {
@@ -129,12 +131,12 @@ namespace Loyc
 		/// <returns>True.</returns>
 		public static bool True<T>(T value) => true;
 		
-		/// <summary>This method simply assigns a value to a variable and returns true.
-		/// For example, <c>G.Var(out int x, 777)</c> is used to create a variable 
-		/// called x with a value of 777.</summary>
+		/// <summary>This method simply assigns a value to a variable and returns the 
+		/// value. For example, <c>G.Var(out int x, 777)</c> creates a variable called 
+		/// x with a value of 777, and returns 777.</summary>
 		/// <returns>True.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static bool Var<T>(out T var, T value) { var = value; return true; }
+		public static T Var<T>(out T var, T value) => var = value;
 
 		/// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
 		/// <returns>True</returns>
@@ -571,6 +573,39 @@ namespace Loyc
 			if (sb.Length != 0)
 				output.Add(sb.ToString());
 			return output;
+		}
+
+		/// <summary>Given an expression that refers to a method or property, such as
+		/// <c>(Class c) => c.Method(0, 0)</c>, this function returns the 
+		/// System.Reflection.MethodInfo object associated with the method/property.
+		/// You can use an expression like <c>(Class c) => c.Prop</c> to get a property's
+		/// getter, but you can't get the setter because C# 9 doesn't support them in 
+		/// expression trees.</summary>
+		/// <exception cref="InvalidCastException">The expression was not in the expected format.</exception>
+		public static MemberInfo GetMethodInfo<T, TResult>(Expression<Func<T, TResult>> code)
+		{
+			if (code.Body is MemberExpression me)
+				return ((PropertyInfo)me.Member).GetGetMethod()!;
+			//else if (code.Body is BinaryExpression be && be.NodeType == ExpressionType.Assign)
+			//	return ((PropertyInfo)((MemberExpression)be.Left).Member).GetSetMethod()!;
+			else
+				return ((MethodCallExpression)code.Body).Method;
+		}
+
+		/// <summary>Given an expression that refers to a static method or property, 
+		/// such as <c>() => Class.Method(0, 0)</c>, this function returns the 
+		/// System.Reflection.MethodInfo object associated with the method/property.
+		/// You can use an expression like <c>() => Class.Prop</c> to get a property's
+		/// getter, but you can't get the setter because C# 9 doesn't support them in 
+		/// expression trees.</summary>
+		public static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> code)
+		{
+			if (code.Body is MemberExpression me)
+				return ((PropertyInfo)me.Member).GetGetMethod()!;
+			//else if (code.Body is BinaryExpression be && be.NodeType == ExpressionType.Assign)
+			//	return ((PropertyInfo)((MemberExpression)be.Left).Member).GetSetMethod()!;
+			else
+				return ((MethodCallExpression)code.Body).Method;
 		}
 	}
 
