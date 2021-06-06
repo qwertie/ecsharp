@@ -83,6 +83,7 @@ namespace Loyc.Tests
 		public static int Loyc_Essentials()
 		{
 			return MiniTest.RunTests.RunMany(
+				new MultiMapTests(_seed),
 				new EitherTests(),
 				new BaisTests(),
 				new ListExtTests(),

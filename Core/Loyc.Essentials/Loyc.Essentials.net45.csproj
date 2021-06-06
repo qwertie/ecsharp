@@ -164,6 +164,7 @@
     </Compile>
     <Compile Include="Collections\HelperClasses\CollectionWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\SetWrapper.cs" />
+    <Compile Include="Collections\Implementations\MultiMap.cs" />
     <Compile Include="MessageSinks\LogMessage.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
     <Compile Include="MessageSinks\LogException.cs" />
