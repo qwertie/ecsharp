@@ -15,12 +15,13 @@ namespace LeMP.Tests
 		{
 			TestLes("list = ##map([a, b, 3], $x => $x + 1);",
 			        "list = [a + 1, b + 1, 3 + 1];");
+			TestLes("##map(#splice(w, x, y), $x => $x * 2);",
+			        "w * 2;\nx * 2;\ny * 2;");
 			TestLes("list = ##map([a + b, 3, x + y], ($x + $y) => Add($x, $y));",
 			        "list = [Add(a, b), 3, Add(x, y)];");
 			TestLes("list = ##mapWithFilter([a + b, 3, x + y], ($x + $y) => Add($x, $y));",
 			        "list = [Add(a, b), Add(x, y)];");
 		}
-
 
 		[Test]
 		public void MultiMatchTest()
@@ -63,6 +64,13 @@ namespace LeMP.Tests
 						"list = @``;");
 			}
 			Assert.AreEqual(1, _msgHolder.List.Count(msg => msg.Severity == Severity.Warning));
+		}
+
+		[Test]
+		public void PreprocessTest()
+		{
+			TestEcs("define WXY() => #splice(w, x, y); \n ##map(WXY(), $x => $x * 2);",
+			        "w * 2;\nx * 2;\ny * 2;");
 		}
 	}
 }

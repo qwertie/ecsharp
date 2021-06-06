@@ -72,7 +72,7 @@ namespace LeMP
 			// Preprocess some arguments
 			var args = node.Args.SmartSelect(n => n.Calls(S.Lambda, 2) ? n : context.PreProcess(n));
 
-			LNode input = node.Args[0];
+			LNode input = args[0];
 
 			// Decode the skipSpec, if any
 			LNode skipSpec = node.Args[1];
