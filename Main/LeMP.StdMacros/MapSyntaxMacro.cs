@@ -52,7 +52,7 @@ namespace LeMP
 			"Each of the other arguments to ##map should have the form `pattern => replacement`," +
 			"and this example does not, so ##map will print an error.",
 			"##map")]
-		public static LNode map(LNode node, IMacroContext context) => mapWithFilter(node, context, true);
+		public static LNode map(LNode node, IMacroContext context) => map(node, context, true);
 
 		[LexicalMacro(@"##mapWithFilter(inputList, pattern => replacement, ...); ##mapWithFilter(inputList, skipSpec, pattern => replacement, ...)",
 			"Performs a transformation on each argument in an argument list. This macro behaves " +
@@ -62,9 +62,15 @@ namespace LeMP
 			"Unlike ##map, ##mapWithFilter filters out any items that don't match a pattern. For example, " +
 			"`##map((1+2, 3, 4*5), ($a+$b) => $a+$b, ($a*$b) => $a*$b)` produces `(1+2, 4*5)`.",
 			"##mapWithFilter")]
-		public static LNode mapWithFilter(LNode node, IMacroContext context) => mapWithFilter(node, context, false);
+		public static LNode mapWithFilter(LNode node, IMacroContext context) => map(node, context, false);
 
-		public static LNode mapWithFilter(LNode node, IMacroContext context, bool keepUnmatched)
+		[LexicalMacro(@"##mapTarget(inputCall, pattern => replacement, ...);",
+			"Performs a transformation on the target of a call. Equivalent to `##map(inputCall, -1..0, ...)`.",
+			"##mapTarget")]
+		public static LNode mapTarget(LNode node, IMacroContext context) => 
+			map(node.WithArgs(node.Args.Insert(1, F.Call(CodeSymbols.DotDot, F.Literal(-1), F.Literal(0)))), context, true);
+
+		public static LNode map(LNode node, IMacroContext context, bool keepUnmatched)
 		{
 			if (node.ArgCount < 2)
 				return Reject(context, node, "Expected two or more arguments");

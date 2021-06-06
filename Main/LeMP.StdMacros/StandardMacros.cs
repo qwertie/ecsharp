@@ -191,5 +191,29 @@ namespace LeMP
 		}
 
 		#endregion
+
+		#region withTarget, targetOf
+
+		[LexicalMacro(@"##withTarget(callNode, newTarget);",
+			"Changes the Target of the first argument to be the second argument",
+			"##withTarget")]
+		public static LNode withTarget(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount == 2)
+				return node[0].WithTarget(node[1]);
+			return null;
+		}
+
+		[LexicalMacro(@"##targetOf(callNode);",
+			"Gets the target of a call node. If the argument is not a call node, the node itself is returned instead.",
+			"##targetOf")]
+		public static LNode targetOf(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount == 1)
+				return node[0].Target ?? node[0];
+			return null;
+		}
+
+		#endregion
 	}
 }

@@ -72,5 +72,14 @@ namespace LeMP.Tests
 			TestEcs("define WXY() => #splice(w, x, y); \n ##map(WXY(), $x => $x * 2);",
 			        "w * 2;\nx * 2;\ny * 2;");
 		}
+
+		[Test]
+		public void MapTargetTest()
+		{
+			TestEcs("##mapTarget(foo(25), $x => $x());",
+			        "foo()(25);");
+			TestEcs("##mapTarget(foo(42), bar => baz, foo => bar);",
+			        "bar(42);");
+		}
 	}
 }
