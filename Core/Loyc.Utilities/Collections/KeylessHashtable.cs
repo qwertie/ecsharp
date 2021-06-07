@@ -1,4 +1,4 @@
-﻿// Author: David Piepgrass
+// Author: David Piepgrass
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -226,7 +226,7 @@ namespace Loyc.Collections.Impl
 			_count = 0;
 			_values = EmptyArray<T>.Value;
 			_next = EmptyArray<Int>.Value;
-			InternalList.Fill(_buckets, IntEND);
+			_buckets.AsSpan().Fill(IntEND);
 		}
 
 		public override IEnumerator<T> GetEnumerator()

@@ -13,6 +13,7 @@ namespace Loyc.Syntax
 	using Loyc.Collections.Impl;
 	using Loyc.Collections.MutableListExtensionMethods;
 	using Loyc.Syntax.Les;
+	using System.Runtime.InteropServices;
 
 	/// <summary>
 	/// Exposes a stream as an ICharSource, as though it were an array of 
@@ -242,7 +243,9 @@ namespace Loyc.Syntax
 		{
 			if (outChars.Length < neededOutSize)
 				Array.Resize(ref outChars, neededOutSize);
-			return _decoder.GetChars(buf.InternalList, buf.InternalStart, buf.Count, outChars, outIndex, flush);
+
+			MemoryMarshal.TryGetArray(buf.AsMemory(), out ArraySegment<byte> seg);
+			return _decoder.GetChars(seg.Array, seg.Offset, seg.Count, outChars, outIndex, flush);
 		}
 
 		public override int Count

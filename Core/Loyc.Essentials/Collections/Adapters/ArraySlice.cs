@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.Math;
@@ -20,12 +21,14 @@ namespace Loyc.Collections.MutableListExtensionMethods
 namespace Loyc.Collections
 {
 	/// <summary>Adapter: Provides access to a section of an array.</summary>
+	/// <remarks>As of version 30.1, this is a wrapper around <see cref="Memory{T}"/>.</remarks>
 	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>, IIsEmpty
 	{
-		T[] _list;
-		int _start, _count;
+		Memory<T> _mem;
 
 		public static implicit operator ArraySlice<T>(T[] array) { return new ArraySlice<T>(array); }
+		public static implicit operator ArraySlice<T>(Memory<T> array) { return new ArraySlice<T>(array); }
+		public static implicit operator Memory<T>(ArraySlice<T> array) { return array._mem; }
 
 		/// <summary>Initializes an array slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
@@ -40,29 +43,15 @@ namespace Loyc.Collections
 		/// </remarks>
 		public ArraySlice(T[] list, int start, int count)
 		{
-			_list = list;
-			_start = start;
-			_count = count;
-			if (start < 0) CheckParam.ThrowBadArgument("The start index was below zero.");
-			if (count < 0) CheckParam.ThrowBadArgument("The count was below zero.");
-			if (count > _list.Length - start)
-				_count = System.Math.Max(_list.Length - start, 0);
+			if ((uint)(start + count) > (uint)list.Length)
+				count = list.Length - start;
+			_mem = list.AsMemory(start, count);
 		}
-		public ArraySlice(T[] list)
-		{
-			_list = list;
-			_start = 0;
-			_count = list.Length;
-		}
+		public ArraySlice(T[] list) : this(list.AsMemory()) { }
+		public ArraySlice(Memory<T> mem) => _mem = mem;
 
-		public int Count
-		{
-			get { return _count; }
-		}
-		public bool IsEmpty
-		{
-			get { return _count == 0; }
-		}
+		public int Count => _mem.Length;
+		public bool IsEmpty => _mem.Length == 0;
 		public T First
 		{
 			get { return this[0]; }
@@ -70,17 +59,18 @@ namespace Loyc.Collections
 		}
 		public T Last
 		{
-			get { return this[_count - 1]; }
-			set { this[_count - 1] = value; }
+			get { return this[Count - 1]; }
+			set { this[Count - 1] = value; }
 		}
 
 		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopFirst(out bool empty)
 		{
-			if (_count != 0) {
+			if (Count != 0) {
 				empty = false;
-				_count--;
-				return _list[_start++];
+				var first = _mem.Span[0];
+				_mem = _mem.Slice(1);
+				return first;
 			}
 			empty = true;
 			return default(T);
@@ -88,10 +78,11 @@ namespace Loyc.Collections
 		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopLast(out bool empty)
 		{
-			if (_count != 0) {
+			if (Count != 0) {
 				empty = false;
-				_count--;
-				return _list[_start + _count];
+				var last = _mem.Span[_mem.Length - 1];
+				_mem = _mem.Slice(0, _mem.Length - 1);
+				return last;
 			}
 			empty = true;
 			return default(T);
@@ -106,37 +97,28 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 		public InternalList.Enumerator<T> GetEnumerator()
 		{
-			return new InternalList.Enumerator<T>(_list, _start, _start + _count);
+			return new InternalList.Enumerator<T>(_mem);
 		}
 
 		public T this[int index]
 		{
-			get { 
-				if ((uint)index < (uint)_count)
-					return _list[_start + index];
-				throw new IndexOutOfRangeException();
-			}
-			set {
-				if ((uint)index < (uint)_count)
-					_list[_start + index] = value;
-				else
-					throw new IndexOutOfRangeException();
-			}
+			get => _mem.Span[index];
+			set => _mem.Span[index] = value;
 		}
 		public T this[int index, T defaultValue]
 		{
 			get { 
-				if ((uint)index < (uint)_count)
-					return _list[_start + index];
+				if ((uint)index < (uint)_mem.Length)
+					return _mem.Span[index];
 				return defaultValue;
 			}
 		}
 		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
-			if ((uint)index < (uint)_count) {
+			if ((uint)index < (uint)_mem.Length) {
 				fail = false;
-				return _list[_start + index];
+				return _mem.Span[index];
 			}
 			fail = true;
 			return default(T);
@@ -144,26 +126,16 @@ namespace Loyc.Collections
 		IListSource<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
 		public ArraySlice<T> Slice(int start, int count = int.MaxValue)
 		{
-			if (start < 0)
-				CheckParam.ThrowBadArgument("The start index was below zero.");
 			if (count < 0)
 				count = 0;
-			var slice = new ArraySlice<T>();
-			slice._list = this._list;
-			slice._start = this._start + start;
-			slice._count = count;
-			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - start, 0);
-			return slice;
+			if ((uint)(start + count) >= (uint)_mem.Length)
+				return new ArraySlice<T>(_mem.Slice(start));
+			return new ArraySlice<T>(_mem.Slice(start, count));
 		}
 
-		public T[] ToArray()
-		{
-			var array = new T[Count];
-			for (int i = 0; i < array.Length; i++)
-				array[i] = _list[_start + i];
-			return array;
-		}
+		public T[] ToArray() => _mem.ToArray();
+
+		public Memory<T> AsMemory() => _mem;
 
 		/// <summary>Returns the original array.</summary>
 		/// <remarks>Ideally, to protect the array there would be no way to access
@@ -172,8 +144,29 @@ namespace Loyc.Collections
 		/// form of a triple (list, start index, count). In order to call such an
 		/// old-style API using a slice, one must be able to extract the internal
 		/// list and start index values.</remarks>
-		public T[] InternalList { get { return _list; } }
-		public int InternalStart { get { return _start; } }
-		public int InternalStop { get { return _start + _count; } }
+		[Obsolete("Please use MemoryMarshal.TryGetArray(this.AsMemory(), out var seg) and read seg.Array")]
+		public T[]? InternalList {
+			get {
+				if (!MemoryMarshal.TryGetArray(_mem, out ArraySegment<T> seg))
+					throw new InvalidOperationException();
+				return seg.Array;
+			}
+		}
+		[Obsolete("Please use MemoryMarshal.TryGetArray(this.AsMemory(), out var seg) and read seg.Offset")]
+		public int InternalStart {
+			get {
+				if (!MemoryMarshal.TryGetArray(_mem, out ArraySegment<T> seg))
+					throw new InvalidOperationException();
+				return seg.Offset;
+			}
+		}
+		[Obsolete("Please use MemoryMarshal.TryGetArray(this.AsMemory(), out var seg) and read seg.Offset + seg.Count")]
+		public int InternalStop {
+			get {
+				if (!MemoryMarshal.TryGetArray(_mem, out ArraySegment<T> seg))
+					throw new InvalidOperationException();
+				return seg.Offset + seg.Count;
+			}
+		}
 	}
 }

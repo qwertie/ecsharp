@@ -14,10 +14,10 @@ namespace Loyc.Essentials.Tests
 		[Test]
 		public void BasicTest()
 		{
-			var arr = new byte[] { 67, 97, 116, 128, 10, 69, 255, 65, 66, 67, 68 };
-			var str = "Cat\b`@iE?tEB!CD";
-			var str2 = ByteArrayInString.Convert(arr);
-			var arr2 = ByteArrayInString.Convert(str);
+			var arr = new byte[] { 67, 97, 116, 131, 10, 69, 255, 65, 66, 67, 68 };
+			var str = "Cat\b`piE?tEB!CD";
+			var str2 = ByteArrayInString.ConvertFromBytes(arr, false);
+			var arr2 = ByteArrayInString.ConvertToBytes(str);
 			Assert.AreEqual(str, str2);
 			ExpectList(arr, arr2);
 		}
@@ -30,8 +30,8 @@ namespace Loyc.Essentials.Tests
 			for (int len = 0; len < 100; len++) {
 				byte[] bytes = new byte[len];
 				_r.NextBytes(bytes);
-				string asStr = ByteArrayInString.Convert(bytes);
-				byte[] result = ByteArrayInString.Convert(asStr).ToArray();
+				string asStr = ByteArrayInString.ConvertFromBytes(bytes, _r.Next(2) != 0);
+				byte[] result = ByteArrayInString.ConvertToBytes(asStr).ToArray();
 				ExpectList(result, bytes);
 			}
 		}

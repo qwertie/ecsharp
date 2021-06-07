@@ -249,7 +249,7 @@ namespace Loyc.Syntax
 				return OK(ch < 0x10000 ? (char)ch : (object)s.ToString());
 			});
 			AddParser(true, _bais, (s, tm) => {
-				var slice = ByteArrayInString.TryConvert(s);
+				var slice = ByteArrayInString.TryConvertToBytes(s);
 				if (slice == null)
 					return new LogMessage(Severity.Error, s, "This is not a valid BAIS string.");
 				return slice.Value.ToArray();
@@ -294,7 +294,7 @@ namespace Loyc.Syntax
 			AddPrinter(true, typeof(UString), (lit, sb) =>
 				{ sb.Append((UString)lit.Value); return lit.TypeMarker; });
 			AddPrinter(true, typeof(byte[]), (lit, sb) =>
-				{ sb.Append(ByteArrayInString.Convert((byte[])lit.Value, false)); return _bais; });
+				{ sb.Append(ByteArrayInString.ConvertFromBytes((byte[])lit.Value, false)); return _bais; });
 
 			// NON-STANDARD TYPES
 

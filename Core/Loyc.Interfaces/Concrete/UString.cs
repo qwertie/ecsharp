@@ -60,7 +60,7 @@ namespace Loyc
 
 		private readonly string? _str;
 		private int _start, _count;
-		
+
 		/// <summary>Initializes a UString slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
 		/// <remarks>The (start, count) range is allowed to be invalid, as long
@@ -103,7 +103,7 @@ namespace Loyc
 			_count = count;
 			Debug.Assert(start >= 0 && count >= 0 && start + count <= (_str == null ? 0 : _str.Length));
 		}
-		
+
 		/// <summary>Returns the original string.</summary>
 		/// <remarks>Ideally, the string would be private and there would be no way 
 		/// to access its contents beyond the boundaries of the slice. However, the
@@ -143,6 +143,9 @@ namespace Loyc
 				return c;
 			}
 		}
+
+		// TODO: consider changing UString to be a wrapper around Memory<char>
+		public ReadOnlyMemory<char> AsMemory() => _str.AsMemory(_start, _count);
 
 		public uchar PopFirst(out bool fail)
 		{

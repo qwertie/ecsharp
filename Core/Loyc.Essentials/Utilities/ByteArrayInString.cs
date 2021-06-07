@@ -2,6 +2,7 @@ using Loyc.Collections;
 using Loyc.Collections.MutableListExtensionMethods;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Loyc
@@ -31,18 +32,21 @@ namespace Loyc
 	/// For example:
 	/// <pre>
 	///   //                    C   a    t       \n  E        A   B   C   D
-	///   var b = new byte[] { 67, 97, 116, 128, 10, 69, 255, 65, 66, 67, 68 };
-	///   Assert.AreEqual(ByteArrayInString.Convert(b), "Cat\b`@iE?tEB!CD");
+	///   var b = new byte[] { 67, 97, 116, 131, 10, 69, 255, 65, 66, 67, 68 };
+	///   Assert.AreEqual(ByteArrayInString.Convert(b), "Cat\b`piE?tEB!CD");
 	/// </pre>
-	/// A byte sequence such as 128, 10, 69, 255 can be encoded in base 64 as 
+	/// A byte sequence such as 131, 10, 69, 255 can be encoded in base 64 as 
 	/// illustrated:
 	/// <pre>
-	///              ---128---    ---10----    ---69----  ---255---  
-	///   Bytes:     1000 0000    0000 1010    0100 0101  1111 1111  
-	///   Base 64:   100000   000000   101001    000101   111111   110000
-	///   Encoded: 01100000 01000000 01101001  01000101 01111111 01110000
-	///            ---96--- ---64--- --105---  ---69--- --127--- --112---
-	///               `        @        i         E        ~        p
+	///              ---131---    ---10----    ---69----  ---255---  
+	///   Bytes:     1000 0011    0000 1010    0100 0101  1111 1111  
+	///   Base 64:   100000   110000   101001    000101   111111   110000
+	///   Encoded: 01100000 01110000 01101001  01000101 01111111 01110000
+	///            ---96--- --112--- --105---  ---69--- --127--- --112---
+	///               `        p        i         E        ~        p
+	
+	///            01100000 01111000 01001100 
+	
 	/// </pre>
 	/// <para/>
 	/// An interesting property of this base-64 encoding is that when it encodes
@@ -63,7 +67,11 @@ namespace Loyc
 		/// <summary>Encodes a byte array to a string with BAIS encoding, which preserves 
 		/// runs of ASCII characters unchanged.</summary>
 		/// <param name="allowControlChars">If true, control characters under 32 are 
-		///   treated as ASCII (except character 8 '\b').</param>
+		///   treated as ASCII (except character 8 '\b'). When preparing output for
+		///   JSON it may be more efficient to use false here, because JSON does not 
+		///   officially allow control characters in strings, so if this is true, a
+		///   standard JSON encoder will lengthen control characters to 6-character 
+		///   escape sequences.</param>
 		/// <returns>The encoded string.</returns>
 		/// <remarks>
 		/// If the byte array can be interpreted as ASCII, it is returned as characters,
@@ -75,21 +83,25 @@ namespace Loyc
 		/// three bytes if possible (as four characters). This decision may, 
 		/// unfortunately, cut off the beginning of some ASCII runs.
 		/// </remarks>
-		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true)
+		public static string ConvertFromBytes(Memory<byte> bytes, bool allowControlChars)
 		{
 			var sb = new StringBuilder();
-			while (RangeExt.TryPopFirst(ref bytes, out byte b))
+			var span = bytes.Span;
+			for (int i = 0; i < span.Length;)
 			{
+				byte b = span[i++];
 				if (IsAscii(b, allowControlChars))
 					sb.Append((char)b);
 				else {
 					sb.Append('\b');
 					// Do binary encoding in groups of 3 bytes
-					for (;; b = bytes.PopFirst(out bool _)) {
+					for (;; b = span[i++]) {
 						int accum = b;
-						if (RangeExt.TryPopFirst(ref bytes, out b)) {
+						if (i < span.Length) {
+							b = span[i++];
 							accum = (accum << 8) | b;
-							if (RangeExt.TryPopFirst(ref bytes, out b)) {
+							if (i < span.Length) {
+								b = span[i++];
 								accum = (accum << 8) | b;
 								sb.Append(EncodeBase64Digit(accum >> 18));
 								sb.Append(EncodeBase64Digit(accum >> 12));
@@ -108,12 +120,14 @@ namespace Loyc
 							sb.Append(EncodeBase64Digit(accum << 4));
 							break;
 						}
-						if (IsAscii(bytes.First, allowControlChars) &&
-							IsAscii(bytes[1, 32], allowControlChars) &&
-							IsAscii(bytes[2, 32], allowControlChars)) {
+						if (i < span.Length && IsAscii(span[i], allowControlChars) &&
+							(i + 1 >= span.Length || IsAscii(span[i + 1], allowControlChars)) &&
+							(i + 2 >= span.Length || IsAscii(span[i + 2], allowControlChars))) {
 							sb.Append('!'); // return to ASCII mode
 							break;
 						}
+						if (i >= span.Length)
+							break;
 					}
 				}
 			}
@@ -123,42 +137,46 @@ namespace Loyc
 		static bool IsAscii(byte b, bool allowControlChars)
 			=> b < 127 && (b >= 32 || (allowControlChars && b != '\b'));
 
-		/// <summary>Decodes a BAIS string back to a byte array.</summary>
-		/// <param name="s">String to decode.</param>
-		/// <exception cref="FormatException">The string cannot be interpreted as a byte array in BAIS format.</exception>
-		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
-		/// if you need a true array).</returns>
-		public static ArraySlice<byte> Convert(string s) =>
-			TryConvert(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
+		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
+		public static string ConvertFromBytes(byte[] bytes, bool allowControlChars)
+			=> ConvertFromBytes(bytes.AsMemory(), allowControlChars);
+
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
 		/// <param name="s">String to decode.</param>
 		/// <exception cref="FormatException">The string cannot be interpreted as a byte array in BAIS format.</exception>
 		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
 		/// if you need a true array).</returns>
-		public static ArraySlice<byte> Convert(UString s) =>
-			TryConvert(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
+		public static ArraySlice<byte> ConvertToBytes(string s) =>
+			TryConvertToBytes(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
+
+		/// <summary>Decodes a BAIS string back to a byte array.</summary>
+		/// <param name="s">String to decode.</param>
+		/// <exception cref="FormatException">The string cannot be interpreted as a byte array in BAIS format.</exception>
+		/// <returns>Decoded byte array (use <c>Convert(s).ToArray()</c> 
+		/// if you need a true array).</returns>
+		public static ArraySlice<byte> ConvertToBytes(UString s) =>
+			TryConvertToBytes(s) ?? throw new FormatException("String cannot be interpreted as byte array".Localized());
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
 		/// <param name="s">String to decode.</param>
 		/// <returns>Decoded byte array, or null if decoding fails.</returns>
-		public static ArraySlice<byte>? TryConvert(UString s)
+		public static ArraySlice<byte>? TryConvertToBytes(UString s)
 		{
 			// Maybe when we go to .NET Core they'll offer a Span overload to make this efficient?
-			return TryConvert(s.ToString() ?? "");
+			return TryConvertToBytes(s.ToString() ?? "");
 		}
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
 		/// <param name="s">String to decode.</param>
 		/// <returns>Decoded byte array, or null if decoding fails.</returns>
-		public static ArraySlice<byte>? TryConvert(string s)
+		public static ArraySlice<byte>? TryConvertToBytes(string s)
 		{
 			byte[] b = Encoding.UTF8.GetBytes(s);
-			var result = ConvertToBytes(b);
-			return result.InternalList == null ? (ArraySlice<byte>?)null : result;
+			return ConvertToBytes(b);
 		}
 
-		private static ArraySlice<byte> ConvertToBytes(byte[] b)
+		private static ArraySlice<byte>? ConvertToBytes(byte[] b)
 		{
 			for (int i = 0; i < b.Length - 1; ++i)
 			{
@@ -172,7 +190,7 @@ namespace Loyc
 						if (i < b.Length)
 						{
 							if ((uint)((cur = b[i]) - 63) > 63)
-								return default;
+								return null;
 							int digit = (cur - 64) & 63;
 							int zeros = 16 - 6; // number of 0 bits on right side of accum
 							int accum = digit << zeros;
@@ -194,7 +212,7 @@ namespace Loyc
 
 							// Invalid states: unused bits in accumulator, or invalid base-64 char
 							if ((accum & 0xFF00) != 0 || (i < b.Length && b[i] != '!'))
-								return default;
+								return null;
 							i++;
 
 							// Start taking bytes verbatim
@@ -210,10 +228,25 @@ namespace Loyc
 			return b;
 		}
 
-
 		public static char EncodeBase64Digit(int digit)
 			=> (char)((digit + 1 & 63) + 63);
 		public static int DecodeBase64Digit(char digit)
 			=> (uint)(digit - 63) <= 63 ? (digit - 64) & 63 : -1;
+
+		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
+		[Obsolete("This was renamed to ConvertFromBytes")]
+		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true) => ConvertFromBytes(bytes, allowControlChars);
+
+		[Obsolete("This was renamed to TryConvertToBytes")]
+		public static ArraySlice<byte>? TryConvert(UString s) => TryConvertToBytes(s);
+
+		[Obsolete("This was renamed to TryConvertToBytes")]
+		public static ArraySlice<byte>? TryConvert(string s) => TryConvertToBytes(s);
+
+		[Obsolete("This was renamed to ConvertToBytes")]
+		public static ArraySlice<byte> Convert(string s) => ConvertToBytes(s);
+
+		[Obsolete("This was renamed to ConvertToBytes")]
+		public static ArraySlice<byte> Convert(UString s) => ConvertToBytes(s);
 	}
 }
