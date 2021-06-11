@@ -13,15 +13,16 @@ namespace LeMP
 {
 	public partial class StandardMacros
 	{
-		[LexicalMacro(@"##unroll (pattern in inputList) { output }; // EC# syntax; use .#unroll in LES3",
+		[LexicalMacro(@"##unroll (pattern in inputList) { output; }; // EC# syntax; use .#unroll in LES3",
 			"Produces variations of a block of code, matching each item in the `inputList` against " +
 			"a pattern to the left of `in`. The `inputList` is preprocessed before its items are " +
 			"matched against the pattern. The item list must be a tuple, a braced block, a JSON-style " +
 			"list (the '[] operator), or a call to #splice. Every item in inputList should match the " +
 			"pattern, or an error is produced." +
 			"\n\n" +
-			"This macro is closely related to ##map, but a warning is produced if any items in " +
-			"`inputList` don't match the pattern.",
+			"This macro is closely related to ##map. `##unroll(P in L) { o; }` is equivalent to " +
+			"`##map(L, (P) => { o; })`, except that an error is produced if any items in the list `L` " +
+			"don't match the pattern P.",
 			"##unroll")]
 		public static LNode unroll(LNode node, IMacroContext context)
 		{
@@ -50,7 +51,7 @@ namespace LeMP
 		static readonly Symbol @in = GSymbol.Get("in");
 
 		[LexicalMacro(@"/* LES syntax */ unroll ((X, Y) `in` ((X, Y), (Y, X))) {...}; /* EC#/LES3 syntax */ unroll ((X, Y) in ((X, Y), (Y, X))) {...}",
-			 "This is obsolete. Please use ##foreach instead, which accepts arbitrary patterns" +
+			 "This is obsolete. Please use ##unroll instead, which accepts arbitrary patterns" +
 			 "on the left but expects the `$` operator to mark all uses of each variable." +
 			 "For example, `unroll (f in (F,G)) { f(f); }` should be changed to " +
 			 "`##unroll ($f in (F,G)) { $f($f); }`.\n\n"
