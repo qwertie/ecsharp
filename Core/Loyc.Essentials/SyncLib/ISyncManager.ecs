@@ -15,19 +15,13 @@ namespace Loyc.SyncLib
 	public delegate T SyncFieldFunc<T>(Symbol? name, [AllowNull] T value);
 
 	// Primitive types that a synchronizer must support "out of the box"
-	define primitiveTypes => #splice(bool, int, uint, long, ulong, float, double, BigInteger, char);
+	define basicTypes => #splice(bool, int, uint, long, ulong, float, double, BigInteger, char);
 
 	// Bitfield types include a size-in-bits parameter and a signedness boolean
 	define bitfieldTypes => #splice(int, long, BigInteger);
-	
-	//macro ##foreach() {}
-	//
-	//define bitfieldUnsignedTypes => ##foreach(type in ##map(bitfieldTypes, x => ##switch(x) {
-	//	case int: (x, uint);
-	//	case long: (x, ulong);
-	//	case BigInteger: (x, BigInteger);
-	//})
-	
+
+	define bitfieldTypesWithUnsigned => ##map(bitfieldTypes, int => (int, uint), long => (long, ulong), $x => ($x, $x));
+
 	// in certain cases it is not possible to directly use a type in a 
 	// location where an expression is expected, either because the type 
 	// is not a valid expression (e.g. `int?` is not a valid expression) 
@@ -42,27 +36,17 @@ namespace Loyc.SyncLib
 	define (#type<$T>) { $T; }
 
 	define ({
-		forEachPrimitiveType($type) { $(..code); }
+		forEachPrimitiveType($T) { $(..code); }
 	}) {
-		// (primitiveTypes,) informs the EC# parser that we're constructing 
-		// a tuple, not a parenthsized expression. Sadly, #preprocessChild is
-		// needed because unroll doesn't understand #splice.
-		#preprocessChild(0/1,
-			unroll ($type in (primitiveTypes,)) { $(..code); });
+		##unroll($T in basicTypes) { $(..code); };
 	}
 
 	define ({
-		forEachBitfieldType($type) { $(..code); }
+		forEachBasicType($T) { $(..code); }
 	}) {
-		#preprocessChild(0/1,
-			unroll ($type in (bitfieldTypes,)) { $(..code); });
-	}
-
-	define ({
-		forEachBasicType($type) { $(..code); }
-	}) {
+		##map(basicTypes, $T => $(..code));
 		#preprocessChild(0/1, 
-			unroll ($type in (primitiveTypes, #type<byte[]>, string, ReadOnlyMemory<char>, ReadOnlyMemory<byte>))
+			unroll ($T in (basicTypes, #type<byte[]>, string, ReadOnlyMemory<char>, ReadOnlyMemory<byte>))
 			{
 				$(..code);
 			});
@@ -176,27 +160,27 @@ namespace Loyc.SyncLib
 		/// or saved.</summary>
 		int Depth { get; }
 
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-			type Sync(Symbol? name, type savable);
+			$T Sync(Symbol? name, $T savable);
 		}
-		forEachBitfieldType(type)
+		##unroll($T in bitfieldTypes)
 		{
 			/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-			type Sync(Symbol? name, type savable, int bits, bool signed = true);
+			$T Sync(Symbol? name, $T savable, int bits, bool signed = true);
 		}
 
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-			type? SyncNullable(Symbol? name, type? savable);
+			$T? SyncNullable(Symbol? name, $T? savable);
 		}
 
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a list of values in the current object.</summary>
-			IReadOnlyCollection<type> SyncList(Symbol? name, IReadOnlyCollection<type> savable);
+			IReadOnlyCollection<$T> SyncList(Symbol? name, IReadOnlyCollection<$T> savable);
 		}
 
 		[return: MaybeNull]
@@ -311,8 +295,11 @@ namespace Loyc.SyncLib
 		///   (4) The <see cref="Mode"/> is Query, Schema or Merge and the current 
 		///       <see cref="ISyncManager"/> has decided not to traverse into the 
 		///       current field. In this case, this method returns (false, childKey).
+		///   <para/>
+		///   In Saving mode, and in every case except (3), the returned Object is 
+		///   the same as childKey.
 		/// </remarks>
-		(bool Begun, object Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1);
+		(bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1);
 
 		/// <summary>
 		/// If you called <see cref="BeginSubObject"/> and it returned true, you 
@@ -330,35 +317,35 @@ namespace Loyc.SyncLib
 	public interface ISyncManager<out M> : ISyncManager where M: ISyncManager<M>
 	{
 		#rawText("[return: MaybeNull]");
-		new T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<M, T> syncFunc,
+		T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<M, T> syncFunc,
 			SubObjectMode mode = SubObjectMode.Deduplicate);
 	}
 
 	public static partial class SyncManagerExt
 	{
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-			public static type Sync<SyncManager>(this SyncManager sync, string name, type savable) 
+			public static $T Sync<SyncManager>(this SyncManager sync, string name, $T savable) 
 				where SyncManager : ISyncManager => sync.Sync((Symbol)name, savable);
 		}
-		forEachBitfieldType(type)
+		##unroll($T in bitfieldTypes)
 		{
 			/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-			public static type Sync<SyncManager>(this SyncManager sync, string name, type savable, int bits, bool signed = true)
+			public static $T Sync<SyncManager>(this SyncManager sync, string name, $T savable, int bits, bool signed = true)
 				where SyncManager : ISyncManager => sync.Sync((Symbol)name, savable);
 		}
 
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-			public static type? SyncNullable<SyncManager>(this SyncManager sync, string name, type? savable)
+			public static $T? SyncNullable<SyncManager>(this SyncManager sync, string name, $T? savable)
 				where SyncManager : ISyncManager => sync.SyncNullable((Symbol)name, savable);
 		}
-		forEachBasicType(type)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a list of values in the current object.</summary>
-			public static IReadOnlyCollection<type> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<type> savable)
+			public static IReadOnlyCollection<$T> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<$T> savable)
 				where SyncManager : ISyncManager => sync.SyncList((Symbol)name, savable);
 		}
 	}

@@ -1,14 +1,64 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Numerics;
+
+macro stringToBytes($str) {
+	var bytes = Encoding.UTF8.GetBytes((string)str.Value).Select(b => quote((byte) $(LNode.Literal((char) b))));
+	return quote(new byte[] { $(..bytes) });
+}
+define isUnsigned($T) {
+	$T `staticMatches` uint || $T `staticMatches` ulong;
+}
 
 namespace Loyc.SyncLib
 {
 	public static partial class SyncJson
 	{
+		partial class WriterState
+		{
+			internal static readonly byte[] _null = stringToBytes("null");
+		}
+
 		public partial struct Writer
 		{
-			
+			internal static readonly byte[] _true = stringToBytes("true");
+			internal static readonly byte[] _false = stringToBytes("false");
+			internal static readonly byte[] _null = WriterState._null;
+
+			##unroll($T in (int, uint, long, ulong)) {
+				public $T Sync(Symbol? name, $T savable) {
+					_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
+					return savable;
+				}
+			}
+			##unroll($T in (BigInteger, float, double, char)) {
+				public $T Sync(Symbol? name, $T savable) {
+					_s.WriteProp(name == null ? "" : name.Name, savable);
+					return savable;
+				}
+			}
+			##unroll($T in (bool, int, uint, long, ulong, float, double, BigInteger, char, ReadOnlyMemory<char>, ReadOnlyMemory<byte>)) {
+				public $T? SyncNullable(Symbol? name, $T? savable) {
+					string nameS = name == null ? "" : name.Name;
+					if (savable == null)
+						_s.WriteProp(nameS, _null);
+					else
+						static if (isUnsigned($T)) {
+							_s.WriteProp(nameS, (long) savable.Value, false);
+						} else static if ($T `staticMatches` bool) {
+							_s.WriteProp(nameS, savable.Value ? _true : _false);
+						} else static if ($T `staticMatches` ReadOnlyMemory<char>) {
+							_s.WriteProp(nameS, savable.Value.Span);
+						} else static if ($T `staticMatches` ReadOnlyMemory<byte>) {
+							_s.WriteProp(nameS, ByteArrayInString.Convert(savable.Value, allowControlChars: false));
+						} else {
+							_s.WriteProp(nameS, savable.Value);
+						}
+					return savable;
+				}
+			}
 		}
 	}
 }

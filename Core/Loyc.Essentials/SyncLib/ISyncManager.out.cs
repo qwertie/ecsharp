@@ -1,4 +1,4 @@
-// Generated from ISyncManager.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from ISyncManager.ecs by LeMP custom tool. LeMP version: 30.0.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -44,15 +44,20 @@ namespace Loyc.SyncLib
 		/// (e.g. JSON, Protobuf). If this field is false, fields must be read in
 		/// the same order they were written, and omitting fields is not allowed
 		/// (e.g. you cannot skip over a null field without saving it).</summary>
-		/// <remarks>If this property is false, the data may not have any recorded 
-		/// structure, and failure to read the correct fields in the correct order 
-		/// tends to give you "garbage" results.</remarks>
+		/// <remarks>
+		/// Avoid reading fields out of order, and avoid skipping fields. Even 
+		/// if doing so is supported, it may reduce performance.
+		/// <para/>
+		/// If this property is false, the data may not have any recorded 
+		/// structure. In that case, failure to read the correct fields in the 
+		/// correct order tends to give you "garbage" results for the entire 
+		/// remainder of the stream.
+		/// </remarks>
 		bool SupportsReordering { get; }
 
 		/// <summary>Returns true if the <see cref="ISyncManager"/> supports 
 		/// deduplication of objects and cyclic object graphs. Note: all standard 
-		/// implementations of this interface do support deduplication and cyclic
-		/// object graphs.</summary>
+		/// implementations of this property return true.</summary>
 		bool SupportsDeduplication { get; }
 
 		/// <summary>Indicates that the properties of the current sub-object do not
@@ -128,8 +133,6 @@ namespace Loyc.SyncLib
 		/// loaded or saved. This property is zero if the root object is being loaded
 		/// or saved.</summary>
 		int Depth { get; }
-
-		
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		bool Sync(Symbol? name, bool savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
@@ -149,22 +152,11 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		char Sync(Symbol? name, char savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		byte[] Sync(Symbol? name, byte[] savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		string Sync(Symbol? name, string savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		ReadOnlyMemory<char> Sync(Symbol? name, ReadOnlyMemory<char> savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		ReadOnlyMemory<byte> Sync(Symbol? name, ReadOnlyMemory<byte> savable);
-
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		int Sync(Symbol? name, int savable, int bits, bool signed = true);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		long Sync(Symbol? name, long savable, int bits, bool signed = true);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		BigInteger Sync(Symbol? name, BigInteger savable, int bits, bool signed = true);
-
-		
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		bool? SyncNullable(Symbol? name, bool? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
@@ -183,16 +175,6 @@ namespace Loyc.SyncLib
 		BigInteger? SyncNullable(Symbol? name, BigInteger? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		char? SyncNullable(Symbol? name, char? savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		byte[]? SyncNullable(Symbol? name, byte[]? savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		string? SyncNullable(Symbol? name, string? savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		ReadOnlyMemory<char>? SyncNullable(Symbol? name, ReadOnlyMemory<char>? savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		ReadOnlyMemory<byte>? SyncNullable(Symbol? name, ReadOnlyMemory<byte>? savable);
-
-		
 		/// <summary>Reads or writes a list of values in the current object.</summary>
 		IReadOnlyCollection<bool> SyncList(Symbol? name, IReadOnlyCollection<bool> savable);
 		/// <summary>Reads or writes a list of values in the current object.</summary>
@@ -211,14 +193,6 @@ namespace Loyc.SyncLib
 		IReadOnlyCollection<BigInteger> SyncList(Symbol? name, IReadOnlyCollection<BigInteger> savable);
 		/// <summary>Reads or writes a list of values in the current object.</summary>
 		IReadOnlyCollection<char> SyncList(Symbol? name, IReadOnlyCollection<char> savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		IReadOnlyCollection<byte[]> SyncList(Symbol? name, IReadOnlyCollection<byte[]> savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		IReadOnlyCollection<string> SyncList(Symbol? name, IReadOnlyCollection<string> savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		IReadOnlyCollection<ReadOnlyMemory<char>> SyncList(Symbol? name, IReadOnlyCollection<ReadOnlyMemory<char>> savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		IReadOnlyCollection<ReadOnlyMemory<byte>> SyncList(Symbol? name, IReadOnlyCollection<ReadOnlyMemory<byte>> savable);
 		[return: MaybeNull] 
 		
 		T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<ISyncManager, T> syncFunc, 
@@ -331,8 +305,11 @@ namespace Loyc.SyncLib
 		///   (4) The <see cref="Mode"/> is Query, Schema or Merge and the current 
 		///       <see cref="ISyncManager"/> has decided not to traverse into the 
 		///       current field. In this case, this method returns (false, childKey).
+		///   <para/>
+		///   In Saving mode, and in every case except (3), the returned Object is 
+		///   the same as childKey.
 		/// </remarks>
-		(bool Begun, object Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1);
+		(bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1);
 
 		/// <summary>
 		/// If you called <see cref="BeginSubObject"/> and it returned true, you 
@@ -350,14 +327,12 @@ namespace Loyc.SyncLib
 	public interface ISyncManager<out M> : ISyncManager where M: ISyncManager<M>
 	{
 		[return: MaybeNull]
-		new T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<M, T> syncFunc, 
+		T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<M, T> syncFunc, 
 		  SubObjectMode mode = SubObjectMode.Deduplicate);
 	}
 
 	public static partial class SyncManagerExt
 	{
-
-		
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static bool Sync<SyncManager>(this SyncManager sync, string name, bool savable) where SyncManager: ISyncManager => 
 		sync.Sync((Symbol) name, savable);
@@ -386,19 +361,6 @@ namespace Loyc.SyncLib
 		public static char Sync<SyncManager>(this SyncManager sync, string name, char savable) where SyncManager: ISyncManager => 
 		sync.Sync((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		public static byte[] Sync<SyncManager>(this SyncManager sync, string name, byte[] savable) where SyncManager: ISyncManager => 
-		sync.Sync((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		public static string Sync<SyncManager>(this SyncManager sync, string name, string savable) where SyncManager: ISyncManager => 
-		sync.Sync((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		public static ReadOnlyMemory<char> Sync<SyncManager>(this SyncManager sync, string name, ReadOnlyMemory<char> savable) where SyncManager: ISyncManager => 
-		sync.Sync((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
-		public static ReadOnlyMemory<byte> Sync<SyncManager>(this SyncManager sync, string name, ReadOnlyMemory<byte> savable) where SyncManager: ISyncManager => 
-		sync.Sync((Symbol) name, savable);
-
-		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static int Sync<SyncManager>(this SyncManager sync, string name, int savable, int bits, bool signed = true) where SyncManager: ISyncManager => 
 		sync.Sync((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
@@ -407,8 +369,6 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static BigInteger Sync<SyncManager>(this SyncManager sync, string name, BigInteger savable, int bits, bool signed = true) where SyncManager: ISyncManager => 
 		sync.Sync((Symbol) name, savable);
-
-		
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		public static bool? SyncNullable<SyncManager>(this SyncManager sync, string name, bool? savable) where SyncManager: ISyncManager => 
 		sync.SyncNullable((Symbol) name, savable);
@@ -436,20 +396,6 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		public static char? SyncNullable<SyncManager>(this SyncManager sync, string name, char? savable) where SyncManager: ISyncManager => 
 		sync.SyncNullable((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		public static byte[]? SyncNullable<SyncManager>(this SyncManager sync, string name, byte[]? savable) where SyncManager: ISyncManager => 
-		sync.SyncNullable((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		public static string? SyncNullable<SyncManager>(this SyncManager sync, string name, string? savable) where SyncManager: ISyncManager => 
-		sync.SyncNullable((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		public static ReadOnlyMemory<char>? SyncNullable<SyncManager>(this SyncManager sync, string name, ReadOnlyMemory<char>? savable) where SyncManager: ISyncManager => 
-		sync.SyncNullable((Symbol) name, savable);
-		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
-		public static ReadOnlyMemory<byte>? SyncNullable<SyncManager>(this SyncManager sync, string name, ReadOnlyMemory<byte>? savable) where SyncManager: ISyncManager => 
-		sync.SyncNullable((Symbol) name, savable);
-
-		
 		/// <summary>Reads or writes a list of values in the current object.</summary>
 		public static IReadOnlyCollection<bool> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<bool> savable) where SyncManager: ISyncManager => 
 		sync.SyncList((Symbol) name, savable);
@@ -476,18 +422,6 @@ namespace Loyc.SyncLib
 		sync.SyncList((Symbol) name, savable);
 		/// <summary>Reads or writes a list of values in the current object.</summary>
 		public static IReadOnlyCollection<char> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<char> savable) where SyncManager: ISyncManager => 
-		sync.SyncList((Symbol) name, savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<byte[]> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<byte[]> savable) where SyncManager: ISyncManager => 
-		sync.SyncList((Symbol) name, savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<string> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<string> savable) where SyncManager: ISyncManager => 
-		sync.SyncList((Symbol) name, savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ReadOnlyMemory<char>> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<ReadOnlyMemory<char>> savable) where SyncManager: ISyncManager => 
-		sync.SyncList((Symbol) name, savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ReadOnlyMemory<byte>> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<ReadOnlyMemory<byte>> savable) where SyncManager: ISyncManager => 
 		sync.SyncList((Symbol) name, savable);
 	}
 }
