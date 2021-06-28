@@ -91,8 +91,9 @@ namespace Loyc.SyncLib
 			// contrast, int and int? are distinct types with different synchronizers.)
 			var dict = new Dictionary<Type, Delegate>();
 			dict.SetRange(GetSynchronizers(nameof(ISyncManager.Sync)));
-			dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncList)));
 			dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncNullable)));
+			// TODO: support SyncList extension methods
+			//dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncList)));
 			return dict;
 
 			static IEnumerable<KeyValuePair<Type, Delegate>> GetSynchronizers(string name)

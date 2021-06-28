@@ -44,6 +44,23 @@ namespace Loyc.SyncLib
 			/// If false, more compact SyncLib-style references are used instead. When
 			/// reading JSON, this setting is ignored and both formats are supported.</summary>
 			public bool NewtonsoftCompatibility { get; set; } = true;
+
+			/// <summary>When set to true, <see cref="SyncJson.Writer"/> uses BAIS 
+			/// encoding when Sync() is called on a byte array. BAIS uses about 37% as 
+			/// many bytes (73% less) as a standard whitespace-free array encoding, or 
+			/// less if the bytes contain long runs of ASCII characters in the range 
+			/// 32 to 126 (because these are encoded verbatim). See Remarks regarding 
+			/// the effect of using null or false for this property.</summary>
+			/// <remarks>
+			/// When writing JSON, if this property set to null, BAIS is written when
+			/// NewtonsoftCompatibility is false and Sync() is called rather than 
+			/// SyncList(). If this property is false, then BAIS is not used.
+			/// <para/>
+			/// When reading JSON, strings will be interpreted as BAIS in contexts where 
+			/// a byte array is expected, unless this property is false. If this is 
+			/// false, then the string will cause a type mismatch exception.
+			/// </remarks>
+			public bool? UseBais { get; set; } = null;
 		}
 	}
 

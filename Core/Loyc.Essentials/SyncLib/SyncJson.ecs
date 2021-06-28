@@ -1,3 +1,7 @@
+///
+/// This file uses Enhanced C# to generate some of the code of SyncJson,
+/// SyncJson.Writer and SyncJson.Reader.
+///
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -8,47 +12,53 @@ macro stringToBytes($str) {
 	var bytes = Encoding.UTF8.GetBytes((string)str.Value).Select(b => quote((byte) $(LNode.Literal((char) b))));
 	return quote(new byte[] { $(..bytes) });
 }
+
+using Loyc.Collections.Impl;
+using Loyc.SyncLib.Impl;
+
 define isUnsigned($T) {
 	$T `staticMatches` uint || $T `staticMatches` ulong;
 }
+
+[Passive]
+define (#type<$T>) { $T; }
 
 namespace Loyc.SyncLib
 {
 	public static partial class SyncJson
 	{
+		internal static readonly byte[] _true = stringToBytes("true");
+		internal static readonly byte[] _false = stringToBytes("false");
+		internal static readonly byte[] _null = stringToBytes("null");
+
 		partial class WriterState
 		{
-			internal static readonly byte[] _null = stringToBytes("null");
 		}
 
 		public partial struct Writer
 		{
-			internal static readonly byte[] _true = stringToBytes("true");
-			internal static readonly byte[] _false = stringToBytes("false");
-			internal static readonly byte[] _null = WriterState._null;
-
 			##unroll($T in (int, uint, long, ulong)) {
 				public $T Sync(Symbol? name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
 					return savable;
 				}
 			}
-			##unroll($T in (BigInteger, float, double, char)) {
+			##unroll($T in (BigInteger, float, double, char, string)) {
 				public $T Sync(Symbol? name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, savable);
 					return savable;
 				}
 			}
-			##unroll($T in (bool, int, uint, long, ulong, float, double, BigInteger, char, ReadOnlyMemory<char>, ReadOnlyMemory<byte>)) {
+			##unroll($T in (bool, int, uint, long, ulong, float, double, BigInteger, char)) {
 				public $T? SyncNullable(Symbol? name, $T? savable) {
 					string nameS = name == null ? "" : name.Name;
 					if (savable == null)
-						_s.WriteProp(nameS, _null);
+						_s.WriteNull(nameS);
 					else
 						static if (isUnsigned($T)) {
 							_s.WriteProp(nameS, (long) savable.Value, false);
 						} else static if ($T `staticMatches` bool) {
-							_s.WriteProp(nameS, savable.Value ? _true : _false);
+							_s.WriteLiteralProp(nameS, savable.Value ? _true : _false);
 						} else static if ($T `staticMatches` ReadOnlyMemory<char>) {
 							_s.WriteProp(nameS, savable.Value.Span);
 						} else static if ($T `staticMatches` ReadOnlyMemory<byte>) {
@@ -57,6 +67,13 @@ namespace Loyc.SyncLib
 							_s.WriteProp(nameS, savable.Value);
 						}
 					return savable;
+				}
+			}
+			##unroll($T in (bool, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
+				public InternalList<$T> SyncListImpl(Symbol? name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
+				{
+					SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
+					return default;
 				}
 			}
 		}
