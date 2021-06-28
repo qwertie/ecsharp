@@ -21,7 +21,7 @@ namespace Loyc.Collections
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
-	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>> //, IGetIteratorSlice<T>
+	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>>//, IScannable<T> //, IGetIteratorSlice<T>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 

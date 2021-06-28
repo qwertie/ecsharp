@@ -22,7 +22,7 @@ namespace Loyc.Collections
 {
 	/// <summary>Adapter: Provides access to a section of an array.</summary>
 	/// <remarks>As of version 30.1, this is a wrapper around <see cref="Memory{T}"/>.</remarks>
-	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>, IIsEmpty
+	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>, IIsEmpty, IScannable<T>, IMValue<ArraySlice<T>>
 	{
 		Memory<T> _mem;
 
@@ -137,6 +137,9 @@ namespace Loyc.Collections
 
 		public Memory<T> AsMemory() => _mem;
 
+		public InternalList.Scanner<T> Scan() => new InternalList.Scanner<T>(_mem);
+		IScanner<T> IScan<T>.Scan() => Scan();
+
 		/// <summary>Returns the original array.</summary>
 		/// <remarks>Ideally, to protect the array there would be no way to access
 		/// its contents beyond the boundaries of the slice. However, the 
@@ -168,5 +171,8 @@ namespace Loyc.Collections
 				return seg.Offset + seg.Count;
 			}
 		}
+
+		ArraySlice<T> IMValue<ArraySlice<T>>.Value { get => this; set => this = value; }
+		ArraySlice<T> IValue<ArraySlice<T>>.Value => this;
 	}
 }

@@ -1,4 +1,4 @@
-// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from LinqToLists.ecs by LeMP custom tool. LeMP version: 30.0.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -198,6 +198,24 @@ namespace Loyc.Collections
 			for (int i = 0; i < array.Length; i++)
 				array[i] = c[i];
 			return array;
+		}
+
+		public static T[] ToArray<T>(this IReadOnlyCollection<T> c)
+		{
+			var array = new T[c.Count];
+			int i = 0;
+			foreach (var item in c)
+				array[i++] = item;
+			return array;
+		}
+
+		/// <summary>Copies the contents of a collection to a List.</summary>
+		public static List<T> ToList<T>(this IReadOnlyCollection<T> c)
+		{
+			var list = new List<T>(c.Count);
+			foreach (var item in c)
+				list.Add(item);
+			return list;
 		}
 
 		public static T[] ToArray<T>(this IListAndListSource<T> c) => MutableListExtensionMethods.LinqToLists.ToArray(c);

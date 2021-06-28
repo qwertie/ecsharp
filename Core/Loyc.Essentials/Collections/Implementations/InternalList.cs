@@ -51,7 +51,8 @@ namespace Loyc.Collections.Impl
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
 	[Serializable]
-	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>
+	public struct InternalList<T> : IListAndListSource<T>, 
+		IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>, IScannable<T>
 	{
 		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalList<T> Empty = new InternalList<T>(EmptyArray<T>.Value, 0);
@@ -279,23 +280,23 @@ namespace Loyc.Collections.Impl
 			_count = InternalList.RemoveAt(index, count, _array, _count);
 		}
 
-        public T this[int index]
+		public T this[int index]
 		{
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			[DebuggerStepThrough]
 			get { 
 				Debug.Assert((uint)index < (uint)_count);
 				return _array[index];
 			}
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set {
 				Debug.Assert((uint)index < (uint)_count);
 				_array[index] = value;
 			}
 		}
-        public T this[int index, T defaultValue]
+		public T this[int index, T defaultValue]
 		{
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get {
 				if ((uint)index < (uint)_count)
 					return _array[index];
@@ -441,6 +442,12 @@ namespace Loyc.Collections.Impl
 			Array.Copy(_array, start, copy, 0, subcount);
 			return new InternalList<T>(copy, subcount);
 		}
+
+		public Memory<T> AsMemory() => _array.AsMemory(0, _count);
+		public T[] AsArray() => _count == _array.Length ? _array : ToArray();
+
+		public InternalList.Scanner<T> Scan() => new InternalList.Scanner<T>(AsMemory());
+		IScanner<T> IScan<T>.Scan() => Scan();
 	}
 
 	/// <summary>
@@ -887,6 +894,33 @@ namespace Loyc.Collections.Impl
 			object? System.Collections.IEnumerator.Current => Current;
 			public void Dispose() { }
 			public void Reset() => _index = -1;
+		}
+
+		public struct Scanner<T> : IScanner<T>
+		{
+			private Memory<T> _array;
+			private int _index;
+			public Scanner(Memory<T> array)
+			{
+				_array = array;
+				_index = 0;
+			}
+
+			public bool CanScanBackward => true;
+
+			public ReadOnlyMemory<T> Read(int skip, int minLength, ref Memory<T> buffer)
+			{
+				_index += skip;
+				if ((uint)_index > (uint)_array.Length) {
+					if (skip < 0) {
+						_index = 0;
+						CheckParam.ThrowBadArgument(nameof(skip), "Attempted to rewind before beginning of array");
+					} else {
+						_index = _array.Length;
+					}
+				}
+				return _array.Slice(_index);
+			}
 		}
 	}
 }

@@ -75,18 +75,6 @@ define TakeWhile_SkipWhile($IList<T>, $ListSlice<T>, $listMin)
 		}
 	}
 }
-define DefineToArray($IList<T>)
-{
-	// *** Reminder: do not edit the generated output! ***
-	/// <summary>Copies the contents of a list to an array.</summary>
-	public static T[] ToArray<T>(this $IList<T> c)
-	{
-		var array = new T[c.Count];
-		for (int i = 0; i < array.Length; i++)
-			array[i] = c[i];
-		return array;
-	}
-}
 
 namespace Loyc.Collections
 {
@@ -167,7 +155,33 @@ namespace Loyc.Collections
 		TakeWhile_SkipWhile(IListSource<T>, Slice_<T>, 0);
 		TakeWhile_SkipWhile(INegListSource<T>, NegListSlice<T>, list.Min);
 
-		DefineToArray(IReadOnlyList<T>);
+		// *** Reminder: do not edit the generated output! ***
+		/// <summary>Copies the contents of a list to an array.</summary>
+		public static T[] ToArray<T>(this IReadOnlyList<T> c)
+		{
+			var array = new T[c.Count];
+			for (int i = 0; i < array.Length; i++)
+				array[i] = c[i];
+			return array;
+		}
+
+		public static T[] ToArray<T>(this IReadOnlyCollection<T> c)
+		{
+			var array = new T[c.Count];
+			int i = 0;
+			foreach (var item in c)
+				array[i++] = item;
+			return array;
+		}
+
+		/// <summary>Copies the contents of a collection to a List.</summary>
+		public static List<T> ToList<T>(this IReadOnlyCollection<T> c)
+		{
+			var list = new List<T>(c.Count);
+			foreach (var item in c)
+				list.Add(item);
+			return list;
+		}
 
 		public static T[] ToArray<T>(this IListAndListSource<T> c) => MutableListExtensionMethods.LinqToLists.ToArray(c);
 		

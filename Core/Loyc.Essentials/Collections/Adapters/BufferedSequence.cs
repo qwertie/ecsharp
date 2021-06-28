@@ -43,7 +43,7 @@ namespace Loyc.Collections
 	/// reading the sequence as <see cref="TryGet"/> is called.</summary>
 	/// <remarks>Avoid calling <see cref="Count"/> if you actually want laziness;
 	/// this property must read and buffer the entire sequence.</remarks>
-	public class BufferedSequence<T> : ListSourceBase<T>
+	public class BufferedSequence<T> : ListSourceBase<T>, IScannable<T>
 	{
 		InternalList<T> _buffer = InternalList<T>.Empty;
 		IEnumerator<T>? _e; // set to null when ended
@@ -95,6 +95,45 @@ namespace Loyc.Collections
 				return _buffer.Count;
 			}
 		}
-	}
 
+		public Scanner Scan() => new Scanner(this);
+		IScanner<T> IScan<T>.Scan() => Scan();
+
+		public struct Scanner : IScanner<T>
+		{
+			BufferedSequence<T> _seq;
+			private int _index;
+
+			public Scanner(BufferedSequence<T> seq)
+			{
+				_seq = seq;
+				_index = 0;
+			}
+
+			public bool CanScanBackward => true;
+
+			public ReadOnlyMemory<T> Read(int skip, int minLength, ref Memory<T> buffer)
+			{
+				_index += skip;
+
+				if (minLength < 0)
+					minLength = 16;
+
+				// Ensure we've buffered up enough items to fulfill the request
+				int lastIndex = _index + minLength - 1;
+				_seq.TryGet(lastIndex, out bool _);
+
+				if ((uint)_index > (uint)_seq._buffer.Count) {
+					if (skip < 0) {
+						_index = 0;
+						CheckParam.ThrowBadArgument(nameof(skip), "Attempted to rewind before beginning of array");
+					} else {
+						_index = _seq._buffer.Count;
+					}
+				}
+				
+				return _seq._buffer.AsMemory().Slice(_index);
+			}
+		}
+	}
 }

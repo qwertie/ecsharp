@@ -83,6 +83,11 @@ namespace Loyc.Tests
 		public static int Loyc_Essentials()
 		{
 			return MiniTest.RunTests.RunMany(
+				//new SyncJsonWriterTests(),
+				new InternalListScannerTests(_seed),
+				new ScannableEnumerableTests(_seed),
+				new ScannableEnumerableTests(_seed, 200_000),
+				new BufferedSequenceScannerTests(_seed),
 				new MultiMapTests(_seed),
 				new EitherTests(),
 				new BaisTests(),

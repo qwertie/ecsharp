@@ -1,4 +1,3 @@
-using Loyc.Collections.Impl;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.MutableListExtensionMethods;
-
+ 
 namespace Loyc.Collections
 {
 	/// <summary>
