@@ -134,7 +134,6 @@ namespace Loyc
 		/// <summary>This method simply assigns a value to a variable and returns the 
 		/// value. For example, <c>G.Var(out int x, 777)</c> creates a variable called 
 		/// x with a value of 777, and returns 777.</summary>
-		/// <returns>True.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static T Var<T>(out T var, T value) => var = value;
 

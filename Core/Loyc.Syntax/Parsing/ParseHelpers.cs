@@ -153,15 +153,15 @@ namespace Loyc.Syntax
 
 			encountered |= EscapeC.HasEscapes;
 			int code; // hex code after \u or \x or \U
-			int len; // length of hex code after \u or \x or \U
+			int len = 4; // length of hex code after \u or \x or \U
 			UString slice, original = s;
 			int type = s.PopFirst(out fail);
 			switch (type) {
 				case 'x':
 					encountered |= EscapeC.BackslashX;
+					len = 2;
 					goto case 'u';
 				case 'u':
-					len = type == 'u' ? 4 : 2;
 					slice = s.Left(len);
 					if (TryParseHex(ref slice, out code) == len) {
 						s = s.Substring(slice.InternalStart - s.InternalStart);

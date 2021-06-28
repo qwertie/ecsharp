@@ -83,10 +83,9 @@ namespace Loyc
 		/// three bytes if possible (as four characters). This decision may, 
 		/// unfortunately, cut off the beginning of some ASCII runs.
 		/// </remarks>
-		public static string ConvertFromBytes(Memory<byte> bytes, bool allowControlChars)
+		public static string ConvertFromBytes(ReadOnlySpan<byte> span, bool allowControlChars)
 		{
 			var sb = new StringBuilder();
-			var span = bytes.Span;
 			for (int i = 0; i < span.Length;)
 			{
 				byte b = span[i++];
@@ -107,8 +106,6 @@ namespace Loyc
 								sb.Append(EncodeBase64Digit(accum >> 12));
 								sb.Append(EncodeBase64Digit(accum >> 6));
 								sb.Append(EncodeBase64Digit(accum));
-								if (bytes.IsEmpty)
-									break;
 							} else {
 								sb.Append(EncodeBase64Digit(accum >> 10));
 								sb.Append(EncodeBase64Digit(accum >> 4));
@@ -139,7 +136,7 @@ namespace Loyc
 
 		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
 		public static string ConvertFromBytes(byte[] bytes, bool allowControlChars)
-			=> ConvertFromBytes(bytes.AsMemory(), allowControlChars);
+			=> ConvertFromBytes(bytes.AsSpan(), allowControlChars);
 
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>
@@ -235,7 +232,8 @@ namespace Loyc
 
 		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
 		[Obsolete("This was renamed to ConvertFromBytes")]
-		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true) => ConvertFromBytes(bytes, allowControlChars);
+		public static string Convert(ArraySlice<byte> bytes, bool allowControlChars = true) 
+			=> ConvertFromBytes(bytes.AsMemory().Span, allowControlChars);
 
 		[Obsolete("This was renamed to TryConvertToBytes")]
 		public static ArraySlice<byte>? TryConvert(UString s) => TryConvertToBytes(s);
