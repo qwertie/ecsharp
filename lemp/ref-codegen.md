@@ -332,7 +332,7 @@ This macro converts an identifier to uppercase:
 
 The input is expected to be an identifier, which is converted to uppercase (e.g. `toUpper(xen)` is `XEN`). The `Name` of a Loyc tree is a [Symbol](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), so `id.Name.Name` is used to get the string stored inside the `Symbol` in order to convert it to uppercase. The Name of a call like `Foo(x, y)` is `Foo`. Literals and complex calls have zero-length names, so `toUpper(3)` would return the empty identifier, denoted ```@`` ``` in Enhanced C# (I'm considering changing this to `null`, though, in which case `toUpper(3)` would produce an error).
 
-`LNode` is short for "Loyc node", a reference to the underlying syntax tree, called a [Loyc tree](http://loyc.net/loyc-trees). A Loyc tree is a simple (ish) data structure inspired by the Lisp family of languages; it enables LeMP to be language-agnostic (though still C#-centric as of 2021). The `LNode` API is discussed [here](http://loyc.net/loyc-trees/dotnet.html).
+`LNode` is short for "Loyc node", a reference to the underlying syntax tree, called a [Loyc tree](http://loyc.net/loyc-trees). A Loyc tree is a simple data structure inspired by the Lisp family of languages; it enables LeMP to be language-agnostic (though still C#-centric as of 2021). The `LNode` API is discussed [here](http://loyc.net/loyc-trees/dotnet.html).
 
 Here you can see two macros that do almost the same thing, but one is implemented with `define` and the other with `macro`:
 
@@ -366,16 +366,18 @@ A subtle difference between these two macros is that `WriteLine1` refers to `$ar
 
 Like `define`, `macro` has two different syntaxes. The following two macros are equivalent:
 
-    macro toUpper($id) {
-        return LNode.Id(id.Name.Name.ToUpper());
-    }
-    macro (toUpper($id)) {
-        return LNode.Id(id.Name.Name.ToUpper());
-    }
+~~~cs
+macro toUpper($id) {
+    return LNode.Id(id.Name.Name.ToUpper());
+}
+macro (toUpper($id)) {
+    return LNode.Id(id.Name.Name.ToUpper());
+}
+~~~
 
 The second syntax is more flexible because it allows you to match arbitrary expressions. For example,
 
-~~~
+~~~cs
 macro ({ 
     if ($x == null)
         $then;
@@ -396,20 +398,28 @@ if (result == null) {
 
 The macro body has access to two parameter variables, `LNode node` and `IMacroContext context`. `node` is the syntax tree of the entire macro call including the macro name (of any). `context` provides access to all functionality of [IMacroContext](http://ecsharp.net/doc/code/interfaceLeMP_1_1IMacroContext.html).
 
+[`MacroMode`](http://ecsharp.net/doc/code/namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721) values can be attached as attributes. For example, the `[PriorityOverride]` attribute will cause your macro to supercede other (default-priority) macros that have the same name and match the same patterns. On the other hand you can use `[PriorityFallback]` to define a polyfill: a macro with a lower priority than other macros.
+
 Here's another example. This macro's job is to convert a UTF-8 string into a byte array, e.g. `var hello = stringToBytes("hi!")` becomes `var hello = new byte[] { (byte) 'h', (byte) 'i', (byte) '!' };`
 
-    using System;
-    using System.Linq;
-    using System.Text;
+~~~cs
+using System;
+using System.Linq;
+using System.Text;
 
-    macro stringToBytes($str) {
-        var s = (string) str.Value;
-        var bytes = Encoding.UTF8.GetBytes(s).Select(
-            b => quote((byte) $(LNode.Literal((char) b))));
-        return quote(new byte[] { $(..bytes) });
-    }
+macro stringToBytes($str) {
+    var s = (string) str.Value;
+    var bytes = Encoding.UTF8.GetBytes(s).Select(
+        b => quote((byte) $(LNode.Literal((char) b))));
+    return quote(new byte[] { $(..bytes) });
+}`
+~~~
 
 The `stringToBytes` macro uses the `quote` macro to generate a syntax tree for the cast to `(byte)` and for the literal characters, created with the `LNode.Literal` method.
+
+The `macro` macro must appear at the top level of the file, and it is affected by `using` statements above it. These using statements cannot reference namespaces from assemblies that are not already referenced by LeMP. `using` statements that are meant only for use at runtime must be moved down; put them **after** your macros.
+
+Inside the `macro` body it should be possible to reference assemblies with `#r` in the same way as you would do in C# Interactive in Visual Studio (but, honestly, I haven't figured out the best way to reference system assemblies or NuGet assemblies and I could use help figuring it out... the problem is that system assemblies are located in different places on different machines and operating systems, so writing portable code is a challenge. Also, as of early 2021, the official LeMP release is still using .NET 4.7, so .NET Core DLLs cannot be used. There will eventually be a transition to .NET 6.)
 
 My TO-DO list says to write a macro-writing guide. In the meantime, [please leave your questions here](https://github.com/qwertie/ecsharp/discussions/categories/q-a).
 
