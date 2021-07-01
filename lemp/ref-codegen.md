@@ -322,7 +322,19 @@ Often, `define` has higher performance than `replace` because, by piggybacking o
 
 ### macro ###
 
-The `macro` macros combine `define`'s power to create macros with `compileTime`'s power to run code at compile time. Here you can see two macros that do almost the same thing, but one is implemented with `define` and the other with `macro`:
+The `macro` macros combine `define`'s power to create macros with `compileTime`'s power to run C# code at compile time. There's a lot to learn to use `macro` effectively, so let's start simple.
+
+This macro converts an identifier to uppercase:
+
+    macro toUpper($id) {
+        return LNode.Id(id.Name.Name.ToUpper());
+    }
+
+The input is expected to be an identifier, which is converted to uppercase (e.g. `toUpper(xen)` is `XEN`). The `Name` of a Loyc tree is a [Symbol](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), so `id.Name.Name` is used to get the string stored inside the `Symbol` in order to convert it to uppercase. The Name of a call like `Foo(x, y)` is `Foo`. Literals and complex calls have zero-length names, so `toUpper(3)` would return the empty identifier, denoted ```@`` ``` in Enhanced C# (I'm considering changing this to `null`, though, in which case `toUpper(3)` would produce an error).
+
+`LNode` is short for "Loyc node", a reference to the underlying syntax tree, called a [Loyc tree](http://loyc.net/loyc-trees). A Loyc tree is a simple (ish) data structure inspired by the Lisp family of languages; it enables LeMP to be language-agnostic (though still C#-centric as of 2021). The `LNode` API is discussed [here](http://loyc.net/loyc-trees/dotnet.html).
+
+Here you can see two macros that do almost the same thing, but one is implemented with `define` and the other with `macro`:
 
 ~~~cs
 define WriteLine1($message, $(..args)) => 
@@ -350,17 +362,41 @@ Please note that the `quote` macro does not have access to the data type of the 
 
 A subtle difference between these two macros is that `WriteLine1` refers to `$args` while `WriteLine2` refers to `$(..args)`. In fact, you can change `$args` to `$(..args)` and `WriteLine1` will still work properly, but if you change `$(..args)` to `$args` in the quote macro, it will not compile. This is because the second macro uses `quote`, and `quote` is not aware that `args` is a _list_ of syntax trees, so you must inform it that `args` is a list using `$(..args)`. In contrast, `define` is already aware that `args` is a list, so you do not have to tell it.
 
-`macro` relies on `compileTime` to function. It implicitly references the same libraries and implicitly includes the same `using` directives as `compileTime`, such as `Loyc.Syntax` which contains `LNode`.
+`macro` relies on `compileTime` to function. It implicitly references the same libraries and implicitly includes the same `using` directives as `compileTime`, such as `Loyc.Syntax` which contains `LNode`. The `macro` macro preprocesses the method body before giving it to the C# scripting engine, so LeMP macros can be used inside the method body.
 
-My TO-DO list says to write more documentation and a macro-writing guide. In the meantime, here's another couple of examples to get you started. This macro converts an identifier to uppercase:
+Like `define`, `macro` has two different syntaxes. The following two macros are equivalent:
 
     macro toUpper($id) {
         return LNode.Id(id.Name.Name.ToUpper());
     }
+    macro (toUpper($id)) {
+        return LNode.Id(id.Name.Name.ToUpper());
+    }
 
-The input is expected to be an identifier, which is converted to uppercase (e.g. `toUpper(xen)` is `XEN`). The `Name` of a Loyc tree is a [Symbol](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), so `id.Name.Name` is used to get the string stored inside the `Symbol` in order to convert it to uppercase. The Name of a call like `Foo(x, y)` is `Foo`. Literals and complex calls have zero-length names, so `toUpper(3)` would return the empty identifier, denoted ```@`` ``` in Enhanced C# (I'm considering changing this to `null`, though, in which case this macro would produce an error).
+The second syntax is more flexible because it allows you to match arbitrary expressions. For example,
 
-The following macro's job is to convert a UTF-8 string into a byte array, e.g. `var hello = stringToBytes("hi!")` becomes `var hello = new byte[] { (byte) 'h', (byte) 'i', (byte) '!' };`
+~~~
+macro ({ 
+    if ($x == null)
+        $then;
+}) {
+    return quote {
+        if ($x is null)
+            $then;
+    };
+}
+
+// The condition is changed to `result is null`. (The macro also, unfortunately, 
+// deletes these comments and some extra work is needed to preserve them.)
+if (result == null) {
+    CancelTransaction();
+    // This comment is preserved though, because it's part of $then
+}
+~~~
+
+The macro body has access to two parameter variables, `LNode node` and `IMacroContext context`. `node` is the syntax tree of the entire macro call including the macro name (of any). `context` provides access to all functionality of [IMacroContext](http://ecsharp.net/doc/code/interfaceLeMP_1_1IMacroContext.html).
+
+Here's another example. This macro's job is to convert a UTF-8 string into a byte array, e.g. `var hello = stringToBytes("hi!")` becomes `var hello = new byte[] { (byte) 'h', (byte) 'i', (byte) '!' };`
 
     using System;
     using System.Linq;
@@ -375,7 +411,7 @@ The following macro's job is to convert a UTF-8 string into a byte array, e.g. `
 
 The `stringToBytes` macro uses the `quote` macro to generate a syntax tree for the cast to `(byte)` and for the literal characters, created with the `LNode.Literal` method.
 
-`LNode` is short for "Loyc node", a reference to the underlying syntax tree, called a [Loyc tree](http://loyc.net/loyc-trees). A Loyc tree is a simple (ish) data structure inspired by the Lisp family of languages; it enables LeMP to be language-agnostic (though still C#-centric as of 2021). The `LNode` API is discussed [here](http://loyc.net/loyc-trees/dotnet.html).
+My TO-DO list says to write a macro-writing guide. In the meantime, [please leave your questions here](https://github.com/qwertie/ecsharp/discussions/categories/q-a).
 
 ### precompute, rawPrecompute ###
 
