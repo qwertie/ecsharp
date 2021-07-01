@@ -24,7 +24,7 @@ Look up by category
     - [`rawQuote`](ref-other.html#rawquote)
 - Pattern matching (at runtime)
     - [`matchCode`](ref-other.html#matchcode): Syntax tree matching ([see article](lemp-code-gen-and-analysis.html#pattern-matching-using-matchcode))
-    - [`match`](ref-other.html#match): Object pattern matching ([see
+    - [`match`](ref-other.html#match): Object pattern matching (obsolete) ([see
  article](pattern-matching.html#pattern-matching))
 - [Code Contracts](ref-code-contracts.html)
     - [notnull](ref-code-contracts.html#notnull--notnull)

@@ -9,13 +9,15 @@ toc: true
 Introduction
 ------------
 
-One of the main uses of LeMP is generating large amounts of code that follow obvious patterns.
+One of the main uses of LeMP is generating code.
 
 - The `compileTime` and `precompute` macros make decisions at compile-time by running C# code (powered by Microsoft's C# Interactive engine). This can produce numbers, expressions or blocks of code that are inserted into the output; it can also read or write files (or, in fact, do anything that you could do at runtime*)
     <div class="sidebox">* I don't consider this a good thing: it is a security risk, but .NET has never offered a very reliable sandboxing mechanism, and with the move to .NET Core, the old AppDomain sandboxing mechanism is going away. Giving you unlimited power to do anything at compile time seems like the best choice under the circumstances.</div>
-- The `replace`, `define` and `unroll` macros are typically used to generate user-defined code, but `replace` and  `define` may also useful for other tasks, such as implementing optimizations or doing syntactically predictable refactorings.
+- The `macro`, `define`, `replace`, and `unroll` macros are typically used to generate user-defined code, but may also be useful for other tasks, such as implementing optimizations or doing syntactically predictable refactorings.
 - The `static` macros (`static if`, `static deconstruct`, `static matchCode`, `staticMatches`) make decisions at compile-time by analyzing syntax.
-- The `alt class` macro is the only macro on this page designed for a particular use case: generating disjoint union types in the form of class hierarchies.
+- The `alt class` macro is the only macro on this page designed for a particular use case: generating disjoint union types in the form of class hierarchies. `alt class` has largely been superceded by C# 9 record types.
+
+Most code generation tasks can be accomplished with just four macros: `macro`, `matchCode`, `quote`, and `compileTime`. Most of the other macros here were introduced before `compileTime` and `macro`, and they are mostly useful for simple code generation scenarios that do not need to invoke the heavyweight C# Interactive engine.
 
 In addition, there is a macro for the unary `$` operator, which looks up and inserts a syntax variable captured by `static deconstruct`, `static tryDeconstruct` or the `` `staticMatches` `` operator. (This works differently from `static matchCode`, because `static matchCode` performs replacements "in advance" inside the "handler" below the matching `case`, whereas `$` replaces lazily. In most cases, however, the net effect is the same.)
 
@@ -208,45 +210,80 @@ This causes `StackOverflowException`, which is unrecoverable and terminates the 
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+// General syntax
+[Passive]
+define (Foo[$index] = $value) {
+	Foo.SetAt($index, $value);
+}
+x = Foo[y] = z;
+
+// Method syntax
 define MakeSquare($T) { 
-	void Square($T x) { return x*x; }
+	void Square($T x) => x*x;
 }
 MakeSquare(int);
 MakeSquare(double);
 MakeSquare(float);
-
-[Passive]
-define operator=(Foo[$index], $value) {
-	Foo.SetAt($index, $value);
-}
-x = Foo[y] = z;
 ~~~
 
 ~~~csharp
 // Output of LeMP
-void Square(int x) {
-  return x * x;
-}
-void Square(double x) {
-  return x * x;
-}
-void Square(float x) {
-  return x * x;
-}
-
 x = Foo.SetAt(y, z);
+
+void Square(int x) => x * x;
+void Square(double x) => x * x;
+void Square(float x) => x * x;
 ~~~
 </div>
 
-Defines a new macro, scoped to the current braced block, that matches the specified pattern and replaces it with the specified output code. `define` has the same syntax as a method, so you can use either lambda syntax like `replace MacroName(...) => ...`, or brace syntax like `replace MacroName(...) { ... }`. Brace syntax is more general, since it allows you to put multiple statements in the output, and you can also include type declarations.
+Defines a new macro, scoped to the current braced block, that matches the specified pattern and replaces it with the specified output code. `define` has two forms. The _method syntax_ resembles a method, and in EC# you can use either lambda syntax like `define MacroName(...) => ...`, or brace syntax like `define MacroName(...) { ... }`. Brace syntax is more general, since it allows you to put multiple statements in the output, and you can also include type declarations.
+
+The _general syntax_ has the form `define (pattern) { replacement; }`, where the braces are mandatory and are not included in the output. The syntax `define (pattern) => replacement;` is not (and cannot be) supported, because it is not valid Enhanced C# syntax.
 
 The `[Passive]` option in the above example prevents warning messages when assignment operators are encountered that do not fit the specified pattern (e.g. `X = Y` and `X[index] = Y` do not match the pattern). See [MacroMode](http://ecsharp.net/doc/code/namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721) for a list of available options.
 
-Matching and replacement occur the same way as in the older [`replace`](#replace) macro. One difference is worth noting: if there are braces around a match argument, those 
-braces are treated literally, not ignored (even though the braces around the replacement code 
-are _not_ considered part of the replacement code; they _are_ ignored).
+Matching and replacement occur the same way as in the older [`replace`](#replace) macro. One difference is worth noting: if you are using the _method syntax_ and there are braces around a matching argument, those braces are treated literally, not ignored (even though the braces around the replacement code are _not_ considered part of the replacement code; they _are_ ignored). If you are using the _general syntax_ then it has no effect to enclose the _entire pattern_ in braces, but braces are significant inside the pattern. In the following example, the braces around `$body` are significant, but the braces around the entire `while` loop are ignored:
 
-The technical difference between this and the older `replace()` macro is that `replace` performs a find-and-replace operation directly, whereas this one creates a macro with a specific name. This leads to a couple of differences in behavior which ensure that the old macro is still useful in certain situations.
+~~~exec
+// Fun fact: while(true) {...} is equivalent to for(;;) {...}
+[Passive]
+define ({ while (true) { $body; } }) 
+{
+  for (;;) $body;
+}
+
+while (true) {
+  Keep.Going();
+}
+~~~
+
+The general syntax ignores the _outer_ braces in order to allow you to use statement syntax `while (true) {...}` (which is not a legal EC# _expression_). **Note:** if you want to write a pattern that matches braces themselves, you simply need to use double braces, i.e. `define ({ { $body; } }) { ... }`
+
+`define` has the ability to generate unique names.
+
+- If the output block contains an identifier whose name begins with `temp#`, the `#` is replaced with a number (minimum two digits) that is unique to the current invocation of the macro.
+- If the output block contains an identifier whose name contains `unique#`, `unique#` is replaced with a number that is unique to the current invocation of the macro.
+
+Example:
+
+~~~exec
+define change_temporarily($lhs = $rhs)
+{
+	var old_unique# = $lhs; // save previous value
+	$lhs = $rhs;
+	on_finally { $lhs = old_unique#; } // restore
+};
+
+void Example()
+{
+	change_temporarily(Environment.CurrentDirectory = @"C:\");
+	change_temporarily(Console.ForegroundColor = ConsoleColor.Red);
+	Console.WriteLine("Text color is temporarily red...");
+	Console.WriteLine("And we're in " + Environment.CurrentDirectory);
+}
+~~~
+
+The technical difference between `define` and the older `replace` macro is that `replace` performs a find-and-replace operation directly, whereas this one creates a macro with a specific name. This leads to a couple of differences in behavior which ensure that the old macro is still useful in certain situations.
 
 The first difference is that `define` works recursively, but `replace` doesn't:
 
@@ -282,6 +319,63 @@ The order of replacements is
 Often, `define` has higher performance than `replace` because, by piggybacking on the usual macro expansion process, it avoids performing an extra pass on the syntax tree.
 
 **Note**: `define` and `replace` are not hygienic. For example, variables defined in the replacement expression are not renamed to avoid conflicts with variables defined at the point of expansion.
+
+### macro ###
+
+The `macro` macros combine `define`'s power to create macros with `compileTime`'s power to run code at compile time. Here you can see two macros that do almost the same thing, but one is implemented with `define` and the other with `macro`:
+
+~~~cs
+define WriteLine1($message, $(..args)) => 
+  MessageSink.Default.Write(Severity.Note, "WriteLine1", $message, $args);
+
+macro WriteLine2($message, $(..args)) => 
+  quote(MessageSink.Default.Write(Severity.Note,
+    new LineColumnFile(
+      $(LNode.Literal(message.Range.Start.Line)),
+      $(LNode.Literal(message.Range.Start.Column)),
+      $(LNode.Literal(message.Range.Source.FileName))),
+    $message, $(..args)));
+
+compileTime{
+	WriteLine1("Hello {0}", "world");
+	WriteLine2("Goodbye {0}", "Bob");
+}
+~~~
+
+Both of these macros allow you to print formatted messages from inside a `compileTime` or `macro` block.
+
+However, the second one can include any C# expression. The macro uses this ability to send information to `MessageSink.Default` about the location of the message in the source code, by constructing a `new LineColumnFile` object. When you double-click the second message in your development environment, it should take you to the location where the message was printed.
+
+Please note that the `quote` macro does not have access to the data type of the arguments being inserted, and assumes they are `LNode`; therefore the macro must convert the line, column and filename into LNodes via `LNode.Literal`.
+
+A subtle difference between these two macros is that `WriteLine1` refers to `$args` while `WriteLine2` refers to `$(..args)`. In fact, you can change `$args` to `$(..args)` and `WriteLine1` will still work properly, but if you change `$(..args)` to `$args` in the quote macro, it will not compile. This is because the second macro uses `quote`, and `quote` is not aware that `args` is a _list_ of syntax trees, so you must inform it that `args` is a list using `$(..args)`. In contrast, `define` is already aware that `args` is a list, so you do not have to tell it.
+
+`macro` relies on `compileTime` to function. It implicitly references the same libraries and implicitly includes the same `using` directives as `compileTime`, such as `Loyc.Syntax` which contains `LNode`.
+
+My TO-DO list says to write more documentation and a macro-writing guide. In the meantime, here's another couple of examples to get you started. This macro converts an identifier to uppercase:
+
+    macro toUpper($id) {
+        return LNode.Id(id.Name.Name.ToUpper());
+    }
+
+The input is expected to be an identifier, which is converted to uppercase (e.g. `toUpper(xen)` is `XEN`). The `Name` of a Loyc tree is a [Symbol](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), so `id.Name.Name` is used to get the string stored inside the `Symbol` in order to convert it to uppercase. The Name of a call like `Foo(x, y)` is `Foo`. Literals and complex calls have zero-length names, so `toUpper(3)` would return the empty identifier, denoted ```@`` ``` in Enhanced C# (I'm considering changing this to `null`, though, in which case this macro would produce an error).
+
+The following macro's job is to convert a UTF-8 string into a byte array, e.g. `var hello = stringToBytes("hi!")` becomes `var hello = new byte[] { (byte) 'h', (byte) 'i', (byte) '!' };`
+
+    using System;
+    using System.Linq;
+    using System.Text;
+
+    macro stringToBytes($str) {
+        var s = (string) str.Value;
+        var bytes = Encoding.UTF8.GetBytes(s).Select(
+            b => quote((byte) $(LNode.Literal((char) b))));
+        return quote(new byte[] { $(..bytes) });
+    }
+
+The `stringToBytes` macro uses the `quote` macro to generate a syntax tree for the cast to `(byte)` and for the literal characters, created with the `LNode.Literal` method.
+
+`LNode` is short for "Loyc node", a reference to the underlying syntax tree, called a [Loyc tree](http://loyc.net/loyc-trees). A Loyc tree is a simple (ish) data structure inspired by the Lisp family of languages; it enables LeMP to be language-agnostic (though still C#-centric as of 2021). The `LNode` API is discussed [here](http://loyc.net/loyc-trees/dotnet.html).
 
 ### precompute, rawPrecompute ###
 
