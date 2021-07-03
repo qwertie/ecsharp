@@ -133,6 +133,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Literals.ecs</DependentUpon>
     </Compile>
+    <Compile Include="WhereSyntaxMacro.cs" />
     <Compile Include="lesX.to.ecs\les2.to.ecs.Macros.cs" />
     <Compile Include="ecs\MatchCode.out.cs">
       <DependentUpon>MatchCode.ecs</DependentUpon>

@@ -81,31 +81,17 @@ namespace LeMP
 			LNode input = args[0];
 
 			// Decode the skipSpec, if any
-			LNode skipSpec = node.Args[1];
-			int? asInt = GetIntValue(skipSpec);
-			(int start, int stop)? range = GetIntRange(skipSpec, input.ArgCount);
-			if (range == null) {
-				int? num = GetIndex(skipSpec, input.ArgCount);
-				if (num != null)
-					range = (num.Value, int.MaxValue);
-			}
-			int iFirstPattern = 1; // index of first pattern
-			if (range == null)
-				range = (0, int.MaxValue);
-			else
-				iFirstPattern++;
-
-			// Ensure range is valid
-			range = (Math.Max(range.Value.start, input.Min), Math.Min(range.Value.stop, input.Max + 1));
+			var range = TryDecodeSkipSpec(input, node.Args[1]);
+			int iFirstPattern = range.exists ? 2 : 1;
 
 			// Expect first argument to be a call, unless skipSpec says to process attributes only
-			if (!input.IsCall && range.Value.stop > -1)
+			if (!input.IsCall && range.stop > -1)
 				return Reject(context, input, "Expected a call node");
 
 			// Decode the patterns
 			var cases = new List<(LNodeList Pattern, LNodeList Replacement)>();
 			for (int i = iFirstPattern; i < node.ArgCount; i++) {
-				var arg = node.Args[i];
+				var arg = args[i];
 				if (arg.Calls(CodeSymbols.Lambda, 2)) {
 					LNode pattern = arg.Args[0], replacement = arg.Args[1];
 					if (pattern.Calls(S.Braces, 0))
@@ -128,22 +114,22 @@ namespace LeMP
 				cases.Add((keep, keep));
 			}
 
-			if (range.Value.start < -1) {
+			if (range.start < -1) {
 				// Perform the mapping operation on the attributes
-				int stop = Math.Min(range.Value.stop, -1);
-				var (outputAttrs, _) = DoMapping(input, range.Value.start, stop, cases);
-				outputAttrs.InsertRange(0, input.Attrs.Slice(0, range.Value.start - input.Min));
+				int stop = Math.Min(range.stop, -1);
+				var (outputAttrs, _) = DoMapping(input, range.start, stop, cases);
+				outputAttrs.InsertRange(0, input.Attrs.Slice(0, range.start - input.Min));
 				outputAttrs.AddRange(input.Attrs.Slice(input.Attrs.Count - (-1 - stop)));
 				input = input.WithAttrs(LNode.List(outputAttrs));
 			}
 
-			if (range.Value.stop > -1) {
+			if (range.stop > -1) {
 				// Perform the mapping operation on the Target and/or Args
-				int min = Math.Max(range.Value.start, -1);
-				var (output, _) = DoMapping(input, min, range.Value.stop, cases);
+				int min = Math.Max(range.start, -1);
+				var (output, _) = DoMapping(input, min, range.stop, cases);
 				if (min > -1)
 					output.InsertRange(0, input.Slice(0, min));
-				output.AddRange(input.Slice(range.Value.stop));
+				output.AddRange(input.Slice(range.stop));
 
 				if (min > -1) {
 					// Target was not changed
@@ -159,6 +145,24 @@ namespace LeMP
 			} else {
 				return input;
 			}
+		}
+
+		public static (bool exists, int start, int stop) TryDecodeSkipSpec(LNode input, LNode skipSpec)
+		{
+			int? asInt = GetIntValue(skipSpec);
+			(int start, int stop)? range = GetIntRange(skipSpec, input.ArgCount);
+			if (range == null) {
+				int? num = GetIndex(skipSpec, input.ArgCount);
+				if (num != null)
+					range = (num.Value, int.MaxValue);
+			}
+			bool exists = range != null;
+			if (!exists)
+				range = (0, int.MaxValue);
+
+			// Ensure range is valid
+			return (exists, Math.Max(range.Value.start, input.Min),
+			                Math.Min(range.Value.stop, input.Max + 1));
 		}
 
 		static (List<LNode> output, int failIndex) DoMapping(LNode input, int start, int stop, List<(LNodeList Pattern, LNodeList Replacement)> cases)

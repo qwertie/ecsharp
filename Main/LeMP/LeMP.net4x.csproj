@@ -65,6 +65,7 @@
     <Compile Include="Tests\TestCompileTimeMacros.cs" />
     <Compile Include="Tests\PreludeMacroTests_Les2.cs" />
     <Compile Include="Tests\PreludeMacroTests_Les3.cs" />
+    <Compile Include="Tests\TestFilterSyntaxMacros.cs" />
     <Compile Include="Tests\TestMapSyntaxMacro.cs" />
     <Compile Include="Tests\TestStaticMatchCodeAndSwitchMacro.cs" />
     <Compile Include="Tests\TestUserDefinedMacroMacro.cs" />
