@@ -89,7 +89,7 @@ namespace Loyc.SyncLib
 				name2[0] = c;
 				return name2.ToString();
 			}
-			return "";
+			return name;
 		}
 	}
 

@@ -47,6 +47,7 @@ namespace Loyc.Essentials.Tests
 
 			jsonSerializer = new JsonSerializer
 			{
+				PreserveReferencesHandling = PreserveReferencesHandling.Objects,
 				ContractResolver = new DefaultContractResolver {
 					NamingStrategy = new CamelCaseNamingStrategy()
 				},
@@ -56,7 +57,8 @@ namespace Loyc.Essentials.Tests
 
 			options = new SyncJson.Options(compactMode: true) {
 				NameConverter = SyncJson.ToCamelCase,
-				RootMode = 0,
+				RootMode = SubObjectMode.Deduplicate,
+				NewtonsoftCompatibility = true,
 			};
 			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBasics, options);
 			Assert.AreEqual(json, syncJson);
@@ -86,6 +88,7 @@ namespace Loyc.Essentials.Tests
 
 			jsonSerializer = new JsonSerializer
 			{
+				PreserveReferencesHandling = PreserveReferencesHandling.Objects,
 				ContractResolver = new DefaultContractResolver {
 					NamingStrategy = new CamelCaseNamingStrategy()
 				},
@@ -95,7 +98,8 @@ namespace Loyc.Essentials.Tests
 
 			options = new SyncJson.Options(compactMode: true) {
 				NameConverter = SyncJson.ToCamelCase,
-				RootMode = 0,
+				RootMode = SubObjectMode.Deduplicate,
+				NewtonsoftCompatibility = true,
 			};
 			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);
 			Assert.AreEqual(json, syncJson);
